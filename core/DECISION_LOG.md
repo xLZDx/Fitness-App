@@ -52969,3 +52969,108 @@ section rewritten to match this entry's own correction rather than repeating the
 genuinely operator-only open item. Re-ran `report_conform.py`, republished the Russian file to the
 same Artifact URL (`https://claude.ai/artifact/Rv9EQo6PXyaRF5if5n76iY`, version 8). No code changes;
 LOCAL-class per the `rosetta` skill, no plan needed.
+
+## 2026-09-16 -- Tier B item 9 (row 24, Firestore wildcard-with-denylist) -- investigation only,
+## backlog premise partly stale, referred to GPT-PM as a product/engineering tradeoff
+
+**Planned** (per the backlog brief, `core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md:106-110`):
+"Migrating `/users/{uid}/{coll}/**` to an explicit per-collection allowlist is a real
+rules-migration with real blast radius... Full Rosetta plan, real `firestore_rules.test.ts`
+coverage proving DENY/ALLOW for every current collection before this is anywhere near a push."
+
+**What was actually verified**, by reading the real files rather than trusting the brief (§3/§23):
+
+1. **The stated precondition -- "real `firestore_rules.test.ts` coverage" -- is already met, and
+   has been since 2026-09-11** (`git log -1 -- functions/src/__rules__/firestore_rules.test.ts` =
+   `e0b789f`, five days before this backlog brief was written). 1016 lines, run against the real
+   Firestore emulator (not mocked): explicit ALLOW/DENY pairs for every collection with its own
+   rules block (`subscription`, `usage`, `receipts`, `profile` health-strip incl. patch-based
+   re-attacks, catalogs, `donor_wall`, `equipment_reports`, `coach_bookings`, `coach_listings`,
+   canary namespace, `debug_sessions` incl. shape/size validation, `recognised_models`,
+   `equipment_identity_sessions`/`_latest_session`/`_telemetry`, top-level catalog-authority
+   collections), a default-deny test for an unlisted TOP-LEVEL collection, and a dedicated test
+   that the generic wildcard's `{document=**}` recursion covers nested paths too. Same stale-brief
+   pattern as this session's earlier FORM_COACH_HUD_ALIGNMENT correction: the backlog text's
+   factual premise about the repo's current state had gone stale between when the master plan
+   line was written (`core/MASTER_PLAN_2026-08-26.md:388-392`, which itself already says "whether
+   it is worth the migration cost... is a product/engineering tradeoff this section does not
+   decide" -- not a technical blocker) and when this backlog brief restated it as an open
+   precondition.
+
+2. **The actual residual risk row 24 names is real, current, and structurally cannot be closed by
+   more tests of the kind already written.** The wildcard grants owner read/write to any
+   `/users/{uid}/{newColl}/**` the moment code starts writing to it -- no `firestore.rules` change,
+   no test failure, nothing to catch it, because that is what an opt-out (denylist) pattern means.
+   Confirmed by reading the generated-account-export enumeration (`account_export.ts:202-258`)
+   against `scripts/ci/data_lifecycle_policy.json` (the MVP1.G3-CI-8 lifecycle-policy file): nine
+   real subcollections ride the wildcard grant today with no dedicated `firestore.rules` block --
+   `generated_exercises`, `equipment_setup_notes`, `programmes`, `machine_cards`,
+   `recognised_equipment`, `scheduled_sessions`, `workout_logs`, `stats`, `workout_sessions` --
+   each intentional (present in the export enumeration and classified `BOTH` in the policy file),
+   but none of that intent is expressed anywhere `firestore.rules` itself, or its own test suite,
+   could check against.
+
+3. **A mechanism already exists that is close to solving this, but solves an adjacent problem, not
+   this one.** `scripts/ci/check_data_lifecycle_coverage.js` (MVP1.G3-CI-8) fails CI when a new
+   `.collection('name')` literal appears in production source (`functions/src/**`, `mobile/lib/**`)
+   with no matching entry in `data_lifecycle_policy.json` -- read in full, confirmed live. But its
+   required classification is `DELETE` / `EXPORT` / `BOTH` / `EXEMPT`: a data-*retention* decision
+   (is this collection swept by `deleteAccount`, surfaced by `exportAccountData`), not an
+   *access-control* decision. A future sensitive nested collection (e.g. something that should be
+   server-only, mirroring `usage`/`receipts`) can be added, satisfy this guard with an `EXEMPT` or
+   `BOTH` classification, and still be silently owner-read/write via the wildcard with nobody
+   having made that call on purpose -- the exact "opens a new collection by omission" failure this
+   backlog item names, just one layer removed from where the guard already looks.
+
+**DECISION requested of GPT-PM as product owner (§16/§17)**, not decided unilaterally here because
+the master plan itself already declined to: the tradeoff is real blast-radius-now (a full explicit
+per-collection allowlist rewrite of `firestore.rules`, touching every one of the ~30 match blocks
+plus these 9 wildcard-riding collections, with the exact failure mode the brief names -- "wrong
+either breaks legitimate client reads or opens a new collection by omission" -- as the cost of
+getting the rewrite itself wrong) vs. a narrower, structurally-identical-in-effect fix (extend
+`check_data_lifecycle_coverage.js`'s existing classification schema with a second, orthogonal axis
+-- e.g. `OWNER_RW` / `OWNER_RO` / `SERVER_ONLY` / `SHARED_READONLY` -- cross-checked against what
+`firestore.rules` actually grants for that collection today, so a NEW collection added without a
+deliberate access decision fails CI exactly the way a new collection added without a deliberate
+retention decision already does). Recommendation given to GPT-PM: the narrower fix, because it
+reuses an already-proven, already-wired mechanism, converts the exact omission risk into a hard CI
+failure without touching the 421-line rules file or its 1016-line test suite at all, and leaves the
+full allowlist rewrite available later if GPT-PM judges the wildcard pattern itself (not just its
+omission risk) unacceptable.
+
+**Status**: investigation and premise-correction only. No source changed, no Rosetta plan opened
+(nothing to authorize yet -- this is the pre-plan step of framing the actual decision).
+
+**Addendum, same session, immediately after**: attempting the GPT-PM send
+(`mcp__pm-bridge__gpt_send_and_await`, project `Fitness_App`) failed: `"No compatible orchestrator
+is active. Gate C disables the multi-writer direct browser path..."`. Checked
+`pm_bridge_mode_status` directly rather than retrying blind (per `pmbridge-check-rotation-before-
+declaring-bug` memory): the orchestrator daemon IS running (pid 3116, port 8765) and current, but
+**this session itself is stale** relative to the code on disk -- it loaded build `b6b82262` while
+disk is at `6575215f`, and the tool's own diagnostic says the drift reaches project-resolution/
+routing code specifically (`fbae675c...` vs `e56e9af0...` routing-identity hashes), with an explicit
+warning that this session "still chooses which project it names, so letting it send could deliver
+one project's content into another project's chat" -- and that restarting the daemon will NOT fix
+it; only a fresh session picks up the change. Matches the standing `pm-bridge-server-js-is-routing-
+identity` memory (one shared daemon, a `src/` edit desyncs every running session's routing) exactly.
+
+`review.js` (the CLI workaround used earlier this session for two other gates) does not substitute
+here: it hard-requires a diff scope (`--uncommitted`/`--base`/`--commit`) and refuses without one
+(`"missing --cwd or scope flag"`), and this item has no diff to send -- it is a pre-implementation
+product question, not a code review.
+
+Per §21/standing practice, not forcing past an explicit routing-safety refusal on a guess: sending
+anyway risks the exact cross-project content leak class this project's own memory already flags as
+a real, previously-unresolved risk (CLAUDE.md §15's "concurrent inbound cross-contamination, not
+fully closed" gap), and `pm_bridge_restart` is explicitly gated on asking first
+(`feedback-pmbridge-restart-after-20min-unresponsive` memory) -- not applicable here regardless,
+since the daemon itself is reported healthy; only this session's own build is stale, which a
+restart of the daemon cannot fix.
+
+**Item 9 is therefore deferred, not decided and not abandoned**: no verdict invented, no option
+(A/B/C) chosen unilaterally in place of GPT-PM's product-owner call. This is a genuine, evidenced
+transport blocker, not an operator-only decision under §4/§14/§20 -- so per the standing "GO
+Автономно не останавливаясь" authorization and §18, the session continues to the next backlog item
+(Tier B item 10) rather than stopping. The framed question above stays ready to send as-is the
+moment a fresh (non-stale) session or a working transport is available -- either a new Claude Code
+session in this repo, or the operator restarting this one.
