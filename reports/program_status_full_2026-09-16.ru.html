@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ e824048</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5a3cb52</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -374,10 +376,10 @@
         <tr><td class="idcell">19</td><td class="item">Решение по политике экспорта фото (R11f-2)</td><td>Low</td><td><span class="pill blocked">open</span> — решение не принято</td></tr>
         <tr><td class="idcell">20</td><td class="item">Избранные залы + соц-мониторинг</td><td>Low</td><td><span class="pill notstarted">только план</span></td></tr>
         <tr><td class="idcell">21</td><td class="item">Молчаливый провал 8 alert-путей (Stripe × 2 и др.)</td><td>High, финансово-значимо</td><td><span class="pill passed">closed</span> — 2026-08-28</td></tr>
-        <tr><td class="idcell">22</td><td class="item">Нет CI-джобы, собирающей release-артефакт</td><td>Блокер релиза</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
-        <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy без теста</td><td>Medium-High</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">22</td><td class="item">Нет CI-джобы, собирающей release-артефакт</td><td>Блокер релиза</td><td><span class="pill partial">частично</span> — job добавлена и реально гоняется на ubuntu-latest (2 реальных бага найдены и исправлены: захардкоженный Windows-путь к JDK в gradle.properties, отсутствующий google-services.json); хвост — оператору нужно завести репо-секрет GOOGLE_SERVICES_JSON_B64 в GitHub, без него release-build красный по понятной причине, не по мистике</td></tr>
+        <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy без теста</td><td>Medium-High</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (3 раунда), тест-степ добавлен + постоянный regression-guard (6 pytest-тестов)</td></tr>
         <tr><td class="idcell">24</td><td class="item">Firestore wildcard + денилист вместо allowlist</td><td>Medium</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
-        <tr><td class="idcell">25</td><td class="item">server_export.dart — не тот регион Functions</td><td>Low-Medium</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">25</td><td class="item">server_export.dart — не тот регион Functions</td><td>Low-Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE, регион-фикс + regression-guard тест</td></tr>
         <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration без расписания sweep</td><td>Medium</td><td><span class="pill blocked">open</span> — повторно отмечено, известно с 08-15</td></tr>
       </tbody>
     </table>
@@ -413,6 +415,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

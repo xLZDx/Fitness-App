@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ e824048</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5a3cb52</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -370,10 +372,10 @@
         <tr><td class="idcell">19</td><td class="item">Photo export policy decision (R11f-2)</td><td>Low</td><td><span class="pill blocked">open</span> — decision not made</td></tr>
         <tr><td class="idcell">20</td><td class="item">Gym-favoriting + social monitoring</td><td>Low</td><td><span class="pill notstarted">plan only</span></td></tr>
         <tr><td class="idcell">21</td><td class="item">Silent failure-alert path on 8 sites (Stripe × 2, etc.)</td><td>High, financial-correctness-adjacent</td><td><span class="pill passed">closed</span> — 2026-08-28</td></tr>
-        <tr><td class="idcell">22</td><td class="item">No CI job builds a real release artifact</td><td>Release-blocking</td><td><span class="pill blocked">open</span> — new, 09-15</td></tr>
-        <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy hook has no test step</td><td>Medium-High</td><td><span class="pill blocked">open</span> — new, 09-15</td></tr>
+        <tr><td class="idcell">22</td><td class="item">No CI job builds a real release artifact</td><td>Release-blocking</td><td><span class="pill partial">partial</span> — job added and actually runs on ubuntu-latest (2 real bugs found and fixed: hardcoded Windows JDK path in gradle.properties, missing google-services.json); remaining tail -- operator needs to provision the GOOGLE_SERVICES_JSON_B64 repo secret in GitHub, without it release-build fails with a clear, actionable message, not a mystery</td></tr>
+        <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy hook has no test step</td><td>Medium-High</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (3 rounds), test step added + persistent regression guard (6 pytest tests)</td></tr>
         <tr><td class="idcell">24</td><td class="item">Firestore wildcard + denylist instead of allowlist</td><td>Medium</td><td><span class="pill blocked">open</span> — new, 09-15</td></tr>
-        <tr><td class="idcell">25</td><td class="item">server_export.dart calls the wrong Functions region</td><td>Low-Medium</td><td><span class="pill blocked">open</span> — new, 09-15</td></tr>
+        <tr><td class="idcell">25</td><td class="item">server_export.dart calls the wrong Functions region</td><td>Low-Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE, region fix + regression-guard test</td></tr>
         <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration has no scheduled sweep</td><td>Medium</td><td><span class="pill blocked">open</span> — re-flagged, known since 08-15</td></tr>
       </tbody>
     </table>
@@ -409,6 +411,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

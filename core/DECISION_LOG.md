@@ -52529,3 +52529,14 @@ open on exactly this one operator action.
 **Result**: `.github/workflows/flutter.yml` (+~35 lines: the `Write google-services.json` step, the
 fork/Dependabot `if:` guard). Committing together with row 23's changes (found and fixed in the same
 verification pass) and this decision log entry.
+
+## 2026-09-16 -- Rolling status report updated in place (rows 22/23/25)
+
+Report gate threshold (3 commits since the last `reports/`-touching commit) reached. Updated the
+priority table in `reports/program_status_full_2026-09-16.ru.html`/`.html` in place: row 23 and row
+25 marked `closed` (genuine GPT-PM APPROVE, both documented above); row 22 moved from `open` to
+`partial` (CI job real and exercised, 2 real bugs found/fixed, one operator action -- provisioning
+`GOOGLE_SERVICES_JSON_B64` -- still outstanding). Re-ran `report_conform.py`, republished the Russian
+file to the same Artifact URL (`https://claude.ai/artifact/Rv9EQo6PXyaRF5if5n76iY`, version 5).
+Continuing to the next backlog item in the same turn per this session's own PM-mode-style "report,
+then continue" authorization.
