@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9f6b785</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b55b1fd</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -339,7 +341,7 @@
         <tr><td class="idcell">10</td><td class="item">kCanonicalMachines ↔ equipment.json parity check</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">11</td><td class="item">Client-runtime/ML telemetry (frame-timing, camera/inference)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">12</td><td class="item">Secret-scanning extended to git history</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, the <span class="mono">gitleaks (full history)</span> job in secrets.yml, <span class="mono">fetch-depth: 0</span></td></tr>
-        <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill blocked">open</span> — keeps §27 rows 7/8 (HUD migration, WCAG contrast) open</td></tr>
+        <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: re-verified, was already closed 2026-08-27/28 under this repo's own gate numbering ("MVP1.G3 OBS-1 item 6"); <span class="mono">composed_screen_golden_test.dart</span> covers Home + Workouts' Programs tab (the ask) plus the Scan flow's 3 states as a bonus, green in the CI-matching <span class="mono">flutter test</span> invocation. Fixed a stale doc comment in <span class="mono">hud_golden_test.dart</span> still claiming this was uncovered. Does not by itself close §27 rows 7/8 — those track HUD migration debt and device WCAG verification, separate remaining work this item was never a full substitute for</td></tr>
       </tbody>
     </table>
   </div>
@@ -413,6 +415,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

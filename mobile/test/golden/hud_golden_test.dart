@@ -19,12 +19,12 @@ import '../support/golden_fonts.dart';
 /// `test/golden/README.md` for how to run and regenerate these, and for the
 /// font-determinism and exact-pixel-comparison decisions this file relies on.
 ///
-/// Deliberately NOT covered: a full-screen composition (e.g. `HomePage`).
-/// Every candidate screen wires through several Riverpod providers and a
-/// `GoRouter` (see `test/features/home_page_test.dart`'s `_buildApp`) and is
-/// mid-churn product surface, not a stable primitive -- exactly what M8 asks
-/// this first slice to avoid. A composed-screen golden is a reasonable
-/// follow-up once one settles, not a gap in this gate.
+/// Deliberately NOT covered here: a full-screen composition (e.g. `HomePage`)
+/// -- mid-churn product surface, not a stable primitive, exactly what M8 asks
+/// this first slice to avoid. That follow-up now exists as its own file,
+/// `composed_screen_golden_test.dart` (see `test/golden/README.md`'s
+/// "Composed screens" section) -- Home and Workouts' Programs tab, plus the
+/// Scan flow's aiming/found/fidelity states.
 void main() {
   setUpAll(loadHudGoldenFonts);
 

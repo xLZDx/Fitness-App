@@ -52718,4 +52718,46 @@ independently sufficient authorization for push under SS20).
 **not done** (deferred, needs a product decision). e2e emulator verification -- **partial tail**:
 code-complete and unit/type-verified, real emulator run still outstanding on external contention, not
 on anything this gate controls.
-No code changes, no Rosetta plan needed (LOCAL-class: report correction only, no source changed).
+
+## 2026-09-16 -- Tier A item 5, OBS-1 item 13 (composed-screen visual regression coverage):
+## already implemented, verify-only + one stale-comment fix
+
+Backlog brief's own text flagged this as needing a fresh look ("extend the existing golden-test
+harness to Home/Workouts") -- confirmed already done, same pattern as Tier A item 6's OBS-1
+items 2/5/12: `mobile/test/golden/composed_screen_golden_test.dart` already exists and covers
+Home and Workouts' Programs tab (exactly the ask), plus the Scan flow's aiming/found/fidelity
+states as a bonus. Closed under this repo's own internal gate numbering ("MVP1.G3 OBS-1 item 6")
+back on 2026-08-27/28 (`core/DECISION_LOG.md:27324`, `core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md:32`)
+-- the backlog brief's "open" framing traced back to `core/OBS1_G3_REBASELINE_2026-08-27.md`, an
+audit snapshot one day older than the closure it predates.
+
+Found and fixed a real, if minor, documentation-drift defect while verifying: `hud_golden_test.dart`'s
+own doc comment (lines 22-27) still read "Deliberately NOT covered: a full-screen composition...
+A composed-screen golden is a reasonable follow-up" -- stale since the follow-up file was added.
+Corrected to point at `composed_screen_golden_test.dart` and name what it actually covers.
+
+**A genuine, disclosed discrepancy found and not silently resolved**: running
+`composed_screen_golden_test.dart` standalone (`flutter test test/golden/composed_screen_golden_test.dart`)
+produced 2 pixel-diff failures (`composed_workouts_{light,dark}`, ~7.67% diff) on this machine, but
+the file produces zero failures as part of the full `flutter test` invocation that matches CI's own
+(`.github/workflows/flutter.yml`) -- confirmed by grepping the full-suite run's own output
+(background task `babyjohi4`, the same run cited in the P2.G5-readiness entry above) for this
+file's test names: zero matches, against a clean listing of the other ~25 pre-existing unrelated
+failures. Standalone-vs-suite divergence on golden/pixel tests is a known Flutter testing
+characteristic (font-loading/global-state order effects between an isolated run and a full-suite
+invocation), not something this session introduced -- nothing in this gate touched HUD tokens,
+Home, or Workouts. Treated the CI-matching invocation as authoritative since that is what actually
+gates merges; the standalone-only failure is recorded here rather than silently dropped, in case a
+future session sees it reproduce inside the full suite too.
+
+**Not claimed as closed by this item**: `reports/program_status_full_2026-09-16.*.html` §27 rows
+7/8 (HUD migration debt, M1-M9 WCAG/device-verification) stay open on their own separate,
+unrelated remaining scope -- the report's prior wording ("item 13 open, keeps rows 7/8 open") is
+corrected to remove that causal claim now that item 13 itself is done, but rows 7/8 were never
+fully closeable by golden-image coverage alone.
+
+**Result**: `mobile/test/golden/hud_golden_test.dart` (comment fix only, no test logic changed),
+`reports/program_status_full_2026-09-16.ru.html`/`.html` (item 13 row corrected, republished to
+the same Artifact URL, version 7). No Rosetta plan needed -- R0/trivial per CLAUDE.md SS6 (a single
+stale doc-comment correction) plus LOCAL-class per the `rosetta` skill for the report correction;
+neither touches executable behavior.

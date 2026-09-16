@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9f6b785</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b55b1fd</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -342,7 +344,7 @@
         <tr><td class="idcell">10</td><td class="item">kCanonicalMachines ↔ equipment.json parity-check</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">11</td><td class="item">Client-runtime/ML телеметрия (frame-timing, camera/inference)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">12</td><td class="item">Secret-scanning с расширением на git-историю</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: подтверждено, job <span class="mono">gitleaks (full history)</span> в secrets.yml, <span class="mono">fetch-depth: 0</span></td></tr>
-        <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill blocked">open</span> — держит открытыми пункты 7/8 из §27 (миграция HUD, WCAG-контраст)</td></tr>
+        <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill passed">done</span> — 16.09: перепроверено, было закрыто ещё 27-28.08.2026 под внутренней нумерацией этого репо ("MVP1.G3 OBS-1 item 6"); <span class="mono">composed_screen_golden_test.dart</span> покрывает Home + вкладку Programs в Workouts (то, что просили), плюс бонусом 3 состояния экрана сканирования; зелёный в инвокации <span class="mono">flutter test</span>, совпадающей с CI. Исправлен устаревший doc-комментарий в <span class="mono">hud_golden_test.dart</span>, всё ещё утверждавший, что покрытия нет. Сам по себе не закрывает пункты 7/8 из §27 — там остаётся отдельная незавершённая работа (миграция HUD, верификация WCAG на устройстве), которую этот пункт никогда полностью не заменял</td></tr>
       </tbody>
     </table>
   </div>
@@ -417,6 +419,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 
