@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f09d732</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7fee6f4</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <nav class="jump">
   <a href="#verdict">Вердикт</a>
@@ -262,7 +264,7 @@
             <tr><td class="idcell">P2.G1</td><td><span class="pill passed">passed</span></td><td>Структурированный OCR (<span class="mono">MachineTextEvidence</span>) — закрыт 2026-09-10.</td></tr>
             <tr><td class="idcell">P2.G2</td><td><span class="pill passed">passed</span></td><td>IdentityTextParser, все 6 hard-cases — закрыт 2026-09-10/11.</td></tr>
             <tr><td class="idcell">P2.G3</td><td><span class="pill partial">review done, гейт открыт</span></td><td>5 раундов GPT-PM, финал APPROVE, код запушен — но гейт формально <b>OPEN/DEPLOYMENT_PENDING</b>: реальный (не dry-run) deploy в <span class="mono">fitness-app-korostelev</span> отдельно не авторизован.</td></tr>
-            <tr><td class="idcell">P2.G4</td><td><span class="pill partial">не подтверждено в трекере</span></td><td>Review-раунд 3: APPROVE 0/0. Коммит <span class="mono">b3fd37c</span> запушен, закрытие переотправлено с формальным waiver'ом по golden-тестам — но ни <span class="mono">pm_gate_status</span>, ни мастер-план не показывают финальный <span class="mono">passed</span>. Требует доверификации.</td></tr>
+            <tr><td class="idcell">P2.G4</td><td><span class="pill passed">passed (подтверждено 09-16)</span></td><td>Доверифицировано позже в этот же день: Rosetta-план <span class="mono">bced53</span> (rev4) имеет <span class="mono">status: passed</span>, closure review — реальный <span class="mono">VERDICT: APPROVE 0/0</span> от GPT-PM (2026-09-12T10:00:15Z). Гейт был закрыт корректно ещё 12 сентября — просто не был отдельно отражён в <span class="mono">pm_gate_status</span>. Пробел трекинга забэкфиллен через <span class="mono">pm_set_gate</span>.</td></tr>
             <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">шаги 2/3a готовы</span></td><td>Это <b>не сам P2.G5</b>, а подготовка телеметрии к нему. Step 2 (серверный writer) и Step 3a (мобильная телеметрия) — passed, последний закрыт сегодня, 2026-09-16, коммит <span class="mono">f09d732</span>. <b>Step 3b намеренно отложен</b>: <span class="mono">ENRICHMENT_DISABLED</span> не шлётся по сети, мобильный <span class="mono">genericOutcome</span> = null, надёжного retry-outbox нет.</td></tr>
             <tr><td class="idcell">P2.G5</td><td><span class="pill notstarted">не начат</span></td><td>Сам чекпоинт GO_VISUAL/DEFER_VISUAL. Нужны: (1) report/metrics-скрипт — по §7 дизайн-дока такого скрипта в <span class="mono">scripts/</span> вообще нет; (2) минимум 50 eligible-сканов <b>и</b> 14 календарных дней сбора реальных данных — сбор фактически не начинался, код телеметрии только что смёржен.</td></tr>
           </tbody>
@@ -349,6 +351,7 @@
       <tbody>
         <tr><td class="idcell">0</td><td class="item">D1/H3 — внешняя клиническая валидация</td><td>Блокер релиза, внешний</td><td><span class="pill blocked">open</span> — единственная причина вердикта NOT_RELEASE_READY</td></tr>
         <tr><td class="idcell">1</td><td class="item">targetSdk 35 vs. Play API-36</td><td>Блокер публикации</td><td><span class="pill passed">closed</span> — через MVP1.G2; мастер-план не обновлён, см. оговорки</td></tr>
+
         <tr><td class="idcell">2</td><td class="item">Injury filter fail-open (360/1887 без тегов)</td><td>Блокер релиза</td><td><span class="pill blocked">open</span> — by design, решение за D1/H3</td></tr>
         <tr><td class="idcell">3</td><td class="item">Отсутствие pregnancy-пути</td><td>был блокер</td><td><span class="pill passed">closed</span> — F014</td></tr>
         <tr><td class="idcell">4</td><td class="item">B5d обходит SafetyContext</td><td>был блокер</td><td><span class="pill passed">closed</span> — F015</td></tr>
@@ -388,16 +391,15 @@
       <li>Не отражает работу этой недели: <span class="mono">P2.G5-readiness</span> шаг 3a (закрыт сегодня, 09-16), финальный статус <span class="mono">P2.G4</span>.</li>
       <li>Не упоминает <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> как отдельный гейт вовсе — тот появился в <span class="mono">pm_gate_status</span> отдельно от мастер-плана.</li>
     </ul>
-    <b>pm_gate_status (реестр PM Bridge) тоже неполон:</b> не содержит отдельных записей для P2.G1–P2.G4 — те гейты закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. Если нужен единый источник истины по всей программе, у него сегодня два конкурирующих, частично пересекающихся журнала, а не один.
+    <b>pm_gate_status (реестр PM Bridge) тоже был неполон:</b> не содержал отдельных записей для P2.G1–P2.G4 — те гейты закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. <b>Обновление той же сессией, 2026-09-16:</b> P2.G4 доверифицирован напрямую по своей Rosetta-записи (<span class="mono">status: passed</span>, реальный closure-review APPROVE 0/0 от 2026-09-12) и забэкфиллен в <span class="mono">pm_gate_status</span>. P2.G1–P2.G3 остаются незабэкфиллены — тот же пробел, просто ещё не закрыт для этих трёх гейтов.
   </div>
 </section>
 
 <section id="next">
   <h2><span class="num">07</span> Что бы я предложил дальше</h2>
   <div class="callout">
-    Пять реальных направлений, каждое само по себе достаточно для отдельного GO:
+    <span class="mono">P2.G4</span> уже доверифицирован и забэкфиллен в <span class="mono">pm_gate_status</span> в рамках этого же отчёта (см. §01) — вычеркнуто из списка. Остаются четыре реальных направления, каждое само по себе достаточно для отдельного GO:
     <ul>
-      <li><b>Доверифицировать P2.G4</b> и, если всё действительно сделано, формально зафиксировать <span class="mono">pm_set_gate</span> — сейчас это «сделано по факту, но не по бумагам».</li>
       <li><b>Продолжить P2.G5-readiness</b> — step 3b (durable outbox, ENRICHMENT_DISABLED) или начать сбор реальных 50 сканов/14 дней для будущего P2.G5.</li>
       <li><b>MVP1.G3 Step 10A</b> — единственный формально описанный, но не подтверждённый закрытым шаг до финального G3.</li>
       <li><b>Пункт 22</b> (нет CI-джобы для release-артефакта) — блокер релиза, никем пока не взят в работу.</li>
@@ -409,6 +411,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

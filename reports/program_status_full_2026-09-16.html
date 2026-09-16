@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f09d732</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7fee6f4</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <nav class="jump">
   <a href="#verdict">Verdict</a>
@@ -259,7 +261,7 @@
             <tr><td class="idcell">P2.G1</td><td><span class="pill passed">passed</span></td><td>Structured OCR (<span class="mono">MachineTextEvidence</span>) — closed 2026-09-10.</td></tr>
             <tr><td class="idcell">P2.G2</td><td><span class="pill passed">passed</span></td><td>IdentityTextParser, all 6 hard cases — closed 2026-09-10/11.</td></tr>
             <tr><td class="idcell">P2.G3</td><td><span class="pill partial">review done, gate open</span></td><td>5 GPT-PM rounds, final APPROVE, code pushed — but the gate itself remains formally <b>OPEN/DEPLOYMENT_PENDING</b>: a real (non-dry-run) deploy to <span class="mono">fitness-app-korostelev</span> has not been separately authorized.</td></tr>
-            <tr><td class="idcell">P2.G4</td><td><span class="pill partial">not confirmed in tracker</span></td><td>Review round 3: APPROVE 0/0. Commit <span class="mono">b3fd37c</span> pushed, closure resubmitted with a formal waiver on the golden-test count — but neither <span class="mono">pm_gate_status</span> nor the master plan shows a final <span class="mono">passed</span>. Needs re-verification.</td></tr>
+            <tr><td class="idcell">P2.G4</td><td><span class="pill passed">passed (confirmed 09-16)</span></td><td>Re-verified later the same day: the Rosetta plan <span class="mono">bced53</span> (rev4) carries <span class="mono">status: passed</span>, and its closure review is a genuine <span class="mono">VERDICT: APPROVE 0/0</span> from GPT-PM (2026-09-12T10:00:15Z). The gate was closed correctly on September 12 — it just was never separately mirrored into <span class="mono">pm_gate_status</span>. That tracking gap is now backfilled via <span class="mono">pm_set_gate</span>.</td></tr>
             <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">steps 2/3a done</span></td><td>This is <b>not P2.G5 itself</b> — it's the telemetry infrastructure preparing for it. Step 2 (server writer) and Step 3a (mobile telemetry) — passed, the latter closed today, 2026-09-16, commit <span class="mono">f09d732</span>. <b>Step 3b is deliberately deferred</b>: <span class="mono">ENRICHMENT_DISABLED</span> is never sent over the network, mobile <span class="mono">genericOutcome</span> stays null, no durable retry outbox exists.</td></tr>
             <tr><td class="idcell">P2.G5</td><td><span class="pill notstarted">not started</span></td><td>The actual GO_VISUAL/DEFER_VISUAL checkpoint. Needs: (1) a report/metrics script — per the design doc §7, no such script exists anywhere under <span class="mono">scripts/</span>; (2) a minimum of 50 eligible scans <b>and</b> 14 calendar days of real collection — collection has effectively not started, the telemetry code only just merged.</td></tr>
           </tbody>
@@ -385,16 +387,15 @@
       <li>Doesn't reflect this week's work: <span class="mono">P2.G5-readiness</span> step 3a (closed today, 09-16), or P2.G4's final status.</li>
       <li>Doesn't mention <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> as a gate at all — that one surfaced only in <span class="mono">pm_gate_status</span>, separate from the master plan.</li>
     </ul>
-    <b>pm_gate_status (the PM Bridge registry) is also incomplete:</b> it carries no individual entries for P2.G1–P2.G4 — those gates were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. A single source of truth for the whole program today means reconciling two competing, partly-overlapping logs, not reading one.
+    <b>pm_gate_status (the PM Bridge registry) was also incomplete:</b> it carried no individual entries for P2.G1–P2.G4 — those gates were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. <b>Same-session update, 2026-09-16:</b> P2.G4 was re-verified directly against its own Rosetta record (<span class="mono">status: passed</span>, a genuine closure-review APPROVE 0/0 from 2026-09-12) and backfilled into <span class="mono">pm_gate_status</span>. P2.G1–P2.G3 remain un-backfilled — the same gap, just not yet closed for those three.
   </div>
 </section>
 
 <section id="next">
   <h2><span class="num">07</span> What I'd suggest next</h2>
   <div class="callout">
-    Five real directions, each substantial enough for its own GO:
+    <span class="mono">P2.G4</span> has already been re-verified and backfilled into <span class="mono">pm_gate_status</span> as part of this same report (see §01) — struck from the list. Four real directions remain, each substantial enough for its own GO:
     <ul>
-      <li><b>Re-verify P2.G4</b> and, if it's genuinely done, formally record it via <span class="mono">pm_set_gate</span> — right now it's "done in practice, not on the books."</li>
       <li><b>Continue P2.G5-readiness</b> — step 3b (durable outbox, ENRICHMENT_DISABLED) or start collecting the real 50 scans/14 days for the eventual P2.G5.</li>
       <li><b>MVP1.G3 Step 10A</b> — the one formally-described sub-step that isn't confirmed closed before final G3.</li>
       <li><b>Row 22</b> (no CI job for a release artifact) — a release blocker nobody has picked up yet.</li>
@@ -406,6 +407,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

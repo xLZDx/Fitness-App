@@ -52106,3 +52106,26 @@ Delivered as a full HTML status report (RU/EN pair, `reports/program_status_full
 covering: P0-P6 platform status gate-by-gate (including the P2.G5-readiness vs. P2.G5-itself
 distinction), MVP1, FORM_COACH_HUD_ALIGNMENT, all 13 OBS-1 items, and the full 27-row master-plan
 priority table. Published as an Artifact (Russian only, per house format); both files committed.
+
+## 2026-09-16 -- P2.G4 backfilled into pm_gate_status; correction to the same-day status report
+
+Following up on gap #1 above (report-writing is standing autonomy per CLAUDE.md SS17, no new plan/GO
+needed): read `D:\Repo\pm-bridge\state\rosetta\plans\fitness_app-2026-09-11T18-28-24-330Z-bced53.json`
+directly (the P2.G4 rev4 Rosetta plan) rather than trusting the report's own earlier "unconfirmed"
+characterization. Ground truth: `status: "passed"`, GO `VERDICT: APPROVE 0/0` (2026-09-11T18:32:41Z,
+review_request_id `bf74fe5c-2da9-4c0c-9543-860a5a6f8f91`), closure review `VERDICT: APPROVE 0/0`
+(2026-09-12T10:00:15Z, request_id `976ebc8b-8a25-4874-b978-ede616b8c439`, reply: "Rosetta validation
+may be recorded passed. P2.G4 closure is approved."). Commits `b3fd37c9`/`2d34cd39`/`5ef56137`.
+
+P2.G4 WAS genuinely closed on 2026-09-12 -- the earlier report's "not confirmed in tracker" framing
+was correct about `pm_gate_status` specifically (a real backfill gap) but read as broader uncertainty
+about the gate itself than the evidence actually supported once the Rosetta record was checked
+directly rather than only the two indirect sources (pm_gate_status, master plan) used the first time.
+Backfilled via `pm_set_gate(project=Fitness_App, gate_id=P2.G4, status=passed, ...)` -- GPT-PM
+notification failed (`No compatible orchestrator is active`, durable request `bf86c662-2021-591b-
+bdbc-d492ab7492b2`), gate status recorded regardless per this tool's own fail-open design; nothing
+about the gate's actual closure depends on that notification succeeding.
+
+Both report files corrected (P2.G4 row now `passed`, "what's next" list item removed, caveats section
+updated to note P2.G1-G3 remain un-backfilled while P2.G4 no longer is), re-conformed, artifact
+republished at the same URL (version 3), committed.
