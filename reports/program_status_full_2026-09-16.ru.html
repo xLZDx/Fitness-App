@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9913918</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6c8d8bb</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -386,7 +388,7 @@
         <tr><td class="idcell">21</td><td class="item">Молчаливый провал 8 alert-путей (Stripe × 2 и др.)</td><td>High, финансово-значимо</td><td><span class="pill passed">closed</span> — 2026-08-28</td></tr>
         <tr><td class="idcell">22</td><td class="item">Нет CI-джобы, собирающей release-артефакт</td><td>Блокер релиза</td><td><span class="pill partial">частично</span> — job добавлена и реально гоняется на ubuntu-latest (2 реальных бага найдены и исправлены: захардкоженный Windows-путь к JDK в gradle.properties, отсутствующий google-services.json); хвост — оператору нужно завести репо-секрет GOOGLE_SERVICES_JSON_B64 в GitHub, без него release-build красный по понятной причине, не по мистике</td></tr>
         <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy без теста</td><td>Medium-High</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (3 раунда), тест-степ добавлен + постоянный regression-guard (6 pytest-тестов)</td></tr>
-        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + денилист вместо allowlist</td><td>Medium</td><td><span class="pill partial">расследовано, ждёт GPT-PM</span> — 09-16: заявленная предпосылка бэклога («нет тестового покрытия») устарела — <span class="mono">firestore_rules.test.ts</span> (1016 строк) уже полное. Реальный остаточный риск найден и сформулирован (9 коллекций живут только на wildcard-грант, без явного правила), вопрос отправлен GPT-PM (allowlist-миграция vs. расширение существующего drift-guard) — отправка заблокирована устаревшей сборкой транспорта этой сессии, ждёт свежей сессии</td></tr>
+        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + денилист вместо allowlist</td><td>Medium</td><td><span class="pill passed">ЗАКРЫТО 09-16 (P2-ACCESS-1)</span> — новый CI-гейт <span class="mono">scripts/ci/check_data_access_policy.js</span>: 4 источника обнаружения коллекций (rules, литералы <span class="mono">.collection()</span>/<span class="mono">.doc()</span> во всех 3 production-кодовых базах, реестр путей-констант, fail-closed на всё остальное неразрешённое) требует path-aware декларацию <span class="mono">clientAccess</span> для каждой найденной коллекции, проверяемую живым Firestore-эмулятором с operation-specific доказательством для CONDITIONAL-ячеек. Заполнено для всех 37 найденных путей. 30-кейсовый mutation-proof self-test. Сам wildcard-паттерн в <span class="mono">firestore.rules</span> не тронут (полная allowlist-миграция остаётся отложенной опцией) — закрыт риск ОМИССИИ: новая чувствительная коллекция без явного решения о доступе теперь валит CI. Процесс: 4 ревизии плана + 4 раунда ревью реализации GPT-PM (последний — явно разрешённое исключение из лимита в 3 раунда, само это исключение тоже одобрено GPT-PM), 21 реальный проверенный дефект найден и исправлен, коммит <span class="mono">6c8d8bb</span></td></tr>
         <tr><td class="idcell">25</td><td class="item">server_export.dart — не тот регион Functions</td><td>Low-Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE, регион-фикс + regression-guard тест</td></tr>
         <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration без расписания sweep</td><td>Medium</td><td><span class="pill partial">partial</span> — 09-16: скрипт впервые протестирован (0→36 тестов) и запущен заново, вживую, только на чтение. Находка: живой проект (fitness-app-korostelev) — 39/39 профильных документов всё ещё несут поля здоровья (2026-08-06 было записано 0); legacy-shared — 1/14. Вероятно тестовые аккаунты с устройств (предположение, не подтверждено) — согласуется с "реальных пользователей пока нет". Удаление (<span class="mono">--apply</span>) — действие над продакшен-данными, намеренно не выполнено, ждёт решения оператора. Плановая проверка в CI набросана, но нерабочая — нужны новый auth-путь и секрет.</td></tr>
       </tbody>
@@ -415,7 +417,7 @@
     <table>
       <thead><tr><th>Пункт</th><th>Статус</th><th>Что произошло</th></tr></thead>
       <tbody>
-        <tr><td class="idcell">Tier B 9 / row 24</td><td><span class="pill partial">расследовано, ждёт GPT-PM</span></td><td>См. §05, пункт 24 выше.</td></tr>
+        <tr><td class="idcell">Tier B 9 / row 24</td><td><span class="pill passed">ЗАКРЫТО (P2-ACCESS-1)</span></td><td>См. §05, пункт 24 выше. Продолжено и полностью закрыто позже в тот же день, за пределами исходного окна этого отчёта — полная история в <span class="mono">core/DECISION_LOG.md</span> (поиск "Row 24 gate").</td></tr>
         <tr><td class="idcell">Tier B 10/11/12<br/>(MVP1.G3 Step 10A/B/C)</td><td><span class="pill passed">уже было закрыто, бухгалтерия исправлена</span></td><td>См. §02 выше — реальной работы не требовалось, только исправление устаревшей записи трекинга.</td></tr>
         <tr><td class="idcell">Tier C 13/14<br/>(row 12, row 19)</td><td><span class="pill passed">closed</span></td><td>См. §05, пункты 12 и 19 выше — оба продуктовых решения от GPT-PM получены и реализованы, по 2 раунда ревью каждое.</td></tr>
         <tr><td class="idcell">Tier D 15<br/>(P2.G3 production deploy)</td><td><span class="pill passed">DONE</span></td><td>Самый рискованный пункт всего бэклога. См. §01 (P2.G3) выше — свежий, конкретный GPT-PM APPROVE именно на действие деплоя, живая проверка индекс-инвентаря продакшена и dry-run перед реальным деплоем, живая проверка после деплоя (<span class="mono">stripeWebhook</span> не затронут).</td></tr>
@@ -428,10 +430,10 @@
 <section id="next">
   <h2><span class="num">07</span> Что бы я предложил дальше</h2>
   <div class="callout">
-    Обновлено 09-16, конец дня: весь бэклог <span class="mono">AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</span> пройден до конца — Tier A (пункты 22/23/25, OBS-1 2/5/12/13, sweep остаточных данных здоровья), Tier B (пункт 8 — исправлена устаревшая предпосылка; пункты 10/11/12 — оказались уже закрыты 08-27/28, исправлена только бухгалтерия трекинга; пункт 9/row 24 — расследовано, вопрос сформулирован и отправлен GPT-PM, ждёт ответа), Tier C (пункты 12/19 — оба продуктовых решения получены и реализованы) и Tier D (пункт 15 — <b>реальный production-деплой P2.G3 выполнен</b>, самый рискованный пункт всего прогона). Реально оставшиеся направления:
+    Обновлено 09-16, конец дня: весь бэклог <span class="mono">AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</span> пройден до конца — Tier A (пункты 22/23/25, OBS-1 2/5/12/13, sweep остаточных данных здоровья), Tier B (пункт 8 — исправлена устаревшая предпосылка; пункты 10/11/12 — оказались уже закрыты 08-27/28, исправлена только бухгалтерия трекинга; пункт 9/row 24 — <b>полностью закрыт (P2-ACCESS-1), новый CI-гейт доступа Firestore, см. §05</b>), Tier C (пункты 12/19 — оба продуктовых решения получены и реализованы) и Tier D (пункт 15 — <b>реальный production-деплой P2.G3 выполнен</b>, самый рискованный пункт всего прогона). Реально оставшиеся направления:
     <ul>
       <li><b>Ждёт решения оператора</b> — запускать ли и когда <span class="mono">strip_health_from_profiles.py --apply</span> против 40 найденных документов-остатков. Это не решение GPT-PM и не то, что эта сессия может взять на себя единолично (исключение для удаления в CLAUDE.md §20).</li>
-      <li><b>Ждёт свежей (не устаревшей) сессии PM Bridge</b> — два вопроса, отправка которых заблокирована устаревшей сборкой транспорта этой сессии: (1) ответ GPT-PM по пункту 24 (Firestore wildcard vs. allowlist), уже отправлен, ответ пока не получен; (2) бэкфилл <span class="mono">pm_set_gate</span> для P2.G3 и MVP1.G3/Step10A/B/C — решение уже принято и полностью задокументировано, не хватает только записи в реестр PM Bridge.</li>
+      <li><b>Ждёт свежей (не устаревшей) сессии PM Bridge</b> — бэкфилл <span class="mono">pm_set_gate</span> для P2.G3, MVP1.G3/Step10A/B/C и P2-ACCESS-1/row 24 — решения уже приняты и полностью задокументированы, не хватает только записи в реестр PM Bridge (отложено намеренно — эти записи авто-уведомляют GPT-PM через тот же нестабильный транспорт, которым эта сессия не может безопасно пользоваться напрямую для этой цели).</li>
       <li><b>Аудит реального текущего состояния FORM_COACH_HUD_ALIGNMENT</b> — формулировка этого гейта в бэклоге оказалась устаревшей (см. §03); полноценный реконсиляционный аудит того, что уже реализовано, а что ещё в процессе в цепочке Session/Form Coach/Onboarding, не проводился.</li>
       <li><b>Оставшийся отложенный объём P2.G5-readiness</b> — подключение сетевой отправки <span class="mono">ENRICHMENT_DISABLED</span> и заполнение мобильного <span class="mono">genericOutcome</span>, заблокировано на продуктовое решение GPT-PM (известное противоречие с §4.2b замороженного дизайн-контракта).</li>
     </ul>
@@ -441,6 +443,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

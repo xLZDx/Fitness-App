@@ -54233,3 +54233,32 @@ before being accepted as real (per SS3/SS23) -- none were taken on the reviewer'
 **Status**: committing and pushing the gate's actual code now (nothing had been committed yet --
 every round reviewed the live uncommitted working tree). Updating `scripts/ci/data_lifecycle_policy.json`'s
 policy backfill, `MASTER_PLAN_2026-08-26.md`'s row 24 status, and the rolling status report next.
+
+## 2026-09-16 -- Row 24 gate: committed and pushed (commit `6c8d8bb`), master plan and rolling
+status report updated to CLOSED
+
+Committed and pushed the complete gate (`scripts/ci/check_data_access_policy.js`,
+`scripts/ci/lib/rules_parser.js`, `scripts/ci/test_check_data_access_policy.js`,
+`functions/src/__rules__/data_access_policy.test.ts`, `scripts/ci/DATA_ACCESS_POLICY_DESIGN.md`,
+`scripts/ci/data_lifecycle_policy.json`'s `clientAccess` backfill for all 37 discovered paths,
+`.github/workflows/functions.yml`'s new `data-access-policy` CI job) as commit `6c8d8bb`, pushed to
+`origin/master` (`b107aa4..6c8d8bb`). Authorized by GPT-PM's genuine, correlated, terminal
+`VERDICT: APPROVE` (round 4, reviewRequestId `19e2cc5f-4b52-4355-b76a-96391884c5c4`) per CLAUDE.md
+SS20/SS22 -- no separate operator push-GO needed.
+
+Updated `core/MASTER_PLAN_2026-08-26.md` row 24 (SS6 table) from open to Closed with the full
+mechanism summary and commit reference. Updated both `reports/program_status_full_2026-09-16.ru.html`
+and `.html`'s row-24 table entries (SS05 priority table, SS06b Tier-B-9 row, SS07 loose-ends list) from
+"investigated, awaiting GPT-PM" to closed, re-conformed via `report_conform.py`, republished the RU
+artifact (version 10, same URL `https://claude.ai/artifact/Rv9EQo6PXyaRF5if5n76iY`).
+
+**Row 24 is now fully closed, end to end**: plan approved (4 revisions), implementation reviewed and
+approved (5 remediation batches, 21 real defects found and fixed, cold internal review + 4 GPT-PM
+rounds including one explicitly-authorized round-cap exception), code committed and pushed, tracking
+documents updated. Remaining, deliberately out of scope for this gate: (1) the wildcard PATTERN
+itself in `firestore.rules` (full allowlist migration, option A, still deferred); (2) an AST-based
+rewrite of this checker's TypeScript-reading parts (GPT-PM's own Option C), tracked as separate
+future work, not a blocker for this gate's closure; (3) `pm_set_gate` PM Bridge registry backfill
+for this gate (and the still-pending P2.G3/MVP1.G3 ones from earlier this session) -- deliberately
+deferred to a fresh session, since that call auto-notifies GPT-PM via the same PM Bridge transport
+this session's stale build cannot safely use for that purpose.
