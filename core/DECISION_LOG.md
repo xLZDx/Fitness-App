@@ -52902,3 +52902,55 @@ non-interactive auth path in `firebase_api.py` plus an operator-provisioned secr
 row 22's `GOOGLE_SERVICES_JSON_B64` gap). Actual production cleanup (`--apply`) -- **not done,
 operator decision pending** -- this is the one genuinely open item from this gate that is not an
 engineering task.
+
+## 2026-09-16 -- Tier B item 8 (FORM_COACH_HUD_ALIGNMENT): backlog brief's framing was stale,
+## corrected before starting work rather than acted on as written
+
+The autonomous backlog brief (`core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md`, item 8) framed
+this as: "GPT-PM gave APPROVE + GO on 2026-08-29... the tracker shows zero movement since... before
+resuming: confirm the plan hash still matches... Bottom-nav icon redesign stays
+REFERENCE_BLOCKED_DEFERRED -- do not touch it without an operator-supplied reference image." Before
+opening a plan on that premise, read the actual decision-log trail (SS3/SS23: verify a claim,
+including one from this project's own planning docs, before acting on it) and found it materially
+wrong on two counts:
+
+1. **The nav-icon blocker is already resolved and shipped**, not still blocked. A fuller
+   design-handoff archive (`core/design/reference/full_handoff_v1/`) landed 2026-08-30 and named all
+   5 bottom-nav icon roles explicitly (`grid_view`, `fitness_center`, `radio_button_checked`,
+   `north_east`, `person`) -- GPT-PM's own 2026-08-30 review caught the stale
+   "pending an operator reference" line the same day it was written and moved the status to
+   `REFERENCE_AVAILABLE / REOPENED`. Commit `9d43c92` ("nav icons + Profile summary match
+   full_handoff_v1; Form Coach colours by verdict") implemented exactly this mapping -- confirmed by
+   reading `mobile/lib/shared/widgets/main_shell.dart:81-95` directly: `Icons.grid_view_rounded`,
+   `fitness_center_rounded`, `radio_button_checked_rounded`, `north_east_rounded`,
+   `person_outline_rounded` match the 5 named roles exactly (Flutter's own Material icon set, per
+   the handoff's own instruction to swap Material Symbols Sharp for the product's icons, not copy
+   them verbatim). Went through a full 4-round GPT-PM review (this file, commit range
+   `9d43c92..bdee3cd`, `VERDICT: APPROVE`, `PUSH: AUTHORIZED`) and is pushed --
+   `git merge-base --is-ancestor bdee3cd HEAD` confirmed true against this session's own current
+   HEAD, and no later commit has touched either `main_shell.dart` or `glass_nav_bar.dart` since.
+2. **"Zero movement since 2026-08-29" is false.** The same day the nav-icon fix shipped, a whole
+   sequenced follow-on program was opened and partly executed under its own GPT-PM governance:
+   nav icons + Profile summary + Form Coach colours (shipped, `bdee3cd`), a 5-item scope decision
+   routed to and answered by GPT-PM (Session redesign chosen next; Form Coach avatar-mode
+   pose-match direction chosen over push-up rep-counter fix; joint-fault marker shelved until that
+   lands; Onboarding given an explicit safety-first reconciliation constraint -- "the visual
+   reference does not get authority over safety-critical information architecture"), and a Session
+   (player/timer) gate that shipped its own first slice (`RestTimer` -> `HudRing`, colour-token
+   migration) under a GPT-PM-decided MINIMAL-DIFF scope boundary.
+
+**Not resolved by this entry**: whether the Session gate's first slice is the ONLY thing that
+shipped from that sequence, or whether later work (Form Coach avatar-mode pose-match generalization,
+joint-fault marker, Onboarding reconciliation) also progressed -- the decision log's own headers
+show no further `## ` entry continuing this specific thread after the 2026-08-30 Session gate entry,
+which is evidence of absence, not proof of it. Fully auditing this parallel design program's current
+frontier (what shipped, what's mid-flight, what's still blocked on the Onboarding safety constraint)
+is real, substantial work in its own right -- comparable in scope to the `OBS1_G3_STEP10C_RECONCILIATION`
+audit this project has already done once for a different area -- and was not attempted in the space
+of this gate. Recorded here as its own explicit open item rather than either quietly resumed on the
+backlog brief's stale premise or silently skipped.
+
+**Status**: nav-icon redesign (the backlog item's own literal ask) -- **done**, verify-only, already
+shipped and reviewed. Full FORM_COACH_HUD_ALIGNMENT program state -- **needs its own reconciliation
+audit before any further work is planned against it**; not attempted here. No Rosetta plan opened --
+this entry is investigation-and-correction only, no source changed.
