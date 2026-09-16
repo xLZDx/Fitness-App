@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Статус программы Fitness_App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#0b0f14; --surface:#121820; --surface-2:#1a222b; --border:#26313c;
+    --text:#e8edf1; --text-dim:#93a5b2; --text-faint:#5f7080;
+    --accent:#c9ff47; --accent-deep:#4b7a00; --accent-ink:#20330a;
+    --ok:#38d97a; --ok-ink:#0c3320; --warn:#f5b942; --warn-ink:#3a2a08;
+    --crit:#ff5d6c; --crit-ink:#3a0f14; --pending:#9b8cff; --pending-ink:#231b3f;
+    --mute:#5f7080; --mute-ink:#1c242c;
+    --shadow: 0 1px 0 rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="light"]){
+      --bg:#f4f6f2; --surface:#ffffff; --surface-2:#edf1e9; --border:#d7ddd0;
+      --text:#141a12; --text-dim:#4c5a49; --text-faint:#7c887a;
+      --accent:#5f8f00; --accent-deep:#3f6600; --accent-ink:#eaffc4;
+      --ok:#1f9c57; --ok-ink:#e4f8ec; --warn:#a86a00; --warn-ink:#fdf1da;
+      --crit:#c8283a; --crit-ink:#fbe4e6; --pending:#5a4cd1; --pending-ink:#ece9fb;
+      --mute:#6b7970; --mute-ink:#e9ece5;
+      --shadow: 0 1px 0 rgba(0,0,0,.06);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b0f14; --surface:#121820; --surface-2:#1a222b; --border:#26313c;
+    --text:#e8edf1; --text-dim:#93a5b2; --text-faint:#5f7080;
+    --accent:#c9ff47; --accent-deep:#4b7a00; --accent-ink:#20330a;
+    --ok:#38d97a; --ok-ink:#0c3320; --warn:#f5b942; --warn-ink:#3a2a08;
+    --crit:#ff5d6c; --crit-ink:#3a0f14; --pending:#9b8cff; --pending-ink:#231b3f;
+    --mute:#5f7080; --mute-ink:#1c242c;
+  }
+
+  *{box-sizing:border-box;}
+  html{color-scheme:light dark;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px; line-height:1.55;
+    padding-inline:20px; padding-block:32px 64px;
+  }
+  .wrap{max-width:980px; margin:0 auto;}
+  a{color:var(--accent-deep);}
+  @media (prefers-color-scheme: dark){ a{color:var(--accent);} }
+  :root[data-theme="dark"] a{color:var(--accent);}
+
+  header{margin-bottom:8px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11.5px;
+    letter-spacing:.11em; text-transform:uppercase; color:var(--text-faint);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:"Archivo", ui-sans-serif, sans-serif; font-weight:800;
+    font-size:clamp(28px,4.4vw,40px); line-height:1.06; letter-spacing:-.015em;
+    margin:0 0 10px; text-wrap:balance;
+  }
+  .dek{font-size:16px; color:var(--text-dim); max-width:62ch; margin:0;}
+
+  nav.jump{
+    display:flex; flex-wrap:wrap; gap:6px 10px; margin:22px 0 30px;
+    padding:12px 14px; background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  }
+  nav.jump a{
+    font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-dim);
+    text-decoration:none; padding:3px 8px; border-radius:6px; border:1px solid transparent;
+  }
+  nav.jump a:hover{border-color:var(--border); color:var(--text);}
+
+  section{margin:44px 0;}
+  h2{
+    font-family:"Archivo",sans-serif; font-weight:700; font-size:22px;
+    letter-spacing:-.01em; margin:0 0 4px; display:flex; align-items:baseline; gap:10px;
+  }
+  h2 .num{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--text-faint); font-weight:500;}
+  .section-note{color:var(--text-dim); font-size:13.5px; margin:0 0 18px; max-width:70ch;}
+
+  /* verdict banner */
+  .verdict{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:22px 24px; box-shadow:var(--shadow);
+  }
+  .verdict-left{display:flex; align-items:center; gap:16px; min-width:260px;}
+  .verdict-badge{
+    font-family:"Archivo",sans-serif; font-weight:800; font-size:14px; letter-spacing:.02em;
+    padding:9px 14px; border-radius:9px; background:var(--crit-ink); color:var(--crit);
+    border:1px solid color-mix(in srgb, var(--crit) 40%, transparent); white-space:nowrap;
+  }
+  .verdict-text{font-size:14.5px; color:var(--text-dim); max-width:44ch;}
+  .verdict-text b{color:var(--text); font-weight:600;}
+  .stat-row{display:flex; gap:26px; flex-wrap:wrap;}
+  .stat{text-align:right;}
+  .stat .n{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:26px; font-weight:500; line-height:1;}
+  .stat .l{font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; margin-top:4px;}
+  .stat.crit .n{color:var(--crit);}
+  .stat.ok .n{color:var(--ok);}
+  .stat.warn .n{color:var(--warn);}
+
+  /* status pill */
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace;
+    font-size:11.5px; font-weight:500; padding:3px 9px 3px 7px; border-radius:100px;
+    white-space:nowrap; line-height:1.5;
+  }
+  .pill::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor; flex:none;}
+  .pill.passed{background:var(--ok-ink); color:var(--ok);}
+  .pill.progress{background:var(--warn-ink); color:var(--warn);}
+  .pill.blocked{background:var(--crit-ink); color:var(--crit);}
+  .pill.notstarted{background:var(--mute-ink); color:var(--mute);}
+  .pill.deferred{background:var(--pending-ink); color:var(--pending);}
+  .pill.partial{background:var(--warn-ink); color:var(--warn);}
+
+  /* gate cards */
+  .cardgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px;}
+  .gate{
+    background:var(--surface); border:1px solid var(--border); border-radius:11px;
+    padding:14px 16px; display:flex; flex-direction:column; gap:8px;
+  }
+  .gate .id{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-faint);}
+  .gate .name{font-size:13.5px; font-weight:500; color:var(--text); line-height:1.35;}
+  .gate .foot{font-size:12px; color:var(--text-dim); line-height:1.4;}
+
+  .phase{
+    border-left:3px solid var(--border); padding-left:16px; margin:0 0 26px;
+  }
+  .phase.done{border-left-color:var(--ok);}
+  .phase.mixed{border-left-color:var(--warn);}
+  .phase.notstarted{border-left-color:var(--mute);}
+  .phase-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .phase-head h3{font-family:"Archivo",sans-serif; font-size:16px; font-weight:700; margin:0;}
+  .phase-body{color:var(--text-dim); font-size:13.5px;}
+  .phase-body p{margin:0 0 8px;}
+  .phase-body code, .mono{font-family:"IBM Plex Mono",monospace; font-size:.92em; color:var(--text);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{
+    text-align:left; font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--text-faint); font-weight:500; padding:0 12px 8px; border-bottom:1px solid var(--border);
+  }
+  td{padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; color:var(--text-dim);}
+  td.item{color:var(--text); font-weight:500;}
+  tr:last-child td{border-bottom:none;}
+  .tblwrap{overflow-x:auto; border:1px solid var(--border); border-radius:11px; background:var(--surface);}
+  .tblwrap table{min-width:640px;}
+  .tblwrap th:first-child, .tblwrap td:first-child{padding-left:16px;}
+  .tblwrap th:last-child, .tblwrap td:last-child{padding-right:16px;}
+
+  .idcell{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-faint); white-space:nowrap;}
+
+  .callout{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:11px;
+    padding:16px 18px; font-size:13.5px; color:var(--text-dim);
+  }
+  .callout b{color:var(--text);}
+  .callout.warn{border-color:color-mix(in srgb, var(--warn) 35%, var(--border));}
+  .callout ul{margin:8px 0 0; padding-left:20px;}
+  .callout li{margin:4px 0;}
+
+  footer{margin-top:56px; padding-top:18px; border-top:1px solid var(--border); font-size:12px; color:var(--text-faint);}
+
+  @media (max-width:640px){
+    .verdict{flex-direction:column; align-items:flex-start;}
+    .stat-row{gap:18px;}
+    h1{font-size:26px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Fitness_App · программный статус</p>
+  <h1>Полная картина программы</h1>
+  <p class="dek">Сводка по всем открытым и закрытым инициативам: P0–P6 (ML/распознавание оборудования), MVP1, FORM_COACH_HUD_ALIGNMENT, наблюдаемость OBS-1 и полный список из 27 приоритетных пунктов мастер-плана — восстановлено из <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> и <span class="mono">core/MASTER_PLAN_2026-08-26.md</span> по состоянию на 2026-09-16.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f09d732</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<nav class="jump">
+  <a href="#verdict">Вердикт</a>
+  <a href="#p0p6">P0–P6</a>
+  <a href="#mvp1">MVP1</a>
+  <a href="#formcoach">Form Coach HUD</a>
+  <a href="#obs1">OBS-1</a>
+  <a href="#priorities">27 приоритетов</a>
+  <a href="#caveats">Оговорки</a>
+  <a href="#next">Что дальше</a>
+</nav>
+
+<section id="verdict">
+  <div class="verdict">
+    <div class="verdict-left">
+      <div class="verdict-badge">NOT RELEASE READY</div>
+      <div class="verdict-text">Вердикт независимого SPTR-аудита (2026-08-25) держится на одном внешнем факторе — <b>пункт 0, клиническая валидация (D1/H3)</b>, который не закрывается инженерной работой.</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat crit"><div class="n">4</div><div class="l">блокера релиза, открыты</div></div>
+      <div class="stat warn"><div class="n">3</div><div class="l">гейта в работе</div></div>
+      <div class="stat ok"><div class="n">~30</div><div class="l">гейтов закрыто</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="p0p6">
+  <h2><span class="num">01</span> Платформа распознавания оборудования — P0–P6</h2>
+  <p class="section-note">Программа отдельна от «движка принятия решений» (<span class="mono">recognize.ts</span>/<span class="mono">evidence_fusion.ts</span>/<span class="mono">policy.ts</span>), который независимый SPTR-аудит нашёл 0%-реализованным. P0/P1 — каталожные/онтологические предпосылки; P4/P6 — сам движок.</p>
+
+  <div class="phase done">
+    <div class="phase-head"><h3>P0 — базовые гейты и governance</h3><span class="pill passed">закрыто G1–G6 + AGGREGATE</span></div>
+    <div class="phase-body"><p><span class="mono">P0.G0</span> остаётся <b>BLOCKED_EXTERNAL_PLATFORM_MIGRATION</b> — реальная внешняя предпосылка (App Check/миграция платформы), не инженерная задача.</p></div>
+  </div>
+
+  <div class="phase mixed">
+    <div class="phase-head"><h3>P1 — приём каталога/онтологии</h3><span class="pill partial">G1–G4 закрыты</span></div>
+    <div class="phase-body"><p><span class="mono">P1.G5</span> — <span class="pill blocked">BLOCKED_ON_SOURCE_EVIDENCE</span>. <span class="mono">P1.G6</span> — не начат.</p></div>
+  </div>
+
+  <div class="phase mixed">
+    <div class="phase-head"><h3>P2 — OCR-движок распознавания текста</h3><span class="pill partial">частично</span></div>
+    <div class="phase-body">
+      <div class="tblwrap" style="margin-bottom:10px;">
+        <table>
+          <thead><tr><th>Гейт</th><th>Статус</th><th>Детали</th></tr></thead>
+          <tbody>
+            <tr><td class="idcell">P2.G1</td><td><span class="pill passed">passed</span></td><td>Структурированный OCR (<span class="mono">MachineTextEvidence</span>) — закрыт 2026-09-10.</td></tr>
+            <tr><td class="idcell">P2.G2</td><td><span class="pill passed">passed</span></td><td>IdentityTextParser, все 6 hard-cases — закрыт 2026-09-10/11.</td></tr>
+            <tr><td class="idcell">P2.G3</td><td><span class="pill partial">review done, гейт открыт</span></td><td>5 раундов GPT-PM, финал APPROVE, код запушен — но гейт формально <b>OPEN/DEPLOYMENT_PENDING</b>: реальный (не dry-run) deploy в <span class="mono">fitness-app-korostelev</span> отдельно не авторизован.</td></tr>
+            <tr><td class="idcell">P2.G4</td><td><span class="pill partial">не подтверждено в трекере</span></td><td>Review-раунд 3: APPROVE 0/0. Коммит <span class="mono">b3fd37c</span> запушен, закрытие переотправлено с формальным waiver'ом по golden-тестам — но ни <span class="mono">pm_gate_status</span>, ни мастер-план не показывают финальный <span class="mono">passed</span>. Требует доверификации.</td></tr>
+            <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">шаги 2/3a готовы</span></td><td>Это <b>не сам P2.G5</b>, а подготовка телеметрии к нему. Step 2 (серверный writer) и Step 3a (мобильная телеметрия) — passed, последний закрыт сегодня, 2026-09-16, коммит <span class="mono">f09d732</span>. <b>Step 3b намеренно отложен</b>: <span class="mono">ENRICHMENT_DISABLED</span> не шлётся по сети, мобильный <span class="mono">genericOutcome</span> = null, надёжного retry-outbox нет.</td></tr>
+            <tr><td class="idcell">P2.G5</td><td><span class="pill notstarted">не начат</span></td><td>Сам чекпоинт GO_VISUAL/DEFER_VISUAL. Нужны: (1) report/metrics-скрипт — по §7 дизайн-дока такого скрипта в <span class="mono">scripts/</span> вообще нет; (2) минимум 50 eligible-сканов <b>и</b> 14 календарных дней сбора реальных данных — сбор фактически не начинался, код телеметрии только что смёржен.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin:0;">Важно: <span class="mono">pm_gate_status</span> вообще не содержит отдельных записей P2.G1–G4 — они закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. Пробел в едином трекере, не ошибка проверки.</p>
+    </div>
+  </div>
+
+  <div class="phase notstarted">
+    <div class="phase-head"><h3>P3 — лицензированный корпус / golden set</h3><span class="pill notstarted">не начат</span></div>
+    <div class="phase-body"><p>Не упоминается ни в одном статусе мастер-плана как начатый; согласуется с тем, что визуальная ветка (P4/P6) намеренно отложена.</p></div>
+  </div>
+
+  <div class="phase notstarted">
+    <div class="phase-head"><h3>P4 — визуальный retrieval, evidence fusion, Gemini-верификатор</h3><span class="pill deferred">намеренно отложен</span></div>
+    <div class="phase-body"><p>Решение <span class="mono">OCR_TEXT_ONLY_DEFER_VISUAL</span> от 2026-08-07 (измеренный провал 10-class классификатора 5/18 vs. 18/18 у text-anchor). При возобновлении — заблокирован нерешённым конфликтом лицензии vendor-клипов на AI-обучение (пункт 11 в §27).</p></div>
+  </div>
+
+  <div class="phase notstarted">
+    <div class="phase-head"><h3>P5 — guided multi-view UX</h3><span class="pill notstarted">не начат</span></div>
+    <div class="phase-body"><p>Упоминается только как будущий получатель <span class="mono">NEED_MORE_VIEW</span>-состояния из P2.G4.</p></div>
+  </div>
+
+  <div class="phase notstarted">
+    <div class="phase-head"><h3>P6 — shadow deploy, телеметрия, промоушен EXPERIMENTAL→VERIFIED</h3><span class="pill notstarted">не начат</span></div>
+    <div class="phase-body"><p>P6-T — единственный владелец перехода <span class="mono">textSupportStatus: EXPERIMENTAL → VERIFIED</span> (P6.G2/G3), пока не существует.</p></div>
+  </div>
+</section>
+
+<section id="mvp1">
+  <h2><span class="num">02</span> MVP1</h2>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>Гейт</th><th>Статус</th><th>Детали</th></tr></thead>
+      <tbody>
+        <tr><td class="idcell">MVP1.G1</td><td><span class="pill passed">passed</span></td><td>Все 4 слайса закрыты.</td></tr>
+        <tr><td class="idcell">MVP1.G2</td><td><span class="pill passed">passed</span></td><td>Android 16 / API-36 targetSdk миграция. <b>Это фактически закрывает пункт 1 приоритетной таблицы</b> («targetSdk 35 vs. Play API-36») — сам мастер-план эту строку не обновил, см. оговорки ниже.</td></tr>
+        <tr><td class="idcell">MVP1.G3</td><td><span class="pill progress">in-progress</span></td><td>Step 9B (production-мониторинг) — closed. Формально открытым остаётся Step 10: <b>10A</b> (live-видимость enforcement-состояния из Firebase/GCP), <b>10B</b> (device-подтверждение Crashlytics/perf сигналов), <b>10C</b> (сверка 13 пунктов OBS-1 rebaseline). Из decision-log/§27 видно, что часть работы, помеченной как «Step 10B/10C evidence» (телеметрия, алерт-роутинг), уже фактически сделана 2026-08-28 — но записи о финальном adversarial-review и <span class="mono">pm_set_gate(G3=passed)</span> не найдено. GPT-PM явно исключил из scope: деплой AI Gateway callable и threshold-based AI paging.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="formcoach">
+  <h2><span class="num">03</span> FORM_COACH_HUD_ALIGNMENT</h2>
+  <div class="callout">
+    <span class="pill progress">in-progress</span> — GPT-PM APPROVE + GO получен 2026-08-29. Scope: привести все 4 экрана Form Coach (intro, camera-readiness checklist, exercise picker, live camera/avatar view) к HUD-визуальному языку. Редизайн иконок bottom-nav явно отложен (<span class="mono">REFERENCE_BLOCKED_DEFERRED</span>) — ждёт референсное изображение от оператора.
+    <br><br><b>Не тронут с 2026-08-29</b> — последняя запись в трекере датирована этим днём, более двух недель без движения на фоне активной работы по P2. Стоит явно решить: продолжать или сознательно поставить на паузу.
+  </div>
+</section>
+
+<section id="obs1">
+  <h2><span class="num">04</span> OBS-1 — наблюдаемость и алертинг (13 пунктов)</h2>
+  <p class="section-note">Каждый серьёзный дефект в истории проекта находили вручную, точечным аудитом — почти никогда постоянным мониторингом. OBS-1 — гейт, закрывающий именно этот класс риска, разделён на CI-проверки (блокируют коммит) и RUNTIME-мониторы (нужен pager/on-call).</p>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>#</th><th>Пункт</th><th>Тип</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td class="idcell">1</td><td class="item">Auth/data-flow канарейка</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
+        <tr><td class="idcell">2</td><td class="item">Functions test-health enforcement в CI</td><td>CI</td><td><span class="pill notstarted">не подтверждено</span></td></tr>
+        <tr><td class="idcell">3</td><td class="item">Дашборд enforcement-статуса (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill partial">частично</span> — только видимость, общая картина App Check всё ещё UNKNOWN</td></tr>
+        <tr><td class="idcell">4</td><td class="item">Монитор целостности биллинга (Stripe)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
+        <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift проверка</td><td>CI</td><td><span class="pill notstarted">не подтверждено</span></td></tr>
+        <tr><td class="idcell">6</td><td class="item">Mobile/Dart dependency (SCA) сканирование</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
+        <tr><td class="idcell">7</td><td class="item">Проверка data-lifecycle sweep (deletion/export coverage)</td><td>RUNTIME</td><td><span class="pill blocked">open</span> — скрипт есть, расписания/запуска нет (см. §27, пункт 26)</td></tr>
+        <tr><td class="idcell">8</td><td class="item">Regression-guard на SafetyContext-инвариант</td><td>CI</td><td><span class="pill passed">done</span> — активно охраняет F014/F015</td></tr>
+        <tr><td class="idcell">9</td><td class="item">Мониторинг прямых вызовов Gemini/AI Logic</td><td>RUNTIME</td><td><span class="pill passed">done</span> — экспозиция устранена (все 4 AI-вызова переведены на server-side <span class="mono">httpsCallable</span>), риск теперь под MVP1.G4</td></tr>
+        <tr><td class="idcell">10</td><td class="item">kCanonicalMachines ↔ equipment.json parity-check</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
+        <tr><td class="idcell">11</td><td class="item">Client-runtime/ML телеметрия (frame-timing, camera/inference)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
+        <tr><td class="idcell">12</td><td class="item">Secret-scanning с расширением на git-историю</td><td>CI</td><td><span class="pill notstarted">не подтверждено явно</span></td></tr>
+        <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill blocked">open</span> — держит открытыми пункты 7/8 из §27 (миграция HUD, WCAG-контраст)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="priorities">
+  <h2><span class="num">05</span> Полная приоритетная таблица мастер-плана (27 пунктов)</h2>
+  <p class="section-note">Курированный, но не исчерпывающий список — полный реестр операторских/внешних пунктов см. в <span class="mono">core/CURRENT_STATE.md</span>. Статусы ниже свёрнуты из <span class="mono">core/MASTER_PLAN_2026-08-26.md</span> §9 плюс правки из этой сессии там, где найдено расхождение.</p>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>#</th><th>Пункт</th><th>Приоритет</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td class="idcell">0</td><td class="item">D1/H3 — внешняя клиническая валидация</td><td>Блокер релиза, внешний</td><td><span class="pill blocked">open</span> — единственная причина вердикта NOT_RELEASE_READY</td></tr>
+        <tr><td class="idcell">1</td><td class="item">targetSdk 35 vs. Play API-36</td><td>Блокер публикации</td><td><span class="pill passed">closed</span> — через MVP1.G2; мастер-план не обновлён, см. оговорки</td></tr>
+        <tr><td class="idcell">2</td><td class="item">Injury filter fail-open (360/1887 без тегов)</td><td>Блокер релиза</td><td><span class="pill blocked">open</span> — by design, решение за D1/H3</td></tr>
+        <tr><td class="idcell">3</td><td class="item">Отсутствие pregnancy-пути</td><td>был блокер</td><td><span class="pill passed">closed</span> — F014</td></tr>
+        <tr><td class="idcell">4</td><td class="item">B5d обходит SafetyContext</td><td>был блокер</td><td><span class="pill passed">closed</span> — F015</td></tr>
+        <tr><td class="idcell">5</td><td class="item">OBS-1 (13 пунктов)</td><td>High</td><td><span class="pill partial">частично</span> — см. §04</td></tr>
+        <tr><td class="idcell">6</td><td class="item">Поле purpose для 1484/1887 упражнений</td><td>Medium</td><td><span class="pill notstarted">не начат</span></td></tr>
+        <tr><td class="idcell">7</td><td class="item">HUD-миграция не завершена (GlassCard × 142/46 файлов)</td><td>Medium</td><td><span class="pill blocked">open</span></td></tr>
+        <tr><td class="idcell">8</td><td class="item">M1–M9 без device-верификации, известны WCAG-баги</td><td>Medium</td><td><span class="pill blocked">open</span></td></tr>
+        <tr><td class="idcell">9</td><td class="item">text-anchor OCR (18/18) не подключён в live-режим</td><td>Medium-High</td><td><span class="pill blocked">open</span> с 08-07</td></tr>
+        <tr><td class="idcell">10</td><td class="item">P2/P4/P6 движок распознавания</td><td>Medium/long-term</td><td><span class="pill progress">в работе</span> — P2 активно продвигается</td></tr>
+        <tr><td class="idcell">11</td><td class="item">Конфликт лицензии vendor-клипов на AI-обучение</td><td>Low (пока P4 отложен)</td><td><span class="pill blocked">open</span> — блокирует возобновление P4</td></tr>
+        <tr><td class="idcell">12</td><td class="item">Противоречие nonprofit/subscription в ARB-копирайтинге</td><td>Medium</td><td><span class="pill blocked">open</span></td></tr>
+        <tr><td class="idcell">13</td><td class="item">Утёкший Roboflow-ключ — переиздание не подтверждено</td><td>Medium</td><td><span class="pill blocked">open</span> — операторское/консольное действие</td></tr>
+        <tr><td class="idcell">14</td><td class="item">Полная картина App Check enforcement</td><td>Medium</td><td><span class="pill blocked">open/unknown</span></td></tr>
+        <tr><td class="idcell">15</td><td class="item">kCanonicalMachines второй источник истины</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
+        <tr><td class="idcell">16</td><td class="item">Прямые вызовы Gemini без rate-limit</td><td>Medium-High</td><td><span class="pill passed">closed/rebased</span> — риск теперь под MVP1.G4</td></tr>
+        <tr><td class="idcell">17</td><td class="item">Нет client-runtime/ML телеметрии</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
+        <tr><td class="idcell">18</td><td class="item">Нет SCA-сканирования Mobile/Dart</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
+        <tr><td class="idcell">19</td><td class="item">Решение по политике экспорта фото (R11f-2)</td><td>Low</td><td><span class="pill blocked">open</span> — решение не принято</td></tr>
+        <tr><td class="idcell">20</td><td class="item">Избранные залы + соц-мониторинг</td><td>Low</td><td><span class="pill notstarted">только план</span></td></tr>
+        <tr><td class="idcell">21</td><td class="item">Молчаливый провал 8 alert-путей (Stripe × 2 и др.)</td><td>High, финансово-значимо</td><td><span class="pill passed">closed</span> — 2026-08-28</td></tr>
+        <tr><td class="idcell">22</td><td class="item">Нет CI-джобы, собирающей release-артефакт</td><td>Блокер релиза</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy без теста</td><td>Medium-High</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + денилист вместо allowlist</td><td>Medium</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">25</td><td class="item">server_export.dart — не тот регион Functions</td><td>Low-Medium</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration без расписания sweep</td><td>Medium</td><td><span class="pill blocked">open</span> — повторно отмечено, известно с 08-15</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="caveats">
+  <h2><span class="num">06</span> Оговорки по актуальности данных</h2>
+  <div class="callout warn">
+    <b>Мастер-план (<span class="mono">core/MASTER_PLAN_2026-08-26.md</span>) — основной документ, но не полностью синхронизирован с реальностью:</b>
+    <ul>
+      <li>Датирован 2026-08-26, с одной дозаписью 2026-09-15 (§12). Пункт 1 (targetSdk) в его собственной таблице всё ещё читается как открытый, хотя <span class="mono">MVP1.G2</span> закрыл его ещё 2026-08-27 — документ просто не обновили после этого гейта.</li>
+      <li>Не отражает работу этой недели: <span class="mono">P2.G5-readiness</span> шаг 3a (закрыт сегодня, 09-16), финальный статус <span class="mono">P2.G4</span>.</li>
+      <li>Не упоминает <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> как отдельный гейт вовсе — тот появился в <span class="mono">pm_gate_status</span> отдельно от мастер-плана.</li>
+    </ul>
+    <b>pm_gate_status (реестр PM Bridge) тоже неполон:</b> не содержит отдельных записей для P2.G1–P2.G4 — те гейты закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. Если нужен единый источник истины по всей программе, у него сегодня два конкурирующих, частично пересекающихся журнала, а не один.
+  </div>
+</section>
+
+<section id="next">
+  <h2><span class="num">07</span> Что бы я предложил дальше</h2>
+  <div class="callout">
+    Пять реальных направлений, каждое само по себе достаточно для отдельного GO:
+    <ul>
+      <li><b>Доверифицировать P2.G4</b> и, если всё действительно сделано, формально зафиксировать <span class="mono">pm_set_gate</span> — сейчас это «сделано по факту, но не по бумагам».</li>
+      <li><b>Продолжить P2.G5-readiness</b> — step 3b (durable outbox, ENRICHMENT_DISABLED) или начать сбор реальных 50 сканов/14 дней для будущего P2.G5.</li>
+      <li><b>MVP1.G3 Step 10A</b> — единственный формально описанный, но не подтверждённый закрытым шаг до финального G3.</li>
+      <li><b>Пункт 22</b> (нет CI-джобы для release-артефакта) — блокер релиза, никем пока не взят в работу.</li>
+      <li><b>Решить судьбу FORM_COACH_HUD_ALIGNMENT</b> — продолжать или сознательно приостановить, раз он не двигался две недели.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

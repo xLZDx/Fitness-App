@@ -52075,3 +52075,34 @@ Honest residual, not silently dropped: this session's own Rosetta act-ledger rep
 calls in this session ran with no approved plan governing them (pre-existing audit-mode debt per
 CLAUDE.md SS19 -- Rosetta today records and does not block); not specific to this gate, and not
 remediated by this entry.
+
+## 2026-09-16 -- full-program status report (read-only, no code changed)
+
+Operator asked for a full done/not-done picture of the whole Fitness_App program, not just the
+just-closed P2.G5-readiness step 3a gate. Reconstructed from `pm_gate_status`, this file, and
+`core/MASTER_PLAN_2026-08-26.md` (read in full, all 12 sections). No plan/GO needed -- read-only
+synthesis, same standing autonomy as any decision-log/roadmap update (CLAUDE.md SS17).
+
+**Two real gaps found while assembling it, both worth recording so they are not silently lost
+again:**
+
+1. `pm_gate_status` (PM Bridge's own registry) carries no individual entries for P2.G1-P2.G4 --
+   those four gates were only ever closed through this file, never via `pm_set_gate`. The program
+   currently has two competing, partially-overlapping status logs, not one source of truth.
+2. `core/MASTER_PLAN_2026-08-26.md`'s own SS9 priority table (row 1, `targetSdk` 35 vs. Play
+   API-36) still reads as open, even though `MVP1.G2` closed exactly that item on 2026-08-27 --
+   the document was never revisited after that gate closed. Not fixed in this entry (out of scope
+   for a read-only status pass); flagged so the next session touching that document corrects it
+   rather than trusting the stale row.
+
+Also surfaced, not previously called out anywhere: `P2.G4`'s closure was resubmitted with a formal
+waiver (see this file's own 2026-09-12 "Step 13" entry) but no record of a final `pm_set_gate`
+or an explicit "PASSED" confirmation was found afterward -- treated as "implementation and review
+done, formal gate-closure unconfirmed" rather than assumed closed; and `FORM_COACH_HUD_ALIGNMENT`
+has had no tracker movement since 2026-08-29 (over two weeks), while P2 work proceeded in parallel
+-- flagged as needing an explicit continue/pause decision rather than left ambiguous.
+
+Delivered as a full HTML status report (RU/EN pair, `reports/program_status_full_2026-09-16.*`),
+covering: P0-P6 platform status gate-by-gate (including the P2.G5-readiness vs. P2.G5-itself
+distinction), MVP1, FORM_COACH_HUD_ALIGNMENT, all 13 OBS-1 items, and the full 27-row master-plan
+priority table. Published as an Artifact (Russian only, per house format); both files committed.
