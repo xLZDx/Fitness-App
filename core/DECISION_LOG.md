@@ -53153,3 +53153,80 @@ reason above, not forgotten.
 read-only investigation). Continuing to Tier C (rows 12/19, product-copy decisions) -- those need a
 GPT-PM product ruling too, so they carry the same session-staleness caveat as row 24's referral
 above until a fresh session/transport is available; recorded honestly rather than skipped silently.
+
+## 2026-09-16 -- Tier C rows 12/19 -- CLOSED, GPT-PM APPROVE both rounds, via `review.js` transport
+## workaround (session's MCP path stayed stale)
+
+**Planned**: send both product/scope questions (row 12 nonprofit/subscription copy contradiction,
+row 19 / R11f-2 photo-export-vs-privacy-promise conflict) to GPT-PM per §16/§17, since both are
+explicitly product-owner calls the backlog brief itself says an engineer should not pick
+unilaterally. The `gpt_send_and_await` MCP path was still refused this session (stale build vs. the
+daemon's routing-identity code, same diagnosis as row 24's entry above) -- used the `review.js` CLI
+workaround instead (a fresh OS process, unaffected by this session's stale in-memory state), carrying
+the real questions in a `--scope-note-file` against a nominal `--commit` diff, the same pattern this
+session already used for the Rosetta GO workaround earlier.
+
+**Definition of Done** (implicit in the request, since this was framed as a scope/decision ask, not
+a formal Rosetta gate): a genuine, correlated `VERDICT: APPROVE` naming one option per question,
+implemented faithfully, then verified against the real diff in a second round.
+
+**Round 1** (`reviewRequestId 42696014-fd59-41a7-80c0-f9941bb50b2d`, `replyId
+5c6ae8fe-6c36-4658-bde6-e4028bbb6632`, correlated: true): `VERDICT: APPROVE -- Q1: A. Q2: A.`
+
+- **Q1 (row 12)**: remove nonprofit/donation-solicitation framing from shipped copy; keep the
+  accessibility mission and the safety-paywall-free claim; describe the paid tiers plainly as an
+  optional subscription. GPT-PM's own reasoning cited Moldova consumer-protection guidance on
+  potentially-misleading commercial claims, and was explicit that option B (keep "nonprofit" framing)
+  would need a verified fact this repo cannot confirm on its own -- a legally registered nonprofit
+  entity, with the shipped copy accurately describing that entity's actual relationship to the
+  payments, not merely "a nonprofit is associated with the project."
+- **Q2 (row 19 / R11f-2)**: formally WONT_BUILD progress-photo export under the current product
+  contract; mark the old prototype `ExportScreen` (`App.tsx:3931`) as superseded rather than leaving
+  R11f-2 open; state the supported scope explicitly (capture/timeline/compare/delete only). GPT-PM
+  was explicit this is not a permanent prohibition on ever reconsidering it -- if real user demand
+  later justifies it, reopen as a NEW, explicitly consent-gated, single-photo privacy/product gate,
+  not a resumption of the old design unchanged.
+
+**Verified before implementing** (§3, not acted on GPT-PM's word alone): read every candidate
+string GPT-PM's own evidence cited and two more it did not -- `aboutWeReANonprofitFitnessOrg`
+(mobile/lib/l10n/app_en.arb:70) and `subscriptionWeReANonprofitSubscriptionsAre` (:363) turned out
+to carry NO nonprofit/donation language in their actual shipped VALUES (only their ARB KEY
+identifiers, developer-only, contain the word "Nonprofit") -- only `momentsWeReANonprofitAndThe`
+(:222, "...a few coffees of your time, would you consider becoming a Supporter?...") genuinely needed
+rewriting. Also read `legalTermsBody`/`legalPrivacyBody` (the actual Terms/Privacy text, mobile/lib/
+l10n/app_en.arb:~1911): already correctly states "These payments are not tax-deductible donations.
+There is no nonprofit status and no fiscal sponsor behind this app" -- the legally-operative document
+was never part of the contradiction. For Q2, read `local_progress_photos_repository.dart:64-72` and
+`progress_photos_page.dart:34-39`: both already document "no export, deliberately" since a 2026-08-08
+decision (`core/SESSION_STATE_2026-08-08.md:375-377`, item R7) -- the CODE was already compliant; the
+only real gap was `core/plans/PLAN_BUGS_2026-08-13.md` still recording R11f-2 as an open, undecided
+question five weeks later.
+
+**Implemented** (minimal diff, per this narrower-than-first-assumed scope):
+- `mobile/lib/l10n/app_en.arb` / `app_ru.arb`: `momentsWeReANonprofitAndThe` value rewritten in both
+  locales, donation-solicitation phrasing removed, kept the safety-paywall-free claim, used the
+  existing tier-name terminology ("Сторонник"/"Supporter") rather than inventing new wording.
+- `core/plans/PLAN_BUGS_2026-08-13.md`: R11f-2 line rewritten from "decision not made" to
+  "ЗАКРЫТО WONT_BUILD, 2026-09-16, GPT-PM VERDICT: APPROVE", citing the exact reopening condition
+  GPT-PM specified.
+- `core/MASTER_PLAN_2026-08-26.md` §6 table: rows 12 and 19 both updated from Open to Closed with
+  the evidence and reopening condition stated.
+
+**Verification**: `node scripts/ci/check_ru_en_drift.js` -- 0 new findings attributable to this
+change (2 pre-existing findings in unrelated keys, `formcheckExplainTitle`/
+`formcheckExplainPushupTuck`, already flagged before this diff and out of this gate's scope). Both
+ARB files re-parsed as valid JSON. Grepped for any test/code hardcoding the old string text --
+none found; the one call site (`day3_welcome_modal.dart:60`) reads the string through
+`AppLocalizations`, needing no change.
+
+**Round 2** (`--uncommitted`, `reviewRequestId 4352c940-5962-4c1f-bc29-52be8f371d28`, `replyId
+8e5633bd-ca1c-4da4-ab16-b09b54f937c1`, correlated: true): `VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR.
+One style note, not held: "permanently unbuilt" in the master-plan row 19 text read stronger than
+the sentence's own reopening clause supported -- fixed to "unbuilt by default" in the same commit,
+even though GPT-PM explicitly said it would not hold the gate for it (cheap enough to just fix).
+
+**Status**: both rows CLOSED. Commit+push to follow this entry (push already authorized under §22 --
+an approved GO/APPROVE, no separate word needed). No Rosetta plan opened: this was framed and
+resolved as a scope/product decision exchange, not a formal multi-step implementation gate, and the
+actual code/copy diff is 4 files / 14 insertions / 6 deletions -- STANDARD review class, not HIGH,
+per the `rosetta` skill's own criteria (no dependencies/CI/migrations/secrets touched).
