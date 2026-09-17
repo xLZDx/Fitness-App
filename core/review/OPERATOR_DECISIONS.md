@@ -1,9 +1,21 @@
 # Everything waiting on you
 
-**Eight decisions remain open; one (P1) has been answered.** None of the nine was engineering's to
+**STALE, 2026-09-18: every decision below is now closed.** All nine rows (N05-A/B/C, N04, P1,
+S1/S2/S3, RF) have real decision records under `core/decisions/*.md`, dated 2026-08-21 (P1,
+gym-webhook-disclosure) and 2026-09-17 (N-04, N-05, roboflow-key-reissue, scanner-pipeline-location
+— which folds S1/S2/S3). See `core/CURRENT_STATE.md` for the live closure ledger; the row-by-row
+analysis below is kept as the historical record of what was actually weighed, not because anything
+here is still open. The only genuinely open items are D1/H3/CT1-human-labels (§ "What is not on
+this list" below) — external clinical/human authority, nobody's decision to make from a chat.
+
+<details><summary>Original framing, 2026-08-2x, no longer current</summary>
+
+Eight decisions remain open; one (P1) has been answered. None of the nine was engineering's to
 decide, and none could be closed from inside this repository without a named artefact from you.
 Each row below is answerable in one sentence without opening another document; the research is
 finished and cited, not summarised again here.
+
+</details>
 
 > **This file is not a decision record.** Recording a decision means a file at
 > `core/decisions/<id>.md`, written by you. `core/decisions/gym-webhook-disclosure.md` is the first

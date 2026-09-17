@@ -54801,3 +54801,36 @@ tail, and the two stale documents above) was published as
 `reports/FULL_PICTURE_2026-09-17.ru.html` / `.html`, conformed via `report_conform.py`, and handed
 to the operator as a Russian artifact per the house report format. No code changed; this is a
 reporting/synthesis pass only.
+
+## 2026-09-18 -- stale-document fixes; recon launched on the two remaining tracks under GO
+
+Operator instruction, verbatim: "ГО продолжать оба трека" -- continue two tracks named in the
+prior status report: the equipment-recognition accuracy gap, and the real tail items (including
+the two stale documents flagged above). PM Bridge orchestrator mode confirmed live this session
+(`pm_bridge_mode_status`: pid 39268, running since 12:58:45 same day, 56 requests handled) --
+per CLAUDE.md §18 this is a checkpoint, not a stopping point.
+
+**Both stale documents fixed, not silently ignored:**
+- `core/review/OPERATOR_DECISIONS.md` -- added a `STALE, 2026-09-18` banner at the top stating
+  all nine rows (N05-A/B/C, N04, P1, S1/S2/S3, RF) are closed with real `core/decisions/*.md`
+  records, pointing to `core/CURRENT_STATE.md` as the live ledger. Original framing collapsed into
+  a `<details>` block for historical record rather than deleted, since the row-by-row analysis
+  (cost/reversibility reasoning) is still real historical evidence of what was weighed.
+- `core/plans/ROADMAP_2026_V2.md` -- added a `STALE, flagged 2026-09-18` banner noting it is
+  unedited since 2026-07-28 and predates the HUD redesign/MVP1/SPTR eras, pointing to
+  `core/MASTER_PLAN_2026-08-26.md` as the current plan and to yesterday's full-picture report.
+
+**Recon launched (read-only, no changes yet) on both substantive tracks**, to turn each into a
+concrete, executable plan before touching anything:
+- `scanner-pipeline-location` migration: what exactly moves out of this repo into a new clean
+  training repository per the approved S-1/S-2/S-3 decision, what stays, whether
+  `D:\Repo\equipment-model-pipeline` already has content, and whether any training corpora
+  accidentally already live in this repo's git history (a real risk to flag, not silently fix).
+- Text-anchor (printed-machine-text) recognition path: current state of the 18/18-vs-5/18
+  measured-more-accurate OCR-based recognizer, what production code exists today
+  (`ScanOutcome.confident`/`.alternatives` decision flow) vs. what's missing to wire it into the
+  live decision path instead of/alongside the Gemini visual classifier that measured 48.5%
+  accuracy yesterday.
+
+Both recon passes are in flight; concrete migration/integration plans will be recorded here once
+they return, before any code changes are made.

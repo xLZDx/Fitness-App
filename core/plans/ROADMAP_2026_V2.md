@@ -1,5 +1,11 @@
 # Roadmap 2026 v2 — Implementation Plan + New Game-Changer Features
 
+> **STALE, flagged 2026-09-18.** Unedited since 2026-07-28 — this predates the HUD redesign, the
+> entire MVP1 program, and the entire SPTR equipment-recognition platform. It is kept as the
+> historical Foundation-era catch-up plan, not as current forward planning.
+> **`core/MASTER_PLAN_2026-08-26.md` is the current planning document** (updated as recently as
+> 2026-09-16); see `reports/FULL_PICTURE_2026-09-17.ru.html` for the full current-state synthesis.
+
 **Source of truth for what we build next, in what order, why, and at what cost.** Supersedes `IMPLEMENTATION_PLAN.md` for forward planning (that file remains the historical record of completed phases). Driven directly by [`../business/COMPETITIVE_ASSESSMENT.md`](../business/COMPETITIVE_ASSESSMENT.md).
 
 Author signal: this is a planning doc. Anything here is subject to change after a real implementation pass — the per-feature time estimates are realistic but not contractual.
