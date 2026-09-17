@@ -54774,3 +54774,30 @@ reason to reopen either gate.
 `openpyxl`-environment gap (not fixed, to avoid touching a sibling repo's venv without being
 asked); D1/H3/CT1-human-labels (external clinical authority, cannot be closed from this
 repository by anyone).
+
+## 2026-09-17 (continued) -- full-project status report assembled from every roadmap/design/backlog/decision document
+
+Operator instruction, verbatim: "собери все мд файлы с роудмэп+дизайн+хвосты+бэклог+что я не
+учел и покжи полную картину от начала до конца что сделали что осталость и где мы щас" -- a
+ground-truth "where are we now" answer per the global rule, sourced from the repository's live
+files rather than a cached summary.
+
+An Explore agent inventoried every roadmap/design/backlog/decision/status document in the repo:
+`core/CURRENT_STATE.md`, the full header index plus the last ~465 lines of `core/DECISION_LOG.md`,
+`core/plans/ROADMAP_2026_V2.md`, `core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md`,
+`core/BACKLOG_2026-07-31.md`, `core/MASTER_PLAN_2026-08-26.md`, `core/design/reference/fitness_hud_v1/`,
+`core/design/sptr_equipment_recognition_v4_1/`, `core/PLATFORM_SCOPE.md`, `core/business/*.md`, and
+all five `core/decisions/*.md` records. Two real documentation-drift findings surfaced: (1)
+`core/review/OPERATOR_DECISIONS.md` still lists 8 decisions as open (N05-A/B/C, N04, S1/S2/S3, RF)
+that are now all closed (dated 2026-08-21 and 2026-09-17) -- the file was never updated after those
+closures and would mislead the operator if read directly; (2) `core/plans/ROADMAP_2026_V2.md`
+claims to be the forward-planning source of truth but has not been touched since 2026-07-28,
+predating the entire HUD redesign, MVP program and SPTR platform -- `core/MASTER_PLAN_2026-08-26.md`
+is the actually current planning document.
+
+The synthesis (project timeline, what's closed, the five operator decisions, the live
+`CURRENT_STATE.md` registry, today's equipment-recognition-accuracy finding, the real remaining
+tail, and the two stale documents above) was published as
+`reports/FULL_PICTURE_2026-09-17.ru.html` / `.html`, conformed via `report_conform.py`, and handed
+to the operator as a Russian artifact per the house report format. No code changed; this is a
+reporting/synthesis pass only.

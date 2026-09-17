@@ -1,0 +1,404 @@
+<title>Полная картина проекта</title>
+<meta name="description" content="Fitness_App от начала до конца: что сделано, что осталось, где мы сейчас — 2026-09-17.">
+<style>
+  :root{
+    --bg:#f6f5f0; --surface:#ffffff; --surface-2:#eeece2; --border:#dcd9cb;
+    --text:#181a14; --muted:#5b5f52; --accent:#5c7a00; --accent-strong:#3e5400;
+    --accent-ink:#eaffb0;
+    --ok:#1e7a3d; --ok-bg:#e3f3e6;
+    --warn:#8a5a00; --warn-bg:#fbeecb;
+    --crit:#a3271f; --crit-bg:#fbe3e0;
+    --hold:#5b5f52; --hold-bg:#eeece2;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+      --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+      --accent-ink:#232b12;
+      --ok:#7fe0a0; --ok-bg:#16321f;
+      --warn:#f0c05a; --warn-bg:#3a2c0c;
+      --crit:#ff8f85; --crit-bg:#3a1512;
+      --hold:#9aa78e; --hold-bg:#20261a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+    --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+    --accent-ink:#232b12;
+    --ok:#7fe0a0; --ok-bg:#16321f;
+    --warn:#f0c05a; --warn-bg:#3a2c0c;
+    --crit:#ff8f85; --crit-bg:#3a1512;
+    --hold:#9aa78e; --hold-bg:#20261a;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Manrope', 'Inter', system-ui, sans-serif;
+    font-size:15px; line-height:1.55;
+    padding-inline:16px;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding-block:28px 64px;}
+
+  h1,h2,h3{font-family:'Archivo', 'Manrope', sans-serif; text-wrap:balance; letter-spacing:-.01em;}
+  header{padding-block:8px 4px;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-strong); margin-bottom:10px;
+  }
+  .eyebrow::before{content:"●"; font-size:9px;}
+  h1{font-size:clamp(28px,5vw,40px); font-weight:800; margin:0 0 10px; color:var(--text);}
+  .lede{color:var(--muted); font-size:16px; max-width:60ch; margin:0;}
+
+  .tldr{
+    display:flex; flex-wrap:wrap; gap:8px; margin-block:20px 8px;
+  }
+  .pill{
+    font-family:var(--mono); font-size:12px; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--border); background:var(--surface); color:var(--text);
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .pill.ok{background:var(--ok-bg); color:var(--ok); border-color:transparent;}
+  .pill.warn{background:var(--warn-bg); color:var(--warn); border-color:transparent;}
+  .pill.crit{background:var(--crit-bg); color:var(--crit); border-color:transparent;}
+
+  section{margin-block:40px;}
+  h2{
+    font-size:13px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    color:var(--accent-strong); margin:0 0 4px; padding-bottom:10px; border-bottom:1px solid var(--border);
+  }
+  h2 .num{color:var(--muted); font-weight:500; margin-right:8px;}
+  h3{font-size:18px; margin:22px 0 8px; color:var(--text); font-weight:700;}
+  p{margin:0 0 12px;}
+  a{color:var(--accent-strong);}
+  code, .code{font-family:var(--mono); font-size:.92em; background:var(--surface-2); padding:1px 5px; border-radius:4px;}
+
+  .timeline{list-style:none; margin:16px 0 0; padding:0; border-left:2px solid var(--border); margin-left:6px;}
+  .timeline li{position:relative; padding:0 0 20px 22px;}
+  .timeline li::before{
+    content:""; position:absolute; left:-7px; top:4px; width:12px; height:12px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--accent);
+  }
+  .timeline .when{font-family:var(--mono); font-size:11.5px; color:var(--muted); display:block; margin-bottom:2px;}
+  .timeline .what{font-weight:700;}
+  .timeline .detail{color:var(--muted); font-size:13.5px; margin-top:2px;}
+
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; margin-top:14px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
+  .card .t{font-weight:700; font-size:14px; margin-bottom:4px;}
+  .card .d{color:var(--muted); font-size:12.5px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px; margin-top:14px;}
+  th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  .tbl-wrap{overflow-x:auto;}
+
+  .badge{
+    display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:6px;
+    white-space:nowrap;
+  }
+  .badge.closed{background:var(--ok-bg); color:var(--ok);}
+  .badge.dormant{background:var(--hold-bg); color:var(--hold);}
+  .badge.external{background:var(--warn-bg); color:var(--warn);}
+  .badge.hold{background:var(--hold-bg); color:var(--hold);}
+  .badge.disabled{background:var(--surface-2); color:var(--muted);}
+
+  .callout{
+    border:1px solid var(--crit); background:var(--crit-bg); border-radius:12px;
+    padding:18px 20px; margin-top:16px;
+  }
+  .callout h3{margin-top:0; color:var(--crit);}
+  .callout .stat{font-family:var(--mono); font-size:28px; font-weight:800; color:var(--crit);}
+  .stat-row{display:flex; gap:28px; flex-wrap:wrap; margin:12px 0;}
+  .stat-row div span{display:block; font-size:11px; color:var(--muted); font-family:var(--mono); text-transform:uppercase;}
+
+  .warnbox{
+    border:1px solid var(--warn); background:var(--warn-bg); border-radius:12px;
+    padding:14px 18px; margin-top:14px; color:var(--warn);
+  }
+  .warnbox b{color:var(--warn);}
+
+  ul.plain{margin:8px 0 0; padding-left:20px;}
+  ul.plain li{margin-bottom:6px;}
+
+  .quote{
+    border-left:3px solid var(--accent); padding:2px 0 2px 14px; color:var(--muted);
+    font-style:italic; margin:10px 0;
+  }
+
+  footer{margin-top:56px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:12.5px;}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness_App · статус на 2026-09-17</span>
+  <h1>Полная картина: от начала и до сегодня</h1>
+  <p class="lede">Всё, что накопилось в roadmap, дизайне, бэклоге и decision-логе проекта — собрано в одну картину: что сделано, что реально осталось, и что не учли раньше.</p>
+
+  <div class="tldr">
+    <span class="pill ok">Инженерный бэклог исчерпан (2026-09-16/17)</span>
+    <span class="pill crit">Новая находка сегодня: точность распознавания оборудования 48,5%</span>
+    <span class="pill warn">2 документа устарели и вводят в заблуждение</span>
+    <span class="pill">Осталось: только внешние блокеры (клиника) + отложенные по вашему решению пункты</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 80a1255</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <h2><span class="num">01</span>Как читать этот отчёт</h2>
+  <p>Источники — не пересказ памяти, а живые файлы репозитория на сегодня: <code>core/CURRENT_STATE.md</code> (сгенерирован сегодня), <code>core/DECISION_LOG.md</code> (54 776 строк, ~930 датированных записей с 2026-08-07), пять записей в <code>core/decisions/*.md</code>, <code>core/MASTER_PLAN_2026-08-26.md</code>, план бэклога <code>core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</code>, дизайн-эталон <code>core/design/reference/fitness_hud_v1/</code>, бизнес-документы и другие роадмапы.</p>
+  <p>Ниже — не список файлов, а синтез: путь проекта от старта (7 августа) до сегодняшнего дня, что закрыто безвозвратно, что закрыто вашим решением, что подвешено намеренно, и что оказалось новым и незапланированным.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span>Путь проекта: главные вехи</h2>
+  <ul class="timeline">
+    <li>
+      <span class="when">07–16 авг</span>
+      <span class="what">Фундамент: релизная сборка, контент-каталог (1887 упражнений), первый независимый аудит</span>
+      <span class="detail">Аудит вернул вердикт NOT_RELEASE_READY — набор находок N-01…N-13, серия Tier-6 (F001–F027).</span>
+    </li>
+    <li>
+      <span class="when">17–21 авг</span>
+      <span class="what">HUD-дизайн-система, MVP-гейты M1–M8, финальная сверка продукта/маркетинга</span>
+      <span class="detail">2026-08-21: объявлено MVP_REACHED, первая сборка разослана тестерам.</span>
+    </li>
+    <li>
+      <span class="when">22 авг</span>
+      <span class="what">Запуск SPTR — платформы распознавания оборудования (equipment recognition)</span>
+      <span class="detail">Технический дизайн v4.1→v4.4, гейты P0.G1–G6 закрыты, P1.G1–G4 закрыты.</span>
+    </li>
+    <li>
+      <span class="when">26 авг</span>
+      <span class="what">Consolidated MASTER_PLAN — единый нарратив по всем 6 параллельным линиям работы</span>
+      <span class="detail">Тогда же стартует программа MVP1.G1–G4 (AI Gateway, App Check, IAM-hardening).</span>
+    </li>
+    <li>
+      <span class="when">27–31 авг</span>
+      <span class="what">Observability (OBS-1), IAM/App Check hardening, HUD-миграция — все закрыты</span>
+      <span class="detail">30 авг: пересборка мастер-роадмапа; операторская правка после «почему ты продолжаешь говорить что всё хорошо» — визуальная точность Form Coach пересмотрена заново.</span>
+    </li>
+    <li>
+      <span class="when">01–12 сен</span>
+      <span class="what">Form Coach: перерасчёт позы/координат, гейты G1–G17. Распознавание: программы RECOG-C1/SO1, гейты P2.G1–G4 (OCR-идентичность оборудования)</span>
+      <span class="detail">Каждый гейт P2.* проходил несколько раундов ревью GPT-PM.</span>
+    </li>
+    <li>
+      <span class="when">15–16 сен</span>
+      <span class="what">Полный прогон бэклога (Tier A–D). Вывод: формальный инженерный бэклог исчерпан</span>
+      <span class="detail">Проверка визуального соответствия дизайну на живом устройстве (S8): найден и исправлен один реальный дефект (неверный текстовый стиль на карточках Home).</span>
+    </li>
+    <li>
+      <span class="when">17 сен (сегодня)</span>
+      <span class="what">Первое реальное измерение точности продакшн-распознавания (Gemini) — и реакция на него</span>
+      <span class="detail">См. врезку ниже. Параллельно: закрыты N-04, N-05, ретирирован устаревший гейт P0.G1, синхронизирован статус MVP1.G3/P2.G3 в трекере GPT-PM.</span>
+    </li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Что сделано — крупными блоками</h2>
+  <div class="cards">
+    <div class="card"><div class="t">Релиз и MVP</div><div class="d">Первая сборка распространена тестерам 2026-08-21; MVP_REACHED зафиксирован; регулярные тестовые сборки через Firebase App Distribution с тех пор (последняя — сегодня, build 3109, коммит 80a1255).</div></div>
+    <div class="card"><div class="t">HUD-дизайн-система</div><div class="d">Единый визуальный язык (глянцевое стекло, акцент #C9FF47, Archivo, 158×158 счётчики, 6 фонов по времени суток) — реализован и сверен с эталоном на живом устройстве.</div></div>
+    <div class="card"><div class="t">Безопасность и приватность</div><div class="d">Firestore trust boundary, eligibility layer, App Check/IAM hardening (MVP1.G4), раскрытие webhook-получателя в privacy/terms (gym-webhook-disclosure).</div></div>
+    <div class="card"><div class="t">Каталог контента</div><div class="d">1887 упражнений, аудит и ремедиация 403 находок, fail-closed фильтр противопоказаний (покрытие поднято с 0% до 80,9%).</div></div>
+    <div class="card"><div class="t">Наблюдаемость</div><div class="d">Программа OBS-1 (MVP1.G3): 13-строчная таблица реконсиляции, все шаги 8–10C закрыты; сегодня статус синхронизирован и в трекере GPT-PM.</div></div>
+    <div class="card"><div class="t">Form Coach</div><div class="d">17 гейтов редизайна (G1–G17), пересчёт координатной системы позы, визуальная сверка с эталоном; сегодняшняя проверка на устройстве нашла и исправила 1 реальный баг.</div></div>
+    <div class="card"><div class="t">Распознавание оборудования (SPTR)</div><div class="d">Технический дизайн v4.1–v4.4 согласован, гейты P0–P2 в основном закрыты — но именно здесь сегодня найдена главная незакрытая проблема (ниже).</div></div>
+    <div class="card"><div class="t">Governance / decision-log</div><div class="d">Непрерывный лог решений с 07.08 (54 776 строк), механические гейты (decision-log, GO-gate, GPT-PM review) — обеспечивают, что ни одно решение не потеряно.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Пять операторских решений — закрыты сегодня и ранее</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Решение</th><th>Дата</th><th>Итог</th></tr>
+    <tr><td><b>gym-webhook-disclosure</b></td><td>21.08</td><td>Webhook тренажёрного зала — раскрываемый получатель данных (не GDPR-процессор). Юр. тексты (privacy/terms, оба языка) обновлены.</td></tr>
+    <tr><td><b>roboflow-key-reissue</b></td><td>17.09</td><td>Ключ, вставленный в чат 07.08, никогда не попадал в git. Риск принят, перевыпуск не требуется.</td></tr>
+    <tr><td><b>scanner-pipeline-location</b></td><td>17.09</td><td>Одобрены S-1/S-2/S-3 (вынос источника/происхождения в отдельный репозиторий, корпуса данных не покидают эту машину). <b>Сам перенос ещё не выполнен</b> — нужен отдельный Plan→GO.</td></tr>
+    <tr><td><b>N-04 (gym-association)</b></td><td>17.09</td><td>Вопрос об авторизации привязки к залу — отложен («пока не знаю, оставить как временно неактивный код»). Код-путь недостижим, закрытие валидно.</td></tr>
+    <tr><td><b>N-05 (video quota/abuse)</b></td><td>17.09</td><td>Бюджетный алерт (уже настроен) + принятие остаточного риска $0,077–$0,31 — закрыто. App Check-принуждение для видео рассмотрено, но осознанно <b>не включено</b> — вы отклонили продакшн-редеплой сегодня.</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>Актуальный реестр состояния (<code>core/CURRENT_STATE.md</code>, сгенерирован сегодня)</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Пункт</th><th>Статус</th><th>Кто закрывает</th></tr>
+    <tr><td>F-prefetch, F2, F5, checkout-copy, guest-upgrade-outcome, scanner-dependency-pin, scanner-metadata</td><td><span class="badge closed">CLOSED</span></td><td>SOURCE — доказывается кодом при каждом прогоне</td></tr>
+    <tr><td>N-05, N-04-gym-association, scanner-pipeline-location, gym-webhook-disclosure, roboflow-key-reissue</td><td><span class="badge closed">CLOSED</span></td><td>OPERATOR — файл в core/decisions/</td></tr>
+    <tr><td>metric-provenance-six, F025, N-07</td><td><span class="badge dormant">DORMANT</span></td><td>Спящие «растяжки»-тесты — не открытые вопросы, а гарантия на случай регресса</td></tr>
+    <tr><td>production-image-collection</td><td><span class="badge disabled">DISABLED</span></td><td>Намеренно выключено (историческое решение D3)</td></tr>
+    <tr><td><b>D1</b> — клиническая валидация</td><td><span class="badge external">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>Нужен внешний клиницист — не закрывается изнутри репозитория</td></tr>
+    <tr><td><b>H3</b></td><td><span class="badge hold">HOLD</span></td><td>Держится на той же внешней клинической авторизации</td></tr>
+    <tr><td><b>CT1-human-labels</b></td><td><span class="badge external">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>0 размеченных человеком лейблов — нужен внешний рецензент</td></tr>
+  </table>
+  </div>
+  <p style="margin-top:10px;color:var(--muted);font-size:13px">Итого: из всех пунктов, требовавших операторского решения, <b>все закрыты</b>. Единственное, что реально не закрывается автономно — три пункта, зависящие от внешней (клинической/человеческой) авторизации.</p>
+</section>
+
+<section>
+  <div class="callout">
+    <h3>⚠ Главная новая находка — сегодня, 17.09</h3>
+    <p>Вы напрямую спросили, есть ли тестовое подтверждение, что живой продакшн-путь распознавания оборудования (Gemini) безопасно показывать реальным пользователям. Впервые был проведён реальный замер — и результат разошёлся с тем, что предполагалось раньше.</p>
+    <div class="stat-row">
+      <div><span class="stat">48,5%</span><span>точность, общая (16 из 33)</span></div>
+      <div><span class="stat">55,6%</span><span>точность на high/moderate уверенности эталона</span></div>
+      <div><span class="stat">0/4</span><span>«rotary torso machine» — полный провал категории</span></div>
+    </div>
+    <p>Модель дважды не распознала читаемую надпись на самом тренажёре (табличку «SHOULDER PRESS» приняла за lat pulldown с уверенностью 0,85–0,88). Уверенность модели <b>не отделяет</b> верные ответы от неверных: 0,950 в среднем на верных против 0,877 на неверных — разрыв слишком мал, чтобы на него полагаться.</p>
+    <p><b>Что сделано сегодня:</b> первая попытка (список «ненадёжных» категорий) оказалась неэффективной — не задевала ни один из 4 реально измеренных провалов. По итогам повторного разбора и с вашим одобрением (решение <code>FITAPP-EQUIP-ACC-2026-09-17</code>) принято решение сильнее: <b>каждое облачное (Gemini) совпадение теперь всегда идёт через «я не уверен, выберите сами» (<code>ScanOutcome.alternatives</code>)</b>, а не как «уверенное» — пока не появится реальный сквозной замер продакшн-пути. Уверенный результат остаётся достижим только через путь распознавания печатного текста на табличке.</p>
+    <p><b>Что не закрыто:</b> сама проблема точности классификации не решена — только скрыта от пользователя честной формулировкой «я не уверен». Нужен либо больший датасет/калибровка, либо ваше явное принятие риска перед более широким распространением.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span>Что реально осталось (актуальный «хвост»)</h2>
+  <ul class="plain">
+    <li><b>Точность распознавания оборудования</b> (см. врезку выше) — единственный незакрытый вопрос безопасности продукта на сегодня.</li>
+    <li><b>scanner-pipeline-location</b> — перенос исходников/происхождения в отдельный репозиторий одобрен, но физически ещё не выполнен. Нужен отдельный Plan→GO.</li>
+    <li><b>D1 / H3 / CT1-human-labels</b> — клиническая валидация и человеческая разметка. Нельзя закрыть изнутри репозитория ни при каком ГО — нужен внешний специалист.</li>
+    <li><b>openpyxl в venv</b> — один тест падает из-за окружения (bare <code>python</code> резолвится в venv соседнего проекта ERP, где нет openpyxl). Осознанно не трогали чужой venv.</li>
+    <li><b>Печатный текст на табличках как источник распознавания</b> — измерен на 18/18 против 5/18 у визуального метода, но <b>не подключён</b> к боевому режиму. Отложено по вашей же прямой инструкции: «в конце запланируй тесты кода и распознавания, но это самое последнее на проекте».</li>
+    <li><b>P2.G4+ движок принятия решений (шаги P4/P6)</b> — не начат. Тоже сознательно отложен на «самое последнее».</li>
+    <li><b>Лицензионный конфликт на видео-каталог упражнений</b> (AI-тренировка на вендорских клипах) — блокирует P4, вне текущего скоупа, не решён.</li>
+    <li><b>PM Bridge gate-status registry backfill</b> и <b>FORM_COACH_HUD_ALIGNMENT</b> — явно исключены из прогона бэклога 16.09 по вашей инструкции, не тронуты.</li>
+    <li><b>VPS+CDN видео-хостинг</b> — зафиксирована как идея на бэклог, не спроектирована и не запланирована.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">07</span>Что вы, возможно, не учли: устаревшие документы</h2>
+  <div class="warnbox">
+    <p><b>core/review/OPERATOR_DECISIONS.md</b> — файл называется «всё, что ждёт вас», но перечисляет как открытые 8 решений (N05-A/B/C, N04, S1/S2/S3, RF), которые <b>уже все закрыты</b> (даты закрытия — 21.08 и 17.09). Файл не обновлён после закрытий — если открыть его напрямую, создаётся ложное впечатление, что решения всё ещё ждут вас.</p>
+  </div>
+  <div class="warnbox">
+    <p><b>core/plans/ROADMAP_2026_V2.md</b> — заявлен как «источник истины для планирования вперёд», но не редактировался с <b>28 июля</b> — то есть предшествует вообще всему, что случилось в августе-сентябре (HUD-редизайн, вся программа MVP, вся платформа SPTR). Реальный актуальный план — <code>core/MASTER_PLAN_2026-08-26.md</code> (обновлялся 16 сентября), но и он на день отстаёт от сегодняшних находок.</p>
+  </div>
+  <p style="color:var(--muted);font-size:13.5px">Ни один найденный документ не является единым и актуальным «дорожная карта + видение продукта» на весь проект. Ближайшее к этому — комбинация MASTER_PLAN (нарратив по 6 линиям работы) + PLATFORM_SCOPE.md (платформенные обязательства) + бизнес-документы (май 2026, тоже не обновлялись с тех пор) + дизайн-эталон fitness_hud_v1/.</p>
+</section>
+
+<section>
+  <h2><span class="num">08</span>Карта документов — где что лежит</h2>
+  <div class="cards">
+    <div class="card"><div class="t">Дизайн (визуал)</div><div class="d"><code>core/design/reference/fitness_hud_v1/</code> — канонический эталон (глянцевое стекло, цвета, типографика). Экспорты для onboarding, HUD, Form Coach.</div></div>
+    <div class="card"><div class="t">Дизайн (распознавание)</div><div class="d"><code>core/design/sptr_equipment_recognition_v4_1/</code> — технический дизайн v4.1–v4.4, гейт-контракты и AC/DoD.</div></div>
+    <div class="card"><div class="t">План (актуальный)</div><div class="d"><code>core/MASTER_PLAN_2026-08-26.md</code> — 6 параллельных линий работы, обновлялся 16.09.</div></div>
+    <div class="card"><div class="t">План (устаревший)</div><div class="d"><code>core/plans/ROADMAP_2026_V2.md</code> — не трогался с 28.07, формально всё ещё «источник истины», фактически нет.</div></div>
+    <div class="card"><div class="t">Бэклог (актуальный)</div><div class="d"><code>core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</code> — Tier A–D, отчитан исчерпанным 16–17.09.</div></div>
+    <div class="card"><div class="t">Бэклог (исторический)</div><div class="d"><code>core/BACKLOG_2026-07-31.md</code> — исходный дамп 23 пунктов по эпикам, в основном уже реализовано.</div></div>
+    <div class="card"><div class="t">Decision log</div><div class="d"><code>core/DECISION_LOG.md</code> — 54 776 строк, ~930 записей с 07.08, единственный по-настоящему непрерывный источник истины.</div></div>
+    <div class="card"><div class="t">Реестр состояния</div><div class="d"><code>core/CURRENT_STATE.md</code> — генерируется автоматически, единственный файл с живым статусом закрытия по каждому пункту.</div></div>
+    <div class="card"><div class="t">Операторские решения</div><div class="d"><code>core/decisions/*.md</code> — 5 файлов, по одному на решение, с прямой цитатой вашей формулировки.</div></div>
+    <div class="card"><div class="t">Бизнес / видение</div><div class="d"><code>core/business/*.md</code> — конкурентный анализ, некоммерческий план, питч-дек, план роста. Все от мая 2026, не обновлялись с тех пор.</div></div>
+    <div class="card"><div class="t">Платформа</div><div class="d"><code>core/PLATFORM_SCOPE.md</code> — что официально поддерживается (Android — поддерживается, iOS — не отправлен, но не должен «гнить», Wear OS — сломан, известно, web/desktop — вне скоупа).</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span>Где мы сейчас, одной фразой</h2>
+  <p class="quote">Формальный инженерный бэклог закрыт. Все пять операторских решений приняты. Единственный живой, реально незакрытый вопрос — точность продакшн-распознавания оборудования: сегодня она честно измерена (48,5–55,6%) и временно обезврежена (никогда не показывать «уверенно» без вашего подтверждения), но не решена по существу. Всё остальное, что осталось — либо ждёт внешнего специалиста (клиника, ручная разметка), либо сознательно отложено вами на «самое последнее» (тесты распознавания текста, движок принятия решений P4/P6), либо не спроектированная идея на будущее (видео-хостинг).</p>
+</section>
+
+<footer>
+  Собрано автономно по прямому запросу «собери все мд файлы… покажи полную картину». Источники — файлы репозитория на момент 2026-09-17, без обращения к устаревшим сводкам памяти.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

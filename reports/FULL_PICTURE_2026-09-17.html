@@ -1,0 +1,404 @@
+<title>Full Project Picture</title>
+<meta name="description" content="Fitness_App start to finish: what's done, what remains, where we stand — 2026-09-17.">
+<style>
+  :root{
+    --bg:#f6f5f0; --surface:#ffffff; --surface-2:#eeece2; --border:#dcd9cb;
+    --text:#181a14; --muted:#5b5f52; --accent:#5c7a00; --accent-strong:#3e5400;
+    --accent-ink:#eaffb0;
+    --ok:#1e7a3d; --ok-bg:#e3f3e6;
+    --warn:#8a5a00; --warn-bg:#fbeecb;
+    --crit:#a3271f; --crit-bg:#fbe3e0;
+    --hold:#5b5f52; --hold-bg:#eeece2;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+      --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+      --accent-ink:#232b12;
+      --ok:#7fe0a0; --ok-bg:#16321f;
+      --warn:#f0c05a; --warn-bg:#3a2c0c;
+      --crit:#ff8f85; --crit-bg:#3a1512;
+      --hold:#9aa78e; --hold-bg:#20261a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+    --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+    --accent-ink:#232b12;
+    --ok:#7fe0a0; --ok-bg:#16321f;
+    --warn:#f0c05a; --warn-bg:#3a2c0c;
+    --crit:#ff8f85; --crit-bg:#3a1512;
+    --hold:#9aa78e; --hold-bg:#20261a;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Manrope', 'Inter', system-ui, sans-serif;
+    font-size:15px; line-height:1.55;
+    padding-inline:16px;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding-block:28px 64px;}
+
+  h1,h2,h3{font-family:'Archivo', 'Manrope', sans-serif; text-wrap:balance; letter-spacing:-.01em;}
+  header{padding-block:8px 4px;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-strong); margin-bottom:10px;
+  }
+  .eyebrow::before{content:"●"; font-size:9px;}
+  h1{font-size:clamp(28px,5vw,40px); font-weight:800; margin:0 0 10px; color:var(--text);}
+  .lede{color:var(--muted); font-size:16px; max-width:60ch; margin:0;}
+
+  .tldr{
+    display:flex; flex-wrap:wrap; gap:8px; margin-block:20px 8px;
+  }
+  .pill{
+    font-family:var(--mono); font-size:12px; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--border); background:var(--surface); color:var(--text);
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .pill.ok{background:var(--ok-bg); color:var(--ok); border-color:transparent;}
+  .pill.warn{background:var(--warn-bg); color:var(--warn); border-color:transparent;}
+  .pill.crit{background:var(--crit-bg); color:var(--crit); border-color:transparent;}
+
+  section{margin-block:40px;}
+  h2{
+    font-size:13px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    color:var(--accent-strong); margin:0 0 4px; padding-bottom:10px; border-bottom:1px solid var(--border);
+  }
+  h2 .num{color:var(--muted); font-weight:500; margin-right:8px;}
+  h3{font-size:18px; margin:22px 0 8px; color:var(--text); font-weight:700;}
+  p{margin:0 0 12px;}
+  a{color:var(--accent-strong);}
+  code, .code{font-family:var(--mono); font-size:.92em; background:var(--surface-2); padding:1px 5px; border-radius:4px;}
+
+  .timeline{list-style:none; margin:16px 0 0; padding:0; border-left:2px solid var(--border); margin-left:6px;}
+  .timeline li{position:relative; padding:0 0 20px 22px;}
+  .timeline li::before{
+    content:""; position:absolute; left:-7px; top:4px; width:12px; height:12px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--accent);
+  }
+  .timeline .when{font-family:var(--mono); font-size:11.5px; color:var(--muted); display:block; margin-bottom:2px;}
+  .timeline .what{font-weight:700;}
+  .timeline .detail{color:var(--muted); font-size:13.5px; margin-top:2px;}
+
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; margin-top:14px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
+  .card .t{font-weight:700; font-size:14px; margin-bottom:4px;}
+  .card .d{color:var(--muted); font-size:12.5px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px; margin-top:14px;}
+  th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  .tbl-wrap{overflow-x:auto;}
+
+  .badge{
+    display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:6px;
+    white-space:nowrap;
+  }
+  .badge.closed{background:var(--ok-bg); color:var(--ok);}
+  .badge.dormant{background:var(--hold-bg); color:var(--hold);}
+  .badge.external{background:var(--warn-bg); color:var(--warn);}
+  .badge.hold{background:var(--hold-bg); color:var(--hold);}
+  .badge.disabled{background:var(--surface-2); color:var(--muted);}
+
+  .callout{
+    border:1px solid var(--crit); background:var(--crit-bg); border-radius:12px;
+    padding:18px 20px; margin-top:16px;
+  }
+  .callout h3{margin-top:0; color:var(--crit);}
+  .callout .stat{font-family:var(--mono); font-size:28px; font-weight:800; color:var(--crit);}
+  .stat-row{display:flex; gap:28px; flex-wrap:wrap; margin:12px 0;}
+  .stat-row div span{display:block; font-size:11px; color:var(--muted); font-family:var(--mono); text-transform:uppercase;}
+
+  .warnbox{
+    border:1px solid var(--warn); background:var(--warn-bg); border-radius:12px;
+    padding:14px 18px; margin-top:14px; color:var(--warn);
+  }
+  .warnbox b{color:var(--warn);}
+
+  ul.plain{margin:8px 0 0; padding-left:20px;}
+  ul.plain li{margin-bottom:6px;}
+
+  .quote{
+    border-left:3px solid var(--accent); padding:2px 0 2px 14px; color:var(--muted);
+    font-style:italic; margin:10px 0;
+  }
+
+  footer{margin-top:56px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:12.5px;}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness_App · status as of 2026-09-17</span>
+  <h1>The full picture: start to today</h1>
+  <p class="lede">Everything that has accumulated in the project's roadmap, design, backlog and decision log — assembled into one picture: what's done, what genuinely remains, and what wasn't accounted for before.</p>
+
+  <div class="tldr">
+    <span class="pill ok">Engineering backlog exhausted (2026-09-16/17)</span>
+    <span class="pill crit">New finding today: equipment-recognition accuracy 48.5%</span>
+    <span class="pill warn">2 documents are stale and misleading</span>
+    <span class="pill">What's left: external blockers (clinical) + items you deliberately deferred</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 80a1255</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <h2><span class="num">01</span>How to read this report</h2>
+  <p>Sources are the repository's live files as of today, not a recollection of memory: <code>core/CURRENT_STATE.md</code> (generated today), <code>core/DECISION_LOG.md</code> (54,776 lines, ~930 dated entries since 2026-08-07), the five records under <code>core/decisions/*.md</code>, <code>core/MASTER_PLAN_2026-08-26.md</code>, the backlog plan <code>core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</code>, the design reference <code>core/design/reference/fitness_hud_v1/</code>, the business documents, and every other roadmap file found.</p>
+  <p>What follows is not a file listing but a synthesis: the project's path from its start (August 7) to today, what's permanently closed, what's closed by your own decision, what's deliberately held open, and what turned out to be new and unplanned.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span>The project's path: main milestones</h2>
+  <ul class="timeline">
+    <li>
+      <span class="when">Aug 7–16</span>
+      <span class="what">Foundation: release build, content catalogue (1,887 exercises), first independent audit</span>
+      <span class="detail">The audit returned a NOT_RELEASE_READY verdict — the N-01…N-13 finding set, the Tier-6 series (F001–F027).</span>
+    </li>
+    <li>
+      <span class="when">Aug 17–21</span>
+      <span class="what">HUD design system, MVP gates M1–M8, final product/marketing reconciliation</span>
+      <span class="detail">2026-08-21: MVP_REACHED declared, first build distributed to testers.</span>
+    </li>
+    <li>
+      <span class="when">Aug 22</span>
+      <span class="what">SPTR — the equipment-recognition platform — kicks off</span>
+      <span class="detail">Technical design v4.1→v4.4, gates P0.G1–G6 closed, P1.G1–G4 closed.</span>
+    </li>
+    <li>
+      <span class="when">Aug 26</span>
+      <span class="what">Consolidated MASTER_PLAN — one narrative across all 6 parallel lines of work</span>
+      <span class="detail">The MVP1.G1–G4 program (AI Gateway, App Check, IAM hardening) begins the same day.</span>
+    </li>
+    <li>
+      <span class="when">Aug 27–31</span>
+      <span class="what">Observability (OBS-1), IAM/App Check hardening, HUD migration — all closed</span>
+      <span class="detail">Aug 30: master-roadmap reassessment; an operator correction after "why do you keep saying everything is fine" — Form Coach's visual fidelity was re-examined from scratch.</span>
+    </li>
+    <li>
+      <span class="when">Sep 1–12</span>
+      <span class="what">Form Coach: pose/coordinate-system rework, gates G1–G17. Recognition: RECOG-C1/SO1 programs, gates P2.G1–G4 (OCR-based equipment identity)</span>
+      <span class="detail">Every P2.* gate went through multiple GPT-PM review rounds.</span>
+    </li>
+    <li>
+      <span class="when">Sep 15–16</span>
+      <span class="what">Full backlog run (Tier A–D). Conclusion: the formal engineering backlog is exhausted</span>
+      <span class="detail">On-device design-fidelity check (S8): one real defect found and fixed (wrong text style on Home's stat cards).</span>
+    </li>
+    <li>
+      <span class="when">Sep 17 (today)</span>
+      <span class="what">First real measurement of production recognition (Gemini) accuracy — and the response to it</span>
+      <span class="detail">See the callout below. In parallel: N-04 and N-05 closed, the stale P0.G1 gate retired, MVP1.G3/P2.G3 status reconciled in the GPT-PM tracker.</span>
+    </li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">03</span>What's done — by area</h2>
+  <div class="cards">
+    <div class="card"><div class="t">Release &amp; MVP</div><div class="d">First build distributed to testers 2026-08-21; MVP_REACHED recorded; regular test builds via Firebase App Distribution since then (latest — today, build 3109, commit 80a1255).</div></div>
+    <div class="card"><div class="t">HUD design system</div><div class="d">A unified visual language (glass HUD, accent #C9FF47, Archivo, 158×158 counters, 6 day-phase backgrounds) — built and verified against the reference on a real device.</div></div>
+    <div class="card"><div class="t">Security &amp; privacy</div><div class="d">Firestore trust boundary, eligibility layer, App Check/IAM hardening (MVP1.G4), gym-webhook recipient disclosure in privacy/terms.</div></div>
+    <div class="card"><div class="t">Content catalogue</div><div class="d">1,887 exercises, audit and remediation of 403 findings, fail-closed contraindication filter (coverage raised from 0% to 80.9%).</div></div>
+    <div class="card"><div class="t">Observability</div><div class="d">The OBS-1 program (MVP1.G3): a 13-row reconciliation table, steps 8–10C all closed; today its status was also reconciled in the GPT-PM tracker.</div></div>
+    <div class="card"><div class="t">Form Coach</div><div class="d">17 redesign gates (G1–G17), pose coordinate-system rework, verified against the design reference; today's on-device check found and fixed 1 real bug.</div></div>
+    <div class="card"><div class="t">Equipment recognition (SPTR)</div><div class="d">Technical design v4.1–v4.4 agreed, gates P0–P2 mostly closed — but this is exactly where today's main open problem was found (below).</div></div>
+    <div class="card"><div class="t">Governance / decision log</div><div class="d">A continuous decision log since Aug 7 (54,776 lines), mechanical gates (decision-log, GO-gate, GPT-PM review) — ensure no decision is ever lost.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Five operator decisions — closed today and earlier</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Decision</th><th>Date</th><th>Outcome</th></tr>
+    <tr><td><b>gym-webhook-disclosure</b></td><td>Aug 21</td><td>A gym's maintenance webhook is a disclosed data recipient (not a GDPR processor). Legal text (privacy/terms, both locales) updated.</td></tr>
+    <tr><td><b>roboflow-key-reissue</b></td><td>Sep 17</td><td>A key pasted into a chat on Aug 7 never reached git. Risk accepted, no reissue needed.</td></tr>
+    <tr><td><b>scanner-pipeline-location</b></td><td>Sep 17</td><td>S-1/S-2/S-3 approved (extract source/provenance into a separate repository; data corpora never leave this machine). <b>The migration itself has not been performed yet</b> — needs its own Plan→GO.</td></tr>
+    <tr><td><b>N-04 (gym-association)</b></td><td>Sep 17</td><td>The gym-association authorization question is deferred ("don't know yet, leave it as temporarily inactive code"). The code path is unreachable, so closure is valid.</td></tr>
+    <tr><td><b>N-05 (video quota/abuse)</b></td><td>Sep 17</td><td>Budget alert (already configured) + acceptance of the $0.077–$0.31 residual risk — closed. App Check enforcement for video was reviewed but deliberately <b>not enabled</b> — you declined today's production redeploy.</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>Live status registry (<code>core/CURRENT_STATE.md</code>, generated today)</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Item</th><th>Status</th><th>Who closes it</th></tr>
+    <tr><td>F-prefetch, F2, F5, checkout-copy, guest-upgrade-outcome, scanner-dependency-pin, scanner-metadata</td><td><span class="badge closed">CLOSED</span></td><td>SOURCE — proven by code on every run</td></tr>
+    <tr><td>N-05, N-04-gym-association, scanner-pipeline-location, gym-webhook-disclosure, roboflow-key-reissue</td><td><span class="badge closed">CLOSED</span></td><td>OPERATOR — a file under core/decisions/</td></tr>
+    <tr><td>metric-provenance-six, F025, N-07</td><td><span class="badge dormant">DORMANT</span></td><td>Dormant tripwire tests — not open questions, a guarantee against regression</td></tr>
+    <tr><td>production-image-collection</td><td><span class="badge disabled">DISABLED</span></td><td>Deliberately off (historical decision D3)</td></tr>
+    <tr><td><b>D1</b> — clinical validation</td><td><span class="badge external">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>Needs an outside clinician — cannot be closed from inside the repo</td></tr>
+    <tr><td><b>H3</b></td><td><span class="badge hold">HOLD</span></td><td>Rests on that same external clinical authority</td></tr>
+    <tr><td><b>CT1-human-labels</b></td><td><span class="badge external">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>0 human-reviewed labels — needs an outside reviewer</td></tr>
+  </table>
+  </div>
+  <p style="margin-top:10px;color:var(--muted);font-size:13px">Bottom line: every item that required an operator decision is now <b>closed</b>. The only thing genuinely not closeable autonomously is the three items resting on outside (clinical/human) authority.</p>
+</section>
+
+<section>
+  <div class="callout">
+    <h3>⚠ The main new finding — today, Sep 17</h3>
+    <p>You asked directly whether there is test-proven confidence that the live production equipment-recognition path (Gemini) is safe to show real users. A real measurement was run for the first time — and it did not match what had been assumed.</p>
+    <div class="stat-row">
+      <div><span class="stat">48.5%</span><span>overall accuracy (16 of 33)</span></div>
+      <div><span class="stat">55.6%</span><span>accuracy on high/moderate-confidence ground truth</span></div>
+      <div><span class="stat">0/4</span><span>"rotary torso machine" — total category failure</span></div>
+    </div>
+    <p>The model twice misread legible on-machine text (a "SHOULDER PRESS" placard read as a lat pulldown at 0.85–0.88 confidence). Model confidence <b>does not separate</b> right from wrong: 0.950 average on correct answers vs. 0.877 on wrong ones — too small a gap to rely on.</p>
+    <p><b>Done today:</b> the first fix attempt (a list of "unreliable" categories) turned out ineffective — it didn't touch any of the 4 actually measured failures. Following re-analysis and with your approval (decision <code>FITAPP-EQUIP-ACC-2026-09-17</code>), a stronger fix was adopted: <b>every cloud (Gemini) match now always routes through "I'm not sure, you pick" (<code>ScanOutcome.alternatives</code>)</b> instead of "confident," until a real end-to-end measurement of the production path exists. A confident result remains reachable only via the printed-text recognition path.</p>
+    <p><b>Not closed:</b> the underlying classification-accuracy problem itself is unsolved — only hidden from the user behind an honest "not sure" framing. It needs either a larger dataset/calibration effort, or your explicit risk acceptance before wider distribution.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span>What genuinely remains (the current "tail")</h2>
+  <ul class="plain">
+    <li><b>Equipment-recognition accuracy</b> (see callout above) — the only unresolved product-safety question as of today.</li>
+    <li><b>scanner-pipeline-location</b> — moving source/provenance to a separate repository is approved but not physically done yet. Needs its own Plan→GO.</li>
+    <li><b>D1 / H3 / CT1-human-labels</b> — clinical validation and human labeling. Cannot be closed from inside the repository under any GO — needs an outside specialist.</li>
+    <li><b>openpyxl in a venv</b> — one test fails purely from environment (bare <code>python</code> resolves to the sibling ERP project's venv, which lacks openpyxl). Deliberately left untouched to avoid touching a sibling repo's venv.</li>
+    <li><b>Printed on-machine text as a recognition source</b> — measured at 18/18 vs. 5/18 for the visual method, but <b>not wired</b> into live mode. Deferred per your own direct instruction: "schedule code/recognition testing last, at the very end of the project."</li>
+    <li><b>P2.G4+ decision engine (steps P4/P6)</b> — not started. Also deliberately deferred to "the very last thing."</li>
+    <li><b>Licensing conflict on the vendor exercise-video catalogue</b> (AI training on vendor clips) — blocks P4, out of current scope, unresolved.</li>
+    <li><b>PM Bridge gate-status registry backfill</b> and <b>FORM_COACH_HUD_ALIGNMENT</b> — explicitly excluded from the Sep 16 backlog run by your own instruction, untouched.</li>
+    <li><b>VPS+CDN video hosting</b> — recorded as a backlog idea, not designed or scheduled.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">07</span>What you may not have accounted for: stale documents</h2>
+  <div class="warnbox">
+    <p><b>core/review/OPERATOR_DECISIONS.md</b> — titled "everything waiting on you," but lists 8 decisions (N05-A/B/C, N04, S1/S2/S3, RF) as open that are now <b>all closed</b> (closure dates Aug 21 and Sep 17). The file was never updated after those closures — opening it directly would falsely suggest decisions are still waiting on you.</p>
+  </div>
+  <div class="warnbox">
+    <p><b>core/plans/ROADMAP_2026_V2.md</b> — declared as the "source of truth for forward planning," but hasn't been edited since <b>July 28</b> — i.e. it predates everything that happened in August/September (the HUD redesign, the entire MVP program, the entire SPTR platform). The real current plan is <code>core/MASTER_PLAN_2026-08-26.md</code> (updated as recently as Sep 16), though even that is a day behind today's findings.</p>
+  </div>
+  <p style="color:var(--muted);font-size:13.5px">No single document found is a unified, current "roadmap + product vision" for the whole project. The closest thing is the combination of MASTER_PLAN (the 6-line narrative) + PLATFORM_SCOPE.md (platform commitments) + the business documents (dated May 2026, also stale since) + the design reference fitness_hud_v1/.</p>
+</section>
+
+<section>
+  <h2><span class="num">08</span>Document map — where everything lives</h2>
+  <div class="cards">
+    <div class="card"><div class="t">Design (visual)</div><div class="d"><code>core/design/reference/fitness_hud_v1/</code> — the canonical reference (glass HUD, colors, typography). Exports for onboarding, HUD, Form Coach.</div></div>
+    <div class="card"><div class="t">Design (recognition)</div><div class="d"><code>core/design/sptr_equipment_recognition_v4_1/</code> — technical design v4.1–v4.4, gate contracts and AC/DoD.</div></div>
+    <div class="card"><div class="t">Plan (current)</div><div class="d"><code>core/MASTER_PLAN_2026-08-26.md</code> — 6 parallel lines of work, updated Sep 16.</div></div>
+    <div class="card"><div class="t">Plan (stale)</div><div class="d"><code>core/plans/ROADMAP_2026_V2.md</code> — untouched since Jul 28, formally still "source of truth," not in practice.</div></div>
+    <div class="card"><div class="t">Backlog (current)</div><div class="d"><code>core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</code> — Tier A–D, reported exhausted Sep 16–17.</div></div>
+    <div class="card"><div class="t">Backlog (historical)</div><div class="d"><code>core/BACKLOG_2026-07-31.md</code> — the original 23-item dump by epic, mostly already shipped.</div></div>
+    <div class="card"><div class="t">Decision log</div><div class="d"><code>core/DECISION_LOG.md</code> — 54,776 lines, ~930 entries since Aug 7, the one genuinely continuous source of truth.</div></div>
+    <div class="card"><div class="t">Status registry</div><div class="d"><code>core/CURRENT_STATE.md</code> — auto-generated, the one file with a live closure status per item.</div></div>
+    <div class="card"><div class="t">Operator decisions</div><div class="d"><code>core/decisions/*.md</code> — 5 files, one per decision, each quoting your own words directly.</div></div>
+    <div class="card"><div class="t">Business / vision</div><div class="d"><code>core/business/*.md</code> — competitive assessment, nonprofit plan, pitch deck, growth plan. All dated May 2026, untouched since.</div></div>
+    <div class="card"><div class="t">Platform</div><div class="d"><code>core/PLATFORM_SCOPE.md</code> — what's officially supported (Android — supported, iOS — not shipped but must not "rot," Wear OS — known broken, web/desktop — out of scope).</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span>Where we stand, in one sentence</h2>
+  <p class="quote">The formal engineering backlog is closed. All five operator decisions have been made. The only live, genuinely unresolved question is production equipment-recognition accuracy: honestly measured today at 48.5–55.6% and defused for now (never show "confident" without your own confirmation), but not solved at the root. Everything else that remains is either waiting on an outside specialist (clinical review, human labeling), deliberately deferred by you to "the very last thing" (text-recognition wiring, the P4/P6 decision engine), or an undesigned idea for later (video hosting).</p>
+</section>
+
+<footer>
+  Assembled autonomously on direct request ("gather every markdown file... show the full picture"). Sources are the repository's own files as of 2026-09-17, not stale memory summaries.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
