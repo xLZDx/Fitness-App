@@ -266,9 +266,39 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     return parseResponse(text, index, topK: topK);
   }
 
+  /// Categories the live classifier has been directly measured to get wrong
+  /// every time, regardless of its own self-reported confidence.
+  ///
+  /// Source: `core/ml/eval/eval_results_2026-09-17.json` — the first-ever
+  /// accuracy measurement of this exact model/prompt/config against 33 real
+  /// gym photos (`core/ml/eval/gym_photos_ground_truth_2026-09-17.json`,
+  /// `reports/equipment_recognition_accuracy_2026-09-17.ru.html`). Overall
+  /// accuracy was 48.5% (55.6% restricted to unambiguous ground truth), and
+  /// self-reported confidence barely separated right from wrong (correct
+  /// answers averaged 0.950, wrong ones 0.877) — so a plain confidence floor
+  /// cannot catch this class of failure; a wrong "rotary torso machine" call
+  /// looked exactly as confident (0.85) as a correct one elsewhere. This is a
+  /// category-level finding, not a threshold: 4 of 4 real photos of that
+  /// machine (all HIGH ground-truth confidence — a clearly branded Star Trac
+  /// unit) were misclassified as unrelated categories, and the correct answer
+  /// did not appear even once in the model's own `alternatives`.
+  ///
+  /// Only add a name here on the same standard: a real, reproducible measured
+  /// failure from an eval run recorded in `core/ml/eval/`, never a guess.
+  /// Removing one needs the opposite — a re-run against the same manifest (or
+  /// a larger one) showing the category is no longer a reliable miss.
+  @visibleForTesting
+  static const Set<String> kKnownUnreliableMachineNames = {
+    'rotary torso machine',
+  };
+
   /// Parses the model's JSON (tolerating ```json fences) and resolves every
   /// named machine through the alias index. Unresolvable names are dropped
-  /// with a log — never guessed at.
+  /// with a log — never guessed at; a name in [kKnownUnreliableMachineNames]
+  /// is dropped the same way, on the same "never guess" principle — the
+  /// model's own confidence number cannot be trusted to flag this category
+  /// (see that constant's doc), so the candidate is excluded rather than
+  /// shown with a number that would look no different from a real match.
   @visibleForTesting
   static List<VisualMatch> parseResponse(
     String text,
@@ -293,6 +323,10 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     void addCandidate(Object? name, Object? confidence) {
       if (name is! String) return;
       if (name.trim().toLowerCase() == 'unknown') return;
+      if (kKnownUnreliableMachineNames.contains(name.trim().toLowerCase())) {
+        debugPrint('cloud named "$name" -- known-unreliable category, dropped');
+        return;
+      }
       final id = index.resolve(name);
       if (id == null) {
         debugPrint('cloud named "$name" but the registry has no such machine');

@@ -110,6 +110,34 @@ void main() {
       expect(out.single.confidence, closeTo(0.7, 1e-9));
     });
 
+    test('a known-unreliable category is dropped even at high confidence', () {
+      final out = GeminiVisualEquipmentService.parseResponse(
+        '{"machine": "rotary torso machine", "confidence": 0.85}',
+        index,
+      );
+      expect(out, isEmpty,
+          reason: 'core/ml/eval/eval_results_2026-09-17.json measured this '
+              'category at 0/4 real photos, all at 0.85 self-reported '
+              'confidence -- the number alone cannot distinguish this from a '
+              'real match, so the candidate is dropped rather than shown');
+    });
+
+    test('a known-unreliable category as an alternative is dropped, the main match survives', () {
+      final out = GeminiVisualEquipmentService.parseResponse(
+        '{"machine": "cable machine", "confidence": 0.9, "alternatives": '
+        '[{"machine": "rotary torso machine", "confidence": 0.6}]}',
+        index,
+      );
+      expect(out.single.equipmentId, 'cable_machine');
+    });
+
+    test('the known-unreliable list only names what was actually measured', () {
+      expect(GeminiVisualEquipmentService.kKnownUnreliableMachineNames,
+          {'rotary torso machine'},
+          reason: 'do not add a name here without a matching eval_results_*.json '
+              'measurement -- see the constant\'s own doc comment');
+    });
+
     test('non-JSON raises the recognition error, not a crash', () {
       expect(
         () => GeminiVisualEquipmentService.parseResponse(
