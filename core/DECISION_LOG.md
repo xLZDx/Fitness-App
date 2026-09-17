@@ -54834,3 +54834,76 @@ concrete, executable plan before touching anything:
 
 Both recon passes are in flight; concrete migration/integration plans will be recorded here once
 they return, before any code changes are made.
+
+## 2026-09-18 (continued) -- Track A closed in full: both recon tracks turned out to be already done; 3 gate files classified; 6 gate-closure claims verified against DECISION_LOG; yesterday's report corrected
+
+Operator instruction, verbatim: "ГО А полностью автономно" -- execute the full Track A plan
+(verify 3 unopened gate files; cross-check MVP1.G4/Gate D-E-G-H/Form Coach G17 closure against
+this log directly rather than trusting a doc's self-report; add `npm test` to the
+equipment-identity predeploy hook if missing; fix yesterday's report and this log where they
+claimed the scanner-pipeline migration and text-anchor wiring were still outstanding).
+
+**Both recon tracks (scanner-pipeline migration, text-anchor wiring) returned "already done."**
+Prior turn's premise that they were still open was itself stale:
+- **scanner-pipeline-location**: already migrated the same day it was decided (commit `e379e2d`,
+  before this session's continuation began). `D:\Repo\equipment-model-pipeline` exists with one
+  commit (`94eca86`), `RECOVERY.json` digest-anchored to the 2026-08-18 `SCANNER_PROVENANCE.md`
+  digests. Re-verified today: `python verify_recovery.py` inside that repo -- **24/24 files
+  match, no drift**. No training corpora or `.tflite` files ever entered either repo's git
+  history (checked). Nothing to execute.
+- **Text-anchor (printed-machine-text) recognition**: already fully wired into live production,
+  not a standalone script. `mobile/lib/main.dart:480` overrides
+  `machineTextRecogniserProvider` with `MlKitMachineTextRecogniser` (on-device ML Kit, no cloud
+  dependency); `VisualEquipmentController.classifyFilePath` runs the anchor **before** the
+  Gemini/cloud path and returns `.confident` immediately on an unambiguous match; call order is
+  itself protected by `recognition_baseline.py::_text_anchor_runs_first()`, which lexes the real
+  Dart source and fails the baseline if the order is ever reversed. Since yesterday's
+  `FITAPP-EQUIP-ACC-2026-09-17` fix, the text anchor is the **only** path that can produce
+  `.confident` at all -- every Gemini match now always resolves to `.alternatives`. The "not
+  wired into live mode" phrasing in this log's own 2026-09-10/16 entries was stale prose that was
+  never corrected once the wiring actually landed.
+
+**3 previously-unopened gate files, read and classified -- all archive, no live action:**
+- `core/plans/GATE_V0_REVISED.md` -- round-1 input to a round-2 review; the review happened and
+  its output (V0.1-V0.5) shipped in later Form Coach work. Historical record only.
+- `core/SCAN_G1_SCOPE.md` -- a closed gate contract (Rosetta plan rev5, GPT-PM `VERDICT: APPROVE`
+  on hash `24efdd0d...8a1405`); its acceptance criteria describe already-implemented production
+  code (the Scan tab). Closed, not live.
+- `core/STATE_H_GATES_2026-08-03.md` -- the file's own header already says "Superseded in part,
+  2026-08-04"; H1-H5 closed same week; the only items still marked "waiting on the operator" (a
+  48-item optional clip-import batch, deleting 8.1MB of now-unreachable bundled photos) are from
+  2026-08-03, low-value, and long superseded by the later 1,887-exercise vendor catalog work.
+  No action taken -- flagged as stale/moot, not silently resolved.
+
+**6 gate-closure claims cross-checked directly against this log (not against a summarizing doc)
+-- all confirmed genuinely CLOSED, no false-closed status found:**
+- `MVP1.G4` -- confirmed via `pm_gate_status` cross-reference recorded at line 37564: "MVP1.G3 =
+  passed, MVP1.G4 = passed (9 steps, 7 review rounds)."
+- Product Gates D, E, F, G, H -- confirmed at line 21256: all five cherry-picked onto `master`
+  ("Gate H cherry-picked onto master... closes the Gate D-H line").
+- Form Coach `G17` -- confirmed at line 41564: `VERDICT: APPROVE` "G17 APPROVED for push/closure,"
+  and a build was distributed the same day carrying G17 notes.
+
+**`functions-equipment-identity` predeploy hook -- the suspected gap does not exist.** Read
+`firebase.json` directly: the `equipment-identity` codebase's `predeploy` array already runs both
+`npm run build` **and** `npm test` (lines 40-43), matching the `default` codebase's own pattern.
+Yesterday's backlog-run note calling this a gap was accurate as of its own date but had already
+been fixed by the time this track ran today. No change needed.
+
+**Yesterday's report and this log, corrected** where they claimed two already-done things were
+still open: `reports/FULL_PICTURE_2026-09-17.ru.html` / `.html` updated in place (the
+scanner-pipeline row and the "what remains" list), republished as the same artifact URL. This
+log's own entries above (2026-09-18, "continue two tracks") are left as written, since they
+correctly describe what was investigated and when -- the correction lives in the report, which is
+the operator-facing document, plus this entry.
+
+**Net result of Track A: nothing required a code change.** Every item in the plan turned out to
+be either already done, already fixed, or a stale/moot historical note. Verified via
+`python -m pytest scripts/review/test_state_ledger.py scripts/equipment_identity/ -q` (excluding
+`test_rights.py`) -- suite unchanged from the last known-green baseline, no regressions
+introduced (no production code was touched this pass).
+
+**Track B and C remain exactly as scoped in the prior report** — operator-decision-only
+(recognition accuracy risk acceptance, video-licence conflict, whether to continue P1.G5/G6/P4)
+and genuinely external-authority-only (D1/H3/CT1-human-labels, openpyxl venv) respectively. No
+further autonomous engineering work is open as of this entry.

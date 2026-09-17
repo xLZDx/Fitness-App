@@ -173,13 +173,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 80a1255</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 96b243c</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <section>
   <h2><span class="num">01</span>How to read this report</h2>
@@ -254,7 +256,7 @@
     <tr><th>Decision</th><th>Date</th><th>Outcome</th></tr>
     <tr><td><b>gym-webhook-disclosure</b></td><td>Aug 21</td><td>A gym's maintenance webhook is a disclosed data recipient (not a GDPR processor). Legal text (privacy/terms, both locales) updated.</td></tr>
     <tr><td><b>roboflow-key-reissue</b></td><td>Sep 17</td><td>A key pasted into a chat on Aug 7 never reached git. Risk accepted, no reissue needed.</td></tr>
-    <tr><td><b>scanner-pipeline-location</b></td><td>Sep 17</td><td>S-1/S-2/S-3 approved (extract source/provenance into a separate repository; data corpora never leave this machine). <b>The migration itself has not been performed yet</b> — needs its own Plan→GO.</td></tr>
+    <tr><td><b>scanner-pipeline-location</b></td><td>Sep 17</td><td>S-1/S-2/S-3 approved (extract source/provenance into a separate repository; data corpora never leave this machine). <b>Correction, Sep 18:</b> the migration was already performed the same day (commit <code>e379e2d</code>) — the <code>D:\Repo\equipment-model-pipeline</code> repo exists, corpora/tflite never entered git, all 24 digests re-verified and matched.</td></tr>
     <tr><td><b>N-04 (gym-association)</b></td><td>Sep 17</td><td>The gym-association authorization question is deferred ("don't know yet, leave it as temporarily inactive code"). The code path is unreachable, so closure is valid.</td></tr>
     <tr><td><b>N-05 (video quota/abuse)</b></td><td>Sep 17</td><td>Budget alert (already configured) + acceptance of the $0.077–$0.31 residual risk — closed. App Check enforcement for video was reviewed but deliberately <b>not enabled</b> — you declined today's production redeploy.</td></tr>
   </table>
@@ -297,10 +299,9 @@
   <h2><span class="num">06</span>What genuinely remains (the current "tail")</h2>
   <ul class="plain">
     <li><b>Equipment-recognition accuracy</b> (see callout above) — the only unresolved product-safety question as of today.</li>
-    <li><b>scanner-pipeline-location</b> — moving source/provenance to a separate repository is approved but not physically done yet. Needs its own Plan→GO.</li>
     <li><b>D1 / H3 / CT1-human-labels</b> — clinical validation and human labeling. Cannot be closed from inside the repository under any GO — needs an outside specialist.</li>
     <li><b>openpyxl in a venv</b> — one test fails purely from environment (bare <code>python</code> resolves to the sibling ERP project's venv, which lacks openpyxl). Deliberately left untouched to avoid touching a sibling repo's venv.</li>
-    <li><b>Printed on-machine text as a recognition source</b> — measured at 18/18 vs. 5/18 for the visual method, but <b>not wired</b> into live mode. Deferred per your own direct instruction: "schedule code/recognition testing last, at the very end of the project."</li>
+    <li><i>Corrected Sep 18 — previously listed here in error:</i> the scanner-pipeline migration and the text-anchor recognition wiring (18/18 accuracy) were both already done earlier (commit <code>e379e2d</code>, and production code in <code>main.dart</code>/<code>machine_text_anchor.dart</code>). The text anchor is now the only path that can produce a "confident" result; every Gemini match always routes through "you pick."</li>
     <li><b>P2.G4+ decision engine (steps P4/P6)</b> — not started. Also deliberately deferred to "the very last thing."</li>
     <li><b>Licensing conflict on the vendor exercise-video catalogue</b> (AI training on vendor clips) — blocks P4, out of current scope, unresolved.</li>
     <li><b>PM Bridge gate-status registry backfill</b> and <b>FORM_COACH_HUD_ALIGNMENT</b> — explicitly excluded from the Sep 16 backlog run by your own instruction, untouched.</li>
@@ -345,6 +346,8 @@
   Assembled autonomously on direct request ("gather every markdown file... show the full picture"). Sources are the repository's own files as of 2026-09-17, not stale memory summaries.
 </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
