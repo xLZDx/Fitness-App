@@ -293,9 +293,26 @@ def test_the_worklist_entry_is_pinned_to_its_source_not_to_the_last_commit():
 def test_no_registered_dataset_carries_a_human_or_clinical_label():
     """One assertion over the whole registry rather than per-entry, so a NEW
     dataset added later cannot arrive with a manufactured label count and no
-    test to notice."""
+    test to notice.
+
+    `label_provenance` is a dict of `returned_*` counts for most entries, but
+    `joint_rom_reference` (dataset_registry.py:356) carries it as a prose
+    string instead -- provenance is recorded per-row there, not as a
+    file-level aggregate, so there is no count to sum. That shape has nothing
+    to iterate, but it must not become a silent escape hatch: a string entry
+    is required to carry its own clinical-use disclaimer in `purpose`
+    (`joint_rom_reference`'s own text: "the artifact carries
+    clinical_use=false"), so a future string-shaped entry that omits the
+    disclaimer still fails here instead of passing by having the wrong type.
+    """
     for e in build()["datasets"]:
         provenance = e["label_provenance"]
+        if isinstance(provenance, str):
+            assert "clinical_use=false" in e.get("purpose", ""), (
+                f"{e['dataset_id']} has string-shaped label_provenance with "
+                "no clinical_use=false disclaimer in its purpose text"
+            )
+            continue
         for field, count in provenance.items():
             if field.startswith("returned_"):
                 assert count == 0, f"{e['dataset_id']} claims {field}={count}"

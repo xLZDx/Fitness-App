@@ -119,8 +119,10 @@ that this trigger is inert: every webhook test primes the gym document itself, s
 green today and stays identically green the day a real writer ships. `gyms/` becoming non-empty is
 a Firestore write in a console. **No test, CI check or runtime guard is keyed to it.**
 
-That is recorded rather than papered over. `RESIDUAL[N-04-gym-association]`: if the deferral is
-kept, the cheapest mechanism is a test that fails when `reportEquipment` can reach a populated
-`gyms/` with no association check. It is not built here, because building it now would be
-constructing a guard for a decision nobody has taken — and because P-2 may delete the question
-outright.
+That is recorded rather than papered over. **Built, 2026-09-17, once the deferral was actually
+recorded** (`core/decisions/N-04.md` — the operator kept the deferral, which is exactly the
+precondition this residual names): `functions/src/__tests__/n04_gym_association_guard.test.ts`
+scans production source for a `gyms/` writer and, if one appears, requires `reportEquipment` to
+carry a caller-to-gym association check — today it passes vacuously (no writer exists yet), and
+fails against two synthetic cases (a writer with no check, and confirms a writer with a check
+passes), so it is not decoration. The residual marker is retired; the guard is the mechanism.

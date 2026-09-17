@@ -54643,3 +54643,91 @@ viewers on one popular clip would compete with the rest of the app for one VM's 
 interface) — the standard fix being a CDN (Cloudflare / Bunny CDN or similar) in front of the VPS,
 not raw origin serving. This is a real target-architecture candidate but a separate, sizeable
 piece of engineering — recorded here as a backlog idea, not designed, sized, or scheduled.
+
+## 2026-09-17 — Autonomous tail-closing pass: 3 of 4 non-governance test failures fixed, 1 left as a genuine open decision
+
+Operator instruction: "Автономно закрывай все хвосты внизу" (close the listed tails
+autonomously), covering the 14 pre-existing failing `scripts/` tests, the gate-status
+discrepancy, and P2.G4's state, then send a fresh test build.
+
+**Gate-status discrepancy (MVP1.G3/P2.G3) and P2.G4 state — investigated, not fixable
+locally.** Both gates' "passed"/"closed" claims in this log ARE evidence-backed (specialist
+APPROVE verdicts, a production deploy, a push) but the log also independently records the
+live `pm_gate_status` tool contradicting or lagging that narrative at multiple points
+(this file's own reconciliation entries). Only PM Bridge's own server state can settle
+which is current; not resolvable from local files alone. P2.G4 itself: confirmed fully
+closed and pushed 2026-09-12 (commits `b3fd37c9`/`2d34cd39`/`5ef56137`); the "Step 2
+untested, nothing committed" auto-memory note was stale and should be corrected.
+
+**Fixed, root cause addressed (not papered over):**
+- `scripts/ml/test_ml_contracts.py::test_no_registered_dataset_carries_a_human_or_clinical_label`
+  — `dataset_registry.py`'s `joint_rom_reference` entry carries `label_provenance` as a prose
+  string (per-row provenance, no file-level aggregate to sum), unlike the other four entries'
+  dict shape. Test now handles both shapes and, for the string shape, requires the entry's
+  own `purpose` text to carry a `clinical_use=false` disclaimer rather than silently skipping
+  the check.
+- `scripts/review/test_clinical_import.py::test_the_checked_in_worklist_is_the_one_the_catalogue_produces`
+  and `scripts/ml/test_ml_contracts.py::test_the_committed_registry_is_the_one_the_artefacts_produce`
+  — both are drift checks against the same underlying catalogue
+  (`mobile/assets/data/exercises_vendor.json`, sha256 `d9de3a74...` to `995cbdf5...`,
+  bytes 3,127,495 to 3,197,925). Verified `core/review/worklist/worklist.csv` had zero
+  clinician-filled `disposition` rows before regenerating (no reviewer work at risk of being
+  overwritten — the module's own guard for that case, `clinical_import.py:296-313`, was
+  checked directly). Regenerated `core/review/worklist/{worklist.meta.json,submission.json}`
+  and `core/ml/DATASET_REGISTRY.json` from current source; row counts (1527 tagged / 1887
+  total / 360 untagged) unchanged, only the digest/handoff-commit fields moved.
+- `scripts/equipment_identity/test_baseline.py` (11 of 14 originally-failing tests, all from
+  one root cause) — `_offline_never_confident()` in `recognition_baseline.py` required a
+  literal `if (answeredOffline) {` guard inside `scan_outcome.dart`'s `fromMatches`, which
+  commit `a0e842a` (this session's own FITAPP-EQUIP-ACC-2026-09-17 gate) restructured so
+  every match list, online or offline, now routes through `.alternatives` — `.confident` is
+  unreachable from that factory at all now, which makes the safety invariant this checker
+  guards *stronger*, not weaker. Checker updated to accept both shapes (unreachable, or
+  reachable-with-guard); the two existing synthetic-source regression tests for this checker
+  still pass, confirming it still catches a real removal of the guard. `core/equipment_identity/p0/recognition_baseline_v1.json`
+  and `legacy_real_gym_regression_inventory.json` regenerated to match current source (the
+  second is honestly machine-dependent by the module's own design — may re-diverge on a
+  checkout without the operator's local raw-photo folder, not a defect).
+- `scripts/review/test_state_ledger.py::test_a_residual_comes_due_when_its_row_is_closed`
+  — depended on at least one live residual marker existing somewhere in the tree's
+  prose; today's N-04/N-05/scanner-pipeline-location closures retired the last ones. Rewrote
+  the test to inject a synthetic marker via monkeypatching `residual_markers`, so it tests
+  the mechanism rather than depending on a contingent fact about the current tree.
+
+**Left open, deliberately not resolved unilaterally:**
+`scripts/equipment_identity/test_baseline.py::test_exact_identity_concepts_are_absent_from_current_source`
+still fails, honestly. `recognition_baseline.py`'s `EXACT_IDENTITY_TOKENS` sweep is finding
+real, live code: `mobile/lib/features/visual_equipment/data/equipment_identity.dart` defines
+`RecognitionAuthorityTuple`, `EXACT_MODEL`, an `evidenceLane`-shaped map, and mirrors
+`EquipmentIdentityResponse` — all from commits `b3fd37c`/`39dcfd8`/`b55b1fd`, 2026-09-16,
+P2.G4/P2.G5-readiness, an already-approved and merged feature gate, not a regression from
+today's work. P0.G1's own stated premise ("exact identity does not exist yet") is therefore
+now simply false, on purpose, by later legitimate work superseding it. Whether to (a) retire
+or narrow `EXACT_IDENTITY_TOKENS`/this test now that P2.G4/G5 has superseded P0.G1's scope,
+with a decision note, or (b) scope the sweep to exclude the now-approved P2.G4/G5 files by
+name, is a call about what a checked-in safety/scope gate should mean going forward — not a
+"detection code doesn't match reality" bug, and not decided here. Test left red rather than
+silently weakened or forced green.
+
+**Environment-only, not a code defect, not touched:** `scripts/catalog/test_build_vendor_request_batch.py::test_main_writes_all_three_files`
+fails because the `python` interpreter this shell resolves to
+(`D:\Repo\ERP\.venv\Scripts\python.exe`, a sibling project's venv — see auto-memory
+"PATH resolves to sibling venv") lacks `openpyxl`; `C:\Python314\python.exe` has it. Not
+fixed here to avoid installing a Fitness_App dependency into a sibling repo's venv
+unasked. `scripts/equipment_identity/test_rights.py` still fails to *collect* for the same
+reason (`jsonschema` missing from the same interpreter) — pre-existing, unrelated to this
+pass.
+
+**N-04 closed as an operator decision** (`core/decisions/N-04.md`): both P-1 and P-2 deferred,
+per the operator's own earlier words ("Пока не знаю, оставить как временно неактивный код").
+Its residual marker's own work — a tripwire that fails if
+`reportEquipment` ever gains a caller-to-gym association check gap alongside a real `gyms/`
+writer — was built rather than left outstanding, since the deferral being KEPT is exactly
+the precondition the marker named: `functions/src/__tests__/n04_gym_association_guard.test.ts`,
+passing vacuously today (no writer exists) and exercised against two synthetic cases.
+
+Suites at the end of this pass: `scripts/ml/test_ml_contracts.py` 27 passed;
+`scripts/review/test_clinical_import.py` 82 passed; `scripts/review/test_state_ledger.py`
+137 passed; `scripts/equipment_identity/` (excluding `test_rights.py`) 572 passed, 1 failed
+(the genuine open decision above); `functions` (`n04_gym_association_guard.test.ts`) 5
+passed.

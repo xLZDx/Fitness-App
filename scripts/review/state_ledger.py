@@ -1316,9 +1316,10 @@ LEDGER: tuple[Row, ...] = (
     ),
     Row(
         item="N-04-gym-association",
-        state="OPERATOR_DECISION_REQUIRED",
+        state="CLOSED",
         authority=OPERATOR,
-        evidence=("core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
+        evidence=("core/decisions/N-04.md",
+                  "core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
                   "core/DECISION_LOG.md",),
         invariant=no_gym_membership_model,
         closure=operator_decision_recorded("N-04"),
@@ -1327,7 +1328,12 @@ LEDGER: tuple[Row, ...] = (
               "is no membership model to tie it to, and building one to "
               "satisfy a report field would be inventing a feature to justify "
               "a column. Enrolled because the sweep found it in prose only -- "
-              "it appears in no status table anywhere.",
+              "it appears in no status table anywhere. Closed 2026-09-17: the "
+              "operator deferred both P-1 and P-2 (leave the gym-association "
+              "code path dormant/inactive) rather than force a premature "
+              "product call -- a valid closure because the gated code path is "
+              "already unreachable (gyms/ has no writer). See "
+              "core/decisions/N-04.md.",
     ),
     Row(
         item="F025",

@@ -47,13 +47,13 @@
       "2026-07-30",
       "2026-08-06"
     ],
-    "presentInThisCheckout": false,
-    "rawContentHashes": "UNAVAILABLE_IN_THIS_CHECKOUT",
+    "presentInThisCheckout": true,
+    "rawContentHashes": "NOT_COMPUTED",
     "recordedFrameCount": 30,
     "recordedPath": "D:\\Downloads\\Photos-1-001 (1)"
   },
   "schemaVersion": 1,
   "sealedBlindEvaluation": false,
-  "sourceCommit": "f23130bb6dd24f0e533e4c8e03ee9fb0a0e98f63",
+  "sourceCommit": "b68b446f07d9fa9b6cd4bd15b867802b1acd2a39",
   "trainingAllowed": false
 }

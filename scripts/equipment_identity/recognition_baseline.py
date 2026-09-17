@@ -578,10 +578,29 @@ def _scan_outcome_states() -> list[str]:
 
 
 def _offline_never_confident() -> bool:
-    """`answeredOffline: true` must resolve to `.alternatives`, never
-    `.confident` — the guardrail that keeps a weaker (offline) answer from
-    ever being reported as the settled identification `isWorthRemembering`
-    (and, later, any exact-identity gate) treats as trustworthy.
+    """An offline (on-device) answer must never resolve to `.confident` —
+    the guardrail that keeps a weaker answer from ever being reported as the
+    settled identification `isWorthRemembering` (and, later, any
+    exact-identity gate) treats as trustworthy.
+
+    Two shapes satisfy this, and both are checked for rather than assuming
+    only the older one:
+
+    1. `ScanResult.confident` is unreachable from `fromMatches` at all (in
+       CODE) — the strongest form of the invariant, since neither an online
+       nor an offline answer from this factory can ever be `.confident`.
+       FITAPP-EQUIP-ACC-2026-09-17 (commit a0e842a, GPT-PM-approved decision
+       C) moved the codebase to exactly this shape: every match list, cloud
+       or on-device, now settles as `.alternatives`. There is no
+       `answeredOffline` branch left to find, because there is no
+       `.confident` return left to guard.
+    2. `ScanResult.confident` IS reachable from `fromMatches` (e.g. an
+       online-only confident path exists again in a future change) — in
+       which case an `if (answeredOffline) {` guard must exist, and inside
+       it the factory must still downgrade to `.alternatives` and must not
+       also return `.confident`. This is the shape the original version of
+       this check enforced, kept for the case a future change reintroduces
+       a confident branch without reintroducing the guard.
 
     Scoped to the single-photo path (`ScanResult.fromMatches`) only — see
     `_live_mode_has_no_offline_downgrade_guard` for the live-viewfinder path,
@@ -591,16 +610,27 @@ def _offline_never_confident() -> bool:
     being described under one unscoped name as misleading)."""
     text = _read(VISUAL_EQUIPMENT / "data" / "scan_outcome.dart")
     factory_span = _extract_block_span(text, "factory ScanResult.fromMatches(")
+    # CODE only throughout: a guard/return is executable structure, so a
+    # printed or commented mention of `ScanResult.confident` must neither
+    # satisfy a positive check nor trip a negative one.
+    confident_in_factory = _in_span(
+        find_in(text, "ScanResult.confident", CODE_ONLY), factory_span
+    )
+    if not confident_in_factory:
+        # Shape 1: .confident is entirely unreachable from this factory, so
+        # there is nothing an answeredOffline guard would even need to
+        # downgrade.
+        return True
+
+    # Shape 2: .confident is reachable from this factory, so the
+    # answeredOffline guard must exist and must still downgrade it.
     if not _in_span(find_in(text, "if (answeredOffline) {", CODE_ONLY), factory_span):
         raise BaselineError(
-            "scan_outcome.dart: fromMatches no longer special-cases "
-            "answeredOffline — the offline-never-confident invariant may "
-            "have been removed"
+            "scan_outcome.dart: fromMatches can return ScanResult.confident "
+            "but no longer special-cases answeredOffline — the "
+            "offline-never-confident invariant may have been removed"
         )
     guard_span = _extract_block_span(text, "if (answeredOffline) {")
-    # CODE only: a guard is executable structure, so a printed or commented
-    # mention of `ScanResult.confident` must neither satisfy the positive
-    # check nor trip the negative one.
     if not _in_span(find_in(text, "ScanResult.alternatives", CODE_ONLY), guard_span):
         raise BaselineError(
             "scan_outcome.dart: the answeredOffline guard no longer returns "

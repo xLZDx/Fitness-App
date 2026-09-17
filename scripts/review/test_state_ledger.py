@@ -151,13 +151,15 @@ def test_external_authority_cannot_be_declared_from_here(ledger):
 
 
 def test_operator_authority_cannot_be_declared_from_here(ledger):
-    """Attack E. N-04-gym-association marked CLOSED with no operator decision
-    record. (Was N-05 until 2026-09-17, when N-05 gained a real decision file
-    and a CLOSED swap on it stopped being an attack at all.)"""
-    ledger(_swap("N-04-gym-association", state="CLOSED"))
+    """Attack E. N-07 marked CLOSED with no operator decision record. (Was
+    N-05, then briefly N-04-gym-association, both of which gained real
+    decision files on 2026-09-17 and stopped being attacks at all once they
+    did -- N-07 has no decision file and is DORMANT, not a terminal state, so
+    it still exercises the unauthorised-closure path.)"""
+    ledger(_swap("N-07", state="CLOSED"))
     result = sl.check()
     assert not result.ok
-    bad = [f for f in result.findings if f.item == "N-04-gym-association"]
+    bad = [f for f in result.findings if f.item == "N-07"]
     assert bad and bad[0].kind == "UNAUTHORISED_CLOSURE", result.findings
 
 
@@ -537,27 +539,29 @@ def test_every_state_that_needs_closure_actually_demands_it(ledger, state):
     whole suite, because no test had ever used that word. Any non-source row
     could then have been parked in it with no authority at all.
 
-    Uses N-04-gym-association rather than N-05 (used until 2026-09-17): N-05
-    now has a real decision file on disk, so swapping IT to a closed-shaped
-    state with no matching authority stopped being an attack -- the file is
-    real, the closure genuinely succeeds. N-04-gym-association has no
-    decision file yet, so it still exercises the unauthorised-closure path.
+    Uses N-07 rather than N-05 (used until 2026-09-17) or N-04-gym-association
+    (used briefly the same day): both of the latter gained real decision
+    files on disk and swapping them to a closed-shaped state with no matching
+    authority stopped being an attack -- the file is real, the closure
+    genuinely succeeds. N-07 has no decision file (it is DORMANT, deliberately
+    left unrecorded per its own row notes), so it still exercises the
+    unauthorised-closure path.
     """
-    ledger(_swap("N-04-gym-association", state=state))
+    ledger(_swap("N-07", state=state))
     result = sl.check()
     assert not result.ok, f"{state} escaped the closure gate"
-    kinds = {f.kind for f in result.findings if f.item == "N-04-gym-association"}
+    kinds = {f.kind for f in result.findings if f.item == "N-07"}
     assert "UNAUTHORISED_CLOSURE" in kinds, result.findings
 
 
 def test_the_open_states_do_not_demand_closure(ledger):
     """The other half: a state that honestly says work remains must not need
-    anybody's permission to say so. N-04-gym-association, not N-05: see the
-    note above -- N-05 now has a real decision file, so swapping it back to
-    OPERATOR_DECISION_REQUIRED would itself trip AUTHORITY_SPOKE against the
-    genuine file on disk, which is a different (and correct) failure, not
-    the one this test is checking."""
-    ledger(_swap("N-04-gym-association", state="OPERATOR_DECISION_REQUIRED"))
+    anybody's permission to say so. N-07, not N-05 or N-04-gym-association:
+    see the note above -- both of those now have real decision files, so
+    swapping either back to OPERATOR_DECISION_REQUIRED would itself trip
+    AUTHORITY_SPOKE against the genuine file on disk, which is a different
+    (and correct) failure, not the one this test is checking."""
+    ledger(_swap("N-07", state="OPERATOR_DECISION_REQUIRED"))
     assert sl.check().ok
 
 
@@ -1114,11 +1118,16 @@ def test_no_operator_decision_records_exist_in_the_real_tree():
     GCP billing console live and confirmed 3a+4 (budget alert already
     configured, residual risk accepted), while explicitly declining to
     authorize the App Check production redeploy in the same decision.
+
+    `N-04.md` joined the same way, same day: the operator deferred both P-1
+    and P-2 (leave the gym-association code path dormant) rather than force
+    a premature product call.
     """
     decisions = sl.REPO / "core" / "decisions"
     present = sorted(p.name for p in decisions.glob("*.md")) \
         if decisions.exists() else []
     expected = [
+        "N-04.md",
         "N-05.md",
         "gym-webhook-disclosure.md",
         "roboflow-key-reissue.md",
@@ -1613,7 +1622,7 @@ def test_a_missing_tripwire_file_is_still_caught(tmp_path, monkeypatch):
     assert not sl.f025_tripwire_intact()[0]
 
 
-def test_a_residual_comes_due_when_its_row_is_closed(ledger):
+def test_a_residual_comes_due_when_its_row_is_closed(ledger, monkeypatch):
     """The failure that would actually have happened.
 
     Every live marker describes work due AFTER the operator decides. The moment
@@ -1621,15 +1630,26 @@ def test_a_residual_comes_due_when_its_row_is_closed(ledger):
     and the marker naming it used to go silent for ever, at exactly the moment
     it came due. A tracked marker that vanishes when it matters is worse than
     none, because the convention teaches people it is being watched.
-    """
-    tracked = set(sl.residual_markers())
-    assert tracked, "no live markers: this test would assert nothing"
-    item = sorted(tracked)[0]
 
-    ledger(_swap(item, state="CLOSED",
+    Injects a synthetic marker rather than reading real prose. This test used
+    to assert against whatever `RESIDUAL[...]` marker happened to still be
+    live in the tree, on the assumption there would always be at least one.
+    2026-09-17 disproved that: the last three live markers
+    (scanner-pipeline-location, roboflow-key-reissue's row had none, then
+    N-04-gym-association) were all retired the same day their decisions
+    landed, and this test started failing with "no live markers" -- not
+    because the mechanism broke, but because the fixture depended on a
+    contingent fact about the current tree's prose instead of testing the
+    mechanism itself.
+    """
+    monkeypatch.setattr(
+        sl, "residual_markers",
+        lambda *a, **k: {"F-prefetch": ["synthetic_test_fixture.md"]},
+    )
+    ledger(_swap("F-prefetch", state="CLOSED",
                  closure=lambda: (True, "the operator decided")))
     due = [f for f in sl.check().findings if f.kind == "RESIDUAL_NOW_DUE"]
-    assert due and due[0].item == item, sl.check().findings
+    assert due and due[0].item == "F-prefetch", sl.check().findings
     assert "now due" in due[0].detail
 
 

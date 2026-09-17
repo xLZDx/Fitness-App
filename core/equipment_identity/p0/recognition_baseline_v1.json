@@ -7,8 +7,53 @@
   "generatedBy": "scripts/equipment_identity/recognition_baseline.py",
   "genericInvariants": {
     "exactIdentity": {
-      "exactIdentityConceptsAbsent": true,
-      "hits": [],
+      "exactIdentityConceptsAbsent": false,
+      "hits": [
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity.dart",
+          "token": "EXACT_MODEL"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/state/equipment_identity_providers.dart",
+          "token": "EXACT_MODEL"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity.dart",
+          "token": "EquipmentIdentityResponse"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity.dart",
+          "token": "RecognitionAuthorityTuple"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity_outcome_sink.dart",
+          "token": "RecognitionAuthorityTuple"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity.dart",
+          "token": "evidenceLane"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity_outcome_sink.dart",
+          "token": "evidenceLane"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity.dart",
+          "token": "identityLevel"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity_outcome_sink.dart",
+          "token": "identityLevel"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity.dart",
+          "token": "recognitionSessionId"
+        },
+        {
+          "path": "mobile/lib/features/visual_equipment/data/equipment_identity_outcome_sink.dart",
+          "token": "recognitionSessionId"
+        }
+      ],
       "tokensSwept": [
         "identityLevel",
         "EXACT_MODEL",
@@ -80,7 +125,7 @@
     {
       "path": "mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart",
       "role": "CLOUD_CLASSIFIER_AND_HYBRID — GeminiVisualEquipmentService (primary) and HybridVisualEquipmentService (cloud-first, on-device-fallback orchestration)",
-      "sha256": "f7fb0cb0291136a358d28340266a1e518521276eb5455989ed951547e979e764"
+      "sha256": "4126bef31f217632c2cee42f78f0ffc825879e0b2b2e89ba8ab21cdc103923d6"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/machine_describer.dart",
@@ -90,17 +135,17 @@
     {
       "path": "mobile/lib/features/visual_equipment/data/machine_text_anchor.dart",
       "role": "TEXT_ANCHOR_MATCHING — pure string matching from OCR text to a catalogue id; runs first, silent unless exactly one machine is named",
-      "sha256": "31da73d1e2748330005929c3151d4a393428253a9d8f20bc671bbe2f250d237c"
+      "sha256": "e09bf043c5c103636c81164f73ae36077b8a1027a2b507d1a9273dad36906a65"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/mlkit_live_equipment_service.dart",
       "role": "LIVE_VIEWFINDER_RECOGNITION — continuous scan-tab recognition, same text-anchor-first ordering as the single-photo path",
-      "sha256": "9318ff084d4d8696025b883d2288799b5948ffe4c613bcbbfc0ee646d057ad42"
+      "sha256": "37f27e90de65d30b92335f35bd3cb7aa273991eafe81aafc98da338635110423"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/mlkit_text_recogniser.dart",
       "role": "TEXT_ANCHOR_OCR_BRIDGE — ML Kit text recognition, feeds the matcher above",
-      "sha256": "f58492afa097abf6a18aaad211ddcec02c098b6094ce75f683df38f9b831ed17"
+      "sha256": "ac51d99d4e44c0962298c3119dae0a98bbe813c1d70a179f00b4aad2fe42b3a6"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/mlkit_visual_equipment_service.dart",
@@ -110,7 +155,7 @@
     {
       "path": "mobile/lib/features/visual_equipment/data/scan_outcome.dart",
       "role": "OUTCOME_CONTRACT — ScanOutcome enum and ScanResult, the settled shape every recognition attempt ends in",
-      "sha256": "0c6aa7280206a6d372a7fe3efe6e2001e61da4e910fbcbfe309e0f9b1359d6cf"
+      "sha256": "3e5f2e0f85fae4bab345d8275f94ff89213f8c20af23ed1d97ae213ade74131d"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/visual_equipment_match.dart",
@@ -125,9 +170,9 @@
     {
       "path": "mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart",
       "role": "ORCHESTRATION_CONTROLLER — VisualEquipmentController.classifyFilePath, wires text anchor -> hybrid classifier -> describer in one call",
-      "sha256": "6ded8d33e40cd1a0bfa8571048652962c288b0f135bd1b3a801a6069bdac5e29"
+      "sha256": "d282e67c336b004e7763f5c0521541dad9cc58450442bfc28585cca1d5bcb980"
     }
   ],
   "schemaVersion": 1,
-  "sourceCommit": "ffb044913109a3da02e76d6b3b21b8b9b58c5fd5"
+  "sourceCommit": "b68b446f07d9fa9b6cd4bd15b867802b1acd2a39"
 }

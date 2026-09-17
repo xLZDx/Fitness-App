@@ -172,7 +172,7 @@
       "source_commit": "698c6988c876b93c31b3e2864f91dfd9e3292762",
       "sources": {
         "catalogue": "mobile/assets/data/exercises_vendor.json",
-        "catalogue_sha256": "d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8",
+        "catalogue_sha256": "995cbdf5fbec3af40e5d9f5d12e99fb298655c63ba719fd64a2f75e498feebdc",
         "vocabulary": "scripts/catalog/injury_regions.json"
       },
       "splits": {
@@ -236,7 +236,7 @@
       "status": "AVAILABLE"
     }
   ],
-  "registry_commit": "ad90c32fae4f1f758f4d435c8699f90d7e8c3869",
+  "registry_commit": "b68b446f07d9fa9b6cd4bd15b867802b1acd2a39",
   "required_fields": [
     "dataset_id",
     "dataset_version",
