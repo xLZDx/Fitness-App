@@ -43,10 +43,10 @@ that closed it.
 | `H3` | **HOLD** | EXTERNAL | core/review/CLINICAL_VALIDATION_HANDOFF.md |
 | `CT1-human-labels` | **EXTERNAL_AUTHORITY_REQUIRED** | EXTERNAL | core/ml/review/ |
 | `scanner-metadata` | **CLOSED** | SOURCE | core/ml/METADATA_VALIDATION.json, scripts/ml/metadata_validation_recipe.md, scripts/ml/validate_metadata.py |
-| `scanner-pipeline-location` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/ml/SCANNER_PROVENANCE.md |
+| `scanner-pipeline-location` | **CLOSED** | OPERATOR | core/decisions/scanner-pipeline-location.md, core/ml/SCANNER_PROVENANCE.md |
 | `production-image-collection` | **DISABLED** | SOURCE | mobile/lib/, functions/src/ |
 | `gym-webhook-disclosure` | **CLOSED** | OPERATOR | core/decisions/gym-webhook-disclosure.md, core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md, scripts/legal/legal_text.py, mobile/lib/l10n/app_en.arb, mobile/lib/l10n/app_ru.arb, public/privacy.html, functions/src/index.ts |
-| `roboflow-key-reissue` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/plans/B5_DATA_SOURCES_2026-08-07.md |
+| `roboflow-key-reissue` | **CLOSED** | OPERATOR | core/decisions/roboflow-key-reissue.md, core/plans/B5_DATA_SOURCES_2026-08-07.md |
 
 ## What each row rests on
 
@@ -143,10 +143,12 @@ State is **recomputed** from source on every check; the word above is compared, 
 
 Was ENVIRONMENT_BLOCKED, and should not have been. The blocker was a pip install failing inside a container, generalised into a claim about the host -- which reaches PyPI fine. Answered by the genuine library rather than by widening the stub: VALIDATED_MATCH. The predicate is digest-bound, so replacing the model reopens the question instead of inheriting a verdict earned by a different artefact.
 
-### `scanner-pipeline-location` — OPERATOR_DECISION_REQUIRED
+### `scanner-pipeline-location` — CLOSED
 
 **No local predicate.** Where a 2 GB unversioned recovered pipeline should live is a decision about external storage this worktree does not own.
 Closing it requires a named artefact from the OPERATOR authority. **That artefact is repo-writable**, so this check does not make forgery impossible -- it makes forgery legible in a diff. See the honesty note at the top.
+
+Closed 2026-09-17 (core/decisions/scanner-pipeline-location.md): S-1 approved (extract source+provenance into a separate clean repository; corpora and model artefacts stay out of git, addressed by content hash), S-2 approved (corpora never leave this machine -- neither dataset/'s unrecoverable-provenance photos nor dataset_v2's unattributed CC BY 4.0 claim is cleared for distribution), S-3 approved (the ML recognition programme continues despite the measured 0/18-1/18 real-photo accuracy). The migration itself (S-1's actual repository split) is not yet performed -- tracked separately, needs its own Plan/GO.
 
 ### `production-image-collection` — DISABLED
 
@@ -162,10 +164,10 @@ Closing it requires a named artefact from the OPERATOR authority. **That artefac
 
 Surfaced while deciding N-04, not by asking N-04's question. Closed 2026-08-21 (core/decisions/gym-webhook-disclosure.md): the operator chose to disclose rather than remove the dispatch, surfaced while porting Gate F (MRD-02) onto master -- Gate F is the first client code to ever supply a real gymId on a report, which is what turns the previously-unreachable webhook dispatch reachable. `legal_text.py` (the single source for the .arb bodies and public/privacy.html) now names the gym as a conditional third recipient -- not a GDPR processor, since no controller-processor agreement governs it.
 
-### `roboflow-key-reissue` — OPERATOR_DECISION_REQUIRED
+### `roboflow-key-reissue` — CLOSED
 
 **No local predicate.** Reissuing an API key is an action in the Roboflow console. Nothing here can perform it, and nothing here can observe whether it was performed.
 Carries an invariant: source cannot close this row, but it can reopen the question.
 Closing it requires a named artefact from the OPERATOR authority. **That artefact is repo-writable**, so this check does not make forgery impossible -- it makes forgery legible in a diff. See the honesty note at the top.
 
-Stated precisely, because the loose version would be false: NO key literal is committed to this repository, at HEAD or anywhere in history. What exists is a 2026-08-07 planning document recording that the key was pasted into a CONVERSATION and recommending reissue, with no record of the reissue. The invariant guards the half this tree can answer.
+Stated precisely, because the loose version would be false: NO key literal is committed to this repository, at HEAD or anywhere in history. What exists is a 2026-08-07 planning document recording that the key was pasted into a CONVERSATION and recommending reissue, with no record of the reissue. The invariant guards the half this tree can answer. Closed 2026-09-17 (core/decisions/roboflow-key-reissue.md): the operator accepted the risk and declined to reissue.

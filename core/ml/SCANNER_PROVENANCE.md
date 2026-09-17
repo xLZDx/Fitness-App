@@ -193,9 +193,12 @@ avoids the hazard by construction rather than by adding a marker to defend again
 That marker does not exist yet, and building it is **local Python work in this worktree** —
 `scripts/ml/dataset_registry.py:89` — not something the operator has to supply. It is deliberately
 not built in advance, because it is only needed if a snapshot is chosen and would otherwise be
-engineering performed to look busy. It is recorded here as
-`RESIDUAL[scanner-pipeline-location]` so that choosing A, B or C carries its own precondition
-rather than discovering it afterwards.
+engineering performed to look busy. It was recorded here with the residual marker for
+`scanner-pipeline-location` so that choosing A, B or C carried its own precondition rather than
+discovering it afterwards. **Resolved by non-applicability, 2026-09-17, marker retired:** S-1 was
+decided as the separate-repository shape (`core/decisions/scanner-pipeline-location.md`), not the
+snapshot-into-this-repository shape — the row this marker actually gated (see the table below).
+This marker never activated and this module never needed the machine-readable recovery marker.
 
 ### What the operator must decide — engineering cannot
 
@@ -395,7 +398,7 @@ No hidden downstream work: choosing an architecture is choosing its prerequisite
 
 | Choice | Activates | Required before migration is complete |
 |---|---|---|
-| **S-1 = recommended** (separate repo) | `RESIDUAL[scanner-pipeline-location]` — the CI-asymmetric pin assertion | **Yes.** `test_the_pin_is_dated` asserts `is_git_repository is False` unconditionally while the probing test skips on CI. |
+| **S-1 = recommended** (separate repo) | the residual marker for `scanner-pipeline-location` — the CI-asymmetric pin assertion — **DONE, 2026-09-17, marker retired** | `test_the_pin_is_dated` asserts `is_git_repository is False` unconditionally while the probing test skips on CI; `test_the_pipeline_is_still_not_a_git_repository`'s docstring and `scanner_provenance.py`'s own module docstring were updated in the same change as `D:/Repo/equipment-model-pipeline`'s creation to record that a separate repository now exists without changing `PIPELINE_ROOT`'s own classification. |
 | **S-1 = snapshot into this repository** | Both residuals, including the machine-readable recovery marker | **Yes**, and this is the shape that makes the marker mandatory: `_last_commit_touching` runs `git -C` against *this* worktree, so the substitution only becomes reachable here. |
 | **S-1 = leave in place** | Neither | — |
 | **S-2 = any upload** | A CC BY 4.0 attribution manifest, a crop-to-source mapping, and a "changes made" record | **Yes**, and it must be reconstructed by re-querying the API, which may stop being possible. |
@@ -410,7 +413,9 @@ directory. The pin and the registry must be updated in the *same* change as any 
 repository asserts something false for the length of the gap.
 
 This too is local work — a test change in `scripts/ml/test_scanner_provenance.py:88` — and it too
-is a rider on the decision rather than work due now: `RESIDUAL[scanner-pipeline-location]`.
+was a rider on the decision rather than work due before one existed: the residual marker for
+`scanner-pipeline-location`, **done 2026-09-17, marker retired** in the same commit that created
+`D:/Repo/equipment-model-pipeline`.
 
 ## v1 reproducibility: ATTEMPTED, and the result is METRIC_REPRODUCIBLE
 

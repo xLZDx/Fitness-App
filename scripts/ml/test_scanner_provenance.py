@@ -231,8 +231,14 @@ def test_the_pinned_artefacts_match_the_bytes_on_this_machine():
 @needs_pipeline
 def test_the_pipeline_is_still_not_a_git_repository():
     # The assertion that makes ML-2a OPEN. It is expected to FAIL the day
-    # somebody runs `git init` there -- that failure is the item closing, and
-    # the fix is to update the pin and the registry, not to delete this test.
+    # somebody runs `git init` INSIDE PIPELINE_ROOT itself -- that failure is
+    # the item closing, and the fix is to update the pin and the registry,
+    # not to delete this test. A separate, clean repository copied FROM
+    # PIPELINE_ROOT (D:/Repo/equipment-model-pipeline, 2026-09-17, see
+    # scanner_provenance.py's own docstring and
+    # core/decisions/scanner-pipeline-location.md) does not touch this
+    # assertion -- PIPELINE_ROOT was copied, not migrated, and stays
+    # unversioned on this machine.
     result = probe()
     assert result["is_git_repository"] is False
     assert result["classification"] == "FOUND_UNVERSIONED_PIPELINE"

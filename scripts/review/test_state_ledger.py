@@ -1091,11 +1091,21 @@ def test_no_operator_decision_records_exist_in_the_real_tree():
     reachable (see the file itself, and the matching `gym-webhook-disclosure`
     row in `RULES`, restated to `CLOSED` in the same commit as the decision
     record, per this test's own instruction above).
+
+    `roboflow-key-reissue.md` and `scanner-pipeline-location.md` joined the
+    same way, 2026-09-17: the operator recorded both decisions in a live
+    session (accept-the-risk / do-not-reissue for the API key, S-1/S-2/S-3
+    for the pipeline's location), and both matching `RULES` rows were
+    restated to `CLOSED` in the same commit as these two files.
     """
     decisions = sl.REPO / "core" / "decisions"
     present = sorted(p.name for p in decisions.glob("*.md")) \
         if decisions.exists() else []
-    expected = ["gym-webhook-disclosure.md"]
+    expected = [
+        "gym-webhook-disclosure.md",
+        "roboflow-key-reissue.md",
+        "scanner-pipeline-location.md",
+    ]
     assert present == expected, (
         f"decision records exist: {present}, expected only {expected}. If an "
         "operator wrote a new one, the matching ledger row must be restated "

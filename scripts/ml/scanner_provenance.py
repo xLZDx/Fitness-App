@@ -37,6 +37,19 @@ It does not import the pipeline, copy it into this repository, or promote
 anything. ``D3 = CLOSED`` and ``PRODUCTION_IMAGE_COLLECTION = DISABLED`` are
 untouched: a reproducible v2 would still not be a challenger, and this module
 has no opinion about whether v2 should ship. It records provenance.
+
+## A second, separate git repository now exists — this one does not
+
+2026-09-17: a source+provenance-only SNAPSHOT of ``PIPELINE_ROOT`` was copied
+into its own clean repository, ``D:/Repo/equipment-model-pipeline`` (decision
+record: ``core/decisions/scanner-pipeline-location.md``, S-1). That is a copy,
+not a migration — ``PIPELINE_ROOT`` itself was not touched, still holds the
+corpora and model artefacts this module pins, and is still not a git
+repository. ``is_git_repository`` below still describes ``PIPELINE_ROOT``, and
+``test_the_pipeline_is_still_not_a_git_repository`` is still expected to pass
+on the machine that has it — the new repository living elsewhere does not
+flip that classification. It would only flip the day someone runs
+``git init`` inside ``PIPELINE_ROOT`` itself, which this migration did not do.
 """
 from __future__ import annotations
 

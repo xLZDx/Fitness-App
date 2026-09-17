@@ -1401,13 +1401,24 @@ LEDGER: tuple[Row, ...] = (
     ),
     Row(
         item="scanner-pipeline-location",
-        state="OPERATOR_DECISION_REQUIRED",
+        state="CLOSED",
         authority=OPERATOR,
-        evidence=("core/ml/SCANNER_PROVENANCE.md",),
+        evidence=("core/decisions/scanner-pipeline-location.md",
+                  "core/ml/SCANNER_PROVENANCE.md",),
         closure=operator_decision_recorded("scanner-pipeline-location"),
         no_local_predicate="Where a 2 GB unversioned recovered pipeline should "
                            "live is a decision about external storage this "
                            "worktree does not own.",
+        notes="Closed 2026-09-17 (core/decisions/scanner-pipeline-location.md): "
+              "S-1 approved (extract source+provenance into a separate clean "
+              "repository; corpora and model artefacts stay out of git, "
+              "addressed by content hash), S-2 approved (corpora never leave "
+              "this machine -- neither dataset/'s unrecoverable-provenance "
+              "photos nor dataset_v2's unattributed CC BY 4.0 claim is cleared "
+              "for distribution), S-3 approved (the ML recognition programme "
+              "continues despite the measured 0/18-1/18 real-photo accuracy). "
+              "The migration itself (S-1's actual repository split) is not yet "
+              "performed -- tracked separately, needs its own Plan/GO.",
     ),
     Row(
         item="production-image-collection",
@@ -1452,9 +1463,10 @@ LEDGER: tuple[Row, ...] = (
     ),
     Row(
         item="roboflow-key-reissue",
-        state="OPERATOR_DECISION_REQUIRED",
+        state="CLOSED",
         authority=OPERATOR,
-        evidence=("core/plans/B5_DATA_SOURCES_2026-08-07.md",),
+        evidence=("core/decisions/roboflow-key-reissue.md",
+                  "core/plans/B5_DATA_SOURCES_2026-08-07.md",),
         invariant=roboflow_key_not_committed,
         closure=operator_decision_recorded("roboflow-key-reissue"),
         no_local_predicate="Reissuing an API key is an action in the Roboflow "
@@ -1465,7 +1477,9 @@ LEDGER: tuple[Row, ...] = (
               "anywhere in history. What exists is a 2026-08-07 planning "
               "document recording that the key was pasted into a CONVERSATION "
               "and recommending reissue, with no record of the reissue. The "
-              "invariant guards the half this tree can answer.",
+              "invariant guards the half this tree can answer. Closed "
+              "2026-09-17 (core/decisions/roboflow-key-reissue.md): the "
+              "operator accepted the risk and declined to reissue.",
     ),
 )
 

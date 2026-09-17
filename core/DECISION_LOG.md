@@ -16576,8 +16576,14 @@ local executable work recorded in prose alone: making the recovery marker machin
 `dataset_registry._last_commit_touching` consults `git log`, and the CI-asymmetric pin assertion
 where `test_the_pipeline_is_still_not_a_git_repository` skips on CI while `test_the_pin_is_dated`
 asserts unconditionally. Both verified. Neither is built, because both are riders on a decision
-nobody has taken, and building them now would be engineering performed to look busy. Both now carry
-`RESIDUAL[scanner-pipeline-location]`, which attaches them to the row that gates them.
+nobody has taken, and building them now would be engineering performed to look busy. Both were tagged with the residual marker for `scanner-pipeline-location`, attaching them to the
+row that gated them. **Resolved, 2026-09-17, marker retired:** the row closed as an operator
+decision (`core/decisions/scanner-pipeline-location.md`, S-1 = separate repository) and the
+migration itself ran the same day, creating `D:/Repo/equipment-model-pipeline`. The CI-asymmetric
+pin assertion residual is done — see `scripts/ml/scanner_provenance.py`'s and
+`scripts/ml/test_scanner_provenance.py:88`'s updated docstrings. The machine-readable
+recovery-marker residual never activated: it only gated the snapshot-into-this-repository shape of
+S-1, which was not the one decided.
 
 **Four claims the reviewer could not break**, recorded because a review that finds one thing should
 say what it failed to find: the metadata gap is environment (computing the correct floor needs the
