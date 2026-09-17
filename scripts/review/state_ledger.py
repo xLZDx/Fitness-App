@@ -1298,14 +1298,21 @@ LEDGER: tuple[Row, ...] = (
     ),
     Row(
         item="N-05",
-        state="OPERATOR_DECISION_REQUIRED",
+        state="CLOSED",
         authority=OPERATOR,
-        evidence=("core/review/N05_DISPOSITION.md", "public/privacy.html"),
+        evidence=("core/decisions/N-05.md", "core/review/N05_DISPOSITION.md",
+                  "public/privacy.html"),
         invariant=n05_premise_holds,
         closure=operator_decision_recorded("N-05"),
         quote=("core/review/N05_DISPOSITION.md",
                "per-account uniqueness is not the binding constraint"),
-        notes="Narrative belongs to N05_DISPOSITION.md; this row quotes it.",
+        notes="Narrative belongs to N05_DISPOSITION.md; this row quotes it. "
+              "Closed 2026-09-17: 3a (budget alert, already configured by the "
+              "operator) + 4 (residual risk accepted). App Check video "
+              "enforcement (Option 1 / N05-C) reviewed but deliberately not "
+              "enabled -- see core/decisions/N-05.md for why, and "
+              "core/DECISION_LOG.md's 2026-09-17 entry for the correction to "
+              "N05-C's 'locks out the entire population' framing.",
     ),
     Row(
         item="N-04-gym-association",

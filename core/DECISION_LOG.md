@@ -54612,3 +54612,34 @@ switched from a cloud-classifier single-match to the printed-text anchor (the on
 now writes to recognition history on selection. Full suite:
 `flutter test test/features/visual_equipment/ test/features/scanner/ test/features/scanner_page_test.dart`
 — all passing, 0 failing. `flutter analyze` on all changed files: no issues.
+
+## 2026-09-17 — N-05 closed (3a+4); App Check video enforcement deliberately NOT enabled; VPS+CDN video hosting recorded as a future backlog idea
+
+`N-05` (video-URL quota/abuse exposure) closed as an operator decision:
+`core/decisions/N-05.md`. 3a (GCP budget alert) was already configured by the operator
+(`fitness-app-korostelev` project, $20/month, alerts at 50/90/100%, `Spend cap status: Not
+applicable` — confirmed notification-only, live screenshot reviewed) — no action needed. 4
+(accept the residual $0.077–$0.31 worst-case risk at current 5–10-tester scale) accepted.
+
+**App Check enforcement for video (`APP_CHECK_ENFORCED_VIDEO=true`) was reviewed but explicitly
+NOT enabled.** Correction worth recording: `core/review/OPERATOR_DECISIONS.md`'s N05-C guidance
+("locks out the entire current population") is narrower than current evidence supports — the
+2026-08-29 S23 Play Integrity proof showed the project's App Check console already uses
+`MEETS_DEVICE_INTEGRITY` (not `PLAY_RECOGNIZED`/`LICENSED`), so ordinary unmodified devices
+installed outside Play already attest successfully; only non-standard devices (unlocked
+bootloader/rooted) would be refused. Despite that correction, the operator declined to authorize
+a production redeploy today, verbatim: *"а зачем это щас делать, там еще полно багов и много чего
+еще доделывать или переделывать куда торопиться?"* — correct call: this is a config value with
+real user-facing impact and there is no engineering reason to push it opportunistically alongside
+unrelated governance paperwork. Deferred, not authorized, revisit before public beta or when App
+Check is being pursued for another reason.
+
+**Recorded, not evaluated further:** the operator raised moving video hosting off Google Cloud
+Storage onto a self-managed VPS ("дешевле платить 25 баксов за вм и не думать о лимитах"). Flagged
+back to the operator live: this does not remove the video licence's own no-permanent-link
+condition (independent of hosting location), and a single VPS with no CDN in front of it trades
+the current per-GB cost exposure for a concurrency/bandwidth-saturation risk (many simultaneous
+viewers on one popular clip would compete with the rest of the app for one VM's fixed network
+interface) — the standard fix being a CDN (Cloudflare / Bunny CDN or similar) in front of the VPS,
+not raw origin serving. This is a real target-architecture candidate but a separate, sizeable
+piece of engineering — recorded here as a backlog idea, not designed, sized, or scheduled.

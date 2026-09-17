@@ -151,11 +151,13 @@ def test_external_authority_cannot_be_declared_from_here(ledger):
 
 
 def test_operator_authority_cannot_be_declared_from_here(ledger):
-    """Attack E. N-05 marked CLOSED with no operator decision record."""
-    ledger(_swap("N-05", state="CLOSED"))
+    """Attack E. N-04-gym-association marked CLOSED with no operator decision
+    record. (Was N-05 until 2026-09-17, when N-05 gained a real decision file
+    and a CLOSED swap on it stopped being an attack at all.)"""
+    ledger(_swap("N-04-gym-association", state="CLOSED"))
     result = sl.check()
     assert not result.ok
-    bad = [f for f in result.findings if f.item == "N-05"]
+    bad = [f for f in result.findings if f.item == "N-04-gym-association"]
     assert bad and bad[0].kind == "UNAUTHORISED_CLOSURE", result.findings
 
 
@@ -534,18 +536,28 @@ def test_every_state_that_needs_closure_actually_demands_it(ledger, state):
     `TERMINAL_STATES = ("CLOSED",)` -- removing `NOT_A_DEFECT` -- survived the
     whole suite, because no test had ever used that word. Any non-source row
     could then have been parked in it with no authority at all.
+
+    Uses N-04-gym-association rather than N-05 (used until 2026-09-17): N-05
+    now has a real decision file on disk, so swapping IT to a closed-shaped
+    state with no matching authority stopped being an attack -- the file is
+    real, the closure genuinely succeeds. N-04-gym-association has no
+    decision file yet, so it still exercises the unauthorised-closure path.
     """
-    ledger(_swap("N-05", state=state))
+    ledger(_swap("N-04-gym-association", state=state))
     result = sl.check()
     assert not result.ok, f"{state} escaped the closure gate"
-    kinds = {f.kind for f in result.findings if f.item == "N-05"}
+    kinds = {f.kind for f in result.findings if f.item == "N-04-gym-association"}
     assert "UNAUTHORISED_CLOSURE" in kinds, result.findings
 
 
 def test_the_open_states_do_not_demand_closure(ledger):
     """The other half: a state that honestly says work remains must not need
-    anybody's permission to say so."""
-    ledger(_swap("N-05", state="OPERATOR_DECISION_REQUIRED"))
+    anybody's permission to say so. N-04-gym-association, not N-05: see the
+    note above -- N-05 now has a real decision file, so swapping it back to
+    OPERATOR_DECISION_REQUIRED would itself trip AUTHORITY_SPOKE against the
+    genuine file on disk, which is a different (and correct) failure, not
+    the one this test is checking."""
+    ledger(_swap("N-04-gym-association", state="OPERATOR_DECISION_REQUIRED"))
     assert sl.check().ok
 
 
@@ -1097,11 +1109,17 @@ def test_no_operator_decision_records_exist_in_the_real_tree():
     session (accept-the-risk / do-not-reissue for the API key, S-1/S-2/S-3
     for the pipeline's location), and both matching `RULES` rows were
     restated to `CLOSED` in the same commit as these two files.
+
+    `N-05.md` joined the same way, same day: the operator reviewed their own
+    GCP billing console live and confirmed 3a+4 (budget alert already
+    configured, residual risk accepted), while explicitly declining to
+    authorize the App Check production redeploy in the same decision.
     """
     decisions = sl.REPO / "core" / "decisions"
     present = sorted(p.name for p in decisions.glob("*.md")) \
         if decisions.exists() else []
     expected = [
+        "N-05.md",
         "gym-webhook-disclosure.md",
         "roboflow-key-reissue.md",
         "scanner-pipeline-location.md",

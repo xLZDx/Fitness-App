@@ -35,7 +35,7 @@ that closed it.
 | `metric-provenance-six` | **DORMANT** | SOURCE | scripts/ml/evaluation_report.py, core/ml/METRIC_PROVENANCE.md |
 | `guest-upgrade-outcome` | **CLOSED** | SOURCE | mobile/lib/features/auth/data/sign_in_outcome.dart, mobile/lib/features/auth/data/firebase_auth_repository.dart, mobile/lib/features/auth/login_page.dart |
 | `scanner-dependency-pin` | **CLOSED** | SOURCE | core/ml/pins/ml_train_env_recovered_2026-08-18.txt, core/ml/SCANNER_PROVENANCE.md |
-| `N-05` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N05_DISPOSITION.md, public/privacy.html |
+| `N-05` | **CLOSED** | OPERATOR | core/decisions/N-05.md, core/review/N05_DISPOSITION.md, public/privacy.html |
 | `N-04-gym-association` | **OPERATOR_DECISION_REQUIRED** | OPERATOR | core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md, core/DECISION_LOG.md |
 | `F025` | **DORMANT** | OPERATOR | mobile/test/adversarial/dormant_traps_test.dart |
 | `N-07` | **DORMANT** | OPERATOR | core/review/N07_TEAM_ACTIVATION_GATE.md, mobile/test/adversarial/n07_team_activation_test.dart |
@@ -92,12 +92,12 @@ State is **recomputed** from source on every check; the word above is compared, 
 
 Closes the recoverability of the environment, and nothing about the historical claim. Whether these were the versions v1 was trained with stays UNKNOWN and is not made recoverable by having been written down.
 
-### `N-05` — OPERATOR_DECISION_REQUIRED
+### `N-05` — CLOSED
 
 Carries an invariant: source cannot close this row, but it can reopen the question.
 Closing it requires a named artefact from the OPERATOR authority. **That artefact is repo-writable**, so this check does not make forgery impossible -- it makes forgery legible in a diff. See the honesty note at the top.
 
-Narrative belongs to N05_DISPOSITION.md; this row quotes it.
+Narrative belongs to N05_DISPOSITION.md; this row quotes it. Closed 2026-09-17: 3a (budget alert, already configured by the operator) + 4 (residual risk accepted). App Check video enforcement (Option 1 / N05-C) reviewed but deliberately not enabled -- see core/decisions/N-05.md for why, and core/DECISION_LOG.md's 2026-09-17 entry for the correction to N05-C's 'locks out the entire population' framing.
 
 ### `N-04-gym-association` — OPERATOR_DECISION_REQUIRED
 
