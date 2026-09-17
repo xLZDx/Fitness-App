@@ -1,0 +1,272 @@
+<title>Honest Project Picture</title>
+<meta name="description" content="Fitness_App: independent audit by three review agents — trainer, design, overall readiness. What actually works, what doesn't, and when it could ship.">
+<style>
+  :root{
+    --bg:#f6f5f0; --surface:#ffffff; --surface-2:#eeece2; --border:#dcd9cb;
+    --text:#181a14; --muted:#5b5f52; --accent:#5c7a00; --accent-strong:#3e5400;
+    --ok:#1e7a3d; --ok-bg:#e3f3e6;
+    --warn:#8a5a00; --warn-bg:#fbeecb;
+    --crit:#a3271f; --crit-bg:#fbe3e0;
+    --hold:#5b5f52; --hold-bg:#eeece2;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+      --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+      --ok:#7fe0a0; --ok-bg:#16321f;
+      --warn:#f0c05a; --warn-bg:#3a2c0c;
+      --crit:#ff8f85; --crit-bg:#3a1512;
+      --hold:#9aa78e; --hold-bg:#20261a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+    --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+    --ok:#7fe0a0; --ok-bg:#16321f;
+    --warn:#f0c05a; --warn-bg:#3a2c0c;
+    --crit:#ff8f85; --crit-bg:#3a1512;
+    --hold:#9aa78e; --hold-bg:#20261a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Manrope','Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;padding-inline:16px;}
+  .wrap{max-width:860px;margin:0 auto;padding-block:28px 64px;}
+  h1,h2,h3{font-family:'Archivo','Manrope',sans-serif;text-wrap:balance;letter-spacing:-.01em;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--crit);margin-bottom:10px;}
+  .eyebrow::before{content:"●";font-size:9px;}
+  h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:0 0 10px;}
+  .lede{color:var(--muted);font-size:16px;max-width:62ch;margin:0;}
+  .tldr{display:flex;flex-wrap:wrap;gap:8px;margin-block:20px 8px;}
+  .pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;gap:6px;}
+  .pill.crit{background:var(--crit-bg);color:var(--crit);border-color:transparent;}
+  .pill.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent;}
+  .pill.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent;}
+  section{margin-block:38px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--crit);margin:0 0 4px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  h2 .num{color:var(--muted);font-weight:500;margin-right:8px;}
+  h3{font-size:17px;margin:20px 0 8px;font-weight:700;}
+  p{margin:0 0 12px;}
+  a{color:var(--accent-strong);}
+  code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+  .callout{border:1px solid var(--crit);background:var(--crit-bg);border-radius:12px;padding:18px 20px;margin-top:14px;}
+  .callout h3{margin-top:0;color:var(--crit);}
+  .callout.warn{border-color:var(--warn);background:var(--warn-bg);}
+  .callout.warn h3{color:var(--warn);}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
+  .tbl-wrap{overflow-x:auto;}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;}
+  .badge.broken{background:var(--crit-bg);color:var(--crit);}
+  .badge.partial{background:var(--warn-bg);color:var(--warn);}
+  .badge.unproven{background:var(--hold-bg);color:var(--hold);}
+  .badge.ok{background:var(--ok-bg);color:var(--ok);}
+  ul.plain{margin:8px 0 0;padding-left:20px;}
+  ul.plain li{margin-bottom:6px;}
+  .quote{border-left:3px solid var(--accent);padding:2px 0 2px 14px;color:var(--muted);font-style:italic;margin:10px 0;}
+  footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:12.5px;}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness_App · independent audit · 2026-09-18</span>
+  <h1>The honest picture: trainer is broken, design is unverified, 6–10 weeks to ship</h1>
+  <p class="lede">Yesterday's report was honest about what the documents said — the documents themselves turned out to be the unreliable part. On direct challenge: three independent reviews, trusting no decision-log self-report.</p>
+  <div class="tldr">
+    <span class="pill crit">Trainer crashes with a system dialog — unfixed since Aug 31</span>
+    <span class="pill warn">On-device design fix verification was interrupted — never redone</span>
+    <span class="pill warn">Equipment recognition: wrong pipeline was measured, real accuracy unknown</span>
+    <span class="pill">6–10 weeks to beta, 3–4 months to fully done</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b70661e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <h2><span class="num">01</span>Why the prior report was inaccurate</h2>
+  <p>"Backlog exhausted" was true as a statement about a task list. It is not the same as "the product works" — but that is how it read. The mechanism repeats: almost every gate closed on code review, Windows-rendered golden tests, or a GPT-PM APPROVE — none of which can see a system crash dialog or tell a correct pixel from one baked into the golden reference as wrong. Every time someone actually looked at a live phone, a real defect turned up on the first try (Aug 31 — trainer crash, Sep 16 — wrong Home card text style).</p>
+</section>
+
+<section>
+  <div class="callout">
+    <h3>🔴 Trainer (Form Coach) — genuinely crashes</h3>
+    <p>On an S8 (Android 8, Mali GPU), tapping "Squat" launches a separate system process, <code>mlkit_acceleration_mini_benchmark</code> (Google Play Services' GPU-acceleration benchmark), which dies with <code>Fatal signal 6 (SIGABRT)</code>. Android shows "fitness_app has stopped" with one button — an ordinary user cannot get past it.</p>
+    <p><b>Found 2026-08-31, never fixed or re-verified since.</b> Gate G17 ("the Form Coach figure matches the design reference"), which prior reports cited as closing the trainer, only verified demo-video visual fidelity — a different code path from the one that crashes.</p>
+    <p>Verified this session: the crash happens inside closed Google native code before execution ever reaches our Dart <code>try/catch</code> — it cannot be caught from the app, and <code>google_mlkit_pose_detection: ^0.14.0</code> exposes no public API to disable GPU acceleration. Needs testing on other devices (modern GPU vs. Mali, other Android versions) to know whether this is device-class-specific. The squat's demo video is separately, deliberately disabled (bad source footage) — not a bug, but a visible downgrade.</p>
+  </div>
+</section>
+
+<section>
+  <div class="callout warn">
+    <h3>🟡 Design — no current on-device confirmation</h3>
+    <p>Design-system tokens (colors, blur formula, radii) match the <code>core/design/reference/fitness_hud_v1/</code> reference literally, verified directly in code. But the one real on-device check (2026-09-16) immediately found a confirmed bug — Home's stat cards rendered with the wrong text style, and golden tests never caught it because the golden reference screenshot itself baked in the bug (all M1–M9 gates closed with no device verification at all).</p>
+    <p><b>Re-verifying the fix was interrupted</b>: reinstalling the APK hit <code>INSTALL_FAILED_INSUFFICIENT_STORAGE</code>, then the device dropped off adb; the session didn't force a reconnect. No re-check has happened since — literally "no preview of the installed design" as of today. On top of that, 142 legacy <code>GlassCard</code> occurrences across 46 files still coexist with the new HUD system on the same screens.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>By subsystem</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Subsystem</th><th>Status</th><th>Why</th></tr>
+    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">BROKEN</span></td><td>System crash on workout start, unfixed since Aug 31; rep-count accuracy never measured on a real device</td></tr>
+    <tr><td>Equipment recognition</td><td><span class="badge partial">PARTIAL</span></td><td>48.5% was measured bypassing the real client pipeline (direct Vertex REST) — production accuracy is unknown to anyone. The mitigation ("always ask") works, but the feature is now "pick from a list with a hint," not "point the camera"</td></tr>
+    <tr><td>Design system (HUD)</td><td><span class="badge partial">PARTIAL</span></td><td>Tokens correct in code, but no fresh on-device check; GlassCard→Hud migration incomplete (142 occurrences)</td></tr>
+    <tr><td>Content catalog / safety</td><td><span class="badge partial">PARTIAL</span></td><td>19.1% of exercises (360) untagged and structurally unscreenable — the injury filter fails open by design; tags come from the vendor, not a clinician</td></tr>
+    <tr><td>Payments (Stripe)</td><td><span class="badge unproven">UNPROVEN</span></td><td>Test mode only, never a real charge</td></tr>
+    <tr><td>App Check / production hardening</td><td><span class="badge unproven">UNPROVEN</span></td><td>Last machine-generated status snapshot is a month old</td></tr>
+    <tr><td>Release build / publishing</td><td><span class="badge unproven">UNPROVEN</span></td><td>CI can't build a release without your secret; never published to any store; the Play targetSdk deadline has already passed</td></tr>
+    <tr><td>Auth / onboarding / workout logging</td><td><span class="badge ok">WORKS</span></td><td>Verified by hand on a device, real integration runs against production Firestore</td></tr>
+    <tr><td>Backend / governance / CI</td><td><span class="badge ok">WORKS</span></td><td>Genuinely solid — Firestore rules in CI, dependency audits, alerts proven against real matching filters</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Punch list: what's actually left</h2>
+  <h3>Blocks "the product works"</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
+    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start</td><td>3–5 days (if a workaround exists) / 2–4 weeks (if the pose engine needs swapping). <b>First step: reproduce on 2–3 devices, 1 day, clarifies the estimate immediately.</b></td></tr>
+    <tr><td>2</td><td>Trainer: measure what it actually counts</td><td>4–6 days — currently no number exists at all</td></tr>
+    <tr><td>3</td><td>End-to-end measurement of the real scanner pipeline</td><td>2–4 days</td></tr>
+    <tr><td>4</td><td>Design: re-check every screen against the reference on-device</td><td>1–2 weeks</td></tr>
+    <tr><td>5</td><td>Design: finish the GlassCard → Hud migration</td><td>2–4 weeks</td></tr>
+    <tr><td>6</td><td>Fix the already-measured WCAG contrast failures</td><td>2–4 days</td></tr>
+  </table>
+  </div>
+  <h3>Blocks "shippable"</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
+    <tr><td>7</td><td>targetSdk 35→36 + edge-to-edge check on Android 16</td><td>2–4 days (Play deadline already passed, check for an extension first)</td></tr>
+    <tr><td>8</td><td>GOOGLE_SERVICES_JSON_B64 secret for the CI release build</td><td><b>your action, 15 minutes</b> — the engineering side is fully ready</td></tr>
+    <tr><td>9</td><td>Stripe: leave test mode</td><td>2–3 engineering days + your/legal action</td></tr>
+    <tr><td>10</td><td>App Check: pin down the real status</td><td>2–3 days</td></tr>
+    <tr><td>11</td><td>Play Console: listing, Data Safety, screenshots</td><td>1 week + 1–2 weeks review wait</td></tr>
+  </table>
+  </div>
+  <h3>Blocks "a safe fitness app"</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
+    <tr><td>12</td><td>D1/H3 — clinical validation</td><td>external party, weeks + cost; the one item code cannot accelerate</td></tr>
+    <tr><td>13</td><td>360 untagged exercises</td><td>the call belongs to the clinician (item 12)</td></tr>
+    <tr><td>14</td><td><code>purpose</code> for 1,484 exercises, 1,368 unreviewed cards</td><td>3–6 weeks of content work (or an LLM pass + spot-check ≈ 1–2 weeks)</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Realistic timeline</h2>
+  <ul class="plain">
+    <li>Trainer working and measured: <b>2–4 weeks</b> (uncertainty driven by whether the crash reproduces on other GPUs)</li>
+    <li>Design genuinely re-checked and migrated: <b>3–6 weeks</b></li>
+    <li>Ready to submit to Play: another <b>2–3 weeks</b> on top</li>
+    <li>Clinical validation runs in parallel but can't be sped up with code — likely the longest single item</li>
+  </ul>
+  <p class="quote">To "shippable as a real-user beta": roughly 6–10 weeks of engineering work. To "closed as a finished product": realistically 3–4 months, given the current content debt and open clinical authority.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span>What to do right now</h2>
+  <ul class="plain">
+    <li><b>Connect a phone over USB with debugging on</b> — items 1, 2 and 4 cannot move past diagnosis without it; adb currently sees no device at all.</li>
+    <li><b>Check the Play Console for a targetSdk 36 deadline extension</b> — 15 minutes, nobody has checked yet.</li>
+    <li><b>Hand over the GOOGLE_SERVICES_JSON_B64 secret</b> — unblocks the one fully-ready piece of the release pipeline (the CI build).</li>
+  </ul>
+</section>
+
+<footer>
+  Assembled by three independent review agents (flutter-reviewer, code-reviewer, architect), trusting no decision-log self-report — direct reading of code and primary records only, each with its own file:line citations. Sources: <code>core/DECISION_LOG.md</code> lines 37680–37768 (trainer crash), 54388–54448 (Sep 16 on-device finding), 54489–54614 (recognition accuracy and the disproven fix); <code>mobile/lib/features/form_check/data/mlkit_pose_detector_service.dart</code>; <code>mobile/lib/core/theme/hud_tokens.dart</code>; <code>core/PHASE_4B_STRIPE_SETUP.md</code>; <code>core/PRODUCTION_MANIFEST.md</code>.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

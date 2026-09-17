@@ -1,0 +1,272 @@
+<title>Честная картина проекта</title>
+<meta name="description" content="Fitness_App: независимый аудит трёх ревью-агентов — тренер, дизайн, общая готовность. Что реально работает, что нет, и сколько до релиза.">
+<style>
+  :root{
+    --bg:#f6f5f0; --surface:#ffffff; --surface-2:#eeece2; --border:#dcd9cb;
+    --text:#181a14; --muted:#5b5f52; --accent:#5c7a00; --accent-strong:#3e5400;
+    --ok:#1e7a3d; --ok-bg:#e3f3e6;
+    --warn:#8a5a00; --warn-bg:#fbeecb;
+    --crit:#a3271f; --crit-bg:#fbe3e0;
+    --hold:#5b5f52; --hold-bg:#eeece2;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+      --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+      --ok:#7fe0a0; --ok-bg:#16321f;
+      --warn:#f0c05a; --warn-bg:#3a2c0c;
+      --crit:#ff8f85; --crit-bg:#3a1512;
+      --hold:#9aa78e; --hold-bg:#20261a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0f0a; --surface:#151810; --surface-2:#1b1f15; --border:#2b3122;
+    --text:#eaf0e0; --muted:#9aa78e; --accent:#c9ff47; --accent-strong:#d9ff77;
+    --ok:#7fe0a0; --ok-bg:#16321f;
+    --warn:#f0c05a; --warn-bg:#3a2c0c;
+    --crit:#ff8f85; --crit-bg:#3a1512;
+    --hold:#9aa78e; --hold-bg:#20261a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Manrope','Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;padding-inline:16px;}
+  .wrap{max-width:860px;margin:0 auto;padding-block:28px 64px;}
+  h1,h2,h3{font-family:'Archivo','Manrope',sans-serif;text-wrap:balance;letter-spacing:-.01em;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--crit);margin-bottom:10px;}
+  .eyebrow::before{content:"●";font-size:9px;}
+  h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:0 0 10px;}
+  .lede{color:var(--muted);font-size:16px;max-width:62ch;margin:0;}
+  .tldr{display:flex;flex-wrap:wrap;gap:8px;margin-block:20px 8px;}
+  .pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;gap:6px;}
+  .pill.crit{background:var(--crit-bg);color:var(--crit);border-color:transparent;}
+  .pill.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent;}
+  .pill.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent;}
+  section{margin-block:38px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--crit);margin:0 0 4px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  h2 .num{color:var(--muted);font-weight:500;margin-right:8px;}
+  h3{font-size:17px;margin:20px 0 8px;font-weight:700;}
+  p{margin:0 0 12px;}
+  a{color:var(--accent-strong);}
+  code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+  .callout{border:1px solid var(--crit);background:var(--crit-bg);border-radius:12px;padding:18px 20px;margin-top:14px;}
+  .callout h3{margin-top:0;color:var(--crit);}
+  .callout.warn{border-color:var(--warn);background:var(--warn-bg);}
+  .callout.warn h3{color:var(--warn);}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
+  .tbl-wrap{overflow-x:auto;}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;}
+  .badge.broken{background:var(--crit-bg);color:var(--crit);}
+  .badge.partial{background:var(--warn-bg);color:var(--warn);}
+  .badge.unproven{background:var(--hold-bg);color:var(--hold);}
+  .badge.ok{background:var(--ok-bg);color:var(--ok);}
+  ul.plain{margin:8px 0 0;padding-left:20px;}
+  ul.plain li{margin-bottom:6px;}
+  .quote{border-left:3px solid var(--accent);padding:2px 0 2px 14px;color:var(--muted);font-style:italic;margin:10px 0;}
+  footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:12.5px;}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness_App · независимый аудит · 2026-09-18</span>
+  <h1>Честная картина: тренер сломан, дизайн не проверен, до релиза 6–10 недель</h1>
+  <p class="lede">Вчерашний отчёт был честным по документам, но документы сами оказались ненадёжным источником. По прямому требованию — три независимых ревью без доверия к самоотчётам decision log, только код и живые доказательства.</p>
+  <div class="tldr">
+    <span class="pill crit">Тренер падает с системным крашем — не чинилось с 31.08</span>
+    <span class="pill warn">Проверка исправления дизайна на устройстве сорвалась — не переделана</span>
+    <span class="pill warn">Распознавание оборудования: измерена не та цепочка, продуктовая точность неизвестна</span>
+    <span class="pill">6–10 недель до беты, 3–4 месяца до полной готовности</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b70661e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <h2><span class="num">01</span>Почему прошлый отчёт был неточным</h2>
+  <p>«Бэклог исчерпан» — правда как утверждение о списке задач. Но «список задач пуст» ≠ «продукт работает» — а именно так это прозвучало. Механизм воспроизводится многократно: почти каждое закрытие гейта опиралось на код-ревью, golden-тесты на Windows или GPT-PM APPROVE — ни один из этих методов не видит системный краш-диалог и не отличает правильный пиксель от закреплённого в эталоне неправильного. Каждый раз, когда кто-то всё-таки смотрел на живой телефон — дефект находился с первой попытки (31.08 — краш тренера, 16.09 — неверный стиль карточек Home).</p>
+</section>
+
+<section>
+  <div class="callout">
+    <h3>🔴 Тренер (Form Coach) — реально падает</h3>
+    <p>На S8 (Android 8, Mali GPU) тап «Присед» запускает отдельный системный процесс <code>mlkit_acceleration_mini_benchmark</code> (бенчмарк GPU-ускорения Google Play Services), который падает с <code>Fatal signal 6 (SIGABRT)</code>. Android показывает диалог «Приложение fitness_app остановлено» с единственной кнопкой — обычный пользователь дальше не пройдёт.</p>
+    <p><b>Найдено 2026-08-31, ни разу не исправлено и не перепроверено с тех пор.</b> Гейт G17 («фигура тренера совпадает с эталоном»), который в отчётах фигурировал как закрывающий тренера — проверял только визуальное соответствие demo-видео, а не этот путь запуска тренировки. Краш и закрытие G17 — про разные части одной фичи.</p>
+    <p>Проверено в этой сессии: краш падает в закрытом коде Google до того, как выполнение доходит до нашего Dart <code>try/catch</code> — поймать его из приложения невозможно, а у пакета <code>google_mlkit_pose_detection: ^0.14.0</code> нет публичного API отключить GPU-ускорение. Нужна проверка на других устройствах (современный GPU vs Mali, другая версия Android) — специфично ли это, или бьёт везде. Демо-видео для приседа отдельно отключено осознанно (плохой исходник) — это не баг, но заметная деградация.</p>
+  </div>
+</section>
+
+<section>
+  <div class="callout warn">
+    <h3>🟡 Дизайн — нет актуального подтверждения на устройстве</h3>
+    <p>Токены дизайн-системы (цвета, blur-формула, радиусы) в коде совпадают с эталоном <code>core/design/reference/fitness_hud_v1/</code> буквально, проверено напрямую по коду. Но единственная реальная проверка на живом устройстве (2026-09-16) сразу нашла подтверждённый баг — карточки Home рендерились неверным текстовым стилем, и golden-тесты его не ловили, потому что сам эталон-скриншот содержал этот баг (все гейты M1–M9 закрывались вообще без устройства).</p>
+    <p><b>Перепроверка исправления сорвалась</b>: при переустановке APK устройство отвалилось от adb (`INSTALL_FAILED_INSUFFICIENT_STORAGE`, затем потеря соединения), сессия не стала форсировать переподключение. С тех пор перепроверки не было — то есть буквально «нет превью с установленным дизайном» на сегодня. Плюс 142 вхождения старого <code>GlassCard</code> в 46 файлах всё ещё сосуществуют с новой HUD-системой на одних экранах.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>По подсистемам</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Подсистема</th><th>Статус</th><th>Почему</th></tr>
+    <tr><td>Form Coach (тренер)</td><td><span class="badge broken">СЛОМАН</span></td><td>Системный краш на старте тренировки, не чинилось с 31.08; точность подсчёта повторений никогда не измерялась на реальном устройстве</td></tr>
+    <tr><td>Распознавание оборудования</td><td><span class="badge partial">ЧАСТИЧНО</span></td><td>48,5% измерено в обход реального клиентского пути (напрямую в Vertex REST) — продуктовая точность неизвестна никому. Митигация («всегда переспрашивать») работает, но фича по факту — не «наведи камеру», а «выбери из списка с подсказкой»</td></tr>
+    <tr><td>Дизайн-система (HUD)</td><td><span class="badge partial">ЧАСТИЧНО</span></td><td>Токены верны в коде, но нет свежей проверки на устройстве; миграция GlassCard→Hud не завершена (142 вхождения)</td></tr>
+    <tr><td>Каталог/безопасность контента</td><td><span class="badge partial">ЧАСТИЧНО</span></td><td>19,1% упражнений (360) не размечены и структурно непроверяемы — fail-open фильтр травм по дизайну; теги — от вендора, не от врача</td></tr>
+    <tr><td>Платежи (Stripe)</td><td><span class="badge unproven">НЕ ДОКАЗАНО</span></td><td>Только test mode, реального платежа не было ни разу</td></tr>
+    <tr><td>App Check / защита прода</td><td><span class="badge unproven">НЕ ДОКАЗАНО</span></td><td>Последний машинный снимок статуса — месячной давности</td></tr>
+    <tr><td>Релизная сборка / публикация</td><td><span class="badge unproven">НЕ ДОКАЗАНО</span></td><td>CI собрать релиз не может без вашего секрета; в сторе никогда не публиковалось; targetSdk-дедлайн Play уже просрочен</td></tr>
+    <tr><td>Auth / онбординг / логирование тренировок</td><td><span class="badge ok">РАБОТАЕТ</span></td><td>Проверено вручную на устройстве, есть реальные интеграционные прогоны против продакшн-Firestore</td></tr>
+    <tr><td>Бэкенд / governance / CI</td><td><span class="badge ok">РАБОТАЕТ</span></td><td>Сделано качественно — правила Firestore в CI, аудит зависимостей, алерты доведены до реально работающих фильтров</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Punch-list: что реально осталось</h2>
+  <h3>Блокирует «продукт работает»</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Пункт</th><th>Оценка</th></tr>
+    <tr><td>1</td><td>Тренер: убрать краш-диалог ML Kit при старте</td><td>3–5 дней (если обходится) / 2–4 недели (если нужна смена pose-движка). <b>Первый шаг — воспроизвести на 2–3 устройствах, 1 день, сразу проясняет оценку.</b></td></tr>
+    <tr><td>2</td><td>Тренер: измерить, что он реально считает</td><td>4–6 дней — сейчас цифры нет вообще</td></tr>
+    <tr><td>3</td><td>Сквозное измерение продуктового пути сканера</td><td>2–4 дня</td></tr>
+    <tr><td>4</td><td>Дизайн: сверка всех экранов с эталоном на устройстве</td><td>1–2 недели</td></tr>
+    <tr><td>5</td><td>Дизайн: доделать миграцию GlassCard → Hud</td><td>2–4 недели</td></tr>
+    <tr><td>6</td><td>Закрыть измеренные провалы контраста WCAG</td><td>2–4 дня</td></tr>
+  </table>
+  </div>
+  <h3>Блокирует «можно выпускать»</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Пункт</th><th>Оценка</th></tr>
+    <tr><td>7</td><td>targetSdk 35→36 + проверка edge-to-edge на Android 16</td><td>2–4 дня (дедлайн Play уже просрочен, сначала проверить продление)</td></tr>
+    <tr><td>8</td><td>Секрет GOOGLE_SERVICES_JSON_B64 для CI-релизной сборки</td><td><b>ваше действие, 15 минут</b> — инженерная часть полностью готова</td></tr>
+    <tr><td>9</td><td>Stripe: выход из test mode</td><td>2–3 дня инженерно + операторские/юр. действия</td></tr>
+    <tr><td>10</td><td>App Check: зафиксировать реальный статус</td><td>2–3 дня</td></tr>
+    <tr><td>11</td><td>Play Console: листинг, Data Safety, скриншоты</td><td>1 неделя + 1–2 недели ожидания ревью</td></tr>
+  </table>
+  </div>
+  <h3>Блокирует «безопасное фитнес-приложение»</h3>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Пункт</th><th>Оценка</th></tr>
+    <tr><td>12</td><td>D1/H3 — клиническая валидация</td><td>внешняя сторона, недели + деньги; единственный пункт, который нельзя ускорить кодом</td></tr>
+    <tr><td>13</td><td>360 неразмеченных упражнений</td><td>решение — за клиницистом (п.12)</td></tr>
+    <tr><td>14</td><td>purpose для 1484 упражнений, 1368 непросмотренных карточек</td><td>3–6 недель контента (или LLM-проход + выборочная проверка ≈ 1–2 недели)</td></tr>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Реалистичный срок</h2>
+  <ul class="plain">
+    <li>Тренер рабочий и измеренный: <b>2–4 недели</b> (неопределённость — от воспроизводимости краша на других GPU)</li>
+    <li>Дизайн реально сверен и домигрирован: <b>3–6 недель</b></li>
+    <li>Готовность к подаче в Play: ещё <b>2–3 недели</b> сверху</li>
+    <li>Клиническая валидация — идёт параллельно, но не ускоряется кодом; вероятно, самый долгий пункт</li>
+  </ul>
+  <p class="quote">До состояния «можно выпускать в бету реальным людям» — порядка 6–10 недель инженерной работы. До «проект закрыт как продукт» — реалистично 3–4 месяца, при текущем контентном долге и незакрытой клинической авторитетности.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span>Что сделать прямо сейчас</h2>
+  <ul class="plain">
+    <li><b>Подключить телефон по USB с включённой отладкой</b> — без этого пункты 1, 2, 4 не двигаются дальше диагностики; adb сейчас не видит ни одного устройства.</li>
+    <li><b>Проверить в Play Console продление дедлайна targetSdk 36</b> — 15 минут, никто ещё не проверял.</li>
+    <li><b>Выдать секрет GOOGLE_SERVICES_JSON_B64</b> — разблокирует единственный полностью готовый кусок релизного конвейера (CI-сборку).</li>
+  </ul>
+</section>
+
+<footer>
+  Собрано тремя независимыми ревью-агентами (flutter-reviewer, code-reviewer, architect), без доверия к самоотчётам decision log — только прямое чтение кода и первичных записей с их собственными file:line-цитатами. Источники: <code>core/DECISION_LOG.md</code> строки 37680–37768 (краш тренера), 54388–54448 (находка на устройстве 16.09), 54489–54614 (точность распознавания и опровергнутый фикс); <code>mobile/lib/features/form_check/data/mlkit_pose_detector_service.dart</code>; <code>mobile/lib/core/theme/hud_tokens.dart</code>; <code>core/PHASE_4B_STRIPE_SETUP.md</code>; <code>core/PRODUCTION_MANIFEST.md</code>.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
