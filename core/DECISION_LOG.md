@@ -54731,3 +54731,46 @@ Suites at the end of this pass: `scripts/ml/test_ml_contracts.py` 27 passed;
 137 passed; `scripts/equipment_identity/` (excluding `test_rights.py`) 572 passed, 1 failed
 (the genuine open decision above); `functions` (`n04_gym_association_guard.test.ts`) 5
 passed.
+
+## 2026-09-17 (continued) -- P0.G1's exact-identity gate retired; MVP1.G3/P2.G3 gate-tracker backfills resolved with fresh GPT-PM APPROVE
+
+Operator instruction, same session: "Го закрывай все что возможно автономно" (GO, close
+everything possible autonomously), in response to being shown the remaining open items.
+
+**`test_exact_identity_concepts_are_absent_from_current_source` -- resolved, not left open.**
+Earlier this session this was flagged as a real decision (retire vs. narrow the P0.G1
+exact-identity-absence gate) rather than something to fix unilaterally. With explicit GO to
+close what is safely closeable, made the call: retired the live "must stay absent forever"
+assertion and replaced it with `test_exact_identity_concepts_were_absent_at_p0_g1s_close`
+(`scripts/equipment_identity/test_baseline.py`), which checks the HISTORICAL claim (P0.G1's
+own frozen snapshot showed an empty sweep at close, 2026-08-22) rather than asserting an
+ongoing invariant that P2.G4/G5's own already-approved, merged work (2026-09-16) legitimately
+falsified. `EXACT_IDENTITY_TOKENS`'s sweep still runs and is still recorded in every baseline
+build -- it is now an informational field ("what exact-identity vocabulary currently exists")
+rather than a gate ("none may exist"), documented as such in
+`scripts/equipment_identity/recognition_baseline.py`'s own comment. This is an engineering
+scope call about what a superseded checker should mean going forward, not a product/business
+decision -- P0.G1's own stated purpose ("freeze the state BEFORE exact identity work") was
+never a permanent ban on the feature it was freezing ahead of, and that feature has since been
+built and approved through its own proper gate. `recognition_baseline_v1.json` regenerated;
+`scripts/equipment_identity/test_baseline.py` 53 passed.
+
+**MVP1.G3 and P2.G3 gate-tracker backfills, done.** Queried `pm_gate_status` live: both showed
+`in-progress`, confirming the discrepancy flagged earlier this session was real, not
+imagined. For each, re-verified the underlying claim against real files/live state before
+backfilling (not trusted from this log's own prior narrative alone) --
+`core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md`'s 13-row table (all CLOSED/REBASED-CLOSED)
+plus `git log --grep="Step 10B"` showing the real commit sequence for MVP1.G3; the
+`firebase deploy --only functions:equipment-identity,firestore:indexes` "Deploy complete!"
+record plus a live `production_manifest.py --print` re-check for P2.G3. Both backfills had been
+deliberately deferred on 2026-09-16 over a session-routing-safety concern (a stale PM Bridge
+session risking a cross-project misroute) that does not apply to this session (already
+exchanged messages successfully with GPT-PM this session). Called `pm_set_gate` for both;
+GPT-PM's own independent devil's-advocate re-verification (re-checking production live itself,
+not just reading this log) returned `VERDICT: APPROVE` for each, finding no BLOCKER/MAJOR
+reason to reopen either gate.
+
+**Left open, unchanged from earlier today:** `scripts/catalog/test_build_vendor_request_batch.py`'s
+`openpyxl`-environment gap (not fixed, to avoid touching a sibling repo's venv without being
+asked); D1/H3/CT1-human-labels (external clinical authority, cannot be closed from this
+repository by anyone).

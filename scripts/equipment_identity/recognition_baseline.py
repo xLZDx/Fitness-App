@@ -168,9 +168,17 @@ SCANNER_CONTRACTS: tuple[tuple[str, str], ...] = (
     ),
 )
 
-#: Tokens that must not appear anywhere in the current scanner source. Their
-#: absence IS the baseline claim "exact identity does not exist yet" — v4.4's
-#: own vocabulary for the feature this baseline exists to precede.
+#: Tokens swept to record whether exact-identity vocabulary exists in the
+#: scanner/equipment source. Originally a hard "must be absent" gate — v4.4's
+#: own vocabulary for the feature this baseline exists to precede. Retired as
+#: a gate 2026-09-17 (core/DECISION_LOG.md, same date;
+#: scripts/equipment_identity/test_baseline.py's
+#: test_exact_identity_concepts_were_absent_at_p0_g1s_close): P2.G4/
+#: P2.G5-readiness (2026-09-16, already reviewed and merged) is the
+#: authorized exact-identity work P0.G1 existed to precede, and it now
+#: legitimately uses several of these tokens. The sweep still runs and is
+#: still recorded in the baseline payload — it is now an informational
+#: field about what exists, not an assertion about what must not.
 EXACT_IDENTITY_TOKENS = (
     "identityLevel",
     "EXACT_MODEL",

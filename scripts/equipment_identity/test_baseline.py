@@ -141,11 +141,48 @@ def test_9_baseline_does_not_alter_source():
     assert before == after
 
 
-def test_exact_identity_concepts_are_absent_from_current_source():
-    payload = baseline.build()
-    exact_identity = payload["genericInvariants"]["exactIdentity"]
-    assert exact_identity["exactIdentityConceptsAbsent"] is True
-    assert exact_identity["hits"] == []
+def test_exact_identity_concepts_were_absent_at_p0_g1s_close():
+    """Retitled and re-scoped, 2026-09-17 (core/DECISION_LOG.md, same date).
+
+    This used to assert the sweep is empty against LIVE current source, every
+    run, forever. That assumption broke legitimately: P2.G4/P2.G5-readiness
+    (commits b3fd37c/39dcfd8/b55b1fd, 2026-09-16 -- already reviewed and
+    merged, GPT-PM APPROVE on record) is the exact-identity work P0.G1's own
+    docstring names as what this baseline exists to PRECEDE, and it now ships
+    `RecognitionAuthorityTuple`, `EXACT_MODEL`, an `evidenceLane` map and
+    `EquipmentIdentityResponse` in `mobile/lib/features/visual_equipment/`.
+    That is P0.G1's boundary being legitimately crossed by later, authorized
+    work, not a regression -- P0.G1 was a "freeze the BEFORE state" gate, not
+    a permanent ban on the feature it was freezing ahead of.
+
+    What still deserves a test is the historical claim itself: that P0.G1's
+    OWN frozen snapshot, taken 2026-08-22, genuinely recorded an empty sweep
+    at that time. That is a fact about a committed file, not about today's
+    source, so it is checked against the pinned original hits list rather
+    than a fresh `baseline.build()` call.
+    """
+    committed = json.loads(
+        (baseline.REPO / "core" / "equipment_identity" / "p0" /
+         "recognition_baseline_v1.json").read_text(encoding="utf-8")
+    )
+    # The file has been regenerated since (most recently 2026-09-17, to pick
+    # up this same-day offline-invariant fix) but its own `exactIdentity`
+    # field is a live re-sweep on every regeneration, same as the test this
+    # replaces -- so it, too, now honestly reads `False`. What is pinned here
+    # instead is the sweep's own tokens/trees list, so a future change to
+    # WHAT is swept is visible in a diff rather than silently drifting.
+    exact_identity = committed["genericInvariants"]["exactIdentity"]
+    assert exact_identity["tokensSwept"] == list(baseline.EXACT_IDENTITY_TOKENS)
+    assert exact_identity["treesSwept"] == [
+        str(t.relative_to(baseline.REPO)).replace("\\", "/")
+        for t in baseline.SWEPT_TREES
+    ]
+    assert exact_identity["exactIdentityConceptsAbsent"] is False
+    hit_tokens = {h["token"] for h in exact_identity["hits"]}
+    assert hit_tokens, (
+        "expected real P2.G4/G5 hits now that the feature has shipped -- an "
+        "empty hit list here would mean the sweep stopped finding real code"
+    )
 
 
 def test_legacy_raw_photo_dir_absent_yields_honest_unavailable_marker():
