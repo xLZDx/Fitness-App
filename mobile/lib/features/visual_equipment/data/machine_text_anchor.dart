@@ -262,8 +262,8 @@ List<TextAnchorMatch> matchMachineText(
   // The text cannot tell those apart, so it does not try: both come back as
   // candidates and something else -- the classifier, or the user -- decides.
   //
-  // The confidence is deliberately BELOW ScanResult.confidentMargin territory
-  // so neither can be promoted to a settled answer on its own.
+  // The confidence is deliberately mediocre so neither reads as a settled
+  // answer on its own -- both are returned as candidates, not a pick.
   return [
     for (final id in distinct)
       TextAnchorMatch(

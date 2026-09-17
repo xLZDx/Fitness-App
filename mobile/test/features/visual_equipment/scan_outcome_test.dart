@@ -10,12 +10,17 @@ import 'package:fitness_app/features/visual_equipment/data/visual_equipment_matc
 /// representation at all.
 void main() {
   group('ScanResult.fromMatches', () {
-    test('a clear leader is confident', () {
+    // FITAPP-EQUIP-ACC-2026-09-17: a single candidate and a wide top1/top2
+    // margin used to both mean "confident". Measurement (48.5% live top-1 on
+    // 33 real gym photos, core/ml/eval/eval_results_2026-09-17.json) showed
+    // neither signal separates a correct answer from a confident-sounding
+    // wrong one, so every non-empty match list now settles as alternatives.
+    test('a clear leader is still alternatives, not confident', () {
       final r = ScanResult.fromMatches(const [
         VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
         VisualMatch(equipmentId: 'squat_rack', confidence: 0.2),
       ]);
-      expect(r.outcome, ScanOutcome.confident);
+      expect(r.outcome, ScanOutcome.alternatives);
       expect(r.matches.first.equipmentId, 'leg_press');
     });
 
@@ -31,27 +36,10 @@ void main() {
       expect(r.matches, hasLength(3));
     });
 
-    test('the margin is the boundary, and it is inclusive', () {
-      final atMargin = ScanResult.fromMatches([
-        const VisualMatch(equipmentId: 'a', confidence: 0.50),
-        VisualMatch(
-            equipmentId: 'b', confidence: 0.50 - ScanResult.confidentMargin),
-      ]);
-      expect(atMargin.outcome, ScanOutcome.confident);
-
-      final justUnder = ScanResult.fromMatches([
-        const VisualMatch(equipmentId: 'a', confidence: 0.50),
-        VisualMatch(
-            equipmentId: 'b',
-            confidence: 0.50 - ScanResult.confidentMargin + 0.01),
-      ]);
-      expect(justUnder.outcome, ScanOutcome.alternatives);
-    });
-
-    test('a lone match is confident with nothing to compare against', () {
+    test('a lone match is alternatives with nothing to compare against', () {
       final r = ScanResult.fromMatches(
           const [VisualMatch(equipmentId: 'leg_press', confidence: 0.3)]);
-      expect(r.outcome, ScanOutcome.confident);
+      expect(r.outcome, ScanOutcome.alternatives);
     });
 
     test('no matches never resolves to unknown on its own', () {
@@ -155,17 +143,19 @@ void main() {
           reason: 'the fallback must not file a machine identity');
     });
 
-    test('the cloud path keeps its confident outcome', () {
-      // The control. Without it this suite would pass just as well if
-      // fromMatches had stopped returning confident altogether.
+    test('the cloud path is alternatives too, same as offline', () {
+      // FITAPP-EQUIP-ACC-2026-09-17: this used to be the control proving the
+      // online and offline paths diverge. They no longer do -- neither path
+      // is trusted to settle on one answer until a real end-to-end
+      // measurement of the production (cloud) path exists.
       final r = ScanResult.fromMatches(
         const [
           VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
           VisualMatch(equipmentId: 'bench', confidence: 0.1),
         ],
       );
-      expect(r.outcome, ScanOutcome.confident);
-      expect(r.isWorthRemembering, isTrue);
+      expect(r.outcome, ScanOutcome.alternatives);
+      expect(r.isWorthRemembering, isFalse);
     });
   });
 

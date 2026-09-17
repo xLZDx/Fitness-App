@@ -875,10 +875,28 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                           onOpen: _openEquipment,
                         )
                       : const SizedBox.shrink(),
+                  // FITAPP-EQUIP-ACC-2026-09-17 (GPT-PM review, round 2):
+                  // every cloud match now settles here instead of `confident`,
+                  // so this list is where the user's OWN identification now
+                  // happens -- a tap is no longer "open a runner-up", it is
+                  // "this is the machine". `isWorthRemembering` stays false
+                  // for `alternatives` (nothing is filed before the user
+                  // picks), but the pick itself is exactly the answer the
+                  // user was asked to give, and must be recorded the same way
+                  // a `confident` auto-answer already is -- or a tap here
+                  // routes to the exercises with zero trace in "My machines".
                   ScanOutcome.alternatives => _Matches(
                       matches: result.matches,
                       heading: l10n.scannerNotSureClosest,
-                      onOpen: _openEquipment,
+                      onOpen: (id) async {
+                        final picked = result.matches
+                            .firstWhere((m) => m.equipmentId == id);
+                        _remember(
+                            picked.equipmentId,
+                            picked.confidence,
+                            RecognitionSource.photo);
+                        await _openEquipment(id);
+                      },
                     ),
                   // Not in the catalogue, but the describer could name it.
                   // That card IS the answer -- "не удалось понять" stops

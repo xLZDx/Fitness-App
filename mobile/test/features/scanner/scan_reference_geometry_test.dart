@@ -21,6 +21,7 @@ import 'package:fitness_app/features/scanner/widgets/scan_frame.dart';
 import 'package:fitness_app/features/scanner/widgets/scan_glyph.dart';
 import 'package:fitness_app/features/scanner/widgets/scan_match_card.dart';
 import 'package:fitness_app/features/scanner/widgets/scan_viewfinder.dart';
+import 'package:fitness_app/features/visual_equipment/data/mlkit_text_recogniser.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
@@ -195,6 +196,15 @@ void main() {
         scanPreviewBuilderProvider
             .overrideWithValue((_) => const SizedBox.shrink()),
         equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+        // FITAPP-EQUIP-ACC-2026-09-17: a cloud classifier match no longer
+        // settles as confident regardless of confidence or margin (it always
+        // resolves to alternatives, ScanResult.fromMatches). The printed-text
+        // anchor is the only remaining path to ScanOutcome.confident -- an
+        // exact catalogue text match, not a model classification -- so this
+        // fixture reaches the "found" reference state through it instead, to
+        // keep exercising ScanMatchCard's real pixel geometry.
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('Lat pulldown')),
         visualEquipmentServiceProvider.overrideWithValue(
           MockVisualEquipmentService(fixedResults: const [
             VisualMatch(equipmentId: 'lat_pulldown', confidence: 0.92),
@@ -218,7 +228,14 @@ void main() {
     ));
     await tester.pump();
     await tester.pump();
-    return ProviderScope.containerOf(tester.element(find.byType(ScannerPage)));
+    final container =
+        ProviderScope.containerOf(tester.element(find.byType(ScannerPage)));
+    // The printed-text anchor needs the catalogue loaded before it can match
+    // against it (see _anchorOnPrintedText); without this, `lockMatch`'s tap
+    // can race a still-pending equipmentListProvider and silently fall
+    // through to the classifier path instead.
+    await container.read(equipmentListProvider.future);
+    return container;
   }
 
   /// Through the page's own `_classify` (the gallery path), so `_attempted`

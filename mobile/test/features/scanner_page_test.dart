@@ -492,15 +492,29 @@ void main() {
       // again"; tapping it forgets the answer -- the match card leaves, the
       // hint returns to "align", the button reads "Recognise" -- without
       // touching the camera.
+      //
+      // FITAPP-EQUIP-ACC-2026-09-17: a cloud classifier match no longer
+      // settles as confident, so this locks the match through the
+      // printed-text anchor instead (the only remaining reachable path to
+      // ScanOutcome.confident) -- "leg press" is in machine_text_anchor.dart's
+      // own phrase table at confidence 0.92, which is also why the ring
+      // assertion below is unchanged.
       final spy = _SpySession();
       final container = await pumpScan(tester, overrides: [
         scanCameraSessionProvider.overrideWithValue(spy),
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.92),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
       ]);
+      await container.read(equipmentListProvider.future);
       await tester.pump();
       final stopsBefore = spy.stops;
       _useFakePicker();
@@ -578,15 +592,25 @@ void main() {
       // previous design asked each navigation call site to switch live mode off
       // first and one of them forgot, leaving the camera streaming behind the
       // page being read.
+      // FITAPP-EQUIP-ACC-2026-09-17: locked through the printed-text anchor
+      // -- the only remaining reachable path to ScanOutcome.confident -- same
+      // as the test above.
       final spy = _SpySession();
       final container = await pumpScan(tester, overrides: [
         scanCameraSessionProvider.overrideWithValue(spy),
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
       ]);
+      await container.read(equipmentListProvider.future);
       await tester.pump();
       final before = spy.stops;
 
@@ -606,7 +630,17 @@ void main() {
           reason: 'navigating away must release the camera');
     });
 
-    testWidgets('renders classifier matches with confidence', (tester) async {
+    testWidgets(
+        'a cloud match, however confident, renders as alternatives, not a locked card',
+        (tester) async {
+      // FITAPP-EQUIP-ACC-2026-09-17: measurement (48.5% live top-1 on 33 real
+      // gym photos) showed neither "one candidate" nor "a wide top1/top2
+      // margin" separates a correct cloud answer from a confident-sounding
+      // wrong one, so every cloud match -- including a single one at 0.8 with
+      // nothing to compare against -- now settles as alternatives instead of
+      // locking a match card. This replaces the old
+      // "renders classifier matches with confidence" test, which asserted the
+      // exact `confident`-plus-runner-up rendering this fix removes.
       final container = await pumpScan(tester, overrides: [
         visualEquipmentServiceProvider.overrideWithValue(
           MockVisualEquipmentService(fixedResults: const [
@@ -625,14 +659,16 @@ void main() {
           .classifyFilePath('/tmp/machine.jpg');
       await tester.pump();
 
-      // The confident match is the reference's match card (ring + name);
-      // the runner-up is a plain row under the button, with its own figure.
-      expect(find.byKey(const Key('scan-match-card')), findsOneWidget);
+      expect(
+          container.read(visualEquipmentControllerProvider).requireValue.outcome,
+          ScanOutcome.alternatives);
+      // No locked card -- both candidates are plain rows in the "not sure"
+      // list, each with its own confidence figure.
+      expect(find.byKey(const Key('scan-match-card')), findsNothing);
+      expect(find.text('MACHINE LOCKED'), findsNothing);
+      expect(find.text('Not sure — closest matches'), findsOneWidget);
       expect(find.text('leg press'), findsOneWidget);
-      expect(find.text('80'), findsOneWidget,
-          reason: 'the ring shows the classifier\'s own confidence, unrounded '
-              'differently from the row below');
-      expect(find.text('Best matches'), findsOneWidget);
+      expect(find.text('80% confidence'), findsOneWidget);
       expect(find.text('treadmill'), findsOneWidget);
       expect(find.text('20% confidence'), findsOneWidget);
       // The classifier fills labelHint too, with its own internal label. That
@@ -649,25 +685,39 @@ void main() {
     testWidgets(
         'a printed-text match keeps its honesty note out of the canonical card',
         (tester) async {
+      // FITAPP-EQUIP-ACC-2026-09-17: a cloud classifier can no longer settle
+      // as confident at all (even with a `MatchSource.printedText` tag
+      // fabricated directly on its output, as this test used to do), so this
+      // now goes through the REAL printed-text anchor -- the only remaining
+      // path to ScanOutcome.confident. "Falcon Incline" is deliberately not
+      // in machine_text_anchor.dart's phrase table, so the match comes from
+      // the catalogue-name fallback (`_matchByCatalogueName`), which is what
+      // sets `labelHint` to the exact printed phrase. `normaliseText` strips
+      // everything but letters, and `_matchByCatalogueName` only considers
+      // MULTI-word catalogue names -- a digit-bearing single "word" like
+      // "Cybertron 9000" silently drops to one word and is skipped, which is
+      // what the first version of this fixture got wrong.
       final container = await pumpScan(tester, overrides: [
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(
-              equipmentId: 'leg_press',
-              confidence: 0.8,
-              source: MatchSource.printedText,
-              labelHint: 'leg press 9000',
-            ),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('FALCON INCLINE')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Falcon Incline',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
       ]);
+      await container.read(equipmentListProvider.future);
 
       await container
           .read(visualEquipmentControllerProvider.notifier)
           .classifyFilePath('/tmp/machine.jpg');
       await tester.pump();
 
-      final noteFinder = find.textContaining('LEG PRESS 9000');
+      final noteFinder = find.textContaining('FALCON INCLINE');
       expect(noteFinder, findsOneWidget,
           reason: 'the honesty note must still reach the user');
       expect(
@@ -695,13 +745,16 @@ void main() {
     testWidgets(
         'a confident match with real logged history shows Level-1 memory',
         (tester) async {
+      // FITAPP-EQUIP-ACC-2026-09-17: locked through the printed-text anchor.
+      // `_FakeEquipmentRepository.listEquipment()` returns an empty list, but
+      // that is enough -- "leg press" is matched from
+      // machine_text_anchor.dart's own phrase table, not from the catalogue
+      // content; the catalogue only needs to have resolved (non-null) for the
+      // anchor to run at all.
       final when = DateTime.now().subtract(const Duration(days: 3));
       final container = await pumpScan(tester, overrides: [
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.8),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
         equipmentRepositoryProvider
             .overrideWithValue(_FakeEquipmentRepository(['leg_press_row'])),
         workoutSessionsProvider.overrideWith((_) => Stream.value([
@@ -716,6 +769,7 @@ void main() {
         workoutSessionTotalsProvider.overrideWith(
             (_) async => WorkoutLogTotals(total: 1, longestStreakDays: 1)),
       ]);
+      await container.read(equipmentListProvider.future);
 
       await container
           .read(visualEquipmentControllerProvider.notifier)
@@ -1354,14 +1408,24 @@ void main() {
     testWidgets('a confident result offers the AI Coach', (tester) async {
       // R2.8: reuse the existing sheet at the moment the user is standing in
       // front of the machine, rather than only one screen later.
+      //
+      // FITAPP-EQUIP-ACC-2026-09-17: locked through the printed-text anchor
+      // -- the only remaining reachable path to ScanOutcome.confident.
       final container = await pumpScan(tester, overrides: [
         scanCameraSessionProvider.overrideWithValue(_SpySession()),
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
       ]);
+      await container.read(equipmentListProvider.future);
 
       await container
           .read(visualEquipmentControllerProvider.notifier)
@@ -1386,13 +1450,24 @@ void main() {
       // `SafetyContext.blockedByAStatedAnswer` exists to draw and which the
       // test above ('a confident result offers the AI Coach', an un-onboarded
       // user) is the control for.
+      // FITAPP-EQUIP-ACC-2026-09-17: locked through the printed-text anchor,
+      // so `scan-ai-coach`'s absence proves the safety block, not merely that
+      // `alternatives` never renders it (which is what a cloud-classifier
+      // fixture would now prove instead, uselessly, since it never reaches
+      // `locked` at all).
       final container = await pumpScan(tester, overrides: [
         scanCameraSessionProvider.overrideWithValue(_SpySession()),
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
         safetyContextProvider.overrideWith((_) async => SafetyContext(
               screening: screen({
                 for (final q in ParQQuestion.values)
@@ -1400,6 +1475,7 @@ void main() {
               }),
             )),
       ]);
+      await container.read(equipmentListProvider.future);
 
       await container
           .read(visualEquipmentControllerProvider.notifier)
@@ -1422,13 +1498,21 @@ void main() {
       // doing the blocking -- only F014's professional-guidance answer can.
       // The control is 'a confident result offers the AI Coach' above, which
       // runs the same recognition with no safety override at all.
+      // FITAPP-EQUIP-ACC-2026-09-17: locked through the printed-text anchor,
+      // for the same reason as N04 above.
       final container = await pumpScan(tester, overrides: [
         scanCameraSessionProvider.overrideWithValue(_SpySession()),
-        visualEquipmentServiceProvider.overrideWithValue(
-          MockVisualEquipmentService(fixedResults: const [
-            VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
-          ]),
-        ),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
         safetyContextProvider.overrideWith((_) async => SafetyContext(
               screening: screen({
                 for (final q in ParQQuestion.values) q: false,
@@ -1438,6 +1522,7 @@ void main() {
               ),
             )),
       ]);
+      await container.read(equipmentListProvider.future);
 
       await container
           .read(visualEquipmentControllerProvider.notifier)
@@ -1505,24 +1590,90 @@ void main() {
       // scan writes nothing" passes exactly as happily when NOTHING on the path
       // can write at all — which is how the earlier version of that test
       // passed while never reaching `_remember`.
+      //
+      // FITAPP-EQUIP-ACC-2026-09-17: a cloud classifier match can no longer
+      // settle as confident, so this control now goes through the
+      // printed-text anchor instead -- the only remaining reachable path to
+      // ScanOutcome.confident and its auto-remember-on-recognise behaviour.
+      // `_CountingService`/`service.calls` is dropped: the anchor answers
+      // first and the classifier is never reached, same as every other
+      // confident-via-anchor test in this file.
       final picker = _useFakePicker();
       final history = MockRecognitionHistoryRepository();
       addTearDown(history.dispose);
-      final service = _CountingService(const [
-        VisualMatch(equipmentId: 'leg_press', confidence: 0.95),
-      ]);
 
-      await pumpScan(tester, overrides: [
+      final container = await pumpScan(tester, overrides: [
         scanCameraSessionProvider.overrideWithValue(_SpySession()),
         recognitionHistoryRepositoryProvider.overrideWithValue(history),
-        visualEquipmentServiceProvider.overrideWithValue(service),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
       ]);
+      await container.read(equipmentListProvider.future);
       await tapGallery(tester);
 
       expect(picker.calls, 1, reason: 'the button opened the picker');
-      expect(service.calls, 1, reason: 'the picked path reached recognition');
       expect((await history.list()).map((e) => e.equipmentId), ['leg_press'],
           reason: 'a confident scan IS a machine the user identified');
+    });
+
+    testWidgets(
+        'a cloud alternatives scan is remembered only after the user picks one',
+        (tester) async {
+      // FITAPP-EQUIP-ACC-2026-09-17, GPT-PM review round 2 (MAJOR): after
+      // Option C, a cloud match is never auto-remembered (it is always
+      // `alternatives`, and `isWorthRemembering` is false for it) -- so the
+      // ONLY way a cloud identification still reaches "My machines" is the
+      // user's own tap in this list, which must now write the TAPPED
+      // candidate before navigating. Proves both halves: nothing is written
+      // before the tap, and exactly the tapped equipment is written after.
+      final history = MockRecognitionHistoryRepository();
+      addTearDown(history.dispose);
+
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        recognitionHistoryRepositoryProvider.overrideWithValue(history),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
+            VisualMatch(equipmentId: 'treadmill', confidence: 0.1),
+          ]),
+        ),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await tester.pump();
+
+      expect(
+          container.read(visualEquipmentControllerProvider).requireValue.outcome,
+          ScanOutcome.alternatives);
+      expect(await history.list(), isEmpty,
+          reason: 'nothing is written before the user picks one');
+
+      final cta = find.text('treadmill');
+      await tester.scrollUntilVisible(cta, 120);
+      await tester.tap(cta);
+      await tester.pumpAndSettle();
+
+      expect(find.text('equipment treadmill'), findsOneWidget,
+          reason: 'the tap still navigates to the picked equipment');
+      final written = await history.list();
+      expect(written.map((e) => e.equipmentId), ['treadmill'],
+          reason: 'exactly the machine the user tapped -- not the top '
+              'candidate the model happened to rank first (0.9, leg_press)');
+      expect(written.single.confidence, 0.1,
+          reason: 'the tapped candidate\'s own confidence, not the top one\'s');
+      expect(written.single.source, RecognitionSource.photo);
     });
 
     testWidgets('an undecided gallery scan is not remembered', (tester) async {

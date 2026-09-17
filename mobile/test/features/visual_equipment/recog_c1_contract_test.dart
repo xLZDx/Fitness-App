@@ -441,10 +441,13 @@ void main() {
         );
       }
       // The control: the same name above the floor is a normal candidate.
+      // FITAPP-EQUIP-ACC-2026-09-17: production no longer settles a cloud
+      // match as confident, regardless of count or margin -- it always
+      // resolves to alternatives until a real end-to-end measurement exists.
       final ok = GeminiVisualEquipmentService.parseResponse(
           '{"machine": "lat pulldown", "confidence": 0.9}', index);
       expect(ok, hasLength(1));
-      expect(ScanResult.fromMatches(ok).outcome, ScanOutcome.confident);
+      expect(ScanResult.fromMatches(ok).outcome, ScanOutcome.alternatives);
     });
 
     // Fail-closed, and NOT via `assert`: Dart strips assertions outside debug

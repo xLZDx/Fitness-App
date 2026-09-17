@@ -162,7 +162,12 @@ void main() {
           .classifyFilePath('/tmp/a.jpg');
 
       final result = c.read(visualEquipmentControllerProvider).requireValue;
-      expect(result.outcome, ScanOutcome.confident);
+      // FITAPP-EQUIP-ACC-2026-09-17: a cloud match, even alone, is no longer
+      // "confident" -- it settles as alternatives until a real end-to-end
+      // accuracy measurement exists. The describer is still skipped: the
+      // catalogue matched something, which is the actual condition this test
+      // name describes.
+      expect(result.outcome, ScanOutcome.alternatives);
       expect(result.matches.single.equipmentId, 'leg_press');
     });
 

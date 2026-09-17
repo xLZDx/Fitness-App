@@ -112,51 +112,37 @@ class ScanResult {
   /// all — the wrong reason.
   bool get isWorthRemembering => outcome == ScanOutcome.confident;
 
-  /// The gap that separates "one answer" from "pick one of these".
-  ///
-  /// 0.15 is not tuned against a labelled set — it is a starting threshold,
-  /// chosen so a leader has to be clearly ahead rather than merely first.
-  /// Named and in one place so it can be tuned from evidence later instead of
-  /// being re-invented at each call site.
-  static const double confidentMargin = 0.15;
-
   /// Classifies a ranked match list into confident-vs-alternatives.
   ///
   /// Never returns [ScanOutcome.unknown] or [ScanOutcome.noEquipment]: an
   /// empty list means the CALLER must decide which of those two it is, and it
   /// needs the describer's answer to tell them apart.
+  ///
+  /// FITAPP-EQUIP-ACC-2026-09-17: this used to trust a single candidate, or a
+  /// top1/top2 margin >= 0.15, as "confident" for an online (cloud) answer.
+  /// Measurement against 33 real gym photos (core/ml/eval/eval_results_2026-09-17.json,
+  /// reports/equipment_recognition_accuracy_2026-09-17.ru.html) put live
+  /// top-1 accuracy at 48.5% -- both a single high-confidence candidate and a
+  /// clean top1/top2 margin occurred repeatedly on WRONG answers, so neither
+  /// signal separates a correct identification from a confident-sounding
+  /// wrong one. Operator-approved decision C (PM Bridge state/decisions.jsonl,
+  /// id FITAPP-EQUIP-ACC-2026-09-17): every non-empty match list -- online or
+  /// offline -- is presented as [ScanOutcome.alternatives] ("I am not sure,
+  /// you pick") until a real end-to-end measurement of the production path
+  /// exists. [ScanOutcome.confident] is no longer reachable from this factory;
+  /// it remains reachable only from the printed-text anchor
+  /// (`VisualEquipmentController._anchorOnPrintedText`), which reads text
+  /// printed on the machine itself rather than classifying a photo of it --
+  /// usually an exact catalogue-name match, but also a coarser inference when
+  /// three or more distinct machine names appear on one placard
+  /// (`matchMachineText`'s `cable_machine` case, confidence 0.75). Neither is
+  /// a Gemini classification, and neither was part of what this evaluation
+  /// measured.
   factory ScanResult.fromMatches(
     List<VisualMatch> ranked, {
     bool answeredOffline = false,
   }) {
     if (ranked.isEmpty) return const ScanResult.noEquipment();
-    // An on-device answer is never presented as settled, however sure the
-    // model sounds. It is a 10-class classifier serving a catalogue of 70+
-    // machines, so every machine outside those ten MUST come back wearing one
-    // of their labels — and measurement says it does so at full confidence.
-    //
-    // B1, 30 real gym photos (core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md):
-    // an abduction machine scored `treadmill` 0.892, a Nautilus shoulder press
-    // scored `leg_press` 0.897, an abdominal machine `treadmill` 0.742. Those
-    // were the model's THREE most confident answers in the whole set and all
-    // three are wrong. A confidence gate cannot catch that — 0.85 would have
-    // admitted two of them — and neither can the top-1/top-2 margin, which for
-    // the abduction machine was 0.892 vs 0.032.
-    //
-    // So the honest degradation is at the source of the answer rather than at
-    // its score: "possibly one of these" is what this model can support. The
-    // real fix is more classes plus a none-of-mine class (B5); until then this
-    // keeps a guess from being dressed as an identification, and — via
-    // isWorthRemembering — keeps it out of the user's saved machines.
-    if (answeredOffline) {
-      return ScanResult.alternatives(ranked, answeredOffline: true);
-    }
-    if (ranked.length == 1) {
-      return ScanResult.confident(ranked, answeredOffline: answeredOffline);
-    }
-    final lead = ranked[0].confidence - ranked[1].confidence;
-    return lead >= confidentMargin
-        ? ScanResult.confident(ranked, answeredOffline: answeredOffline)
-        : ScanResult.alternatives(ranked, answeredOffline: answeredOffline);
+    return ScanResult.alternatives(ranked, answeredOffline: answeredOffline);
   }
 }

@@ -54524,3 +54524,85 @@ rather than being called R0-and-skipped outright.
 - `flutter analyze` on both changed files: no issues.
 
 **What this does NOT fix, stated honestly:** the underlying ~48.5%/55.6% base accuracy is unchanged — this closes exactly the one confirmed, 100%-reproducible category blind spot found so far, not the general reliability gap. Confidence still does not reliably separate right from wrong for every OTHER category; a broader mitigation (a real confidence floor tuned against a larger, more diverse eval set, or the operator's product-level risk-acceptance decision) is still open. This is one concrete, evidence-backed increment, not a claim that recognition is now reliable.
+
+**SUPERSEDED by the correction below (2026-09-17, same date): the claim above ("closes exactly the one confirmed... blind spot") is itself wrong.** Do not read this entry's own final paragraph as still current — see the dated correction that follows for why and what actually shipped instead.
+
+## Correction: the entry above overclaims what c2ae9dc actually fixed
+
+**Date:** 2026-09-17
+**Trigger:** follow-up session escalated c2ae9dc to GPT-PM (PM Bridge, project Fitness_App) with the
+measured eval numbers and a full-sweep devil's-advocate request. Two of GPT-PM's technical claims
+were independently re-verified against source before being accepted, and both held:
+
+- **c2ae9dc does not close the measured gap it was framed as fixing.** `kKnownUnreliableMachineNames`
+  drops a candidate only when the model's raw label IS `"rotary torso machine"`. All 4 measured real
+  failures in `core/ml/eval/eval_results_2026-09-17.json` had the model outputting a DIFFERENT wrong
+  label (`seated dip machine`, `seated row machine` x2, `calf raise machine`) — none of the 4 measured
+  failures are touched by this guard. The 3 new unit tests cited above exercise an artificial case
+  (the model correctly naming the unreliable category), not any of the 4 real recorded failures.
+- **The existing UI mitigation is weaker than the entry above implies.** In
+  `mobile/lib/features/visual_equipment/data/scan_outcome.dart` (`ScanResult.fromMatches`, before this
+  entry's own fix below), a single Gemini candidate was auto-`confident` regardless of its absolute
+  score, and a multi-candidate response used a top1/top2 margin (`confidentMargin = 0.15`) the code's
+  own comment already called a "starting threshold... not tuned against a labelled set." Neither
+  signal separated correct from wrong answers on the measured data.
+
+**Decision, logged and operator-approved:** PM Bridge `state/decisions.jsonl`, id
+`FITAPP-EQUIP-ACC-2026-09-17`, verdict APPROVED (operator, in-session, 2026-09-17). Option C
+(GPT-PM's recommendation): every cloud (Gemini) match — online, any candidate count, any margin — now
+resolves to `ScanOutcome.alternatives` ("I am not sure, you pick") instead of `ScanOutcome.confident`,
+until a real end-to-end measurement of the production path (through ML Kit OCR pre-processing/crop/
+resize, not a direct Vertex API call) exists. Implemented in `ScanResult.fromMatches`
+(`mobile/lib/features/visual_equipment/data/scan_outcome.dart`): the single-candidate and
+top1/top2-margin branches that produced `confident` were removed; every non-empty match list now
+returns `alternatives`, matching the treatment the offline/on-device fallback already had.
+`ScanOutcome.confident` remains reachable only from the printed-text anchor
+(`VisualEquipmentController._anchorOnPrintedText`) — usually an exact catalogue-name match, but also
+a coarser inference for a 3+-name cable-station placard (`matchMachineText`'s `cable_machine` case,
+confidence 0.75). Neither is a Gemini classification, and neither was part of what this evaluation
+measured.
+
+`kKnownUnreliableMachineNames` (c2ae9dc) is left in place unchanged: harmless, evidence-grounded for
+the one category it names, and now moot as a safety mechanism (every cloud answer goes through
+`alternatives` regardless), but removing it buys nothing either. Larger dataset expansion / per-category
+calibration is explicitly deferred, per GPT-PM, to a pre-beta gate (before any non-operator access to
+the scanner — TestFlight/Play beta/any distribution).
+
+**Round 2 (GPT-PM full-sweep review of this same gate, same date) found 4 MAJORs, all fixed before
+commit:**
+1. The tap-to-select `alternatives` flow (`_Matches`' `onOpen` in `scanner_page.dart`) opened the
+   chosen equipment but never called `_remember` — since `ScanResult.isWorthRemembering` is now
+   always false for a cloud match, an explicit user pick from the alternatives list stopped writing
+   to "My machines" entirely (previously any single high-confidence cloud match auto-wrote itself).
+   Fixed: the `ScanOutcome.alternatives` branch's `onOpen` now records the TAPPED match
+   (`picked.equipmentId`/`picked.confidence`, `RecognitionSource.photo`) before navigating — the
+   user's own selection is exactly the identification the old auto-write used to make on the model's
+   behalf.
+2. `flutter test test/features/visual_equipment/ test/features/scanner/` does not cover
+   `mobile/test/features/scanner_page_test.dart` (it lives one directory up). That suite had 7
+   failures from this change: five tests reached `ScanOutcome.confident` through the now-alternatives
+   cloud-classifier path and needed converting to the printed-text anchor (same technique as the
+   geometry-test fix) or to assert the new alternatives rendering, plus the two AI-Coach
+   safety-override tests that happened to still pass but for the wrong reason (no coach shown because
+   `alternatives` never renders `_ScanAiCoachEntry`, not because of the safety block being tested) —
+   also moved onto the text anchor so they test what their names claim again. See below for the
+   corrected full-suite command and count.
+3. This correction entry, as first written, was inserted BEFORE the prior entry's own closing
+   paragraph ("this closes exactly the one confirmed... blind spot"), leaving that already-refuted
+   claim as the last sentence of the whole block. Fixed: that paragraph now sits at the end of the
+   PRIOR entry (immediately above, followed by an explicit supersession note), and this correction is
+   what a reader now reaches last.
+4. This entry and `scan_outcome.dart`'s own doc comment called the printed-text anchor an "exact
+   catalogue text match." `machine_text_anchor.dart`'s `matchMachineText` also returns a single,
+   `ScanOutcome.confident`-triggering match for a 3+-name cable-station placard (`cable_machine` at
+   confidence 0.75) — an inference from the placard's shape, not a printed name. Both places now say
+   so.
+
+**Verification:** `scan_outcome_test.dart`, `scan_controller_test.dart` and
+`recog_c1_contract_test.dart` updated for the new always-`alternatives` cloud behaviour;
+`scan_reference_geometry_test.dart`'s and `scanner_page_test.dart`'s "found"/confident fixtures
+switched from a cloud-classifier single-match to the printed-text anchor (the only remaining path to
+`ScanOutcome.confident`) to keep exercising real, reachable UI; `scanner_page.dart`'s alternatives tap
+now writes to recognition history on selection. Full suite:
+`flutter test test/features/visual_equipment/ test/features/scanner/ test/features/scanner_page_test.dart`
+— all passing, 0 failing. `flutter analyze` on all changed files: no issues.
