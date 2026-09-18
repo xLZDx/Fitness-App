@@ -55222,3 +55222,58 @@ capture spanning both the crash-free relaunch and the `pm clear` follow-up attem
 scratchpad, not committed); `adb shell dumpsys window | grep mCurrentFocus` polled for ~2 minutes
 post-tap; `adb shell pm clear com.fitnessapp.fitness_app.sptr.debug`; screenshots confirming live
 camera preview was genuinely active (session scratchpad, not committed).
+
+---
+
+## 2026-09-18 (session end): handoff state for the next session -- trainer crash still unresolved, reliable repro not re-established
+
+**Context.** Operator gave a broad autonomous GO ("Автономно до конца и разберись с крашем") to
+keep working the trainer-crash problem after the S8 non-reproduction finding above, then paused
+the session mid-diagnosis ("пауза") and finally asked to close out cleanly with state saved for a
+follow-up session, explicitly skipping a GPT-PM review round for this wrap-up entry (operator
+instruction, this specific action only -- CLAUDE.md §21; does not change the mechanical commit/push
+review gate itself, which still runs its normal attempt-or-fail-open check regardless of what
+this entry says).
+
+**What was attempted this pass, after the S8 non-reproduction finding:** planned to test whether
+`adb shell pm clear com.google.android.gms` (resetting Play Services' own state, not just the
+app's) would restore the crash -- this was flagged in the prior entry as higher-blast-radius and
+not yet attempted. Before doing that, tried a cheaper experiment first: fresh `pm clear` on the
+app itself (again) plus a full guest sign-up and 10-step onboarding flow (tapped "Пропустить"
+through all 10 steps) to reach a genuinely first-run state, reasoning that the earlier
+non-reproduction might have been because the account/app state, not just Play Services' cache,
+still carried some memory of the prior run. **This was not completed** -- the session was paused
+by the operator right after onboarding finished, with S8 sitting on the Скан (camera scan) tab,
+before navigating back to Тренер по технике to test whether the crash recurs from this genuinely
+fresh state. `com.google.android.gms` was never cleared this pass.
+
+**Current device state at session end:**
+- **S8** (`ce02171299f0711005`): app is running, freshly onboarded as a new guest account (not
+  the same guest session as any prior entry), sitting on the Тренировки -> Скан tab. No crash
+  occurred during this onboarding pass. The Тренер по технике flow was NOT re-attempted from this
+  fresh state before the pause.
+- **S23** (`R5CW142SASR`): disconnected from adb by session end (`adb devices` no longer lists it);
+  its last known state was mid-session, stable, no new activity since the earlier S23 reproduction
+  entry.
+- Stray `adb logcat` background processes from this session (S8 continuous capture across two
+  attempts) were killed via `taskkill /F /IM adb.exe` at session end to avoid leaving zombie
+  capture processes running unattended; any not-yet-reviewed raw logcat output from this pass
+  lives only in the session scratchpad (`D:\Temp\claude\d--Repo\...\scratchpad\s8_retry_logcat.txt`)
+  and was not committed (per this project's convention of not committing raw diagnostic dumps).
+
+**Exact resumption point for the next session:** from S8's current state (fresh guest, onboarding
+done, on the Скан tab), navigate Тренировки -> Библиотека -> Для вас -> Тренер по технике ->
+Присед -> Готово -> Нажмите когда готовы, with continuous `logcat` running, and observe whether
+the crash reproduces from this genuinely fresh account+app state. If it still does not reproduce,
+the next lever is `adb shell pm clear com.google.android.gms` (higher blast radius -- resets ALL
+Play Services state on the device, not just this app's; already flagged in the prior entry as
+needing its own explicit confirmation before use, separate from the general "diagnose this crash"
+authorization already given).
+
+**Status: still open, still unresolved.** No app code has been changed at any point in this whole
+crash investigation (2026-08-31 discovery through this entry). The root cause (upstream Play
+Services `mlkit_vision_mediapipe.zzib` `NoSuchFieldError`, googlesamples/mlkit issue #993) is
+identified and documented; a reliable, on-demand reproduction method is not, and no mitigation can
+be responsibly written or verified until one exists. `reports/HONEST_STATUS_2026-09-18.ru.html`
+and `.html` punch-list item 1 already reflect this uncertainty accurately as of the prior commit
+(`0151638`) and do not need further revision for this entry.
