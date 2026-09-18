@@ -55330,8 +55330,8 @@ primary evidence, not accepted or dismissed on assertion.
    s8_run3 logcat names `com.google.mlkit:mediapipe-internal@@17.0.0-beta10` inside the app's own
    `/data/app/.../base.odex`, i.e. code **bundled in the app**, not the device's Play Services. Whether a
    different google_mlkit_pose_detection / native pose version avoids it was never tested. Corrected in
-   reports and the manifest comment: root cause is a native ML Kit/MediaPipe acceleration failure, exact artifact
-   unresolved. (The "Play Services caches the benchmark" hypothesis in earlier entries is likewise unsupported.)
+   reports and the manifest comment: the failure manifests in bundled ML Kit/MediaPipe code; mediapipe-internal
+   17.0.0-beta10 appears in the abort stack; exact root cause, responsible artifact and version remain unresolved. (The "Play Services caches the benchmark" hypothesis in earlier entries is likewise unsupported.)
 2. **Hidden WorkManager failure -- CONFIRMED.** After the service is removed, logcat shows
    `Unable to start service ... MlKitRemoteWorkerService ... not found` and
    `PoseMiniBenchmarkWorker ... Worker result FAILURE`: 4 terminal FAILUREs within ~1.3 s at pose start
