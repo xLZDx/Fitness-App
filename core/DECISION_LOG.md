@@ -54989,3 +54989,165 @@ pipeline, blocked only on this).
 No code was changed this pass -- this was a correction of what was reported, not a fix of what
 was found. The trainer crash and the design re-verification both remain genuinely open, and both
 are blocked on the same missing resource: a connected physical device.
+
+---
+
+## 2026-09-18 (continued, later): Form Coach crash LIVE-REPRODUCED on S8, root cause is more specific than previously documented
+
+**Context.** Operator connected the physical S8 (`ce02171299f0711005`, Android 8.0.0, Mali GPU) and
+S23 (dropped off adb mid-session, continued with S8 alone), and gave literal "ГО" to authorize live
+on-device diagnosis of the Form Coach crash the operator had flagged as still broken
+(*"а как же тренер который не работает совсем"*). This is a fresh, dated reproduction -- the prior
+finding (2026-08-31, `core/DECISION_LOG.md` ~line 37669-37780) was over two weeks stale and had
+never been re-verified live.
+
+**Reproduction path, via adb (debug build `com.fitnessapp.fitness_app.sptr.debug`):** guest login ->
+onboarding (fail-open health screening confirmed working as documented) -> Тренировки tab ->
+Библиотека -> Для вас -> "Тренер по технике" row -> intro card ("Готово — разрешить камеру") ->
+camera permission dialog -> ГРАНТ -> movement picker (Присед preselected) -> "Нажмите когда готовы"
+-> camera opens, live preview + pose overlay UI renders correctly for a few seconds -> **app crashes,
+Android shows "Приложение fitness_app остановлено."**
+
+**Root cause, now precisely identified (previously only "closed-source native SIGABRT, uncatchable
+from Dart" -- true, but this is the actual mechanism):**
+
+```
+09-18 11:02:03.698 18323 18432 F libc    : Fatal signal 6 (SIGABRT), code -6 in tid 18432 (pool-5-thread-7)
+09-18 11:02:03.820 18436 18436 F DEBUG   : pid: 18323, tid: 18432, name: pool-5-thread-7  >>> com.fitnessapp.fitness_app.sptr.debug:mlkit_acceleration_mini_benchmark <<<
+09-18 11:02:03.822 18436 18436 F DEBUG   : Abort message: 'java_vm_ext.cc:504] JNI DETECTED ERROR IN APPLICATION: JNI GetObjectField called with pending exception java.lang.NoSuchFieldError: no "[B" field "value" in class "Lcom/google/android/gms/internal/mlkit_vision_mediapipe/zzib;" or its superclasses'
+```
+
+This is a **JNI field-layout mismatch inside Google Play Services' own obfuscated
+`mlkit_vision_mediapipe` internals** (`zzib` class), surfacing as `NoSuchFieldError` for a `[B`
+("byte array") field named `value`. It fires inside the `mlkit_acceleration_mini_benchmark` child
+process (separate OS process, confirmed via `ps`/`dumpsys activity` -- pid 18323, distinct from the
+app's own pid 15267), which `WorkManager`'s `PoseMiniBenchmarkWorker` on the main process observes
+only as `RuntimeException: Binder died` (logged, caught, `Worker result FAILURE` -- does NOT itself
+crash the app):
+
+```
+09-18 11:02:06.587 15267 15303 E WM-WorkerWrapper: Work [ id=..., tags={ com.google.mlkit.vision.pose.internal.PoseMiniBenchmarkWorker } ] failed because it threw an exception/error
+09-18 11:02:06.587 15267 15303 E WM-WorkerWrapper: java.util.concurrent.ExecutionException: java.lang.RuntimeException: Binder died
+```
+
+So there are two failures, not one: the benchmark subprocess's own fatal JNI/native abort (crashes
+that process, invisible to the app), and the main process's own handling of the resulting binder
+death (handled cleanly, does not itself crash). **The actual app-visible "приложение остановлено"
+dialog follows a few seconds later** (camera force-closed at 11:02:09, crash dialog visible in
+screenshot shortly after) -- consistent with something downstream of the failed benchmark (likely
+the pose detector's own initialization, which depends on the benchmark's acceleration-capability
+result) throwing on the main process once it can't get a valid answer back.
+
+**Why this is new information, not just a re-confirmation:** the 2026-08-31 finding established
+that the crash exists and is architecturally uncatchable from Dart, but had no abort-message-level
+diagnosis of WHY the mini-benchmark process dies. `NoSuchFieldError` on an internal Play Services
+class is a **version-skew symptom** -- the on-device Google Play Services build and the app's
+compiled-in `google_mlkit_pose_detection: ^0.14.0` / `play-services-mlkit-*` dependency expect
+different internal shapes of `zzib`. This means the failure is plausibly:
+- fixable by pinning a different `google_mlkit_pose_detection`/underlying `play-services-mlkit-*`
+  version known compatible with this Play Services build, without waiting for a pose-engine
+  replacement (the previous report's "2-4 weeks if the pose engine needs replacing" scenario), OR
+- a Play Services bug specific to old/stale Play Services builds on Android 8 devices that auto-update
+  would fix on its own (this S8's Play Services build was not checked this pass), OR
+- both -- a compatibility floor the app needs to declare and the S8's Play Services happens to sit
+  below.
+
+None of these are verified yet -- this entry records the reproduction and the newly-legible root
+cause, not a fix. `google_mlkit_pose_detection: ^0.14.0` still exposes no public API to disable
+GPU/NNAPI acceleration probing, so a code-level "just turn off the benchmark" fix is not available;
+the next real step is checking whether a different `google_mlkit_pose_detection`/play-services-mlkit
+version resolves the field mismatch, and separately checking this S8's actual Play Services version
+against what other, non-crashing devices report.
+
+**Evidence chain (this device, this run, all times 2026-09-18 11:0x):**
+- `adb -s ce02171299f0711005 logcat -d --pid=15267` -- WorkManager binder-death entry, camera
+  open/close sequence.
+- `adb -s ce02171299f0711005 logcat -d | grep -iE "SIGABRT|tombstone|Fatal signal"` -- the abort
+  message above, tombstone written to `/data/tombstones/tombstone_01` on-device (not pulled off
+  device this pass).
+- Screenshot evidence (session scratchpad, not committed -- ephemeral diagnostic images): live
+  camera+pose-overlay UI rendering correctly seconds before the crash, then the Android
+  "Приложение fitness_app остановлено" dialog.
+
+**Not yet done (as of the entry above):** pulling the full tombstone file off-device for the
+complete native stack; checking this S8's installed Google Play Services version; testing whether
+the crash reproduces on S23 (Android 16). Punch-list item 1 (`reports/HONEST_STATUS_2026-09-18.ru.html`)
+stays open.
+
+---
+
+## 2026-09-18 (continued, later still): S23 reproduction + upstream research -- the crash is NOT device-specific, but the fatal cascade is
+
+**Context.** Both S8 (`ce02171299f0711005`) and S23 (`R5CW142SASR`, Android 16) reconnected to adb
+this pass. Continuing the four "not yet done" items above via read-only adb diagnosis (no GO
+required -- inspection only, per `CLAUDE.md` §4).
+
+**1. Google Play Services version, both devices, via `adb shell dumpsys package
+com.google.android.gms`:** S8 `versionName=26.33.32 (040400-974685114)`; S23
+`versionName=26.33.32 (260400-974685114)`. **Identical core GMS version on both devices**, and
+freshly updated on S8 (`dexTimeStamp=2026-09-09`). This rules out "S8's Play Services is stale and
+would auto-update past the bug" -- it is already current.
+
+**2. Reproduced live on S23** (same route: guest -> Тренировки -> Библиотека -> Для вас -> Тренер
+по технике -> Присед -> Готово -> Нажмите когда готовы), with `logcat` captured continuously to a
+file for the whole run. **The identical abort fires**, same class, same package versions:
+
+```
+09-18 14:28:55.989 27788 27788 F DEBUG   : Abort message: 'JNI DETECTED ERROR IN APPLICATION: JNI GetObjectField called with pending exception java.lang.NoSuchFieldError: no "[B" field "value" in class "Lcom/google/android/gms/internal/mlkit_vision_mediapipe/zzib;" or its superclasses
+  at long ...zzhx.zzj(long, ...zzib) (com.google.mlkit:mediapipe-internal@@17.0.0-beta10:-2)
+  ... com.google.mlkit:pose-detection-common@@18.0.0-beta5 ... com.google.mlkit:common@@18.11.0 ...
+```
+
+`ActivityManager` logs the subprocess death and **reschedules and restarts it**
+(`MlKitRemoteWorkerService`, `PoseMiniBenchmarkWorker` reports `Worker result FAILURE` on
+`Binder died`, same as the S8 finding above) -- textually the same failure mode as S8, same package
+versions, same GMS build.
+
+**3. The divergence that matters: on S23 the app does NOT crash.** Polled `mCurrentFocus` via
+`dumpsys window` for 40+ seconds after the subprocess abort, and screenshotted the running
+activity -- `MainActivity` stayed in foreground the entire time, UI static on the demo-silhouette
+pose overlay, no "приложение остановлено" dialog, no further subprocess deaths in the captured
+log. On S8 (2026-08-31 finding, re-confirmed earlier this session) the identical subprocess abort
+cascades into a full app crash a few seconds later. **Same root-cause bug, different blast radius**
+-- the fatal cascade to the whole app looks S8/low-memory-hardware-class specific (Exynos 8895,
+Mali GPU, Android 8, presumably tighter memory headroom under the WorkManager retry churn), not an
+inherent property of the underlying ML Kit bug itself.
+
+**4. Upstream research (WebSearch, not previously done):** the identical error signature
+(`NoSuchFieldError`/`fid == null` on `gms.internal.mlkit_vision_mediapipe.zzib`, inside the same
+`mlkit_acceleration_mini_benchmark` subprocess) is an **open, unresolved Google ML Kit bug**,
+tracked at `github.com/googlesamples/mlkit` issue #993 (opened 2025-12-18, i.e. current and
+unfixed as of this session), reproduced there on Pixel 6, Pixel 8, Galaxy S24 Ultra (Android 16),
+Note20 Ultra (Android 13), Galaxy A54 (Android 15) and a Motorola One 5G UW Ace (Android 12) --
+i.e. **a wide spread of current, healthy, non-legacy devices**, not an Android-8/old-hardware
+artifact. This is new evidence against the "version-skew, fixable by pinning a different
+`google_mlkit_pose_detection`/`play-services-mlkit-*` version" hypothesis recorded earlier this
+session: the failure lives inside Google's own closed, on-device Play Services binary
+(`gms.internal.mlkit_vision_mediapipe`), which the app's pinned Flutter/Gradle dependency version
+does not control -- Play Services modules of this kind are resolved/updated by the OS independently
+of what the app declares. No known workaround or fix is documented in the upstream issue thread as
+of this research.
+
+**Revised implication for punch-list item 1** (`reports/HONEST_STATUS_2026-09-18.ru.html`):
+**do NOT** move the estimate toward "days / dependency pin" as the previous entry speculated --
+that hypothesis is now weaker, not stronger, given the upstream evidence. The realistic paths are
+(a) work around the *cascade* specifically on S8-class low-memory hardware (e.g. constrain
+`PoseMiniBenchmarkWorker`/WorkManager retry behavior so a benchmark subprocess failure cannot take
+the whole app down -- an app-side mitigation of the crash, not a fix of the underlying ML Kit bug),
+or (b) wait for Google's own upstream fix to issue #993, timeline unknown and outside this
+project's control. Neither is verified yet; this entry records evidence, not a fix, and the
+estimate should stay at "2-4 weeks, engineering-side mitigation, contingent on further
+investigation" rather than collapsing to either extreme.
+
+**Not yet done:** pulling a tombstone (attempted this pass -- `/data/tombstones/` requires root,
+unavailable on both non-rooted devices; the abort message plus partial native frames already
+captured via `logcat` are the best available evidence without root); prototyping the WorkManager/
+retry-throttling mitigation described in (a) above; confirming whether the mitigation is even
+sufficient without also fixing memory pressure on S8-class hardware specifically.
+
+**Evidence chain (this pass):** `adb -s R5CW142SASR logcat -v threadtime` (continuous capture,
+session scratchpad, not committed -- raw log volume); `adb shell dumpsys package
+com.google.android.gms` on both device serials; `adb shell dumpsys window | grep mCurrentFocus`
+polled repeatedly post-crash on S23; WebSearch results for `googlesamples/mlkit` issues #993 and
+#445 (cross-checked via WebFetch for exact device/version list, not taken from the search snippet
+alone).
