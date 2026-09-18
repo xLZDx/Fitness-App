@@ -159,7 +159,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
-    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start</td><td>3–5 days (if a workaround exists) / 2–4 weeks (if the pose engine needs swapping). <b>First step: reproduce on 2–3 devices, 1 day, clarifies the estimate immediately.</b></td></tr>
+    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start</td><td>2–4 weeks, with a new explicit unknown (updated 2026-09-18). Reproduced on both S8 and S23 — the root cause is not the app's pinned dependency version but a bug inside Google Play Services' own closed code (an open, unfixed upstream bug, googlesamples/mlkit issue #993). Pinning a different `google_mlkit_pose_detection` version is unlikely to help. Worse: the crash turned out to be <b>non-reproducible on demand</b> — a repeat attempt on the same S8 in the same session did not crash at all (ML Kit models loaded normally). This looks like Play Services caching the benchmark result (fails once, then skips it), but that is not confirmed. Writing a mitigation now is not responsible — there is nothing reliable to verify it against. The next step is establishing a reliable repro method, not writing code.</td></tr>
     <tr><td>2</td><td>Trainer: measure what it actually counts</td><td>4–6 days — currently no number exists at all</td></tr>
     <tr><td>3</td><td>End-to-end measurement of the real scanner pipeline</td><td>2–4 days</td></tr>
     <tr><td>4</td><td>Design: re-check every screen against the reference on-device</td><td>1–2 weeks</td></tr>

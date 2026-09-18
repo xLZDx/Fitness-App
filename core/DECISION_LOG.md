@@ -55151,3 +55151,74 @@ com.google.android.gms` on both device serials; `adb shell dumpsys window | grep
 polled repeatedly post-crash on S23; WebSearch results for `googlesamples/mlkit` issues #993 and
 #445 (cross-checked via WebFetch for exact device/version list, not taken from the search snippet
 alone).
+
+---
+
+## 2026-09-18 (continued, later still): S8 re-attempt did NOT reproduce -- crash is not deterministic on every launch, mitigation work deferred as unverifiable right now
+
+**Context.** Operator GO covered two next steps: (a) attempt an app-side mitigation of the S8
+cascade, (b) update `reports/HONEST_STATUS_2026-09-18.ru.html`'s punch-list estimate. Before
+writing any mitigation code, went back to S8 with continuous `logcat` capture (a fresh run,
+`am force-stop` + relaunch, then the identical route: Тренировки -> Библиотека -> Для вас ->
+Тренер по технике -> Присед -> Готово -> Нажмите когда готовы) to have a live baseline to test any
+fix against.
+
+**Result: the crash did NOT occur.** Watched `mCurrentFocus` for ~2 minutes after tapping "Нажмите
+когда готовы" -- `MainActivity` stayed in the foreground the entire time, live camera preview
+visible on screen (confirmed via screenshot, real camera feed of a dark room, not the demo
+silhouette). `logcat` shows the pose models loaded successfully
+(`Successfully loaded: mlkit_pose/pose_person_detector_f16.tflite` and
+`pose_landmark_detector_lite_f16_inf.tflite`) and **zero** occurrences of
+`mlkit_acceleration_mini_benchmark` in the captured log for this run -- the benchmark subprocess
+that fatally aborted in every single prior reproduction (2026-08-31, and twice earlier today on
+this same S8, plus S23) simply never ran this time.
+
+**This is new evidence that changes the picture materially:** the crash is **not deterministic on
+every app launch**. The most likely explanation, not yet confirmed: Google Play Services'
+`mlkit_acceleration_mini_benchmark` framework caches its per-device/per-app benchmark result (this
+is a documented general pattern for ML Kit's acceleration-capability probing -- it is meant to run
+once and cache, not on every session) -- so the crash may only be hit on the *first* attempt to run
+the benchmark for this app+device combination, after which Play Services either caches the
+(fatal) failure and skips re-running it, or caches a fallback/CPU-only path. Attempted to test this
+directly: ran `adb shell pm clear` on the app to force a clean-state relaunch. This did **not**
+restore the crash either in the one follow-up attempt made -- but `pm clear` only resets the
+*app's own* data, not Google Play Services' own internal benchmark-result cache (which lives in
+`com.google.android.gms`'s data, keyed by device+package, outside this app's control) -- so this
+experiment does not cleanly confirm or refute the caching hypothesis either way, and the sample
+size (one non-reproduction) is too small to treat as proof of anything on its own.
+
+**Decision: do NOT write speculative mitigation code against this crash right now.** Per this
+project's own evidence standard (repository CLAUDE.md, "test the actual behavior -- syntax/build
+success alone is not proof"), a WorkManager-retry-throttling or similar app-side change cannot be
+verified to do anything useful when the crash it targets cannot currently be reproduced on demand.
+Shipping such a change now would be an untested, unverifiable guess dressed up as a fix. The
+responsible next step, when this is picked up again, is: (1) determine whether Play Services'
+benchmark cache can be reset independently of the app (e.g. via `adb shell pm clear
+com.google.android.gms` -- not attempted this pass, higher-blast-radius since it resets ALL of
+Play Services' state on the device, would need its own explicit confirmation given it affects
+every app on the device, not just this one), or (2) accept that reliable reproduction may require
+a factory-reset device or a device that has genuinely never run this app before, and budget
+diagnosis time accordingly.
+
+**Effort-estimate implication for punch-list item 1:** the previous entry's "2-4 weeks,
+engineering-side mitigation" framing assumed a reliably reproducible target to fix and verify
+against. That assumption is now in question. If the crash is genuinely a one-time,
+cache-driven event that self-resolves after the first launch, real-world user impact may be
+smaller than assumed (most users would only hit it once, on first use, not every session) --
+but the app still cannot currently distinguish "will crash" from "already cached, safe" ahead of
+time, so a first-launch crash on this feature remains a real, unmitigated defect for whichever
+user's device+Play-Services-state combination triggers it first. The estimate is left as
+**2-4 weeks with a new, explicit unknown**: confirming the caching hypothesis and establishing a
+reliable repro method is itself unscoped work that has to happen before any fix's effort can be
+estimated with confidence, let alone the fix itself.
+
+**Not yet done:** confirming the Play-Services-cache hypothesis directly (would need either a
+device that has never run this app, or a way to reset `com.google.android.gms`'s own benchmark
+cache without wiping the whole device's Play Services state); establishing a reliable repro
+method before attempting any code-level mitigation.
+
+**Evidence chain (this pass):** `adb -s ce02171299f0711005 logcat -v threadtime` (continuous
+capture spanning both the crash-free relaunch and the `pm clear` follow-up attempt, session
+scratchpad, not committed); `adb shell dumpsys window | grep mCurrentFocus` polled for ~2 minutes
+post-tap; `adb shell pm clear com.fitnessapp.fitness_app.sptr.debug`; screenshots confirming live
+camera preview was genuinely active (session scratchpad, not committed).
