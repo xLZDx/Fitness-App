@@ -55335,8 +55335,8 @@ primary evidence, not accepted or dismissed on assertion.
 2. **Hidden WorkManager failure -- CONFIRMED.** After the service is removed, logcat shows
    `Unable to start service ... MlKitRemoteWorkerService ... not found` and
    `PoseMiniBenchmarkWorker ... Worker result FAILURE`: 4 terminal FAILUREs within ~1.3 s at pose start
-   (S8 17:52:03-04; S23 identical count), none in the following 2 minutes. Bounded noise, no retry storm within the
-   observed window; a longer soak was not done.
+   (S8 17:52:03-04; S23 identical count), none in the following 2 minutes. No retry storm within the observed window;
+   downstream functional impact of these failures is unverified; a longer soak was not done.
 3. **My "dumpsys package shows no MlKitRemoteWorkerService" claim was worthless evidence.** The same grep is empty
    on the OLD build too (measured on S23: 0 hits on the old APK). The real evidence that the service is gone is the
    "not found" lines above and the absence of any `Start proc ...:mlkit_acceleration_mini_benchmark`.

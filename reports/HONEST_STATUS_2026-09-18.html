@@ -122,7 +122,7 @@
   <div class="callout">
     <h3>🟡 Trainer (Form Coach) — crash dialog removed on S8 and S23; trainer overall unproven</h3>
     <p><b>History (baseline before 2026-09-18).</b> On an S8 (Android 8, Mali GPU), the first trainer launch from clean state started a separate process, <code>mlkit_acceleration_mini_benchmark</code>, which died with <code>Fatal signal 6 (SIGABRT)</code> (<code>NoSuchFieldError</code> in <code>mlkit_vision_mediapipe.zzib</code>); Android showed "fitness_app has stopped". The main app process stayed alive — the defect was the system dialog. The same crash reproduced on an S23 with the old build.</p>
-    <p><b>Mitigation 2026-09-18.</b> The <code>MlKitRemoteWorkerService</code> was removed from the manifest (<code>tools:node="remove"</code>). Verified on S8 and S23, clean guest + first camera grant: 2 minutes with no dialog, no <code>SIGABRT</code>/<code>NoSuchFieldError</code>, the benchmark process never starts, pose models load. Side effect: at pose start, <code>PoseMiniBenchmarkWorker</code> fails fast four times in a row with FAILURE ("service not found"), then silence — log noise, not a failure. Gate G17 only verified demo-video visual fidelity — a different path from the one that crashed.</p>
+    <p><b>Mitigation 2026-09-18.</b> The <code>MlKitRemoteWorkerService</code> was removed from the manifest (<code>tools:node="remove"</code>). Verified on S8 and S23, clean guest + first camera grant: 2 minutes with no dialog, no <code>SIGABRT</code>/<code>NoSuchFieldError</code>, the benchmark process never starts, pose models load. Side effect: at pose start, <code>PoseMiniBenchmarkWorker</code> logs four terminal FAILUREs ("service not found") within about 1.3 s, with no further retries during the 2-minute observation; downstream functional impact is unverified. Gate G17 only verified demo-video visual fidelity — a different path from the one that crashed.</p>
     <p><b>Unproven.</b> Not verified: that pose landmarks are produced with a person in frame; that equipment recognition and OCR still work without the service; a release build; rep-count accuracy (never measured). Root cause: a native ML Kit/MediaPipe failure (<code>com.google.mlkit:mediapipe-internal 17.0.0-beta10</code>, bundled in the app, during pose acceleration); the exact responsible artifact and version are unresolved, and whether a dependency version change would help was not tested. The squat's demo video is separately, deliberately disabled (bad source footage).</p>
   </div>
 </section>
@@ -192,7 +192,7 @@
 <section>
   <h2><span class="num">04</span>Realistic timeline</h2>
   <ul class="plain">
-    <li>Trainer working and measured: crash removed on S8; measuring rep-count accuracy on a real person remains (estimate not revisited)</li>
+    <li>Trainer working and measured: crash dialog mitigated on S8+S23, trainer overall UNPROVEN; still open: landmarks with a person in frame, recognition/OCR after the fix, release build, rep-count accuracy (estimate not revisited)</li>
     <li>Design genuinely re-checked and migrated: <b>3–6 weeks</b></li>
     <li>Ready to submit to Play: another <b>2–3 weeks</b> on top</li>
     <li>Clinical validation runs in parallel but can't be sped up with code — likely the longest single item</li>
