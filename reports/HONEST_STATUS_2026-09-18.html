@@ -70,10 +70,10 @@
 <div class="wrap">
 <header>
   <span class="eyebrow">Fitness_App · independent audit · 2026-09-18</span>
-  <h1>The honest picture: the trainer crash dialog is gone on S8/S23, but the trainer itself is unproven, design is unverified, 6–10 weeks to ship</h1>
+  <h1>The honest picture: the trainer crash dialog is gone on S8 and the benchmark-process crash is suppressed on S8 and S23, but the trainer itself is unproven, design is unverified, 6–10 weeks to ship</h1>
   <p class="lede">Yesterday's report was honest about what the documents said — the documents themselves turned out to be the unreliable part. On direct challenge: three independent reviews, trusting no decision-log self-report.</p>
   <div class="tldr">
-    <span class="pill warn">Trainer: crash dialog removed on S8/S23; landmarks, OCR and rep-count accuracy unverified</span>
+    <span class="pill warn">Trainer: crash dialog gone on S8, benchmark-process crash suppressed on S8+S23; landmarks, OCR and rep-count accuracy unverified</span>
     <span class="pill warn">On-device design fix verification was interrupted — never redone</span>
     <span class="pill warn">Equipment recognition: wrong pipeline was measured, real accuracy unknown</span>
     <span class="pill">6–10 weeks to beta, 3–4 months to fully done</span>
@@ -120,9 +120,9 @@
 
 <section>
   <div class="callout">
-    <h3>🟡 Trainer (Form Coach) — crash dialog removed on S8 and S23; trainer overall unproven</h3>
-    <p><b>History (baseline before 2026-09-18).</b> On an S8 (Android 8, Mali GPU), the first trainer launch from clean state started a separate process, <code>mlkit_acceleration_mini_benchmark</code>, which died with <code>Fatal signal 6 (SIGABRT)</code> (<code>NoSuchFieldError</code> in <code>mlkit_vision_mediapipe.zzib</code>); Android showed "fitness_app has stopped". The main app process stayed alive — the defect was the system dialog. The same crash reproduced on an S23 with the old build.</p>
-    <p><b>Mitigation 2026-09-18.</b> The <code>MlKitRemoteWorkerService</code> was removed from the manifest (<code>tools:node="remove"</code>). Verified on S8 and S23, clean guest + first camera grant: 2 minutes with no dialog, no <code>SIGABRT</code>/<code>NoSuchFieldError</code>, the benchmark process never starts, pose models load. Side effect: at pose start, <code>PoseMiniBenchmarkWorker</code> logs four terminal FAILUREs ("service not found") within about 1.3 s, with no further retries during the 2-minute observation; downstream functional impact is unverified. Gate G17 only verified demo-video visual fidelity — a different path from the one that crashed.</p>
+    <h3>🟡 Trainer (Form Coach) — crash dialog gone on S8, benchmark-process crash suppressed on S8 and S23; trainer overall unproven</h3>
+    <p><b>History (baseline before 2026-09-18).</b> On an S8 (Android 8, Mali GPU), the first trainer launch from clean state started a separate process, <code>mlkit_acceleration_mini_benchmark</code>, which died with <code>Fatal signal 6 (SIGABRT)</code> (<code>NoSuchFieldError</code> in <code>mlkit_vision_mediapipe.zzib</code>); Android showed "fitness_app has stopped". The main app process stayed alive — the defect was the system dialog. On an S23 with the old build the same benchmark-process crash reproduced (Start proc + SIGABRT/NoSuchFieldError in the log) but no visible dialog was recorded there.</p>
+    <p><b>Mitigation 2026-09-18.</b> The <code>MlKitRemoteWorkerService</code> was removed from the manifest (<code>tools:node="remove"</code>). Verified on S8 and S23, clean guest + first camera grant, 2 minutes each: no <code>SIGABRT</code>/<code>NoSuchFieldError</code>, the benchmark process never starts, pose models load; on S8 the foreground dialog no longer appears (S23 had no recorded dialog before the fix). Side effect: at pose start, <code>PoseMiniBenchmarkWorker</code> logs four terminal FAILUREs ("service not found") within about 1.3 s, with no further retries during the 2-minute observation; downstream functional impact is unverified. Gate G17 only verified demo-video visual fidelity — a different path from the one that crashed.</p>
     <p><b>Unproven.</b> Not verified: that pose landmarks are produced with a person in frame; that equipment recognition and OCR still work without the service; a release build; rep-count accuracy (never measured). Attribution: the failure manifests in bundled ML Kit/MediaPipe code; <code>com.google.mlkit:mediapipe-internal 17.0.0-beta10</code> appears in the abort stack; the exact root cause, responsible artifact and version remain unresolved, and whether a dependency version change would help was not tested. The squat's demo video is separately, deliberately disabled (bad source footage).</p>
   </div>
 </section>
@@ -140,7 +140,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>Subsystem</th><th>Status</th><th>Why</th></tr>
-    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">UNPROVEN</span></td><td>Crash dialog on start removed 2026-09-18 (ML Kit benchmark service removed from the manifest, verified on S8 and S23); landmarks with a person in frame, OCR/recognition after the fix, and rep-count accuracy not verified</td></tr>
+    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">UNPROVEN</span></td><td>Benchmark-process crash suppressed on S8 and S23 and the S8 crash dialog gone, 2026-09-18 (ML Kit benchmark service removed from the manifest); landmarks with a person in frame, OCR/recognition after the fix, and rep-count accuracy not verified</td></tr>
     <tr><td>Equipment recognition</td><td><span class="badge partial">PARTIAL</span></td><td>48.5% was measured bypassing the real client pipeline (direct Vertex REST) — production accuracy is unknown to anyone. The mitigation ("always ask") works, but the feature is now "pick from a list with a hint," not "point the camera"</td></tr>
     <tr><td>Design system (HUD)</td><td><span class="badge partial">PARTIAL</span></td><td>Tokens correct in code, but no fresh on-device check; GlassCard→Hud migration incomplete (142 occurrences)</td></tr>
     <tr><td>Content catalog / safety</td><td><span class="badge partial">PARTIAL</span></td><td>19.1% of exercises (360) untagged and structurally unscreenable — the injury filter fails open by design; tags come from the vendor, not a clinician</td></tr>
@@ -159,7 +159,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
-    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start — <b>MITIGATED on S8 and S23 (2026-09-18)</b>; trainer overall unproven</td><td>Reproduced on a clean guest account (first camera grant) and removed by deleting the service from the manifest; 2 minutes with no dialog on both devices. Remaining: pose landmarks with a person in frame, equipment recognition and OCR after the fix, a release build, rep-count accuracy. The earlier "2–4 weeks" estimate rested on a wrong picture of the cause and was not revisited for what remains.</td></tr>
+    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start — <b>MITIGATED 2026-09-18: benchmark-process crash suppressed on S8 and S23, crash dialog gone on S8</b>; trainer overall unproven</td><td>Reproduced on a clean guest account (first camera grant) and removed by deleting the service from the manifest; 2 minutes each with no crash signature on both devices; the dialog itself was reproduced only on S8. Remaining: pose landmarks with a person in frame, equipment recognition and OCR after the fix, a release build, rep-count accuracy. The earlier "2–4 weeks" estimate rested on a wrong picture of the cause and was not revisited for what remains.</td></tr>
     <tr><td>2</td><td>Trainer: measure what it actually counts</td><td>4–6 days — currently no number exists at all</td></tr>
     <tr><td>3</td><td>End-to-end measurement of the real scanner pipeline</td><td>2–4 days</td></tr>
     <tr><td>4</td><td>Design: re-check every screen against the reference on-device</td><td>1–2 weeks</td></tr>
@@ -192,7 +192,7 @@
 <section>
   <h2><span class="num">04</span>Realistic timeline</h2>
   <ul class="plain">
-    <li>Trainer working and measured: crash dialog mitigated on S8+S23, trainer overall UNPROVEN; still open: landmarks with a person in frame, recognition/OCR after the fix, release build, rep-count accuracy (estimate not revisited)</li>
+    <li>Trainer working and measured: benchmark-process crash suppressed on S8+S23 (dialog gone on S8), trainer overall UNPROVEN; still open: landmarks with a person in frame, recognition/OCR after the fix, release build, rep-count accuracy (estimate not revisited)</li>
     <li>Design genuinely re-checked and migrated: <b>3–6 weeks</b></li>
     <li>Ready to submit to Play: another <b>2–3 weeks</b> on top</li>
     <li>Clinical validation runs in parallel but can't be sped up with code — likely the longest single item</li>

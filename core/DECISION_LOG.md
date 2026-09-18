@@ -55355,3 +55355,16 @@ same picture.
 service removal (would send a camera frame to Gemini on the app's default path, so not run casually); release
 build; rep-count accuracy; a longer soak for WorkManager retry churn; whether bumping the native pose artifact
 (google_mlkit_pose_detection 0.14.x) removes the underlying failure instead of working around it.
+
+---
+
+## 2026-09-18 (closure review, MAJOR fixed): S23 dialog claim narrowed to what was observed
+
+Rosetta closure review of plan `fitness_app-2026-09-18T16-29-18-388Z-f8b3b4` returned REVISE (0 BLOCKER / 1 MAJOR)
+after APPROVE at GO: reports and the manifest comment said the foreground crash **dialog** was reproduced and
+removed on S8 **and S23**. Checked against our own record: on S23 the old-build run logged the benchmark
+subprocess crash (`Start proc ...mini_benchmark`, 2x SIGABRT/NoSuchFieldError, 1013 lines) but the entry above
+already says "no visible dialog on that device" (focus stayed MainActivity). So there are two distinct claims:
+(1) subprocess SIGABRT/NoSuchFieldError reproduced pre-fix and suppressed post-fix on S8 **and** S23;
+(2) the foreground dialog reproduced and gone on **S8 only**. Manifest comment, EN/RU reports (H1, heading, pill,
+status row, punch list, timeline, mitigation paragraph) updated accordingly. Finding accepted; no dispute.
