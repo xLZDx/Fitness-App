@@ -55316,3 +55316,42 @@ image-labeling/text-recognition (not exercised).
 
 **Report:** `reports/HONEST_STATUS_2026-09-18.{ru.html,html}` punch-list item 1, Form Coach row and the
 top pill updated to match (trainer status is now "not proven", not "broken").
+
+---
+
+## 2026-09-18 (later still): corrections to the entry above after GPT-PM plan review (REVISE, 3 MAJOR) + S23 verification
+
+Rosetta retrospective plan `fitness_app-2026-09-18T15-56-07-835Z-bfcd98` (hash 0eb50a79...ecb2) was sent to GPT-PM
+(request 7c1f2b8e-4d3a-4e6b-9a51-2f0c8d7e3b14); verdict `REVISE`, 0 BLOCKER / 3 MAJOR. Each was checked against
+primary evidence, not accepted or dismissed on assertion.
+
+1. **Attribution was wrong -- CONFIRMED by our own log.** The 2026-09-18 entries and the report said the root cause
+   is closed code inside Google Play Services and that a dependency pin would not help. The abort stack in
+   s8_run3 logcat names `com.google.mlkit:mediapipe-internal@@17.0.0-beta10` inside the app's own
+   `/data/app/.../base.odex`, i.e. code **bundled in the app**, not the device's Play Services. Whether a
+   different google_mlkit_pose_detection / native pose version avoids it was never tested. Corrected in
+   reports and the manifest comment: root cause is a native ML Kit/MediaPipe acceleration failure, exact artifact
+   unresolved. (The "Play Services caches the benchmark" hypothesis in earlier entries is likewise unsupported.)
+2. **Hidden WorkManager failure -- CONFIRMED.** After the service is removed, logcat shows
+   `Unable to start service ... MlKitRemoteWorkerService ... not found` and
+   `PoseMiniBenchmarkWorker ... Worker result FAILURE`: 4 terminal FAILUREs within ~1.3 s at pose start
+   (S8 17:52:03-04; S23 identical count), none in the following 2 minutes. Bounded noise, no retry storm within the
+   observed window; a longer soak was not done.
+3. **My "dumpsys package shows no MlKitRemoteWorkerService" claim was worthless evidence.** The same grep is empty
+   on the OLD build too (measured on S23: 0 hits on the old APK). The real evidence that the service is gone is the
+   "not found" lines above and the absence of any `Start proc ...:mlkit_acceleration_mini_benchmark`.
+4. **Report wording** contradicted itself (H1/red callout still "broken/never fixed" while the punch-list said DONE).
+   Rewritten in both languages: crash dialog MITIGATED on S8+S23; trainer overall UNPROVEN.
+
+**S23 (R5CW142SASR, 1080x2316, EN system locale) -- now verified.** First run accidentally exercised the OLD
+build (background install never completed; installed versionCode 3012 > debug 14 -> INSTALL_FAILED_VERSION_DOWNGRADE):
+that run reproduced the crash on S23 (`Start proc ...mini_benchmark`, 2x SIGABRT/NoSuchFieldError, 1013 log lines,
+no visible dialog on that device). Reinstalled with `adb install -r -d` (debug app, data preserved), pm clear, new
+guest, same route: 0 `mini_benchmark` / `NoSuchFieldError` / `SIGABRT` / `FATAL EXCEPTION`, `MainActivity` in focus
+across 12 polls x 10 s, pose models loaded, 4 "service not found" + 8 worker log lines. Both devices now show the
+same picture.
+
+**Still NOT verified (open):** pose landmarks with a person in frame; equipment image labeling and OCR after the
+service removal (would send a camera frame to Gemini on the app's default path, so not run casually); release
+build; rep-count accuracy; a longer soak for WorkManager retry churn; whether bumping the native pose artifact
+(google_mlkit_pose_detection 0.14.x) removes the underlying failure instead of working around it.

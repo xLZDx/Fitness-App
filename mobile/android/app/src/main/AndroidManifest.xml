@@ -113,11 +113,14 @@
             android:value="false" />
 
         <!-- ML Kit acceleration mini-benchmark: runs in its own process and aborts
-             fatally on affected Play Services builds (NoSuchFieldError in
-             mlkit_vision_mediapipe.zzib, googlesamples/mlkit#993), which Android
-             surfaces as a foreground "app stopped" dialog on first Form Coach use
-             (S8 + S23, core/DECISION_LOG.md 2026-09-18). It only probes
-             GPU/NNAPI delegate speed; pose detection does not need it. -->
+             fatally (NoSuchFieldError in mlkit_vision_mediapipe.zzib, bundled
+             mediapipe-internal 17.0.0-beta10; see googlesamples/mlkit#993), which
+             Android surfaces as a foreground "app stopped" dialog on first Form
+             Coach use (S8 + S23, core/DECISION_LOG.md 2026-09-18). Removing the
+             service makes the benchmark worker fail fast ("service not found",
+             4 terminal FAILUREs at pose start) and pose loads its models anyway.
+             Workaround, not a root-cause fix: landmark output with a person in
+             frame, image labeling and OCR were NOT re-verified after removal. -->
         <service
             android:name="com.google.mlkit.acceleration.internal.MlKitRemoteWorkerService"
             tools:node="remove" />

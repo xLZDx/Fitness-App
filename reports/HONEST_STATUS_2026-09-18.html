@@ -70,10 +70,10 @@
 <div class="wrap">
 <header>
   <span class="eyebrow">Fitness_App · independent audit · 2026-09-18</span>
-  <h1>The honest picture: trainer is broken, design is unverified, 6–10 weeks to ship</h1>
+  <h1>The honest picture: the trainer crash dialog is gone on S8/S23, but the trainer itself is unproven, design is unverified, 6–10 weeks to ship</h1>
   <p class="lede">Yesterday's report was honest about what the documents said — the documents themselves turned out to be the unreliable part. On direct challenge: three independent reviews, trusting no decision-log self-report.</p>
   <div class="tldr">
-    <span class="pill warn">Trainer: crash dialog removed via manifest, verified on S8 (2026-09-18); rep-count accuracy still unmeasured</span>
+    <span class="pill warn">Trainer: crash dialog removed on S8/S23; landmarks, OCR and rep-count accuracy unverified</span>
     <span class="pill warn">On-device design fix verification was interrupted — never redone</span>
     <span class="pill warn">Equipment recognition: wrong pipeline was measured, real accuracy unknown</span>
     <span class="pill">6–10 weeks to beta, 3–4 months to fully done</span>
@@ -120,10 +120,10 @@
 
 <section>
   <div class="callout">
-    <h3>🔴 Trainer (Form Coach) — genuinely crashes</h3>
-    <p>On an S8 (Android 8, Mali GPU), tapping "Squat" launches a separate system process, <code>mlkit_acceleration_mini_benchmark</code> (Google Play Services' GPU-acceleration benchmark), which dies with <code>Fatal signal 6 (SIGABRT)</code>. Android shows "fitness_app has stopped" with one button — an ordinary user cannot get past it.</p>
-    <p><b>Found 2026-08-31, never fixed or re-verified since.</b> Gate G17 ("the Form Coach figure matches the design reference"), which prior reports cited as closing the trainer, only verified demo-video visual fidelity — a different code path from the one that crashes.</p>
-    <p>Verified this session: the crash happens inside closed Google native code before execution ever reaches our Dart <code>try/catch</code> — it cannot be caught from the app, and <code>google_mlkit_pose_detection: ^0.14.0</code> exposes no public API to disable GPU acceleration. Needs testing on other devices (modern GPU vs. Mali, other Android versions) to know whether this is device-class-specific. The squat's demo video is separately, deliberately disabled (bad source footage) — not a bug, but a visible downgrade.</p>
+    <h3>🟡 Trainer (Form Coach) — crash dialog removed on S8 and S23; trainer overall unproven</h3>
+    <p><b>History (baseline before 2026-09-18).</b> On an S8 (Android 8, Mali GPU), the first trainer launch from clean state started a separate process, <code>mlkit_acceleration_mini_benchmark</code>, which died with <code>Fatal signal 6 (SIGABRT)</code> (<code>NoSuchFieldError</code> in <code>mlkit_vision_mediapipe.zzib</code>); Android showed "fitness_app has stopped". The main app process stayed alive — the defect was the system dialog. The same crash reproduced on an S23 with the old build.</p>
+    <p><b>Mitigation 2026-09-18.</b> The <code>MlKitRemoteWorkerService</code> was removed from the manifest (<code>tools:node="remove"</code>). Verified on S8 and S23, clean guest + first camera grant: 2 minutes with no dialog, no <code>SIGABRT</code>/<code>NoSuchFieldError</code>, the benchmark process never starts, pose models load. Side effect: at pose start, <code>PoseMiniBenchmarkWorker</code> fails fast four times in a row with FAILURE ("service not found"), then silence — log noise, not a failure. Gate G17 only verified demo-video visual fidelity — a different path from the one that crashed.</p>
+    <p><b>Unproven.</b> Not verified: that pose landmarks are produced with a person in frame; that equipment recognition and OCR still work without the service; a release build; rep-count accuracy (never measured). Root cause: a native ML Kit/MediaPipe failure (<code>com.google.mlkit:mediapipe-internal 17.0.0-beta10</code>, bundled in the app, during pose acceleration); the exact responsible artifact and version are unresolved, and whether a dependency version change would help was not tested. The squat's demo video is separately, deliberately disabled (bad source footage).</p>
   </div>
 </section>
 
@@ -140,7 +140,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>Subsystem</th><th>Status</th><th>Why</th></tr>
-    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">UNPROVEN</span></td><td>Crash dialog on start removed 2026-09-18 (ML Kit benchmark service removed from the manifest, verified on S8; S23 not re-checked); rep-count accuracy never measured on a real device</td></tr>
+    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">UNPROVEN</span></td><td>Crash dialog on start removed 2026-09-18 (ML Kit benchmark service removed from the manifest, verified on S8 and S23); landmarks with a person in frame, OCR/recognition after the fix, and rep-count accuracy not verified</td></tr>
     <tr><td>Equipment recognition</td><td><span class="badge partial">PARTIAL</span></td><td>48.5% was measured bypassing the real client pipeline (direct Vertex REST) — production accuracy is unknown to anyone. The mitigation ("always ask") works, but the feature is now "pick from a list with a hint," not "point the camera"</td></tr>
     <tr><td>Design system (HUD)</td><td><span class="badge partial">PARTIAL</span></td><td>Tokens correct in code, but no fresh on-device check; GlassCard→Hud migration incomplete (142 occurrences)</td></tr>
     <tr><td>Content catalog / safety</td><td><span class="badge partial">PARTIAL</span></td><td>19.1% of exercises (360) untagged and structurally unscreenable — the injury filter fails open by design; tags come from the vendor, not a clinician</td></tr>
@@ -159,7 +159,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
-    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start — <b>DONE 2026-09-18 (S8)</b></td><td>[Current: reproduced on a clean guest account on S8 at first camera-permission grant and removed by deleting MlKitRemoteWorkerService from the manifest; after the fix, 2 minutes with no dialog and the benchmark process never starts. Not verified: S23, rep-count accuracy, a person in frame.] Historical estimate: 2–4 weeks, with a new explicit unknown (updated 2026-09-18). Reproduced on both S8 and S23 — the root cause is not the app's pinned dependency version but a bug inside Google Play Services' own closed code (an open, unfixed upstream bug, googlesamples/mlkit issue #993). Pinning a different `google_mlkit_pose_detection` version is unlikely to help. Worse: the crash turned out to be <b>non-reproducible on demand</b> — a repeat attempt on the same S8 in the same session did not crash at all (ML Kit models loaded normally). This looks like Play Services caching the benchmark result (fails once, then skips it), but that is not confirmed. Writing a mitigation now is not responsible — there is nothing reliable to verify it against. The next step is establishing a reliable repro method, not writing code.</td></tr>
+    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start — <b>MITIGATED on S8 and S23 (2026-09-18)</b>; trainer overall unproven</td><td>Reproduced on a clean guest account (first camera grant) and removed by deleting the service from the manifest; 2 minutes with no dialog on both devices. Remaining: pose landmarks with a person in frame, equipment recognition and OCR after the fix, a release build, rep-count accuracy. The earlier "2–4 weeks" estimate rested on a wrong picture of the cause and was not revisited for what remains.</td></tr>
     <tr><td>2</td><td>Trainer: measure what it actually counts</td><td>4–6 days — currently no number exists at all</td></tr>
     <tr><td>3</td><td>End-to-end measurement of the real scanner pipeline</td><td>2–4 days</td></tr>
     <tr><td>4</td><td>Design: re-check every screen against the reference on-device</td><td>1–2 weeks</td></tr>
