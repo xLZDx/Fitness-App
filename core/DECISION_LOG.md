@@ -55277,3 +55277,42 @@ identified and documented; a reliable, on-demand reproduction method is not, and
 be responsibly written or verified until one exists. `reports/HONEST_STATUS_2026-09-18.ru.html`
 and `.html` punch-list item 1 already reflect this uncertainty accurately as of the prior commit
 (`0151638`) and do not need further revision for this entry.
+
+---
+
+## 2026-09-18 (later): trainer crash reproduced on clean state and mitigated -- MlKitRemoteWorkerService removed from the manifest
+
+**Repro (S8 ce02171299f0711005, guest account created and onboarded this run, continuous logcat).**
+Route: Тренировки -> Библиотека -> Для вас -> Тренер по технике -> "Готово -- разрешить камеру" ->
+system camera grant -> Присед -> "Нажмите когда готовы". At 17:38:31 the process
+`com.fitnessapp.fitness_app.sptr.debug:mlkit_acceleration_mini_benchmark` aborted (SIGABRT) with
+`NoSuchFieldError: no "[B" field "value" in class ...mlkit_vision_mediapipe/zzib` (same signature as
+2026-08-31 and the earlier S8/S23 runs) and Android showed the foreground "Приложение fitness_app
+остановлено" dialog for a full 2 minutes until dismissed. Correction to the earlier framing: what
+crashes is the **separate benchmark subprocess**, not the main app process -- the main process (pid
+9066) stayed alive, the tap on the dialog returned to a working trainer screen, and the subprocess was
+restarted by the service. The user-visible defect is the system dialog, not a dead app. The earlier
+non-reproduction was consistent with the trigger being first-run state (fresh account + first camera
+grant), not with a Play Services cache we had to reset; `pm clear com.google.android.gms` was therefore
+NOT needed and was not run.
+
+**Mitigation.** `mobile/android/app/src/main/AndroidManifest.xml`: `tools:node="remove"` on
+`com.google.mlkit.acceleration.internal.MlKitRemoteWorkerService` (merged in from mediapipe-internal,
+declared with `android:process=":mlkit_acceleration_mini_benchmark"`). That service only runs the
+GPU/NNAPI acceleration mini-benchmark. Alternatives considered: pinning google_mlkit_pose_detection
+(root cause is Play Services, not our version); WorkManager retry/throttling from the previous
+handoff (targets a cascade that this run did not show -- a single subprocess crash, not a retry loop).
+
+**Verification (same S8, same route, fresh `pm clear` + new guest + onboarding, new build).**
+`dumpsys package` lists no MlKitRemoteWorkerService; after "Нажмите когда готовы" `mCurrentFocus` stayed
+`MainActivity` for 120 s (12 polls x 10 s); logcat (2.1 MB) has 0 occurrences of `mini_benchmark`,
+`NoSuchFieldError`, `FATAL EXCEPTION`, `SIGABRT`; pose models `pose_person_detector_f16.tflite` and
+`pose_landmark_detector_lite_f16_inf.tflite` loaded; screenshot shows a live camera preview.
+
+**Not verified:** S23 (not connected); that pose landmarks are produced and reps counted with a person
+in frame (only model load + live preview were observed -- rep-count accuracy remains unmeasured, as
+before); release build (only debug was built/installed); that removing the service has no effect on
+image-labeling/text-recognition (not exercised).
+
+**Report:** `reports/HONEST_STATUS_2026-09-18.{ru.html,html}` punch-list item 1, Form Coach row and the
+top pill updated to match (trainer status is now "not proven", not "broken").

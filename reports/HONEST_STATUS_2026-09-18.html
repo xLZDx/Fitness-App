@@ -73,7 +73,7 @@
   <h1>The honest picture: trainer is broken, design is unverified, 6–10 weeks to ship</h1>
   <p class="lede">Yesterday's report was honest about what the documents said — the documents themselves turned out to be the unreliable part. On direct challenge: three independent reviews, trusting no decision-log self-report.</p>
   <div class="tldr">
-    <span class="pill crit">Trainer crashes with a system dialog — unfixed since Aug 31</span>
+    <span class="pill warn">Trainer: crash dialog removed via manifest, verified on S8 (2026-09-18); rep-count accuracy still unmeasured</span>
     <span class="pill warn">On-device design fix verification was interrupted — never redone</span>
     <span class="pill warn">Equipment recognition: wrong pipeline was measured, real accuracy unknown</span>
     <span class="pill">6–10 weeks to beta, 3–4 months to fully done</span>
@@ -140,7 +140,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>Subsystem</th><th>Status</th><th>Why</th></tr>
-    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">BROKEN</span></td><td>System crash on workout start, unfixed since Aug 31; rep-count accuracy never measured on a real device</td></tr>
+    <tr><td>Form Coach (trainer)</td><td><span class="badge broken">UNPROVEN</span></td><td>Crash dialog on start removed 2026-09-18 (ML Kit benchmark service removed from the manifest, verified on S8; S23 not re-checked); rep-count accuracy never measured on a real device</td></tr>
     <tr><td>Equipment recognition</td><td><span class="badge partial">PARTIAL</span></td><td>48.5% was measured bypassing the real client pipeline (direct Vertex REST) — production accuracy is unknown to anyone. The mitigation ("always ask") works, but the feature is now "pick from a list with a hint," not "point the camera"</td></tr>
     <tr><td>Design system (HUD)</td><td><span class="badge partial">PARTIAL</span></td><td>Tokens correct in code, but no fresh on-device check; GlassCard→Hud migration incomplete (142 occurrences)</td></tr>
     <tr><td>Content catalog / safety</td><td><span class="badge partial">PARTIAL</span></td><td>19.1% of exercises (360) untagged and structurally unscreenable — the injury filter fails open by design; tags come from the vendor, not a clinician</td></tr>
@@ -159,7 +159,7 @@
   <div class="tbl-wrap">
   <table>
     <tr><th>#</th><th>Item</th><th>Estimate</th></tr>
-    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start</td><td>2–4 weeks, with a new explicit unknown (updated 2026-09-18). Reproduced on both S8 and S23 — the root cause is not the app's pinned dependency version but a bug inside Google Play Services' own closed code (an open, unfixed upstream bug, googlesamples/mlkit issue #993). Pinning a different `google_mlkit_pose_detection` version is unlikely to help. Worse: the crash turned out to be <b>non-reproducible on demand</b> — a repeat attempt on the same S8 in the same session did not crash at all (ML Kit models loaded normally). This looks like Play Services caching the benchmark result (fails once, then skips it), but that is not confirmed. Writing a mitigation now is not responsible — there is nothing reliable to verify it against. The next step is establishing a reliable repro method, not writing code.</td></tr>
+    <tr><td>1</td><td>Trainer: remove the ML Kit crash dialog on start — <b>DONE 2026-09-18 (S8)</b></td><td>[Current: reproduced on a clean guest account on S8 at first camera-permission grant and removed by deleting MlKitRemoteWorkerService from the manifest; after the fix, 2 minutes with no dialog and the benchmark process never starts. Not verified: S23, rep-count accuracy, a person in frame.] Historical estimate: 2–4 weeks, with a new explicit unknown (updated 2026-09-18). Reproduced on both S8 and S23 — the root cause is not the app's pinned dependency version but a bug inside Google Play Services' own closed code (an open, unfixed upstream bug, googlesamples/mlkit issue #993). Pinning a different `google_mlkit_pose_detection` version is unlikely to help. Worse: the crash turned out to be <b>non-reproducible on demand</b> — a repeat attempt on the same S8 in the same session did not crash at all (ML Kit models loaded normally). This looks like Play Services caching the benchmark result (fails once, then skips it), but that is not confirmed. Writing a mitigation now is not responsible — there is nothing reliable to verify it against. The next step is establishing a reliable repro method, not writing code.</td></tr>
     <tr><td>2</td><td>Trainer: measure what it actually counts</td><td>4–6 days — currently no number exists at all</td></tr>
     <tr><td>3</td><td>End-to-end measurement of the real scanner pipeline</td><td>2–4 days</td></tr>
     <tr><td>4</td><td>Design: re-check every screen against the reference on-device</td><td>1–2 weeks</td></tr>
@@ -192,7 +192,7 @@
 <section>
   <h2><span class="num">04</span>Realistic timeline</h2>
   <ul class="plain">
-    <li>Trainer working and measured: <b>2–4 weeks</b> (uncertainty driven by whether the crash reproduces on other GPUs)</li>
+    <li>Trainer working and measured: crash removed on S8; measuring rep-count accuracy on a real person remains (estimate not revisited)</li>
     <li>Design genuinely re-checked and migrated: <b>3–6 weeks</b></li>
     <li>Ready to submit to Play: another <b>2–3 weeks</b> on top</li>
     <li>Clinical validation runs in parallel but can't be sped up with code — likely the longest single item</li>

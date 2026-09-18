@@ -112,6 +112,16 @@
             android:name="io.flutter.embedding.android.EnableImpeller"
             android:value="false" />
 
+        <!-- ML Kit acceleration mini-benchmark: runs in its own process and aborts
+             fatally on affected Play Services builds (NoSuchFieldError in
+             mlkit_vision_mediapipe.zzib, googlesamples/mlkit#993), which Android
+             surfaces as a foreground "app stopped" dialog on first Form Coach use
+             (S8 + S23, core/DECISION_LOG.md 2026-09-18). It only probes
+             GPU/NNAPI delegate speed; pose detection does not need it. -->
+        <service
+            android:name="com.google.mlkit.acceleration.internal.MlKitRemoteWorkerService"
+            tools:node="remove" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
