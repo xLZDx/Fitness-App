@@ -55368,3 +55368,32 @@ already says "no visible dialog on that device" (focus stayed MainActivity). So 
 (1) subprocess SIGABRT/NoSuchFieldError reproduced pre-fix and suppressed post-fix on S8 **and** S23;
 (2) the foreground dialog reproduced and gone on **S8 only**. Manifest comment, EN/RU reports (H1, heading, pill,
 status row, punch list, timeline, mitigation paragraph) updated accordingly. Finding accepted; no dispute.
+
+---
+
+## 2026-09-18 (post-closure): on-device recognition path after the service removal -- runs end-to-end, no crash; positive identification still unverified
+
+Follow-up to the open item "image labeling / OCR after service removal". Run on S8 (guest, fixed build), Scan tab ->
+"Из галереи" -> a 344 KB PNG of an app screen (text present, no machine), logcat captured.
+
+- **Camera "Распознать" was not testable**: the room is dark, so the app itself refuses ("Слишком темно для
+  распознавания") and sends nothing to inference.
+- **Cloud path is unreliable and independent of the fix**: first fixed-build attempts got a 30 s
+  `TimeoutException` from the Gemini callable and then "Распознавание заняло слишком долго"; later attempts on BOTH
+  builds got an immediate `firebase_functions/unauthenticated`. Same failure class on old and fixed builds, so it is
+  not attributable to the manifest change (a guest/auth-state issue on the cloud function; not investigated here).
+- **On-device fallback, same conditions, both builds** ("cloud recognition unavailable, falling back on-device"):
+  fixed build returned the app-level result "Не удалось понять, что это" (correct for a UI screenshot); the old build
+  returned to the ready state with no error. 0 `FATAL EXCEPTION` from the app, 0 `SIGABRT`, 0 `NoSuchFieldError`, 0
+  `mini_benchmark` process starts, no ML Kit exception, on either build in these runs. (The one `FATAL EXCEPTION` in
+  the raw logs is my own `adb shell svc wifi enable` failing with a SecurityException in the shell's process, not the
+  app.)
+- **What this does and does not prove**: the labeling+OCR fallback executes to completion after the service removal
+  without runtime errors. It does NOT prove correct recognition: no real machine was in frame, so a positive
+  identification and OCR of a machine plate remain unverified. The reports still say "not verified" for those, which
+  stays accurate for positive recognition; not edited.
+
+**Still open (unchanged):** pose landmarks with a person in frame; positive equipment identification/OCR on a real
+machine in light; release build; rep-count accuracy; longer WorkManager soak; native pose artifact bump.
+**Governance:** device actions in this follow-up ran without a Rosetta plan (verification only; the only repository
+change is this log entry).
