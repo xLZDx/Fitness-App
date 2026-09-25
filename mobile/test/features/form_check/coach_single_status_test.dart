@@ -71,10 +71,12 @@ void _phoneSized(WidgetTester t) {
   addTearDown(t.view.resetDevicePixelRatio);
 }
 
-ProviderContainer _container(List<PoseFrame> frames, {bool skeleton = false}) {
+ProviderContainer _container(List<PoseFrame> frames,
+    {bool skeleton = false, bool noTarget = false}) {
   final c = ProviderContainer(overrides: [
     poseDetectorServiceProvider
         .overrideWithValue(MockPoseDetectorService(frames)),
+    if (noTarget) poseTargetProvider.overrideWithValue(null),
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
   ]);
   addTearDown(c.dispose);
@@ -140,6 +142,28 @@ void main() {
     expect(c.read(avatarCannotPlaceBodyProvider), isTrue,
         reason: 'positive control: this is the state under test');
 
+    // Since gate T3 the squat target scores shoulder and ankle too, and a view
+    // without them cannot be judged. The band then says so through the gate
+    // hint (still exactly one voice) instead of the avatar's own "no torso"
+    // line, which describes the same missing joints less usefully.
+    expect(c.read(poseEffectiveGateVerdictProvider),
+        PoseGateVerdict.missingJoints);
+    expect(_statuses(t), ['form_check.gate_hint']);
+  });
+
+  testWidgets('with no target to score, the avatar\'s own "no torso" line is '
+      'still the one voice', (t) async {
+    _phoneSized(t);
+    final c = _container(_noShoulders(), noTarget: true);
+    await t.pumpWidget(_page(c));
+    await t.pump();
+    c.read(avatarModeProvider.notifier).state = true;
+    await _settle(t);
+
+    expect(c.read(avatarCannotPlaceBodyProvider), isTrue,
+        reason: 'positive control: this is the state under test');
+    expect(c.read(poseEffectiveGateVerdictProvider), PoseGateVerdict.ok,
+        reason: 'nothing is scored, so only the classifier gate applies');
     expect(_statuses(t), ['form_check.avatar_no_torso']);
   });
 

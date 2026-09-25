@@ -55397,3 +55397,180 @@ Follow-up to the open item "image labeling / OCR after service removal". Run on 
 machine in light; release build; rep-count accuracy; longer WorkManager soak; native pose artifact bump.
 **Governance:** device actions in this follow-up ran without a Rosetta plan (verification only; the only repository
 change is this log entry).
+
+---
+
+## 2026-09-18 (evening): Form Coach live scoring -- operator device findings and start of a fix (not yet implemented)
+
+**Correction to my earlier claim.** I reported live pose tracking as working on S23 (HEAD + manifest workaround) from
+screenshots showing a skeleton and a moving rep counter. The operator, standing side-on to the phone on both sides
+and following the on-screen instruction, reported that this was wrong: reps were counted correctly (10 of 10),
+but the technique ring read ~2% at the bottom of the squat and ~62% when standing or approaching the phone, the
+"Вы не дошли до целевой формы" cue stayed on permanently, and the skeleton glowed neither red nor green. Not
+applied: an edit to the reports that would have called live tracking "working".
+
+**Evidence gathered (FACT unless marked).**
+- The manifest change (93f8589) touches only the benchmark service; form_check logic is unchanged since 09-04 except
+  demo/sky commits of 09-09 (a3b5041, 6ca2c36). pubspec.lock is gitignored (my earlier "lock unchanged" was
+  unsupported); the pose plugin resolves to 0.14.0 in both the current checkout and an older worktree.
+- HEAD run on S23, rep log: peaks 0.67-0.76 against pass 0.80, so every rep is "missed=true"; the 2026-09-02 log
+  (c585dfa era, same device, real body) recorded peaks 0.88-0.91 for the same movement.
+- The last commit with a with-body device verification of green AND red is c585dfa (2026-09-02, DECISION_LOG lines
+  ~40020-40029: green at technique 85%, red at 48%). Nothing after it was checked against a body on the S23
+  (ce4231e "NOT CONFIRMED", a35f9ed G17 "not obtained in-session").
+- On the c585dfa build (bisect step 1) the operator did 24 reps: all counted, first all red, several green in the
+  middle for the same squat depth (sometimes fully inside the silhouette), then all red again after stepping toward
+  the phone and back; the highlight covers the whole skeleton rather than the faulty zone; still "did not reach the
+  silhouette". So the behaviour is present on the 2026-09-02 build too: it is not a regression from the manifest
+  workaround, and the bisect to a "stable build" does not find a fixed one -- the design itself has these gaps.
+- Read-only code traces (two agents, cited file:line in their reports, key points re-stated here):
+  (a) technique %, glow colour and the "missed" cue derive from ONE number, poseMatchScore against a side-view
+  squat-bottom target over 4 joints; reps are counted by a separate hip-minus-knee signal. (b) The squat classifier
+  never reports a fault (severity 0), so the per-bone fault highlight is empty and paintSkeleton falls back to
+  bones.all: the whole skeleton lights. (c) The glow is two blurred strokes UNDER a white halo (alpha .45) and
+  white core (alpha .95) drawn over all bones, so colour is mostly hidden. (d) poseMatchScore uses every target
+  joint with likelihood >= 0.5, including cropped/extrapolated ones; the pre-judging gate checks only hips and
+  knees and lets coordinates up to 4 units out pass; alignTargetToBody rejects a too-close body (torso > 0.40)
+  but the score has no such guard, so a cropped body is scored and judged as a MISS while the rep still counts.
+  lastRepMissedTarget is then carried until the next completed rep (stuck red). (e) The on-screen "OUT OF
+  CONTRACT" line is a session-wide sticky debug accumulator, never consulted by scoring; not evidence for one
+  frame. (f) _peakFrameThisRep exists only inside assert(): nothing per-joint is available in release builds.
+- Bisect artefacts: a detached worktree (scratchpad) built at c585dfa and ce4231e; APKs kept in the session
+  scratchpad. S23 now runs the c585dfa build, not the operator's earlier 3012 build (overwritten by me with
+  `adb install -r -d`).
+
+**Operator directive (GO, 2026-09-18):** make red/green much lighter, saturated and visibly glowing; light the
+specific faulty zone rather than the whole skeleton; make the voice say specifically what is done wrong; study and
+fix or find other approaches ("this is the app's feature"). Consequence for the design: a coloured core under a
+thin white core departs from the reference README (bones white, glow only as halo); the operator's request to make
+it "really glow" is taken as consent to that departure for the live squat verdict.
+
+**Gates (order chosen so the false reds are removed before anything is coloured or spoken):**
+T3 do not judge a cropped body (require every scored joint likelihood >= 0.7 and inside the frame; otherwise the
+rep is unjudged, "step back" hint, red cleared). T1 glow + zone (bright saturated palette, 3 glow layers, coloured
+core, only the dominant-offset chain lit). T2 voice (one dominant fault from scale-free features -- depth, torso
+lean, knee travel -- spoken only on missed reps with reliable landmarks; thresholds provisional, to be calibrated
+from [rep] logs). Each gate: unit tests, goldens regenerated where the skeleton painter changes, S23 check with the
+operator in frame, GPT-PM one-sweep review before the next.
+
+## 2026-09-18 (night): Form Coach gate T3 implemented -- rep judged only on reliable scored joints (device check pending)
+
+Rosetta plan fitness_app-2026-09-18T18-43-41-930Z-9cb0ae (v3, hash 9fdd07c3...), GPT-PM APPROVE 0 BLOCKER / 0 MAJOR
+after v1 (5 MAJOR) and v2 (1 MAJOR: two writers on poseGateVerdictProvider).
+
+**What changed.** New `mobile/lib/features/form_check/data/pose_scoring_gate.dart`: `scoredJointsOf(target)` (target
+joints minus unscoredJoints), `chooseScoringSide` (mean likelihood of the scored left joints vs their right
+counterparts; right wins only when strictly better and maps right joints into the left slots, a missing counterpart
+leaves the slot empty; a bilateral scored set is never remapped), `reliabilityVerdict` (gatePose over exactly the
+scored set, returns the PoseGateVerdict), `combineGateVerdicts`. `RepSessionController._onFrame` computes the
+classifier verdict and the scoring verdict on the same frame, publishes ONE `poseEffectiveGateVerdictProvider`
+before any return, and calls poseMatchScore only on a reliable frame (unreliable frames still reach the rep counter;
+an all-unreliable rep keeps peak null -> not judged, not missed). `poseGateVerdictProvider` stays the raw classifier
+gate (single writer FormFeedbackController). Readers switched to the effective one: coachSessionProvider,
+CoachReadinessBand, the [rep] log. `avatarVerdictSeverity(currentFrameReliable:)` returns null for the silhouette
+fallback while the current frame is unreliable; completed-rep state is not modified; a canFault rule keeps its own
+colour (internal review finding, fixed). The [rep] log now prints the scored side, withheld-frame counts per
+reason, and per-joint likelihood and x,y of the scored (side-mapped) frame.
+
+**Consequence accepted and pinned in tests.** A frame with hips/knees but no shoulder/ankle used to show the avatar's
+"cannot place torso" line; for a squat with a target it now shows the gate hint (missingJoints) -- same missing
+joints, one voice. With no target the old line still shows (new test).
+
+**Evidence (FACT).** 26+ new tests in pose_scoring_gate_test.dart and scoring_gate_session_test.dart; each gatePose
+guard (low confidence, edge, unit mismatch, missing, implausible torso), the combine rule, side mapping, the
+neutral-overlay flag, the reliability gate in _onFrame and the scored-frame argument were mutated one at a time and
+each mutation failed its own test (bite check), then restored. form_check suite: 645 passed. Full mobile suite:
+3890 passed, 21 failed, ALL 21 in test/golden (hud, scan_reference, form_coach). The same golden tests fail with the
+identical pixel counts on a clean stash of HEAD (e.g. form_coach_live 3.33%/18632px, hud_chip_selected_dark 251px),
+so they are a pre-existing environment mismatch (not caused by T3); the painter is untouched and no golden was
+regenerated. Internal reviewers: flutter-reviewer (no BLOCKER/MAJOR; 2 MINOR: canFault blanking -> fixed;
+side-flapping hysteresis -> deferred, watch S23 logs) and functional-test-reviewer (2 MAJOR coverage gaps:
+right-side end-to-end, target==null -> tests added; minor gaps for pause, mixed-visibility, bilateral, scored NaN,
+edited-test assertions -> added). Not added: a real-page widget test for the overlay colour swap (function-seam only).
+
+**NOT verified yet.** On-device behaviour on the S23 with the operator (both side-on stances, one too-close pass):
+whether peaks return to the 0.88-0.91 range of 2026-09-02 or stay low. The pass mark and targets are unchanged, so a
+systematically low score would be a target/threshold problem for a later gate, not solved here. T1 (glow + zone) and
+T2 (voice) are not started.
+
+## 2026-09-25: T3 device check on S23 -- orientation spread traced to depth, not to the mirror; too-close still judged red (T3 NOT closed)
+
+Debug APK built from the uncommitted T3 tree, installed on S23 R5CW142SASR (`adb install -r -d`, versionCode 14,
+lastUpdateTime 2026-09-25 17:53:28, foreground package confirmed). Continuation plan
+fitness_app-2026-09-25T14-40-03-348Z-22876e: GPT-PM APPROVE, closed BLOCKED after round 1. Closure plan
+fitness_app-2026-09-25T15-18-28-694Z-da5a91: GPT-PM VERDICT BLOCKED (rejected). The proposed explanation ("the target
+is authored left-side only") contradicted the documented `FORMCOACH_TARGET_MIRROR_2026-09-01` invariant in
+pose_target.dart, and GPT-PM asked for a per-rep diagnosis first. Nothing has been committed or pushed.
+
+**Operator-labelled run (FACT, [rep] lines 18:26:53-18:27:41).** The operator reported 11 reps in order: 4 with the
+left shoulder toward the phone, 4 with the right, 3 too close. The log has exactly 11 reps in that order.
+
+| reps | stance | scoredSide | mirror | peak | missed | deepest hipMinusKnee |
+|---|---|---|---|---|---|---|
+| #1-4 | left shoulder to phone | right x4 | true x4 | 0.836 / 0.807 / 0.827 / 0.849 | false x4 | 0.112 / 0.092 / 0.075 / 0.094 |
+| #5-8 | right shoulder to phone | left/right/left/right | false x4 | 0.724 / 0.706 / 0.659 / 0.593 | true x4 | 0.005 / -0.022 / -0.019 / -0.030 |
+| #9-11 | too close | right x3 | false/true/true | 0.322 / 0.162 / 0.440 | true x3 | withheld lowConfidence 6 / 3 / 3 |
+
+**Mirror (FACT).** The facing decision is consistent: mirror=true on 4/4 image-left-facing reps, false on 4/4
+image-right-facing reps. `chooseScoringSide` flips between left and right on #5-8, but the scored coordinates are
+nearly the same whichever side is chosen (hip x 0.20-0.25, knee x 0.41-0.43 on all four), because in a true profile ML
+Kit puts both sides almost on top of each other. The side choice is therefore not what separates the two groups.
+
+**What separates them (INFERENCE, not yet proven causal).** Depth. Every passing rep has its hip clearly below its knee
+at the deepest frame (0.075-0.112). Every failing right-facing rep stays at or above knee level (-0.030 to 0.005). The
+largest per-joint residuals on #5-8 are the hip (dx +0.11 to +0.24) and the knee (dy +0.15 to +0.33), and that is
+exactly the signature of a shallower squat. The remaining open point: this is either a real execution difference in
+that stance, or a camera-perspective effect of the phone's position. That still has to be confirmed with the operator.
+It is not evidence of a scorer defect.
+
+**Too-close pass fails T3's own verification criterion (FACT).** The criterion was "a too-close pass gives unevaluated
+reps and the existing hint instead of red". All three reps were judged missed, because a few frames per rep still
+cleared the reliability gate. **Corrected the same day:** a first draft of this entry blamed a garbled leg chain. That
+was wrong. The garbled layout (rep #9: hip y 0.417 above knee 0.323) is the RAW deepest frame, which the debug log
+selects by `_debugHipMinusKnee` (form_check_providers.dart:1573-1576), and it was never scored. The frames that were
+scored look plausible and simply score low. There were also no `[align]` lines in the buffer, so the
+`liveTorso > 0.40` drawing guard was not the mechanism either. What does separate them is scale. The shoulder-to-hip
+distance of the scored peak frame measures 0.235-0.284 across all 8 side-on reps and 0.325-0.409 across all 3
+too-close reps. The narrow fix is therefore a "too close" scale guard in the scoring reliability verdict, not a
+leg-chain guard.
+
+**Facing asymmetry is not execution (operator, FACT):** the operator states the right-shoulder reps were as deep as the
+left. Tracking quality is equal (scored likelihoods 0.97-1.00 in both groups). The detector still reports a shallower
+squat when facing image-right (raw hip/knee midpoint), so the asymmetry sits in the geometry the detector returns or
+in the camera perspective, not in T3's side choice or the target mirror. The mechanism is still open.
+
+**Two further GPT-PM rounds the same day, both BLOCKED (nothing implemented, nothing committed).**
+(1) R1, plan fitness_app-2026-09-25T15-35-04-568Z-ed206a: a scoring-only guard at shoulder-to-hip distance > 0.31. It
+was rejected because it contradicts the G14 positive control (Mi 9T Pro rep #25, liveTorso 0.332, gate=ok, match
+0.210 from genuine lack of depth). That control is documented in pose_target.dart:1064-1074 as correctly NOT rejected,
+and a torso-only cutoff would let a reliably tracked bad rep escape evaluation by standing closer. Accepted: a real
+discriminator has to separate "unreliable because too close" from "legitimately close".
+(2) A closure plan, fitness_app-2026-09-25T15-37-54-300Z-f6bfa0. It proposed reading T3's too-close criterion in its
+reliability sense: unreliable close frames were withheld (6/3/3), and reliable close frames are scored per G14. It was
+rejected as "retroactively weakens an explicit T3 acceptance criterion". The reply was truncated by the transport, and
+a recovery peek was aborted and not retried.
+
+**State (DECISION pending, operator).** T3's own criterion ("too close -> unevaluated, not red") and the G14 precedent
+("a reliably tracked close body must be scored") conflict on exactly the frames the S23 produced. Neither
+implementation nor reviewer can resolve that alone. The options are to revise the T3 criterion explicitly as a product
+decision, or to build and measure a real proximity-reliability discriminator in a follow-up gate before T3 closes. The
+T3 working tree stays uncommitted and intact.
+
+**DECISION (operator, CEO, 2026-09-25): option A. "Вариант А (рекомендую): - GO".** T3's too-close acceptance criterion
+is revised, explicitly and by the operator rather than reinterpreted by the implementer. A too-close frame the reliability
+gate rejects is withheld and not scored, which is the behaviour observed: withheld lowConfidence 6/3/3. A close frame that
+IS reliably tracked is scored, per the G14 precedent, so a too-close rep can be judged missed. This is the stricter,
+safer reading: standing closer cannot hide a bad rep. T3 closes on this basis. The source and tests are unchanged since
+2026-09-18 22:12:59 (file mtimes), the state that passed form_check 645/645 and the full suite 3890 passed / 21
+pre-existing golden failures. **Next gate, recommended by the implementer and accepted by the operator:** the facing
+asymmetry (right-shoulder stance 0/4 passes at equal depth, the detector's hip-vs-knee geometry depends on facing). It
+is the most user-visible defect. It is a separate gate with its own plan. The T1/T2 order stays as agreed. Backlog: the
+attempted/passed counter ("8/0"), the demo fallback on tracking loss, the avatar collapsing at close range, and the
+skeleton upside down at camera start.
+
+**Operator findings logged, out of T3 scope (backlog):** (a) the rep counter should show attempted vs passed reps
+(e.g. "8/0"), and today it counts every rep; (b) when tracking drops mid-session (dark / too close) the panel falls back
+to the pre-session demo widget, which shows "Показа для этого движения пока нет" beside the gate hint. This is
+pre-existing, and `coachBodyDrawableProvider` / `_syncDemo` are outside the T3 diff; (c) the skeleton was upside down
+once at camera start (transient). The on-screen "OUT OF CONTRACT" line is the debug-only `pose_unit_probe.dart` readout
+(assert-gated), not a defect.

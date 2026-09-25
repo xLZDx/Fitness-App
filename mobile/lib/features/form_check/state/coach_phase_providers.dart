@@ -131,7 +131,7 @@ final coachPhaseControllerProvider =
 /// timer to leave pending behind a test and no wakeup burned on a screen that
 /// is showing a steady answer.
 final coachSessionProvider = Provider<CoachSessionState>((ref) {
-  final verdict = ref.watch(poseGateVerdictProvider);
+  final verdict = ref.watch(poseEffectiveGateVerdictProvider);
   final current = ref.watch(coachPhaseControllerProvider);
 
   if (current.phase == CoachPhase.qualityCheck ||

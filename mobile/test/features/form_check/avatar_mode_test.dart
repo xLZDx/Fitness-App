@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/form_check/data/coach_phases.dart';
 import 'package:fitness_app/features/form_check/data/pose_detector_service.dart';
+import 'package:fitness_app/features/form_check/data/pose_gate.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
 import 'package:fitness_app/features/form_check/form_check_page.dart';
 import 'package:fitness_app/features/form_check/state/coach_phase_providers.dart';
@@ -132,10 +133,12 @@ void main() {
   testWidgets('a body it cannot place says so, instead of an empty scene',
       (t) async {
     // Not hypothetical. `SquatDepthClassifier.requiredLandmarks` is hips and
-    // knees — no shoulder — so on a squat framed low the gate reports `ok` and
-    // the rep counter counts, while the avatar has no shoulder to build a spine
-    // from and nothing to draw. With the camera image gone, silence there is a
-    // blank scene over a coach that is working perfectly.
+    // knees — no shoulder — so on a squat framed low the CLASSIFIER gate
+    // reports `ok` and the rep counter counts, while the avatar has no shoulder
+    // to build a spine from and nothing to draw. Since gate T3 the squat target
+    // also scores shoulder and ankle, so the screen's effective verdict is
+    // `missingJoints` and the band says so; either way the empty scene must be
+    // accounted for.
     _phoneSized(t);
     // Repeated rather than a single frame. The mock replays its fixtures once,
     // 33 ms apart, and the mode is switched on after the first pump — a
@@ -163,7 +166,12 @@ void main() {
     expect(c.read(latestPoseFrameProvider), isNotNull,
         reason: 'positive control: a pose really did arrive');
     expect(_avatar, findsNothing);
-    expect(find.byKey(const Key('form_check.avatar_no_torso')), findsOneWidget,
+    // Gate T3: the squat target also scores shoulder and ankle, so this view
+    // cannot be judged and the band explains the empty scene through the gate
+    // hint instead of the avatar's own line — one voice either way.
+    expect(c.read(poseEffectiveGateVerdictProvider),
+        PoseGateVerdict.missingJoints);
+    expect(find.byKey(const Key('form_check.gate_hint')), findsOneWidget,
         reason: 'the screen has to account for the empty scene');
   });
 

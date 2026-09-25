@@ -14,6 +14,7 @@ import '../data/pose_avatar.dart';
 import '../data/pose_detector_service.dart';
 import '../data/pose_gate.dart';
 import '../data/pose_landmark.dart';
+import '../data/pose_scoring_gate.dart';
 import '../data/pose_silhouette.dart';
 import '../data/pose_target.dart';
 import '../data/pose_unit_probe.dart';
@@ -422,13 +423,13 @@ class CoachBackdropController extends Notifier<String> {
       for (final b in kCoachBackdrops)
         if (b != state) b,
     ];
-    state = others[ref.read(coachBackdropRandomProvider).nextInt(others.length)];
+    state =
+        others[ref.read(coachBackdropRandomProvider).nextInt(others.length)];
   }
 }
 
-final coachBackdropProvider =
-    NotifierProvider<CoachBackdropController, String>(
-        CoachBackdropController.new);
+final coachBackdropProvider = NotifierProvider<CoachBackdropController, String>(
+    CoachBackdropController.new);
 
 /// The live body as a drawable figure, or null when there is nothing to draw.
 ///
@@ -635,6 +636,18 @@ final poseGateConfigProvider =
 final poseGateVerdictProvider =
     StateProvider<PoseGateVerdict>((_) => PoseGateVerdict.ok);
 
+/// The verdict on the live body as the SCREEN should read it: the classifier's
+/// verdict when that is not ok, otherwise whether the joints the target scores
+/// are reliable (see `pose_scoring_gate.dart`).
+///
+/// Separate from [poseGateVerdictProvider] on purpose. That one is the raw
+/// classifier gate with a single writer, [FormFeedbackController]. This one has
+/// exactly one writer too — `RepSessionController._onFrame`, which computes both
+/// halves from the same [PoseFrame] in one callback, so the result cannot depend
+/// on which controller was created or notified first.
+final poseEffectiveGateVerdictProvider =
+    StateProvider<PoseGateVerdict>((_) => PoseGateVerdict.ok);
+
 /// Whether developer diagnostics may paint over the camera and be measured.
 ///
 /// Defaults to [kDebugMode], so a release build is false. A provider rather
@@ -791,13 +804,24 @@ int? avatarVerdictSeverity(
   FormFeedback? feedback, {
   double? matchScore,
   bool? lastRepMissedTarget,
+  bool currentFrameReliable = true,
 }) {
   if (activeClassifiers.isEmpty) return null;
   final classifier = activeClassifiers.first;
   if (classifier.canFault) {
+    // A rule that can fault reads its own joints, gated by the classifier's own
+    // verdict; the target-scoring reliability below says nothing about them, and
+    // blanking a real fault the cue card and voice still report would be two
+    // voices again.
     if (feedback == null || feedback.rule != classifier.rule) return null;
     return feedback.severity;
   }
+  // The silhouette fallback below is scored on the target's joints. When the
+  // body on screen right now cannot be judged on them (cropped, hidden, guessed
+  // by the detector) there is no verdict colour — neither a live green nor a
+  // stale red from the last rep. The completed rep's own record is untouched;
+  // only this live overlay goes neutral.
+  if (!currentFrameReliable) return null;
   // `classifier` names a real, known movement that has simply chosen not to
   // fault it (camera-angle-confounded, e.g. squat depth / hip hinge) — unlike
   // an empty list, which means no classifier at all is watching. The match
@@ -1126,13 +1150,11 @@ class RepSessionState {
         RepVerdict.faulted => false,
       };
 
-  int get cleanReps => reps
-      .where((r) => r.isObservedAt(_minObservedRatio) && r.isClean)
-      .length;
+  int get cleanReps =>
+      reps.where((r) => r.isObservedAt(_minObservedRatio) && r.isClean).length;
 
-  int get sloppyReps => reps
-      .where((r) => r.isObservedAt(_minObservedRatio) && !r.isClean)
-      .length;
+  int get sloppyReps =>
+      reps.where((r) => r.isObservedAt(_minObservedRatio) && !r.isClean).length;
 
   /// Repetitions that finished with too little of them visible to judge.
   ///
@@ -1199,6 +1221,11 @@ class RepSessionController extends Notifier<RepSessionState> {
   /// breakdown at the rep boundary can say WHICH joints lost the score. Never
   /// read in a release build.
   PoseFrame? _peakFrameThisRep;
+
+  /// Which side [_peakFrameThisRep] was scored on, and how many frames of the
+  /// rep were withheld from scoring and why. Debug evidence only.
+  ScoringSide? _peakSideThisRep;
+  final Map<PoseGateVerdict, int> _unreliableVerdictsThisRep = {};
 
   /// The deepest frame of the rep, by hip-minus-knee height, and that depth.
   ///
@@ -1372,6 +1399,29 @@ class RepSessionController extends Notifier<RepSessionState> {
 
   void _onFrame(PoseFrame frame) {
     _retirePoseError(ref);
+
+    // The classifier verdict and the scoring-reliability verdict are computed
+    // here, on this one frame, and published as ONE effective verdict before
+    // any return below — so the screen never sees half of it, and the answer
+    // cannot depend on which controller heard the frame first.
+    final gateConfig = ref.read(poseGateConfigProvider);
+    final result = evaluateGated(
+      ref.read(activeClassifiersProvider),
+      frame,
+      config: gateConfig,
+    );
+    final target = ref.read(poseTargetProvider);
+    final scored =
+        target == null ? const <LandmarkType>{} : scoredJointsOf(target);
+    final ScoringFrame? scoring = (result.scorable && target != null)
+        ? chooseScoringSide(frame, scored)
+        : null;
+    final scoringVerdict = scoring == null
+        ? PoseGateVerdict.ok
+        : reliabilityVerdict(scoring.frame, scored, config: gateConfig);
+    ref.read(poseEffectiveGateVerdictProvider.notifier).state =
+        combineGateVerdicts(result.verdict, scoringVerdict);
+
     final counter = _counter;
     if (counter == null) return;
 
@@ -1416,11 +1466,6 @@ class RepSessionController extends Notifier<RepSessionState> {
       _lastCountingFrameMs = frame.timestampMs;
     }
 
-    final result = evaluateGated(
-      ref.read(activeClassifiersProvider),
-      frame,
-      config: ref.read(poseGateConfigProvider),
-    );
     // An unscorable frame is dropped entirely — it must not reach the rep
     // counter and it must not reach the voice coach. This single early return
     // is what stops a selfie of a face from producing six reps and an endless
@@ -1452,8 +1497,15 @@ class RepSessionController extends Notifier<RepSessionState> {
     // are the same shape at the same scale in both modes. Scoring now runs
     // identically regardless of `avatarModeProvider` — the two modes differ
     // only in how the tracked body is drawn, never in what "correct" means.
-    final target = ref.read(poseTargetProvider);
-    final match = target == null ? null : poseMatchScore(frame, target);
+    //
+    // Only a frame whose scored joints are reliable is scored at all. An
+    // unreliable one is "cannot tell" — match stays null, the frame still
+    // reaches the rep counter below, and a rep made only of such frames keeps
+    // its peak null, so it is not evaluated rather than falsely missed.
+    final match =
+        (target == null || scoring == null || !scoringVerdict.isScorable)
+            ? null
+            : poseMatchScore(scoring.frame, target);
     _publishMatch(match);
 
     // Paused, or finished. One guard, and it sits HERE rather than at the top
@@ -1503,10 +1555,20 @@ class RepSessionController extends Notifier<RepSessionState> {
       if (match != null && match > (_peakMatchThisRep ?? -1)) {
         _peakMatchThisRep = match;
         assert(() {
-          _peakFrameThisRep = frame;
+          // The frame that was actually SCORED — side-mapped when the right
+          // side was the visible one — so the breakdown explains the number.
+          _peakFrameThisRep = scoring?.frame;
+          _peakSideThisRep = scoring?.side;
           return true;
         }());
       }
+      assert(() {
+        if (target != null && !scoringVerdict.isScorable) {
+          _unreliableVerdictsThisRep.update(scoringVerdict, (n) => n + 1,
+              ifAbsent: () => 1);
+        }
+        return true;
+      }());
       assert(() {
         final depth = _debugHipMinusKnee(frame);
         if (depth != null && depth > (_deepestThisRep ?? -1e9)) {
@@ -1574,12 +1636,16 @@ class RepSessionController extends Notifier<RepSessionState> {
       debugPrint('[rep] #${counter.repCount} target=${target?.id} '
           'peak=${peak?.toStringAsFixed(3) ?? "-"} '
           'pass=$kPoseMatchPassing missed=$missed gate=${ref.read(
-        poseGateVerdictProvider,
+        poseEffectiveGateVerdictProvider,
       )} frames=$_scoredFramesThisRep scored/'
           '$_unscoredFramesThisRep unscoreable');
       final f = _peakFrameThisRep;
       if (f != null && target != null) {
+        debugPrint('[rep]   scoredSide=${_peakSideThisRep?.name} '
+            'withheld=$_unreliableVerdictsThisRep');
         debugPrint('[rep]   ${debugMatchBreakdown(f, target)}');
+        debugPrint('[rep]   scored joints '
+            '${_debugScoredJoints(f, scoredJointsOf(target))}');
       }
       final deep = _deepestFrameThisRep;
       if (deep != null && target != null) {
@@ -1603,6 +1669,8 @@ class RepSessionController extends Notifier<RepSessionState> {
     _worstThisRep = null;
     _peakMatchThisRep = null;
     _peakFrameThisRep = null;
+    _peakSideThisRep = null;
+    _unreliableVerdictsThisRep.clear();
     _deepestFrameThisRep = null;
     _deepestThisRep = null;
     _scoredFramesThisRep = 0;
@@ -1629,6 +1697,16 @@ class RepSessionController extends Notifier<RepSessionState> {
       unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
     }
   }
+
+  /// Per-joint likelihood and position of the scored set, for the `[rep]` log.
+  String _debugScoredJoints(PoseFrame frame, Set<LandmarkType> scored) => [
+        for (final t in scored)
+          if (frame.landmarks[t] case final lm?)
+            '${t.name}=p${lm.likelihood.toStringAsFixed(2)}'
+                '@${lm.x.toStringAsFixed(3)},${lm.y.toStringAsFixed(3)}'
+          else
+            '${t.name}=missing',
+      ].join(' ');
 
   /// Republish the counter's live numbers while keeping the last verdict.
   ///
@@ -1665,6 +1743,8 @@ class RepSessionController extends Notifier<RepSessionState> {
     _worstThisRep = null;
     _peakMatchThisRep = null;
     _peakFrameThisRep = null;
+    _peakSideThisRep = null;
+    _unreliableVerdictsThisRep.clear();
     _deepestFrameThisRep = null;
     _deepestThisRep = null;
     _scoredFramesThisRep = 0;
@@ -1736,6 +1816,8 @@ class RepSessionController extends Notifier<RepSessionState> {
     // set would be credited to the first rep of the next one.
     _peakMatchThisRep = null;
     _peakFrameThisRep = null;
+    _peakSideThisRep = null;
+    _unreliableVerdictsThisRep.clear();
     _deepestFrameThisRep = null;
     _deepestThisRep = null;
     _scoredFramesThisRep = 0;

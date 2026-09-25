@@ -27,7 +27,7 @@ Widget _harness(ProviderContainer container) => UncontrolledProviderScope(
 
 ProviderContainer _container(PoseGateVerdict verdict) {
   final c = ProviderContainer(overrides: [
-    poseGateVerdictProvider.overrideWith((_) => verdict),
+    poseEffectiveGateVerdictProvider.overrideWith((_) => verdict),
     // R11h: this file's subject is the camera UI, so it starts where
     // that UI lives instead of tapping through the two intro cards.
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),

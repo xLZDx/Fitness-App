@@ -1337,6 +1337,8 @@ class _SkeletonOverlay extends ConsumerWidget {
       matchScore: ref.watch(poseMatchProvider),
       lastRepMissedTarget: ref.watch(repSessionControllerProvider
           .select((s) => s.lastRepMissedTarget)),
+      currentFrameReliable:
+          ref.watch(poseEffectiveGateVerdictProvider).isScorable,
     );
     final colors = Theme.of(context).colors;
     return CustomPaint(
@@ -1648,6 +1650,8 @@ class _PoseAvatar extends ConsumerWidget {
       // and the rest of that object changes on every one of them.
       lastRepMissedTarget: ref.watch(repSessionControllerProvider
           .select((s) => s.lastRepMissedTarget)),
+      currentFrameReliable:
+          ref.watch(poseEffectiveGateVerdictProvider).isScorable,
     );
     final colors = Theme.of(context).colors;
 

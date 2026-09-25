@@ -77,7 +77,7 @@ ProviderContainer _container({
   double? match,
 }) {
   final c = ProviderContainer(overrides: [
-    poseGateVerdictProvider.overrideWith((_) => verdict),
+    poseEffectiveGateVerdictProvider.overrideWith((_) => verdict),
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
     _showRepCountProvider.overrideWithValue(showRepCount),
     _armedProvider.overrideWithValue(armed),

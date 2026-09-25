@@ -79,7 +79,7 @@ ProviderContainer _container({
   RepSessionState session = const RepSessionState(),
 }) {
   final c = ProviderContainer(overrides: [
-    poseGateVerdictProvider.overrideWith((_) => PoseGateVerdict.ok),
+    poseEffectiveGateVerdictProvider.overrideWith((_) => PoseGateVerdict.ok),
     coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
     _showRepCountProvider.overrideWithValue(showRepCount),
     _sessionProvider.overrideWithValue(session),
