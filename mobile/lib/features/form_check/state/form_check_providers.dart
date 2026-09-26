@@ -17,6 +17,7 @@ import '../data/pose_landmark.dart';
 import '../data/pose_scoring_gate.dart';
 import '../data/pose_silhouette.dart';
 import '../data/pose_target.dart';
+import '../data/pose_roll_diagnostics.dart';
 import '../data/pose_unit_probe.dart';
 import '../data/rep_counter.dart';
 import '../data/rep_signals.dart';
@@ -1237,6 +1238,10 @@ class RepSessionController extends Notifier<RepSessionState> {
   PoseFrame? _deepestFrameThisRep;
   double? _deepestThisRep;
 
+  /// The stance before each attempt, for the camera-roll diagnosis (gate F1).
+  /// Debug evidence only — every call into it sits inside `assert()`.
+  final StandingWindow _standing = StandingWindow();
+
   /// How many frames of the rep could and could not be scored.
   ///
   /// Required by GPT-PM before the squat gate closes, and it is instrumentation
@@ -1531,6 +1536,18 @@ class RepSessionController extends Notifier<RepSessionState> {
     final wasInRep = counter.phase != RepPhase.top;
     final event = counter.update(frame, feedback: result.feedback);
 
+    // Gate F1: the stance at the top, frozen per attempt at the start of its
+    // descent, so the rep that completes logs exactly the stance before it.
+    assert(() {
+      final atTop = counter.phase == RepPhase.top;
+      if (!wasInRep && !atTop) {
+        _standing.onDescentStarted();
+      } else if (atTop) {
+        _standing.onTopFrame(frame);
+      }
+      return true;
+    }());
+
     // Accumulate only while a repetition is actually in flight — which is what
     // RepCounter does with its own severity log, and what this did not. Frames
     // spent standing between reps were folded into the next one, so a fault
@@ -1654,6 +1671,7 @@ class RepSessionController extends Notifier<RepSessionState> {
             'match=${poseMatchScore(deep, target)?.toStringAsFixed(3)} '
             '${debugJointDump(deep, target)}');
       }
+      debugPrint('[rep]   ${debugSegmentsLine(_standing.takeSnapshot(), deep)}');
       return true;
     }());
 
@@ -1749,6 +1767,10 @@ class RepSessionController extends Notifier<RepSessionState> {
     _deepestThisRep = null;
     _scoredFramesThisRep = 0;
     _unscoredFramesThisRep = 0;
+    assert(() {
+      _standing.reset();
+      return true;
+    }());
 
     // Only the silhouette is allowed to blame the user for a rejection. The
     // counter's own signal is hip-height-minus-knee-height — the same
@@ -1822,6 +1844,10 @@ class RepSessionController extends Notifier<RepSessionState> {
     _deepestThisRep = null;
     _scoredFramesThisRep = 0;
     _unscoredFramesThisRep = 0;
+    assert(() {
+      _standing.reset();
+      return true;
+    }());
     unawaited(ref.read(voiceCoachProvider).stop());
     state = const RepSessionState();
   }

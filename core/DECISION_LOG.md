@@ -55574,3 +55574,50 @@ to the pre-session demo widget, which shows "Показа для этого дв
 pre-existing, and `coachBodyDrawableProvider` / `_syncDemo` are outside the T3 diff; (c) the skeleton was upside down
 once at camera start (transient). The on-screen "OUT OF CONTRACT" line is the debug-only `pose_unit_probe.dart` readout
 (assert-gated), not a defect.
+
+## 2026-09-26: gate F1 (facing asymmetry) phase 1: camera-roll diagnosis instrumented (debug-only), device run pending
+
+Rosetta plan fitness_app-2026-09-26T10-28-32-483Z-18b1ba (v4). GPT-PM APPROVE (request 2f9a6c83, reply 1de8ead0),
+reached after three REVISE rounds, each fixed in full:
+- v1: a single standing frame is not robust, so the estimate became the median of a window.
+- v2: the rule compared raw signed angles across mirrored facings, so a facing normalisation is now pre-registered and
+  the second finding was addressed on its most likely reading. Its text was truncated by the transport.
+- v3: the window was cleared at descent but logged at completion, so the stance is now frozen per attempt at descent.
+
+**Hypothesis (INFERENCE):** the phone is rolled by about 13-16 degrees. On the 2026-09-25 deepest frames, one equal pose
+plus a roll of about 16 degrees fits the thigh, and one of about 13 degrees fits the shank, with the same sign. The
+torso fits only about 4 degrees, so the evidence is mixed, and that is why this phase diagnoses rather than corrects.
+
+**What was built.** New `mobile/lib/features/form_check/data/pose_roll_diagnostics.dart`:
+- **Convention:** `segmentAngle` uses atan2(dx,dy) in degrees, with x right and y down. A mirror maps a to -a; a roll
+  maps a to a+delta.
+- **Stance collection:** `StandingWindow` fills only at RepPhase.top, after 10 settle frames, with hip-midline motion
+  < 0.01 frame to frame, capped at 60 samples. It freezes a per-attempt `StandingSnapshot` at the top-to-descending
+  transition, hands it over once at completion, and is reset on reject and on resetSet.
+- **Rule:** `classifyRoll` is the pre-registered rule:
+  - it returns INCONCLUSIVE when either facing has fewer than 2 usable reps (n >= 20);
+  - delta=(rL+rR)/2;
+  - n=f*(a-delta);
+  - it returns CONFIRMED when |delta| >= 5 AND the thigh and shank facing means are within 5 AND the raw (delta=0)
+    difference is over 5.
+
+`RepSessionController` calls it only inside assert() (grep: 4 call sites, all asserted) and prints a `[rep] segments`
+line per completed rep. The stationarity check compares against the previous observed frame, not the previous
+qualifying frame. That is the stricter velocity reading, and it avoids a permanent lockout after one step.
+
+**Evidence (FACT):**
+- `pose_roll_diagnostics_test.dart` has 16 tests: the sign, the mirror/roll identity, a synthetic +15 degree roll
+  CONFIRMED with delta 15.00, no roll REFUTED, inconsistent poses REFUTED, INCONCLUSIVE, the window filters, and a
+  controller lifecycle test (the frozen stance is logged, a rejected attempt leaks nothing, resetSet clears).
+- Bite checks, each killed by its own test, with the source restored byte-identical (cmp):
+  - dropping the facing normalisation;
+  - dropping the settle filter;
+  - mean for median;
+  - clearing the snapshot at descent.
+- The plan's "flip the normalisation sign" mutant is inert for a both-facings flip, because the absolute difference is
+  sign-invariant, so it was run as dropping f.
+- form_check suite: 661/661 (645 before). flutter analyze: one pre-existing unused import in
+  coach_hud_test.dart, untouched.
+
+**Pending:** a labelled S23 run (4 left, 4 right, 2 s standing before each rep). The S23 was not connected at build
+time. classifyRoll's verdict goes into the next entry, whichever way it comes out.
