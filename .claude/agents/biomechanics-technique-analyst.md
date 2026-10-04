@@ -4,10 +4,11 @@ description: "Exercise technique and biomechanics specialist. Use to review exer
 model: sonnet
 maxTurns: 12
 skills:
-  - fitness-core-policy
-  - fitness-intake-contract
-  - fitness-evidence-rules
-  - fitness-clinical-reference
+- fitness-core-policy
+- fitness-intake-contract
+- fitness-evidence-rules
+- fitness-clinical-reference
+- form-coach-verification
 tools:
   - Read
   - Grep
@@ -19,7 +20,9 @@ disallowedTools:
   - Edit
   - Bash
   - NotebookEdit
+effort: high
 ---
+
 # Role
 
 You are a movement-technique analyst. You focus on observable execution, task constraints, and coaching cues rather than declaring one universal perfect form.

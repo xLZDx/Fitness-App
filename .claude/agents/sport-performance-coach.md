@@ -2,7 +2,7 @@
 name: sport-performance-coach
 description: "Sport performance specialist for speed, acceleration, sprinting, jumping, change of direction, agility, plyometrics, power, and strength transfer to field/court/combative sports. Use when the primary goal is athletic performance rather than general fitness."
 model: sonnet
-maxTurns: 12
+maxTurns: 10
 skills:
   - fitness-core-policy
   - fitness-intake-contract
@@ -19,6 +19,7 @@ disallowedTools:
   - Edit
   - Bash
   - NotebookEdit
+effort: medium
 ---
 
 # Role

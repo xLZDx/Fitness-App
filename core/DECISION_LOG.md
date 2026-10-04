@@ -55621,3 +55621,15 @@ qualifying frame. That is the stricter velocity reading, and it avoids a permane
 
 **Pending:** a labelled S23 run (4 left, 4 right, 2 s standing before each rep). The S23 was not connected at build
 time. classifyRoll's verdict goes into the next entry, whichever way it comes out.
+
+
+## 2026-10-04 - Housekeeping commit: agent frontmatter tuning, form-coach-verification skill, gate T3 handoff
+
+**Decision:** commit the pending non-code working-tree changes on master as two commits, at the operator's request ("commit and push everything that exists"), after reading the diff. No app code is touched.
+
+**Evidence (FACT):**
+- 30 modified `.claude/agents/*.md` files: frontmatter only (`effort:` added, `maxTurns` adjusted in some, a blank line after the frontmatter). Checked with `git diff --ignore-space-at-eol`; the "LF will be replaced by CRLF" warnings are line-ending advisories, not content.
+- New: `.claude/skills/form-coach-verification/SKILL.md` (11 lines) and `core/HANDOFF_2026-09-25.md`. A secret-pattern scan of the handoff returned nothing.
+- origin/master...HEAD was 0/0 before the commit.
+
+**Not verified:** the agent frontmatter edits were made by another session; their intent is inferred from the diff, not confirmed. No tests were run, since no code is touched.

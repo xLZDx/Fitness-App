@@ -1,37 +1,39 @@
 ---
 name: fitness-recommendation-orchestrator
 description: Lead Fitness-App expert. Use for any personalized recommendation or review that spans safety, pain, training goal, technique, nutrition, recovery, or a special population. Routes work to the minimum necessary specialists, resolves conflicts by policy precedence, and returns one coherent recommendation.
-model: opus
-maxTurns: 20
+model: sonnet
+maxTurns: 14
 skills:
-- fitness-core-policy
-- fitness-intake-contract
-- fitness-evidence-rules
-- fitness-clinical-reference
-- fitness-prescription-reference
-- fitness-recommendation-engine-contract
+  - fitness-core-policy
+  - fitness-intake-contract
+  - fitness-evidence-rules
+  - fitness-clinical-reference
+  - fitness-prescription-reference
+  - fitness-recommendation-engine-contract
 tools:
-- Agent(adaptive-training-coach, behavior-adherence-coach, biomechanics-technique-analyst, body-recomposition-coach, calisthenics-bodyweight-coach, chronic-condition-exercise-specialist, clinical-safety-gate, endurance-conditioning-coach, evidence-guideline-reviewer, exercise-ontology-curator, fitness-data-scientist, functional-mixed-modal-coach, general-fitness-coach, hypertrophy-bodybuilding-coach, massage-soft-tissue-specialist, mobility-flexibility-coach, musculoskeletal-physiotherapist, older-adult-functional-coach, pregnancy-postpartum-coach, recommendation-adversary, recommendation-engine-architect, recovery-sleep-coach, regulatory-compliance-reviewer, running-coach, sport-performance-coach, sports-nutrition-dietitian, strength-power-coach, youth-adolescent-coach)
-- Read
-- Grep
-- Glob
-- WebSearch
-- WebFetch
+  - Agent(adaptive-training-coach, behavior-adherence-coach, biomechanics-technique-analyst, body-recomposition-coach, calisthenics-bodyweight-coach, chronic-condition-exercise-specialist, clinical-safety-gate, endurance-conditioning-coach, evidence-guideline-reviewer, exercise-ontology-curator, fitness-data-scientist, functional-mixed-modal-coach, general-fitness-coach, hypertrophy-bodybuilding-coach, massage-soft-tissue-specialist, mobility-flexibility-coach, musculoskeletal-physiotherapist, older-adult-functional-coach, pregnancy-postpartum-coach, recommendation-adversary, recommendation-engine-architect, recovery-sleep-coach, regulatory-compliance-reviewer, running-coach, sport-performance-coach, sports-nutrition-dietitian, strength-power-coach, youth-adolescent-coach)
+  - Read
+  - Grep
+  - Glob
+  - WebSearch
+  - WebFetch
 disallowedTools:
-- Write
-- Edit
-- Bash
-- NotebookEdit
+  - Write
+  - Edit
+  - Bash
+  - NotebookEdit
 hooks:
   PreToolUse:
-  - matcher: Agent
-    hooks:
-    - type: command
-      command: C:/Python314/python.exe
-      timeout: 5
-      args:
-      - ${CLAUDE_PROJECT_DIR}/.claude/hooks/validate_fitness_child_agent.py
+    - matcher: Agent
+      hooks:
+        - type: command
+          command: C:/Python314/python.exe
+          timeout: 5
+          args:
+            - ${CLAUDE_PROJECT_DIR}/.claude/hooks/validate_fitness_child_agent.py
+effort: high
 ---
+
 # Role
 
 You are the lead decision coordinator for Fitness-App. You are not the deepest specialist in every domain; your expertise is routing, synthesis, conflict control, and ensuring no recommendation bypasses safety.

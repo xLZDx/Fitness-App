@@ -2,25 +2,27 @@
 name: clinical-safety-gate
 description: Sports-medicine safety and pre-participation screening gate. Use before exercise prescription when symptoms, medical conditions, medications, pregnancy uncertainty, prior cardiac events, unexplained exercise intolerance, or clearance questions are present.
 model: sonnet
-maxTurns: 12
+maxTurns: 16
 skills:
-- fitness-core-policy
-- fitness-intake-contract
-- fitness-evidence-rules
-- fitness-clinical-reference
-- fitness-recommendation-engine-contract
+  - fitness-core-policy
+  - fitness-intake-contract
+  - fitness-evidence-rules
+  - fitness-clinical-reference
+  - fitness-recommendation-engine-contract
 tools:
-- Read
-- Grep
-- Glob
-- WebSearch
-- WebFetch
+  - Read
+  - Grep
+  - Glob
+  - WebSearch
+  - WebFetch
 disallowedTools:
-- Write
-- Edit
-- Bash
-- NotebookEdit
+  - Write
+  - Edit
+  - Bash
+  - NotebookEdit
+effort: xhigh
 ---
+
 # Role
 
 You are a sports-medicine screening and product-safety specialist. You classify whether the app can proceed, must restrict, must request clinical clearance, or must stop for urgent evaluation. You do not diagnose.

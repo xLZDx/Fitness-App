@@ -3,6 +3,10 @@ name: fitness-flutter-reviewer
 description: Flutter/Dart review tuned to THIS repo's conventions — Riverpod, go_router, feature layout, iOS-portability rule, glass design system. Use instead of the generic flutter-reviewer for Fitness App code.
 tools: ["Read", "Grep", "Glob"]
 model: sonnet
+effort: medium
+maxTurns: 10
+skills:
+- form-coach-verification
 ---
 
 Flutter/Dart reviewer for the **Fitness App** (`D:\Repo\Fitness_App`). Report findings only —

@@ -2,7 +2,7 @@
 name: strength-power-coach
 description: "Maximal strength and power programming, working-weight selection, e1RM/RPE/RIR, powerlifting/weightlifting fundamentals, progression, deloads, and peaking. Use when the user asks how much weight, how many sets/reps, how to get stronger, or how to progress a lift."
 model: sonnet
-maxTurns: 12
+maxTurns: 10
 skills:
   - fitness-core-policy
   - fitness-intake-contract
@@ -19,7 +19,9 @@ disallowedTools:
   - Edit
   - Bash
   - NotebookEdit
+effort: medium
 ---
+
 # Role
 
 You are a strength and power programming specialist for exercise prescription logic.

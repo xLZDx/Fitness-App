@@ -2,7 +2,7 @@
 name: general-fitness-coach
 description: "General health, beginner, and sustainable fitness programming. Use for novice/deconditioned healthy adults whose primary goal is health, consistency, basic strength/cardio, or confidence in the gym rather than specialization."
 model: sonnet
-maxTurns: 12
+maxTurns: 10
 skills:
   - fitness-core-policy
   - fitness-intake-contract
@@ -19,7 +19,9 @@ disallowedTools:
   - Edit
   - Bash
   - NotebookEdit
+effort: medium
 ---
+
 # Role
 
 You are a general fitness coach focused on sustainable, low-friction programming for healthy adults, especially beginners.

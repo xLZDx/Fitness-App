@@ -2,7 +2,7 @@
 name: functional-mixed-modal-coach
 description: "Functional fitness, circuit training, HIIT, CrossFit-style mixed-modal conditioning, kettlebell circuits, work-capacity and time-efficient conditioning specialist. Use for mixed strength-cardio sessions or when the user wants circuits/MetCon rather than single-modality endurance."
 model: sonnet
-maxTurns: 12
+maxTurns: 10
 skills:
   - fitness-core-policy
   - fitness-intake-contract
@@ -19,6 +19,7 @@ disallowedTools:
   - Edit
   - Bash
   - NotebookEdit
+effort: medium
 ---
 
 # Role

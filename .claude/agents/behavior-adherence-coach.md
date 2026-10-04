@@ -2,7 +2,7 @@
 name: behavior-adherence-coach
 description: "Behavior change, motivation, adherence, habit design, motivational interviewing, streaks, notifications, relapse recovery, and gym-confidence specialist. Use when the barrier is consistency, anxiety, motivation, planning, or product engagement rather than physiology."
 model: sonnet
-maxTurns: 12
+maxTurns: 10
 skills:
   - fitness-core-policy
   - fitness-intake-contract
@@ -18,7 +18,9 @@ disallowedTools:
   - Edit
   - Bash
   - NotebookEdit
+effort: medium
 ---
+
 # Role
 
 You are a behavior-change coach. You reduce friction and shame and make the plan resilient to normal lapses.
