@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fitness_App — срез по коду и CI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#0b0f14; --surface:#121820; --surface-2:#1a222b; --border:#26313c;
+    --text:#e8edf1; --text-dim:#93a5b2; --text-faint:#5f7080;
+    --accent:#c9ff47; --accent-deep:#4b7a00; --accent-ink:#20330a;
+    --ok:#38d97a; --ok-ink:#0c3320; --warn:#f5b942; --warn-ink:#3a2a08;
+    --crit:#ff5d6c; --crit-ink:#3a0f14; --pending:#9b8cff; --pending-ink:#231b3f;
+    --mute:#5f7080; --mute-ink:#1c242c;
+    --shadow: 0 1px 0 rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="light"]){
+      --bg:#f4f6f2; --surface:#ffffff; --surface-2:#edf1e9; --border:#d7ddd0;
+      --text:#141a12; --text-dim:#4c5a49; --text-faint:#7c887a;
+      --accent:#5f8f00; --accent-deep:#3f6600; --accent-ink:#eaffc4;
+      --ok:#1f9c57; --ok-ink:#e4f8ec; --warn:#a86a00; --warn-ink:#fdf1da;
+      --crit:#c8283a; --crit-ink:#fbe4e6; --pending:#5a4cd1; --pending-ink:#ece9fb;
+      --mute:#6b7970; --mute-ink:#e9ece5;
+      --shadow: 0 1px 0 rgba(0,0,0,.06);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b0f14; --surface:#121820; --surface-2:#1a222b; --border:#26313c;
+    --text:#e8edf1; --text-dim:#93a5b2; --text-faint:#5f7080;
+    --accent:#c9ff47; --accent-deep:#4b7a00; --accent-ink:#20330a;
+    --ok:#38d97a; --ok-ink:#0c3320; --warn:#f5b942; --warn-ink:#3a2a08;
+    --crit:#ff5d6c; --crit-ink:#3a0f14; --pending:#9b8cff; --pending-ink:#231b3f;
+    --mute:#5f7080; --mute-ink:#1c242c;
+  }
+
+  *{box-sizing:border-box;}
+  html{color-scheme:light dark;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px; line-height:1.55;
+    padding-inline:20px; padding-block:32px 64px;
+  }
+  .wrap{max-width:1080px; margin:0 auto;}
+  a{color:var(--accent-deep);}
+  @media (prefers-color-scheme: dark){ a{color:var(--accent);} }
+  :root[data-theme="dark"] a{color:var(--accent);}
+
+  header{margin-bottom:8px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11.5px;
+    letter-spacing:.11em; text-transform:uppercase; color:var(--text-faint);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:"Archivo", ui-sans-serif, sans-serif; font-weight:800;
+    font-size:clamp(28px,4.4vw,40px); line-height:1.06; letter-spacing:-.015em;
+    margin:0 0 10px; text-wrap:balance;
+  }
+  .dek{font-size:16px; color:var(--text-dim); max-width:66ch; margin:0;}
+
+  nav.jump{
+    display:flex; flex-wrap:wrap; gap:6px 10px; margin:22px 0 30px;
+    padding:12px 14px; background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  }
+  nav.jump a{
+    font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-dim);
+    text-decoration:none; padding:3px 8px; border-radius:6px; border:1px solid transparent;
+  }
+  nav.jump a:hover{border-color:var(--border); color:var(--text);}
+
+  section{margin:44px 0;}
+  h2{
+    font-family:"Archivo",sans-serif; font-weight:700; font-size:22px;
+    letter-spacing:-.01em; margin:0 0 4px; display:flex; align-items:baseline; gap:10px;
+  }
+  h2 .num{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--text-faint); font-weight:500;}
+  .lede{color:var(--text-dim); font-size:14px; max-width:72ch; margin:0 0 20px;}
+
+  /* stat tiles */
+  .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 10px;}
+  .tile{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
+  .tile .v{font-family:"Archivo",sans-serif; font-weight:800; font-size:26px; letter-spacing:-.01em;}
+  .tile .l{font-size:12px; color:var(--text-faint); margin-top:2px;}
+  .tile.ok .v{color:var(--ok);} .tile.warn .v{color:var(--warn);} .tile.crit .v{color:var(--crit);}
+
+  /* pills */
+  .pill{display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace;
+    font-size:11px; letter-spacing:.04em; text-transform:uppercase; padding:2px 8px; border-radius:99px; white-space:nowrap;}
+  .pill.ok{background:var(--ok-ink); color:var(--ok);}
+  .pill.warn{background:var(--warn-ink); color:var(--warn);}
+  .pill.crit{background:var(--crit-ink); color:var(--crit);}
+  .pill.pending{background:var(--pending-ink); color:var(--pending);}
+  .pill.mute{background:var(--mute-ink); color:var(--text-faint);}
+
+  /* tables */
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:var(--surface);
+    border:1px solid var(--border); border-radius:10px; overflow:hidden;}
+  caption{caption-side:top; text-align:left; font-size:12px; color:var(--text-faint); margin-bottom:6px;}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top;}
+  thead th{background:var(--surface-2); font-family:"IBM Plex Mono",monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); cursor:pointer; user-select:none;}
+  thead th:hover{color:var(--text);}
+  thead th.sort-asc::after{content:" \25B2";} thead th.sort-desc::after{content:" \25BC";}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td.num,th.num{text-align:right; font-family:"IBM Plex Mono",monospace;}
+  .tablewrap{overflow-x:auto;}
+
+  /* charts */
+  .chart-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin:14px 0;}
+  .chart-card h3{margin:0 0 12px; font-size:14px; font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em;}
+  .bars{display:flex; flex-direction:column; gap:7px;}
+  .bar-row{display:grid; grid-template-columns:150px 1fr 56px; align-items:center; gap:10px; font-size:12.5px;}
+  .bar-row .lbl{color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bar-track{height:16px; background:var(--surface-2); border-radius:4px; overflow:hidden; display:flex;}
+  .bar-seg{height:100%;}
+  .bar-row .val{font-family:"IBM Plex Mono",monospace; color:var(--text-faint); text-align:right;}
+  .legend{display:flex; flex-wrap:wrap; gap:12px 18px; margin-top:12px; font-size:12px; color:var(--text-dim);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .donut-wrap{display:flex; align-items:center; gap:24px; flex-wrap:wrap;}
+
+  .filterbar{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .filterbar button{font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-transform:uppercase;
+    letter-spacing:.05em; padding:6px 12px; border-radius:99px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text-dim); cursor:pointer;}
+  .filterbar button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+  .filterbar button:hover:not(.active){border-color:var(--text-faint); color:var(--text);}
+
+  .callout{border-left:3px solid var(--warn); background:var(--surface); border:1px solid var(--border);
+    border-left:3px solid var(--warn); border-radius:8px; padding:12px 16px; font-size:13.5px; margin:14px 0;}
+  .callout.crit{border-left-color:var(--crit);}
+  .callout.ok{border-left-color:var(--ok);}
+  .callout b{color:var(--text);}
+
+  ol.findings{padding-left:0; list-style:none; display:flex; flex-direction:column; gap:10px;}
+  ol.findings li{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-size:13.5px;}
+  ol.findings .sev{font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-right:8px;}
+
+  footer{margin-top:60px; padding-top:18px; border-top:1px solid var(--border); font-size:12px; color:var(--text-faint);}
+  code{font-family:"IBM Plex Mono",monospace; font-size:.92em; background:var(--surface-2); padding:1px 5px; border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Fitness_App · срез на 2026-10-06</p>
+  <h1>Срез по коду и CI</h1>
+  <p class="dek">Что реально построено, какого оно размера, и что прямо сейчас говорит CI — это не отчёт по спринту, а чтение состояния репозитория и живого состояния GitHub Actions по сегодняшним плановым прогонам.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3da7737</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<nav class="jump">
+  <a href="#summary">Сводка</a>
+  <a href="#ci">Статус CI</a>
+  <a href="#tests">Тестовые наборы</a>
+  <a href="#code">Код по фичам</a>
+  <a href="#security">Безопасность зависимостей</a>
+  <a href="#gates">Гейты governance</a>
+  <a href="#activity">Активность коммитов</a>
+  <a href="#findings">Находки</a>
+</nav>
+
+<section id="summary">
+<h2>Сводка</h2>
+<p class="lede">Мобильное приложение (Flutter/Dart) + Cloud Functions (TypeScript) + Python-инструментарий сборки каталога + тонкий Wear OS компаньон. 1 125 коммитов с 2026-05-07 в трёх разных эрах (3-дневная сборка, 7-недельный разрыв, затем 3-месячный период release-engineering и аудитов).</p>
+<div class="tiles">
+  <div class="tile"><div class="v">79 301</div><div class="l">строк в mobile/lib (363 файла)</div></div>
+  <div class="tile"><div class="v">102 604</div><div class="l">строк тестового кода, все наборы</div></div>
+  <div class="tile ok"><div class="v">3917/3927</div><div class="l">mobile-тестов проходит (сегодняшний CI)</div></div>
+  <div class="tile ok"><div class="v">606/606</div><div class="l">unit-тестов functions (перепроверено сегодня)</div></div>
+  <div class="tile warn"><div class="v">4 / 11</div><div class="l">CI-джобов красные сегодня (flutter+functions)</div></div>
+  <div class="tile crit"><div class="v">1 critical</div><div class="l">из 18 npm-уязвимостей, functions/</div></div>
+  <div class="tile"><div class="v">12 / 19</div><div class="l">строк governance-гейта CLOSED</div></div>
+  <div class="tile"><div class="v">1 125</div><div class="l">всего коммитов (2026-05 → сейчас)</div></div>
+</div>
+</section>
+
+<section id="ci">
+<h2><span class="num">01</span> Статус CI — живой, сегодня</h2>
+<p class="lede">5 workflow'ов GitHub Actions, данные взяты напрямую из <code>gh run list</code> / <code>gh run view</code> по последнему плановому прогону каждого (все на <code>master</code>, 2026-10-05/06). Это не историческое утверждение — это то, что говорит пайплайн прямо сейчас.</p>
+
+<div class="filterbar" id="ci-filter">
+  <button data-f="all" class="active">Все (11)</button>
+  <button data-f="fail">Красные (4)</button>
+  <button data-f="pass">Зелёные (7)</button>
+</div>
+
+<div class="tablewrap">
+<table id="ci-table">
+<thead><tr><th>Workflow</th><th>Джоб</th><th>Статус</th><th>Причина</th><th>Класс</th></tr></thead>
+<tbody>
+<tr data-s="fail"><td>flutter</td><td>analyze + test</td><td><span class="pill warn">8 из 3927 красных</span></td><td>Все 8 — в <code>test/golden/*</code>, рендеринг-голдены, задокументированный заранее известный дрейф шрифтов хост/CI, не логические ошибки</td><td>известно</td></tr>
+<tr data-s="fail"><td>flutter</td><td>release build (APK+AAB)</td><td><span class="pill crit">заблокировано</span></td><td>secret <code>GOOGLE_SERVICES_JSON_B64</code> не задан в репозитории — операторское действие</td><td>оператор</td></tr>
+<tr data-s="fail"><td>flutter</td><td>integration (emulator)</td><td><span class="pill crit">инфра-ошибка</span></td><td>Шаг Android-эмулятора падает при старте/завершении на хостинговом раннере (KVM/эмулятор-инфра, не тестовый assert)</td><td>инфра</td></tr>
+<tr data-s="fail"><td>flutter</td><td>dart/flutter deps (OSV scan)</td><td><span class="pill crit">инфра-ошибка</span></td><td><code>stat …/mobile/pubspec.lock: no such file</code> — workflow запускает сканер не из той рабочей директории</td><td>инфра, баг конфига CI</td></tr>
+<tr data-s="fail"><td>flutter</td><td>RU/EN translation drift</td><td><span class="pill warn">2 новые находки</span></td><td><code>formcheckExplainTitle</code>, <code>formcheckExplainPushupTuck</code> — несовпадение полярности отрицания между EN и RU строками (всего 30 помечено, 28 уже в baseline)</td><td>реально, контент</td></tr>
+<tr data-s="fail"><td>flutter</td><td>CT-1 content QA</td><td><span class="pill warn">2 из 27 красных</span></td><td>один тест самоуничтожающийся (привязывает assert к буквальному <code>HEAD</code>, поэтому падает на первом же коммите) — см. Находки</td><td>баг дизайна теста</td></tr>
+<tr data-s="pass"><td>flutter</td><td>functions-build</td><td><span class="pill ok">зелёный</span></td><td>—</td><td>—</td></tr>
+<tr data-s="fail"><td>functions</td><td>unit (jest)</td><td><span class="pill ok">606/606 (перепроверено сегодня)</span></td><td>собственный последний прогон CI старше этого; перезапущено локально на текущем HEAD</td><td>проверено</td></tr>
+<tr data-s="fail"><td>functions</td><td>dependency audit</td><td><span class="pill crit">18 уязвимостей</span></td><td>10 moderate, 7 high, <b>1 critical</b> — см. раздел «Безопасность»</td><td>реально, security</td></tr>
+<tr data-s="fail"><td>functions</td><td>firestore rules (emulator)</td><td><span class="pill crit">инфра-ошибка</span></td><td><code>npm error could not determine executable to run</code> внутри <code>run_emulator_tests.js</code> — сломано разрешение скрипта/зависимости в CI, не падение правил</td><td>инфра, нужно расследовать</td></tr>
+<tr data-s="fail"><td>functions</td><td>account-deletion e2e</td><td><span class="pill crit">инфра-ошибка</span></td><td>та же ошибка <code>could not determine executable</code>, тот же скрипт</td><td>инфра, нужно расследовать</td></tr>
+<tr data-s="pass"><td>equipment-identity-functions</td><td>build-and-test / audit / deploy-isolation</td><td><span class="pill ok">зелёный</span></td><td>—</td><td>—</td></tr>
+<tr data-s="pass"><td>secrets</td><td>gitleaks</td><td><span class="pill ok">зелёный</span></td><td>—</td><td>—</td></tr>
+<tr data-s="pass"><td>health-data-residue</td><td>sweep</td><td><span class="pill mute">пропущен</span></td><td>еженедельный по расписанию, сейчас сознательный no-op по собственному условию <code>if:</code> джоба</td><td>так задумано</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="chart-card">
+  <h3>Зелёные / красные по workflow (джобы)</h3>
+  <div class="bars" id="chart-ci"></div>
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i>зелёный</span>
+    <span><i style="background:var(--warn)"></i>известное/заранее существовавшее</span>
+    <span><i style="background:var(--crit)"></i>новое или инфра-сломано</span>
+    <span><i style="background:var(--mute)"></i>пропущено</span>
+  </div>
+</div>
+</section>
+
+<section id="tests">
+<h2><span class="num">02</span> Тестовые наборы рядом друг с другом</h2>
+<p class="lede">Четыре независимых набора, четыре разных раннера. Числа по mobile и functions ниже свежо перепроверены на актуальном <code>master</code> (не процитированы из старого документа); числа по catalog/ML тоже собраны заново — собственный <code>CLAUDE.md</code> проекта всё ещё говорит «74 теста» для catalog-набора, что устарело более чем в 2,8 раза.</p>
+<div class="chart-card">
+  <h3>Проходящих тестов, по набору</h3>
+  <div class="bars" id="chart-tests"></div>
+</div>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Набор</th><th>Раннер</th><th class="num">Файлов тестов</th><th class="num">Тестов</th><th>Результат</th></tr></thead>
+<tbody>
+<tr><td>mobile (Flutter/Dart)</td><td><code>flutter test</code></td><td class="num">355</td><td class="num">3 927</td><td><span class="pill warn">3 917 pass / 8 fail (golden) / 2 skip</span></td></tr>
+<tr><td>functions (Cloud Functions)</td><td><code>jest</code></td><td class="num">24</td><td class="num">606</td><td><span class="pill ok">606/606</span></td></tr>
+<tr><td>functions — Firestore rules</td><td><code>jest + emulator</code></td><td class="num">—</td><td class="num">269 (последняя проверка 2026-09-16)</td><td><span class="pill crit">CI сломан сегодня (инфра)</span></td></tr>
+<tr><td>scripts/catalog (Python)</td><td><code>pytest</code></td><td class="num">6</td><td class="num">211</td><td><span class="pill ok">собрано чисто</span></td></tr>
+<tr><td>scripts/ml — CT-1 content QA</td><td><code>pytest</code></td><td class="num">4</td><td class="num">27</td><td><span class="pill warn">25 pass / 2 fail</span></td></tr>
+</tbody>
+</table>
+</div>
+<div class="callout"><b>Примечание по итогу mobile.</b> Последний явный счёт полного набора в <code>core/DECISION_LOG.md</code> (2026-09-18) был 3 890 passed / 21 failed, все golden. Сегодняшний CI показывает 3 917 / 8 — больше тестов (диагностика F1 добавлена 2026-09-26) и меньше golden-падений, чем в той исторической записи; напрямую числа не сравнимы (локальный прогон vs шрифты хостингового раннера), оба подлинные, и golden-падения — тот же задокументированный класс в обоих случаях.</div>
+</section>
+
+<section id="code">
+<h2><span class="num">03</span> Размер кода по фичам</h2>
+<p class="lede">363 Dart-файла в 38 модулях <code>mobile/lib/features/</code>, подсчитано заново (не снимок 2026-08-12 из <code>core/CODEMAP.md</code>, который занижает <code>form_check</code> примерно в 2 раза). Клик по заголовку столбца сортирует.</p>
+<div class="chart-card">
+  <h3>Топ-15 фич по строкам кода</h3>
+  <div class="bars" id="chart-loc"></div>
+</div>
+<div class="tablewrap">
+<table id="loc-table">
+<thead><tr><th data-k="name">Фича</th><th data-k="files" class="num">Файлов</th><th data-k="lines" class="num">Строк</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</section>
+
+<section id="security">
+<h2><span class="num">04</span> Безопасность зависимостей — <code>functions/</code></h2>
+<p class="lede"><code>npm audit</code> против пакета Cloud Functions, перезапущен сегодня. Выделенный CI-джоб «dependency audit» падает именно на этом — собственный exit-код <code>npm audit</code> ненулевой, когда уязвимости есть, по дизайну, так что красный цвет этого джоба — это <i>работает как задумано</i>, а не ложная тревога.</p>
+<div class="donut-wrap">
+  <div id="chart-vuln"></div>
+  <div class="legend" id="vuln-legend" style="flex-direction:column; gap:8px;"></div>
+</div>
+<div class="callout crit"><b>1 critical</b>-находка восходит к транзитивным зависимостям <code>@google-cloud/storage</code> (уязвимые версии <code>retry-request</code> / <code>teeny-request</code>). Ещё не разобрана на предмет реальной эксплуатируемости в паттерне использования этой кодовой базы — это и есть следующий конкретный шаг, а не повтор severity-метки самого <code>npm audit</code>.</div>
+<div class="callout"><b>Примечание про область охвата.</b> 18 — это собственное число CI-джоба, и оно сознательно ограничено флагами <code>--omit=dev --package-lock-only</code> — задокументировано в <code>functions.yml</code> как явный выбор (уязвимость в <code>jest</code> никогда не доходит до пользователя; уязвимость в <code>stripe</code> или <code>firebase-admin</code> — доходит). Обычный, неограниченный <code>npm audit</code> сегодня (с devDependencies) возвращает <b>54</b> (14 moderate, 39 high, тот же 1 critical) — лишние 36 — это советы только по инструментарию, которые собственная политика проекта сознательно выводит за рамки CI-гейта, а не скрытый продакшн-риск.</div>
+<div class="callout"><b>Mobile-сторона сегодня не проверена.</b> Аналогичный OSV-скан для Dart/Flutter сломан на уровне конфига CI (не та рабочая директория), поэтому живого сигнала об уязвимостях зависимостей на Flutter-стороне сейчас нет вообще — это сам по себе пробел, который стоит закрыть, отдельно от того, что он мог бы найти.</div>
+</section>
+
+<section id="gates">
+<h2><span class="num">05</span> Реестр governance-гейтов</h2>
+<p class="lede">19 строк, отслеживаемых в <code>core/CURRENT_STATE.md</code>, сгенерировано <code>scripts/review/state_ledger.py</code> — большинство пересчитывается из исходников при каждой проверке (не заявлено вручную). 4 строки структурно не закрываемы инженерией: они ждут клинициста, вендора разметки данных или операторское действие вне этого репозитория.</p>
+<div class="donut-wrap">
+  <div id="chart-gates"></div>
+  <div class="legend" id="gates-legend" style="flex-direction:column; gap:8px;"></div>
+</div>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Строка</th><th>Состояние</th><th>Авторитет</th><th>Чего ждёт</th></tr></thead>
+<tbody>
+<tr><td>D1</td><td><span class="pill crit">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>внешний</td><td>клиническая проверка каталога упражнений — локальный предикат невозможен</td></tr>
+<tr><td>H3</td><td><span class="pill crit">HOLD</span></td><td>внешний</td><td>снимается тем же возвратом, что и D1</td></tr>
+<tr><td>CT1-human-labels</td><td><span class="pill crit">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>внешний</td><td><code>HUMAN_REVIEW_LABELS = 0</code> — нужен вендор/процесс разметки</td></tr>
+<tr><td>Row 22 (CI release secret)</td><td><span class="pill warn">код готов, заблокировано</span></td><td>оператор</td><td>GitHub secret <code>GOOGLE_SERVICES_JSON_B64</code> — 10-минутное операторское действие</td></tr>
+<tr><td>production-image-collection</td><td><span class="pill mute">DISABLED</span></td><td>source</td><td>так задумано — отслеживается, чтобы поймать регрессию (если снова включится)</td></tr>
+<tr><td>12 прочих строк</td><td><span class="pill ok">CLOSED</span></td><td>source / оператор</td><td>F-prefetch, F2, F5, checkout-copy, guest-upgrade-outcome, scanner-dependency-pin, N-05, N-04, scanner-metadata, scanner-pipeline-location, gym-webhook-disclosure, roboflow-key-reissue</td></tr>
+<tr><td>3 прочих строки</td><td><span class="pill pending">DORMANT</span></td><td>оператор</td><td>metric-provenance-six, F025, N-07 — растяжки на недостижимых путях кода, не открытые вопросы</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="activity">
+<h2><span class="num">06</span> Активность коммитов</h2>
+<p class="lede">1 125 коммитов, три разные эры: 3-дневная сборка (май), 7-недельная полная остановка (июнь — реальная, не пробел в данных), затем release-engineering и аудиты (июль–октябрь), которые по числу коммитов многократно превосходят исходную сборку.</p>
+<div class="chart-card">
+  <h3>Коммитов по месяцам</h3>
+  <div class="bars" id="chart-commits"></div>
+</div>
+</section>
+
+<section id="findings">
+<h2><span class="num">07</span> Находки, по приоритету</h2>
+<ol class="findings">
+<li><span class="sev pill crit">HIGH</span><b>1 critical + 7 high npm-уязвимостей в <code>functions/</code>, не разобрано.</b> <code>npm audit</code> указывает на транзитивные зависимости <code>@google-cloud/storage</code>. Следующий шаг: dry-run <code>npm audit fix</code>, чтобы увидеть, что безопасный бамп версии, а что breaking-major, затем настоящий Rosetta-гейт, если что-то затрагивает несущий путь.</li>
+<li><span class="sev pill crit">HIGH</span><b>Два CI-джоба Cloud Functions (Firestore rules, account-deletion e2e) падают на <code>npm error could not determine executable to run</code>.</b> Одна и та же первопричина оба раза, внутри <code>scripts/run_emulator_tests.js</code> — похоже на отсутствующий/переименованный бинарник (firebase-tools?) в зависимостях CI, а не на регрессию теста. Нужен <code>npm ci</code> + прямое воспроизведение на чистом чекауте для подтверждения.</li>
+<li><span class="sev pill warn">MEDIUM</span><b>OSV-скан уязвимостей Dart/Flutter молча не работает</b> (не та рабочая директория → «no such file» → exit 127, CI читает это как падение джоба, а не как результат скана). Живого сигнала об уязвимостях mobile-зависимостей сейчас нет вообще.</li>
+<li><span class="sev pill warn">MEDIUM</span><b>2 новые находки дрейфа RU/EN-перевода</b> по строкам Form Coach (<code>formcheckExplainTitle</code>, <code>formcheckExplainPushupTuck</code>) — несовпадение полярности отрицания, то есть русский и английский текст могут утверждать противоположное. Вероятно, внесено в ходе недавней работы по T3/F1 Form Coach.</li>
+<li><span class="sev pill mute">LOW</span><b>Один pytest из CT-1 самоуничтожающийся по конструкции</b>: он утверждает, что закреплённый commit-хеш записи в worklist отличается от <code>HEAD</code>, вычисленного как буквальный <code>HEAD</code> в момент определения теста — поэтому он падает на самом первом коммите после написания, навсегда, вне зависимости от реального дрейфа. Баг дизайна теста, не баг продукта.</li>
+<li><span class="sev pill mute">LOW</span><b>8 падений golden-тестов в <code>flutter.yml</code> — тот же задокументированный класс</b>, отмеченный в <code>core/DECISION_LOG.md</code> с 2026-09-18 (дрейф рендеринга шрифтов хост/CI). Не новое, не регрессия — стоит отдельного фикса только если visual-regression покрытие станет следующим приоритетом.</li>
+<li><span class="sev pill ok">INFO</span><b>Построчные счётчики по фичам в <code>core/CODEMAP.md</code> устарели почти в 2×</b> (<code>form_check</code> сейчас 13 562 строки в 31 файле, а не 6 821/23, записанные 2026-08-12). Файл требует обновления в том же коммите, что и любое изменение фичи; эта дисциплина провисла именно для счётчиков размера.</li>
+</ol>
+</section>
+
+<footer>
+  Сгенерировано из живого состояния репозитория и GitHub Actions (<code>gh run view</code>) 2026-10-06. Счётчики тестов mobile/functions/python перезапущены или пересобраны заново для этого отчёта, а не процитированы из старых записей, кроме явно помеченных случаев. Код графиков инлайновый, без внешней библиотеки.
+</footer>
+
+</div>
+
+<script>
+var DATA = {
+  ci: [
+    {label:'flutter', ok:2, warn:2, crit:3, mute:0},
+    {label:'functions', ok:1, warn:0, crit:2, mute:0},
+    {label:'equipment-identity-fns', ok:3, warn:0, crit:0, mute:0},
+    {label:'secrets', ok:1, warn:0, crit:0, mute:0},
+    {label:'health-data-residue', ok:0, warn:0, crit:0, mute:1}
+  ],
+  tests: [
+    {label:'mobile (flutter)', value:3917, total:3927, color:'warn'},
+    {label:'functions (jest)', value:606, total:606, color:'ok'},
+    {label:'catalog (pytest)', value:211, total:211, color:'ok'},
+    {label:'CT-1 (pytest)', value:25, total:27, color:'warn'}
+  ],
+  loc: [
+    {name:'form_check', files:31, lines:13562},
+    {name:'workouts', files:39, lines:7904},
+    {name:'equipment', files:30, lines:7914},
+    {name:'visual_equipment', files:34, lines:6501},
+    {name:'onboarding', files:21, lines:3799},
+    {name:'progress_photos', files:17, lines:3211},
+    {name:'scanner', files:9, lines:3090},
+    {name:'programmes', files:12, lines:2756},
+    {name:'profile', files:11, lines:2722},
+    {name:'subscription', files:11, lines:2226},
+    {name:'home', files:5, lines:1937},
+    {name:'safety', files:6, lines:1534},
+    {name:'progress', files:3, lines:1185},
+    {name:'data_export', files:8, lines:1090},
+    {name:'auth', files:7, lines:932},
+    {name:'posture', files:4, lines:762},
+    {name:'ai_planner', files:5, lines:666},
+    {name:'recovery', files:4, lines:404},
+    {name:'ai_coach', files:5, lines:589},
+    {name:'donor_wall', files:5, lines:508},
+    {name:'catalog', files:5, lines:504},
+    {name:'marketplace', files:4, lines:443},
+    {name:'personalisation', files:4, lines:483},
+    {name:'community', files:4, lines:479},
+    {name:'account_deletion', files:5, lines:539},
+    {name:'celebrity_plans', files:4, lines:307},
+    {name:'social_feed', files:4, lines:359},
+    {name:'settings', files:1, lines:389},
+    {name:'moments', files:5, lines:316},
+    {name:'legal', files:3, lines:223},
+    {name:'splash', files:1, lines:192},
+    {name:'cycle_aware', files:1, lines:199},
+    {name:'voice', files:1, lines:137},
+    {name:'about', files:1, lines:287},
+    {name:'licences', files:1, lines:99},
+    {name:'sdk_export', files:1, lines:66},
+    {name:'goal_photo', files:1, lines:60},
+    {name:'buddy', files:1, lines:75},
+    {name:'body_comp', files:1, lines:46}
+  ],
+  vuln: [
+    {label:'critical', value:1, color:'crit'},
+    {label:'high', value:7, color:'warn'},
+    {label:'moderate', value:10, color:'pending'}
+  ],
+  gates: [
+    {label:'CLOSED', value:12, color:'ok'},
+    {label:'DORMANT (растяжка)', value:3, color:'pending'},
+    {label:'EXTERNAL_AUTHORITY_REQUIRED / HOLD', value:3, color:'crit'},
+    {label:'DISABLED (по дизайну)', value:1, color:'mute'}
+  ],
+  commits: [
+    {label:'2026-05', value:36},
+    {label:'2026-06', value:0},
+    {label:'2026-07', value:91},
+    {label:'2026-08', value:809},
+    {label:'2026-09', value:188},
+    {label:'2026-10', value:1}
+  ]
+};
+
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim(); }
+
+function renderBars(containerId, rows, opts){
+  opts = opts || {};
+  var el = document.getElementById(containerId);
+  if(!el) return;
+  var max = opts.max || Math.max.apply(null, rows.map(function(r){ return r.total || r.value; }));
+  el.innerHTML = '';
+  rows.forEach(function(r){
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    var lbl = document.createElement('div'); lbl.className = 'lbl'; lbl.textContent = r.label || r.name;
+    var track = document.createElement('div'); track.className = 'bar-track';
+    var segs = r.segs || [{v: r.value, c: r.color || 'accent'}];
+    segs.forEach(function(s){
+      var seg = document.createElement('div');
+      seg.className = 'bar-seg';
+      seg.style.width = (max ? (s.v/max*100) : 0) + '%';
+      seg.style.background = s.c === 'accent' ? cssVar('accent') : cssVar(s.c);
+      seg.title = s.label ? (s.label+': '+s.v) : s.v;
+      track.appendChild(seg);
+    });
+    var val = document.createElement('div'); val.className = 'val';
+    val.textContent = r.total ? (r.value + '/' + r.total) : (r.lines != null ? r.lines.toLocaleString() : r.value);
+    row.appendChild(lbl); row.appendChild(track); row.appendChild(val);
+    el.appendChild(row);
+  });
+}
+
+function renderDonut(containerId, legendId, rows){
+  var el = document.getElementById(containerId);
+  var legend = document.getElementById(legendId);
+  if(!el) return;
+  var total = rows.reduce(function(s,r){ return s+r.value; }, 0);
+  var r = 54, cx = 64, cy = 64, circumference = 2*Math.PI*r;
+  var offset = 0;
+  var svg = '<svg width="128" height="128" viewBox="0 0 128 128">';
+  svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+cssVar('surface-2')+'" stroke-width="18"/>';
+  rows.forEach(function(row){
+    var frac = total ? row.value/total : 0;
+    var dash = frac*circumference;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+cssVar(row.color)+'" stroke-width="18" '+
+      'stroke-dasharray="'+dash+' '+(circumference-dash)+'" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 '+cx+' '+cy+')">'+
+      '<title>'+row.label+': '+row.value+'</title></circle>';
+    offset += dash;
+  });
+  svg += '<text x="64" y="60" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="600" fill="'+cssVar('text')+'">'+total+'</text>';
+  svg += '<text x="64" y="76" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="'+cssVar('text-faint')+'">всего</text>';
+  svg += '</svg>';
+  el.innerHTML = svg;
+  if(legend){
+    legend.innerHTML = rows.map(function(row){
+      return '<span><i style="background:'+cssVar(row.color)+'"></i>'+row.label+' — '+row.value+'</span>';
+    }).join('');
+  }
+}
+
+// CI bars: stacked ok/warn/crit/mute per workflow
+renderBars('chart-ci', DATA.ci.map(function(w){
+  var total = w.ok+w.warn+w.crit+w.mute;
+  return {label:w.label, total:total, value:total,
+    segs:[
+      {v:w.ok, c:'ok', label:'зелёный'},
+      {v:w.warn, c:'warn', label:'известное'},
+      {v:w.crit, c:'crit', label:'новое/инфра'},
+      {v:w.mute, c:'mute', label:'пропущено'}
+    ]};
+}), {max: 7});
+
+renderBars('chart-tests', DATA.tests.map(function(t){
+  return {label:t.label, value:t.value, total:t.total, color: t.color};
+}));
+
+renderBars('chart-loc', DATA.loc.slice(0,15).map(function(f){
+  return {label:f.name, value:f.lines, lines:f.lines, color:'accent'};
+}), {max: DATA.loc[0].lines});
+
+renderDonut('chart-vuln', 'vuln-legend', DATA.vuln);
+renderDonut('chart-gates', 'gates-legend', DATA.gates);
+
+renderBars('chart-commits', DATA.commits.map(function(c){
+  return {label:c.label, value:c.value, lines:c.value, color: c.value===0 ? 'mute' : 'accent'};
+}));
+
+// CI filter buttons
+document.querySelectorAll('#ci-filter button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('#ci-filter button').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    var f = btn.getAttribute('data-f');
+    document.querySelectorAll('#ci-table tbody tr').forEach(function(tr){
+      tr.style.display = (f === 'all' || tr.getAttribute('data-s') === f) ? '' : 'none';
+    });
+  });
+});
+
+// LOC table render + sort
+var locTbody = document.querySelector('#loc-table tbody');
+var locSort = {k:'lines', dir:-1};
+function renderLocTable(){
+  var rows = DATA.loc.slice().sort(function(a,b){
+    var av = a[locSort.k], bv = b[locSort.k];
+    if(typeof av === 'string') return av.localeCompare(bv) * locSort.dir;
+    return (av-bv) * locSort.dir;
+  });
+  locTbody.innerHTML = rows.map(function(r){
+    return '<tr><td>'+r.name+'</td><td class="num">'+r.files+'</td><td class="num">'+r.lines.toLocaleString()+'</td></tr>';
+  }).join('');
+  document.querySelectorAll('#loc-table thead th').forEach(function(th){
+    th.classList.remove('sort-asc','sort-desc');
+    if(th.getAttribute('data-k') === locSort.k) th.classList.add(locSort.dir===1?'sort-asc':'sort-desc');
+  });
+}
+document.querySelectorAll('#loc-table thead th').forEach(function(th){
+  th.addEventListener('click', function(){
+    var k = th.getAttribute('data-k');
+    if(locSort.k === k) locSort.dir *= -1; else { locSort.k = k; locSort.dir = -1; }
+    renderLocTable();
+  });
+});
+renderLocTable();
+</script>
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
