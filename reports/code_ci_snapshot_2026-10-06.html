@@ -4,155 +4,71 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fitness_App — Code &amp; CI snapshot</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root{
-    --bg:#0b0f14; --surface:#121820; --surface-2:#1a222b; --border:#26313c;
-    --text:#e8edf1; --text-dim:#93a5b2; --text-faint:#5f7080;
-    --accent:#c9ff47; --accent-deep:#4b7a00; --accent-ink:#20330a;
-    --ok:#38d97a; --ok-ink:#0c3320; --warn:#f5b942; --warn-ink:#3a2a08;
-    --crit:#ff5d6c; --crit-ink:#3a0f14; --pending:#9b8cff; --pending-ink:#231b3f;
-    --mute:#5f7080; --mute-ink:#1c242c;
-    --shadow: 0 1px 0 rgba(0,0,0,.4);
-  }
-  @media (prefers-color-scheme: light){
-    :root:not([data-theme="light"]){
-      --bg:#f4f6f2; --surface:#ffffff; --surface-2:#edf1e9; --border:#d7ddd0;
-      --text:#141a12; --text-dim:#4c5a49; --text-faint:#7c887a;
-      --accent:#5f8f00; --accent-deep:#3f6600; --accent-ink:#eaffc4;
-      --ok:#1f9c57; --ok-ink:#e4f8ec; --warn:#a86a00; --warn-ink:#fdf1da;
-      --crit:#c8283a; --crit-ink:#fbe4e6; --pending:#5a4cd1; --pending-ink:#ece9fb;
-      --mute:#6b7970; --mute-ink:#e9ece5;
-      --shadow: 0 1px 0 rgba(0,0,0,.06);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#0b0f14; --surface:#121820; --surface-2:#1a222b; --border:#26313c;
-    --text:#e8edf1; --text-dim:#93a5b2; --text-faint:#5f7080;
-    --accent:#c9ff47; --accent-deep:#4b7a00; --accent-ink:#20330a;
-    --ok:#38d97a; --ok-ink:#0c3320; --warn:#f5b942; --warn-ink:#3a2a08;
-    --crit:#ff5d6c; --crit-ink:#3a0f14; --pending:#9b8cff; --pending-ink:#231b3f;
-    --mute:#5f7080; --mute-ink:#1c242c;
-  }
-
-  *{box-sizing:border-box;}
-  html{color-scheme:light dark;}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    font-size:15px; line-height:1.55;
-    padding-inline:20px; padding-block:32px 64px;
-  }
-  .wrap{max-width:1080px; margin:0 auto;}
-  a{color:var(--accent-deep);}
-  @media (prefers-color-scheme: dark){ a{color:var(--accent);} }
-  :root[data-theme="dark"] a{color:var(--accent);}
-
-  header{margin-bottom:8px;}
-  .eyebrow{
-    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11.5px;
-    letter-spacing:.11em; text-transform:uppercase; color:var(--text-faint);
-    margin:0 0 10px;
-  }
-  h1{
-    font-family:"Archivo", ui-sans-serif, sans-serif; font-weight:800;
-    font-size:clamp(28px,4.4vw,40px); line-height:1.06; letter-spacing:-.015em;
-    margin:0 0 10px; text-wrap:balance;
-  }
-  .dek{font-size:16px; color:var(--text-dim); max-width:66ch; margin:0;}
-
-  nav.jump{
-    display:flex; flex-wrap:wrap; gap:6px 10px; margin:22px 0 30px;
-    padding:12px 14px; background:var(--surface); border:1px solid var(--border); border-radius:10px;
-  }
-  nav.jump a{
-    font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-dim);
-    text-decoration:none; padding:3px 8px; border-radius:6px; border:1px solid transparent;
-  }
-  nav.jump a:hover{border-color:var(--border); color:var(--text);}
-
-  section{margin:44px 0;}
-  h2{
-    font-family:"Archivo",sans-serif; font-weight:700; font-size:22px;
-    letter-spacing:-.01em; margin:0 0 4px; display:flex; align-items:baseline; gap:10px;
-  }
-  h2 .num{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--text-faint); font-weight:500;}
-  .lede{color:var(--text-dim); font-size:14px; max-width:72ch; margin:0 0 20px;}
-
-  /* stat tiles */
-  .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 10px;}
-  .tile{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
-  .tile .v{font-family:"Archivo",sans-serif; font-weight:800; font-size:26px; letter-spacing:-.01em;}
-  .tile .l{font-size:12px; color:var(--text-faint); margin-top:2px;}
-  .tile.ok .v{color:var(--ok);} .tile.warn .v{color:var(--warn);} .tile.crit .v{color:var(--crit);}
-
-  /* pills */
-  .pill{display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace;
-    font-size:11px; letter-spacing:.04em; text-transform:uppercase; padding:2px 8px; border-radius:99px; white-space:nowrap;}
-  .pill.ok{background:var(--ok-ink); color:var(--ok);}
-  .pill.warn{background:var(--warn-ink); color:var(--warn);}
-  .pill.crit{background:var(--crit-ink); color:var(--crit);}
-  .pill.pending{background:var(--pending-ink); color:var(--pending);}
-  .pill.mute{background:var(--mute-ink); color:var(--text-faint);}
-
-  /* tables */
-  table{width:100%; border-collapse:collapse; font-size:13.5px; background:var(--surface);
-    border:1px solid var(--border); border-radius:10px; overflow:hidden;}
-  caption{caption-side:top; text-align:left; font-size:12px; color:var(--text-faint); margin-bottom:6px;}
-  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top;}
-  thead th{background:var(--surface-2); font-family:"IBM Plex Mono",monospace; font-size:11px;
-    text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); cursor:pointer; user-select:none;}
-  thead th:hover{color:var(--text);}
-  thead th.sort-asc::after{content:" \25B2";} thead th.sort-desc::after{content:" \25BC";}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover{background:var(--surface-2);}
-  td.num,th.num{text-align:right; font-family:"IBM Plex Mono",monospace;}
-  .tablewrap{overflow-x:auto;}
-
-  /* charts */
-  .chart-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin:14px 0;}
-  .chart-card h3{margin:0 0 12px; font-size:14px; font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em;}
-  .bars{display:flex; flex-direction:column; gap:7px;}
-  .bar-row{display:grid; grid-template-columns:150px 1fr 56px; align-items:center; gap:10px; font-size:12.5px;}
-  .bar-row .lbl{color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .bar-track{height:16px; background:var(--surface-2); border-radius:4px; overflow:hidden; display:flex;}
-  .bar-seg{height:100%;}
-  .bar-row .val{font-family:"IBM Plex Mono",monospace; color:var(--text-faint); text-align:right;}
-  .legend{display:flex; flex-wrap:wrap; gap:12px 18px; margin-top:12px; font-size:12px; color:var(--text-dim);}
-  .legend span{display:inline-flex; align-items:center; gap:6px;}
-  .legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
-  .donut-wrap{display:flex; align-items:center; gap:24px; flex-wrap:wrap;}
-
-  .filterbar{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
-  .filterbar button{font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-transform:uppercase;
-    letter-spacing:.05em; padding:6px 12px; border-radius:99px; border:1px solid var(--border);
-    background:var(--surface); color:var(--text-dim); cursor:pointer;}
-  .filterbar button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
-  .filterbar button:hover:not(.active){border-color:var(--text-faint); color:var(--text);}
-
-  .callout{border-left:3px solid var(--warn); background:var(--surface); border:1px solid var(--border);
-    border-left:3px solid var(--warn); border-radius:8px; padding:12px 16px; font-size:13.5px; margin:14px 0;}
-  .callout.crit{border-left-color:var(--crit);}
-  .callout.ok{border-left-color:var(--ok);}
-  .callout b{color:var(--text);}
-
-  ol.findings{padding-left:0; list-style:none; display:flex; flex-direction:column; gap:10px;}
-  ol.findings li{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-size:13.5px;}
-  ol.findings .sev{font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-right:8px;}
-
-  footer{margin-top:60px; padding-top:18px; border-top:1px solid var(--border); font-size:12px; color:var(--text-faint);}
-  code{font-family:"IBM Plex Mono",monospace; font-size:.92em; background:var(--surface-2); padding:1px 5px; border-radius:4px;}
+:root{--bg:#f4f6f8;--sf:#fff;--ink:#17202b;--mu:#5a6676;--ln:#dce2e9;--ac:#1f5fa6;--ok:#1c6f53;--ok-bg:#1c6f5322;--warn:#a35d00;--warn-bg:#a35d0022;--crit:#b3261e;--crit-bg:#b3261e22;--mute:#6b7480;--mute-bg:#eef1f4;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141a;--sf:#161d25;--ink:#e3e9ef;--mu:#98a4b2;--ln:#2a333e;--ac:#86b6ee;--ok:#5fd0a4;--ok-bg:#1c6f5344;--warn:#f0b35a;--warn-bg:#a35d0044;--crit:#f2867e;--crit-bg:#b3261e44;--mute:#8b95a1;--mute-bg:#1f2731;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f141a;--sf:#161d25;--ink:#e3e9ef;--mu:#98a4b2;--ln:#2a333e;--ac:#86b6ee;--ok:#5fd0a4;--ok-bg:#1c6f5344;--warn:#f0b35a;--warn-bg:#a35d0044;--crit:#f2867e;--crit-bg:#b3261e44;--mute:#8b95a1;--mute-bg:#1f2731;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:20px 60px}
+header h1{font-size:1.7rem;margin:0 0 4px;text-wrap:balance}
+header p{margin:0;color:var(--mu);max-width:64ch}
+h2{font-size:1.3rem;margin-top:38px;border-bottom:1px solid var(--ln);padding-bottom:5px;text-wrap:balance}
+h3{font-size:1.05rem;margin:0 0 8px}
+a{color:var(--ac)}
+.m{color:var(--mu);font-size:.85rem}
+.stats{display:flex;flex-wrap:wrap;gap:22px;margin:16px 0}
+.stats div{display:flex;flex-direction:column}
+.stats b{font-size:1.5rem;font-variant-numeric:tabular-nums}
+.stats span{color:var(--mu);font-size:.82rem}
+.stats b.ok{color:var(--ok)} .stats b.warn{color:var(--warn)} .stats b.crit{color:var(--crit)}
+.p{display:inline-block;font:600 .7rem/1.6 system-ui,sans-serif;padding:0 7px;border-radius:8px;white-space:nowrap}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-crit{background:var(--crit-bg);color:var(--crit)}
+.p-mute{background:var(--mute-bg);color:var(--mu)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:var(--sf);border:1px solid var(--ln);border-radius:8px;overflow:hidden}
+th,td{border-bottom:1px solid var(--ln);padding:7px 10px;text-align:left;vertical-align:top}
+th{color:var(--mu);font-weight:600;font-size:.76rem;letter-spacing:.03em;text-transform:uppercase;background:var(--mute-bg);cursor:pointer;user-select:none}
+th:hover{color:var(--ink)}
+th.sa::after{content:" \25B2"} th.sd::after{content:" \25BC"}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--mute-bg)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px 16px;margin:12px 0}
+.card h4{margin:0 0 10px;font-size:.78rem;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.bars{display:flex;flex-direction:column;gap:6px}
+.brow{display:grid;grid-template-columns:140px 1fr 54px;align-items:center;gap:8px;font-size:.82rem}
+.brow .l{color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btr{height:14px;background:var(--mute-bg);border-radius:4px;overflow:hidden;display:flex}
+.bsg{height:100%}
+.brow .v{font-variant-numeric:tabular-nums;color:var(--mu);text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:10px;font-size:.8rem;color:var(--mu)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.donut{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.filters button{font:600 .72rem/1.6 system-ui,sans-serif;padding:3px 11px;border-radius:9px;border:1px solid var(--ln);background:var(--sf);color:var(--mu);cursor:pointer}
+.filters button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.note{background:var(--mute-bg);border-radius:8px;padding:11px 14px;font-size:.88rem;margin:10px 0}
+.note.crit{background:var(--crit-bg)}
+.note b{color:var(--ink)}
+.findings{padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.findings li{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:10px 14px;font-size:.88rem}
+code{font:.85em ui-monospace,"SF Mono",Consolas,monospace;color:var(--mu);background:var(--mute-bg);padding:1px 4px;border-radius:4px}
+footer{margin-top:50px;padding-top:14px;border-top:1px solid var(--ln);font-size:.78rem;color:var(--mu)}
+nav.jump{display:flex;flex-wrap:wrap;gap:4px 10px;margin:16px 0 26px;font-size:.82rem}
+nav.jump a{color:var(--mu);text-decoration:none}
+nav.jump a:hover{color:var(--ac)}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
-  <p class="eyebrow">Fitness_App · snapshot 2026-10-06</p>
-  <h1>Code &amp; CI snapshot</h1>
-  <p class="dek">What is actually built, how big it is, and what CI says about it right now — not a sprint report, a read of the repository and the live GitHub Actions state as of this morning's scheduled runs.</p>
+<h1>Fitness_App — Code &amp; CI snapshot</h1>
+<p>What's actually built, how big it is, and what CI says right now. Snapshot 2026-10-06, read straight from the repo and live GitHub Actions.</p>
 </header>
 
 <!-- report-conform:begin -->
@@ -180,7 +96,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3da7737</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2a663cf</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -189,375 +105,181 @@
 <!-- report-conform:end -->
 
 <nav class="jump">
-  <a href="#summary">Summary</a>
-  <a href="#ci">CI status</a>
-  <a href="#tests">Test suites</a>
-  <a href="#code">Code by feature</a>
-  <a href="#security">Dependency security</a>
-  <a href="#gates">Governance gates</a>
-  <a href="#activity">Commit activity</a>
-  <a href="#findings">Findings</a>
+<a href="#ci">CI</a> · <a href="#tests">Tests</a> · <a href="#code">Code</a> · <a href="#security">Security</a> · <a href="#gates">Gates</a> · <a href="#activity">Activity</a> · <a href="#findings">Findings</a>
 </nav>
 
-<section id="summary">
-<h2>Summary</h2>
-<p class="lede">Mobile app (Flutter/Dart) + Cloud Functions (TypeScript) + a Python catalog-build toolchain + a thin Wear OS companion. 1,125 commits since 2026-05-07 across three distinct eras (3-day build, 7-week gap, then a 3-month release-engineering/audit push).</p>
-<div class="tiles">
-  <div class="tile"><div class="v">79,301</div><div class="l">mobile/lib lines (363 files)</div></div>
-  <div class="tile"><div class="v">102,604</div><div class="l">test code lines, all suites</div></div>
-  <div class="tile ok"><div class="v">3917/3927</div><div class="l">mobile tests passing (today's CI)</div></div>
-  <div class="tile ok"><div class="v">606/606</div><div class="l">functions unit tests (verified today)</div></div>
-  <div class="tile warn"><div class="v">4 / 11</div><div class="l">CI jobs red today (flutter+functions workflows)</div></div>
-  <div class="tile crit"><div class="v">1 critical</div><div class="l">of 18 npm vulnerabilities, functions/</div></div>
-  <div class="tile"><div class="v">12 / 19</div><div class="l">governance gate rows CLOSED</div></div>
-  <div class="tile"><div class="v">1,125</div><div class="l">total commits (2026-05 → now)</div></div>
+<div class="stats">
+  <div><b>79,301</b><span>mobile/lib lines</span></div>
+  <div><b class="ok">3917/3927</b><span>mobile tests passing</span></div>
+  <div><b class="ok">606/606</b><span>functions unit tests</span></div>
+  <div><b class="warn">4/11</b><span>CI jobs red today</span></div>
+  <div><b class="crit">1 critical</b><span>of 18 npm vulns</span></div>
+  <div><b>12/19</b><span>gate rows closed</span></div>
+  <div><b>1,125</b><span>commits since May</span></div>
 </div>
-</section>
 
-<section id="ci">
-<h2><span class="num">01</span> CI status — live, today</h2>
-<p class="lede">5 GitHub Actions workflows, read directly from <code>gh run list</code> / <code>gh run view</code> against the last scheduled run of each (all on <code>master</code>, 2026-10-05/06). Not a historical claim — this is what the pipeline says right now.</p>
-
-<div class="filterbar" id="ci-filter">
-  <button data-f="all" class="active">All (11)</button>
+<h2 id="ci">CI status — live, today</h2>
+<p class="m">5 GitHub Actions workflows, read via <code>gh run list</code> / <code>gh run view</code> against the last scheduled run of each (<code>master</code>, 2026-10-05/06).</p>
+<div class="filters" id="cif">
+  <button data-f="all" class="on">All (11)</button>
   <button data-f="fail">Failing (4)</button>
   <button data-f="pass">Passing (7)</button>
 </div>
-
-<div class="tablewrap">
-<table id="ci-table">
-<thead><tr><th>Workflow</th><th>Job</th><th>Status</th><th>Root cause</th><th>Class</th></tr></thead>
+<div class="tbl">
+<table id="cit">
+<thead><tr><th>Workflow</th><th>Job</th><th>Status</th><th>Cause</th></tr></thead>
 <tbody>
-<tr data-s="fail"><td>flutter</td><td>analyze + test</td><td><span class="pill warn">8 of 3927 red</span></td><td>All 8 in <code>test/golden/*</code> — widget-rendering goldens, documented pre-existing host/CI font-rendering drift, not logic failures</td><td>known</td></tr>
-<tr data-s="fail"><td>flutter</td><td>release build (APK+AAB)</td><td><span class="pill crit">blocked</span></td><td><code>GOOGLE_SERVICES_JSON_B64</code> repo secret not set — operator-only provisioning action</td><td>operator</td></tr>
-<tr data-s="fail"><td>flutter</td><td>integration (emulator)</td><td><span class="pill crit">infra error</span></td><td>Android emulator step fails during boot/teardown on the hosted runner (KVM/emulator infra, not a test assertion)</td><td>infra</td></tr>
-<tr data-s="fail"><td>flutter</td><td>dart/flutter deps (OSV scan)</td><td><span class="pill crit">infra error</span></td><td><code>stat …/mobile/pubspec.lock: no such file</code> — workflow runs the scanner from the wrong working directory</td><td>infra, CI config bug</td></tr>
-<tr data-s="fail"><td>flutter</td><td>RU/EN translation drift</td><td><span class="pill warn">2 new findings</span></td><td><code>formcheckExplainTitle</code>, <code>formcheckExplainPushupTuck</code> — negation-polarity mismatch between the EN and RU strings (30 flagged total, 28 already grandfathered)</td><td>real, content</td></tr>
-<tr data-s="fail"><td>flutter</td><td>CT-1 content QA</td><td><span class="pill warn">2 of 27 red</span></td><td>one is a self-defeating test (pins an assertion to literal <code>HEAD</code>, so it fails the instant anything is committed) — see Findings</td><td>test design bug</td></tr>
-<tr data-s="pass"><td>flutter</td><td>functions-build</td><td><span class="pill ok">green</span></td><td>—</td><td>—</td></tr>
-<tr data-s="fail"><td>functions</td><td>unit (jest)</td><td><span class="pill ok">606/606 (re-verified today)</span></td><td>CI's own last run predates this; re-ran locally against current HEAD</td><td>verified</td></tr>
-<tr data-s="fail"><td>functions</td><td>dependency audit</td><td><span class="pill crit">18 vulns</span></td><td>10 moderate, 7 high, <b>1 critical</b> — see Security section</td><td>real, security</td></tr>
-<tr data-s="fail"><td>functions</td><td>firestore rules (emulator)</td><td><span class="pill crit">infra error</span></td><td><code>npm error could not determine executable to run</code> inside <code>run_emulator_tests.js</code> — script/dependency resolution broken in CI, not a rule failure</td><td>infra, needs investigation</td></tr>
-<tr data-s="fail"><td>functions</td><td>account-deletion e2e</td><td><span class="pill crit">infra error</span></td><td>same <code>could not determine executable</code> failure, same script</td><td>infra, needs investigation</td></tr>
-<tr data-s="pass"><td>equipment-identity-functions</td><td>build-and-test / audit / deploy-isolation</td><td><span class="pill ok">green</span></td><td>—</td><td>—</td></tr>
-<tr data-s="pass"><td>secrets</td><td>gitleaks</td><td><span class="pill ok">green</span></td><td>—</td><td>—</td></tr>
-<tr data-s="pass"><td>health-data-residue</td><td>sweep</td><td><span class="pill mute">skipped</span></td><td>scheduled weekly, currently a deliberate no-op per the job's own <code>if:</code> guard</td><td>by design</td></tr>
+<tr data-s="fail"><td>flutter</td><td>analyze + test</td><td><span class="p p-warn">8 of 3927 red</span></td><td>all 8 in golden tests — documented pre-existing font-rendering drift, not logic</td></tr>
+<tr data-s="fail"><td>flutter</td><td>release build</td><td><span class="p p-crit">blocked</span></td><td><code>GOOGLE_SERVICES_JSON_B64</code> secret missing — operator action</td></tr>
+<tr data-s="fail"><td>flutter</td><td>integration (emulator)</td><td><span class="p p-crit">infra error</span></td><td>Android emulator boot/teardown fails on hosted runner</td></tr>
+<tr data-s="fail"><td>flutter</td><td>OSV dependency scan</td><td><span class="p p-crit">infra error</span></td><td>wrong working directory, <code>pubspec.lock</code> not found — CI config bug</td></tr>
+<tr data-s="fail"><td>flutter</td><td>RU/EN drift</td><td><span class="p p-warn">2 new findings</span></td><td>negation-polarity mismatch in 2 Form Coach strings</td></tr>
+<tr data-s="fail"><td>flutter</td><td>CT-1 content QA</td><td><span class="p p-warn">2 of 27 red</span></td><td>one test is self-defeating by construction (see Findings)</td></tr>
+<tr data-s="pass"><td>flutter</td><td>functions-build</td><td><span class="p p-ok">green</span></td><td>—</td></tr>
+<tr data-s="fail"><td>functions</td><td>unit (jest)</td><td><span class="p p-ok">606/606 (re-verified today)</span></td><td>CI's own run predates this; re-ran locally</td></tr>
+<tr data-s="fail"><td>functions</td><td>dependency audit</td><td><span class="p p-crit">18 vulns</span></td><td>10 moderate, 7 high, 1 critical</td></tr>
+<tr data-s="fail"><td>functions</td><td>Firestore rules</td><td><span class="p p-crit">infra error</span></td><td><code>npm error could not determine executable to run</code></td></tr>
+<tr data-s="fail"><td>functions</td><td>account-deletion e2e</td><td><span class="p p-crit">infra error</span></td><td>same root cause as rules job</td></tr>
+<tr data-s="pass"><td>equipment-identity-fns</td><td>build / audit / isolation</td><td><span class="p p-ok">green</span></td><td>—</td></tr>
+<tr data-s="pass"><td>secrets</td><td>gitleaks</td><td><span class="p p-ok">green</span></td><td>—</td></tr>
+<tr data-s="pass"><td>health-data-residue</td><td>sweep</td><td><span class="p p-mute">skipped</span></td><td>deliberate weekly no-op</td></tr>
 </tbody>
 </table>
 </div>
-
-<div class="chart-card">
-  <h3>Pass / fail by workflow (jobs)</h3>
-  <div class="bars" id="chart-ci"></div>
-  <div class="legend">
-    <span><i style="background:var(--ok)"></i>green</span>
-    <span><i style="background:var(--warn)"></i>known/pre-existing</span>
-    <span><i style="background:var(--crit)"></i>new or infra-broken</span>
-    <span><i style="background:var(--mute)"></i>skipped</span>
-  </div>
+<div class="card">
+<h4>Jobs by workflow</h4>
+<div class="bars" id="c-ci"></div>
+<div class="legend"><span><i style="background:var(--ok)"></i>green</span><span><i style="background:var(--warn)"></i>known</span><span><i style="background:var(--crit)"></i>new/infra</span><span><i style="background:var(--mute)"></i>skipped</span></div>
 </div>
-</section>
 
-<section id="tests">
-<h2><span class="num">02</span> Test suites side by side</h2>
-<p class="lede">Four independent suites, four different runners. Mobile and functions counts below are freshly re-verified against current <code>master</code> (not quoted from an old doc); the catalog/ML counts are freshly collected too — the project's own <code>CLAUDE.md</code> still says "74 tests" for the catalog suite, which is stale by more than 2.8×.</p>
-<div class="chart-card">
-  <h3>Tests passing, by suite</h3>
-  <div class="bars" id="chart-tests"></div>
-</div>
-<div class="tablewrap">
+<h2 id="tests">Test suites</h2>
+<div class="card"><h4>Tests passing, by suite</h4><div class="bars" id="c-tests"></div></div>
+<div class="tbl">
 <table>
-<thead><tr><th>Suite</th><th>Runner</th><th class="num">Test files</th><th class="num">Tests</th><th>Result</th></tr></thead>
+<thead><tr><th>Suite</th><th>Runner</th><th class="n">Tests</th><th>Result</th></tr></thead>
 <tbody>
-<tr><td>mobile (Flutter/Dart)</td><td><code>flutter test</code></td><td class="num">355</td><td class="num">3,927</td><td><span class="pill warn">3,917 pass / 8 fail (golden) / 2 skip</span></td></tr>
-<tr><td>functions (Cloud Functions)</td><td><code>jest</code></td><td class="num">24</td><td class="num">606</td><td><span class="pill ok">606/606</span></td></tr>
-<tr><td>functions — Firestore rules</td><td><code>jest + emulator</code></td><td class="num">—</td><td class="num">269 (last verified 2026-09-16)</td><td><span class="pill crit">CI broken today (infra)</span></td></tr>
-<tr><td>scripts/catalog (Python)</td><td><code>pytest</code></td><td class="num">6</td><td class="num">211</td><td><span class="pill ok">collected clean</span></td></tr>
-<tr><td>scripts/ml — CT-1 content QA</td><td><code>pytest</code></td><td class="num">4</td><td class="num">27</td><td><span class="pill warn">25 pass / 2 fail</span></td></tr>
+<tr><td>mobile (Flutter)</td><td><code>flutter test</code></td><td class="n">3,927</td><td><span class="p p-warn">3,917 pass / 8 fail / 2 skip</span></td></tr>
+<tr><td>functions</td><td><code>jest</code></td><td class="n">606</td><td><span class="p p-ok">606/606</span></td></tr>
+<tr><td>functions rules</td><td><code>jest+emulator</code></td><td class="n">269 (2026-09-16)</td><td><span class="p p-crit">CI broken today</span></td></tr>
+<tr><td>catalog (Python)</td><td><code>pytest</code></td><td class="n">211</td><td><span class="p p-ok">clean</span></td></tr>
+<tr><td>CT-1 content QA</td><td><code>pytest</code></td><td class="n">27</td><td><span class="p p-warn">25 pass / 2 fail</span></td></tr>
 </tbody>
 </table>
 </div>
-<div class="callout"><b>Note on the mobile total.</b> <code>core/DECISION_LOG.md</code>'s last explicit full-suite count (2026-09-18) was 3,890 passed / 21 failed, all golden. Today's CI shows 3,917 / 8 — more tests (F1 diagnostics added 2026-09-26) and fewer golden failures than that historical entry; the two numbers are not directly comparable (local run vs. hosted-runner fonts), both are genuine, and the golden failures are the same documented class either way.</div>
-</section>
+<p class="m">Mobile total freshly re-verified; not quoted from the decision log's 2026-09-18 figure (3,890/21). The catalog suite is 211 tests, not the "74" <code>CLAUDE.md</code> still claims.</p>
 
-<section id="code">
-<h2><span class="num">03</span> Code size by feature</h2>
-<p class="lede">363 Dart files across 38 <code>mobile/lib/features/</code> modules, freshly counted (not the 2026-08-12 snapshot in <code>core/CODEMAP.md</code>, which undercounts <code>form_check</code> by roughly 2×). Click a column header to sort.</p>
-<div class="chart-card">
-  <h3>Top 15 features by lines of code</h3>
-  <div class="bars" id="chart-loc"></div>
-</div>
-<div class="tablewrap">
-<table id="loc-table">
-<thead><tr><th data-k="name">Feature</th><th data-k="files" class="num">Files</th><th data-k="lines" class="num">Lines</th></tr></thead>
+<h2 id="code">Code by feature</h2>
+<p class="m">363 Dart files, 38 features, counted fresh (not the stale 2026-08-12 <code>CODEMAP.md</code> snapshot). Click a header to sort.</p>
+<div class="card"><h4>Top 15 by lines</h4><div class="bars" id="c-loc"></div></div>
+<div class="tbl">
+<table id="loct">
+<thead><tr><th data-k="name">Feature</th><th data-k="files" class="n">Files</th><th data-k="lines" class="n">Lines</th></tr></thead>
 <tbody></tbody>
 </table>
 </div>
-</section>
 
-<section id="security">
-<h2><span class="num">04</span> Dependency security — <code>functions/</code></h2>
-<p class="lede"><code>npm audit</code> against the Cloud Functions package, re-run today. The dedicated CI "dependency audit" job fails on exactly this — <code>npm audit</code>'s own exit code is non-zero whenever vulnerabilities exist, by design, so that job going red is <i>working as intended</i>, not a false alarm.</p>
-<div class="donut-wrap">
-  <div id="chart-vuln"></div>
-  <div class="legend" id="vuln-legend" style="flex-direction:column; gap:8px;"></div>
-</div>
-<div class="callout crit"><b>1 critical</b> finding traces to transitive deps of <code>@google-cloud/storage</code> (vulnerable <code>retry-request</code> / <code>teeny-request</code> versions). Not yet triaged for actual exploitability in this codebase's usage pattern — that triage is the next concrete step, not a re-statement of <code>npm audit</code>'s own severity label.</div>
-<div class="callout"><b>Scope note.</b> 18 is the CI job's own number, and it is deliberately scoped to <code>--omit=dev --package-lock-only</code> — documented in <code>functions.yml</code> as an explicit choice (a vulnerability in <code>jest</code> never reaches a user; one in <code>stripe</code> or <code>firebase-admin</code> does). Running a plain, unscoped <code>npm audit</code> today (devDependencies included) returns <b>54</b> (14 moderate, 39 high, same 1 critical) — the extra 36 are tooling-only advisories the project's own policy treats as out of CI-gating scope, not a hidden production risk.</div>
-<div class="callout"><b>Mobile side unverified today.</b> The equivalent Dart/Flutter OSV scan job is broken at the CI-config level (wrong working directory), so there is currently no live dependency-vulnerability signal for the Flutter side at all — this is itself a gap worth closing, separate from any vulnerability it might find.</div>
-</section>
+<h2 id="security">Dependency security — functions/</h2>
+<div class="donut"><div id="c-vuln"></div><div class="legend" id="lv" style="flex-direction:column;gap:6px"></div></div>
+<div class="note crit"><b>1 critical</b> via transitive deps of <code>@google-cloud/storage</code> — not yet triaged for real exploitability.</div>
+<div class="note">CI's 18 is scoped <code>--omit=dev</code> (documented, deliberate). Unscoped <code>npm audit</code> today: <b>54</b> (14 moderate, 39 high, same 1 critical) — the extra 36 are dev-tooling-only.</div>
+<div class="note">Mobile side has no live signal today — its OSV scan job is broken (see CI table).</div>
 
-<section id="gates">
-<h2><span class="num">05</span> Governance gate ledger</h2>
-<p class="lede">19 rows tracked in <code>core/CURRENT_STATE.md</code>, generated by <code>scripts/review/state_ledger.py</code> — most are recomputed from source on every check (not hand-claimed). Four rows are structurally not engineering-closeable: they wait on a clinician, a labeling vendor, or an operator action outside this repository.</p>
-<div class="donut-wrap">
-  <div id="chart-gates"></div>
-  <div class="legend" id="gates-legend" style="flex-direction:column; gap:8px;"></div>
-</div>
-<div class="tablewrap">
+<h2 id="gates">Governance gates</h2>
+<p class="m">19 rows in <code>core/CURRENT_STATE.md</code>, mostly recomputed from source, not hand-claimed.</p>
+<div class="donut"><div id="c-gates"></div><div class="legend" id="lg" style="flex-direction:column;gap:6px"></div></div>
+<div class="tbl">
 <table>
-<thead><tr><th>Row</th><th>State</th><th>Authority</th><th>What it's waiting on</th></tr></thead>
+<thead><tr><th>Row</th><th>State</th><th>Waiting on</th></tr></thead>
 <tbody>
-<tr><td>D1</td><td><span class="pill crit">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>external</td><td>clinical review of the exercise catalogue — no local predicate possible</td></tr>
-<tr><td>H3</td><td><span class="pill crit">HOLD</span></td><td>external</td><td>released by the same return as D1</td></tr>
-<tr><td>CT1-human-labels</td><td><span class="pill crit">EXTERNAL_AUTHORITY_REQUIRED</span></td><td>external</td><td><code>HUMAN_REVIEW_LABELS = 0</code> — needs a labeling vendor/process</td></tr>
-<tr><td>Row 22 (CI release secret)</td><td><span class="pill warn">code-complete, blocked</span></td><td>operator</td><td><code>GOOGLE_SERVICES_JSON_B64</code> GitHub secret — a 10-minute operator action</td></tr>
-<tr><td>production-image-collection</td><td><span class="pill mute">DISABLED</span></td><td>source</td><td>by design — tracked so a regression (it turning back on) would be caught</td></tr>
-<tr><td>12 other rows</td><td><span class="pill ok">CLOSED</span></td><td>source / operator</td><td>F-prefetch, F2, F5, checkout-copy, guest-upgrade-outcome, scanner-dependency-pin, N-05, N-04, scanner-metadata, scanner-pipeline-location, gym-webhook-disclosure, roboflow-key-reissue</td></tr>
-<tr><td>3 other rows</td><td><span class="pill pending">DORMANT</span></td><td>operator</td><td>metric-provenance-six, F025, N-07 — tripwires on unreached code paths, not open questions</td></tr>
+<tr><td>D1, H3, CT1-human-labels</td><td><span class="p p-crit">EXTERNAL / HOLD</span></td><td>clinician + labeling vendor — not engineering-closeable</td></tr>
+<tr><td>Row 22 (CI secret)</td><td><span class="p p-warn">code-complete, blocked</span></td><td><code>GOOGLE_SERVICES_JSON_B64</code> — 10-min operator action</td></tr>
+<tr><td>production-image-collection</td><td><span class="p p-mute">DISABLED</span></td><td>by design, tracked as a tripwire</td></tr>
+<tr><td>12 other rows</td><td><span class="p p-ok">CLOSED</span></td><td>—</td></tr>
+<tr><td>3 other rows</td><td><span class="p p-mute">DORMANT</span></td><td>tripwires on unreached code</td></tr>
 </tbody>
 </table>
 </div>
-</section>
 
-<section id="activity">
-<h2><span class="num">06</span> Commit activity</h2>
-<p class="lede">1,125 commits, three distinct eras: a 3-day build (May), a 7-week dead stop (June — real, not a data gap), then release-engineering and audit work (July–October) that dwarfs the original build in commit count.</p>
-<div class="chart-card">
-  <h3>Commits per month</h3>
-  <div class="bars" id="chart-commits"></div>
-</div>
-</section>
+<h2 id="activity">Commit activity</h2>
+<div class="card"><h4>Commits per month</h4><div class="bars" id="c-commits"></div></div>
 
-<section id="findings">
-<h2><span class="num">07</span> Findings, ranked</h2>
+<h2 id="findings">Findings, ranked</h2>
 <ol class="findings">
-<li><span class="sev pill crit">HIGH</span><b>1 critical + 7 high npm vulnerabilities in <code>functions/</code>, untriaged.</b> <code>npm audit</code> flags transitive deps of <code>@google-cloud/storage</code>. Next step: <code>npm audit fix</code> dry-run to see what's a safe bump vs. a breaking major, then a real Rosetta gate if anything touches a load-bearing path.</li>
-<li><span class="sev pill crit">HIGH</span><b>Two Cloud Functions CI jobs (Firestore rules, account-deletion e2e) fail on <code>npm error could not determine executable to run</code>.</b> Same root cause both times, inside <code>scripts/run_emulator_tests.js</code> — looks like a missing/renamed binary (firebase-tools?) in the CI dependency set, not a test regression. Needs a <code>npm ci</code> + direct repro on a clean checkout to confirm.</li>
-<li><span class="sev pill warn">MEDIUM</span><b>The Dart/Flutter OSV vulnerability scan has been silently non-functional</b> (wrong working directory → "no such file" → exit 127, read by CI as a job failure but not as a scan result). There is currently no live mobile-dependency vulnerability signal at all.</li>
-<li><span class="sev pill warn">MEDIUM</span><b>2 new RU/EN translation drift findings</b> on Form Coach strings (<code>formcheckExplainTitle</code>, <code>formcheckExplainPushupTuck</code>) — a negation-polarity mismatch, meaning the Russian and English copy may assert opposite things. Likely introduced during the recent T3/F1 Form Coach work.</li>
-<li><span class="sev pill mute">LOW</span><b>One CT-1 pytest is self-defeating by construction</b>: it asserts the worklist entry's pinned commit hash differs from <code>HEAD</code>, computed as literally <code>HEAD</code> at test-definition time — so it fails on the very next commit after it was written, forever, regardless of real drift. Test-design bug, not a product bug.</li>
-<li><span class="sev pill mute">LOW</span><b>8 golden-test failures in <code>flutter.yml</code> are the same documented class</b> noted in <code>core/DECISION_LOG.md</code> since 2026-09-18 (host/CI font-rendering drift). Not new, not a regression — worth a dedicated fix only if visual-regression coverage is the next priority.</li>
-<li><span class="sev pill ok">INFO</span><b><code>core/CODEMAP.md</code>'s per-feature line counts are stale by up to ~2×</b> (<code>form_check</code> is now 13,562 lines across 31 files, not the 6,821/23 recorded 2026-08-12). The file says to update it in the same commit as any feature change; that discipline has lapsed for size counts specifically.</li>
+<li><span class="p p-crit">HIGH</span> <b>1 critical + 7 high npm vulns, untriaged.</b> Transitive deps of <code>@google-cloud/storage</code>. Next: <code>npm audit fix</code> dry-run.</li>
+<li><span class="p p-crit">HIGH</span> <b>Two functions CI jobs broken on the same error</b> (<code>could not determine executable to run</code> in <code>run_emulator_tests.js</code>) — needs a clean-checkout repro.</li>
+<li><span class="p p-warn">MEDIUM</span> <b>Flutter OSV scan silently non-functional</b> (wrong working dir) — no live mobile vuln signal at all.</li>
+<li><span class="p p-warn">MEDIUM</span> <b>2 new RU/EN drift findings</b> on Form Coach strings — negation-polarity mismatch, likely from the recent T3/F1 work.</li>
+<li><span class="p p-mute">LOW</span> <b>One CT-1 pytest is self-defeating</b>: it pins an assertion to literal <code>HEAD</code>, so it fails on the next commit forever.</li>
+<li><span class="p p-mute">LOW</span> <b>8 golden-test failures are the same documented class</b> since 2026-09-18 — not a regression.</li>
+<li><span class="p p-ok">INFO</span> <b>CODEMAP.md's feature line counts are stale by ~2x</b> for <code>form_check</code> specifically.</li>
 </ol>
-</section>
 
-<footer>
-  Generated from live repository state and GitHub Actions (<code>gh run view</code>) on 2026-10-06. Mobile/functions/python test counts were re-run or re-collected for this report, not quoted from older entries, except where explicitly marked. Chart code is inline, no external library.
-</footer>
-
+<footer>Generated from live repo state and GitHub Actions on 2026-10-06. Mobile/functions/python counts re-run for this report, not quoted from older entries except where marked.</footer>
 </div>
 
 <script>
-var DATA = {
-  ci: [
-    {label:'flutter', ok:2, warn:2, crit:3, mute:0},
-    {label:'functions', ok:1, warn:0, crit:2, mute:0},
-    {label:'equipment-identity-fns', ok:3, warn:0, crit:0, mute:0},
-    {label:'secrets', ok:1, warn:0, crit:0, mute:0},
-    {label:'health-data-residue', ok:0, warn:0, crit:0, mute:1}
-  ],
-  tests: [
-    {label:'mobile (flutter)', value:3917, total:3927, color:'warn'},
-    {label:'functions (jest)', value:606, total:606, color:'ok'},
-    {label:'catalog (pytest)', value:211, total:211, color:'ok'},
-    {label:'CT-1 (pytest)', value:25, total:27, color:'warn'}
-  ],
-  loc: [
-    {name:'form_check', files:31, lines:13562},
-    {name:'workouts', files:39, lines:7904},
-    {name:'equipment', files:30, lines:7914},
-    {name:'visual_equipment', files:34, lines:6501},
-    {name:'onboarding', files:21, lines:3799},
-    {name:'progress_photos', files:17, lines:3211},
-    {name:'scanner', files:9, lines:3090},
-    {name:'programmes', files:12, lines:2756},
-    {name:'profile', files:11, lines:2722},
-    {name:'subscription', files:11, lines:2226},
-    {name:'home', files:5, lines:1937},
-    {name:'safety', files:6, lines:1534},
-    {name:'progress', files:3, lines:1185},
-    {name:'data_export', files:8, lines:1090},
-    {name:'auth', files:7, lines:932},
-    {name:'posture', files:4, lines:762},
-    {name:'ai_planner', files:5, lines:666},
-    {name:'recovery', files:4, lines:404},
-    {name:'ai_coach', files:5, lines:589},
-    {name:'donor_wall', files:5, lines:508},
-    {name:'catalog', files:5, lines:504},
-    {name:'marketplace', files:4, lines:443},
-    {name:'personalisation', files:4, lines:483},
-    {name:'community', files:4, lines:479},
-    {name:'account_deletion', files:5, lines:539},
-    {name:'celebrity_plans', files:4, lines:307},
-    {name:'social_feed', files:4, lines:359},
-    {name:'settings', files:1, lines:389},
-    {name:'moments', files:5, lines:316},
-    {name:'legal', files:3, lines:223},
-    {name:'splash', files:1, lines:192},
-    {name:'cycle_aware', files:1, lines:199},
-    {name:'voice', files:1, lines:137},
-    {name:'about', files:1, lines:287},
-    {name:'licences', files:1, lines:99},
-    {name:'sdk_export', files:1, lines:66},
-    {name:'goal_photo', files:1, lines:60},
-    {name:'buddy', files:1, lines:75},
-    {name:'body_comp', files:1, lines:46}
-  ],
-  vuln: [
-    {label:'critical', value:1, color:'crit'},
-    {label:'high', value:7, color:'warn'},
-    {label:'moderate', value:10, color:'pending'}
-  ],
-  gates: [
-    {label:'CLOSED', value:12, color:'ok'},
-    {label:'DORMANT (tripwire)', value:3, color:'pending'},
-    {label:'EXTERNAL_AUTHORITY_REQUIRED / HOLD', value:3, color:'crit'},
-    {label:'DISABLED (by design)', value:1, color:'mute'}
-  ],
-  commits: [
-    {label:'2026-05', value:36},
-    {label:'2026-06', value:0},
-    {label:'2026-07', value:91},
-    {label:'2026-08', value:809},
-    {label:'2026-09', value:188},
-    {label:'2026-10', value:1}
-  ]
+var D = {
+  ci: [{l:'flutter',ok:2,wa:2,cr:3,mu:0},{l:'functions',ok:1,wa:0,cr:2,mu:0},{l:'equip-identity',ok:3,wa:0,cr:0,mu:0},{l:'secrets',ok:1,wa:0,cr:0,mu:0},{l:'health-residue',ok:0,wa:0,cr:0,mu:1}],
+  tests: [{l:'mobile',v:3917,t:3927,c:'warn'},{l:'functions',v:606,t:606,c:'ok'},{l:'catalog',v:211,t:211,c:'ok'},{l:'CT-1',v:25,t:27,c:'warn'}],
+  loc: [{n:'form_check',f:31,x:13562},{n:'workouts',f:39,x:7904},{n:'equipment',f:30,x:7914},{n:'visual_equipment',f:34,x:6501},{n:'onboarding',f:21,x:3799},{n:'progress_photos',f:17,x:3211},{n:'scanner',f:9,x:3090},{n:'programmes',f:12,x:2756},{n:'profile',f:11,x:2722},{n:'subscription',f:11,x:2226},{n:'home',f:5,x:1937},{n:'safety',f:6,x:1534},{n:'progress',f:3,x:1185},{n:'data_export',f:8,x:1090},{n:'auth',f:7,x:932},{n:'posture',f:4,x:762},{n:'ai_planner',f:5,x:666},{n:'recovery',f:4,x:404},{n:'ai_coach',f:5,x:589},{n:'donor_wall',f:5,x:508},{n:'catalog',f:5,x:504},{n:'marketplace',f:4,x:443},{n:'personalisation',f:4,x:483},{n:'community',f:4,x:479},{n:'account_deletion',f:5,x:539},{n:'celebrity_plans',f:4,x:307},{n:'social_feed',f:4,x:359},{n:'settings',f:1,x:389},{n:'moments',f:5,x:316},{n:'legal',f:3,x:223},{n:'splash',f:1,x:192},{n:'cycle_aware',f:1,x:199},{n:'voice',f:1,x:137},{n:'about',f:1,x:287},{n:'licences',f:1,x:99},{n:'sdk_export',f:1,x:66},{n:'goal_photo',f:1,x:60},{n:'buddy',f:1,x:75},{n:'body_comp',f:1,x:46}],
+  vuln: [{l:'critical',v:1,c:'crit'},{l:'high',v:7,c:'warn'},{l:'moderate',v:10,c:'mute'}],
+  gates: [{l:'CLOSED',v:12,c:'ok'},{l:'DORMANT',v:3,c:'mute'},{l:'EXTERNAL/HOLD',v:3,c:'crit'},{l:'DISABLED',v:1,c:'mute'}],
+  commits: [{l:'2026-05',v:36},{l:'2026-06',v:0},{l:'2026-07',v:91},{l:'2026-08',v:809},{l:'2026-09',v:188},{l:'2026-10',v:1}]
 };
-
-function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim(); }
-
-function renderBars(containerId, rows, opts){
-  opts = opts || {};
-  var el = document.getElementById(containerId);
-  if(!el) return;
-  var max = opts.max || Math.max.apply(null, rows.map(function(r){ return r.total || r.value; }));
-  el.innerHTML = '';
-  rows.forEach(function(r){
-    var row = document.createElement('div');
-    row.className = 'bar-row';
-    var lbl = document.createElement('div'); lbl.className = 'lbl'; lbl.textContent = r.label || r.name;
-    var track = document.createElement('div'); track.className = 'bar-track';
-    var segs = r.segs || [{v: r.value, c: r.color || 'accent'}];
-    segs.forEach(function(s){
-      var seg = document.createElement('div');
-      seg.className = 'bar-seg';
-      seg.style.width = (max ? (s.v/max*100) : 0) + '%';
-      seg.style.background = s.c === 'accent' ? cssVar('accent') : cssVar(s.c);
-      seg.title = s.label ? (s.label+': '+s.v) : s.v;
-      track.appendChild(seg);
-    });
-    var val = document.createElement('div'); val.className = 'val';
-    val.textContent = r.total ? (r.value + '/' + r.total) : (r.lines != null ? r.lines.toLocaleString() : r.value);
-    row.appendChild(lbl); row.appendChild(track); row.appendChild(val);
-    el.appendChild(row);
-  });
-}
-
-function renderDonut(containerId, legendId, rows){
-  var el = document.getElementById(containerId);
-  var legend = document.getElementById(legendId);
-  if(!el) return;
-  var total = rows.reduce(function(s,r){ return s+r.value; }, 0);
-  var r = 54, cx = 64, cy = 64, circumference = 2*Math.PI*r;
-  var offset = 0;
-  var svg = '<svg width="128" height="128" viewBox="0 0 128 128">';
-  svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+cssVar('surface-2')+'" stroke-width="18"/>';
-  rows.forEach(function(row){
-    var frac = total ? row.value/total : 0;
-    var dash = frac*circumference;
-    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+cssVar(row.color)+'" stroke-width="18" '+
-      'stroke-dasharray="'+dash+' '+(circumference-dash)+'" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 '+cx+' '+cy+')">'+
-      '<title>'+row.label+': '+row.value+'</title></circle>';
-    offset += dash;
-  });
-  svg += '<text x="64" y="60" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="600" fill="'+cssVar('text')+'">'+total+'</text>';
-  svg += '<text x="64" y="76" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="'+cssVar('text-faint')+'">total</text>';
-  svg += '</svg>';
-  el.innerHTML = svg;
-  if(legend){
-    legend.innerHTML = rows.map(function(row){
-      return '<span><i style="background:'+cssVar(row.color)+'"></i>'+row.label+' — '+row.value+'</span>';
+function cv(n){ return getComputedStyle(document.documentElement).getPropertyValue('--'+n).trim(); }
+function bars(id, rows, max){
+  var el = document.getElementById(id); if(!el) return;
+  max = max || Math.max.apply(null, rows.map(function(r){ return r.t||r.v; }));
+  el.innerHTML = rows.map(function(r){
+    var segs = r.segs || [{v:r.v, c:r.c||'ac'}];
+    var track = segs.map(function(s){
+      var w = max ? (s.v/max*100) : 0;
+      return '<div class="bsg" style="width:'+w+'%;background:'+cv(s.c)+'" title="'+(s.l||'')+': '+s.v+'"></div>';
     }).join('');
-  }
-}
-
-// CI bars: stacked ok/warn/crit/mute per workflow
-renderBars('chart-ci', DATA.ci.map(function(w){
-  var total = w.ok+w.warn+w.crit+w.mute;
-  return {label:w.label, total:total, value:total,
-    segs:[
-      {v:w.ok, c:'ok', label:'green'},
-      {v:w.warn, c:'warn', label:'known/pre-existing'},
-      {v:w.crit, c:'crit', label:'new/infra'},
-      {v:w.mute, c:'mute', label:'skipped'}
-    ]};
-}), {max: 7});
-
-renderBars('chart-tests', DATA.tests.map(function(t){
-  return {label:t.label, value:t.value, total:t.total, color: t.color};
-}));
-
-renderBars('chart-loc', DATA.loc.slice(0,15).map(function(f){
-  return {label:f.name, value:f.lines, lines:f.lines, color:'accent'};
-}), {max: DATA.loc[0].lines});
-
-renderDonut('chart-vuln', 'vuln-legend', DATA.vuln);
-renderDonut('chart-gates', 'gates-legend', DATA.gates);
-
-renderBars('chart-commits', DATA.commits.map(function(c){
-  return {label:c.label, value:c.value, lines:c.value, color: c.value===0 ? 'mute' : 'accent'};
-}));
-
-// CI filter buttons
-document.querySelectorAll('#ci-filter button').forEach(function(btn){
-  btn.addEventListener('click', function(){
-    document.querySelectorAll('#ci-filter button').forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-    var f = btn.getAttribute('data-f');
-    document.querySelectorAll('#ci-table tbody tr').forEach(function(tr){
-      tr.style.display = (f === 'all' || tr.getAttribute('data-s') === f) ? '' : 'none';
-    });
-  });
-});
-
-// LOC table render + sort
-var locTbody = document.querySelector('#loc-table tbody');
-var locSort = {k:'lines', dir:-1};
-function renderLocTable(){
-  var rows = DATA.loc.slice().sort(function(a,b){
-    var av = a[locSort.k], bv = b[locSort.k];
-    if(typeof av === 'string') return av.localeCompare(bv) * locSort.dir;
-    return (av-bv) * locSort.dir;
-  });
-  locTbody.innerHTML = rows.map(function(r){
-    return '<tr><td>'+r.name+'</td><td class="num">'+r.files+'</td><td class="num">'+r.lines.toLocaleString()+'</td></tr>';
+    var val = r.t ? (r.v+'/'+r.t) : (r.v).toLocaleString();
+    return '<div class="brow"><div class="l">'+(r.l)+'</div><div class="btr">'+track+'</div><div class="v">'+val+'</div></div>';
   }).join('');
-  document.querySelectorAll('#loc-table thead th').forEach(function(th){
-    th.classList.remove('sort-asc','sort-desc');
-    if(th.getAttribute('data-k') === locSort.k) th.classList.add(locSort.dir===1?'sort-asc':'sort-desc');
-  });
 }
-document.querySelectorAll('#loc-table thead th').forEach(function(th){
-  th.addEventListener('click', function(){
-    var k = th.getAttribute('data-k');
-    if(locSort.k === k) locSort.dir *= -1; else { locSort.k = k; locSort.dir = -1; }
-    renderLocTable();
+function donut(id, legendId, rows){
+  var el = document.getElementById(id), lg = document.getElementById(legendId); if(!el) return;
+  var total = rows.reduce(function(s,r){return s+r.v;},0);
+  var r=48,cx=56,cy=56,circ=2*Math.PI*r,off=0;
+  var svg = '<svg width="112" height="112" viewBox="0 0 112 112"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+cv('mute-bg')+'" stroke-width="16"/>';
+  rows.forEach(function(row){
+    var frac = total?row.v/total:0, dash = frac*circ;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+cv(row.c)+'" stroke-width="16" stroke-dasharray="'+dash+' '+(circ-dash)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+cx+' '+cy+')"><title>'+row.l+': '+row.v+'</title></circle>';
+    off += dash;
+  });
+  svg += '<text x="56" y="52" text-anchor="middle" font-size="18" font-weight="700" fill="'+cv('ink')+'">'+total+'</text><text x="56" y="68" text-anchor="middle" font-size="9" fill="'+cv('mu')+'">total</text></svg>';
+  el.innerHTML = svg;
+  if(lg) lg.innerHTML = rows.map(function(row){ return '<span><i style="background:'+cv(row.c)+'"></i>'+row.l+' — '+row.v+'</span>'; }).join('');
+}
+bars('c-ci', D.ci.map(function(w){ return {l:w.l, t:w.ok+w.wa+w.cr+w.mu, segs:[{v:w.ok,c:'ok',l:'green'},{v:w.wa,c:'warn',l:'known'},{v:w.cr,c:'crit',l:'new/infra'},{v:w.mu,c:'mute',l:'skip'}]}; }), 7);
+bars('c-tests', D.tests.map(function(t){ return {l:t.l, v:t.v, t:t.t, c:t.c}; }));
+bars('c-loc', D.loc.slice(0,15).map(function(f){ return {l:f.n, v:f.x, c:'ac'}; }), D.loc[0].x);
+donut('c-vuln','lv', D.vuln);
+donut('c-gates','lg', D.gates);
+bars('c-commits', D.commits.map(function(c){ return {l:c.l, v:c.v, c: c.v===0?'mute':'ac'}; }));
+
+document.querySelectorAll('#cif button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#cif button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    var f = b.getAttribute('data-f');
+    document.querySelectorAll('#cit tbody tr').forEach(function(tr){ tr.style.display = (f==='all'||tr.getAttribute('data-s')===f)?'':'none'; });
   });
 });
-renderLocTable();
+var lsort = {k:'x', d:-1};
+function renderLoc(){
+  var rows = D.loc.slice().sort(function(a,b){ var av=a[lsort.k],bv=b[lsort.k]; return (typeof av==='string' ? av.localeCompare(bv) : av-bv)*lsort.d; });
+  document.querySelector('#loct tbody').innerHTML = rows.map(function(r){ return '<tr><td>'+r.n+'</td><td class="n">'+r.f+'</td><td class="n">'+r.x.toLocaleString()+'</td></tr>'; }).join('');
+  document.querySelectorAll('#loct thead th').forEach(function(th){ th.classList.remove('sa','sd'); if(th.getAttribute('data-k')===lsort.k) th.classList.add(lsort.d===1?'sa':'sd'); });
+}
+document.querySelectorAll('#loct thead th').forEach(function(th){
+  th.addEventListener('click', function(){ var k=th.getAttribute('data-k'); if(lsort.k===k) lsort.d*=-1; else {lsort.k=k; lsort.d=-1;} renderLoc(); });
+});
+renderLoc();
 </script>
-
 
 <!-- report-conform:script:begin -->
 <script>
