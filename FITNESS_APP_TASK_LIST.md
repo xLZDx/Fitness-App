@@ -1,5 +1,17 @@
 # Fitness App — Complete Task List
 
+<!-- audit-followup-2026-10-07:start -->
+## Current scope and status — 2026-10-07
+
+This 75-item list is the original product vision, **not a list of 75 implemented features and not the current release checklist**. The original QR/celebrity/ecosystem framing and Priority Recommendations below are retained as historical proposals; do not treat them as authorization to expand the next engineering batch.
+
+Current checkpoint: **REVIEW_DOCUMENTED / REMEDIATION_NOT_STARTED**. Local `master @ a6e8005`, upstream `3da7737`, ahead 2 before this documentation update. Fresh backend unit run: 606/606 assertions PASS, 24/24 suites, with a Jest worker teardown warning. Python review timed out at 60 s; Flutter/device/release checks were not newly run in this follow-up. Commercial release readiness is not established.
+
+Active work: [source-level code review](core/review/CODE_REVIEW_2026-10-07.md), [where we are now](core/state/REVIEW_STATUS_2026-10-07.md), [autonomous closure plan and prompt](core/plans/AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md), [current pickup queue](core/plans/NEXT_TICKETS.md), [HTML summary](reports/code_review_status_2026-10-07.ru.html). Restore reproducible CI, fix account/security/store boundaries, then close reliability and release evidence. Real clinical/device/store decisions remain explicit blockers. Applicable privacy and safety obligations are not waived by narrowing product scope.
+<!-- audit-followup-2026-10-07:end -->
+
+## Original product vision — historical proposals
+
 **Concept:** Create QR codes for gym equipment from various manufacturers in sports halls to help people train correctly. The app pairs equipment with celebrity-led instructional videos, personalized recommendations, and a full ecosystem for training, nutrition, community, and rewards.
 
 ---

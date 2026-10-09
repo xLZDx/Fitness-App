@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPTR — код-ревью, статус и следующие действия · 07.10.2026</title>
+<style>
+:root{color-scheme:light dark;--bg:#f3f5f8;--card:#fff;--text:#182331;--muted:#536274;--line:#d7dee7;--link:#1557a0;--warn:#873e09;--ok:#14613f}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:1140px;margin:auto;padding:32px 22px 64px}h1{font-size:2.1rem;line-height:1.18;margin:12px 0}h2{margin-top:38px;font-size:1.45rem}h3{font-size:1.12rem}a{color:var(--link);text-underline-offset:3px}.eyebrow,.muted{color:var(--muted)}.banner,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:16px 0}.banner{border-left:6px solid var(--warn)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.grid .card{margin:0}.metric{font-size:1.75rem;font-weight:750}.good{color:var(--ok)}.warn{color:var(--warn)}nav{display:flex;gap:18px;flex-wrap:wrap;margin:24px 0}code,pre{font-family:ui-monospace,Consolas,monospace;font-size:.88em}code{overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);padding:16px;border-radius:7px;border:1px solid var(--line)}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;background:var(--card);font-size:.93rem}th,td{padding:12px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{font-size:.83rem;color:var(--muted)}.status{font-weight:750;white-space:nowrap}footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}@media(prefers-color-scheme:dark){:root{--bg:#111821;--card:#19232e;--text:#e5edf5;--muted:#b0bdcc;--line:#364657;--link:#8bc2ff;--warn:#ffbd7e;--ok:#87dab0}}@media print{.wrap{max-width:none;padding:0}body{background:white;color:black}.card,.banner{break-inside:avoid}a{color:inherit}nav{display:none}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="eyebrow">FITNESS APP / SPTR · 7 ОКТЯБРЯ 2026 · ДОПОЛНЕНИЕ К РЕВЬЮ</div>
+<h1>Код-ревью. Где мы сейчас.<br>Что закрывать автономно.</h1>
+<p class="muted"><code>D:\Repo\Fitness_App</code> · local <code>master @ a6e8005</code> · upstream <code>3da7737</code> · ahead 2 до документирования.</p>
+<div class="banner"><strong>Контрольная точка: REVIEW_DOCUMENTED / REMEDIATION_NOT_STARTED.</strong><br>Код существенно реализован. Исправления нового ревью ещё не сделаны. Коммерческий релиз не подтверждён. В этом follow-up изменены только документы, без commit, push, deploy и удаления данных.</div>
+<div class="grid">
+<div class="card"><div class="metric good">606 / 606</div>Свежие backend unit assertions<br><span class="muted">24 / 24 suites, exit 0</span></div>
+<div class="card"><div class="metric warn">WARNING</div>Jest worker завершён принудительно<br><span class="muted">Тесты PASS ≠ чистый teardown</span></div>
+<div class="card"><div class="metric warn">TIMEOUT</div>Python scripts/review: 60 s<br><span class="muted">Нет полного итога; не PASS</span></div>
+<div class="card"><div class="metric">9 + 1</div>CR-замечания + кандидат<br><span class="muted">Отдельно 7 release-проверок</span></div>
+</div>
+<nav><a href="#code">Код-ревью</a><a href="#state">Текущее состояние</a><a href="#next">Автономная очередь</a><a href="#external">Внешние блокеры</a><a href="#docs">Документы</a></nav>
+<h2 id="code">Конкретные участки кода и условия закрытия</h2>
+<p>Номера строк привязаны к удалённому SHA <code>3da7737e388434250ef61a1e24cd67f8cab5c4ad</code>. SOURCE_CONFIRMED — чтение исходника, не новый runtime-reproducer. Все исправления ниже остаются OPEN.</p>
+<div class="scroll"><table><thead><tr><th>ID / приоритет</th><th>Файл / участок</th><th>Проблема</th><th>Следующее действие</th></tr></thead><tbody>
+<tr><td>CR-01 · P1</td><td><code>.gitignore:42–51</code></td><td>App lockfile исключён из Git; OSV в чистом checkout не работает.</td><td>Зафиксировать проверенный граф; выполнить настоящий scan и clean-checkout проверку.</td></tr>
+<tr><td>CR-02 · P1</td><td><code>functions/scripts/run_emulator_tests.js:109–128</code></td><td><code>npx firebase</code> без закреплённого CLI; suites не доходят до assertions.</td><td>Закрепить Firebase CLI; rules/deletion E2E на disposable demo-проектах.</td></tr>
+<tr><td>CR-03 · P1</td><td><code>app_router.dart:100–115</code></td><td>Удаление аккаунта отправляет незавершившего анкету пользователя обратно в onboarding.</td><td>Узкие authenticated account-actions и реальный UI-вход; не ослаблять auth.</td></tr>
+<tr><td>CR-04 · P1 store</td><td><code>subscription_providers.dart:120–157</code><br><code>build_release.ps1:174–193</code></td><td>Override тарифа default=true; штатный release wrapper его не отключает.</td><td>Personal/test/store profiles и проверка store APK с сохранёнными test preferences.</td></tr>
+<tr><td>CR-05 · P2</td><td><code>firestore.rules:45–73,180–217</code></td><td>Canary исключён из wildcard, но специальные grants шире заявленной политики.</td><td>Единый predicate и emulator access matrix. Утечка чужих аккаунтов не доказана.</td></tr>
+<tr><td>CR-06 · P1</td><td><code>gemini_equipment_service.dart:269–340</code></td><td>Запрет predicted rotary не ловит истинный rotary, распознанный как другой тип.</td><td>True/predicted раздельно, regression fixture и проверяемое подтверждение identity.</td></tr>
+<tr><td>CR-07 · P2</td><td><code>local_sensitive_store.dart:54–68</code></td><td>JSON с неверным типом health не покрыт catch FormatException.</td><td>Schema validation, distinct corrupt state, восстановление без потери данных.</td></tr>
+<tr><td>CR-08 · P1 marketplace</td><td><code>functions/src/index.ts:1523–1548</code></td><td>Timestamp booking ID и PaymentIntent без устойчивой идемпотентности.</td><td>Request ID, повтор без дубликата, reconciliation. До live-активации; не расширять scope.</td></tr>
+<tr><td>CR-09 · P2</td><td><code>functions/</code> Jest lifecycle</td><td>606 PASS, но worker не завершился штатно; место утечки пока неизвестно.</td><td>Диагностика open handles; нормальный exit без маскировки forceExit.</td></tr>
+</tbody></table></div>
+<div class="card"><h3>Пример: CR-03, account lifecycle</h3><pre>if (isSignedIn &amp;&amp;
+    !isOnboarded &amp;&amp;
+    location != '/onboarding' &amp;&amp;
+    !isEquipmentOrWorkout &amp;&amp;
+    !isPublic) {
+  return '/onboarding';
+}</pre><p><code>/delete-account</code> не входит в исключения. Регрессия должна проверять нового авторизованного пользователя и signed-out отдельно; чувствительный маршрут нельзя делать публичным.</p></div>
+<div class="card"><h3>Пример: CR-04, store boundary</h3><pre>bool.fromEnvironment('ALLOW_TIER_OVERRIDE', defaultValue: true)</pre><p>Один <code>--release</code> не отключает флаг. В штатном wrapper его нет. Нужны явный store profile и проверка артефакта, при сохранении личного режима оператора.</p></div>
+<p><strong>CAND-01:</strong> async auth-listener в <code>profileWatchOf</code> — проверить быстрые A → B → sign-out с задержанной cancel. До детерминированного failing test это кандидат, не доказанный дефект.</p>
+<p><strong>Снятые выводы:</strong> FadeTransition не чинить по старому замечанию; причина OSV — отсутствующий lockfile; пустой screening не даёт автоматического допуска. Повтор PaymentIntent не равен повторному списанию.</p>
+<h2 id="state">Где мы находимся</h2>
+<div class="scroll"><table><thead><tr><th>Область</th><th>Статус</th><th>Остаток</th></tr></thead><tbody>
+<tr><td>Backend unit</td><td class="status good">PASS + WARNING</td><td>606 assertions, 24 suites; завершить teardown. Не заменяет rules/e2e.</td></tr>
+<tr><td>Flutter / release / CI</td><td class="status warn">NOT READY</td><td>Прочитанный run 37569707786 красный; новый полный Flutter run не выполнен.</td></tr>
+<tr><td>Основное приложение</td><td class="status">IMPLEMENTED / PARTIAL</td><td>Доказать полный путь: оборудование → инструкция → подход → сохранение → повторный визит.</td></tr>
+<tr><td>Form Coach T3</td><td class="status">CODE COMMITTED</td><td>255b8f2; exact-build S23 acceptance не установлена. F1 — debug diagnosis, не завершённый новый алгоритм.</td></tr>
+<tr><td>Клинические gates / labels</td><td class="status warn">EXTERNAL HOLD</td><td>Подлинный внешний результат нельзя заменить Markdown или синтетическими labels.</td></tr>
+<tr><td>Review remediation</td><td class="status">NOT STARTED</td><td>В этом пакете подготовлены документы; кодовые fixes ещё OPEN.</td></tr>
+</tbody></table></div>
+<h2 id="next">Что делать автономно дальше</h2>
+<p><strong>B0:</strong> exact baseline и владение checkout. <strong>B1:</strong> lockfile, CLI, audit и красные CI checks. <strong>B2:</strong> account actions, store profile, canary grants. <strong>B3:</strong> corrupted profile, scanner regression, Jest teardown, проверка CAND-01. <strong>B4:</strong> полный final-head suite, build и evidence. <strong>B5:</strong> сверка документации и adversarial-проверка CLOSED.</p>
+<p>Блокер одного пункта фиксируется и не останавливает независимые задачи. Не реализовывать все 75 feature ideas; не переписывать стек; не активировать marketplace и не запускать новое обучение как побочный эффект аудита. Подробный исполнимый промпт — в документе плана.</p>
+<h2 id="external">Что требует внешнего действия</h2>
+<p>Реальные движения человека на S23; клиническая оценка D1/H3; независимые human labels; разрешённые credentials/store/production decisions; реальный продуктовый пилот. Инженер готовит APK, worklist, тесты, preflight и отчёты. Он не подделывает результаты этих проверок.</p>
+<div class="banner"><strong>Терминальное условие:</strong> ENGINEERING_CLOSED_WITH_EXTERNAL_BLOCKERS только после реального выполнения всех доступных инженерных задач. Иначе PARTIAL или BLOCKED_WITH_EVIDENCE. Ни один статус не означает автоматический PRODUCTION_GO.</div>
+<h2 id="docs">Локальные документы и evidence</h2>
+<p><a href="../core/review/CODE_REVIEW_2026-10-07.md">Полный код-ревью с критериями закрытия</a><br><a href="../core/state/REVIEW_STATUS_2026-10-07.md">Текущий статус</a><br><a href="../core/plans/AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md">План B0–B5 и автономный промпт</a><br><a href="../core/evidence/REVIEW_TESTS_2026-10-07.json">Свежие результаты локальных запусков</a><br><a href="../core/plans/NEXT_TICKETS.md">Обновлённая очередь</a></p>
+<p>Обновлены входные точки INDEX, NEXT_TICKETS, IMPLEMENTATION_PLAN, FITNESS_APP_TASK_LIST, CODEMAP и старый T3 handoff. История сохранена. Машинно генерируемый CURRENT_STATE.md не редактировался. Десять независимых AI-агентов не запускались; ролевые проходы одного ревьюера не называются независимым консенсусом.</p>
+<footer>Источники: локальное чтение через DC_MCP; pinned GitHub source; CI runs <a href="https://github.com/xLZDx/Fitness-App/actions/runs/37569707786">37569707786</a> и <a href="https://github.com/xLZDx/Fitness-App/actions/runs/37572085504">37572085504</a>. Сохранены только документы. Этот отчёт не предоставляет разрешения на отправку двух исходных локальных коммитов или production deploy.</footer>
+</main></body></html>

@@ -1,5 +1,13 @@
 # Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans)
 
+<!-- autonomous-closure-v2-2026-10-08:start -->
+## Engineering closure handoff — 2026-10-08
+
+For the next autonomous engineering pass use [AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md](plans/AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md) together with [source-level findings](review/CODE_REVIEW_2026-10-07.md) and [dated status plus current addendum](state/REVIEW_STATUS_2026-10-07.md). Reconcile remaining obligations from this master plan and later decisions against actual code/evidence; do not revive already completed work or quietly drop still-open agreed tasks. This is an execution-routing addendum, not a rewrite of scope decisions, clinical authority, accepted risks or gate receipts. The historical metrics and claims below must not be treated as a fresh audit.
+
+Preparation only: PROMPT_READY. No application remediation, test rerun, commit, push or deployment was performed by this documentation update. Generated CURRENT_STATE remains untouched.
+<!-- autonomous-closure-v2-2026-10-08:end -->
+
 **Compiled:** 2026-08-26
 **Scope:** every plan, design, and decision found in `core/DECISION_LOG.md`, `core/plans/`, `core/*.md`, `docs/Redisign/`, and the HUD design handoff package, from project inception (2026-07-28) through the independent SPTR audit (2026-08-25).
 **Source method:** six parallel research passes (foundation era, GUI/HUD design lineage, onboarding/safety/catalog era, ML/equipment-recognition platform, release/business/governance, and the SPTR independent audit itself), each citing file:line evidence and cross-checking plan claims against current code, not just decision-log self-reports. Full source-file list in §10.

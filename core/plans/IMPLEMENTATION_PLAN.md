@@ -1,6 +1,24 @@
 # Fitness App — Roadmap
 
-**Source of truth for multi-phase plans, sequencing, and progress.** Update as phases complete or scope shifts. Master feature list lives in [`../FITNESS_APP_TASK_LIST.md`](../FITNESS_APP_TASK_LIST.md) (75 features); this file describes *how* and *in what order* we build them.
+<!-- autonomous-closure-v2-2026-10-08:start -->
+## Active autonomous execution instruction — 2026-10-08
+
+The executable handoff is now [AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md](AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md), version 2. It retains B0–B5, adds reconciliation of all remaining agreed engineering obligations into one evidence-linked registry, and requires real verification before closure. The version 1 technical plan below remains reference material; its short prompt is superseded. Do not treat dormant UI as proof that backend defects can be dropped, or a missing device as a reason to stop independent fixes. No new feature programme, automatic production GO, push authority or clinical clearance is created.
+
+This local update prepares the instruction and documentation only: **PROMPT_READY / REMEDIATION_NOT_STARTED_BY_THIS_UPDATE**. Prior test results remain dated evidence, not tests executed for this update.
+<!-- autonomous-closure-v2-2026-10-08:end -->
+
+<!-- audit-followup-2026-10-07:start -->
+## Current execution overlay — 2026-10-07
+
+The active engineering sequence is [AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md](AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md): **B0 baseline → B1 dependencies/CI → B2 account/security/store → B3 reliability/ML regression → B4 release evidence → B5 documentation closure**. Read [current status](../state/REVIEW_STATUS_2026-10-07.md) and [source-level findings](../review/CODE_REVIEW_2026-10-07.md) before selecting work. Remediation implementation is NOT STARTED in this documentation-only follow-up.
+
+The roadmap below is historical design/phase history, not the authority for current runtime bindings, versions, test totals, or deployment. In particular, the old planned backend/payment descriptions and old design widgets do not override actual source. Do not restart completed features or implement all 75 ideas as audit remediation. External clinical/device/credential gates remain separate and explicit; no automatic production GO.
+
+The original vision is preserved in [`../../FITNESS_APP_TASK_LIST.md`](../../FITNESS_APP_TASK_LIST.md). `core/CURRENT_STATE.md` is generated and remains untouched; update its underlying authority/evidence only through the canonical workflow. Existing Git, privacy, and approval rules remain in force.
+<!-- audit-followup-2026-10-07:end -->
+
+## Historical roadmap — retained for context
 
 ---
 
