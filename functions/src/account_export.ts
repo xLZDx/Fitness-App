@@ -167,7 +167,13 @@ function redactBooking(row: Record<string, unknown>, uid: string): unknown {
   for (const field of BOOKING_SELF_FIELDS) {
     if (field in row) out[field] = row[field];
   }
-  out.yourRole = row.clientUid === uid ? "client" : "coach";
+  const isClient = row.clientUid === uid;
+  out.yourRole = isClient ? "client" : "coach";
+  // The booking id is the CLIENT's own reference. Legacy ids were
+  // `bk_<ms>_<clientUid>`, so handing the row id to the coach hands over the
+  // client's uid; newer ids are a hash a coach could test candidate uids
+  // against. A coach identifies a session by when it was and what it cost.
+  if (!isClient) delete out.id;
   return out;
 }
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'sensitive_profile.dart';
@@ -102,21 +103,36 @@ class PrefsSensitiveStore implements LocalSensitiveStore {
     final key = _quarantineKey(uid);
     if (_prefs.getString(key) != null) return;
     try {
-      await _prefs.setString(key, raw);
-    } catch (_) {
+      final saved = await _prefs.setString(key, raw);
+      if (!saved) {
+        debugPrint('sensitive store: could not quarantine an unreadable blob');
+      }
+    } catch (e) {
       // Failing to preserve a copy must not turn into failing to read; the
-      // live blob is untouched either way.
+      // live blob is untouched either way. Logged, because without the copy a
+      // later explicit save is the end of the only evidence.
+      debugPrint('sensitive store: quarantine failed: $e');
+    }
+  }
+
+  /// SharedPreferences reports a failed write by returning `false`, not by
+  /// throwing. Ignoring it let [DeviceHealthProfileRepository.save] publish the
+  /// stripped profile to the server while the health answers existed nowhere.
+  @override
+  Future<void> write(String uid, SensitiveProfile value) async {
+    final saved =
+        await _prefs.setString(_key(uid), jsonEncode(value.toJson()));
+    if (!saved) {
+      throw StateError('sensitive profile was not persisted on this device');
     }
   }
 
   @override
-  Future<void> write(String uid, SensitiveProfile value) async {
-    await _prefs.setString(_key(uid), jsonEncode(value.toJson()));
-  }
-
-  @override
   Future<void> clear(String uid) async {
-    await _prefs.remove(_key(uid));
+    final removed = await _prefs.remove(_key(uid));
+    if (!removed) {
+      throw StateError('sensitive profile could not be removed from this device');
+    }
   }
 }
 

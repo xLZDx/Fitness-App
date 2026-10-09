@@ -144,7 +144,19 @@ test("carries every store the inventory lists for this user", async () => {
   expect(res.donorWall).toMatchObject({ name: "Ivan" });
   expect(res.coachListing).toMatchObject({ bio: "coach" });
   // Both ends of the marketplace, in one list.
-  expect(res.coachBookings.map((b: any) => b.id).sort()).toEqual(["b1", "b2"]);
+  expect(res.coachBookings.map((b: any) => b.yourRole).sort()).toEqual([
+    "client",
+    "coach",
+  ]);
+  // The client keeps their own booking id; the coach's row carries none.
+  const asClient: any = res.coachBookings.find(
+    (b: any) => b.yourRole === "client",
+  );
+  const asCoach: any = res.coachBookings.find(
+    (b: any) => b.yourRole === "coach",
+  );
+  expect(asClient.id).toBe("b1");
+  expect(asCoach).not.toHaveProperty("id");
   expect(res.equipmentReports[0]).toMatchObject({ fault: "cable" });
   expect(res.debugSessions).toHaveLength(1);
 });
@@ -204,7 +216,8 @@ test("a coach's export does not carry their clients' uids or payment ids",
     // Third-party personal data in a file the recipient can forward anywhere.
     collections.set("coach_bookings", [
       {
-        id: "b1",
+        // Legacy id shape: the client's uid is embedded in the doc id itself.
+        id: "bk_1_client_7",
         data: {
           clientUid: "client_7",
           coachUid: "u1",
@@ -220,6 +233,7 @@ test("a coach's export does not carry their clients' uids or payment ids",
 
     expect(JSON.stringify(res)).not.toContain("client_7");
     expect(JSON.stringify(res)).not.toContain("pi_secret");
+    expect(booking).not.toHaveProperty("id");
     // What is theirs stays: when it was, what it cost, which side they were on.
     expect(booking.startsAt).toBe("2026-08-01T10:00:00Z");
     expect(booking.priceCents).toBe(5000);

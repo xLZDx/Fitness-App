@@ -22,6 +22,42 @@ import 'package:fitness_app/features/safety/data/par_q.dart';
 String _key(String uid) => 'profile.sensitive.$uid';
 String _quarantine(String uid) => 'profile.sensitive.corrupt.$uid';
 
+/// SharedPreferences reports a failed write by RETURNING false, not by
+/// throwing. This wraps a real instance and makes chosen writes fail that way.
+class _FailingPrefs implements SharedPreferences {
+  _FailingPrefs(this._real, {this.failSet = false, this.failRemove = false});
+  final SharedPreferences _real;
+  final bool failSet;
+  final bool failRemove;
+  var setCalls = 0;
+
+  @override
+  String? getString(String key) => _real.getString(key);
+  @override
+  Future<bool> setString(String key, String value) async {
+    setCalls++;
+    return failSet ? false : _real.setString(key, value);
+  }
+
+  @override
+  Future<bool> remove(String key) async =>
+      failRemove ? false : _real.remove(key);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('${invocation.memberName}');
+}
+
+class _CountingRepo extends MockProfileRepository {
+  _CountingRepo() : super(latency: Duration.zero);
+  var saves = 0;
+  @override
+  Future<void> save(UserProfile profile) async {
+    saves++;
+    return super.save(profile);
+  }
+}
+
 Future<PrefsSensitiveStore> _storeWith(Map<String, Object> seed) async {
   SharedPreferences.setMockInitialValues(seed);
   return PrefsSensitiveStore(await SharedPreferences.getInstance());
@@ -182,6 +218,19 @@ void main() {
       expect(again!.health.conditions, ['asthma']);
     });
 
+    test('a save that never touched health leaves the corrupt blob and the flag',
+        () async {
+      const blob = '{"health": []}';
+      final store = await _storeWith({_key('u'): blob});
+      final r = await repo(store, UserProfile.empty('u'));
+      final loaded = (await r.load('u'))!;
+      await r.save(loaded);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(_key('u')), blob,
+          reason: 'an empty-but-valid blob must not replace unreadable data');
+      expect(r.isSensitiveCorrupt('u'), isTrue);
+    });
+
     test('a pre-split server copy still repairs a corrupt local blob', () async {
       final store = await _storeWith({_key('u'): '{"health": []}'});
       final server = UserProfile.empty('u').copyWith(
@@ -205,6 +254,54 @@ void main() {
       final p = await r.load('w');
       expect(p!.health.conditions, ['asthma']);
       expect(r.isSensitiveCorrupt('w'), isFalse);
+    });
+  });
+
+  group('a write the platform reports as failed (returns false)', () {
+    test('write throws instead of reporting success', () async {
+      SharedPreferences.setMockInitialValues({});
+      final real = await SharedPreferences.getInstance();
+      final store = PrefsSensitiveStore(_FailingPrefs(real, failSet: true));
+      expect(
+          () => store.write(
+              'u', const SensitiveProfile(health: HealthHistory(conditions: ['asthma']))),
+          throwsStateError);
+    });
+
+    test('clear throws instead of reporting success', () async {
+      SharedPreferences.setMockInitialValues({_key('u'): '{}'});
+      final real = await SharedPreferences.getInstance();
+      final store = PrefsSensitiveStore(_FailingPrefs(real, failRemove: true));
+      expect(() => store.clear('u'), throwsStateError);
+    });
+
+    test('the repository does not publish the stripped profile when the local write failed',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final real = await SharedPreferences.getInstance();
+      final failing = _FailingPrefs(real, failSet: true);
+      final inner = _CountingRepo();
+      await inner.save(UserProfile.empty('u'));
+      final before = inner.saves;
+      final r = DeviceHealthProfileRepository(inner, PrefsSensitiveStore(failing));
+      await expectLater(
+          r.save(UserProfile.empty('u')
+              .copyWith(health: const HealthHistory(conditions: ['asthma']))),
+          throwsStateError);
+      expect(inner.saves, before,
+          reason: 'local first: the server copy must not be written when the '
+              'device copy was not');
+    });
+
+    test('a failed quarantine still reads as corrupt and leaves the live blob',
+        () async {
+      const blob = '{"health": []}';
+      SharedPreferences.setMockInitialValues({_key('u'): blob});
+      final real = await SharedPreferences.getInstance();
+      final store = PrefsSensitiveStore(_FailingPrefs(real, failSet: true));
+      final r = await store.readChecked('u');
+      expect(r, isA<SensitiveCorrupt>());
+      expect(real.getString(_key('u')), blob);
     });
   });
 }

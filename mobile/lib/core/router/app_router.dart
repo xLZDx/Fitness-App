@@ -240,7 +240,13 @@ Stream<dynamic> profileWatchOf(
         final gen = ++generation;
         chain = chain.then((_) async {
           try {
-            await stopWatchingProfile();
+            // Its own guard: a throwing cancel of the OLD listener must not
+            // skip subscribing the NEW user (profileSub is already detached).
+            try {
+              await stopWatchingProfile();
+            } catch (e, st) {
+              if (!closed) out.addError(e, st);
+            }
             // A newer auth event arrived while the old listener was being
             // torn down, or the router is gone: it owns the next step.
             if (closed || gen != generation) return;

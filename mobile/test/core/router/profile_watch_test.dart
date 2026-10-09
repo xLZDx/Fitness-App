@@ -101,6 +101,35 @@ class _SlowCancelRepo implements ProfileRepository {
   Future<void> delete(String uid) async {}
 }
 
+/// m1. The old account's listener teardown throws (a platform-channel hiccup).
+/// The next account must still be watched.
+class _ThrowingCancelRepo implements ProfileRepository {
+  final watched = <String>[];
+  var _first = true;
+
+  @override
+  Stream<UserProfile?> watch(String uid) {
+    watched.add(uid);
+    final throwOnCancel = _first;
+    _first = false;
+    final c = StreamController<UserProfile?>(
+      onCancel: () {
+        if (throwOnCancel) throw StateError('cancel failed');
+      },
+    );
+    return c.stream;
+  }
+
+  @override
+  UserProfile? cached(String uid) => null;
+  @override
+  Future<UserProfile?> load(String uid) async => null;
+  @override
+  Future<void> save(UserProfile profile) async {}
+  @override
+  Future<void> delete(String uid) async {}
+}
+
 void _race() {
   group('CAND-01: rapid auth changes with a slow subscription cancel', () {
     test('A -> B -> sign-out leaves NO live profile subscription and emits no stale profile',
@@ -251,5 +280,24 @@ void main() {
     await pumpEventQueue();
 
     expect(repo.cancelled, contains('a'));
+  });
+
+  test('a throwing cancel of the old listener does not skip the new account',
+      () async {
+    final throwing = _ThrowingCancelRepo();
+    final errors = <Object>[];
+    final sub = profileWatchOf(auth, throwing)
+        .listen((_) {}, onError: (Object e) => errors.add(e));
+    addTearDown(sub.cancel);
+
+    auth.emit(const _FakeUser('a'));
+    await pumpEventQueue();
+    auth.emit(const _FakeUser('b'));
+    await pumpEventQueue();
+
+    expect(throwing.watched, ['a', 'b'],
+        reason: 'B must be watched even though tearing A down threw');
+    expect(errors, isNotEmpty,
+        reason: 'the teardown failure is reported, not swallowed');
   });
 }

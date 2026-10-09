@@ -6,6 +6,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
 import 'package:fitness_app/features/progress_photos/data/photo_directory.dart';
 
+/// Wraps real prefs; `remove` of chosen keys returns false (or throws), the way
+/// a failed platform write does.
+class _FlakyPrefs implements SharedPreferences {
+  _FlakyPrefs(this._real, {required this.failing, this.throwInstead = false});
+  final SharedPreferences _real;
+  final Set<String> failing;
+  final bool throwInstead;
+
+  @override
+  Set<String> getKeys() => _real.getKeys();
+  @override
+  String? getString(String key) => _real.getString(key);
+  @override
+  Future<bool> remove(String key) async {
+    if (failing.contains(key)) {
+      if (throwInstead) throw StateError('platform failure');
+      return false;
+    }
+    return _real.remove(key);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('${invocation.memberName}');
+}
+
 /// A1 — the on-device half of account deletion.
 ///
 /// Every case here is a real leak the audit of 2026-08-11 named, expressed as
@@ -27,6 +53,58 @@ void main() {
     SharedPreferences.setMockInitialValues(values);
     return SharedPreferences.getInstance();
   }
+
+  test('one key that fails to erase does not stop the others, and the caller is told',
+      () async {
+    final real = await prefsWith({
+      'profile.sensitive.u1': '{"injuries":["knee"]}',
+      'moment.streak': '3',
+      'settings.tier_override': 'pro',
+    });
+    final flaky = _FlakyPrefs(real, failing: {'profile.sensitive.u1'});
+    final photos = Directory('${docs.path}/progress_photos/u1')
+      ..createSync(recursive: true);
+    File('${photos.path}/p1.bin').writeAsBytesSync([1, 2, 3]);
+
+    await expectLater(
+      DeviceLocalDataWipe(prefs: flaky, documentsDir: docs).wipe('u1'),
+      throwsA(isA<LocalWipeIncomplete>().having(
+          (e) => e.remaining, 'remaining', ['profile.sensitive.<uid>'])),
+    );
+
+    expect(real.getString('moment.streak'), isNull,
+        reason: 'keys after the failing one are still erased');
+    expect(real.getString('settings.tier_override'), isNull);
+    expect(photos.existsSync(), isFalse,
+        reason: 'the larger leak (photos) is not skipped by a prefs failure');
+  });
+
+  test('a remove that throws is reported the same way, without aborting', () async {
+    final real = await prefsWith({
+      'profile.sensitive.u1': '{}',
+      'moment.streak': '3',
+    });
+    final flaky =
+        _FlakyPrefs(real, failing: {'profile.sensitive.u1'}, throwInstead: true);
+
+    await expectLater(
+      DeviceLocalDataWipe(prefs: flaky, documentsDir: docs).wipe('u1'),
+      throwsA(isA<LocalWipeIncomplete>()),
+    );
+    expect(real.getString('moment.streak'), isNull);
+  });
+
+  test('removes this account\'s photo-consent record and keeps another\'s', () async {
+    final prefs = await prefsWith({
+      'progress_photos.consent.v1.u1': 'granted',
+      'progress_photos.consent.v1.u2': 'granted',
+    });
+
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
+
+    expect(prefs.getString('progress_photos.consent.v1.u1'), isNull);
+    expect(prefs.getString('progress_photos.consent.v1.u2'), isNotNull);
+  });
 
   test('removes the health blob belonging to the deleted uid', () async {
     final prefs = await prefsWith({

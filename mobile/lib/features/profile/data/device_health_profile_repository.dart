@@ -126,9 +126,19 @@ class DeviceHealthProfileRepository implements ProfileRepository {
   @override
   Future<void> save(UserProfile profile) async {
     final sensitive = extractSensitive(profile);
-    await _store.write(profile.uid, sensitive);
-    _cache[profile.uid] = sensitive;
-    _corrupt.remove(profile.uid);
+    // While the stored block is unreadable the repository hands callers an
+    // EMPTY health block, so a save that never touched health arrives here
+    // empty. Writing it would replace the unreadable blob with an empty but
+    // VALID one: the flag would clear and the loss would read as "never
+    // answered". Keep the live blob and the flag until the user supplies
+    // health data. (An intentional "clear everything" is indistinguishable
+    // from this and is deferred until a recovery prompt exists.)
+    final keepUnreadable = _corrupt.contains(profile.uid) && sensitive.isEmpty;
+    if (!keepUnreadable) {
+      await _store.write(profile.uid, sensitive);
+      _cache[profile.uid] = sensitive;
+      _corrupt.remove(profile.uid);
+    }
     await _inner.save(stripSensitive(profile));
   }
 
