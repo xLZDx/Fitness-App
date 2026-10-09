@@ -94,6 +94,11 @@ if (!chosen) {
   process.exit(1);
 }
 
+// CR-02 (2026-10-08): `firebase-tools` is a pinned devDependency of this
+// package, so `npx --no-install firebase` resolves node_modules/.bin/firebase
+// and never reaches the network. Before this, `npx firebase` found no local
+// binary on a clean runner and died with "could not determine executable to
+// run" -- a tool-launch failure that looked like a failing rules suite.
 // One shell string rather than (command, args). Node 20+ refuses to spawn a
 // `.cmd` without a shell -- the CVE-2024-27980 hardening -- and `npx` on
 // Windows IS `npx.cmd`, so the argv form dies with a bare `EINVAL` that says
@@ -107,7 +112,7 @@ const configFlag = process.env.FIREBASE_EMULATOR_CONFIG
   : "";
 
 const result = spawnSync(
-  `npx firebase emulators:exec --only ${emulators} ` +
+  `npx --no-install firebase emulators:exec --only ${emulators} ` +
     configFlag +
     `--project ${projectId} ` +
     `"npx jest --config ${config}"`,
