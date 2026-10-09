@@ -41,6 +41,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { createHash } from "crypto";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
@@ -1520,31 +1521,130 @@ export const bookCoachSession = onCall(
       auth.token?.email ?? null,
     );
 
-    const bookingId = `bk_${Date.now()}_${auth.uid}`;
-    const intent = await stripe.paymentIntents.create({
-      amount: priceCents,
-      currency: (coach.currency as string | undefined) ?? "usd",
-      customer: customerId,
-      application_fee_amount: platformFeeCents,
-      transfer_data: { destination: accountId },
-      metadata: {
-        firebaseUid: auth.uid,
-        coachUid,
-        bookingId,
-        kind: "coach_booking",
-      },
-    });
+    // CR-08. The id used to be `bk_${Date.now()}_${uid}`, so a retry of ONE
+    // logical booking (double tap, lost response, client retry) got a new id
+    // and a new PaymentIntent, and a Firestore failure after a successful
+    // Stripe create left an orphan intent nobody could find again.
+    //
+    // The id is now derived from the caller's uid and a request id, so the same
+    // request always maps to the same booking and the same Stripe idempotency
+    // key. The request id is the client's `requestId` when it sends one (a
+    // deliberate second booking of the same slot uses a new one) and otherwise
+    // is derived from the booking parameters themselves, which is what keeps
+    // existing clients idempotent without a client change. It is bound to the
+    // uid by the hash: another user cannot collide with or read this booking.
+    const rawRequestId = bounded(data.requestId, 128, "requestId");
+    if (rawRequestId !== undefined && !/^[A-Za-z0-9_.-]+$/.test(rawRequestId)) {
+      throw new HttpsError("invalid-argument", "requestId has an unusable shape.");
+    }
+    const sha = (v: string) => createHash("sha256").update(v).digest("hex");
+    const requestId =
+      rawRequestId ?? `p_${sha(`${coachUid}|${startsAt}|${durationMinutes}`)}`;
+    const bookingId = `bk_${sha(`${auth.uid}|${requestId}`).slice(0, 32)}`;
+    const currency = (coach.currency as string | undefined) ?? "usd";
+    // What this request asked for, INCLUDING what it would be charged. A
+    // repeat with the same request id but a different slot, price or payout
+    // target is a different request wearing the same id, and is refused rather
+    // than answered with the first one's PaymentIntent.
+    const requestFingerprint = sha(
+      [coachUid, startsAt, durationMinutes, priceCents, currency, accountId].join("|"),
+    );
+    const bookingRef = db.doc(`coach_bookings/${bookingId}`);
 
-    await db.doc(`coach_bookings/${bookingId}`).set({
-      coachUid,
-      clientUid: auth.uid,
-      startsAt,
-      durationMinutes,
-      priceCents,
-      platformFeeCents,
-      status: "pending",
-      stripePaymentIntentId: intent.id,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    const existingSnap = await bookingRef.get();
+    const existing = existingSnap.exists ? existingSnap.data() : undefined;
+    if (existing) {
+      if (existing.requestFingerprint !== requestFingerprint) {
+        throw new HttpsError(
+          "already-exists",
+          "This request id was already used for a different booking.",
+        );
+      }
+      const knownIntent = existing.stripePaymentIntentId as string | undefined;
+      if (knownIntent) {
+        // A retry of a booking that already has its PaymentIntent: hand back
+        // the SAME one. Nothing new is created in Stripe or Firestore.
+        const prior = await stripe.paymentIntents.retrieve(knownIntent);
+        return {
+          bookingId,
+          clientSecret: prior.client_secret,
+          amountCents: priceCents,
+        };
+      }
+      // Claimed but never completed (the call died between the claim and the
+      // Stripe/Firestore write). Fall through and finish it: the Stripe
+      // idempotency key below returns the intent if one was created.
+    } else {
+      try {
+        // create(), not set(): of two concurrent first calls exactly one
+        // claims the booking, the other gets ALREADY_EXISTS.
+        await bookingRef.create({
+          coachUid,
+          clientUid: auth.uid,
+          startsAt,
+          durationMinutes,
+          priceCents,
+          platformFeeCents,
+          status: "creating",
+          requestFingerprint,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (err) {
+        const code = (err as { code?: unknown }).code;
+        if (code === 6 || code === "already-exists" || code === "ALREADY_EXISTS") {
+          // Lost the race; the winner is creating the intent. Ask the client
+          // to retry rather than create a second one beside it.
+          throw new HttpsError(
+            "aborted",
+            "This booking is already being created; retry shortly.",
+          );
+        }
+        throw err;
+      }
+    }
+
+    let intent: Stripe.PaymentIntent;
+    try {
+      intent = await stripe.paymentIntents.create(
+        {
+          amount: priceCents,
+          currency,
+          customer: customerId,
+          application_fee_amount: platformFeeCents,
+          transfer_data: { destination: accountId },
+          metadata: {
+            firebaseUid: auth.uid,
+            coachUid,
+            bookingId,
+            kind: "coach_booking",
+          },
+        },
+        // One key per booking: a retry after a lost response, or after the
+        // Firestore write below failed, returns this same PaymentIntent.
+        { idempotencyKey: `booking_${bookingId}` },
+      );
+    } catch (err) {
+      const stripeCode = (err as { code?: unknown }).code;
+      if (stripeCode === "idempotency_key_in_use") {
+        throw new HttpsError(
+          "aborted",
+          "This booking is already being created; retry shortly.",
+        );
+      }
+      throw err;
+    }
+
+    // Only a claimed ("creating") booking is advanced. The webhook may already
+    // have confirmed it on a retry path, and writing "pending" over
+    // "confirmed" would regress a paid booking.
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(bookingRef);
+      if (snap.data()?.status === "creating") {
+        tx.update(bookingRef, {
+          status: "pending",
+          stripePaymentIntentId: intent.id,
+        });
+      }
     });
 
     return {

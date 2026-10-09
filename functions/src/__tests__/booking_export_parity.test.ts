@@ -92,18 +92,29 @@ describe("booking export parity", () => {
   /** Every field any writer puts into a `coach_bookings` document. */
   function writtenFields(): string[] {
     const found = new Set<string>();
-    const target = "coach_bookings/${bookingId}`).set(";
-    let at = src.indexOf(target);
+    // CR-08 turned the single creation `.set(` into a claim `.create(` plus a
+    // transactional `tx.update(bookingRef, ...)` completion, so the writers are
+    // named by the call shape that reaches the document, not by one spelling.
+    // Each target is the text immediately before the object literal written.
+    const targets = [
+      "coach_bookings/${bookingId}`).set(", // the webhook's status merge
+      "bookingRef.create(", // the claim: the full row
+      "tx.update(bookingRef,", // claim -> pending, with the intent id
+    ];
     let writers = 0;
-    while (at >= 0) {
-      writers++;
-      const open = src.indexOf("{", at + target.length);
-      expect(open).toBeGreaterThan(at);
-      for (const k of keysOf(open)) found.add(k);
-      at = src.indexOf(target, at + target.length);
+    for (const target of targets) {
+      let at = src.indexOf(target);
+      expect(at).toBeGreaterThanOrEqual(0);
+      while (at >= 0) {
+        writers++;
+        const open = src.indexOf("{", at + target.length);
+        expect(open).toBeGreaterThan(at);
+        for (const k of keysOf(open)) found.add(k);
+        at = src.indexOf(target, at + target.length);
+      }
     }
-    // Both writers, named rather than assumed: creation and the webhook merge.
-    expect(writers).toBe(2);
+    // The three writers, named rather than assumed: claim, completion, webhook.
+    expect(writers).toBe(3);
     return [...found];
   }
 

@@ -405,9 +405,12 @@ run('(g) dedicated restrictive block NOT excluded from the wildcard -> RED namin
     assertRed(red, '(g) red', "coll != 'newLeaf'");
     assertRed(red, '(g) red names the leaf', 'newLeaf');
 
+    // Anchored on the WRITE condition's indentation (19 spaces; the read
+    // condition uses 18). Since CR-05 `profile` appears in both, and the
+    // fixture's policy keeps newLeaf's read on the wildcard (OWNER).
     const excluded = withDedicated.replace(
-      "coll != 'profile'",
-      "coll != 'profile'\n                   && coll != 'newLeaf'",
+      "                   && coll != 'profile'",
+      "                   && coll != 'profile'\n                   && coll != 'newLeaf'",
     );
     assert.notStrictEqual(excluded, withDedicated, '(g) exclusion-injection anchor not found');
     fs.writeFileSync(rulesPath, excluded);
@@ -429,7 +432,9 @@ run('(h) duplicate allow-statement for the same verb within one block -> RED, th
   const tmp = buildTempCopy();
   try {
     const rulesPath = path.join(tmp, 'firestore.rules');
-    const rules = fs.readFileSync(rulesPath, 'utf8');
+    // EOL-normalised: a Windows checkout (core.autocrlf) copies CRLF rules and the
+    // LF-anchored injection below never matched.
+    const rules = fs.readFileSync(rulesPath, 'utf8').split(String.fromCharCode(13, 10)).join(String.fromCharCode(10));
     const duplicated = rules.replace(
       '                           || request.resource.data.lifestyle.alcohol == null));\n    }',
       '                           || request.resource.data.lifestyle.alcohol == null));\n' +

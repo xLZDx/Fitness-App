@@ -46,12 +46,25 @@ service cloud.firestore {
       return request.auth != null
           && request.auth.token.get('canary', false) == true;
     }
+
+    // CR-05. Firestore allows a request if ANY matching rule permits it, so the
+    // wildcard's `!isCanaryToken()` above does nothing against a separate,
+    // more specific grant for the same path that omits it. Every non-public
+    // grant for an authenticated caller therefore goes through this one
+    // predicate instead of a bare `request.auth != null`, which is what keeps
+    // "the canary's ENTIRE grant is `_canary/{its uid}`" true. Public
+    // surfaces (`donor_wall`, `allow read: if true`) are deliberately not
+    // routed through it.
+    function isOrdinaryUser() {
+      return request.auth != null && !isCanaryToken();
+    }
     match /users/{uid}/{coll}/{document=**} {
       allow read: if request.auth != null
                   && request.auth.uid == uid
                   && !isCanaryToken()
                   && coll != 'usage'
                   && coll != 'receipts'
+                  && coll != 'profile'
                   && coll != 'recognised_models'
                   && coll != 'equipment_identity_sessions'
                   && coll != 'equipment_identity_latest_session'
@@ -179,13 +192,13 @@ service cloud.firestore {
           && f.get('professionalGuidance', null) == null;
     }
     match /users/{uid}/profile/{docId} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
       // Tolerant of a write that omits `health`/`lifestyle` altogether
       // (a partial field update, or a document shape this rule has not seen
       // yet) — it only refuses a write that INCLUDES a health block and that
       // block is not the stripped shape. What it must never accept is a
       // present `health` carrying real content.
-      allow write: if request.auth != null
+      allow write: if isOrdinaryUser()
                    && request.auth.uid == uid
                    && (!('health' in request.resource.data)
                        || healthIsStripped(request.resource.data.health))
@@ -200,11 +213,11 @@ service cloud.firestore {
     // Equipment + exercise catalogs are read-only for clients.
     // Server-side admin scripts write these via the Admin SDK.
     match /equipment/{anyId} {
-      allow read: if request.auth != null;
+      allow read: if isOrdinaryUser();
       allow write: if false;
     }
     match /exercises/{anyId} {
-      allow read: if request.auth != null;
+      allow read: if isOrdinaryUser();
       allow write: if false;
     }
 
@@ -212,7 +225,7 @@ service cloud.firestore {
     // gymId → display name + maintenance metadata, but only the
     // server (Admin SDK) writes via the gym-onboarding tooling.
     match /gyms/{gymId} {
-      allow read: if request.auth != null;
+      allow read: if isOrdinaryUser();
       allow write: if false;
     }
 
@@ -281,7 +294,7 @@ service cloud.firestore {
     // that made this an open-ended dump.
     match /debug_sessions/{sessionId} {
       allow read: if false;
-      allow create: if request.auth != null
+      allow create: if isOrdinaryUser()
                     && request.resource.data.uid == request.auth.uid
                     && request.resource.data.keys().hasOnly(
                          ['identity', 'droppedCount', 'events',
@@ -336,7 +349,7 @@ service cloud.firestore {
     // `RecognitionAuthorityTuple` embedded in a resolved record can never be
     // altered post-write by anything but the server that wrote it.
     match /users/{uid}/recognised_models/{modelId} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
       allow write: if false;
     }
 

@@ -155,6 +155,10 @@ const BOOKING_WITHHELD_FIELDS = [
   "coachUid",
   // A payment-intent id is a live Stripe handle, not a receipt.
   "stripePaymentIntentId",
+  // CR-08. The digest `bookCoachSession` uses to tell a retry of the same
+  // request from a different one wearing its id. Internal bookkeeping; a hash
+  // of the other party's uid and the payout target is not the user's data.
+  "requestFingerprint",
 ] as const;
 
 /** A booking reduced to the part that is this user's own data. */

@@ -438,6 +438,69 @@ describe("canary identity: excluded from ordinary per-user data", () => {
   });
 });
 
+// CR-05. The canary's contract is "its own `_canary/{uid}` document and
+// NOTHING else". Firestore ORs every matching rule, so the wildcard's
+// `!isCanaryToken()` is worthless if a separate, more specific grant for the
+// same path omits it. Each case below targets one such grant individually,
+// with the owner (non-canary) shown succeeding so a rule that simply denied
+// everyone would not pass.
+describe("canary identity: no other grant applies to it (CR-05)", () => {
+  const seed = async (path: string, data: Record<string, unknown>) =>
+    env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), path), data);
+    });
+
+  test("its own profile is NOT readable or writable", async () => {
+    await seed(`users/${CANARY_UID}/profile/main`, { goal: "x" });
+    await assertFails(getDoc(doc(asCanary(), `users/${CANARY_UID}/profile/main`)));
+    await assertFails(
+      setDoc(doc(asCanary(), `users/${CANARY_UID}/profile/main`), { goal: "y" }),
+    );
+    // the same shape for an ordinary owner still works
+    await seed(`users/${ALICE}/profile/main`, { goal: "x" });
+    await assertSucceeds(getDoc(doc(asAlice(), `users/${ALICE}/profile/main`)));
+    await assertSucceeds(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), { goal: "y" }),
+    );
+  });
+
+  test("its own recognised_models are NOT readable", async () => {
+    await seed(`users/${CANARY_UID}/recognised_models/m1`, { id: "m1" });
+    await assertFails(
+      getDoc(doc(asCanary(), `users/${CANARY_UID}/recognised_models/m1`)),
+    );
+    await seed(`users/${ALICE}/recognised_models/m1`, { id: "m1" });
+    await assertSucceeds(
+      getDoc(doc(asAlice(), `users/${ALICE}/recognised_models/m1`)),
+    );
+  });
+
+  test("the equipment, exercise and gym catalogues are NOT readable", async () => {
+    for (const path of ["equipment/e1", "exercises/x1", "gyms/g1"]) {
+      await seed(path, { name: "n" });
+      await assertFails(getDoc(doc(asCanary(), path)));
+      await assertSucceeds(getDoc(doc(asAlice(), path)));
+    }
+  });
+
+  test("it cannot create a debug session", async () => {
+    await assertFails(
+      addDoc(collection(asCanary(), "debug_sessions"), session(CANARY_UID)),
+    );
+    await assertSucceeds(
+      addDoc(collection(asAlice(), "debug_sessions"), session(ALICE)),
+    );
+  });
+
+  test("the explicitly public donor wall stays public", async () => {
+    // Deliberately NOT closed to the canary: it is `allow read: if true` by
+    // product decision, so denying it here would contradict that block.
+    await seed("donor_wall/d1", { name: "n" });
+    await assertSucceeds(getDoc(doc(asCanary(), "donor_wall/d1")));
+    await assertSucceeds(getDoc(doc(signedOut(), "donor_wall/d1")));
+  });
+});
+
 describe("debug sessions", () => {
   test("a signed-in user creates one stamped with their own uid", async () => {
     await assertSucceeds(

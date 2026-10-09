@@ -142,6 +142,13 @@ function deleteReferencesResource(cond) {
  * `verb` is one of the four tracked operations -- see
  * `deleteReferencesResource` for the one case classification depends on it. */
 function classifyCondition(cond, pathVar, verb) {
+  // CR-05. `isOrdinaryUser()` is `request.auth != null && !isCanaryToken()`:
+  // the same authenticated-caller predicate with the synthetic canary identity
+  // excluded. That exclusion only NARROWS who is let in, so for the policy
+  // vocabulary (OWNER / AUTHENTICATED are upper bounds on who may act) it is
+  // read as the bare `request.auth != null` it refines. Anything else around
+  // it is still judged exactly as before.
+  cond = cond.replace(/isOrdinaryUser\(\)/g, 'request.auth != null');
   if (cond === 'false') return 'ALWAYS_FALSE';
   if (verb === 'delete' && deleteReferencesResource(cond)) return 'ALWAYS_FALSE';
   if (cond === 'true') return 'PUBLIC';

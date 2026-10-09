@@ -218,7 +218,7 @@ function resolveFirebaseWebApiKey():
   };
 }
 
-class ProbeTimeoutError extends Error {
+export class ProbeTimeoutError extends Error {
   constructor() {
     super("canary probe step exceeded its deadline");
   }
@@ -234,14 +234,20 @@ class ProbeTimeoutError extends Error {
  * assumed away — the same posture `ai_gateway.ts` documents for its own
  * location default.
  */
-function withTimeout<T>(promise: Promise<T>, budgetMs: number): Promise<T> {
+export function withTimeout<T>(promise: Promise<T>, budgetMs: number): Promise<T> {
   if (budgetMs <= 0) return Promise.reject(new ProbeTimeoutError());
+  // CR-09: the losing timer is cleared once the race settles. Left armed it
+  // kept a handle (and, in a test worker, the worker) alive for the full
+  // budget after every call that finished on time.
+  let timer: ReturnType<typeof setTimeout> | undefined;
   return Promise.race([
     promise,
     new Promise<T>((_resolve, reject) => {
-      setTimeout(() => reject(new ProbeTimeoutError()), budgetMs);
+      timer = setTimeout(() => reject(new ProbeTimeoutError()), budgetMs);
     }),
-  ]);
+  ]).finally(() => {
+    if (timer !== undefined) clearTimeout(timer);
+  });
 }
 
 /** A Security Rules denial reads as `FirebaseError` with this code from the
@@ -513,8 +519,9 @@ export async function runCanaryProbe(
 ): Promise<CanaryProbeResult> {
   const startedAtMs = Date.now();
   const bodyPromise = runCanaryProbeBody(startedAtMs, opts);
+  let hardDeadlineTimer: ReturnType<typeof setTimeout> | undefined;
   const hardDeadlinePromise = new Promise<CanaryProbeResult>((resolve) => {
-    setTimeout(() => {
+    hardDeadlineTimer = setTimeout(() => {
       resolve({
         success: false,
         latencyMs: Date.now() - startedAtMs,
@@ -526,5 +533,9 @@ export async function runCanaryProbe(
       });
     }, OVERALL_HARD_DEADLINE_MS);
   });
-  return Promise.race([bodyPromise, hardDeadlinePromise]);
+  // CR-09: clear the deadline timer when the body wins the race (see
+  // withTimeout above for why a surviving timer is a leak).
+  return Promise.race([bodyPromise, hardDeadlinePromise]).finally(() => {
+    if (hardDeadlineTimer !== undefined) clearTimeout(hardDeadlineTimer);
+  });
 }
