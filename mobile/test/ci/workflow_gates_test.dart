@@ -235,12 +235,27 @@ void main() {
         final flags = line
             .replaceFirst(RegExp(r'^.*build_release\.ps1'), '')
             .trim();
-        expect(flags, anyOf(isEmpty, equals('-Bundle')),
+        // CR-04: CI builds the STORE profile (tier override disabled), so the
+        // artifact it proves is the one that is allowed to leave the machine.
+        expect(
+            flags,
+            anyOf(
+              isEmpty,
+              equals('-Bundle'),
+              equals('-BuildProfile store'),
+              equals('-BuildProfile store -Bundle'),
+            ),
             reason: 'unexpected flag(s) "$flags" on a CI release-build '
-                'invocation -- only a bare call or exactly "-Bundle" is '
-                'allowed; anything else (including any abbreviation of '
-                '-Distribute) must not silently pass: $line');
+                'invocation -- only the store profile, optionally with '
+                '-Bundle, is allowed; anything else (including any '
+                'abbreviation of -Distribute) must not silently pass: $line');
       }
+      expect(
+          invocations.where((l) => l.contains('-BuildProfile store')).length,
+          greaterThanOrEqualTo(2),
+          reason: 'CR-04: both the APK and the AAB CI builds must use the '
+              'store profile, or CI proves a build that can ship the tier '
+              'override');
       // Both artifact forms: the default (split APK) and -Bundle (AAB).
       final bundleCalls =
           invocations.where((l) => l.endsWith('-Bundle')).length;
@@ -248,7 +263,7 @@ void main() {
           reason: 'only the split-APK form is exercised; the AAB path (the '
               'one the Play console actually accepts) is unverified');
       final defaultCalls =
-          invocations.where((l) => l.endsWith('build_release.ps1')).length;
+          invocations.where((l) => !l.endsWith('-Bundle')).length;
       expect(defaultCalls, greaterThanOrEqualTo(1),
           reason: 'only the -Bundle form is exercised; the default split-APK '
               'form (what testers actually install) is unverified');

@@ -47,7 +47,7 @@ mobile/.packages
 mobile/build/
 mobile/.pub-cache/
 mobile/.pub/
-mobile/pubspec.lock
+# mobile/pubspec.lock is TRACKED (CR-01): CI, OSV and release builds must share one resolved graph.
 mobile/ios/Pods/
 mobile/ios/Flutter/Generated.xcconfig
 mobile/ios/Runner/GeneratedPluginRegistrant.*

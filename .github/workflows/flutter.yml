@@ -70,7 +70,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pub-
 
       - name: flutter pub get
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: flutter analyze
         # Don't fail the run on warnings-only (we have a few pre-existing
@@ -79,6 +79,12 @@ jobs:
 
       - name: flutter test
         run: flutter test --no-pub --reporter=expanded
+
+      # CR-04. The suite above runs with the Dart default (override allowed).
+      # The STORE build compiles ALLOW_TIER_OVERRIDE=false, so the guard is
+      # exercised under that exact configuration too.
+      - name: tier-override guard under the store define
+        run: flutter test --no-pub --dart-define=ALLOW_TIER_OVERRIDE=false test/features/subscription test/features/settings
 
   # CI-F2 (backlog row 22). No job anywhere built a real release artifact --
   # analyze-and-test only ever runs `flutter test`, so a break in the actual
@@ -145,7 +151,7 @@ jobs:
 
       - name: flutter pub get
         working-directory: mobile
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       # google-services.json (mobile/android/app/) is the file the Google
       # Services Gradle plugin refuses to build without. NOT confidential by
@@ -186,10 +192,10 @@ jobs:
       # separate invocations, not one script with two output claims, so a
       # regression specific to either build type is still caught.
       - name: Build split APK (release)
-        run: pwsh scripts/dev/build_release.ps1
+        run: pwsh scripts/dev/build_release.ps1 -BuildProfile store
 
       - name: Build AAB (release)
-        run: pwsh scripts/dev/build_release.ps1 -Bundle
+        run: pwsh scripts/dev/build_release.ps1 -BuildProfile store -Bundle
 
       # Size floors are real measurements (2026-09-16, this exact HEAD, same
       # split/bundle commands run locally), not guesses -- roughly half the
@@ -287,7 +293,7 @@ jobs:
 
       - name: flutter pub get
         working-directory: mobile
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       # Gradle is the slow half of this job, and it is the half that caches
       # well. Keyed on the build files so a plugin bump invalidates it.
@@ -341,13 +347,7 @@ jobs:
           # on every CI integration job" false exactly while an unrelated
           # earlier file was red. Run every file regardless of prior
           # failures, then fail the job only after all of them have run.
-          script: |
-            failed=0
-            for f in integration_test/*_test.dart; do
-              echo "=== $f ==="
-              flutter test "$f" --reporter=expanded || failed=1
-            done
-            exit $failed
+          script: bash ../scripts/ci/run_integration_tests.sh
 
   # CT-1. Cheap on purpose: a contract check and a rule set, not a training
   # run. §26 of the CT-1 brief is explicit that expensive training must not
@@ -362,6 +362,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # VER-05. scripts/ml/test_ml_contracts.py asks git for the last commit
+          # that touched the catalogue and compares it to HEAD, and the
+          # registry records source commits that must resolve. A depth-1 clone
+          # has only HEAD, so those checks failed for a reason that says
+          # nothing about provenance. Full history is what makes them real.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -542,6 +549,11 @@ jobs:
             "https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64"
           chmod +x /usr/local/bin/osv-scanner
           osv-scanner --version
+
+      # CR-01. The scanner must read the SAME graph the app is built and
+      # tested from. A missing lockfile is a FAIL here, never a skipped scan.
+      - name: pubspec.lock is tracked (scan input must exist)
+        run: test -f pubspec.lock || { echo "::error::mobile/pubspec.lock is not in the checkout; the scan would not examine the app's real dependency graph"; exit 1; }
 
       - name: scan pubspec.lock for known vulnerabilities
         run: osv-scanner --lockfile=pubspec.lock

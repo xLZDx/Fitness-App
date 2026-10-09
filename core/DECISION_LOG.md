@@ -55677,3 +55677,9 @@ Rebuilt both `reports/code_ci_snapshot_2026-10-06.html` and `.ru.html` with the 
 **Also added:** core/plans/PHASE2_BODY_SCAN_COACH_REFERENCE_REVIEW_2026-10-09.md, a grouped review of an operator-recorded walkthrough of a third-party body-fat/meal-scan app. Candidate input only; no scope chosen, nothing implemented. Product decisions (which theme, build vs license, consent for a generative "future you" preview) stay with the operator.
 
 **Not done in this entry:** no push, no CI run, no GPT review. Local commits only; sprint-end tests and reviews run through subagents before any push, per development rules v4.
+
+## 2026-10-09 — Commit: build/CI toolchain (CR-01, CR-04, VER-04, VER-05, VER-06)
+
+**What and why:** mobile/pubspec.lock is now tracked and CI uses `flutter pub get --enforce-lockfile` (OSV job was failing on "stat mobile/pubspec.lock: no such file" because the lock was never committed; it now also fails loudly if missing). Build profiles personal/test/store with the store define guarding the tier override, and CI building with the store profile. Integration job body moved to scripts/ci/run_integration_tests.sh. CT-1 checkout uses fetch-depth 0 so the "last commit touching the catalogue" check is meaningful (it compared HEAD with itself in a depth-1 clone). RU/EN drift baseline reviewed (0 NEW).
+**Evidence:** per-item evidence and residuals in core/state/TAIL_CLOSURE_REGISTRY.json (CR-01 enforce-lockfile exit 0 on Linux and Windows with an identical lock; CR-04 PowerShell profile tests all passed; VER-06 check_ru_en_drift 0 NEW).
+**Unverified:** CI itself not re-run (nothing pushed); no real store artifact built (needs google-services config, EXT-04); VER-04 integration script not executed against an emulator in this run.
