@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/onboarding/data/step_answered.dart';
@@ -53,6 +54,7 @@ Widget _harness(UserProfile seed) {
 
 void main() {
   final empty = UserProfile.empty('u');
+  _deleteAccountEntry();
 
   /// However many screens the flow currently has.
   ///
@@ -267,5 +269,48 @@ void main() {
         .widget<AnimatedFractionallySizedBox>(
             find.byType(AnimatedFractionallySizedBox));
     expect(track.duration, Duration.zero);
+  });
+}
+
+/// CR-03. The way out of an unfinished questionnaire is on the screen, not
+/// only reachable by typing a route.
+void _deleteAccountEntry() {
+  testWidgets('onboarding offers a real entry to account deletion',
+      (tester) async {
+    final router = GoRouter(
+      initialLocation: '/onboarding',
+      routes: [
+        GoRoute(
+            path: '/onboarding',
+            builder: (_, __) => const AuroraBackground(child: OnboardingPage())),
+        GoRoute(
+            path: '/delete-account',
+            builder: (_, __) =>
+                const Scaffold(body: Text('delete-account-stub'))),
+      ],
+    );
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        questionnaireDraftProvider
+            .overrideWith(() => _SeededDraft(UserProfile.empty('u'))),
+        profileRepositoryProvider.overrideWith(
+          (ref) => MockProfileRepository(latency: Duration.zero),
+        ),
+      ],
+      child: MaterialApp.router(
+        theme: AppTheme.light(),
+        locale: kTestLocale,
+        localizationsDelegates: kTestLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    ));
+    await tester.pump();
+    final entry = find.byKey(const Key('onboarding-delete-account'));
+    expect(entry, findsOneWidget);
+    expect(find.text('Delete my account'), findsOneWidget);
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(find.text('delete-account-stub'), findsOneWidget);
   });
 }

@@ -70,6 +70,89 @@ class SensitiveProfile {
   }
 }
 
+/// The three things reading the device-only blob can come to (CR-07).
+///
+/// A stored blob used to be read by one tolerant parser whose only failure
+/// mode was `FormatException`; valid JSON of the wrong SHAPE (`{"health": []}`)
+/// escaped as a TypeError and took down every screen watching the profile. The
+/// obvious repair -- catch everything and answer "empty" -- is worse: an empty
+/// answer is "no injuries reported", and the very next save would overwrite the
+/// only copy of what the user had told the app. So the outcomes are separate:
+///
+///  * [SensitiveMissing]  -- nothing was ever stored.
+///  * [SensitiveValid]    -- parsed and structurally sound.
+///  * [SensitiveCorrupt]  -- something is stored and it cannot be trusted. The
+///    raw text travels with it so a caller can preserve it.
+sealed class SensitiveRead {
+  const SensitiveRead();
+}
+
+class SensitiveMissing extends SensitiveRead {
+  const SensitiveMissing();
+}
+
+class SensitiveValid extends SensitiveRead {
+  const SensitiveValid(this.profile);
+  final SensitiveProfile profile;
+}
+
+class SensitiveCorrupt extends SensitiveRead {
+  const SensitiveCorrupt({required this.raw, required this.reason});
+  final String raw;
+  final String reason;
+}
+
+/// Structural check of a decoded sensitive blob. Returns a human-readable
+/// reason for the FIRST thing wrong, or null when it is sound.
+///
+/// What counts as wrong is a value of the wrong TYPE where the schema fixes
+/// one. What does not count: a missing key (an older build wrote less), an
+/// unknown enum name (a different build wrote more), or `null` for an optional
+/// field. Those degrade to empty/null in [SensitiveProfile.fromJson], which is
+/// the intended tolerance; the point of this check is to stop treating
+/// "unusable" as if it were "old".
+String? sensitiveJsonProblem(Object? decoded) {
+  if (decoded is! Map) return 'top level is not an object';
+  final health = decoded['health'];
+  if (health != null && health is! Map) return 'health is not an object';
+  for (final key in ['smoking', 'alcohol']) {
+    final v = decoded[key];
+    if (v != null && v is! String) return '$key is not a string';
+  }
+  if (health is Map) {
+    for (final key in [
+      'conditions',
+      'allergies',
+      'medications',
+      'physicalLimitations',
+      'recentSurgeries',
+    ]) {
+      final v = health[key];
+      if (v == null) continue;
+      if (v is! List) return 'health.$key is not a list';
+      if (v.any((e) => e is! String)) return 'health.$key holds a non-string';
+    }
+    final injuries = health['injuries'];
+    if (injuries != null) {
+      if (injuries is! List) return 'health.injuries is not a list';
+      if (injuries.any((e) => e is! Map)) {
+        return 'health.injuries holds a non-object';
+      }
+    }
+    for (final key in ['bloodPressure', 'otherConcerns']) {
+      final v = health[key];
+      if (v != null && v is! String) return 'health.$key is not a string';
+    }
+    final screening = health['screening'];
+    if (screening != null && screening is! Map) {
+      return 'health.screening is not an object';
+    }
+    final flags = health['flags'];
+    if (flags != null && flags is! Map) return 'health.flags is not an object';
+  }
+  return null;
+}
+
 /// Pulls the device-only parts out of a whole profile.
 SensitiveProfile extractSensitive(UserProfile p) => SensitiveProfile(
       health: p.health,

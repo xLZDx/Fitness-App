@@ -146,6 +146,20 @@ void main() {
       expect(b.toSnapshot().sleepScore, 50);
     });
 
+    test('a night delivered as several segments is their SUM, not the last one',
+        () {
+      // 3 h + 2 h + 1 h = 6 h of the 8 h reference = 75. The last segment
+      // alone would give 12.5 -> 13.
+      final b = HealthDayBucket(day: when)
+        ..absorb(point(h.HealthDataType.SLEEP_ASLEEP, 0, when,
+            span: const Duration(hours: 3)))
+        ..absorb(point(h.HealthDataType.SLEEP_ASLEEP, 0, when,
+            span: const Duration(hours: 2)))
+        ..absorb(point(h.HealthDataType.SLEEP_ASLEEP, 0, when,
+            span: const Duration(hours: 1)));
+      expect(b.toSnapshot().sleepScore, 75);
+    });
+
     test('caps the sleep score at 100 for a long night', () {
       final b = HealthDayBucket(day: when)
         ..absorb(point(h.HealthDataType.SLEEP_ASLEEP, 0, when,

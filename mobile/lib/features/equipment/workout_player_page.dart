@@ -735,6 +735,9 @@ class _MarkCompleteButton extends ConsumerWidget {
           .read(restTimerProvider.notifier)
           .start(Duration(seconds: _restSecondsFor(exercise)));
       ref.read(_loggedEntryProvider(sessionKey).notifier).state = entry;
+      // The captured load was spent on this set; do not carry it into the
+      // next session of the same exercise.
+      ref.invalidate(setLoadProvider(exercise.id));
 
       // Ask for a 1-tap perceived-effort rating. Skipping is fine — the
       // rating is optional, and Freeletics' AI Coach reads a similar

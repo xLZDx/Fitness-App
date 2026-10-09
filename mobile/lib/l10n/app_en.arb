@@ -664,6 +664,7 @@
     }
   },
   "onboardingSkipStep": "Skip",
+  "onboardingDeleteAccountLink": "Delete my account",
   "onboardingStepOf": "Step {arg0} of {arg1} · {arg2}",
   "@onboardingStepOf": {
     "placeholders": {

@@ -283,6 +283,15 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   /// unit) were misclassified as unrelated categories, and the correct answer
   /// did not appear even once in the model's own `alternatives`.
   ///
+  /// CR-06 (2026-10-08): this list is keyed on the PREDICTED name, but the
+  /// measured defect runs the other way -- a TRUE rotary torso machine was
+  /// NAMED as something else, and a name filter cannot see that (it would also
+  /// drop a CORRECT "rotary torso machine"). It is therefore not the control
+  /// for misnaming. That control is routing: no cloud answer can become a
+  /// confirmed identity (`ScanResult.fromMatches` -> alternatives only). See
+  /// `cloud_answer_pipeline_fixture_test.dart`, which keeps true and predicted
+  /// labels apart and replays the recorded run.
+  ///
   /// Only add a name here on the same standard: a real, reproducible measured
   /// failure from an eval run recorded in `core/ml/eval/`, never a guess.
   /// Removing one needs the opposite — a re-run against the same manifest (or

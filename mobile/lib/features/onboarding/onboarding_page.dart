@@ -234,6 +234,19 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   busy: isSubmitting,
                   onTap: _next,
                 ),
+                // CR-03. A real way out for a user who does not want to
+                // finish: the route is exempt from the onboarding redirect
+                // (app_router `_accountActionPaths`), and the page it opens
+                // still re-authenticates before anything is deleted.
+                if (!isSubmitting)
+                  TextButton(
+                    key: const Key('onboarding-delete-account'),
+                    onPressed: () => context.push('/delete-account'),
+                    child: Text(
+                      l10n.onboardingDeleteAccountLink,
+                      style: HudType.label(t, size: 11).overPhoto(t),
+                    ),
+                  ),
               ],
             ),
           ),

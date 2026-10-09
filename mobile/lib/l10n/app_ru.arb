@@ -382,6 +382,7 @@
   "onboardingCouldNotSaveProfile": "Не удалось сохранить профиль: {arg0}",
   "onboardingStepCounterA11y": "Шаг {arg0} из {arg1}",
   "onboardingSkipStep": "Пропустить",
+  "onboardingDeleteAccountLink": "Удалить мой аккаунт",
   "onboardingStepOf": "Шаг {arg0} из {arg1} · {arg2}",
   "progressphotosCouldNotLoadPhotos": "Не удалось загрузить фото: {arg0}",
   "recoveryCouldNotApplyDeload": "Не удалось применить разгрузку: {arg0}",

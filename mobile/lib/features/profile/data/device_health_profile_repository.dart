@@ -128,6 +128,7 @@ class DeviceHealthProfileRepository implements ProfileRepository {
     final sensitive = extractSensitive(profile);
     await _store.write(profile.uid, sensitive);
     _cache[profile.uid] = sensitive;
+    _corrupt.remove(profile.uid);
     await _inner.save(stripSensitive(profile));
   }
 
@@ -139,8 +140,34 @@ class DeviceHealthProfileRepository implements ProfileRepository {
   }
 
   Future<SensitiveProfile> _read(String uid) async {
-    final s = await _store.read(uid);
-    _cache[uid] = s;
-    return s;
+    final r = await _store.readChecked(uid);
+    switch (r) {
+      case SensitiveValid(:final profile):
+        _corrupt.remove(uid);
+        _cache[uid] = profile;
+        return profile;
+      case SensitiveMissing():
+        _corrupt.remove(uid);
+        _cache[uid] = SensitiveProfile.empty;
+        return SensitiveProfile.empty;
+      case SensitiveCorrupt():
+        // CR-07. Unreadable is not "no restrictions". The caller still gets an
+        // empty block -- which is the fail-closed answer for safety, because
+        // screening reads as UNANSWERED and an unanswered screening blocks --
+        // but the repository remembers WHY it is empty, and nothing here
+        // writes over the live blob. Only an explicit [save] by the user does,
+        // and the store has already quarantined the original.
+        _corrupt.add(uid);
+        _cache[uid] = SensitiveProfile.empty;
+        return SensitiveProfile.empty;
+    }
   }
+
+  /// Uids whose device-only block failed its last structural read.
+  final Set<String> _corrupt = {};
+
+  /// True when the stored health block for [uid] could not be trusted on the
+  /// last read and the user has not yet re-entered it. For a recovery prompt;
+  /// it is not a safety decision (the screening gate is).
+  bool isSensitiveCorrupt(String uid) => _corrupt.contains(uid);
 }

@@ -114,6 +114,9 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     final personalKeys = {
       ..._personalKeys,
       'profile.sensitive.$uid',
+      // The unreadable-blob copy kept by PrefsSensitiveStore (CR-07): raw
+      // health text under a separate key, so it must be erased with the rest.
+      'profile.sensitive.corrupt.$uid',
       if (legacyIsMine) _legacyPhotoKey,
       // Only when it names THIS user: it holds a uid, and clearing someone
       // else's would re-arm a migration that has already happened.

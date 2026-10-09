@@ -38,6 +38,21 @@ void main() {
     expect(prefs.getString('profile.sensitive.u1'), isNull);
   });
 
+  test('removes the quarantined copy of an unreadable health blob too', () async {
+    // CR-07 keeps the first unreadable blob under a separate key. It is raw
+    // health text, so erasure that leaves it behind is not erasure.
+    final prefs = await prefsWith({
+      'profile.sensitive.u1': '{"health": []}',
+      'profile.sensitive.corrupt.u1': '{"health": []}',
+      'profile.sensitive.corrupt.u2': '{"health": "other"}',
+    });
+
+    await DeviceLocalDataWipe(prefs: prefs, documentsDir: docs).wipe('u1');
+
+    expect(prefs.getString('profile.sensitive.corrupt.u1'), isNull);
+    expect(prefs.getString('profile.sensitive.corrupt.u2'), isNotNull);
+  });
+
   test('keeps another account\'s health blob on a shared phone', () async {
     // Deleting your account must not delete a family member's health data as
     // a side effect. Their own deletion is what removes theirs.
