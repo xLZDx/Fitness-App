@@ -40,6 +40,10 @@ The app covers health and exercise-related interactions. Do not infer clinical s
 
 - [Full historic report index: all 88 existing English HTML report counterparts](reports/ENGLISH_HISTORICAL_REPORTS_INDEX.md). Original Russian HTML is retained; the index identifies 20 English pages with source-language UI/quotation evidence rather than silently rewriting test inputs. This is historical navigation, not current release-status certification.
 
+## English historical release-blocker audit
+
+- [August 11, 2026 Fitness App full audit — English translation](core/AUDIT_REPORT_2026-08-11.en.md), linked to the [unchanged original](core/AUDIT_REPORT_2026-08-11.md). The historical **BLOCK** verdict, privacy/Stripe/ML findings and exact test results are preserved; none is represented as an independent review of the current application.
+
 ## Historical Reviews Translated into English
 
 Two original source-citation review reports are available with linked English companions:
