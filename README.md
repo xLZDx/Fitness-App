@@ -30,6 +30,16 @@ The app covers health and exercise-related interactions. Do not infer clinical s
 
 **Repository authority:** This README is an entry point, not a release approval. Follow [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), and the latest verified project status before any deployment.
 
+
+## Historical Reviews Translated into English
+
+Two original source-citation review reports are available with linked English companions:
+
+- [Citation verification: 4 of 4 supported at the original checkpoint](reports/citation_verification_report.en.md).
+- [Equipment identity citations: 1 supported and 3 unverified](reports/equipment_identity_citation_review.en.md).
+
+The original Russian-language HTML reports remain unchanged as historical evidence. These review results are **not** current product, device, privacy or release approval.
+
 ## Contribution language
 
 All newly authored GitHub descriptions, documentation, code comments, commit messages, issue/PR bodies, and review comments must be in English. Preserve immutable source data and machine-readable identifiers in their original form where translation would change behavior.
