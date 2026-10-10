@@ -14,6 +14,10 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 
 ---
 
+## English design reference audit
+
+- [Full `core/design` English source inventory](design/ENGLISH_DOCUMENTATION_INDEX.md): all 13 design-source Markdown files language-checked; two unique Russian HUD design documents translated into local English companions for each of the two identical reference directories, preserving historical source hashes and the distinction between simulated Form Coach visuals and production ML.
+
 ## English plan translation inventory
 
 - [Complete `core/plans` language index — all 43 historical plans, nine new source-bound English translations](plans/ENGLISH_TRANSLATION_INDEX.md). The index distinguishes substantial Russian narratives from immutable operator quotations and application language/test evidence.
