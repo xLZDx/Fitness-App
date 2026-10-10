@@ -36,6 +36,10 @@ The app covers health and exercise-related interactions. Do not infer clinical s
 - [Fitness App redesign document index](docs/Redisign/ENGLISH_DOCUMENTATION_INDEX.md) — seven original source documents translated into separate English companions, eight other unique documents already in English, and explicit preservation of original screenshot labels, D1/G0 STOP boundaries, 44 open product decisions and owner-only push controls.
 - [English v1.6 developer master](docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.6.en.md) and [English Figma master v1.3](docs/Redisign/FIGMA_FULL_APP_REFACTOR_PROMPT_v1.3.en.md) are historical versioned handoffs. Do not treat their legacy claims or planned features as currently implemented or approved.
 
+## Historical English Reports
+
+- [Full historic report index: all 88 existing English HTML report counterparts](reports/ENGLISH_HISTORICAL_REPORTS_INDEX.md). Original Russian HTML is retained; the index identifies 20 English pages with source-language UI/quotation evidence rather than silently rewriting test inputs. This is historical navigation, not current release-status certification.
+
 ## Historical Reviews Translated into English
 
 Two original source-citation review reports are available with linked English companions:
