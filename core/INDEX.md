@@ -14,6 +14,10 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 
 ---
 
+## English plan translation inventory
+
+- [Complete `core/plans` language index — all 43 historical plans, nine new source-bound English translations](plans/ENGLISH_TRANSLATION_INDEX.md). The index distinguishes substantial Russian narratives from immutable operator quotations and application language/test evidence.
+
 ## Source-bound English historical companions (draft)
 
 These files are dated translations for documentation review. They are **not** new acceptance gates or updated implementation evidence. Read the unchanged Russian originals when exact operator quotations, historic code state or consent/approval boundaries matter.
