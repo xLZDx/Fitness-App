@@ -31,6 +31,11 @@ The app covers health and exercise-related interactions. Do not infer clinical s
 **Repository authority:** This README is an entry point, not a release approval. Follow [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), and the latest verified project status before any deployment.
 
 
+## Redesign Documentation in English
+
+- [Fitness App redesign document index](docs/Redisign/ENGLISH_DOCUMENTATION_INDEX.md) — seven original source documents translated into separate English companions, eight other unique documents already in English, and explicit preservation of original screenshot labels, D1/G0 STOP boundaries, 44 open product decisions and owner-only push controls.
+- [English v1.6 developer master](docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.6.en.md) and [English Figma master v1.3](docs/Redisign/FIGMA_FULL_APP_REFACTOR_PROMPT_v1.3.en.md) are historical versioned handoffs. Do not treat their legacy claims or planned features as currently implemented or approved.
+
 ## Historical Reviews Translated into English
 
 Two original source-citation review reports are available with linked English companions:
