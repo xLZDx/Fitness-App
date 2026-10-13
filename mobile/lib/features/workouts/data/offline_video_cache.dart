@@ -159,13 +159,33 @@ class FileOfflineVideoCache implements OfflineVideoCache {
     return f;
   }
 
+  /// Downloads in flight, by url. Two callers asking for the same clip used to
+  /// write the same `.part` file, and the failure cleanup of one deleted the
+  /// file under the other (NEW-PREFETCH-CONCURRENT). They now share one run;
+  /// the second caller's [onProgress] is not called.
+  final Map<String, Future<File>> _inFlight = {};
+
   @override
   Future<File> download(String url,
+      {String? from, ProgressCallback? onProgress}) {
+    final running = _inFlight[url];
+    if (running != null) return running;
+    final run = _download(url, from: from, onProgress: onProgress);
+    _inFlight[url] = run;
+    return run.whenComplete(() => _inFlight.remove(url));
+  }
+
+  Future<File> _download(String url,
       {String? from, ProgressCallback? onProgress}) async {
     await _sweepPartials();
     final dir = await _cacheDir();
     final dest = File('${dir.path}/${_filenameFor(url)}');
-    if (await dest.exists()) return dest;
+    if (await dest.exists()) {
+      // An empty file cannot be a finished clip; treat it as a miss and
+      // fetch again instead of serving it forever.
+      if (await dest.length() > 0) return dest;
+      await _deleteQuietly(dest, 'empty cached clip');
+    }
     final tmp = File('${dest.path}$_partSuffix');
     try {
       await _fetch(from ?? url, tmp.path, onProgress: onProgress);
@@ -190,7 +210,9 @@ class FileOfflineVideoCache implements OfflineVideoCache {
   /// Swept once per instance, and the provider builds one -- so in practice
   /// once per app start, before the first byte of the first download.
   Future<void> _sweepPartials() {
-    return _sweep ??= () async {
+    final existing = _sweep;
+    if (existing != null) return existing;
+    final run = () async {
       final dir = await _cacheDir();
       await for (final ent in dir.list()) {
         if (ent is File && ent.path.endsWith(_partSuffix)) {
@@ -198,6 +220,12 @@ class FileOfflineVideoCache implements OfflineVideoCache {
         }
       }
     }();
+    _sweep = run;
+    // A failed sweep must not fail every later download for the whole run.
+    run.then((_) {}, onError: (Object _) {
+      _sweep = null;
+    });
+    return run;
   }
 
   /// Drops least-recently-used clips until the library fits [maxBytes].

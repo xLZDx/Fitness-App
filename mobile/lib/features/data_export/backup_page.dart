@@ -28,16 +28,32 @@ class _BackupPageState extends ConsumerState<BackupPage> {
   final _restorePass = TextEditingController();
   final _restoreBody = TextEditingController();
   bool _restoreDone = false;
+  bool _undone = false;
 
-  Future<void> _restore() async {
-    setState(() => _restoreDone = false);
+  Future<void> _restore({bool acceptOtherAccount = false}) async {
+    setState(() {
+      _restoreDone = false;
+      _undone = false;
+    });
     await ref.read(backupRestoreActionProvider.notifier).restore(
           envelope: _restoreBody.text,
           passphrase: _restorePass.text,
+          acceptOtherAccount: acceptOtherAccount,
         );
     if (!mounted) return;
     final failed = ref.read(backupRestoreActionProvider).hasError;
     setState(() => _restoreDone = !failed);
+  }
+
+  Future<void> _undo() async {
+    await ref.read(backupRestoreActionProvider.notifier).undoLastRestore();
+    if (!mounted) return;
+    final failed = ref.read(backupRestoreActionProvider).hasError;
+    setState(() {
+      // A failed undo keeps the button, so the user can try again.
+      if (!failed) _restoreDone = false;
+      _undone = !failed;
+    });
   }
 
   @override
@@ -58,6 +74,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
   /// forever; told "damaged file" when they simply mistyped, they give up on a
   /// backup that was fine.
   String _message(AppLocalizations l10n, Object error) {
+    if (error is BackupAccountMismatch) return l10n.backupRestoreOtherAccount;
     if (error is BackupPassphraseException) return l10n.backupWrongPassphrase;
     if (error is BackupFormatException) return l10n.backupNotABackupFile;
     if (error is TransferPayloadException) return l10n.backupNotABackupFile;
@@ -219,6 +236,12 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.error),
                   ),
+                  if (restoreState.error is BackupAccountMismatch)
+                    TextButton(
+                      key: const Key('backup-restore-anyway'),
+                      onPressed: () => _restore(acceptOtherAccount: true),
+                      child: Text(l10n.backupRestoreAnyway),
+                    ),
                 ],
                 // An explicit flag, not `restoreState.hasValue`: the notifier
                 // starts life as AsyncData(null), so "has a value" is true
@@ -227,6 +250,17 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                 if (_restoreDone && !restoreState.isLoading) ...[
                   const SizedBox(height: 10),
                   Text(l10n.backupRestoreDone,
+                      style: theme.textTheme.bodySmall),
+                  if (ref.read(backupRestoreActionProvider.notifier).canUndo)
+                    TextButton(
+                      key: const Key('backup-restore-undo'),
+                      onPressed: _undo,
+                      child: Text(l10n.backupRestoreUndo),
+                    ),
+                ],
+                if (_undone && !restoreState.isLoading) ...[
+                  const SizedBox(height: 10),
+                  Text(l10n.backupRestoreUndone,
                       style: theme.textTheme.bodySmall),
                 ],
               ],

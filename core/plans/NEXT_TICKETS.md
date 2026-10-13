@@ -1,5 +1,42 @@
 # Next implementation tickets
 
+<!-- autonomous-closure-v2-2026-10-08:start -->
+## Execution entrypoint — 2026-10-08
+
+Use [AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md](AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md), version 2, for the next autonomous execution. It replaces the old short agent prompt and requires a source-linked reconciliation of ALL remaining agreed engineering obligations, not only the nine CR rows. Preserve original CR/VER/CAND/EXT IDs in the execution registry; validate historical OPEN/DONE claims against current source and later decisions. Unapproved future features remain outside this batch.
+
+Sequence remains B0–B5. **CR-08 is not dropped merely because listings are demo:** investigate and repair the existing booking backend and regression coverage locally where possible, without building/activating a new marketplace or making real payments. T3/F1/T1/T2 must be reconciled with the actual accepted contracts; complete available engineering work and keep human/device acceptance separate. Environment blockers and FIXED_UNVERIFIED are not engineering CLOSED.
+
+Preparation status: **PROMPT_READY; remediation was not executed by this documentation update.** The dated queue and test results below remain the previous checkpoint, not fresh results for 8 October. Existing commit/push/deploy restrictions remain in force.
+<!-- autonomous-closure-v2-2026-10-08:end -->
+
+<!-- audit-followup-2026-10-07:start -->
+## Active queue — 2026-10-07
+
+This section supersedes the historical May queue below for the next engineering pickup. Current baseline: local `master @ a6e8005`, upstream `3da7737e388434250ef61a1e24cd67f8cab5c4ad`, ahead 2 plus the documentation follow-up. Re-check Git before execution. Fixes below are **OPEN / NOT STARTED**, not completed by writing this page.
+
+| Order | Package | Work | Exit evidence |
+|---|---|---|---|
+| 0 | B0 | Baseline, ownership, approved execution scope | Exact SHA, dirty/staged state, unpushed commit list |
+| 1 | B1 | CR-01 lockfile/OSV; CR-02 Firebase CLI; VER-01 dependency triage; provenance/RU-EN CI | Reproducible resolution; actual scanner and emulator assertions; no untriaged high/critical |
+| 2 | B2 | CR-03 account deletion before onboarding; CR-04 store profile; CR-05 canary rules | Targeted negative tests, real UI entry, store artifact guard, emulator access matrix |
+| 3 | B3 | CR-06 scanner error direction; CR-07 corrupt profile; CR-09 Jest teardown; verify CAND-01 | Reproducers and regression tests; no unverified identity; normal test-process exit |
+| 4 | B4 | VER-02/03/04/05/06 full test/build evidence and release preflight | Final-head results and artifact/config provenance; NOT_RUN remains visible |
+| 5 | B5 | Reconcile statuses, links and final adversarial review | CLOSED only with evidence; precise external backlog |
+
+CR-08 booking idempotency is required before marketplace activation; do not build or activate a new marketplace merely to close this review. Verify real backend reachability separately from demo UI.
+
+External dependencies: S23 with a person, real clinical D1/H3 review, human labels, authorized credentials/store/production decisions, real pilot. Prepare the packages autonomously and continue independent tasks; do not fabricate external closure. Current local evidence: **606/606 backend unit tests PASS, 24/24 suites, with worker teardown warning; scripts/review TIMEOUT at 60 s**. These are not release/device PASS.
+
+Read [code review](../review/CODE_REVIEW_2026-10-07.md), [current status](../state/REVIEW_STATUS_2026-10-07.md), [full plan and agent prompt](AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md). The prior 75-feature vision is not this remediation scope. This queue does not authorize commits/push/deploy beyond current operator permissions.
+<!-- audit-followup-2026-10-07:end -->
+
+---
+
+## Historical queue and claims — retained, not current instructions
+
+The material below is preserved as history. Model training, XOR/AES, pricing, return URLs, features and test counts must be revalidated against current code before any action; old DONE labels do not establish current runtime readiness.
+
 **As of 2026-05-11.** Refreshed after the 6-commit roadmap-closure
 sprint (`9849d2a` → `7c4b845` → `ee72853` → `e25101e` → `64d0cdb` →
 `f9b25e2` → plus this commit). Most original tickets are shipped;

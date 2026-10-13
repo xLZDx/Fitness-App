@@ -171,6 +171,55 @@ void main() {
           'payload');
     });
 
+    /// The iteration count is read from the file, so a crafted backup could pin
+    /// a CPU for hours. The ceiling must be enforced before any key derivation:
+    /// the envelope below is otherwise well-formed, so if the check ran after
+    /// derivation the call would not return quickly and would end in a
+    /// passphrase error, not this format error.
+    test('an iteration count above the ceiling is refused before derivation',
+        () {
+      String envelopeWith(Object iterations) => jsonEncode({
+            'format': kBackupFormat,
+            'version': 1,
+            'kdf': {
+              'name': 'PBKDF2-HMAC-SHA256',
+              'iterations': iterations,
+              'salt': base64Encode(List<int>.filled(16, 1)),
+            },
+            'cipher': 'AES-256-GCM',
+            'iv': base64Encode(List<int>.filled(12, 2)),
+            'tag': base64Encode(List<int>.filled(16, 3)),
+            'payload': base64Encode(List<int>.filled(8, 4)),
+          });
+
+      expect(kMaxIterations, greaterThan(kDefaultIterations));
+      for (final n in [kMaxIterations + 1, 1 << 40]) {
+        final sw = Stopwatch()..start();
+        expect(
+          () => decryptBackup(envelopeJson: envelopeWith(n), passphrase: 'p'),
+          throwsA(isA<BackupFormatException>().having(
+              (e) => e.message,
+              'message',
+              'backup key settings are out of range')),
+        );
+        // Deriving 2.1M iterations in pure Dart takes seconds.
+        expect(sw.elapsed, lessThan(const Duration(seconds: 1)));
+      }
+    });
+
+    test('a missing or non-positive iteration count is a settings error', () {
+      for (final bad in <Object?>[0, -5, '8', null]) {
+        final j = Map<String, dynamic>.from(jsonDecode(encryptBackup(
+            plaintext: 'x', passphrase: secret, iterations: 8)) as Map);
+        (j['kdf'] as Map)['iterations'] = bad;
+        expect(
+          () => decryptBackup(envelopeJson: jsonEncode(j), passphrase: secret),
+          throwsA(isA<BackupFormatException>().having((e) => e.message,
+              'message', 'backup is missing its key settings')),
+        );
+      }
+    });
+
     test('an empty passphrase is refused at creation', () {
       expect(
         () => encryptBackup(plaintext: 'x', passphrase: '', iterations: 8),

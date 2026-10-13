@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "recorded_date": "2026-10-07",
+  "project": "D:\\Repo\\Fitness_App",
+  "local_head_short": "a6e8005",
+  "remote_head": "3da7737e388434250ef61a1e24cd67f8cab5c4ad",
+  "record_type": "tool_response_summary_not_signed_attestation",
+  "runs": [
+    {
+      "tool": "DC_MCP.run_project_tests",
+      "cwd": "D:\\Repo\\Fitness_App\\functions",
+      "runner": "npm_test",
+      "observed_command": "npm test -> jest",
+      "timeout_seconds": 60,
+      "exit_code": 0,
+      "duration_seconds": 46.086,
+      "jest_duration_seconds": 43.803,
+      "suites_passed": 24,
+      "suites_total": 24,
+      "tests_passed": 606,
+      "tests_total": 606,
+      "assertion_status": "PASS",
+      "teardown_status": "WARNING",
+      "warning_exact": "A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.",
+      "other_warning": "DEP0040 punycode deprecation",
+      "scope": "mocked backend unit tests; not Firestore Rules, not live Stripe, not device tests"
+    },
+    {
+      "tool": "DC_MCP.run_project_tests",
+      "cwd": "D:\\Repo\\Fitness_App\\scripts\\review",
+      "runner": "pytest",
+      "timeout_seconds": 60,
+      "exit_code": null,
+      "duration_seconds": 60.058,
+      "status": "TIMEOUT",
+      "stdout_exact": "........................................................................ [ 32%]\n....................",
+      "stderr_exact": "",
+      "tests_passed": null,
+      "tests_total": null,
+      "note": "No final summary. Do not infer a full-suite PASS or a test failure from timeout."
+    }
+  ],
+  "not_run_in_this_followup": [
+    "flutter analyze/test",
+    "Firestore emulator rules and deletion E2E",
+    "Android release build",
+    "S23 camera/form-coach device validation",
+    "production deployment checks"
+  ],
+  "historical_ci_sources": {
+    "flutter": "https://github.com/xLZDx/Fitness-App/actions/runs/37569707786",
+    "functions": "https://github.com/xLZDx/Fitness-App/actions/runs/37572085504",
+    "note": "Retrieved 2026-10-07 evidence, not newly dispatched runs."
+  }
+}

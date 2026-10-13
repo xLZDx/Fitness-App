@@ -34,6 +34,10 @@ param(
     [switch]$Distribute,
     [switch]$Bundle,
     [switch]$Fat,
+    # CR-04. personal (default, operator phones, tier override ALLOWED),
+    # test, or store (tier override FORBIDDEN). See build_release_profile.ps1.
+    [ValidateSet('personal', 'test', 'store')]
+    [string]$BuildProfile = 'personal',
     [string]$Notes = '',
     [string]$Testers = 'korostelevivan@gmail.com',
     [string]$FirebaseAppId = '1:988522745882:android:b9af40bb887a0388c201a3'
@@ -44,6 +48,7 @@ param(
 # Firebase side effects. See build_release_gitcheck.ps1 and its companion
 # build_release_gitcheck.tests.ps1.
 . (Join-Path $PSScriptRoot 'build_release_gitcheck.ps1')
+. (Join-Path $PSScriptRoot 'build_release_profile.ps1')
 
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Resolve-Path "$PSScriptRoot\..\.."
@@ -175,7 +180,13 @@ $defines = @(
     "--dart-define=GIT_SHA=$GitSha",
     "--dart-define=BUILT_AT=$BuiltAt",
     "--build-number=$BuildNumber"
-)
+) + (Get-ProfileDefines -BuildProfile $BuildProfile)
+Assert-StoreDefinesSafe -BuildProfile $BuildProfile -Defines $defines
+if ($BuildProfile -eq 'store') {
+    Write-Host 'PROFILE  : store  (tier override DISABLED)' -ForegroundColor Cyan
+} else {
+    Write-Host "PROFILE  : $BuildProfile  (tier override ALLOWED -- NOT a store build; use -BuildProfile store)" -ForegroundColor Yellow
+}
 
 Push-Location $MobileDir
 try {

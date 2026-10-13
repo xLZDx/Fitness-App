@@ -25,11 +25,35 @@ jest.mock("firebase-admin", () => {
   const getRef = (path: string): any => {
     let ref = refs.get(path);
     if (!ref) {
+      // CR-08: the ref now keeps the document it was last written with, so
+      // create() (fails if the row exists), update() and set() are visible to
+      // a later get() the way they are in Firestore. `primeDoc` still wins for
+      // a test that overrides `get`.
+      let stored: any;
       ref = {
         path,
-        get: jest.fn(async () => ({ exists: false, data: () => undefined })),
-        set: jest.fn(async () => undefined),
-        delete: jest.fn(async () => undefined),
+        get: jest.fn(async () => ({
+          exists: stored !== undefined,
+          data: () => stored,
+        })),
+        set: jest.fn(async (data: any, opts?: any) => {
+          stored = opts?.merge ? { ...(stored ?? {}), ...data } : data;
+        }),
+        create: jest.fn(async (data: any) => {
+          if (stored !== undefined) {
+            const e: any = new Error("6 ALREADY_EXISTS");
+            e.code = 6;
+            throw e;
+          }
+          stored = data;
+        }),
+        update: jest.fn(async (data: any) => {
+          if (stored === undefined) throw new Error("5 NOT_FOUND");
+          stored = { ...stored, ...data };
+        }),
+        delete: jest.fn(async () => {
+          stored = undefined;
+        }),
       };
       refs.set(path, ref);
     }
@@ -43,6 +67,7 @@ jest.mock("firebase-admin", () => {
     fn({
       get: (ref: any) => ref.get(),
       set: (ref: any, data: any, opts?: any) => ref.set(data, opts),
+      update: (ref: any, data: any) => ref.update(data),
       delete: (ref: any) => ref.delete(),
     }),
   );
@@ -81,7 +106,7 @@ jest.mock("stripe", () => {
     customers: { create: jest.fn() },
     checkout: { sessions: { create: jest.fn() } },
     invoices: { list: jest.fn() },
-    paymentIntents: { create: jest.fn() },
+    paymentIntents: { create: jest.fn(), retrieve: jest.fn() },
     // A4 — checkout now asks Stripe whether this customer already has a live
     // subscription before creating a second one. Defaulted to "none" in
     // `beforeEach`; the duplicate-guard tests override it.
@@ -193,6 +218,7 @@ beforeEach(() => {
   stripeMock.subscriptions.list.mockReset().mockResolvedValue({ data: [] });
   stripeMock.invoices.list.mockReset();
   stripeMock.paymentIntents.create.mockReset();
+  stripeMock.paymentIntents.retrieve.mockReset();
 });
 
 /* ------------------------------------------------------------------ */
@@ -1215,38 +1241,48 @@ describe("bookCoachSession", () => {
       ),
     );
 
-    expect(res.bookingId).toMatch(/^bk_\d+_client1$/);
+    expect(res.bookingId).toMatch(/^bk_[0-9a-f]{32}$/);
     expect(res.clientSecret).toBe("pi_1_secret_x");
     expect(res.amountCents).toBe(10000);
 
     expect(stripeCtor).toHaveBeenCalledWith(...STRIPE_CTOR_ARGS);
     expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
-    expect(stripeMock.paymentIntents.create).toHaveBeenCalledWith({
-      amount: 10000,
-      currency: "eur",
-      customer: "cus_cl1",
-      application_fee_amount: 1500, // 15% of 10000
-      transfer_data: { destination: "acct_c1" },
-      metadata: {
-        firebaseUid: "client1",
-        coachUid: "coach1",
-        bookingId: res.bookingId,
-        kind: "coach_booking",
+    expect(stripeMock.paymentIntents.create).toHaveBeenCalledWith(
+      {
+        amount: 10000,
+        currency: "eur",
+        customer: "cus_cl1",
+        application_fee_amount: 1500, // 15% of 10000
+        transfer_data: { destination: "acct_c1" },
+        metadata: {
+          firebaseUid: "client1",
+          coachUid: "coach1",
+          bookingId: res.bookingId,
+          kind: "coach_booking",
+        },
       },
-    });
+      // CR-08: one Stripe idempotency key per booking.
+      { idempotencyKey: `booking_${res.bookingId}` },
+    );
 
     const bookingRef = adminMock.__getRef(`coach_bookings/${res.bookingId}`);
-    expect(bookingRef.set).toHaveBeenCalledTimes(1);
-    expect(bookingRef.set).toHaveBeenCalledWith({
+    expect(bookingRef.create).toHaveBeenCalledTimes(1);
+    expect(bookingRef.create).toHaveBeenCalledWith({
       coachUid: "coach1",
       clientUid: "client1",
       startsAt: "2026-08-01T10:00:00.000Z",
       durationMinutes: 45,
       priceCents: 10000,
       platformFeeCents: 1500,
+      status: "creating",
+      requestFingerprint: expect.stringMatching(/^[0-9a-f]{64}$/),
+      createdAt: "__SERVER_TIMESTAMP__",
+    });
+    // The claim advances to pending only once the intent exists.
+    expect(bookingRef.update).toHaveBeenCalledTimes(1);
+    expect(bookingRef.update).toHaveBeenCalledWith({
       status: "pending",
       stripePaymentIntentId: "pi_1",
-      createdAt: "__SERVER_TIMESTAMP__",
     });
   });
 
@@ -1309,7 +1345,7 @@ describe("bookCoachSession", () => {
           { uid: "client1", token: {} },
         ),
       );
-      expect(res.bookingId).toMatch(/^bk_\d+_client1$/);
+      expect(res.bookingId).toMatch(/^bk_[0-9a-f]{32}$/);
     });
   });
 
@@ -1337,11 +1373,173 @@ describe("bookCoachSession", () => {
         currency: "usd", // coach doc has no currency -> default
         application_fee_amount: 500, // Math.round(3333 * 0.15) = 500
       }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
     const bookingRef = adminMock.__getRef(`coach_bookings/${res.bookingId}`);
-    expect(bookingRef.set).toHaveBeenCalledWith(
+    expect(bookingRef.create).toHaveBeenCalledWith(
       expect.objectContaining({ durationMinutes: 60, platformFeeCents: 500 }),
     );
+  });
+
+  /**
+   * CR-08. A retry of ONE logical booking must not create a second booking or
+   * a second PaymentIntent, and the failure windows between the claim, the
+   * Stripe call and the Firestore write must each be recoverable.
+   */
+  describe("idempotency (CR-08)", () => {
+    const call = (data: Record<string, unknown> = {}, uid = "client1") =>
+      bookCoachSession.run(
+        req(
+          {
+            coachUid: "coach1",
+            startsAt: "2026-08-01T10:00:00.000Z",
+            durationMinutes: 60,
+            ...data,
+          },
+          { uid, token: { email: `${uid}@example.com` } },
+        ),
+      );
+
+    beforeEach(() => {
+      primeDoc("coach_listings/coach1", {
+        priceCentsPerSession: 10000,
+        stripeConnectAccountId: "acct_c1",
+        currency: "eur",
+      });
+      primeDoc(CLIENT_SUB_PATH, { stripeCustomerId: "cus_cl1" });
+      primeDoc("users/client2/subscription/main", { stripeCustomerId: "cus_cl2" });
+      stripeMock.paymentIntents.create.mockResolvedValue({
+        id: "pi_1",
+        client_secret: "pi_1_secret",
+      });
+      stripeMock.paymentIntents.retrieve.mockResolvedValue({
+        id: "pi_1",
+        client_secret: "pi_1_secret",
+      });
+    });
+
+    test("a sequential repeat returns the SAME booking and creates nothing new", async () => {
+      const first = await call();
+      const second = await call();
+      expect(second.bookingId).toBe(first.bookingId);
+      expect(second.clientSecret).toBe(first.clientSecret);
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+      const ref = adminMock.__getRef(`coach_bookings/${first.bookingId}`);
+      expect(ref.create).toHaveBeenCalledTimes(1);
+    });
+
+    test("a repeat in a different millisecond is still the same booking", async () => {
+      // The old id embedded Date.now(), so this is the exact defect.
+      const realNow = Date.now;
+      try {
+        Date.now = () => 1_000;
+        const first = await call();
+        Date.now = () => 2_000;
+        const second = await call();
+        expect(second.bookingId).toBe(first.bookingId);
+        expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+      } finally {
+        Date.now = realNow;
+      }
+    });
+
+    test("two concurrent identical calls create ONE intent; the loser is told to retry", async () => {
+      const results = await Promise.allSettled([call(), call()]);
+      const ok = results.filter((r) => r.status === "fulfilled");
+      const failed = results.filter(
+        (r) => r.status === "rejected",
+      ) as PromiseRejectedResult[];
+      expect(ok).toHaveLength(1);
+      expect(failed).toHaveLength(1);
+      expect(failed[0].reason.code).toBe("aborted");
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+      // ...and the retry the loser was asked to make returns the winner's booking.
+      const retry = await call();
+      expect(retry.bookingId).toBe(
+        (ok[0] as PromiseFulfilledResult<any>).value.bookingId,
+      );
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+    });
+
+    test("the same request id with a different slot is refused, not answered with the first intent", async () => {
+      await call({ requestId: "req-1" });
+      await expectHttpsError(
+        call({ requestId: "req-1", startsAt: "2026-08-02T10:00:00.000Z" }),
+        "already-exists",
+      );
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+    });
+
+    test("the same request id with a changed PRICE is refused", async () => {
+      await call({ requestId: "req-2" });
+      primeDoc("coach_listings/coach1", {
+        priceCentsPerSession: 20000,
+        stripeConnectAccountId: "acct_c1",
+        currency: "eur",
+      });
+      await expectHttpsError(call({ requestId: "req-2" }), "already-exists");
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+    });
+
+    test("a different request id books the same slot again on purpose", async () => {
+      const a = await call({ requestId: "req-a" });
+      stripeMock.paymentIntents.create.mockResolvedValue({
+        id: "pi_2",
+        client_secret: "pi_2_secret",
+      });
+      const b = await call({ requestId: "req-b" });
+      expect(b.bookingId).not.toBe(a.bookingId);
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(2);
+    });
+
+    test("another user with the same request id gets a different booking (bound to uid)", async () => {
+      const a = await call({ requestId: "shared" }, "client1");
+      const b = await call({ requestId: "shared" }, "client2");
+      expect(b.bookingId).not.toBe(a.bookingId);
+    });
+
+    test("Stripe succeeded, Firestore completion failed: the retry reuses the intent and finishes the booking", async () => {
+      // The orphan-intent window. The first call creates the intent and then
+      // dies on the Firestore write; the booking row stays "creating".
+      const runTx = (adminMock.firestore() as any).runTransaction;
+      runTx.mockImplementationOnce(async () => {
+        throw new Error("firestore unavailable");
+      });
+      await expect(call()).rejects.toThrow("firestore unavailable");
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(1);
+
+      const retry = await call();
+      // Stripe is asked again with the SAME key (it returns the same intent);
+      // no second booking row is claimed.
+      expect(stripeMock.paymentIntents.create).toHaveBeenCalledTimes(2);
+      const keys = stripeMock.paymentIntents.create.mock.calls.map(
+        (c: any[]) => c[1].idempotencyKey,
+      );
+      expect(keys[0]).toBe(keys[1]);
+      const ref = adminMock.__getRef(`coach_bookings/${retry.bookingId}`);
+      expect(ref.create).toHaveBeenCalledTimes(1);
+      expect((await ref.get()).data().status).toBe("pending");
+      expect((await ref.get()).data().stripePaymentIntentId).toBe("pi_1");
+    });
+
+    test("Stripe reports its own idempotency key as in use: asked to retry, nothing duplicated", async () => {
+      const err: any = new Error("in use");
+      err.code = "idempotency_key_in_use";
+      stripeMock.paymentIntents.create.mockRejectedValueOnce(err);
+      await expectHttpsError(call(), "aborted");
+      const retry = await call();
+      expect(retry.clientSecret).toBe("pi_1_secret");
+    });
+
+    test("a webhook confirmation is never overwritten with pending", async () => {
+      const first = await call();
+      const ref = adminMock.__getRef(`coach_bookings/${first.bookingId}`);
+      await ref.set({ status: "confirmed" }, { merge: true });
+      // A late retry completes nothing: the row is no longer "creating".
+      const again = await call();
+      expect(again.bookingId).toBe(first.bookingId);
+      expect((await ref.get()).data().status).toBe("confirmed");
+    });
   });
 
   test("unauthenticated request throws unauthenticated", async () => {

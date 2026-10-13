@@ -5,6 +5,8 @@
     "commonSomethingWentWrong": { "flags": ["negation_polarity_mismatch"], "reason": "EN 'went wrong' has no literal negation word; RU 'пошло не так' is the standard idiom for it. Verified same meaning." },
     "scannerFailedBody": { "flags": ["negation_polarity_mismatch"], "reason": "Same 'went wrong' idiom as commonSomethingWentWrong. Verified same meaning." },
     "formcheckRepFaulted": { "flags": ["negation_polarity_mismatch"], "reason": "EN 'was off' has no literal negation word; RU 'было не так' is the equivalent idiom. Verified same meaning." },
+    "formcheckExplainTitle": { "flags": ["negation_polarity_mismatch"], "reason": "Reviewed 2026-10-08 (VER-06). EN 'What exactly is wrong' has no literal negation word; RU 'Что именно не так' is the standard idiom for 'wrong'. Verified same meaning." },
+    "formcheckExplainPushupTuck": { "flags": ["negation_polarity_mismatch"], "reason": "Reviewed 2026-10-08 (VER-06). EN 'rather than held in one line' is rendered by RU 'а не вытянут в одну линию'; the RU 'не' is the contrastive 'rather than', not an added negation. Both say the body is folded at the hip instead of straight. Verified same meaning." },
     "aboutNoDataResaleEver": { "flags": ["negation_polarity_mismatch"], "reason": "RU 'Никакой' (no standalone не-particle) renders EN 'No'. Verified same meaning." },
     "catalogNothingToModerateGreatWork": { "flags": ["negation_polarity_mismatch"], "reason": "RU 'нечего' (nothing) renders EN 'Nothing', no standalone не-particle in this word. Verified same meaning." },
     "workoutsEmptyFiltered": { "flags": ["negation_polarity_mismatch"], "reason": "EN 'Nothing in X yet' rendered as RU 'в X пока пусто' (X is empty for now) -- no standalone не-particle on the RU side. Verified same meaning." },

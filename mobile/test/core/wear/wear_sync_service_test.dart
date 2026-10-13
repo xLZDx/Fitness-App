@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/wear/wear_sync_service.dart';
@@ -31,6 +32,61 @@ void main() {
       });
       expect(back.suggestedWeightKg, isNull);
       expect(back.isResting, isFalse);
+    });
+  });
+
+  group('MethodChannelWearSyncService', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    const channel = MethodChannel('fitnessapp/wear_sync');
+    const state = WearWorkoutState(
+      exerciseTitle: 'Squat',
+      setNumber: 1,
+      totalSets: 3,
+      suggestedWeightKg: 60,
+      restRemainingSeconds: 0,
+    );
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+    });
+
+    test('pushState surfaces a native send failure instead of success',
+        () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+        throw PlatformException(code: 'WEAR', message: 'send failed');
+      });
+      await expectLater(
+        MethodChannelWearSyncService().pushState(state),
+        throwsA(isA<PlatformException>()),
+      );
+    });
+
+    test('pushState reports false when no native bridge is registered',
+        () async {
+      // No handler installed: invokeMethod throws MissingPluginException,
+      // which means "no watch", not an error.
+      expect(await MethodChannelWearSyncService().pushState(state), isFalse);
+    });
+
+    test('pushState sends the state as JSON on the pushState method',
+        () async {
+      MethodCall? seen;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+        seen = call;
+        return true;
+      });
+      await MethodChannelWearSyncService().pushState(state);
+      expect(seen?.method, 'pushState');
+      expect(seen?.arguments, contains('"title":"Squat"'));
+    });
+
+    test('pushState returns true when native reports delivery', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async => true);
+      expect(await MethodChannelWearSyncService().pushState(state), isTrue);
     });
   });
 

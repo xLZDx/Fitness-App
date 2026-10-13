@@ -75,7 +75,11 @@ jest.mock("firebase-functions/logger", () => ({
 }));
 
 import { HttpsError } from "firebase-functions/v2/https";
-import { exportAccountData } from "../account_export";
+import {
+  exportAccountData,
+  HARD_RESPONSE_BYTES,
+  MAX_EXPORT_BYTES,
+} from "../account_export";
 import { QUOTAS } from "../abuse_guard";
 
 const req = (uid: string | null = "u1"): any => ({
@@ -144,7 +148,19 @@ test("carries every store the inventory lists for this user", async () => {
   expect(res.donorWall).toMatchObject({ name: "Ivan" });
   expect(res.coachListing).toMatchObject({ bio: "coach" });
   // Both ends of the marketplace, in one list.
-  expect(res.coachBookings.map((b: any) => b.id).sort()).toEqual(["b1", "b2"]);
+  expect(res.coachBookings.map((b: any) => b.yourRole).sort()).toEqual([
+    "client",
+    "coach",
+  ]);
+  // The client keeps their own booking id; the coach's row carries none.
+  const asClient: any = res.coachBookings.find(
+    (b: any) => b.yourRole === "client",
+  );
+  const asCoach: any = res.coachBookings.find(
+    (b: any) => b.yourRole === "coach",
+  );
+  expect(asClient.id).toBe("b1");
+  expect(asCoach).not.toHaveProperty("id");
   expect(res.equipmentReports[0]).toMatchObject({ fault: "cable" });
   expect(res.debugSessions).toHaveLength(1);
 });
@@ -204,7 +220,8 @@ test("a coach's export does not carry their clients' uids or payment ids",
     // Third-party personal data in a file the recipient can forward anywhere.
     collections.set("coach_bookings", [
       {
-        id: "b1",
+        // Legacy id shape: the client's uid is embedded in the doc id itself.
+        id: "bk_1_client_7",
         data: {
           clientUid: "client_7",
           coachUid: "u1",
@@ -220,6 +237,7 @@ test("a coach's export does not carry their clients' uids or payment ids",
 
     expect(JSON.stringify(res)).not.toContain("client_7");
     expect(JSON.stringify(res)).not.toContain("pi_secret");
+    expect(booking).not.toHaveProperty("id");
     // What is theirs stays: when it was, what it cost, which side they were on.
     expect(booking.startsAt).toBe("2026-08-01T10:00:00Z");
     expect(booking.priceCents).toBe(5000);
@@ -243,6 +261,138 @@ test("a capped section is named, never silently short", async () => {
   expect(res.truncated).toContain("debug_sessions.uid");
   expect((res.notes as string[]).join(" ")).toContain("capped at 2000");
 });
+
+test("an export over the byte ceiling is trimmed and named, never silently short",
+  async () => {
+    // 1500 rows is under MAX_ROWS, but ~15 MB serialized is over the ceiling.
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 1500 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.truncated).toContain("debugSessions");
+    expect(res.debugSessions.length).toBeLessThan(1500);
+    expect(Buffer.byteLength(JSON.stringify(res), "utf8")).toBeLessThanOrEqual(
+      MAX_EXPORT_BYTES + 4096,
+    );
+    expect((res.notes as string[]).join(" ")).toContain("bytes");
+  });
+
+test("an export under the byte ceiling is returned untouched, with no truncated entry",
+  async () => {
+    // ~7 MB serialized: large, but below MAX_EXPORT_BYTES (8 MiB).
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 700 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.debugSessions).toHaveLength(700);
+    expect(res.truncated).toEqual([]);
+    expect((res.notes as string[]).join(" ")).not.toContain("bytes");
+  });
+
+test("F-03: a single oversized non-array section over the hard ceiling is rejected, no data",
+  async () => {
+    // The byte guard only trims array sections; a 10 MiB profile document
+    // cannot be trimmed and must not be returned as a success.
+    docs.set("users/u1/profile/main", {
+      blob: "x".repeat(HARD_RESPONSE_BYTES + 1024),
+    });
+
+    let caught: any;
+    let res: any;
+    try {
+      res = await exportAccountData.run(req());
+    } catch (e) {
+      caught = e;
+    }
+
+    expect(res).toBeUndefined();
+    expect(caught).toBeInstanceOf(HttpsError);
+    expect(caught.code).toBe("resource-exhausted");
+    expect(String(caught.message)).not.toContain("xxxx");
+  });
+
+test("F-03: a non-array response between the soft and hard ceilings still succeeds",
+  async () => {
+    // ~8.5 MiB: over MAX_EXPORT_BYTES (nothing to trim), under the hard ceiling.
+    const size = MAX_EXPORT_BYTES + 512 * 1024;
+    expect(size).toBeLessThan(HARD_RESPONSE_BYTES);
+    docs.set("users/u1/profile/main", { blob: "x".repeat(size) });
+
+    const res = await exportAccountData.run(req());
+
+    expect((res.profile as { blob: string }).blob).toHaveLength(size);
+    const bytes = Buffer.byteLength(JSON.stringify(res), "utf8");
+    expect(bytes).toBeGreaterThan(MAX_EXPORT_BYTES);
+    expect(bytes).toBeLessThanOrEqual(HARD_RESPONSE_BYTES);
+  });
+
+test("every section trimmed for size is named, once, and keeps its leading rows",
+  async () => {
+    // Two sections of ~6 MB each: ~12 MB total, so BOTH must be trimmed.
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "users/u1/workout_logs",
+      Array.from({ length: 600 }, (_, i) => ({ id: `l${i}`, data: { blob } })),
+    );
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 600 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.truncated).toContain("workoutLogs");
+    expect(res.truncated).toContain("debugSessions");
+    expect(new Set(res.truncated).size).toBe(res.truncated.length);
+    expect(res.workoutLogs.length).toBeLessThan(600);
+    expect(res.debugSessions.length).toBeLessThan(600);
+    // Trailing rows are dropped; the leading rows survive in order.
+    expect(res.workoutLogs[0]).toMatchObject({ id: "l0" });
+    expect(res.debugSessions[0]).toMatchObject({ id: "d0" });
+    expect(Buffer.byteLength(JSON.stringify(res), "utf8")).toBeLessThanOrEqual(
+      MAX_EXPORT_BYTES + 4096,
+    );
+  });
+
+test("a section that hit the row cap and the byte ceiling is named once",
+  async () => {
+    // 2100 rows hits MAX_ROWS (named "debug_sessions.uid"); 2000 kept rows of
+    // 10 KB is ~20 MB, so the byte guard trims it as well ("debugSessions").
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 2100 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.truncated).toContain("debug_sessions.uid");
+    expect(res.truncated).toContain("debugSessions");
+    expect(res.truncated.filter((n: string) => n === "debugSessions")).toHaveLength(1);
+    expect(Buffer.byteLength(JSON.stringify(res), "utf8")).toBeLessThanOrEqual(
+      MAX_EXPORT_BYTES + 4096,
+    );
+  });
 
 test("exactly at the cap is not reported as truncated", async () => {
   collections.set(

@@ -55633,3 +55633,128 @@ time. classifyRoll's verdict goes into the next entry, whichever way it comes ou
 - origin/master...HEAD was 0/0 before the commit.
 
 **Not verified:** the agent frontmatter edits were made by another session; their intent is inferred from the diff, not confirmed. No tests were run, since no code is touched.
+## 2026-10-06 — Code & CI snapshot report: interactive HTML, live GitHub Actions read, 7 real findings surfaced
+
+**Operator request (chat, explicit):** "сделай сводный интерактивный штмл репорт с понятными графиками и сравнительными таблицами по код/ci" — a consolidated interactive HTML report with clear charts and comparative tables on code/CI, following the earlier readiness-matrix conversation. Read-only task, no GO required (CLAUDE.md §3: read-only inspection/reporting needs none).
+
+**What was built.** `reports/code_ci_snapshot_2026-10-06.ru.html` / `.html`, house format (`html-report` skill): real `<header>`, provenance+copy block injected by `report_conform.py` (verified clean: `--check` reports no missing block for either new file), inline SVG bar/donut charts with no external JS library, sortable code-size table, filterable CI-status table. Balanced-tag sanity check passed on both files.
+
+**Evidence gathered fresh, not quoted from old docs:**
+- `mobile/lib/features/*`: 363 Dart files / 79,301 lines, recounted directly (`core/CODEMAP.md`'s 2026-08-12 snapshot undercounts `form_check` by ~2x — now 13,562/31 vs its recorded 6,821/23).
+- `gh run list` / `gh run view` against the live `master` scheduled runs (2026-10-05/06): 4 of 11 CI jobs red across the `flutter` and `functions` workflows. Root-caused each: 8 golden-test failures (known pre-existing class per `core/DECISION_LOG.md` 2026-09-18), release-build blocked on the already-documented `GOOGLE_SERVICES_JSON_B64` secret, an Android-emulator infra failure, a mis-pathed OSV scanner job (`stat .../mobile/pubspec.lock: no such file`, wrong working directory — a CI config bug, not a vulnerability), 2 new RU/EN translation-drift findings (`formcheckExplainTitle`, `formcheckExplainPushupTuck`, negation-polarity mismatch — likely from the recent Form Coach T3/F1 work), a self-defeating CT-1 pytest (asserts a pinned hash differs from literal `HEAD`, so it fails on the next commit forever), and two Cloud Functions jobs (Firestore rules, account-deletion e2e) both failing on `npm error could not determine executable to run` inside `scripts/run_emulator_tests.js` — same root cause, not yet diagnosed further, flagged as a real open item.
+- `functions` unit suite re-run locally against current HEAD: 606/606 (up from the 2026-09-16 decision-log figure of 601/601) — a live re-verification, not a citation.
+- `scripts/catalog` pytest collection: 211 tests (6 files) — corrects `CLAUDE.md`'s stale "74 tests" claim (>2.8x off).
+- `npm audit` in `functions/`: CI's own scoped number (`--omit=dev --package-lock-only`, a documented deliberate choice in `functions.yml`) is 18 (10 moderate/7 high/1 critical). An unscoped `npm audit` run for this report returns 54 (14 moderate/39 high/1 critical) — reported both, explicitly scoped, so the report doesn't understate real exposure while still explaining why CI's narrower number is itself a deliberate, documented choice and not an undercount by accident.
+- `core/CURRENT_STATE.md` gate ledger: 19 rows tallied (12 CLOSED, 3 DORMANT, 3 EXTERNAL_AUTHORITY_REQUIRED/HOLD, 1 DISABLED-by-design).
+- Monthly commit histogram from `git log --format=%ad --date=format:%Y-%m`: 1,125 total (36/0/91/809/188/1 May–Oct).
+
+**Correction to my own prior turn in this session:** the readiness-matrix answer given earlier today characterized the mobile suite as consistently green modulo the known golden-test class, based on `core/DECISION_LOG.md`'s 2026-09-18 entry. Pulling live CI in this pass surfaced 3 additional red jobs in the same `flutter.yml` workflow (OSV scan, RU/EN drift, CT-1 QA) and 3 in `functions.yml` (audit, rules, e2e) that the decision-log narrative did not mention — not because they regressed just now, but because this is the first time this session read live CI state directly rather than the repository's own narrative of itself. Flagged explicitly in the report rather than silently reconciled.
+
+**Not done in this pass:** no code fix applied to any of the findings above (explicitly a reporting task); the two Cloud Functions `could not determine executable` failures need a direct repro to diagnose past the symptom; the `npm audit` critical finding is not triaged for real exploitability.
+
+## 2026-10-06 (continued) — Code & CI snapshot report: restyled simpler on operator request
+
+**Operator request:** "а можно по проще на подобии <claude.ai artifact link>" — simplify the visual style to match a referenced lighter report (system-ui font, no Google Fonts import, flat light/dark token palette, compact stat rows, `<details>`-free simple sections). Same data and findings, no content change — read-only restyle.
+
+Rebuilt both `reports/code_ci_snapshot_2026-10-06.html` and `.ru.html` with the simpler token system (`--bg/--sf/--ink/--mu/--ln/--ac` + 4 status colors), system-ui font stack, no external font CDN. Kept all interactivity (CI status filter buttons, sortable code-size table, inline SVG bar/donut charts) and all 7 findings unchanged. Balanced-tag check passed on both files after `report_conform.py` re-injection. Republished to the same artifact URL (`https://claude.ai/artifact/KsvhT4kLreD4wHaJJZ9BX5`, version 2) rather than creating a new link.
+
+## 2026-10-08 — Autonomous tail closure (operator GO + ГО): decisions and evidence
+
+**Decisions:** (1) CAND-01 profile-stream race CONFIRMED by a deterministic red test, fixed with a serialized chain + generation fence. (2) CR-05: canary exclusion is a predicate `isOrdinaryUser()` applied to every grant, because Firestore rules are OR-semantics. (3) CR-08: booking identity is a deterministic id plus `create()` claim, Stripe idempotencyKey and transactional completion. (4) Form Coach T1/T2 deliberately NOT implemented: needs the F1 device-labelled S23 run (EXT-01). (5) CR-04 server side: AI callables enforce quota and non-anonymous only, paid tier is client-gated — product decision for the operator, not silently closed. (6) Windows host emulator e2e is BLOCKED_ENVIRONMENT (Node 24 gRPC ECONNRESET); the Linux Node20/JDK21 container is the evidence.
+
+**Evidence (working tree on a6e8005, uncommitted):** Linux container rules 274/274, e2e 22/22, goldens 28/28; Python review 219, ct1/ml/equipment_identity 1118 (after recognition baseline regeneration — only the gemini_equipment_service.dart hash and sourceCommit changed); functions 619, equipment-identity 515; full Flutter on Windows 3921 pass / 25 fail, all 25 in test/golden (Windows rasterizer, by design); flutter analyze 0 errors/warnings, 17 infos.
+
+**Reviewer findings recorded as OPEN (not fixed):** see core/state/TAIL_CLOSURE_REGISTRY.json (NEW-RESTORE-BIND, NEW-DELETE-INTERRUPT, NEW-OFFLINE-LOG, NEW-PREFETCH-CONCURRENT, NEW-HEALTH-ERR, NEW-WEAR, NEW-STRIPE-CUSTOMER, minors). Fixed from review: setLoad leak, sleep aggregation + local-day bucketing, wipe quarantine key.
+
+**Refusal/limit:** Rosetta retrospective plan fitness_app-2026-10-08T01-12-48-830Z-95b32c is recorded but remains `pending`: the GPT-PM request 7c1e5a42-3b9d-4f0a-8e21-5d6a9c3b1f70 ended `uncertain` (bridge unreachable, strike 7/5). No GO was fabricated. Own harness slip: first container rules run lacked scripts/ci; reran, not a code defect.
+
+## 2026-10-09 — Landing the 2026-10-08 tail-closure batch (operator "go")
+
+**Decision:** the operator's "go" was read as authority for the six CI/code tails listed in the previous turn (npm audit, OSV scan, RU/EN drift, CT-1 test, functions rules/e2e jobs, CODEMAP). Reading the working tree first showed all six were already fixed but never committed by the 2026-10-08 autonomous run (71 dirty files on a6e8005, last write 2026-10-08 04:42, no live writer). The sprint is therefore verify-and-land, not re-implement. Mapping to core/state/TAIL_CLOSURE_REGISTRY.json: OSV = CR-01 (root cause: mobile/pubspec.lock was never tracked), functions rules/e2e = CR-02 (firebase-tools pinned, emulator scripts use npx --no-install), RU/EN drift = VER-06 (0 NEW), CT-1 = VER-05 (fetch-depth 0), npm audit = VER-01 (prod high/critical 0; moderates still untriaged in writing), CODEMAP = VER-07 (overlay note added, full reconcile still OPEN).
+
+**Corrections to my own earlier claims this session:** (1) "development is practically done" was wrong/incomplete: the registry still lists 9 OPEN, 3 FIXED_UNVERIFIED and 1 IN_PROGRESS engineering items; I had read CURRENT_STATE.md but not the registry. (2) The CT-1 failure is not "HEAD compared with HEAD" in the abstract: it is a depth-1 clone where the last commit touching the catalogue is the only commit. (3) The OSV failure is an untracked lockfile, not a bad working-directory setting.
+
+**Also added:** core/plans/PHASE2_BODY_SCAN_COACH_REFERENCE_REVIEW_2026-10-09.md, a grouped review of an operator-recorded walkthrough of a third-party body-fat/meal-scan app. Candidate input only; no scope chosen, nothing implemented. Product decisions (which theme, build vs license, consent for a generative "future you" preview) stay with the operator.
+
+**Not done in this entry:** no push, no CI run, no GPT review. Local commits only; sprint-end tests and reviews run through subagents before any push, per development rules v4.
+
+## 2026-10-09 — Commit: build/CI toolchain (CR-01, CR-04, VER-04, VER-05, VER-06)
+
+**What and why:** mobile/pubspec.lock is now tracked and CI uses `flutter pub get --enforce-lockfile` (OSV job was failing on "stat mobile/pubspec.lock: no such file" because the lock was never committed; it now also fails loudly if missing). Build profiles personal/test/store with the store define guarding the tier override, and CI building with the store profile. Integration job body moved to scripts/ci/run_integration_tests.sh. CT-1 checkout uses fetch-depth 0 so the "last commit touching the catalogue" check is meaningful (it compared HEAD with itself in a depth-1 clone). RU/EN drift baseline reviewed (0 NEW).
+**Evidence:** per-item evidence and residuals in core/state/TAIL_CLOSURE_REGISTRY.json (CR-01 enforce-lockfile exit 0 on Linux and Windows with an identical lock; CR-04 PowerShell profile tests all passed; VER-06 check_ru_en_drift 0 NEW).
+**Unverified:** CI itself not re-run (nothing pushed); no real store artifact built (needs google-services config, EXT-04); VER-04 integration script not executed against an emulator in this run.
+
+## 2026-10-09 — Commit: backend dependencies and emulator runner (CR-02, VER-01)
+
+**What and why:** firebase-tools pinned to 15.17.0 as a devDependency and the emulator scripts run it with `npx --no-install`, so the rules and account-deletion e2e CI jobs stop failing with "could not determine executable to run". firebase-admin raised ^12.6.0 -> ^13.10.0 and `@grpc/grpc-js` overridden to ^1.14.5 so the production audit reports no high/critical advisories in functions or functions-equipment-identity. verify_deployment_isolation.py updated for the new runner.
+**Evidence:** Linux node20+jdk21 container: rules and e2e passed before the CR-05 change; isolation tests 107/107; production audit high/critical = 0 in both packages (registry VER-01).
+**Unverified:** VER-01 stays IN_PROGRESS: remaining moderates (uuid chain via google-cloud storage) and dev-only totals (firebase-tools raised the dev count to 65) are not yet triaged in writing (applicability, owner, review date). `npm audit fix --force` is not used. Windows host e2e is BLOCKED_ENVIRONMENT (Node 24 gRPC ECONNRESET); the Linux container is the evidence. firebase-admin is a major-version bump; the 619-test functions suite passed with it, no production deploy was made.
+
+## 2026-10-09 — Commit: rules canary exclusion, booking idempotency, probe timers (CR-05, CR-08, CR-09)
+
+**What and why:** CR-05: the canary identity is excluded from every grant through an `isOrdinaryUser()` predicate, because Firestore rules combine grants with OR. CR-08: `bookCoachSession` is idempotent (deterministic booking id, `create()` claim, Stripe idempotencyKey, transactional completion) and the export code matches. CR-09: canary probe timers are cleared so they stop leaking.
+**Evidence:** CR-05 red on 4 cases before the fix, rules suite 274/274, policy checker exit 0 with a passing mutation self-test; CR-08 9 idempotency tests, a mutant fails 7, functions 25 suites / 619 tests; CR-09 a mutant fails 2 of 3.
+**Unverified:** real Stripe is not exercised (no real payments by rule); the original "force exited" warning was not reproduced in 5 runs, so CR-09 proves the timer cleanup, not that the warning is gone; the canary path of the emulator e2e still needs a Linux-container re-run after the dependency bumps.
+
+## 2026-10-09 — Commit: mobile fixes from the 2026-10-08 closure run (CR-03, CR-06, CR-07, CAND-01, VER-03, NEW-LOAD-LEAK, NEW-SLEEP, NEW-WIPE-QUARANTINE)
+
+**What and why:** CR-03: account deletion is reachable before onboarding completes (router, onboarding page, RU/EN strings). CAND-01: `profileWatchOf` stream race (A -> B -> sign-out) fixed with a serialized chain and a generation fence. CR-07: a corrupt sensitive health blob is typed Missing/Valid/Corrupt, quarantined and fails closed. CR-06: engineering invariant that cloud scanner answers are never auto-confirmed, covered by fixture tests over 33 recorded rows; recognition_baseline_v1.json regenerated because the service docstring changed (hash and sourceCommit only). NEW-LOAD-LEAK, NEW-SLEEP, NEW-WIPE-QUARANTINE: reviewer findings fixed (setLoad leak, sleep aggregation with local-day bucketing, wipe quarantine key). VER-03: four composed goldens regenerated on Linux after a visual diff.
+**Evidence:** router suites 52 pass; about 30 corruption cases, related suites 291 pass; Linux test/golden 28/28; full Flutter on the Windows host 3921 pass and 25 fail, all 25 in test/golden (Windows rasterizer, documented in the golden README); flutter analyze 0 errors, 0 warnings, 17 infos.
+**Unverified:** CR-06 holdout quality needs human labels (EXT-03, BLOCKED_OPERATOR): 16 of 33 historical answers were right, 17 wrong, so this proves the invariant, not model accuracy. No UI consumes `isSensitiveCorrupt` yet (CR-07 residual). RU/EN long strings were not checked on a device. Still OPEN in the registry and untouched here: NEW-RESTORE-BIND, NEW-DELETE-INTERRUPT, NEW-DELETE-OOM, NEW-BACKUP-ITER, NEW-OFFLINE-LOG, NEW-PREFETCH-CONCURRENT, NEW-HEALTH-ERR, NEW-WEAR.
+
+## 2026-10-09 — Commit: fixes from the sprint-end reviews (silent-failure and security reviewers)
+
+**Reviews run (Sonnet, read-only):** silent-failure hunter on the mobile fixes returned 3 MAJOR + 2 MINOR; security reviewer on rules/booking/canary returned 0 BLOCKER/MAJOR + 2 MINOR. A third agent (test runner) stopped at its 16-turn limit with no usable result, so the checks below were run directly.
+**Fixed:** M1 SharedPreferences `setString/remove` return false on failure and were ignored: `PrefsSensitiveStore.write/clear` now throw `StateError`, so `save()` fails before the server copy is written; a failed quarantine is logged. M2 `save()` with an unreadable stored blob no longer replaces it with an empty valid one and keeps `isSensitiveCorrupt` until health data is supplied (an intentional "clear everything" is indistinguishable and is deferred to a recovery prompt). M3 `DeviceLocalDataWipe.wipe` handles each key separately, runs every step, then throws `LocalWipeIncomplete` naming what remains (uid masked); the caller already logs and treats it as best-effort. m1 a throwing cancel of the old profile listener no longer skips watching the next account. m2 the per-uid photo-consent key is now wiped. F2 a coach's booking export no longer carries the booking `id` (legacy ids embed the client uid); the client keeps their own.
+**Not fixed, on purpose:** F1 (rules_parser.js strips `isOrdinaryUser()` and the static policy checker cannot see a grant that drops it; canary protection rests on the emulator cases) stays a MINOR follow-up. m2 remainder: quarantine keeps only the first copy, and `SecurePhotoKeyStore.forget` swallows errors silently. No UI consumes `isSensitiveCorrupt` or `LocalWipeIncomplete` yet.
+**Evidence (this working tree, Windows host):** functions jest 25 suites / 619 tests and tsc clean; flutter analyze clean on the touched areas; flutter tests for profile, account deletion, router and onboarding 336 pass (new regression tests included); RU/EN drift 0 NEW (the two formcheck negation flags are baseline-grandfathered, not retranslated); data-access policy checker green; Python 3.14 (CI uses 3.12): state ledger, CT-1, ML contracts and scanner provenance 405 pass plus the fixture pipeline, equipment_identity 797 pass.
+**Not verified:** Firestore rules and account-deletion e2e in a Linux container were not re-run on this head; the full Flutter suite was not re-run (goldens differ on Windows by design); CI itself has not run; no GPT-PM review yet; nothing pushed. The operator asked to stop after this logical task.
+
+## 2026-10-13 — Commit: bounded deletion sweep and export size guard (NEW-DELETE-OOM)
+
+Account deletion no longer reads whole shared collections at once: `sweepSharedRecords` works in pages of 450, and the export is guarded by size (8 MiB) as well as row count, naming any section it had to trim. Operator decisions recorded this day: GO to close the remaining tails; Stripe customers are not deleted for now because of tax retention (NEW-STRIPE-CUSTOMER carried as "retain, no code change, disclosure wording left to the operator/legal"). Full detail, known edges and verification state: core/changes/2026-10-13-server-delete-paging.md. A catch-up record for the eight earlier commits is core/changes/2026-10-13-landing-batch-record.md. Tests are written and run by the test agents at sprint end; nothing is pushed.
+
+## 2026-10-13 — Commit: backup iteration ceiling, account binding and undo (NEW-BACKUP-ITER, NEW-RESTORE-BIND)
+
+A backup file can no longer demand unbounded PBKDF2 work, and a backup made under another account is refused unless the user chooses "Restore anyway"; the previous on-device answers can be undone (kept in memory only). Detail and limits: core/changes/2026-10-13-backup-account-binding.md.
+
+## 2026-10-13 — Commit: Wear bridge reports real delivery (NEW-WEAR)
+
+The phone-side Wear bridge (MainActivity.kt, not wear/) no longer answers "success" before delivery, runs its node lookup off the main thread, and surfaces lookup and send failures instead of reporting "no watch". Detail: core/changes/2026-10-13-wear-bridge-delivery.md.
+
+## 2026-10-13 - Commit: health read failures shown as failures (NEW-HEALTH-ERR)
+
+**What and why:** readSnapshots rethrows instead of returning an empty list, so a Health Connect failure is no longer displayed as "No health data today"; an empty today read re-checks the auth status and refreshes the cached provider so a revoked permission is noticed without a restart. Detail: core/changes/2026-10-13-health-read-errors.md.
+**Unverified:** not compiled or run (sprint-end test agents do that); no device check. Revocation is detected only on an empty read, not on app resume.
+
+## 2026-10-13 — Commit: finish a device wipe after an interrupted account deletion (NEW-DELETE-INTERRUPT)
+
+A pending-wipe marker (uid only) is recorded right after the server confirms an account deletion and cleared when the device wipe completes; at launch, once the signed-in user is known, a leftover marker for a different account triggers the wipe. The marker is written after confirmation, never before, so it cannot erase a live account's only local health data. Detail: core/changes/2026-10-13-interrupted-deletion-wipe.md.
+
+## 2026-10-13 — Commit: offline "Mark complete" and concurrent prefetch (NEW-OFFLINE-LOG, NEW-PREFETCH-CONCURRENT)
+
+Code written by the second session `fitness-app-93`, which stopped before committing and which my operator did not recognise. I read the 39-line diff in full and committed it unchanged under my own record so the sprint's test and review phase covers it. Detail and limits: core/changes/2026-10-13-offline-log-and-prefetch.md.
+
+## 2026-10-13 — Commit: sprint-end focused functional tests
+
+Focused tests for the eight tail-closure fixes, written and run by test agents after all coding was committed; all green in the touched areas, no product defects found. Gaps (timeout in the Firestore repository save, platform health rethrow, cross-page self-bookings) are listed in core/changes/2026-10-13-sprint-end-functional-tests.md.
+
+## 2026-10-13 - Commit: fixes for valid review minors
+
+Small valid MINOR findings of the four sprint-end specialist reviews are closed as one batch (undo bookkeeping, sweep retry, wear await timeouts, marker guard, logging); larger or pre-existing items go to the tail registry backlog. Detail: core/changes/2026-10-13-review-minors.md.
+
+## 2026-10-13 - Commit: tests for the review-minor fixes
+
+Focused tests for the undo bookkeeping, the interrupted-wipe marker guard and the failed-sweep retry; the page test's auth stub no longer depends on fake-async delivery. All touched test files green. Detail: core/changes/2026-10-13-review-minors-tests.md.
+
+## 2026-10-13 - Commit: tail closure registry update
+
+Engineering tails closed or carried with evidence; Stripe customers retained by operator decision (tax retention); VER-01/04/05/07 closed by development rule 8. Detail: core/changes/2026-10-13-tail-registry-closure.md.
+
+## 2026-10-13 - Commit: fixes for the final GPT-PM review (round 1)
+
+GPT-PM returned REJECT with three MAJOR findings; all verified against source and fixed (sweep on every auth change, pending-wipe uid set, hard export response ceiling) with tests. Detail: core/changes/2026-10-13-gptpm-final-review-fixes.md.
+
+## 2026-10-13 - Commit: stale auth snapshot in the wipe sweep (GPT-PM round 2)
+
+R2-01 verified and fixed: queued sweep runs judge the signed-in uid at execution time, with a re-check right before each wipe. Detail: core/changes/2026-10-13-gptpm-round2-stale-auth.md.

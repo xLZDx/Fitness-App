@@ -25,8 +25,20 @@ final healthSetupRequiredProvider = FutureProvider<bool>((ref) {
   return ref.watch(healthServiceProvider).platformSetupRequired();
 });
 
-final todayHealthProvider = FutureProvider<HealthSnapshot?>((ref) {
-  return ref.watch(healthServiceProvider).readTodaySnapshot();
+final todayHealthProvider = FutureProvider<HealthSnapshot?>((ref) async {
+  final service = ref.watch(healthServiceProvider);
+  final snapshot = await service.readTodaySnapshot();
+  if (snapshot == null) {
+    // NEW-HEALTH-ERR (revoke): the auth status is cached, so a permission
+    // revoked while the app runs kept the "granted" card until restart. An
+    // empty read is the moment to re-check and refresh it if it changed.
+    final cached = ref.read(healthAuthStatusProvider).valueOrNull;
+    final current = await service.currentAuthStatus();
+    if (cached != null && cached != current) {
+      Future.microtask(() => ref.invalidate(healthAuthStatusProvider));
+    }
+  }
+  return snapshot;
 });
 
 final last7DaysHealthProvider =

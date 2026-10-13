@@ -59,7 +59,15 @@ class FirestoreWorkoutSessionRepository implements WorkoutSessionRepository {
 
   @override
   Future<void> save(String uid, WorkoutSession session) async {
-    await _col(uid).doc(session.id).set(session.toJson());
+    // NEW-OFFLINE-LOG: a Firestore write future completes only on SERVER ack,
+    // so offline "Mark complete" spun until the network came back. The write
+    // is already committed to the local cache and will sync; the doc id is
+    // the session id, so a later retry upserts the same document. A genuine
+    // server rejection after the timeout is not reported to this caller.
+    await _col(uid)
+        .doc(session.id)
+        .set(session.toJson())
+        .timeout(const Duration(seconds: 4), onTimeout: () {});
   }
 
   @override

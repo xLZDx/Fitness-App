@@ -1,5 +1,9 @@
 # CODEMAP — where everything lives
 
+<!-- audit-followup-2026-10-07:start -->
+**Current review overlay (2026-10-07):** use this file for navigation, not as a current inventory or proof of runtime readiness. Many counts and descriptions below were measured in August and have not been regenerated in this follow-up. In particular, the claim that functions are only a Stripe bridge and the old feature/test totals must not override current source. Current findings and exact source ranges: [CODE_REVIEW](review/CODE_REVIEW_2026-10-07.md); current checkpoint: [REVIEW_STATUS](state/REVIEW_STATUS_2026-10-07.md); active work: [tail-closure plan](plans/AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md). Do not create missing planned directories merely to make a historical table true. No code or runtime binding was changed by this documentation overlay.
+<!-- audit-followup-2026-10-07:end -->
+
 **Purpose: answer "which file do I open?" in one read, instead of several Glob/Grep rounds.**
 Paths are relative to `mobile/` unless stated. Counts re-measured against the working tree
 **2026-08-12**; 22 of the 31 rows had drifted since the previous 2026-07-28 pass, some of them far

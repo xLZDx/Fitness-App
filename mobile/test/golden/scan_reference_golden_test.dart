@@ -19,6 +19,7 @@ import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/scanner/state/scan_preview_provider.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
+import 'package:fitness_app/features/visual_equipment/data/mlkit_text_recogniser.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/live_equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart';
@@ -130,6 +131,14 @@ void main() {
             VisualMatch(equipmentId: 'lat_pulldown', confidence: 0.92),
           ]),
         ),
+        // FITAPP-EQUIP-ACC-2026-09-17 (a0e842a): a classifier match alone now
+        // settles as alternatives, never as a locked card, so the "found"
+        // frames reach MACHINE LOCKED through the printed-text anchor -- the
+        // only remaining path to ScanOutcome.confident. "lat pulldown" is in
+        // machine_text_anchor.dart's phrase table at 0.92, the reference's
+        // own ring value. Same fixture route as scanner_page_test.dart.
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('lat pulldown')),
         safetyContextProvider.overrideWith((_) async => SafetyContext(
             screening:
                 screen({for (final q in ParQQuestion.values) q: false}))),
@@ -207,6 +216,13 @@ void main() {
     final previous = ImagePickerPlatform.instance;
     ImagePickerPlatform.instance = _FakeImagePicker();
     addTearDown(() => ImagePickerPlatform.instance = previous);
+    // The anchor resolves its phrase against the loaded catalogue; settle it
+    // before the tap, as scanner_page_test.dart does, or the lookup sees an
+    // empty list and the frame never locks.
+    final container = ProviderScope.containerOf(
+        tester.element(find.byType(ScannerPage)));
+    await tester.runAsync(() => container.read(equipmentListProvider.future));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('scan-recognise-gallery')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));

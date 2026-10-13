@@ -17,6 +17,12 @@ import 'package:fitness_app/features/subscription/state/subscription_providers.d
 /// 4242" is a poor answer to "how do I see what I paid for".
 ProviderContainer _container(AppSettings settings) {
   final c = ProviderContainer(overrides: [
+    // CR-04: this file tests the PERSONAL-build behaviour, so it states that
+    // build explicitly instead of inheriting the dart-define. Without this the
+    // suite went red under `--dart-define=ALLOW_TIER_OVERRIDE=false`, which is
+    // exactly the store configuration; the store behaviour is asserted in
+    // tier_override_guard_test.dart.
+    allowTierOverrideProvider.overrideWithValue(true),
     initialSettingsProvider.overrideWithValue(settings),
     settingsRepositoryProvider
         .overrideWithValue(InMemorySettingsRepository(settings)),

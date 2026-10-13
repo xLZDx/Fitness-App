@@ -25,6 +25,8 @@ library;
 
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart' as crypto;
+
 import '../profile/data/sensitive_profile.dart';
 
 /// Identifies the payload inside the envelope, so a future backup that carries
@@ -39,11 +41,40 @@ class TransferPayloadException implements Exception {
   String toString() => 'TransferPayloadException: $message';
 }
 
-String buildTransferPayload(SensitiveProfile sensitive) => jsonEncode({
+/// Raised when a backup made under another account is about to be restored
+/// into this one without the user having said so.
+class BackupAccountMismatch implements Exception {
+  const BackupAccountMismatch();
+  @override
+  String toString() => 'BackupAccountMismatch';
+}
+
+/// A short, non-reversible tag of the account a backup was made under. Not the
+/// uid itself, so the payload never carries an identifier.
+String ownerTagFor(String uid) => crypto.sha256
+    .convert(utf8.encode('fitness-app-backup-owner|$uid'))
+    .toString()
+    .substring(0, 16);
+
+String buildTransferPayload(SensitiveProfile sensitive, {String? ownerTag}) =>
+    jsonEncode({
       'kind': kTransferKind,
       'version': 1,
+      if (ownerTag != null) 'owner': ownerTag,
       'data': sensitive.toJson(),
     });
+
+/// The account tag stored in [payload], or null for a backup made before tags
+/// existed (restorable as before) or one that cannot be parsed.
+String? readTransferOwner(String payload) {
+  try {
+    final decoded = jsonDecode(payload);
+    final owner = decoded is Map ? decoded['owner'] : null;
+    return owner is String ? owner : null;
+  } on FormatException {
+    return null;
+  }
+}
 
 /// Parses what [buildTransferPayload] produced.
 ///

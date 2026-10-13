@@ -1,5 +1,21 @@
 # core/ — documentation index
 
+<!-- autonomous-closure-v2-2026-10-08:start -->
+## Актуальный автономный промпт — 2026-10-08
+
+[GO: закрытие всех инженерных хвостов, версия 2](plans/AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md) — готовая инструкция исполнителю: CR-01–CR-09, CAND-01, VER-01–VER-07, сверка старых открытых пунктов согласованного объёма, B0–B5, отрицательные тесты и финальный адвокат дьявола. Не путать со статусом исполнения: **PROMPT_READY / REMEDIATION_NOT_STARTED_BY_THIS_UPDATE**. Новых запусков тестов, исправлений кода, commit/push/deploy этим обновлением нет. Технические детали плана версии 1 и прежние результаты ниже сохранены как датированные источники; короткий промпт версии 1 заменён версией 2. Обязательные полномочия, клиническая приёмка и запрет неавторизованного push сохраняются.
+<!-- autonomous-closure-v2-2026-10-08:end -->
+
+**Локальная стартовая страница ревью:** [FITNESS_APP_REVIEW.html](../FITNESS_APP_REVIEW.html) — код-ревью, статус, автономный план и результаты проверок. Наличие основных материалов повторно проверено через DC_MCP 2026-10-08; это проверка сохранения файлов, не новый тестовый прогон и не закрытие исправлений.
+
+<!-- audit-followup-2026-10-07:start -->
+## Current review and next execution — 2026-10-07
+
+Start with [current review status](state/REVIEW_STATUS_2026-10-07.md), then [source-level code review](review/CODE_REVIEW_2026-10-07.md) and [autonomous tail-closure plan](plans/AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md). The current pickup queue is the dated section at the top of [NEXT_TICKETS](plans/NEXT_TICKETS.md). [Local test evidence](evidence/REVIEW_TESTS_2026-10-07.json): backend 606/606 assertions PASS with a Jest worker teardown warning; Python review TIMEOUT, not PASS. [HTML status and code-review summary](../reports/code_review_status_2026-10-07.ru.html).
+
+This is a documented remediation queue, not completed fixes. `CURRENT_STATE.md` remains a generated gate ledger and must not be hand-edited. Older plans and business documents below are dated historical sources, not proof of today's deployed behavior or release readiness. No push/deploy authorization is implied.
+<!-- audit-followup-2026-10-07:end -->
+
 Single entry point for everything under `core/`. **Read this file first; open only what your task
 actually needs.**
 

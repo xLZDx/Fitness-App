@@ -111,3 +111,11 @@ scripts/dev/recog_so1_r2.tests.py text eol=lf
 # Same reasoning as core/audit/** above, and the same remedy: these are
 # captured originals, so they are stored byte-for-byte.
 core/equipment_identity/p0/terms_snapshots/** -text
+
+# VER-05 (2026-10-08). scripts/ml/dataset_registry.py records the raw-byte
+# sha256 of mobile/assets/data/joint_rom_reference.json, and
+# test_the_committed_registry_is_the_one_the_artefacts_produce re-derives it.
+# The file is LF in the blob; a fresh Windows clone (core.autocrlf=true)
+# checked it out as CRLF and the rebuilt registry differed (70e49a.. vs the
+# committed 1a23d6..). Same fix as equipment.json above.
+mobile/assets/data/joint_rom_reference.json text eol=lf

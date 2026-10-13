@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fitness App / SPTR — ревью проекта</title>
+<style>
+:root{color-scheme:light dark;--bg:#f4f6f9;--surface:#fff;--ink:#172331;--muted:#526173;--line:#d6dfe8;--accent:#185da6;--warning:#86400b}
+@media(prefers-color-scheme:dark){:root{--bg:#111820;--surface:#1a242f;--ink:#ecf1f7;--muted:#b0bdcc;--line:#3a495a;--accent:#97c6ff;--warning:#ffd294}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,'Segoe UI',sans-serif}main{max-width:980px;margin:auto;padding:42px 22px 60px}h1{font-size:2.1rem;line-height:1.2;margin:10px 0 16px}h2{font-size:1.15rem;margin:0 0 8px}a{color:var(--accent);text-underline-offset:4px}a:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.intro,footer{color:var(--muted)}.notice,article{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}.notice{border-left:5px solid var(--warning);margin:24px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}article p{margin:8px 0 0;color:var(--muted)}.primary{display:inline-block;background:var(--accent);color:var(--bg);padding:12px 20px;border-radius:8px;font-weight:700;text-decoration:none}code{overflow-wrap:anywhere;font-size:.9em}footer{margin-top:32px;border-top:1px solid var(--line);padding-top:18px;font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+<p class="intro">Локальный проект · D:\Repo\Fitness_App</p>
+<h1>Fitness App / SPTR<br>Код-ревью, статус и закрытие хвостов</h1>
+<p>Материалы сохранены в этом репозитории. Их наличие повторно проверено через DC_MCP 8 октября 2026 года. Эта страница открывается локально, без внешних ресурсов.</p>
+<p><a class="primary" href="reports/code_review_status_2026-10-07.ru.html">Открыть отчёт в браузере</a></p>
+<section class="notice" aria-label="Границы статуса">
+<strong>Ревью задокументировано; исправления этим пакетом не выполнены.</strong>
+<p>Исходные материалы и результаты проверок датированы 7 октября. Проверка наличия файлов 8 октября не является новым запуском тестов. Актуальные статусы следует читать в документе «Где мы сейчас». Запись документов не означает commit, push или deploy.</p>
+</section>
+<section class="grid" aria-label="Материалы ревью">
+<article><h2><a href="core/review/CODE_REVIEW_2026-10-07.md">Код-ревью</a></h2><p>Конкретные файлы и строки, замечания CR-01–CR-09, кандидат CAND-01, проверки VER, негативные сценарии и критерии закрытия. Снятые выводы отмечены отдельно.</p></article>
+<article><h2><a href="core/state/REVIEW_STATUS_2026-10-07.md">Где мы сейчас</a></h2><p>Сделано, частично, не начато, внешние блокеры. Разделены готовность кода, тесты, устройство и выпуск.</p></article>
+<article><h2><a href="core/plans/AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md">Автономный промпт v2 — 08.10.2026</a></h2><p>Готовая инструкция GO для закрытия всех согласованных инженерных хвостов: CR/VER/CAND, сверка старых пунктов, B0–B5, тесты и адвокат дьявола. Передайте агенту текст начиная с GO. Промпт подготовлен; исправления этим обновлением не выполнены.</p><p><a href="core/plans/AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md">Технический план v1 и история</a></p></article>
+<article><h2><a href="core/plans/NEXT_TICKETS.md">Очередь следующих задач</a></h2><p>Порядок работ и ожидаемые доказательства. Исторический список идей не является текущим разрешением расширять продукт.</p></article>
+<article><h2><a href="core/evidence/REVIEW_TESTS_2026-10-07.json">Результаты проверок</a></h2><p>Записанные итоги локальных запусков с ограничениями: PASS, предупреждение teardown и TIMEOUT не смешиваются.</p></article>
+<article><h2><a href="core/INDEX.md">Индекс документации</a></h2><p>Вход в инженерные документы, планы и исторические материалы проекта.</p></article>
+</section>
+<footer>Файлы Markdown открываются как текст или в предпросмотре VS Code. Для чтения оформленного отчёта используйте основную кнопку выше. Источник статусов — связанные документы, а не отдельные счётчики этой страницы.</footer>
+</main>
+</body>
+</html>

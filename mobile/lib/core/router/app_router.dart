@@ -50,6 +50,13 @@ final _shellKey = GlobalKey<NavigatorState>();
 // usable attribution surface.
 const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences', '/terms', '/privacy'};
 
+// CR-03. Authenticated account actions: reachable by any SIGNED-IN user
+// before onboarding is finished, and never by a signed-out one (the sign-in
+// rule above still runs first). Deleting the account you just created must not
+// require completing a 10-step questionnaire. Exact matches only -- the page
+// itself still demands recent re-authentication before it deletes anything.
+const _accountActionPaths = {'/delete-account'};
+
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.
 String? resolveRedirect({
@@ -87,6 +94,7 @@ String? resolveRedirect({
   // route the machine page now opens, i.e. the first thing after a scan —
   // leaving it out would have bounced exactly the journey this exemption was
   // written for, and it would have looked like the scanner was broken.
+  final isAccountAction = _accountActionPaths.contains(location);
   final isEquipmentOrWorkout = location.startsWith('/equipment/') ||
       location.startsWith('/exercise/') ||
       location.startsWith('/workout/');
@@ -102,6 +110,7 @@ String? resolveRedirect({
       !isOnboarded &&
       location != '/onboarding' &&
       !isEquipmentOrWorkout &&
+      !isAccountAction &&
       !isPublic) {
     return '/onboarding';
   }
@@ -202,27 +211,71 @@ Stream<dynamic> profileWatchOf(
   StreamSubscription<dynamic>? authSub;
   StreamSubscription<dynamic>? profileSub;
 
+  // CAND-01 (confirmed by a deterministic test, 2026-10-08). The auth callback
+  // used to be a bare `async` closure, so with a slow subscription teardown
+  // two quick auth events ran their bodies INTERLEAVED: the sign-out's
+  // `profileSub = null` landed after B's `profileSub = watch(B)` and orphaned
+  // B's live listener, which kept delivering a profile for a signed-out user.
+  //
+  // Two things close it, and both are needed:
+  //  * events are handled strictly one after another (`chain`), so no body
+  //    starts until the previous one has finished its await;
+  //  * a generation number lets a body that finds itself superseded stop
+  //    before it subscribes, and fences late emissions from an older account.
+  var generation = 0;
+  var closed = false;
+  Future<void> chain = Future<void>.value();
+
   Future<void> stopWatchingProfile() async {
-    await profileSub?.cancel();
+    // Detach first, then cancel: nothing else can see (or overwrite) the
+    // subscription while the cancel is in flight.
+    final old = profileSub;
     profileSub = null;
+    await old?.cancel();
   }
 
   out = StreamController<dynamic>.broadcast(
     onListen: () {
-      authSub = authRepo.authStateChanges().listen((dynamic user) async {
-        await stopWatchingProfile();
-        if (user == null) {
-          out.add(null);
-          return;
-        }
-        profileSub = profileRepo.watch(user.uid as String).listen(
-              out.add,
-              onError: out.addError,
+      authSub = authRepo.authStateChanges().listen((dynamic user) {
+        final gen = ++generation;
+        chain = chain.then((_) async {
+          try {
+            // Its own guard: a throwing cancel of the OLD listener must not
+            // skip subscribing the NEW user (profileSub is already detached).
+            try {
+              await stopWatchingProfile();
+            } catch (e, st) {
+              if (!closed) out.addError(e, st);
+            }
+            // A newer auth event arrived while the old listener was being
+            // torn down, or the router is gone: it owns the next step.
+            if (closed || gen != generation) return;
+            if (user == null) {
+              out.add(null);
+              return;
+            }
+            profileSub = profileRepo.watch(user.uid as String).listen(
+              (dynamic p) {
+                if (!closed && gen == generation) out.add(p);
+              },
+              onError: (Object e, StackTrace st) {
+                if (!closed && gen == generation) out.addError(e, st);
+              },
             );
+          } catch (e, st) {
+            // Keep the chain alive: one failed teardown must not freeze every
+            // later auth change.
+            if (!closed) out.addError(e, st);
+          }
+        });
       });
     },
     onCancel: () async {
+      closed = true;
+      generation++;
       await authSub?.cancel();
+      // Let an in-flight event finish so it cannot subscribe after this.
+      await chain;
       await stopWatchingProfile();
     },
   );

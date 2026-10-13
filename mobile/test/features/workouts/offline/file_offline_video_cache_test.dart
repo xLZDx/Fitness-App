@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -86,6 +87,26 @@ void main() {
       expect(await orphan.exists(), isFalse);
       expect(filesIn(dir).length, 1);
     });
+
+    test('a failed first sweep does not fail the next download', () async {
+      // A plain file where the cache directory must be created makes the first
+      // sweep (and so the first download) fail; removing it lets a retry work.
+      final blocker = File('${dir.path}/blocked');
+      await blocker.writeAsBytes([1]);
+      final cache = FileOfflineVideoCache(
+        directory: Directory(blocker.path),
+        fetch: _fetch(),
+      );
+
+      await expectLater(
+          cache.download('clip-a'), throwsA(isA<FileSystemException>()));
+
+      await blocker.delete();
+      final file = await cache.download('clip-a');
+
+      expect(await file.exists(), isTrue);
+      expect(await file.length(), greaterThan(0));
+    });
   });
 
   /// Backdates a cached clip.
@@ -98,6 +119,97 @@ void main() {
   /// boundary happened to land.
   Future<void> age(File f, Duration by) =>
       f.setLastModified(DateTime.now().subtract(by));
+
+  group('concurrent downloads of one clip share one run', () {
+    test('two overlapping requests for one url fetch once and agree', () async {
+      final seen = <String>[];
+      final gate = Completer<void>();
+      final cache = FileOfflineVideoCache(
+        directory: dir,
+        fetch: (url, savePath, {onProgress}) async {
+          seen.add(url);
+          await gate.future;
+          await File(savePath).writeAsBytes(List.filled(64, 0));
+        },
+      );
+
+      final a = cache.download('clip-a');
+      final b = cache.download('clip-a');
+      await pumpEventQueue();
+      expect(seen.length, 1,
+          reason: 'the second caller must join, not start its own transfer');
+
+      gate.complete();
+      final results = await Future.wait([a, b]);
+
+      expect(seen.length, 1);
+      expect(results[0].path, results[1].path);
+      expect(await results[0].exists(), isTrue);
+      expect(filesIn(dir).length, 1);
+    });
+
+    test('different urls are not merged', () async {
+      final seen = <String>[];
+      final cache = FileOfflineVideoCache(
+        directory: dir,
+        fetch: _fetch(seen: seen),
+      );
+
+      await Future.wait([cache.download('clip-a'), cache.download('clip-b')]);
+
+      expect(seen.toSet(), {'clip-a', 'clip-b'});
+      expect(filesIn(dir).length, 2);
+    });
+
+    test('a shared failure reaches both callers and the next call retries',
+        () async {
+      final seen = <String>[];
+      final gate = Completer<void>();
+      var fail = true;
+      final cache = FileOfflineVideoCache(
+        directory: dir,
+        fetch: (url, savePath, {onProgress}) async {
+          seen.add(url);
+          await gate.future;
+          await File(savePath).writeAsBytes(List.filled(64, 0));
+          if (fail) throw StateError('timeout');
+        },
+      );
+
+      final a = cache.download('clip-a');
+      final b = cache.download('clip-a');
+      final outcomes = Future.wait([
+        a.then<Object>((f) => f, onError: (Object e) => e),
+        b.then<Object>((f) => f, onError: (Object e) => e),
+      ]);
+      gate.complete();
+      final got = await outcomes;
+
+      expect(got[0], isA<StateError>());
+      expect(got[1], isA<StateError>());
+      expect(seen.length, 1);
+      expect(filesIn(dir), isEmpty, reason: 'the partial is cleaned once');
+
+      // The failed run must not stay registered as in flight forever.
+      fail = false;
+      final retry = await cache.download('clip-a');
+      expect(seen.length, 2);
+      expect(await retry.exists(), isTrue);
+    });
+
+    test('once a run finishes, a later call is a normal cache hit', () async {
+      final seen = <String>[];
+      final cache = FileOfflineVideoCache(
+        directory: dir,
+        fetch: _fetch(seen: seen),
+      );
+
+      await Future.wait([cache.download('clip-a'), cache.download('clip-a')]);
+      await cache.download('clip-a');
+
+      expect(seen.length, 1);
+    });
+  });
 
   group('the library is bounded', () {
     test('an over-quota download evicts, and never the clip just fetched',
@@ -192,6 +304,38 @@ void main() {
       expect(await cache.localFile('exercises/girl/Legs/Squat.mp4'), isNotNull);
       expect(await cache.localFile('https://signed.example/abc?exp=123'),
           isNull);
+    });
+
+    test('an empty cached file is a miss and is fetched again', () async {
+      final seen = <String>[];
+      final cache = FileOfflineVideoCache(
+        directory: dir,
+        fetch: _fetch(seen: seen),
+      );
+
+      final first = await cache.download('clip-a');
+      // A zero-byte file cannot be a finished clip (e.g. a truncated write).
+      await first.writeAsBytes(const []);
+      expect(await first.length(), 0);
+
+      final second = await cache.download('clip-a');
+
+      expect(seen.length, 2, reason: 'the empty file must not be served');
+      expect(second.path, first.path);
+      expect(await second.length(), greaterThan(0));
+    });
+
+    test('a non-empty cached file is still served without a fetch', () async {
+      final seen = <String>[];
+      final cache = FileOfflineVideoCache(
+        directory: dir,
+        fetch: _fetch(bytes: 1, seen: seen),
+      );
+
+      await cache.download('clip-a');
+      await cache.download('clip-a');
+
+      expect(seen.length, 1);
     });
 
     test('sizeBytes ignores a partial mid-flight', () async {

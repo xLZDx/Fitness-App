@@ -36,7 +36,137 @@ import '../../progress_photos/data/photo_key_store.dart';
 /// leftover file on one phone, not a failed deletion, and reporting it as the
 /// latter would tell the user something untrue.
 abstract class LocalDataWipe {
+  /// Runs every step even when one fails, then throws [LocalWipeIncomplete]
+  /// naming what remains. Callers treat it as best-effort (the account is
+  /// already deleted) but must not report the device as clean.
   Future<void> wipe(String uid);
+}
+
+/// Remembers WHICH accounts' device data still has to be erased.
+///
+/// A uid is added right AFTER the server confirms the deletion and removed only
+/// after that uid's wipe finished. Added after, not before, on purpose: a marker
+/// that existed while the account was still alive could later erase the only
+/// copy of a live account's health answers. If the process dies between
+/// confirmation and the wipe, the uid is still known and the next launch
+/// finishes the job. A SET, not a single value: a second deletion must never
+/// overwrite the record of a first wipe that has not completed. Holds uids only,
+/// never health data.
+abstract class PendingWipeMarker {
+  Future<Set<String>> read();
+  Future<void> add(String uid);
+  Future<void> remove(String uid);
+}
+
+class PrefsPendingWipeMarker implements PendingWipeMarker {
+  PrefsPendingWipeMarker({SharedPreferences? prefs}) : _injected = prefs;
+  final SharedPreferences? _injected;
+  static const key = 'account_deletion.pending_wipe_uids';
+
+  Future<SharedPreferences> get _prefs async =>
+      _injected ?? await SharedPreferences.getInstance();
+
+  @override
+  Future<Set<String>> read() async =>
+      ((await _prefs).getStringList(key) ?? const <String>[]).toSet();
+
+  // Read-modify-write happens with no await between the read and the call to
+  // setStringList, so two concurrent add/remove calls cannot interleave.
+  @override
+  Future<void> add(String uid) async {
+    final prefs = await _prefs;
+    final next = {...?prefs.getStringList(key), uid}.toList();
+    if (!await prefs.setStringList(key, next)) {
+      throw StateError('could not record the pending device wipe');
+    }
+  }
+
+  @override
+  Future<void> remove(String uid) async {
+    final prefs = await _prefs;
+    final next = [...?prefs.getStringList(key)]..remove(uid);
+    if (next.isEmpty) {
+      await prefs.remove(key);
+    } else {
+      await prefs.setStringList(key, next);
+    }
+  }
+}
+
+class InMemoryPendingWipeMarker implements PendingWipeMarker {
+  final Set<String> _uids = {};
+  @override
+  Future<Set<String>> read() async => {..._uids};
+  @override
+  Future<void> add(String uid) async => _uids.add(uid);
+  @override
+  Future<void> remove(String uid) async => _uids.remove(uid);
+}
+
+/// Finishes a device wipe that an interrupted account deletion left behind.
+///
+/// Call whenever the signed-in user changes (null when signed out). A marker for
+/// the account that is STILL signed in is left alone for now: its own deletion
+/// retry handles it, or the sign-out that follows triggers the next call.
+/// Every other pending uid is wiped independently, so one failure never blocks
+/// the rest. Returns true when at least one wipe ran to completion.
+///
+/// [currentUid], when given, is asked again right before each irreversible wipe
+/// and wins over [signedInUid]: a sweep that waited in a queue must not act on
+/// the sign-in state of the moment it was scheduled.
+Future<bool> finishInterruptedWipe({
+  required PendingWipeMarker marker,
+  required LocalDataWipe wipe,
+  required String? signedInUid,
+  String? Function()? currentUid,
+}) async {
+  var wiped = false;
+  try {
+    for (final pending in await marker.read()) {
+      if (pending == (currentUid != null ? currentUid() : signedInUid)) {
+        continue;
+      }
+      if (!_looksLikeUid(pending)) {
+        // The uid becomes a directory name below. A value that is empty or
+        // carries a path separator is not ours; drop it instead of acting on it.
+        await marker.remove(pending);
+        continue;
+      }
+      try {
+        await wipe.wipe(pending);
+      } catch (e) {
+        // Keep the marker so the next sweep tries again.
+        debugPrint(
+            'interrupted account deletion: device wipe still incomplete: ${e.runtimeType}');
+        continue;
+      }
+      await marker.remove(pending);
+      wiped = true;
+    }
+  } catch (e) {
+    // A preferences failure must not become an unhandled async error.
+    debugPrint('interrupted account deletion sweep failed: ${e.runtimeType}');
+  }
+  return wiped;
+}
+
+bool _looksLikeUid(String uid) =>
+    uid.isNotEmpty &&
+    uid != '.' &&
+    uid != '..' &&
+    !uid.contains('/') &&
+    !uid.contains(r'\');
+
+/// Thrown after a wipe that attempted everything but left something behind.
+class LocalWipeIncomplete implements Exception {
+  LocalWipeIncomplete(this.remaining);
+
+  /// Key names with the uid masked as `<uid>`, plus `progress_photos`.
+  final List<String> remaining;
+
+  @override
+  String toString() =>
+      'LocalWipeIncomplete: device data remains (${remaining.join(', ')})';
 }
 
 class DeviceLocalDataWipe implements LocalDataWipe {
@@ -114,6 +244,11 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     final personalKeys = {
       ..._personalKeys,
       'profile.sensitive.$uid',
+      // The unreadable-blob copy kept by PrefsSensitiveStore (CR-07): raw
+      // health text under a separate key, so it must be erased with the rest.
+      'profile.sensitive.corrupt.$uid',
+      // Per-uid photo consent record (progress_photos/data/photo_consent.dart).
+      'progress_photos.consent.v1.$uid',
       if (legacyIsMine) _legacyPhotoKey,
       // Only when it names THIS user: it holds a uid, and clearing someone
       // else's would re-arm a migration that has already happened.
@@ -125,16 +260,20 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     // the photos were touched at all, which meant the LARGER leak was the one
     // that survived the smaller failure. Each half now runs regardless of the
     // other.
-    try {
-      for (final key in prefs.getKeys().toList()) {
-        final personal =
-            personalKeys.contains(key) || _personalPrefixes.any(key.startsWith);
-        if (personal) {
-          await prefs.remove(key);
-        }
+    // Per key, and `remove` reports failure by returning false rather than
+    // throwing: one failed key used to skip every key after it, and a false
+    // was read as success. The uid is masked so the names are safe to log.
+    final failed = <String>[];
+    for (final key in prefs.getKeys().toList()) {
+      final personal =
+          personalKeys.contains(key) || _personalPrefixes.any(key.startsWith);
+      if (!personal) continue;
+      try {
+        if (!await prefs.remove(key)) failed.add(key.replaceAll(uid, '<uid>'));
+      } catch (e) {
+        failed.add(key.replaceAll(uid, '<uid>'));
+        debugPrint('local data wipe: could not clear a preference: $e');
       }
-    } catch (e) {
-      debugPrint('local data wipe: could not clear preferences: $e');
     }
 
     try {
@@ -154,13 +293,19 @@ class DeviceLocalDataWipe implements LocalDataWipe {
       // deletion into an error the user sees as "your account was not
       // deleted". Logged, not thrown -- same contract as the sign-out step in
       // the caller.
-      debugPrint('local data wipe: could not delete progress photos: $e');
+      // Type only: the exception text carries the uid-named photo path.
+      debugPrint('local data wipe: could not delete progress photos: ${e.runtimeType}');
+      failed.add('progress_photos');
     }
 
     // The envelopes are gone; the key that opened them must not outlive them
     // in the Keystore. Best-effort by the same contract as everything else
     // here — it already unlocks nothing.
     await SecurePhotoKeyStore.forget(uid);
+
+    // Every step has run by now. The caller logs this and still treats the
+    // account as deleted; what it must not do is believe the device is clean.
+    if (failed.isNotEmpty) throw LocalWipeIncomplete(failed);
   }
 
   Future<void> _deleteLooseLegacyFiles(Directory root) async {

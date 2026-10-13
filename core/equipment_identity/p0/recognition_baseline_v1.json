@@ -125,7 +125,7 @@
     {
       "path": "mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart",
       "role": "CLOUD_CLASSIFIER_AND_HYBRID — GeminiVisualEquipmentService (primary) and HybridVisualEquipmentService (cloud-first, on-device-fallback orchestration)",
-      "sha256": "4126bef31f217632c2cee42f78f0ffc825879e0b2b2e89ba8ab21cdc103923d6"
+      "sha256": "ef4dd607a5d8d8e316f34aa60dcea1500451ef4be2896b21595fe017715397b5"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/machine_describer.dart",
@@ -174,5 +174,5 @@
     }
   ],
   "schemaVersion": 1,
-  "sourceCommit": "d7e8fb74e820fbc0d6c1eb6e9bcebedd8a885ab7"
+  "sourceCommit": "a6e80053b78b1663346e71634eb1f3d0d1362a64"
 }

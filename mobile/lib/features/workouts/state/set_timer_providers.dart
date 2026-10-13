@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/state/auth_providers.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../form_check/state/form_check_providers.dart';
 import '../../profile/data/profile_models.dart';
@@ -39,8 +40,16 @@ final setVoiceEnabledProvider = StateProvider<bool>((_) => true);
 /// takes a load. Holding the answer here rather than passing it down means the
 /// question is asked once per exercise per session: the timer collects it, the
 /// completion button spends it, and neither needs to know about the other.
-final setLoadProvider =
-    StateProvider.family<SetCapture?, String>((_, __) => null);
+///
+/// Scoped to the signed-in uid: the answer belongs to one person's session, so
+/// a sign-out / account switch in the same process must not hand A's weight
+/// and reps to B. It is also spent when the set is logged (see
+/// `workout_player_page.dart`), so Monday's 80 kg is not silently re-used on
+/// Wednesday.
+final setLoadProvider = StateProvider.family<SetCapture?, String>((ref, _) {
+  ref.watch(authUserProvider.select((u) => u.valueOrNull?.uid));
+  return null;
+});
 
 /// The plan for [exercise], from what the intake said about experience.
 ///

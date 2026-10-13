@@ -46,6 +46,11 @@ import '../progress_photos/data/photo_encryption.dart';
 /// offline guessing attack a thousand times cheaper.
 const int kDefaultIterations = 210000;
 
+/// Upper bound accepted when OPENING a file. The count comes from the file
+/// itself, so without a ceiling a crafted backup can pin a CPU for hours.
+/// Ten times the default is still only seconds of work.
+const int kMaxIterations = 2100000;
+
 /// Marks the file as ours before anything tries to decrypt it, so a user who
 /// picked the wrong file is told that, rather than being told their passphrase
 /// is wrong.
@@ -197,6 +202,9 @@ String decryptBackup({
   final saltRaw = kdf['salt'];
   if (iterations is! int || iterations < 1 || saltRaw is! String) {
     throw const BackupFormatException('backup is missing its key settings');
+  }
+  if (iterations > kMaxIterations) {
+    throw const BackupFormatException('backup key settings are out of range');
   }
 
   final Uint8List salt, iv, tag, payload;

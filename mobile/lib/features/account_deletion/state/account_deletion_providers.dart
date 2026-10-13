@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +14,38 @@ final accountDeletionServiceProvider =
 /// with the real device implementation, exactly like the service above.
 final localDataWipeProvider =
     Provider<LocalDataWipe>((_) => RecordingLocalDataWipe());
+
+/// Which deleted account's device data is still waiting to be erased.
+/// Overridden in `main.dart` with the SharedPreferences implementation.
+final pendingWipeMarkerProvider =
+    Provider<PendingWipeMarker>((_) => InMemoryPendingWipeMarker());
+
+/// Whenever the signed-in user is known or changes, finishes a device wipe that
+/// an interrupted account deletion left behind. Read from the app root.
+///
+/// Runs on EVERY resolved auth value, not once: a marker for the account that is
+/// still signed in at launch is skipped, and the sign-out that follows must get
+/// another chance to erase it. Runs are chained so two never overlap.
+final interruptedWipeSweepProvider = Provider<void>((ref) {
+  Future<void> running = Future<void>.value();
+  ref.listen(authUserProvider, (_, next) {
+    if (!next.hasValue) return;
+    // The uid is NOT captured here: a run that waits behind an earlier one must
+    // judge "who is signed in" at the moment it executes, not when it was
+    // queued, or it could wipe an account that has signed in since.
+    running = running.then((_) {
+      final now = ref.read(authUserProvider);
+      if (!now.hasValue) return false; // a later emission re-runs the sweep
+      return finishInterruptedWipe(
+        marker: ref.read(pendingWipeMarkerProvider),
+        wipe: ref.read(localDataWipeProvider),
+        signedInUid: now.value?.uid,
+        currentUid: () => ref.read(authUserProvider).valueOrNull?.uid,
+      );
+    });
+    unawaited(running);
+  }, fireImmediately: true);
+});
 
 /// Runs L0b: calls the Cloud Function, then signs the local client out.
 class AccountDeletionAction extends Notifier<AsyncValue<void>> {
@@ -51,6 +85,19 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
       // button again converges cleanly instead of repeating the same failure.
       await ref.read(accountDeletionServiceProvider).deleteAccount();
 
+      // The server has confirmed, so the account is gone for good. Record whose
+      // device data is still to be erased BEFORE touching it: if the process
+      // dies from here on, no signed-in user exists to read the uid from and
+      // the next launch finishes the wipe from this marker instead.
+      final marker = ref.read(pendingWipeMarkerProvider);
+      if (uid != null) {
+        try {
+          await marker.add(uid);
+        } catch (e) {
+          debugPrint('could not record the pending device wipe: $e');
+        }
+      }
+
       // A1 — the device half, between the server call and the sign-out.
       //
       // After the server succeeded, so a failed deletion never wipes a
@@ -64,7 +111,9 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
       if (uid != null) {
         try {
           await ref.read(localDataWipeProvider).wipe(uid);
+          await marker.remove(uid);
         } catch (e) {
+          // The marker stays, so the next launch retries the wipe.
           debugPrint('local data wipe after account deletion failed: $e');
         }
       } else {

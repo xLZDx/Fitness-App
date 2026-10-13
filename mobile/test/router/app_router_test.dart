@@ -187,6 +187,64 @@ void main() {
     });
   });
 
+  // CR-03. /delete-account is an authenticated account action, not a
+  // onboarding-gated feature: a user who has not finished the questionnaire
+  // (new account, abandoned flow, profile that failed to load) must still be
+  // able to remove the account they just created. Signed-out must not get it.
+  group('resolveRedirect: account deletion before onboarding (CR-03)', () {
+    test('signed-in, not onboarded -> /delete-account is reachable', () {
+      for (final anon in [false, true]) {
+        expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: false,
+              location: '/delete-account',
+              isAnonymous: anon),
+          isNull,
+          reason: 'anonymous=$anon must not be forced into onboarding',
+        );
+      }
+    });
+
+    test('signed-out -> /delete-account still goes to /login', () {
+      for (final onboarded in [false, true]) {
+        expect(
+          resolveRedirect(
+              isSignedIn: false,
+              isOnboarded: onboarded,
+              location: '/delete-account',
+              isAnonymous: false),
+          '/login',
+        );
+      }
+    });
+
+    test('signed-in and onboarded -> /delete-account unchanged', () {
+      expect(
+        resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: true,
+            location: '/delete-account',
+            isAnonymous: false),
+        isNull,
+      );
+    });
+
+    test('the exemption is exactly the account-action set, not a prefix', () {
+      for (final p in ['/delete-account/x', '/delete-accounts', '/settings']) {
+        expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: false,
+              location: p,
+              isAnonymous: false),
+          '/onboarding',
+          reason: '$p must still be onboarding-gated',
+        );
+      }
+    });
+  });
+
   // The guest upgrade path. `linkWithCredential` keeps the SAME uid, so
   // reaching /login as a guest preserves the profile, injuries, history and
   // schedule already under `users/{uid}`. Signing out instead mints a fresh

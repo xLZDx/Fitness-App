@@ -51,6 +51,49 @@ const db = () => admin.firestore();
  */
 const MAX_ROWS = 2000;
 
+/** Serialized-size ceiling, kept well under the 10 MiB callable response limit. */
+export const MAX_EXPORT_BYTES = 8 * 1024 * 1024;
+
+/** Last-resort ceiling on the final response, notes included. */
+export const HARD_RESPONSE_BYTES = 9 * 1024 * 1024 + 512 * 1024;
+
+class ExportTooLarge extends Error {}
+
+const jsonBytes = (v: unknown): number =>
+  Buffer.byteLength(JSON.stringify(v) ?? "", "utf8");
+
+/**
+ * Drops trailing rows from the largest array sections until the serialized
+ * body fits [MAX_EXPORT_BYTES], recording each trimmed section in `truncated`.
+ */
+function fitToByteBudget(
+  body: Record<string, unknown>,
+  truncated: Truncation,
+): void {
+  let total = jsonBytes(body);
+  if (total <= MAX_EXPORT_BYTES) return;
+  const sizes = new Map<string, number>();
+  for (const [k, v] of Object.entries(body)) {
+    if (Array.isArray(v) && k !== "truncated") sizes.set(k, jsonBytes(v));
+  }
+  while (total > MAX_EXPORT_BYTES) {
+    let key: string | undefined;
+    for (const [k, size] of sizes) {
+      if ((body[k] as unknown[]).length > 0 && (!key || size > sizes.get(key)!)) {
+        key = k;
+      }
+    }
+    if (!key) break;
+    const rows = body[key] as unknown[];
+    const kept = rows.slice(0, Math.floor(rows.length / 2));
+    body[key] = kept;
+    const next = jsonBytes(kept);
+    total -= sizes.get(key)! - next;
+    sizes.set(key, next);
+    if (!truncated.includes(key)) truncated.push(key);
+  }
+}
+
 /** Collections that hit [MAX_ROWS] on this run. */
 type Truncation = string[];
 
@@ -155,6 +198,10 @@ const BOOKING_WITHHELD_FIELDS = [
   "coachUid",
   // A payment-intent id is a live Stripe handle, not a receipt.
   "stripePaymentIntentId",
+  // CR-08. The digest `bookCoachSession` uses to tell a retry of the same
+  // request from a different one wearing its id. Internal bookkeeping; a hash
+  // of the other party's uid and the payout target is not the user's data.
+  "requestFingerprint",
 ] as const;
 
 /** A booking reduced to the part that is this user's own data. */
@@ -163,7 +210,13 @@ function redactBooking(row: Record<string, unknown>, uid: string): unknown {
   for (const field of BOOKING_SELF_FIELDS) {
     if (field in row) out[field] = row[field];
   }
-  out.yourRole = row.clientUid === uid ? "client" : "coach";
+  const isClient = row.clientUid === uid;
+  out.yourRole = isClient ? "client" : "coach";
+  // The booking id is the CLIENT's own reference. Legacy ids were
+  // `bk_<ms>_<clientUid>`, so handing the row id to the coach hands over the
+  // client's uid; newer ids are a hash a coach could test candidate uids
+  // against. A coach identifies a session by when it was and what it cost.
+  if (!isClient) delete out.id;
   return out;
 }
 
@@ -257,7 +310,7 @@ export const exportAccountData = onCall(
       owned("debug_sessions", "uid", uid, truncated),
     ]);
 
-    return {
+    const body = {
       exportFormatVersion: 1,
       generatedAt: new Date().toISOString(),
       uid,
@@ -298,11 +351,19 @@ export const exportAccountData = onCall(
       // Named, never silent. A capped read that did not say so would be the
       // same lie as a partial export claiming to be whole.
       truncated,
+    };
+
+    // After the row caps, so the byte guard only trims what they let through.
+    fitToByteBudget(body, truncated);
+
+    const response = {
+      ...body,
       notes: [
         ...(truncated.length
           ? [
               "Some sections were capped at " +
-                `${MAX_ROWS} rows: ${truncated.join(", ")}. ` +
+                `${MAX_ROWS} rows or ${MAX_EXPORT_BYTES} bytes: ` +
+                `${truncated.join(", ")}. ` +
                 "Contact support if you need the remainder.",
             ]
           : []),
@@ -311,7 +372,27 @@ export const exportAccountData = onCall(
           "are listed in the app's own export.",
       ],
     };
+
+    // Measured on the object actually returned (notes included). The byte guard
+    // above only trims array sections, so a single oversized non-array field
+    // could still leave the body over the transport limit; that must fail
+    // loudly here rather than as an opaque transport error on the client.
+    if (jsonBytes(response) > HARD_RESPONSE_BYTES) {
+      throw new ExportTooLarge();
+    }
+    return response;
   } catch (err) {
+    if (err instanceof ExportTooLarge) {
+      logger.error(EXPORT_ACCOUNT_FAILED, {
+        event: EXPORT_ACCOUNT_FAILED,
+        uid,
+        err: "export exceeds the response size limit after trimming",
+      });
+      throw new HttpsError(
+        "resource-exhausted",
+        "Your data is too large to export in one response. Contact support.",
+      );
+    }
     // Surfaced, never partially returned. An export missing a collection
     // because one read failed is worse than no export: it reads as "this is
     // everything" while being silently short, which is the precise failure

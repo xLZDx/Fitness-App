@@ -1,0 +1,156 @@
+{
+ "schema_version": 1,
+ "recorded": "2026-10-08",
+ "kind": "derived_from_recorded_run_not_a_new_measurement",
+ "source": "core/ml/eval/eval_results_2026-09-17.json",
+ "source_sha256": "3ed8ed276e18df6be1d1ff0127b6cef0ffe1b15a6da329d983164e4d8b872ff9",
+ "scope_limit": "33 photos from the operator's own test session of 2026-08-06; one historical run of the cloud path. Not a holdout, not independent labels, not a market accuracy figure.",
+ "total": 33,
+ "correct_top1": 16,
+ "wrong_top1": 17,
+ "abstained": 0,
+ "true_rotary_torso": {
+  "total": 4,
+  "named_rotary": 0,
+  "named_other": [
+   "seated dip machine",
+   "seated row machine",
+   "seated row machine",
+   "calf raise machine"
+  ]
+ },
+ "confusion_true_to_predicted": [
+  {
+   "true": "bench press station",
+   "predicted": "bench press station",
+   "n": 3
+  },
+  {
+   "true": "cable machine",
+   "predicted": "cable machine",
+   "n": 3
+  },
+  {
+   "true": "glute kickback machine",
+   "predicted": "glute kickback machine",
+   "n": 2
+  },
+  {
+   "true": "pec deck",
+   "predicted": "lat pulldown",
+   "n": 2
+  },
+  {
+   "true": "rotary torso machine",
+   "predicted": "seated row machine",
+   "n": 2
+  },
+  {
+   "true": "shoulder press machine",
+   "predicted": "lat pulldown",
+   "n": 2
+  },
+  {
+   "true": "assisted pull-up machine",
+   "predicted": "assisted pull-up machine",
+   "n": 1
+  },
+  {
+   "true": "bench press station",
+   "predicted": "sissy squat machine",
+   "n": 1
+  },
+  {
+   "true": "cable machine",
+   "predicted": "chest press machine",
+   "n": 1
+  },
+  {
+   "true": "cable machine",
+   "predicted": "seated row machine",
+   "n": 1
+  },
+  {
+   "true": "captain's chair",
+   "predicted": "assisted pull-up machine",
+   "n": 1
+  },
+  {
+   "true": "elliptical trainer",
+   "predicted": "elliptical trainer",
+   "n": 1
+  },
+  {
+   "true": "lat pulldown",
+   "predicted": "assisted pull-up machine",
+   "n": 1
+  },
+  {
+   "true": "lat pulldown",
+   "predicted": "lat pulldown",
+   "n": 1
+  },
+  {
+   "true": "leg press machine",
+   "predicted": "glute kickback machine",
+   "n": 1
+  },
+  {
+   "true": "pec deck",
+   "predicted": "pec deck",
+   "n": 1
+  },
+  {
+   "true": "pec deck",
+   "predicted": "seated dip machine",
+   "n": 1
+  },
+  {
+   "true": "pec deck",
+   "predicted": "seated row machine",
+   "n": 1
+  },
+  {
+   "true": "rotary torso machine",
+   "predicted": "calf raise machine",
+   "n": 1
+  },
+  {
+   "true": "rotary torso machine",
+   "predicted": "seated dip machine",
+   "n": 1
+  },
+  {
+   "true": "rowing machine",
+   "predicted": "rowing machine",
+   "n": 1
+  },
+  {
+   "true": "seated row machine",
+   "predicted": "cable machine",
+   "n": 1
+  },
+  {
+   "true": "shoulder press machine",
+   "predicted": "shoulder press machine",
+   "n": 1
+  },
+  {
+   "true": "smith machine",
+   "predicted": "smith machine",
+   "n": 1
+  },
+  {
+   "true": "squat rack",
+   "predicted": "squat rack",
+   "n": 1
+  }
+ ],
+ "production_routing_note": "Since a0e842a every cloud answer settles as ScanOutcome.alternatives; confident is reachable only from the printed-text anchor. Replayed by mobile/test/features/visual_equipment/cloud_answer_pipeline_fixture_test.dart.",
+ "not_measured": [
+  "time to confirmation",
+  "wrong confident advancement on a holdout set",
+  "offline fallback accuracy",
+  "exact-model identity accuracy"
+ ]
+}

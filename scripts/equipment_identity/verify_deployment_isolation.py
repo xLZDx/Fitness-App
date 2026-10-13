@@ -30,7 +30,17 @@ IDENTITY_DIR = REPO / "functions-equipment-identity"
 P0_DIR = REPO / "core" / "equipment_identity" / "p0"
 
 NPM = shutil.which("npm") or "npm"
-FIREBASE = shutil.which("firebase") or "firebase"
+def _resolve_firebase() -> str:
+    """Prefer the pinned firebase-tools in functions/node_modules (CR-02), so a
+    clean CI runner with no global CLI still runs the real command."""
+    suffix = ".cmd" if os.name == "nt" else ""
+    local = REPO / "functions" / "node_modules" / ".bin" / f"firebase{suffix}"
+    if local.exists():
+        return str(local)
+    return shutil.which("firebase") or "firebase"
+
+
+FIREBASE = _resolve_firebase()
 
 TARGETED_DEPLOY_COMMANDS = (
     "firebase deploy --only functions:default",

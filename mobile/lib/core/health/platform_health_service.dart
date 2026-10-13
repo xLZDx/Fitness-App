@@ -184,11 +184,11 @@ class PlatformHealthService implements HealthService {
       // Group raw points into per-day buckets.
       final buckets = <String, HealthDayBucket>{};
       for (final p in raw) {
-        final day = DateTime.utc(
-          p.dateFrom.toUtc().year,
-          p.dateFrom.toUtc().month,
-          p.dateFrom.toUtc().day,
-        );
+        // The LOCAL calendar day, carried as a UTC-midnight stamp. Bucketing by
+        // the UTC day split one local day across two buckets at any non-UTC
+        // offset, and `readTodaySnapshot` kept only the newest of them.
+        final local = p.dateFrom.toLocal();
+        final day = DateTime.utc(local.year, local.month, local.day);
         final key = day.toIso8601String();
         final bucket = buckets.putIfAbsent(key, () => HealthDayBucket(day: day));
         bucket.absorb(p);
@@ -198,7 +198,9 @@ class PlatformHealthService implements HealthService {
       return out;
     } catch (e) {
       _recordError('readSnapshots', e);
-      return const [];
+      // NEW-HEALTH-ERR: a failed read is not "no data today". Callers are the
+      // two UI providers, whose error branch already says the read failed.
+      rethrow;
     }
   }
 
@@ -246,7 +248,7 @@ class HealthDayBucket {
   double? hrvSum;
   int hrvCount = 0;
   int? restingHr;
-  int? sleepScore;
+  int? sleepMinutes;
 
   void absorb(h.HealthDataPoint p) {
     final v = p.value;
@@ -264,10 +266,9 @@ class HealthDayBucket {
         restingHr = n.toInt();
         break;
       case h.HealthDataType.SLEEP_ASLEEP:
-        // Translate minutes asleep into a rough 0-100 score
-        // (480 min = 100, capped). Better than nothing.
-        final mins = n.toInt();
-        sleepScore = ((mins / 480) * 100).clamp(0, 100).round();
+        // Health Connect delivers one record per sleep segment; the night is
+        // their SUM. Assigning (`=`) let the last segment decide the score.
+        sleepMinutes = (sleepMinutes ?? 0) + n.toInt();
         break;
       // Both HRV flavours land in the same field: the request asks for
       // whichever one the platform supports, so a bucket that handled only
@@ -289,7 +290,10 @@ class HealthDayBucket {
       steps: steps,
       activeMinutes: activeMinutes,
       restingHeartRateBpm: restingHr,
-      sleepScore: sleepScore,
+      // Rough 0-100 score (480 min = 100, capped). Better than nothing.
+      sleepScore: sleepMinutes == null
+          ? null
+          : ((sleepMinutes! / 480) * 100).clamp(0, 100).round(),
       hrvMs: (hrvSum != null && hrvCount > 0) ? hrvSum! / hrvCount : null,
       activityRingPercent: steps != null
           ? ((steps! / 10000) * 100).clamp(0, 100).round()
