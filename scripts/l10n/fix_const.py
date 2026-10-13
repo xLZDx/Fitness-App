@@ -14,6 +14,7 @@ Usage: python scripts/l10n/fix_const.py
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -30,18 +31,45 @@ LINE = re.compile(
 )
 
 
-def analyze() -> list[tuple[Path, int]]:
-    out = subprocess.run(
-        ["flutter", "analyze"],
-        cwd=MOBILE,
-        capture_output=True,
-        text=True,
-        shell=True,
-    ).stdout
+class AnalyzeError(RuntimeError):
+    """`flutter analyze` could not be run or failed for a reason other than findings."""
+
+
+def parse_hits(out: str) -> list[tuple[Path, int]]:
     hits = []
     for m in LINE.finditer(out):
         hits.append((MOBILE / m.group("file").replace("\\", "/"),
                      int(m.group("line"))))
+    return hits
+
+
+def analyze() -> list[tuple[Path, int]]:
+    # `flutter` is a .bat shim on Windows; which() resolves the real path so no
+    # shell is needed (and no shell-quoting surface).
+    exe = shutil.which("flutter")
+    if exe is None:
+        raise AnalyzeError("`flutter` was not found on PATH")
+    try:
+        proc = subprocess.run(
+            [exe, "analyze"],
+            cwd=MOBILE,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except OSError as exc:
+        raise AnalyzeError(f"could not run flutter analyze: {exc}") from exc
+    out = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    hits = parse_hits(out)
+    # `flutter analyze` exits 1 when it reports issues, so a non-zero code is only
+    # a tool failure when it produced no parseable const finding AND no
+    # analyzer-style finding line at all.
+    if proc.returncode != 0 and not hits and not re.search(
+            r"^\s*(error|warning|info)\s+-\s", out, re.MULTILINE):
+        raise AnalyzeError(
+            f"flutter analyze exited {proc.returncode} without findings:\n"
+            + out.strip()[-800:])
     return hits
 
 
@@ -51,7 +79,9 @@ def strip_const_near(path: Path, line_no: int) -> bool:
     Searches the reported line first, then walks upward: Dart formatting often
     puts `const Foo(` on an earlier line than the offending argument.
     """
-    lines = path.read_text(encoding="utf-8").split("\n")
+    # newline="" keeps CRLF files CRLF (the "\r" stays on each split line).
+    with open(path, encoding="utf-8", newline="") as fh:
+        lines = fh.read().split("\n")
     idx = line_no - 1
     for i in range(idx, max(-1, idx - 12), -1):
         if i < 0 or i >= len(lines):
@@ -59,14 +89,18 @@ def strip_const_near(path: Path, line_no: int) -> bool:
         new = re.sub(r"(?<![\w$])const\s+(?=[A-Za-z_\[<])", "", lines[i], count=1)
         if new != lines[i]:
             lines[i] = new
-            path.write_text("\n".join(lines), encoding="utf-8")
+            with open(path, "w", encoding="utf-8", newline="") as fh:
+                fh.write("\n".join(lines))
             return True
     return False
 
 
 def main() -> None:
     for round_no in range(1, 13):
-        hits = analyze()
+        try:
+            hits = analyze()
+        except AnalyzeError as exc:
+            raise SystemExit(f"flutter analyze failed: {exc}") from exc
         if not hits:
             print(f"clean after {round_no - 1} round(s)")
             return

@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -31,9 +32,13 @@ CONFIG = Path.home() / '.config' / 'configstore' / 'firebase-tools.json'
 
 # The Firebase CLI's own OAuth client. Public constants, compiled into every
 # copy of the open-source tool — not a secret, and not the operator's.
-CLIENT_ID = ('563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6'
-             '.apps.googleusercontent.com')
-CLIENT_SECRET = 'j9iVZfS8kkCEFUPaAeJV0sAi'
+# Env overrides (FIREBASE_OAUTH_CLIENT_ID / FIREBASE_OAUTH_CLIENT_SECRET) win;
+# the constants remain the fallback.
+CLIENT_ID = os.environ.get('FIREBASE_OAUTH_CLIENT_ID') or (
+    '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6'
+    '.apps.googleusercontent.com')
+CLIENT_SECRET = (os.environ.get('FIREBASE_OAUTH_CLIENT_SECRET')
+                 or 'j9iVZfS8kkCEFUPaAeJV0sAi')
 TOKEN_URL = 'https://oauth2.googleapis.com/token'
 
 
@@ -109,20 +114,23 @@ PROJECT = _default_project()
 LEGACY_PROJECT = 'traidingbot-b4061'
 
 
-def main() -> None:
+def main() -> int:
     t = access_token()
+    errors = 0
     print('project')
     info = api(f'https://firebase.googleapis.com/v1beta1/projects/{PROJECT}', t)
     for k in ('projectId', 'state', 'resources'):
         if k in info:
             print(f'  {k}: {info[k]}')
     if '_httpError' in info:
+        errors += 1
         print(f'  ERROR {info["_httpError"]}: {info["_body"][:200]}')
 
     print('\nstorage buckets known to Firebase')
     b = api(f'https://firebasestorage.googleapis.com/v1beta/projects/{PROJECT}'
             '/buckets', t)
     if '_httpError' in b:
+        errors += 1
         print(f'  ERROR {b["_httpError"]}: {b["_body"][:300]}')
     else:
         for bucket in b.get('buckets', []) or []:
@@ -134,6 +142,7 @@ def main() -> None:
     g = api('https://storage.googleapis.com/storage/v1/b'
             f'?project={PROJECT}&fields=items(name,location,storageClass)', t)
     if '_httpError' in g:
+        errors += 1
         print(f'  ERROR {g["_httpError"]}: {g["_body"][:300]}')
     else:
         for bucket in g.get('items', []) or []:
@@ -141,7 +150,10 @@ def main() -> None:
                   f'{bucket.get("storageClass")}')
         if not g.get('items'):
             print('  (none)')
+    if errors:
+        print(f'\n{errors} call(s) failed')
+    return 1 if errors else 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

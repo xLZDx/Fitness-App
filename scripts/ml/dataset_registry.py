@@ -80,9 +80,10 @@ def _git_commit() -> str:
     try:
         return subprocess.run(
             ["git", "-C", str(REPO), "rev-parse", "HEAD"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, check=True, timeout=30,
         ).stdout.strip()
-    except Exception:
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        # git missing / not a checkout / hung: the only cases that mean UNKNOWN.
         return "UNKNOWN"
 
 
@@ -91,10 +92,10 @@ def _last_commit_touching(path: str) -> str:
     try:
         out = subprocess.run(
             ["git", "-C", str(REPO), "log", "-1", "--format=%H", "--", path],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, check=True, timeout=30,
         ).stdout.strip()
         return out or "UNKNOWN"
-    except Exception:
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return "UNKNOWN"
 
 
@@ -432,7 +433,8 @@ def _validate(entry: dict[str, Any]) -> None:
 
 
 def _dump(payload: dict[str, Any]) -> str:
-    return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True,
+                      allow_nan=False) + "\n"
 
 
 def main(argv: list[str] | None = None) -> int:

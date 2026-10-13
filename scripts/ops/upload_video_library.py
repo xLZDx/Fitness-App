@@ -24,17 +24,23 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from firebase_api import access_token, api  # noqa: E402
+from firebase_api import PROJECT, access_token, api  # noqa: E402
 
-BUCKET = 'traidingbot-b4061-videos-eu'
+# Bucket names are derived from the CURRENT project (`.firebaserc`, via
+# firebase_api.PROJECT), the same way create_video_bucket.py and
+# provision_video_bucket.py name them. They were literals pointing at the legacy
+# project `traidingbot-b4061` after the move to `fitness-app-korostelev`, so an
+# upload would have gone to the wrong project's bucket without a sound.
+BUCKET = f'{PROJECT}-videos-eu'
 DROP = Path('D:/Downloads/Video')
 PREFIX = 'exercises'
+MAX_WORKERS = 8
 
 # The licensed library. Its tree is already laid out under the object keys it
 # will be served from -- see `scripts/catalog/bundle_layout.py` -- so it needs
 # no gender-root discovery, unlike the drop, which arrives inside dated
 # wrapper directories.
-LICENSED_BUCKET = 'traidingbot-b4061-videos-private'
+LICENSED_BUCKET = f'{PROJECT}-videos-private'
 LICENSED_TREE = Path('D:/bundle/720')
 
 
@@ -68,15 +74,28 @@ def existing(token: str, bucket: str = BUCKET) -> dict[str, int]:
             return out
 
 
+def check_bucket(bucket: str) -> str:
+    """Fail loudly if [bucket] does not belong to the current project."""
+    if not bucket.startswith(f'{PROJECT}-'):
+        sys.exit(f'bucket {bucket!r} does not belong to the current project '
+                 f'{PROJECT!r} (.firebaserc / FIREBASE_PROJECT); refusing to upload')
+    return bucket
+
+
 def upload(local: Path, name: str, token: str, bucket: str) -> tuple[str, str]:
     url = ('https://storage.googleapis.com/upload/storage/v1/b/'
            f'{bucket}/o?uploadType=media&name={urllib.parse.quote(name, safe="")}')
-    req = urllib.request.Request(url, data=local.read_bytes(), method='POST')
-    req.add_header('Authorization', f'Bearer {token}')
-    req.add_header('Content-Type', 'video/mp4')
     try:
-        with urllib.request.urlopen(req, timeout=300) as r:
-            r.read()
+        size = local.stat().st_size
+        # Streamed from disk: urllib sends a file object in blocks when the
+        # Content-Length is given, so a clip is never held whole in memory.
+        with open(local, 'rb') as fh:
+            req = urllib.request.Request(url, data=fh, method='POST')
+            req.add_header('Authorization', f'Bearer {token}')
+            req.add_header('Content-Type', 'video/mp4')
+            req.add_header('Content-Length', str(size))
+            with urllib.request.urlopen(req, timeout=300) as r:
+                r.read()
         return name, ''
     except Exception as e:  # noqa: BLE001 - reported, not swallowed
         return name, str(e)[:160]
@@ -86,9 +105,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument('--licensed', action='store_true',
                     help='upload the purchased library to the private bucket')
+    ap.add_argument('--workers', type=int, default=4,
+                    help=f'parallel uploads, clamped to 1..{MAX_WORKERS}')
     args = ap.parse_args()
 
-    bucket = LICENSED_BUCKET if args.licensed else BUCKET
+    bucket = check_bucket(LICENSED_BUCKET if args.licensed else BUCKET)
+    workers = max(1, min(args.workers, MAX_WORKERS))
     token = access_token()
 
     wanted: dict[str, Path] = {}
@@ -133,7 +155,7 @@ def main() -> None:
 
     done = failed = 0
     errors: list[str] = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(upload, p, n, token, bucket)
                    for n, p in todo.items()]
         for f in concurrent.futures.as_completed(futures):

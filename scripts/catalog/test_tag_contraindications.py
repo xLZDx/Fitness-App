@@ -357,7 +357,7 @@ class TestTheShippedCatalog:
             # deltoid fly" so it stopped catching a stretch (-1:
             # `Rear Deltoid Stretch`, retracted by `retract_stale_tags` rather
             # than left stale in the catalog).
-            "upper_back": 265,
+            "upper_back": 280,
             # 486 -> 487 (full-catalog content audit, 2026-08-15). No rule
             # changed. `Dumbbell Face Down Lying Shoulder Pres` had shipped
             # with that typo in its title, so the `shoulder_overhead` rule
@@ -376,7 +376,7 @@ class TestTheShippedCatalog:
             # folded into `shoulder_overhead` so a reviewer can drop these two
             # rows without touching the 487 the pressing rules carry.
             "shoulder": 489,
-            "elbow": 371,
+            "elbow": 372,
             # 188 -> 190 (Gate E, 2026-08-15). Same two rows, same reason:
             # "crow" and "wild thing" added to `wrist_weight_bearing`, whose
             # mechanism (bodyweight through an extended wrist) already covered
@@ -388,7 +388,7 @@ class TestTheShippedCatalog:
             # the body from a side plank, which is spinal extension under
             # bodyweight -- the same mechanism as cobra, entered from the side.
             # Crow is deliberately NOT here: it rounds rather than extends.
-            "lower_back": 313,
+            "lower_back": 322,
             "hip": 404,
             "knee": 362,
             "ankle": 229,

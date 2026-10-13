@@ -1,11 +1,11 @@
 {
   "authority": "This worklist asks for a CLINICAL judgement and this repository cannot supply one. Nothing generated here proposes a tag value, and no agent, model or heuristic may fill in a disposition. D1 = EXTERNAL_CLINICAL_VALIDATION_REQUIRED; H3 = HOLD.",
-  "catalogue_bytes": 3197925,
-  "catalogue_sha256": "995cbdf5fbec3af40e5d9f5d12e99fb298655c63ba719fd64a2f75e498feebdc",
+  "catalogue_bytes": 3673169,
+  "catalogue_sha256": "0d46d3ac8f1005d7f772f6727395f03dd37e2e45b63902205ee86246c52114c8",
   "counts": {
-    "tagged": 1527,
+    "tagged": 1535,
     "total": 1887,
-    "untagged": 360
+    "untagged": 352
   },
   "dispositions": [
     "ACCEPT",
@@ -13,7 +13,7 @@
     "AMEND",
     "UNKNOWN"
   ],
-  "handoff_commit": "b68b446f07d9fa9b6cd4bd15b867802b1acd2a39",
+  "handoff_commit": "07d8e4ac34575ca2ec5fe2c9901df60b09fb44e3",
   "regions": [
     "ankle",
     "elbow",
