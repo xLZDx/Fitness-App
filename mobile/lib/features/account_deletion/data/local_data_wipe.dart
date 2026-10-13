@@ -101,18 +101,38 @@ Future<bool> finishInterruptedWipe({
   required LocalDataWipe wipe,
   required String? signedInUid,
 }) async {
-  final pending = await marker.read();
-  if (pending == null || pending == signedInUid) return false;
   try {
-    await wipe.wipe(pending);
+    final pending = await marker.read();
+    if (pending == null || pending == signedInUid) return false;
+    if (!_looksLikeUid(pending)) {
+      // The uid becomes a directory name below. A value that is empty or
+      // carries a path separator is not ours; drop it instead of acting on it.
+      await marker.clear();
+      return false;
+    }
+    try {
+      await wipe.wipe(pending);
+    } catch (e) {
+      // Keep the marker so the next launch tries again.
+      debugPrint(
+          'interrupted account deletion: device wipe still incomplete: ${e.runtimeType}');
+      return false;
+    }
+    await marker.clear();
+    return true;
   } catch (e) {
-    // Keep the marker so the next launch tries again.
-    debugPrint('interrupted account deletion: device wipe still incomplete: $e');
+    // A preferences failure must not become an unhandled async error.
+    debugPrint('interrupted account deletion sweep failed: ${e.runtimeType}');
     return false;
   }
-  await marker.clear();
-  return true;
 }
+
+bool _looksLikeUid(String uid) =>
+    uid.isNotEmpty &&
+    uid != '.' &&
+    uid != '..' &&
+    !uid.contains('/') &&
+    !uid.contains(r'\');
 
 /// Thrown after a wipe that attempted everything but left something behind.
 class LocalWipeIncomplete implements Exception {
@@ -250,7 +270,8 @@ class DeviceLocalDataWipe implements LocalDataWipe {
       // deletion into an error the user sees as "your account was not
       // deleted". Logged, not thrown -- same contract as the sign-out step in
       // the caller.
-      debugPrint('local data wipe: could not delete progress photos: $e');
+      // Type only: the exception text carries the uid-named photo path.
+      debugPrint('local data wipe: could not delete progress photos: ${e.runtimeType}');
       failed.add('progress_photos');
     }
 

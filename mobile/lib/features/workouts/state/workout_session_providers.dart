@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
@@ -140,8 +141,10 @@ class LogSessionAction extends Notifier<AsyncValue<void>> {
       if (streak > 0) {
         await repo.recordStreak(uid, streak).timeout(const Duration(seconds: 4));
       }
-    } catch (_) {
-      // Deliberate, and narrow: see LogWorkoutAction._rememberStreak.
+    } catch (e) {
+      // Deliberate, and narrow: see LogWorkoutAction._rememberStreak. Logged,
+      // because offline the 4 s bound always fires and the record is lost.
+      debugPrint('streak record not written: ${e.runtimeType}');
     }
   }
 }

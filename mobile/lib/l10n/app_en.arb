@@ -15,7 +15,7 @@
   "backupRestoreOtherAccount": "This backup was made under a different account. Restoring it replaces the health answers on this phone.",
   "backupRestoreAnyway": "Restore anyway",
   "backupRestoreUndo": "Undo restore",
-  "backupRestoreUndone": "Undone. The previous answers are back on this phone.",
+  "backupRestoreUndone": "Undone. This phone is back to how it was before the restore.",
   "backupRestoreHint": "Paste the backup text below, or open the file you saved and copy it in.",
   "backupRestoreTitle": "Restore",
   "backupSomethingWentWrong": "That did not work. Check the text and try again.",

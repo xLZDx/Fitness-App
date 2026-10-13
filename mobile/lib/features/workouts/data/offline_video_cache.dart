@@ -210,7 +210,9 @@ class FileOfflineVideoCache implements OfflineVideoCache {
   /// Swept once per instance, and the provider builds one -- so in practice
   /// once per app start, before the first byte of the first download.
   Future<void> _sweepPartials() {
-    return _sweep ??= () async {
+    final existing = _sweep;
+    if (existing != null) return existing;
+    final run = () async {
       final dir = await _cacheDir();
       await for (final ent in dir.list()) {
         if (ent is File && ent.path.endsWith(_partSuffix)) {
@@ -218,6 +220,12 @@ class FileOfflineVideoCache implements OfflineVideoCache {
         }
       }
     }();
+    _sweep = run;
+    // A failed sweep must not fail every later download for the whole run.
+    run.then((_) {}, onError: (Object _) {
+      _sweep = null;
+    });
+    return run;
   }
 
   /// Drops least-recently-used clips until the library fits [maxBytes].

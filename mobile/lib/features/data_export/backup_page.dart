@@ -50,7 +50,8 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     if (!mounted) return;
     final failed = ref.read(backupRestoreActionProvider).hasError;
     setState(() {
-      _restoreDone = false;
+      // A failed undo keeps the button, so the user can try again.
+      if (!failed) _restoreDone = false;
       _undone = !failed;
     });
   }

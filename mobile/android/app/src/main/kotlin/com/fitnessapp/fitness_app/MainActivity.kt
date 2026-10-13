@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
 
 /**
  * Phone-side MainActivity. Hosts the `fitnessapp/wear_sync` MethodChannel
@@ -32,6 +33,8 @@ class MainActivity: FlutterFragmentActivity() {
         const val CHANNEL = "fitnessapp/wear_sync"
         const val PATH_WORKOUT_STATE = "/workout_state"
         private const val TAG = "WearSync"
+        // A hung Data Layer call must not block the single worker forever.
+        private const val TASK_TIMEOUT_SECONDS = 5L
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -54,7 +57,7 @@ class MainActivity: FlutterFragmentActivity() {
                             val payload = json.toByteArray(Charsets.UTF_8)
                             // Success is reported only after every send task completes.
                             val sends = nodes.map { client.sendMessage(it, PATH_WORKOUT_STATE, payload) }
-                            for (send in sends) Tasks.await(send)
+                            for (send in sends) Tasks.await(send, TASK_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                             nodes.isNotEmpty()
                         }
                     }
@@ -93,7 +96,11 @@ class MainActivity: FlutterFragmentActivity() {
      */
     private fun connectedNodeIds(context: Context): List<String> {
         return try {
-            Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
+            Tasks.await(
+                Wearable.getNodeClient(context).connectedNodes,
+                TASK_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS,
+            ).map { it.id }
         } catch (e: Exception) {
             Log.e(TAG, "Connected node lookup failed", e)
             throw e

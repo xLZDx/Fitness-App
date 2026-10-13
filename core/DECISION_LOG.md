@@ -55738,3 +55738,7 @@ Code written by the second session `fitness-app-93`, which stopped before commit
 ## 2026-10-13 — Commit: sprint-end focused functional tests
 
 Focused tests for the eight tail-closure fixes, written and run by test agents after all coding was committed; all green in the touched areas, no product defects found. Gaps (timeout in the Firestore repository save, platform health rethrow, cross-page self-bookings) are listed in core/changes/2026-10-13-sprint-end-functional-tests.md.
+
+## 2026-10-13 - Commit: fixes for valid review minors
+
+Small valid MINOR findings of the four sprint-end specialist reviews are closed as one batch (undo bookkeeping, sweep retry, wear await timeouts, marker guard, logging); larger or pre-existing items go to the tail registry backlog. Detail: core/changes/2026-10-13-review-minors.md.
