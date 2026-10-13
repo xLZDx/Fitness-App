@@ -26,7 +26,7 @@ from build_dataset import split_for
 # Measured on exercises_vendor.json (1,887 rows) when this test was written:
 # 13 groups of rows sharing an identical normalised steps block are split
 # across train and holdout. No title group straddles.
-KNOWN_STEPS_GROUPS_STRADDLING = 13
+KNOWN_STEPS_GROUPS_STRADDLING = 9
 KNOWN_TITLE_GROUPS_STRADDLING = 0
 
 

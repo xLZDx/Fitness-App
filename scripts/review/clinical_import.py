@@ -194,10 +194,15 @@ def write_worklist(directory: Path) -> dict[str, Any]:
     # Metadata only. The rows live in the CSV and nowhere else: a JSON twin of
     # 1,887 rows would be 2.3 MB of derived duplicate, and the moment somebody
     # edits one copy the two disagree with no way to tell which is the review.
+    # Every file below is written with an explicit LF: the CT-1 registry hashes
+    # their raw bytes and `.gitattributes` pins `eol=lf` for them, so a Windows
+    # host (text mode writes CRLF, and csv.writer defaults to CRLF everywhere)
+    # must produce the same bytes as a Linux CI runner.
     (directory / "worklist.meta.json").write_text(
         json.dumps({k: v for k, v in payload.items() if k != "rows"},
                    ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
     # utf-8-sig: Excel on Windows reads a BOM-less UTF-8 CSV as the local
@@ -205,7 +210,7 @@ def write_worklist(directory: Path) -> dict[str, Any]:
     with (directory / "worklist.csv").open(
         "w", encoding="utf-8-sig", newline=""
     ) as fh:
-        out = csv.writer(fh)
+        out = csv.writer(fh, lineterminator="\n")
         out.writerow([*CSV_READONLY, *CSV_FILLABLE])
         for row in payload["rows"]:
             out.writerow([
@@ -232,9 +237,11 @@ def write_worklist(directory: Path) -> dict[str, Any]:
             "rows_csv": "worklist.csv",
         }, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
-    (directory / "HOW_TO_REVIEW.md").write_text(_instructions(payload), "utf-8")
+    (directory / "HOW_TO_REVIEW.md").write_text(
+        _instructions(payload), encoding="utf-8", newline="\n")
     return payload
 
 

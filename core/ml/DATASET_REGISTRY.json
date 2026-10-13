@@ -9,10 +9,10 @@
   "datasets": [
     {
       "artifact": {
-        "bytes": 1378949,
+        "bytes": 1329591,
         "dataset_hash": "f75f6d43cf99c26f9f8f451b868599c0aa6a600c9ea9eb36a7791041a1b3f4bc",
         "path": "core/ml/datasets/content_qa_catalogue_v1/dataset.json",
-        "sha256": "c374a9b9d28e4d68c6d91c9c2e32509a8f93922f3b4ed3169b546685caa1cb93"
+        "sha256": "ea5d341355671b22e00a07297667c8bd4aba59ed6da86e50db538146cf4db8c1"
       },
       "builder": "scripts/ct1/build_dataset.py",
       "contains_images": false,
@@ -57,9 +57,9 @@
     },
     {
       "artifact": {
-        "bytes": 537828,
+        "bytes": 530880,
         "path": "core/ml/review/ct1_review_batch_001/items.json",
-        "sha256": "5118a23a0588e3b90e5eab5187cd09efa2cdc71f3ccb58260ba9bdd2334a9c50"
+        "sha256": "e5d35a5737f0568090136d609423a4e3953a3e2d9da5b8cbbd5ff16894721004"
       },
       "created_at": null,
       "dataset_id": "ct1_review_batch_001",
@@ -89,9 +89,9 @@
     },
     {
       "artifact": {
-        "bytes": 544712,
+        "bytes": 537764,
         "path": "core/ml/review/ct1_review_batch_002/items.json",
-        "sha256": "cf092a2b3dfab36aa2375114e9f31c254b1eae7a1dff02ed5216b82508822338"
+        "sha256": "07fa38c58286ed72138eb1fd4ef14cc58d6f6bb777ade2ba23c18754cc8d225e"
       },
       "created_at": null,
       "dataset_id": "ct1_review_batch_002",
@@ -121,9 +121,9 @@
     },
     {
       "artifact": {
-        "bytes": 544698,
+        "bytes": 537750,
         "path": "core/ml/review/ct1_review_batch_003/items.json",
-        "sha256": "93bd4756befd70d365c65ae677874d7c6a2c8f787a070c5807749109e13307c4"
+        "sha256": "131b5e168102ba342cffa3cb44baae538cf836c8b1f7af71fdbf5dd24b11cc8e"
       },
       "created_at": null,
       "dataset_id": "ct1_review_batch_003",
@@ -153,9 +153,9 @@
     },
     {
       "artifact": {
-        "bytes": 1547797,
+        "bytes": 1546192,
         "path": "core/review/worklist/worklist.csv",
-        "sha256": "e56b31a85c139f351014002ccb864b33cc43f1632a90958123fe5f236ba6eaa3"
+        "sha256": "472aa39088860a68a3e7db419702a9964479f2bc9847cca948083860128b6337"
       },
       "created_at": null,
       "dataset_id": "clinical_contraindication_worklist",
@@ -169,15 +169,15 @@
       "purpose": "The row-level worklist issued for external clinical validation of the contraindication tags. Answers D1/H3; not a training corpus.",
       "row_count": 1887,
       "schema_version": 1,
-      "source_commit": "698c6988c876b93c31b3e2864f91dfd9e3292762",
+      "source_commit": "291fcd1386fd92018bd37ebb4b54ef3ef2534328",
       "sources": {
         "catalogue": "mobile/assets/data/exercises_vendor.json",
-        "catalogue_sha256": "995cbdf5fbec3af40e5d9f5d12e99fb298655c63ba719fd64a2f75e498feebdc",
+        "catalogue_sha256": "560bfd0f02d4be0b63f00c71343b1b401531be9c11e24cae843945c0b3db098c",
         "vocabulary": "scripts/catalog/injury_regions.json"
       },
       "splits": {
-        "tagged": 1527,
-        "untagged": 360
+        "tagged": 1535,
+        "untagged": 352
       },
       "status": "AVAILABLE"
     },
@@ -236,7 +236,7 @@
       "status": "AVAILABLE"
     }
   ],
-  "registry_commit": "b68b446f07d9fa9b6cd4bd15b867802b1acd2a39",
+  "registry_commit": "291fcd1386fd92018bd37ebb4b54ef3ef2534328",
   "required_fields": [
     "dataset_id",
     "dataset_version",

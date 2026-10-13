@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "handoff_commit": "07d8e4ac34575ca2ec5fe2c9901df60b09fb44e3",
-  "catalogue_sha256": "0d46d3ac8f1005d7f772f6727395f03dd37e2e45b63902205ee86246c52114c8",
+  "handoff_commit": "291fcd1386fd92018bd37ebb4b54ef3ef2534328",
+  "catalogue_sha256": "560bfd0f02d4be0b63f00c71343b1b401531be9c11e24cae843945c0b3db098c",
   "reviewer_name": "",
   "reviewer_credentials": "",
   "reviewer_authority": "",

@@ -19,5 +19,8 @@ The catalogue had missing or contradictory purpose, muscles, equipment and steps
 ## Affected contracts and paths
 Catalogue row ids are unchanged; `equipmentId` changed on 40 rows. Recommendation results move with the catalogue (the 100-profile suite is the guard). Not fixed by design, listed in the plan's exception register: the quarantined group-label row (no purpose or muscles, pinned by the quarantine test), a relaxation pose with no working muscle, and 58 ids whose steps are identical because the vendor lists one movement twice.
 
+## CT-1 content QA: root cause and fix
+The worklist CSV was written with `csv.writer`'s default CRLF terminator and the JSON files in text mode, so their bytes depended on the host; the repository stores LF, so on a Linux runner the "checked-in worklist is the one the catalogue produces" check and the registry hashes could not match what a Windows host had generated. `scripts/review/clinical_import.py` and `scripts/ml/dataset_registry.py` now write explicit LF, `.gitattributes` pins `eol=lf` for the hashed files, and `core/review/worklist/*` and `core/ml/DATASET_REGISTRY.json` are regenerated from the repaired catalogue (1887 rows: 1535 tagged, 352 untagged). The pinned counts in `scripts/ml/test_ml_contracts.py` and the near-duplicate baseline in `scripts/ct1/test_split_group_leakage.py` (13 to 9 after the step repairs) follow.
+
 ## Verification state
-`scripts` and `tools` Python suites: see the commit message of the regeneration step for the final counts; the CT-1 registry is regenerated from an LF checkout of this commit.
+`scripts/ml`, `scripts/review`, `scripts/ct1`, `scripts/catalog` and `tools`: the Python suites pass on this branch after the regeneration; the registry `--check` and the worklist `--verify` report a match.

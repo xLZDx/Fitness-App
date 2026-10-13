@@ -470,7 +470,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.write:
-        path.write_text(text, encoding="utf-8")
+        # Explicit LF: `.gitattributes` pins eol=lf for the registry, and a
+        # Windows host must write the bytes a Linux runner would.
+        path.write_text(text, encoding="utf-8", newline="\n")
         print(f"-> {path}")
 
     for e in payload["datasets"]:
