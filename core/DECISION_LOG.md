@@ -55717,3 +55717,7 @@ Account deletion no longer reads whole shared collections at once: `sweepSharedR
 ## 2026-10-13 — Commit: backup iteration ceiling, account binding and undo (NEW-BACKUP-ITER, NEW-RESTORE-BIND)
 
 A backup file can no longer demand unbounded PBKDF2 work, and a backup made under another account is refused unless the user chooses "Restore anyway"; the previous on-device answers can be undone (kept in memory only). Detail and limits: core/changes/2026-10-13-backup-account-binding.md.
+
+## 2026-10-13 — Commit: Wear bridge reports real delivery (NEW-WEAR)
+
+The phone-side Wear bridge (MainActivity.kt, not wear/) no longer answers "success" before delivery, runs its node lookup off the main thread, and surfaces lookup and send failures instead of reporting "no watch". Detail: core/changes/2026-10-13-wear-bridge-delivery.md.

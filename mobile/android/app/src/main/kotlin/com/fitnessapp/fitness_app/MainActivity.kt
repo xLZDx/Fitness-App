@@ -1,11 +1,15 @@
 package com.fitnessapp.fitness_app
 
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Wearable
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 /**
  * Phone-side MainActivity. Hosts the `fitnessapp/wear_sync` MethodChannel
@@ -27,6 +31,7 @@ class MainActivity: FlutterFragmentActivity() {
     companion object {
         const val CHANNEL = "fitnessapp/wear_sync"
         const val PATH_WORKOUT_STATE = "/workout_state"
+        private const val TAG = "WearSync"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -35,7 +40,7 @@ class MainActivity: FlutterFragmentActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "isPaired" -> {
-                        result.success(connectedNodeIds(this).isNotEmpty())
+                        runOffMainThread(result) { connectedNodeIds(this).isNotEmpty() }
                     }
                     "pushState" -> {
                         val json = call.arguments as? String
@@ -43,16 +48,14 @@ class MainActivity: FlutterFragmentActivity() {
                             result.error("ARG", "Expected JSON string", null)
                             return@setMethodCallHandler
                         }
-                        try {
+                        runOffMainThread(result) {
                             val nodes = connectedNodeIds(this)
                             val client = Wearable.getMessageClient(this)
                             val payload = json.toByteArray(Charsets.UTF_8)
-                            for (node in nodes) {
-                                client.sendMessage(node, PATH_WORKOUT_STATE, payload)
-                            }
-                            result.success(nodes.isNotEmpty())
-                        } catch (e: Exception) {
-                            result.error("WEAR", e.localizedMessage, null)
+                            // Success is reported only after every send task completes.
+                            val sends = nodes.map { client.sendMessage(it, PATH_WORKOUT_STATE, payload) }
+                            for (send in sends) Tasks.await(send)
+                            nodes.isNotEmpty()
                         }
                     }
                     else -> result.notImplemented()
@@ -60,18 +63,40 @@ class MainActivity: FlutterFragmentActivity() {
             }
     }
 
+    override fun onDestroy() {
+        executor.shutdown()
+        super.onDestroy()
+    }
+
+    // Tasks.await throws on the main thread, so all Data Layer work runs here.
+    private val executor: ExecutorService = Executors.newSingleThreadExecutor()
+
+    private fun runOffMainThread(result: MethodChannel.Result, work: () -> Any?) {
+        try {
+            executor.execute {
+                try {
+                    val value = work()
+                    runOnUiThread { result.success(value) }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Wear sync failed", e)
+                    runOnUiThread { result.error("WEAR", e.localizedMessage ?: e.toString(), null) }
+                }
+            }
+        } catch (e: RejectedExecutionException) {
+            result.error("WEAR", "Wear sync executor is shut down", null)
+        }
+    }
+
     /**
-     * Synchronously fetches the list of connected wear nodes. We block
-     * briefly because the MethodChannel is invoked on the Flutter
-     * platform thread; the Tasks API uses Google Play services so the
-     * await is fast even on cold cache.
+     * Fetches the connected wear nodes. Must be called off the main thread.
+     * An empty list means "no connected watch"; a failed lookup throws.
      */
     private fun connectedNodeIds(context: Context): List<String> {
         return try {
-            val nodes = Tasks.await(Wearable.getNodeClient(context).connectedNodes)
-            nodes.map { it.id }
-        } catch (_: Exception) {
-            emptyList()
+            Tasks.await(Wearable.getNodeClient(context).connectedNodes).map { it.id }
+        } catch (e: Exception) {
+            Log.e(TAG, "Connected node lookup failed", e)
+            throw e
         }
     }
 }

@@ -55,8 +55,9 @@ class WearWorkoutState {
 abstract class WearSyncService {
   Future<bool> isWatchPaired();
 
-  /// Pushes the current workout state to the paired watch. Best-effort —
-  /// returns false on no-pair / channel error.
+  /// Pushes the current workout state to the paired watch. Returns false
+  /// when no watch is connected; throws [PlatformException] when the lookup
+  /// or the send fails.
   Future<bool> pushState(WearWorkoutState state);
 
   /// Stream of inbound messages from the watch (e.g. "done set" tap).
@@ -91,9 +92,11 @@ class MethodChannelWearSyncService implements WearSyncService {
         jsonEncode(state.toMessage()),
       );
       return r ?? false;
-    } catch (_) {
+    } on MissingPluginException {
+      // No native bridge on this platform: same as "no watch".
       return false;
     }
+    // PlatformException (send/lookup failure) propagates to the caller.
   }
 
   @override
