@@ -149,6 +149,35 @@ class _GatedStore extends CoachRecordingStore {
   }
 }
 
+/// directoryFor throws for the first [failures] calls made while discarding
+/// (save is unaffected: it is armed only once `discard` is entered).
+class _FlakyDirStore extends CoachRecordingStore {
+  _FlakyDirStore(Directory docs, {required this.failures})
+      : super(documents: docs);
+  final int failures;
+  int failedCalls = 0;
+  int discardCalls = 0;
+  bool _discarding = false;
+
+  @override
+  Future<Directory> directoryFor(String uid) async {
+    if (_discarding) {
+      discardCalls++;
+      if (failedCalls < failures) {
+        failedCalls++;
+        throw const FileSystemException('transient');
+      }
+    }
+    return super.directoryFor(uid);
+  }
+
+  @override
+  Future<void> discard(String uid, File file) {
+    _discarding = true;
+    return super.discard(uid, file);
+  }
+}
+
 /// Records with A, presses Stop and waits until the save is parked.
 Future<_GatedStore> _stopWithPausedSave(WidgetTester t, _Rig r, _GatedStore s) async {
   await t.tap(_toggle);
@@ -252,6 +281,61 @@ void main() {
     expect(find.byKey(const Key('coach.recorder.export')), findsOneWidget);
     expect(find.textContaining('recording-discarded'), findsNothing);
     _expectToggle('Record');
+  });
+
+  testWidgets(
+      '(j) save in flight, auth A -> B -> A, then write completes: nothing left',
+      (t) async {
+    final docs = Directory.systemTemp.createTempSync('rec_acct_j');
+    addTearDown(() => docs.deleteSync(recursive: true));
+    final store = _GatedStore(docs);
+    final r = await _pump(t, store: store);
+    await _stopWithPausedSave(t, r, store);
+
+    await _emit(t, r, _user('B'));
+    await _emit(t, r, _user('A')); // same uid is back before the write ends
+    store.release();
+    await _settle(t);
+
+    final root = Directory('${docs.path}/$kCoachRecordingsDir');
+    expect(Directory('${root.path}/A').existsSync(), isFalse);
+    expect(Directory('${root.path}/B').existsSync(), isFalse);
+    expect(
+        root.existsSync()
+            ? root.listSync(recursive: true).whereType<File>()
+            : <File>[],
+        isEmpty);
+    expect(find.byKey(const Key('coach.recorder.export')), findsNothing);
+    expect(find.textContaining('save-failed'), findsNothing);
+    _expectToggle('Record');
+  });
+
+  group('CoachRecordingStore.discard retry', () {
+    late Directory docs;
+    setUp(() => docs = Directory.systemTemp.createTempSync('rec_retry'));
+    tearDown(() => docs.deleteSync(recursive: true));
+
+    test('first attempt fails, second succeeds: file and folder removed',
+        () async {
+      final store = _FlakyDirStore(docs, failures: 1);
+      final f = await store.save('A', CoachRecording(exercise: 'curl'));
+      expect(f.existsSync(), isTrue);
+      await store.discard('A', f);
+      expect(store.failedCalls, 1);
+      expect(store.discardCalls, 2);
+      expect(f.existsSync(), isFalse);
+      expect(Directory('${docs.path}/$kCoachRecordingsDir/A').existsSync(),
+          isFalse);
+    });
+
+    test('three consecutive failures: returns without throwing, 3 attempts',
+        () async {
+      final store = _FlakyDirStore(docs, failures: 3);
+      final f = await store.save('A', CoachRecording(exercise: 'curl'));
+      await expectLater(store.discard('A', f), completes);
+      expect(store.failedCalls, 3);
+      expect(store.discardCalls, 3);
+    });
   });
 
   group('CoachRecordingStore.discard', () {

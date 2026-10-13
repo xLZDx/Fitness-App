@@ -55798,3 +55798,7 @@ Decision: adopt GPT Decisions A (cautious boundary year for under-18 and body sc
 ## 2026-10-14 - Commit: Coach recorder save fenced against account change and deletion
 
 Decision: a recording save in flight is re-validated after the write and rolled back under the original uid if the account changed or is being deleted (GPT round 2 MAJOR-01). Evidence: focused Flutter run, 30 tests, see core/changes/2026-10-14-hardening-recorder-save-fence.md. Unverified: device.
+
+## 2026-10-14 - Commit: Recorder epoch fence and rollback retry
+
+Decision: close GPT round 3 MINOR-01/02 with an epoch counter and a three-attempt rollback. Evidence: focused Flutter run, 15 + 18 tests, see core/changes/2026-10-14-hardening-recorder-epoch-and-rollback-retry.md. Also recorded: Firestore rules emulator suite 279/279 passed on an alternate port (8080 held by another project's process, untouched); Firestore indexes with the TTL override deployed to fitness-app-korostelev; functions deploy not run because the predeploy hook runs the full test suite.

@@ -126,12 +126,19 @@ class CoachRecordingStore {
   /// Removes a file [save] wrote, and its uid folder when that leaves it empty.
   /// Best effort and never throws: it must not recreate anything.
   Future<void> discard(String uid, File file) async {
-    try {
-      if (await file.exists()) await file.delete();
-      final dir = await directoryFor(uid);
-      if (await dir.exists() && await dir.list().isEmpty) await dir.delete();
-    } catch (e) {
-      debugPrint('coach recorder: could not remove an aborted recording: $e');
+    // A few bounded attempts: a transient handle (antivirus, indexer) must not
+    // leave an aborted recording behind.
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        if (await file.exists()) await file.delete();
+        final dir = await directoryFor(uid);
+        if (await dir.exists() && await dir.list().isEmpty) await dir.delete();
+        return;
+      } catch (e) {
+        debugPrint(
+            'coach recorder: could not remove an aborted recording (attempt $attempt): $e');
+        if (attempt < 3) await Future<void>.delayed(const Duration(milliseconds: 150));
+      }
     }
   }
 }
@@ -156,6 +163,11 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
   /// the save destination is derived only from it, never from a later session.
   String? _recUid;
 
+  /// Bumped whenever a recording is discarded or a new one starts, so a save
+  /// already in flight can tell its own recording was abandoned even if the
+  /// same uid signed back in (A -> B -> A).
+  int _epoch = 0;
+
   @override
   void dispose() {
     _sub?.cancel();
@@ -166,6 +178,7 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
 
   /// Cancels the capture and drops the in-memory frames without saving.
   void _discard({String? error}) {
+    _epoch++;
     _sub?.cancel();
     _sub = null;
     _rec = null;
@@ -212,6 +225,7 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
     setState(() {
       _rec = rec;
       _recUid = uid;
+      _epoch++;
       _saved = null;
       _error = null;
     });
@@ -227,9 +241,11 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
     // not being deleted. Read through the container so it still works after
     // this widget is disposed; an unreadable scope counts as "not valid".
     final container = ProviderScope.containerOf(context, listen: false);
+    final epoch = _epoch;
     bool accountStillValid() {
       try {
-        return container.read(authUserProvider).valueOrNull?.uid == startUid &&
+        return _epoch == epoch &&
+            container.read(authUserProvider).valueOrNull?.uid == startUid &&
             container.read(accountBeingDeletedUidProvider) != startUid;
       } catch (_) {
         return false;
