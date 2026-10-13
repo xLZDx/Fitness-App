@@ -280,6 +280,79 @@ test("an export over the byte ceiling is trimmed and named, never silently short
     expect((res.notes as string[]).join(" ")).toContain("bytes");
   });
 
+test("an export under the byte ceiling is returned untouched, with no truncated entry",
+  async () => {
+    // ~7 MB serialized: large, but below MAX_EXPORT_BYTES (8 MiB).
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 700 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.debugSessions).toHaveLength(700);
+    expect(res.truncated).toEqual([]);
+    expect((res.notes as string[]).join(" ")).not.toContain("bytes");
+  });
+
+test("every section trimmed for size is named, once, and keeps its leading rows",
+  async () => {
+    // Two sections of ~6 MB each: ~12 MB total, so BOTH must be trimmed.
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "users/u1/workout_logs",
+      Array.from({ length: 600 }, (_, i) => ({ id: `l${i}`, data: { blob } })),
+    );
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 600 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.truncated).toContain("workoutLogs");
+    expect(res.truncated).toContain("debugSessions");
+    expect(new Set(res.truncated).size).toBe(res.truncated.length);
+    expect(res.workoutLogs.length).toBeLessThan(600);
+    expect(res.debugSessions.length).toBeLessThan(600);
+    // Trailing rows are dropped; the leading rows survive in order.
+    expect(res.workoutLogs[0]).toMatchObject({ id: "l0" });
+    expect(res.debugSessions[0]).toMatchObject({ id: "d0" });
+    expect(Buffer.byteLength(JSON.stringify(res), "utf8")).toBeLessThanOrEqual(
+      MAX_EXPORT_BYTES + 4096,
+    );
+  });
+
+test("a section that hit the row cap and the byte ceiling is named once",
+  async () => {
+    // 2100 rows hits MAX_ROWS (named "debug_sessions.uid"); 2000 kept rows of
+    // 10 KB is ~20 MB, so the byte guard trims it as well ("debugSessions").
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 2100 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.truncated).toContain("debug_sessions.uid");
+    expect(res.truncated).toContain("debugSessions");
+    expect(res.truncated.filter((n: string) => n === "debugSessions")).toHaveLength(1);
+    expect(Buffer.byteLength(JSON.stringify(res), "utf8")).toBeLessThanOrEqual(
+      MAX_EXPORT_BYTES + 4096,
+    );
+  });
+
 test("exactly at the cap is not reported as truncated", async () => {
   collections.set(
     "users/u1/workout_logs",

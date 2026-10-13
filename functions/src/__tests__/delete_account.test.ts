@@ -518,6 +518,96 @@ describe("deleteAccount", () => {
       expect(commit).toHaveBeenCalledTimes(3); // 450 + 450 + 100
     });
 
+  test("a sweep over an empty collection commits nothing", async () => {
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(batchOps).toEqual([]);
+    expect(commit).not.toHaveBeenCalled();
+  });
+
+  test("boundary: exactly one page (450) is fully deleted in one commit",
+    async () => {
+      seed(
+        "debug_sessions",
+        Array.from({ length: 450 }, (_, i) => ({
+          id: `one${i}`,
+          data: { uid: "u1" },
+        })),
+      );
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(batchOps.filter((o) => o.op === "delete")).toHaveLength(450);
+      expect(seededDocs.get("debug_sessions")).toEqual([]);
+      // The follow-up read returns an empty page and commits nothing.
+      expect(commit).toHaveBeenCalledTimes(1);
+    });
+
+  test("boundary: exactly two pages (900) are fully deleted in two commits",
+    async () => {
+      seed(
+        "debug_sessions",
+        Array.from({ length: 900 }, (_, i) => ({
+          id: `two${i}`,
+          data: { uid: "u1" },
+        })),
+      );
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(batchOps.filter((o) => o.op === "delete")).toHaveLength(900);
+      expect(seededDocs.get("debug_sessions")).toEqual([]);
+      expect(commit).toHaveBeenCalledTimes(2);
+    });
+
+  test("boundary: one row past a page (451) takes a second commit",
+    async () => {
+      seed(
+        "debug_sessions",
+        Array.from({ length: 451 }, (_, i) => ({
+          id: `x${i}`,
+          data: { uid: "u1" },
+        })),
+      );
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(batchOps.filter((o) => o.op === "delete")).toHaveLength(451);
+      expect(seededDocs.get("debug_sessions")).toEqual([]);
+      expect(commit).toHaveBeenCalledTimes(2); // 450 + 1
+    });
+
+  test("pages booking and report sweeps too: every row anonymised, none left",
+    async () => {
+      seed(
+        "coach_bookings",
+        Array.from({ length: 1000 }, (_, i) => ({
+          id: `bk${i}`,
+          data: { clientUid: "u1", coachUid: `coach_${i}` },
+        })),
+      );
+      seed(
+        "equipment_reports",
+        Array.from({ length: 500 }, (_, i) => ({
+          id: `er${i}`,
+          data: { reporterUid: "u1" },
+        })),
+      );
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      const bookings = seededDocs.get("coach_bookings") ?? [];
+      expect(bookings).toHaveLength(1000); // counterparty records survive
+      expect(bookings.every((b) => b.data.clientUid === "deleted_user")).toBe(
+        true,
+      );
+      const reports = seededDocs.get("equipment_reports") ?? [];
+      expect(reports).toHaveLength(500);
+      expect(reports.every((r) => r.data.reporterUid === "deleted_user")).toBe(
+        true,
+      );
+    });
+
   test("a failed page commit still surfaces the same internal error",
     async () => {
       seed(

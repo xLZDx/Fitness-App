@@ -63,6 +63,26 @@ void main() {
       );
     });
 
+    test('pushState reports false when no native bridge is registered',
+        () async {
+      // No handler installed: invokeMethod throws MissingPluginException,
+      // which means "no watch", not an error.
+      expect(await MethodChannelWearSyncService().pushState(state), isFalse);
+    });
+
+    test('pushState sends the state as JSON on the pushState method',
+        () async {
+      MethodCall? seen;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+        seen = call;
+        return true;
+      });
+      await MethodChannelWearSyncService().pushState(state);
+      expect(seen?.method, 'pushState');
+      expect(seen?.arguments, contains('"title":"Squat"'));
+    });
+
     test('pushState returns true when native reports delivery', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async => true);

@@ -55734,3 +55734,7 @@ A pending-wipe marker (uid only) is recorded right after the server confirms an 
 ## 2026-10-13 — Commit: offline "Mark complete" and concurrent prefetch (NEW-OFFLINE-LOG, NEW-PREFETCH-CONCURRENT)
 
 Code written by the second session `fitness-app-93`, which stopped before committing and which my operator did not recognise. I read the 39-line diff in full and committed it unchanged under my own record so the sprint's test and review phase covers it. Detail and limits: core/changes/2026-10-13-offline-log-and-prefetch.md.
+
+## 2026-10-13 — Commit: sprint-end focused functional tests
+
+Focused tests for the eight tail-closure fixes, written and run by test agents after all coding was committed; all green in the touched areas, no product defects found. Gaps (timeout in the Firestore repository save, platform health rethrow, cross-page self-bookings) are listed in core/changes/2026-10-13-sprint-end-functional-tests.md.
