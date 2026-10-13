@@ -42,6 +42,78 @@ abstract class LocalDataWipe {
   Future<void> wipe(String uid);
 }
 
+/// Remembers WHICH account's device data still has to be erased.
+///
+/// Written right AFTER the server confirms the deletion, cleared only after the
+/// wipe finished. Written after, not before, on purpose: a marker that existed
+/// while the account was still alive could later erase the only copy of a live
+/// account's health answers. If the process dies between confirmation and the
+/// wipe, the uid is still known and the next launch finishes the job. Holds a
+/// uid only, never health data.
+abstract class PendingWipeMarker {
+  Future<String?> read();
+  Future<void> write(String uid);
+  Future<void> clear();
+}
+
+class PrefsPendingWipeMarker implements PendingWipeMarker {
+  PrefsPendingWipeMarker({SharedPreferences? prefs}) : _injected = prefs;
+  final SharedPreferences? _injected;
+  static const key = 'account_deletion.pending_wipe_uid';
+
+  Future<SharedPreferences> get _prefs async =>
+      _injected ?? await SharedPreferences.getInstance();
+
+  @override
+  Future<String?> read() async => (await _prefs).getString(key);
+
+  @override
+  Future<void> write(String uid) async {
+    if (!await (await _prefs).setString(key, uid)) {
+      throw StateError('could not record the pending device wipe');
+    }
+  }
+
+  @override
+  Future<void> clear() async {
+    await (await _prefs).remove(key);
+  }
+}
+
+class InMemoryPendingWipeMarker implements PendingWipeMarker {
+  String? _uid;
+  @override
+  Future<String?> read() async => _uid;
+  @override
+  Future<void> write(String uid) async => _uid = uid;
+  @override
+  Future<void> clear() async => _uid = null;
+}
+
+/// Finishes a device wipe that an interrupted account deletion left behind.
+///
+/// Call once the signed-in user is known (null when signed out). A marker for
+/// the account that is STILL signed in is left alone: that deletion has not
+/// completed and its own retry will handle the wipe. Returns true when a wipe
+/// ran to completion and the marker was cleared.
+Future<bool> finishInterruptedWipe({
+  required PendingWipeMarker marker,
+  required LocalDataWipe wipe,
+  required String? signedInUid,
+}) async {
+  final pending = await marker.read();
+  if (pending == null || pending == signedInUid) return false;
+  try {
+    await wipe.wipe(pending);
+  } catch (e) {
+    // Keep the marker so the next launch tries again.
+    debugPrint('interrupted account deletion: device wipe still incomplete: $e');
+    return false;
+  }
+  await marker.clear();
+  return true;
+}
+
 /// Thrown after a wipe that attempted everything but left something behind.
 class LocalWipeIncomplete implements Exception {
   LocalWipeIncomplete(this.remaining);

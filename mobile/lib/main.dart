@@ -568,6 +568,7 @@ Future<void> main() async {
         // only here: the default provider records instead of deleting, so a
         // widget test can never wipe the host machine's documents directory.
         localDataWipeProvider.overrideWith((_) => DeviceLocalDataWipe()),
+        pendingWipeMarkerProvider.overrideWith((_) => PrefsPendingWipeMarker()),
 
         // Nurture moments + notifications.
         momentRepositoryProvider.overrideWithValue(momentRepo),
@@ -632,6 +633,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
+    // Finishes a device wipe an interrupted account deletion left behind.
+    ref.watch(interruptedWipeSweepProvider);
     final settings = ref.watch(settingsControllerProvider);
     // Resolved, never nullable: one source of truth shared with the exercise
     // catalog. Passing `null` here would hand resolution to Flutter alone and

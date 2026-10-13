@@ -55726,3 +55726,7 @@ The phone-side Wear bridge (MainActivity.kt, not wear/) no longer answers "succe
 
 **What and why:** readSnapshots rethrows instead of returning an empty list, so a Health Connect failure is no longer displayed as "No health data today"; an empty today read re-checks the auth status and refreshes the cached provider so a revoked permission is noticed without a restart. Detail: core/changes/2026-10-13-health-read-errors.md.
 **Unverified:** not compiled or run (sprint-end test agents do that); no device check. Revocation is detected only on an empty read, not on app resume.
+
+## 2026-10-13 — Commit: finish a device wipe after an interrupted account deletion (NEW-DELETE-INTERRUPT)
+
+A pending-wipe marker (uid only) is recorded right after the server confirms an account deletion and cleared when the device wipe completes; at launch, once the signed-in user is known, a leftover marker for a different account triggers the wipe. The marker is written after confirmation, never before, so it cannot erase a live account's only local health data. Detail: core/changes/2026-10-13-interrupted-deletion-wipe.md.
