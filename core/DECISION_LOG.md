@@ -55786,3 +55786,7 @@ Mock-only features are denied in release (flag, router redirect, guarded marketp
 ## 2026-10-13 - Commit: data-driven live-coach engine with eight beta exercises
 
 The live coach reads exercises from a validated JSON registry through one generic classifier (hold timer for plank and glute bridge); eight new exercises ship as authored beta and advisory: on-screen cues only, no speech, no rep failure, no technique-correctness claim, rep counts hidden until a measured holdout. Promotion to spoken or faulting needs recorded real sets (at least 20 per exercise, 3 camera heights, 3 people, fault margin above twice the tolerance, at most 5 percent false positives); a debug-only recorder collects them. Calf raise is excluded (no heel or toe landmarks). Detail: core/changes/2026-10-13-ws7-coach-registry-engine.md.
+
+## 2026-10-14 - Commit: journey tests for the hardening sprint, live-router flag seam, scan lifecycle fix
+
+Test review asked for falsifiable proof of release gating, account-switch isolation, age policy, deletion fence and body-scan behaviour. Journey tests were written and run by the e2e-runner agents (649 Flutter and 119 Jest focused tests green). Two production changes came out of them: demoFeaturesEnabledProvider so the live router can be driven with the release flag, and a lifecycle observer so a scan countdown cannot survive the app leaving the foreground. Open product decisions recorded in the plan: year-precision age bands, authored coach rows never fault. Detail: core/changes/2026-10-14-hardening-journey-tests.md.

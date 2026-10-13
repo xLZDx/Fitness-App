@@ -12,6 +12,7 @@ import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/recovery/data/deload_detector.dart';
 import 'package:fitness_app/features/safety/data/age_policy.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
+import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 
@@ -131,6 +132,108 @@ void main() {
     expect(safetyContextFor(_profile(birthYear: 1996), now: now).ageBand,
         AgeBand.adult);
     expect(safetyContextFor(_profile(), now: now).ageBand, AgeBand.adult);
+  });
+
+  group('rollover (birthYear has year precision only)', () {
+    // The questionnaire stores a birth YEAR, so the age is `calendarYear -
+    // birthYear`: the band flips on 1 January, whatever the real birthday is.
+    SafetyContext at(int birthYear, DateTime now) =>
+        safetyContextFor(_profile(birthYear: birthYear), now: now);
+
+    test('year precision: 17 -> 18 flips on 1 Jan of the year, not on a birthday',
+        () {
+      // Born 2008: age 17 in 2025, age 18 in 2026.
+      expect(at(2008, DateTime(2025, 12, 31)).ageBand, AgeBand.minor);
+      expect(at(2008, DateTime(2026, 1, 1)).ageBand, AgeBand.adult);
+      // Within one calendar year the band never changes, even if the person is
+      // really still 17 until a December birthday (what the code does).
+      expect(at(2008, DateTime(2026, 1, 1)).ageBand,
+          at(2008, DateTime(2026, 12, 31)).ageBand);
+      // The advisory rolls over with the band.
+      expect(at(2008, DateTime(2025, 12, 31)).advisories.single.reason,
+          BlockReason.ageMinorAdvisory);
+      expect(at(2008, DateTime(2026, 1, 1)).advisories, isEmpty);
+    });
+
+    test('year precision: 64 -> 65 flips on 1 Jan of the year, not on a birthday',
+        () {
+      // Born 1961: age 64 in 2025, age 65 in 2026.
+      expect(at(1961, DateTime(2025, 12, 31)).ageBand, AgeBand.adult);
+      expect(at(1961, DateTime(2026, 1, 1)).ageBand, AgeBand.senior);
+      expect(at(1961, DateTime(2026, 1, 1)).ageBand,
+          at(1961, DateTime(2026, 12, 31)).ageBand);
+      expect(at(1961, DateTime(2025, 12, 31)).advisories, isEmpty);
+      expect(at(1961, DateTime(2026, 1, 1)).advisories.single.reason,
+          BlockReason.ageSeniorAdvisory);
+    });
+
+    test('year precision: the programme day cap follows the same rollover', () {
+      expect(
+          programmeDaysPerWeek(5, _profile(birthYear: 1961),
+              now: DateTime(2025, 12, 31)),
+          5);
+      expect(
+          programmeDaysPerWeek(5, _profile(birthYear: 1961),
+              now: DateTime(2026, 1, 1)),
+          3);
+      expect(
+          programmeDaysPerWeek(5, _profile(birthYear: 2008),
+              now: DateTime(2025, 12, 31)),
+          4);
+      expect(
+          programmeDaysPerWeek(5, _profile(birthYear: 2008),
+              now: DateTime(2026, 1, 1)),
+          5);
+    });
+  });
+
+  group('age cap and beginner cap together', () {
+    final now = DateTime(2026, 10, 13);
+    UserProfile beginner(int birthYear, int freq) => _profile(
+        birthYear: birthYear,
+        level: FitnessLevel(tier: FitnessTier.beginner, frequencyPerWeek: freq));
+
+    test('senior beginner who trains 0x a week: the stricter beginner cap (2) wins',
+        () {
+      // age cap 3, beginner cap 0 + 2 = 2.
+      expect(programmeDaysPerWeek(5, beginner(1950, 0), now: now), 2);
+    });
+
+    test('senior beginner who trains 3x a week: the stricter age cap (3) wins', () {
+      // age cap 3, beginner cap 3 + 2 = 5.
+      expect(programmeDaysPerWeek(5, beginner(1950, 3), now: now), 3);
+    });
+
+    test('minor beginner who trains 1x a week: beginner cap (3) beats age cap (4)',
+        () {
+      expect(programmeDaysPerWeek(5, beginner(2011, 1), now: now), 3);
+    });
+
+    test('adult beginner is not touched by the age cap', () {
+      expect(programmeDaysPerWeek(5, beginner(1990, 3), now: now), 5);
+    });
+
+    test('senior beginner plan: tier ceiling and 0.85 intensity cap both hold', () {
+      final p = beginner(1950, 0).copyWith(
+          health: HealthHistory(
+              injuries: const [],
+              screening: {for (final q in ParQQuestion.values) q: false},
+              flags: HealthFlags(restrictions: const {})));
+      final ctx = safetyContextFor(p, now: now);
+      expect(ctx.ageBand, AgeBand.senior);
+      expect(ctx.maxDifficulty, ExerciseDifficulty.beginner);
+      final pool = [
+        _ex('squat'),
+        _ex('hard', difficulty: ExerciseDifficulty.intermediate),
+        _ex('stretch', group: 'Stretching - Mobility', stretch: true),
+        _ex('row'),
+        _ex('curl'),
+      ];
+      final plan = _plan(ctx, pool: pool).plan;
+      expect(plan.intensityFactor, lessThanOrEqualTo(0.85));
+      expect(plan.exercises.map((e) => e.id), isNot(contains('hard')));
+      expect(plan.exercises.any((e) => e.isStretch), isTrue);
+    });
   });
 
   group('selection', () {

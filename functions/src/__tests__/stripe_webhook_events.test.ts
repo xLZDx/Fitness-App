@@ -557,3 +557,187 @@ describe("deleted-account guard: remaining event paths", () => {
     expect(userRefs()).toEqual([]);
   });
 });
+
+describe("webhook replay journey: redelivery of the same event converges on one document", () => {
+  const notFound = () =>
+    Object.assign(new Error("no user"), { code: "auth/user-not-found" });
+  const authDown = () =>
+    Object.assign(new Error("auth down"), { code: "auth/internal-error" });
+  const subEvent = (created: number, status: string) => ({
+    id: `evt_${created}_${status}`,
+    type: "customer.subscription.updated",
+    created,
+    data: { object: subscriptionObject(status) },
+  });
+  const userRefs = () => [...refs.keys()].filter((p) => p.startsWith("users/"));
+
+  test("a write that landed but whose recheck failed (500) is replayed to the same single document", async () => {
+    const event = subEvent(2000, "active");
+    // First lookup (pre-write guard) succeeds, the post-write recheck fails.
+    getUser.mockResolvedValueOnce({}).mockRejectedValueOnce(authDown());
+
+    const first = await deliver(event);
+    expect(first.status).toHaveBeenCalledWith(500);
+    const afterPartial = { ...getRef(SUB_DOC).__read() };
+    expect(afterPartial).toMatchObject({ status: "active", lastStripeEventCreated: 2000 });
+
+    // Stripe redelivers the same event id: lookups now succeed.
+    const second = await deliver(event);
+    expect(second.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toEqual(afterPartial);
+    expect(userRefs()).toEqual([SUB_DOC]);
+
+    // A third delivery after success is a no-op as well.
+    const third = await deliver(event);
+    expect(third.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toEqual(afterPartial);
+  });
+
+  test("a lifetime write that failed outright (500, nothing stored) is completed by the redelivery", async () => {
+    // The transaction mock does not await tx.set, so the outright-failure case
+    // is exercised through the direct-write lifetime path.
+    const event = {
+      id: "evt_life",
+      type: "payment_intent.succeeded",
+      created: 1000,
+      data: {
+        object: {
+          id: "pi_life",
+          customer: "cus_1",
+          metadata: { firebaseUid: "u1", tier: "celebrityTrainer", period: "lifetime" },
+        },
+      },
+    };
+    getRef(SUB_DOC).set.mockRejectedValueOnce(new Error("firestore unavailable"));
+
+    const first = await deliver(event);
+    expect(first.status).toHaveBeenCalledWith(500);
+    expect(getRef(SUB_DOC).__read()).toBeUndefined();
+
+    const second = await deliver(event);
+    expect(second.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      tier: "celebrityTrainer",
+      status: "active",
+      isLifetime: true,
+      stripeCustomerId: "cus_1",
+      stripePaymentIntentId: "pi_life",
+    });
+    expect(userRefs()).toEqual([SUB_DOC]);
+  });
+
+  test("an older event delivered after a newer one is ignored by the event-order guard, also when replayed", async () => {
+    await deliver(subEvent(3000, "canceled"));
+    const settled = { ...getRef(SUB_DOC).__read() };
+    expect(settled).toMatchObject({ status: "cancelled", lastStripeEventCreated: 3000 });
+
+    const older = await deliver(subEvent(2000, "active"));
+    const olderReplay = await deliver(subEvent(2000, "active"));
+
+    expect(older.status).toHaveBeenCalledWith(200);
+    expect(olderReplay.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toEqual(settled);
+    expect(logger.info).toHaveBeenCalledWith(
+      "ignoring out-of-order stripe event",
+      expect.objectContaining({ eventCreated: 2000, alreadyApplied: 3000 }),
+    );
+  });
+
+  test("the same event id redelivered after deletion answers 200 and writes nothing, even after a raced write was removed", async () => {
+    const event = subEvent(2000, "active");
+    // First delivery races the deletion: the user is there before the write, gone after.
+    getUser.mockResolvedValueOnce({}).mockRejectedValue(notFound());
+    getRef(SUB_DOC).delete = jest.fn(async () => {
+      refs.delete(SUB_DOC);
+    });
+
+    const first = await deliver(event);
+    expect(first.status).toHaveBeenCalledWith(200);
+    expect(refs.has(SUB_DOC)).toBe(false);
+
+    const replay = await deliver(event);
+    expect(replay.status).toHaveBeenCalledWith(200);
+    expect(userRefs()).toEqual([]);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "webhook_event_for_deleted_account",
+      expect.objectContaining({ uid: "u1" }),
+    );
+  });
+
+  test("a lifetime payment replayed after the account was deleted grants nothing", async () => {
+    getUser.mockRejectedValue(notFound());
+    const event = {
+      id: "evt_life",
+      type: "payment_intent.succeeded",
+      created: 1000,
+      data: {
+        object: {
+          id: "pi_life",
+          customer: "cus_1",
+          metadata: { firebaseUid: "u1", tier: "celebrityTrainer", period: "lifetime" },
+        },
+      },
+    };
+    await deliver(event);
+    const replay = await deliver(event);
+    expect(replay.status).toHaveBeenCalledWith(200);
+    expect(userRefs()).toEqual([]);
+  });
+});
+
+describe("coach booking confirmation journey with deleted accounts", () => {
+  const confirmEvent = {
+    id: "evt_bk",
+    type: "payment_intent.succeeded",
+    created: 1000,
+    data: {
+      object: {
+        id: "pi_bk",
+        metadata: { kind: "coach_booking", bookingId: "bk_1", firebaseUid: "u1" },
+      },
+    },
+  };
+  const gone = () =>
+    getUser.mockRejectedValue(
+      Object.assign(new Error("no user"), { code: "auth/user-not-found" }),
+    );
+  const userRefs = () => [...refs.keys()].filter((p) => p.startsWith("users/"));
+
+  test("a booking anonymised by the client's deletion is confirmed once; a replay changes nothing and no user document appears", async () => {
+    gone();
+    await getRef("coach_bookings/bk_1").set({
+      clientUid: "deleted_user",
+      coachUid: "k1",
+      status: "pending",
+    });
+
+    const first = await deliver(confirmEvent);
+    expect(first.status).toHaveBeenCalledWith(200);
+    const confirmed = { ...getRef("coach_bookings/bk_1").__read() };
+    expect(confirmed).toMatchObject({
+      clientUid: "deleted_user",
+      coachUid: "k1",
+      status: "confirmed",
+    });
+
+    const replay = await deliver(confirmEvent);
+    expect(replay.status).toHaveBeenCalledWith(200);
+    expect(getRef("coach_bookings/bk_1").__read()).toEqual(confirmed);
+    expect(userRefs()).toEqual([]);
+  });
+
+  test("a booking removed by the deletion sweep is not recreated, on the first delivery or on a replay", async () => {
+    gone();
+    const first = await deliver(confirmEvent);
+    const replay = await deliver(confirmEvent);
+
+    expect(first.status).toHaveBeenCalledWith(200);
+    expect(replay.status).toHaveBeenCalledWith(200);
+    expect(getRef("coach_bookings/bk_1").__read()).toBeUndefined();
+    expect(userRefs()).toEqual([]);
+    expect(logger.error).toHaveBeenCalledWith(
+      "webhook_booking_confirm_booking_doc_missing",
+      expect.objectContaining({ bookingId: "bk_1" }),
+    );
+  });
+});

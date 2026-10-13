@@ -17,5 +17,19 @@ void main() {
       expect(ids.length, 500);
       expect(ids.every((v) => v >= 0 && v <= 0x7FFFFFFF), isTrue);
     });
+
+    test('literal ids for real inputs, stable across calls (computed independently of the Dart code)', () {
+      // FNV-1a 32 over the UTF-16 code units, masked to 31 bits; the numbers
+      // come from a separate Python implementation, not from this function.
+      expect(reminderIdFor('body_scan_next'), 1706528949);
+      expect(reminderIdFor('body_scan_next'), 1706528949);
+      expect(reminderIdFor('u1'), 71477235);
+      expect(reminderIdFor('u2'), 88254854);
+    });
+
+    test('two different inputs give two different ids', () {
+      expect(reminderIdFor('u1'), isNot(reminderIdFor('u2')));
+      expect(reminderIdFor('body_scan_next'), isNot(reminderIdFor('session_1')));
+    });
   });
 }

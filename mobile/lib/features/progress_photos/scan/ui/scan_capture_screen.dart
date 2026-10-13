@@ -65,7 +65,8 @@ class _ScanCaptureBody extends ConsumerStatefulWidget {
   ConsumerState<_ScanCaptureBody> createState() => _ScanCaptureBodyState();
 }
 
-class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody> {
+class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
+    with WidgetsBindingObserver {
   late final ScanCamera _camera;
   late final ScanSpeaker _speaker;
   late final ScanHaptics _haptics;
@@ -99,6 +100,7 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _cameraLink = ref.listenManual(scanCameraProvider, (_, __) {});
     _camera = ref.read(scanCameraProvider);
     _speaker = ref.read(scanSpeakerProvider);
@@ -140,8 +142,21 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody> {
     }
   }
 
+  /// A countdown must never survive the app leaving the foreground: the user
+  /// is no longer posing, and a shutter that fires on return would capture an
+  /// unprepared body. Anything but `resumed` resets the machine and clears the
+  /// digit; the user has to be ready again to start a new countdown.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed || !mounted) return;
+    _machine.reset();
+    unawaited(_speaker.stop());
+    if (_countdown != null) setState(() => _countdown = null);
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     unawaited(_sub?.cancel());
     unawaited(_camera.stop());
     unawaited(_speaker.stop());

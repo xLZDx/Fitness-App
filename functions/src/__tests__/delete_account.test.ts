@@ -861,3 +861,142 @@ describe("deleteAccount ordering and the final sweep", () => {
     expect(deleteUser).not.toHaveBeenCalled();
   });
 });
+
+describe("deleteAccount journey: failure combinations a user can hit and retry", () => {
+  const FIRESTORE_FAILED = "account deletion: failed to delete Firestore data";
+  const AUTH_FAILED = "account deletion: failed to delete the Auth user";
+  const STRIPE_FAILED = "account deletion: failed to cancel subscription";
+
+  test("a failed cancel keeps all data and tokens, answers a retryable error, and the retry completes", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeSubscriptionId: "sub_1" });
+    seed("debug_sessions", [{ id: "d1", data: { uid: "u1" } }]);
+    cancel.mockRejectedValueOnce(new Error("stripe down"));
+
+    const err = await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(err.message).toMatch(/Your account has not been deleted/);
+    expect(err.message).toMatch(/try again/i);
+    expect(logger.error).toHaveBeenCalledWith(
+      STRIPE_FAILED,
+      expect.objectContaining({ uid: "u1", subscriptionId: "sub_1" }),
+    );
+    expect(revokeRefreshTokens).not.toHaveBeenCalled();
+    expect(recursiveDelete).not.toHaveBeenCalled();
+    expect(commit).not.toHaveBeenCalled();
+    expect(batchOps).toEqual([]);
+    expect(seededDocs.get("debug_sessions")).toHaveLength(1);
+    expect(deleteUser).not.toHaveBeenCalled();
+
+    // Stripe recovered: the same call now deletes everything, revoking once.
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+    expect(res).toEqual({ success: true });
+    expect(cancel).toHaveBeenCalledTimes(2);
+    expect(revokeRefreshTokens).toHaveBeenCalledTimes(1);
+    expect(seededDocs.get("debug_sessions")).toEqual([]);
+    expect(deleteUser).toHaveBeenCalledTimes(1);
+  });
+
+  test("a failed revoke plus a failed first sweep: error, Auth user kept, no final sweep; the retry converges", async () => {
+    revokeRefreshTokens.mockRejectedValueOnce(new Error("auth backend down"));
+    recursiveDelete.mockRejectedValueOnce(new Error("bulkwriter failed"));
+
+    const err = await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(err.message).toMatch(/some of your data could not be deleted/);
+    expect(logger.error).toHaveBeenCalledWith(
+      "delete_account_revoke_tokens_failed",
+      expect.objectContaining({ uid: "u1" }),
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      FIRESTORE_FAILED,
+      expect.objectContaining({ uid: "u1" }),
+    );
+    // Only the three first-pass sweeps ran; the final sweep belongs after deleteUser.
+    expect(recursiveDelete).toHaveBeenCalledTimes(3);
+    expect(deleteUser).not.toHaveBeenCalled();
+
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+    expect(res).toEqual({ success: true });
+    // Retry adds three first-pass sweeps, deleteUser and three final sweeps.
+    expect(recursiveDelete).toHaveBeenCalledTimes(9);
+    expect(deleteUser).toHaveBeenCalledTimes(1);
+  });
+
+  test("a failed revoke plus a failed final sweep: still a success, both named in the log", async () => {
+    (logger.error as jest.Mock).mockClear(); // the logger mock is shared across tests
+    revokeRefreshTokens.mockRejectedValue(new Error("auth backend down"));
+    let afterDeleteUser = false;
+    deleteUser.mockImplementation(async () => {
+      afterDeleteUser = true;
+    });
+    recursiveDelete.mockImplementation(async () => {
+      if (afterDeleteUser) throw new Error("firestore down");
+    });
+
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(res).toEqual({ success: true });
+    expect(deleteUser).toHaveBeenCalledTimes(1);
+    const events = (logger.error as jest.Mock).mock.calls.map((c) => c[0]);
+    expect(events).toContain("delete_account_revoke_tokens_failed");
+    expect(events).toContain("delete_account_final_sweep_failed");
+    expect(events).not.toContain(FIRESTORE_FAILED);
+    expect(events).not.toContain(AUTH_FAILED);
+  });
+
+  test("a failed Auth deletion after the wipe: the message says so, no final sweep runs, the retry finishes", async () => {
+    deleteUser.mockRejectedValueOnce(
+      Object.assign(new Error("auth internal"), { code: "auth/internal-error" }),
+    );
+
+    const err = await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(err.message).toMatch(/Your data was deleted, but signing out could not be completed/);
+    expect(logger.error).toHaveBeenCalledWith(
+      AUTH_FAILED,
+      expect.objectContaining({ uid: "u1" }),
+    );
+    expect(recursiveDelete).toHaveBeenCalledTimes(3);
+
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+    expect(res).toEqual({ success: true });
+    expect(deleteUser).toHaveBeenCalledTimes(2);
+    expect(recursiveDelete).toHaveBeenCalledTimes(9);
+  });
+
+  test("the shared-record sweep commits fall after the first recursive sweep and before deleteUser", async () => {
+    seed("coach_bookings", [{ id: "b1", data: { clientUid: "u1", coachUid: "coach_9" } }]);
+    seed("equipment_reports", [{ id: "r1", data: { reporterUid: "u1" } }]);
+    seed("debug_sessions", [{ id: "d1", data: { uid: "u1" } }]);
+    const order: string[] = [];
+    recursiveDelete.mockImplementation(async (ref: any) => {
+      order.push(`sweep:${ref.path}`);
+    });
+    deleteUser.mockImplementation(async () => {
+      order.push("deleteUser");
+    });
+    commit.mockImplementation(async () => {
+      order.push(`commit:${batchOps[batchOps.length - 1].path}`);
+    });
+    try {
+      await deleteAccount.run(req({ uid: "u1" }));
+    } finally {
+      commit.mockImplementation(async () => undefined);
+    }
+
+    const commits = order.filter((o) => o.startsWith("commit:"));
+    expect(commits).toEqual([
+      "commit:coach_bookings/b1",
+      "commit:equipment_reports/r1",
+      "commit:debug_sessions/d1",
+    ]);
+    const lastFirstPassSweep = 2; // three Promise.all sweeps occupy indexes 0..2
+    expect(order.slice(0, 3).every((o) => o.startsWith("sweep:"))).toBe(true);
+    for (const c of commits) {
+      expect(order.indexOf(c)).toBeGreaterThan(lastFirstPassSweep);
+      expect(order.indexOf(c)).toBeLessThan(order.indexOf("deleteUser"));
+    }
+    // The final sweep comes strictly after deleteUser.
+    expect(order.slice(order.indexOf("deleteUser") + 1).filter((o) => o.startsWith("sweep:"))).toHaveLength(3);
+  });
+});

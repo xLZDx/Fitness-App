@@ -455,4 +455,116 @@ void main() {
       });
     }
   });
+
+  group('registry structure (T10)', () {
+    test('ids and aliases are unique and every id resolves to itself', () {
+      final ids = registry.exercises.map((e) => e.id).toList();
+      expect(ids.toSet().length, ids.length);
+      final aliases = [for (final e in registry.exercises) ...e.aliases];
+      expect(aliases.toSet().length, aliases.length, reason: 'duplicate alias');
+      expect(aliases.toSet().intersection(ids.toSet()), isEmpty,
+          reason: 'an alias must not shadow another exercise id');
+      for (final e in registry.exercises) {
+        expect(registry.lookup(e.id)?.id, e.id);
+        for (final a in e.aliases) {
+          expect(registry.lookup(a)?.id, e.id, reason: a);
+        }
+      }
+    });
+
+    test('rules and signal only reference joints and phases the exercise declares',
+        () {
+      for (final e in registry.exercises) {
+        final phases = e.phases.map((p) => p.name).toSet();
+        for (final r in e.rules) {
+          expect(phases, contains(r.phase), reason: '${e.id}.${r.id} phase');
+        }
+        expect(e.tracked.toSet().intersection(e.unscored.toSet()), isEmpty,
+            reason: '${e.id}: a joint cannot be both tracked and unscored');
+        for (final j in e.signal.joints) {
+          expect(e.tracked, contains(j), reason: '${e.id} signal joint $j');
+        }
+        expect(coachRequiredLandmarks(e), isNotEmpty, reason: e.id);
+      }
+    });
+
+    test('safety-wording rows (tricepDip, goodMorning) stay advisory and beta', () {
+      for (final id in const ['tricepDip', 'goodMorning']) {
+        final e = spec(id);
+        expect(e.safetyWording, isTrue);
+        expect(e.provenance.status, CoachProvenanceStatus.beta);
+        expect(e.rules.every((r) => r.advisory), isTrue, reason: id);
+      }
+    });
+  });
+
+  group('through the session controller (T10)', () {
+    ProviderContainer open(MockPoseDetectorService svc, FormExercise ex) {
+      final c = ProviderContainer(overrides: [
+        poseDetectorServiceProvider.overrideWithValue(svc),
+        voiceCoachProvider.overrideWithValue(MockVoiceCoach()),
+        coachRegistrySnapshotProvider.overrideWithValue(registry),
+        selectedExerciseProvider.overrideWith((_) => ex),
+      ]);
+      addTearDown(c.dispose);
+      c.read(repSessionControllerProvider);
+      return c;
+    }
+
+    test('bentOverRow: a good cycle through the controller never reports a fault',
+        () async {
+      final frames = cycle((v, t) => rowFrame(v, ts: t), 165, 90);
+      final svc = MockPoseDetectorService(frames);
+      final c = open(svc, FormExercise.bentOverRow);
+      await svc.start();
+      await pumpEventQueue();
+      final s = c.read(repSessionControllerProvider);
+      expect(s.lastRepVerdict, isNot(RepVerdict.faulted));
+      expect(s.reps.where((r) => !r.isClean), isEmpty);
+      await svc.dispose();
+    });
+
+    test('bentOverRow: an advisory cue through the controller never turns a rep into a fault',
+        () async {
+      // hip 170 trips bentOverRow.hinge on every frame of the rep.
+      final frames = cycle((v, t) => rowFrame(v, hip: 170, ts: t), 165, 90);
+      final svc = MockPoseDetectorService(frames);
+      final c = open(svc, FormExercise.bentOverRow);
+      final seen = <String?>[];
+      c.listen(formFeedbackControllerProvider, (_, n) => seen.add(n?.cueId),
+          fireImmediately: false);
+      await svc.start();
+      await pumpEventQueue();
+      expect(seen, contains('bentOverRow.hinge'),
+          reason: 'the cue reaches the screen-facing provider');
+      final s = c.read(repSessionControllerProvider);
+      expect(s.lastRepVerdict, isNot(RepVerdict.faulted),
+          reason: 'authored beta rows are advisory: they never fail a rep');
+      await svc.dispose();
+    });
+
+    test('plank: the sag cue and the paused hold timer agree (same normalised signal)',
+        () async {
+      // The sag rule reads the SAME torso-normalised signal as the hold band
+      // (0.08 + 0.04 tolerance = the 0.12 band edge), so a visible sag cue
+      // means the timer is already out of band, and in-band time is never lost
+      // to a cue. Good frames first so the timer demonstrably ran.
+      final frames = [
+        for (var ms = 0; ms <= 3000; ms += 100) plankFrame(0.0, ts: ms),
+        for (var ms = 3100; ms <= 6000; ms += 100) plankFrame(0.06, ts: ms),
+      ];
+      final svc = MockPoseDetectorService(frames);
+      final c = open(svc, FormExercise.plank);
+      final seen = <String?>[];
+      c.listen(formFeedbackControllerProvider, (_, n) => seen.add(n?.cueId));
+      await svc.start();
+      await pumpEventQueue();
+      expect(seen, contains('plank.sag'));
+      final s = c.read(repSessionControllerProvider);
+      expect(s.repCount, 0);
+      expect(s.holdMs, inInclusiveRange(2500, 3100),
+          reason: 'banked in-band time survives; no time accrues while sagging');
+      await svc.dispose();
+    });
+  });
 }

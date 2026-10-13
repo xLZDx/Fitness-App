@@ -52,6 +52,73 @@ void main() {
     test('consent last', () {
       expect(run(consent: false), ScanAccess.needsConsent);
     });
+
+    test('under 18 without consent is underage, with and without supporter',
+        () {
+      expect(run(age: 17, consent: false), ScanAccess.underage);
+      expect(run(age: 17, supporter: false, consent: false),
+          ScanAccess.underage);
+      expect(run(age: 0, consent: false), ScanAccess.underage);
+    });
+
+    test('unknown age without consent is ageUnknown, supporter or not', () {
+      expect(run(age: null, consent: false), ScanAccess.ageUnknown);
+      expect(run(age: null, supporter: false, consent: false),
+          ScanAccess.ageUnknown);
+    });
+
+    test('signed out wins over every other refusal, for every age', () {
+      for (final age in <int?>[null, 0, 17, 18, 60]) {
+        expect(
+            run(signedIn: false, age: age, supporter: false, consent: false),
+            ScanAccess.signedOut,
+            reason: 'age $age');
+        expect(run(signedIn: false, age: age), ScanAccess.signedOut,
+            reason: 'age $age with everything else in order');
+      }
+    });
+
+    test('the full 2x5x2x2 table matches the documented priority order', () {
+      // Independent oracle: first matching refusal in the documented order
+      // signed out > under 18 > unknown age > not supporter > no consent.
+      ScanAccess expected(bool signedIn, int? age, bool supporter, bool consent) {
+        final refusals = <(bool, ScanAccess)>[
+          (!signedIn, ScanAccess.signedOut),
+          (age != null && age < 18, ScanAccess.underage),
+          (age == null, ScanAccess.ageUnknown),
+          (!supporter, ScanAccess.needsSupporter),
+          (!consent, ScanAccess.needsConsent),
+        ];
+        for (final (hit, result) in refusals) {
+          if (hit) return result;
+        }
+        return ScanAccess.allowed;
+      }
+
+      var rows = 0;
+      final seen = <ScanAccess>{};
+      for (final signedIn in [true, false]) {
+        for (final age in <int?>[null, 5, 17, 18, 45]) {
+          for (final supporter in [true, false]) {
+            for (final consent in [true, false]) {
+              final got = run(
+                  signedIn: signedIn,
+                  age: age,
+                  supporter: supporter,
+                  consent: consent);
+              expect(got, expected(signedIn, age, supporter, consent),
+                  reason:
+                      'signedIn=$signedIn age=$age supporter=$supporter consent=$consent');
+              seen.add(got);
+              rows++;
+            }
+          }
+        }
+      }
+      expect(rows, 40);
+      expect(seen, ScanAccess.values.toSet(),
+          reason: 'every outcome is reachable, so the table is not vacuous');
+    });
   });
 
   group('scanAccessProvider wiring', () {
@@ -127,6 +194,37 @@ void main() {
       expect(
           await access(make(birthYear: null, tier: SubscriptionTier.free)),
           ScanAccess.ageUnknown);
+    });
+    test('under 18 and without consent is underage, not needsConsent',
+        () async {
+      expect(await access(make(birthYear: 2010, consent: false)),
+          ScanAccess.underage);
+      expect(
+          await access(make(
+              birthYear: 2010, consent: false, tier: SubscriptionTier.free)),
+          ScanAccess.underage);
+    });
+    test('signed out under 18 without consent is signedOut', () async {
+      expect(
+          await access(make(
+              uid: null,
+              birthYear: 2010,
+              consent: false,
+              tier: SubscriptionTier.free)),
+          ScanAccess.signedOut);
+    });
+    test('unknown age without consent is ageUnknown', () async {
+      expect(await access(make(birthYear: null, consent: false)),
+          ScanAccess.ageUnknown);
+    });
+    test('free tier without consent is needsSupporter, not needsConsent',
+        () async {
+      expect(
+          await access(make(
+              birthYear: adultYear,
+              consent: false,
+              tier: SubscriptionTier.free)),
+          ScanAccess.needsSupporter);
     });
     test('signed out with null age is signedOut', () async {
       expect(await access(make(uid: null, birthYear: null)),

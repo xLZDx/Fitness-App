@@ -373,7 +373,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/home';
       }
       final target = redirectFor(authRepo, profileRepo, location,
-          profileLoaded: loaded);
+          profileLoaded: loaded,
+          demoFeaturesEnabled: ref.read(demoFeaturesEnabledProvider));
       if (target == '/splash' && location != '/splash') {
         held = true;
         // A profile stream that never delivers must not strand the user on

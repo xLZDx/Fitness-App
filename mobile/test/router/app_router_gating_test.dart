@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../helpers/test_app.dart';
+import 'package:fitness_app/core/config/demo_features.dart';
 import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
@@ -132,6 +133,389 @@ void main() {
       await profiles.save(UserProfile(uid: u.uid, completedAt: DateTime(2026)));
       expect(redirectFor(auth, profiles, '/home', profileLoaded: false),
           isNull);
+    });
+  });
+
+  group('J3/T1 release gating via redirectFor (the router derivation)', () {
+    late MockAuthRepository auth;
+    late MockProfileRepository profiles;
+
+    setUp(() async {
+      auth = MockAuthRepository(latency: Duration.zero);
+      profiles = MockProfileRepository(latency: Duration.zero);
+      final u = (await auth.signInAnonymously())!;
+      await profiles.save(UserProfile(uid: u.uid, completedAt: DateTime(2026)));
+    });
+
+    tearDown(() {
+      auth.dispose();
+      profiles.dispose();
+    });
+
+    const denied = [
+      '/community',
+      '/team/abc',
+      '/celebrity-plans',
+      '/contribute',
+      '/moderate',
+      // Sub-paths: only /team/ has a parametrised family.
+      '/team/abc/x',
+      '/team/abc/',
+      '/team/other-id',
+    ];
+
+    test('flag off: every gated path lands on /home for an onboarded user',
+        () {
+      for (final p in denied) {
+        expect(
+            redirectFor(auth, profiles, p, demoFeaturesEnabled: false),
+            '/home',
+            reason: p);
+      }
+    });
+
+    test('flag on: the same paths are not redirected (gate is not a blanket)',
+        () {
+      for (final p in denied) {
+        expect(
+            redirectFor(auth, profiles, p, demoFeaturesEnabled: true), isNull,
+            reason: p);
+      }
+    });
+
+    test('flag off: /coaches and /coaches/x are not gated', () {
+      for (final p in ['/coaches', '/coaches/x']) {
+        expect(isDemoGatedPath(p), isFalse, reason: p);
+        expect(redirectFor(auth, profiles, p, demoFeaturesEnabled: false),
+            isNull,
+            reason: p);
+      }
+    });
+
+    test('flag off: a signed-in, NOT onboarded user never reaches a gated '
+        'target; the chain ends on /onboarding', () async {
+      await profiles.save(UserProfile(uid: auth.currentUser!.uid));
+      for (final p in denied) {
+        final first = resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: false,
+            isAnonymous: true,
+            location: p,
+            demoFeaturesEnabled: false);
+        expect(first, '/home', reason: p);
+        final second = resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: false,
+            isAnonymous: true,
+            location: first!,
+            demoFeaturesEnabled: false);
+        expect(second, '/onboarding', reason: p);
+      }
+    });
+
+    test('flag off: a signed-out caller is sent to /login, not /home', () {
+      for (final p in denied) {
+        expect(
+            resolveRedirect(
+                isSignedIn: false,
+                isOnboarded: false,
+                isAnonymous: false,
+                location: p,
+                demoFeaturesEnabled: false),
+            '/login',
+            reason: p);
+      }
+    });
+  });
+
+  group('J3/T1 live GoRouter (demoFeaturesEnabledProvider override)', () {
+    // The router's redirect closure calls redirectFor with the compile-time
+    // default, and appRouterProvider has no injection point for the flag, so
+    // the release (false) side cannot be driven through the live router
+    // without a production change. What can be proven live: the control half
+    // (gated pages ARE reachable, so the gate is not a blanket redirect),
+    // and the exact location string the live router hands to the gate for
+    // query / trailing-slash variants, fed into the gate with the flag off.
+    Future<GoRouter> mount(WidgetTester tester,
+        {bool onboarded = true,
+        bool signedIn = true,
+        bool? demo}) async {
+      final auth = MockAuthRepository(latency: Duration.zero);
+      final profiles = MockProfileRepository(latency: Duration.zero);
+      if (signedIn) {
+        final u = (await tester.runAsync(() => auth.signInAnonymously()))!;
+        if (onboarded) {
+          await tester.runAsync(() => profiles
+              .save(UserProfile(uid: u.uid, completedAt: DateTime(2026))));
+        }
+      }
+      late GoRouter router;
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          if (demo != null)
+            demoFeaturesEnabledProvider.overrideWithValue(demo),
+          authRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(auth.dispose);
+            return auth;
+          }),
+          profileRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(profiles.dispose);
+            return profiles;
+          }),
+        ],
+        child: Consumer(builder: (context, ref, _) {
+          router = ref.watch(appRouterProvider);
+          return MaterialApp.router(
+            theme: AppTheme.light(),
+            locale: kTestLocale,
+            localizationsDelegates: kTestLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          );
+        }),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      return router;
+    }
+
+    String pathOf(GoRouter r) => r.routerDelegate.currentConfiguration.uri.path;
+
+    Future<void> go(WidgetTester tester, GoRouter r, String loc) async {
+      r.go(loc);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    Future<void> unmount(WidgetTester tester) async {
+      await tester.pumpWidget(const SizedBox());
+    }
+
+    const gatedLocations = [
+      '/community',
+      '/team/abc',
+      '/team/abc/x',
+      '/celebrity-plans',
+      '/contribute',
+      '/moderate',
+      '/community?x=1',
+      '/team/abc?x=1',
+      '/celebrity-plans?x=1',
+      '/contribute?x=1',
+      '/moderate?x=1',
+      '/community/',
+      '/team/abc/',
+      '/celebrity-plans/',
+      '/contribute/',
+      '/moderate/',
+    ];
+
+    testWidgets(
+        'release (provider false): router.go to every gated location lands '
+        'on /home', (tester) async {
+      final router = await mount(tester, demo: false);
+      expect(pathOf(router), '/home');
+      for (final p in gatedLocations) {
+        await go(tester, router, p);
+        expect(pathOf(router), '/home', reason: p);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets(
+        'release: notification-tap style navigation (go and push) is denied',
+        (tester) async {
+      final router = await mount(tester, demo: false);
+      for (final payload in ['/moderate', '/community', '/team/abc']) {
+        router.go(payload);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(pathOf(router), '/home', reason: 'go $payload');
+        router.push(payload);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(pathOf(router), '/home', reason: 'push $payload');
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('release: cold start with a restored gated location lands on '
+        '/home', (tester) async {
+      for (final restored in ['/community', '/team/abc/x', '/moderate']) {
+        tester.platformDispatcher.defaultRouteNameTestValue = restored;
+        final router = await mount(tester, demo: false);
+        expect(pathOf(router), '/home', reason: restored);
+        await unmount(tester);
+      }
+      tester.platformDispatcher.clearDefaultRouteNameTestValue();
+    });
+
+    testWidgets('release: /coaches/x is not gated and a gated page is never '
+        'built for it', (tester) async {
+      final router = await mount(tester, demo: false);
+      await go(tester, router, '/coaches/x');
+      expect(pathOf(router), '/coaches/x');
+      await go(tester, router, '/coaches');
+      expect(pathOf(router), '/coaches');
+      await unmount(tester);
+    });
+
+    testWidgets('release: signed-in not-onboarded user ends on /onboarding, '
+        'signed-out on /login', (tester) async {
+      var router = await mount(tester, demo: false, onboarded: false);
+      for (final p in ['/community', '/team/abc', '/moderate?x=1']) {
+        await go(tester, router, p);
+        expect(pathOf(router), '/onboarding', reason: p);
+      }
+      await unmount(tester);
+      router = await mount(tester, demo: false, signedIn: false);
+      for (final p in ['/community', '/team/abc/x']) {
+        await go(tester, router, p);
+        expect(pathOf(router), '/login', reason: p);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('demo provider true: the same locations are reachable (the '
+        'gate is not a blanket redirect)', (tester) async {
+      final router = await mount(tester, demo: true);
+      const reachable = {
+        '/community': '/community',
+        '/team/abc': '/team/abc',
+        '/celebrity-plans': '/celebrity-plans',
+        '/contribute': '/contribute',
+        '/moderate': '/moderate',
+        '/community?x=1': '/community',
+        '/team/abc?x=1': '/team/abc',
+        '/moderate/': '/moderate',
+        '/contribute/': '/contribute',
+      };
+      for (final e in reachable.entries) {
+        await go(tester, router, e.key);
+        expect(pathOf(router), e.value, reason: e.key);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('demo provider true: cold start restored gated location is '
+        'honoured', (tester) async {
+      tester.platformDispatcher.defaultRouteNameTestValue = '/community';
+      addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
+      final router = await mount(tester, demo: true);
+      expect(pathOf(router), '/community');
+      await unmount(tester);
+    });
+
+    testWidgets('control: gated paths are reachable with demo features on',
+        (tester) async {
+      final router = await mount(tester);
+      for (final p in ['/community', '/celebrity-plans', '/contribute',
+          '/moderate', '/team/abc']) {
+        await go(tester, router, p);
+        expect(pathOf(router), p, reason: p);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets(
+        'what the live router hands to the gate is a gated path for query '
+        'and trailing-slash variants (flag off then denies every one)',
+        (tester) async {
+      final router = await mount(tester);
+      const variants = {
+        '/community?x=1': '/community',
+        '/community/': '/community',
+        '/moderate?x=1': '/moderate',
+        '/contribute/': '/contribute',
+        '/celebrity-plans/?a=b': '/celebrity-plans',
+        '/team/abc?x=1': '/team/abc',
+        '/team/abc/': '/team/abc',
+        '/team/abc/x': '/team/abc/x',
+      };
+      for (final e in variants.entries) {
+        await go(tester, router, e.key);
+        final seen = pathOf(router);
+        expect(seen, e.value, reason: 'location seen for ${e.key}');
+        expect(isDemoGatedPath(seen), isTrue, reason: e.key);
+        expect(
+            resolveRedirect(
+                isSignedIn: true,
+                isOnboarded: true,
+                isAnonymous: true,
+                location: seen,
+                demoFeaturesEnabled: false),
+            '/home',
+            reason: e.key);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('notification-tap style navigation uses the same gate',
+        (tester) async {
+      final router = await mount(tester);
+      for (final payload in ['/moderate', '/community', '/team/abc']) {
+        await go(tester, router, payload);
+        expect(pathOf(router), payload, reason: 'flag on reaches $payload');
+        final signedOut = MockAuthRepository(latency: Duration.zero);
+        final emptyProfiles = MockProfileRepository(latency: Duration.zero);
+        expect(
+            redirectFor(signedOut, emptyProfiles, payload,
+                demoFeaturesEnabled: false),
+            '/login',
+            reason: 'signed-out payload tap is sent to login first');
+        signedOut.dispose();
+        emptyProfiles.dispose();
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('/coaches/x is not gated and builds no gated route',
+        (tester) async {
+      final router = await mount(tester);
+      await go(tester, router, '/coaches/x');
+      expect(isDemoGatedPath(pathOf(router)), isFalse);
+      expect(pathOf(router), isNot('/home'));
+      await unmount(tester);
+    });
+
+    testWidgets(
+        'signed in but not onboarded: onboarding rule still applies, gated '
+        'target is never reached', (tester) async {
+      final router = await mount(tester, onboarded: false);
+      expect(pathOf(router), '/onboarding');
+      for (final p in ['/community', '/team/abc', '/moderate?x=1']) {
+        await go(tester, router, p);
+        expect(pathOf(router), '/onboarding', reason: p);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('signed out: gated paths go to /login', (tester) async {
+      final router = await mount(tester, signedIn: false);
+      for (final p in ['/community', '/team/abc', '/contribute']) {
+        await go(tester, router, p);
+        expect(pathOf(router), '/login', reason: p);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('cold start with a restored gated location (flag on: honoured)',
+        (tester) async {
+      tester.platformDispatcher.defaultRouteNameTestValue = '/community';
+      addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
+      final router = await mount(tester);
+      expect(pathOf(router), '/community');
+      await unmount(tester);
+    });
+
+    testWidgets('cold start restored gated location, not onboarded: '
+        'onboarding wins', (tester) async {
+      tester.platformDispatcher.defaultRouteNameTestValue = '/team/abc';
+      addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
+      final router = await mount(tester, onboarded: false);
+      expect(pathOf(router), '/onboarding');
+      await unmount(tester);
     });
   });
 
