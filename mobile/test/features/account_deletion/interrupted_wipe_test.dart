@@ -14,7 +14,7 @@ import 'package:fitness_app/features/auth/state/auth_providers.dart';
 
 class _AuthRepo implements AuthRepository {
   _AuthRepo({this.user = const AuthUser(uid: 'u1', displayName: 'U')});
-  final AuthUser? user;
+  AuthUser? user;
   int signOutCalls = 0;
 
   @override
@@ -43,7 +43,7 @@ class _MarkerProbingWipe implements LocalDataWipe {
   _MarkerProbingWipe(this.marker);
   final PendingWipeMarker marker;
   final List<String> wiped = [];
-  String? markerSeenDuringWipe;
+  Set<String> markerSeenDuringWipe = {};
 
   @override
   Future<void> wipe(String uid) async {
@@ -54,34 +54,70 @@ class _MarkerProbingWipe implements LocalDataWipe {
 
 /// In-memory marker with a synchronous view, for condition polling.
 class _TrackedMarker extends InMemoryPendingWipeMarker {
-  String? current;
-  bool get hasPending => current != null;
+  final Set<String> current = {};
+  bool get hasPending => current.isNotEmpty;
   @override
-  Future<void> write(String uid) async {
-    current = uid;
-    await super.write(uid);
+  Future<void> add(String uid) async {
+    current.add(uid);
+    await super.add(uid);
   }
 
   @override
-  Future<void> clear() async {
-    current = null;
-    await super.clear();
+  Future<void> remove(String uid) async {
+    current.remove(uid);
+    await super.remove(uid);
   }
 }
 
-class _ThrowingMarkerWrite extends InMemoryPendingWipeMarker {
+class _ThrowingMarkerAdd extends InMemoryPendingWipeMarker {
   @override
-  Future<void> write(String uid) async => throw StateError('prefs down');
+  Future<void> add(String uid) async => throw StateError('prefs down');
 }
 
 class _ThrowingMarkerRead extends InMemoryPendingWipeMarker {
   @override
-  Future<String?> read() async => throw StateError('prefs down');
+  Future<Set<String>> read() async => throw StateError('prefs down');
 }
 
-class _ThrowingMarkerClear extends InMemoryPendingWipeMarker {
+class _ThrowingMarkerRemove extends InMemoryPendingWipeMarker {
   @override
-  Future<void> clear() async => throw StateError('prefs down');
+  Future<void> remove(String uid) async => throw StateError('prefs down');
+}
+
+/// Wipe that fails for the listed uids and records every attempt.
+class _SelectiveWipe implements LocalDataWipe {
+  _SelectiveWipe(this.failFor);
+  Set<String> failFor;
+  final List<String> attempts = [];
+  final List<String> wiped = [];
+  @override
+  Future<void> wipe(String uid) async {
+    attempts.add(uid);
+    if (failFor.contains(uid)) throw StateError('disk locked');
+    wiped.add(uid);
+  }
+}
+
+/// Wipe that blocks until released, and tracks concurrent entries.
+class _GatedWipe implements LocalDataWipe {
+  final List<String> started = [];
+  final List<String> finished = [];
+  final List<Completer<void>> _gates = [];
+  int active = 0;
+  int maxActive = 0;
+  @override
+  Future<void> wipe(String uid) async {
+    started.add(uid);
+    active++;
+    if (active > maxActive) maxActive = active;
+    final gate = Completer<void>();
+    _gates.add(gate);
+    await gate.future;
+    active--;
+    finished.add(uid);
+  }
+
+  void releaseNext() => _gates.removeAt(0).complete();
 }
 
 /// Waits (bounded, condition-based) for the unawaited sweep to finish.
@@ -104,7 +140,7 @@ void main() {
     test('wipes the marked uid and clears the marker when signed out',
         () async {
       final marker = InMemoryPendingWipeMarker();
-      await marker.write('old');
+      await marker.add('old');
       final wipe = RecordingLocalDataWipe();
 
       final ran = await finishInterruptedWipe(
@@ -112,13 +148,13 @@ void main() {
 
       expect(ran, isTrue);
       expect(wipe.wiped, ['old']);
-      expect(await marker.read(), isNull);
+      expect(await marker.read(), isEmpty);
     });
 
     test('wipes the marked uid when a different account is signed in',
         () async {
       final marker = InMemoryPendingWipeMarker();
-      await marker.write('old');
+      await marker.add('old');
       final wipe = RecordingLocalDataWipe();
 
       final ran = await finishInterruptedWipe(
@@ -126,7 +162,7 @@ void main() {
 
       expect(ran, isTrue);
       expect(wipe.wiped, ['old']);
-      expect(await marker.read(), isNull);
+      expect(await marker.read(), isEmpty);
     });
 
     test('does nothing and returns false when there is no marker', () async {
@@ -138,13 +174,13 @@ void main() {
 
       expect(ran, isFalse);
       expect(wipe.wiped, isEmpty);
-      expect(await marker.read(), isNull);
+      expect(await marker.read(), isEmpty);
     });
 
     test('leaves the marker and the data alone for the still-signed-in uid',
         () async {
       final marker = InMemoryPendingWipeMarker();
-      await marker.write('u1');
+      await marker.add('u1');
       final wipe = RecordingLocalDataWipe();
 
       final ran = await finishInterruptedWipe(
@@ -154,12 +190,12 @@ void main() {
       expect(wipe.wiped, isEmpty,
           reason: 'that account is still signed in; wiping would destroy '
               'a live account\'s data');
-      expect(await marker.read(), 'u1');
+      expect(await marker.read(), {'u1'});
     });
 
     test('keeps the marker and returns false when the wipe throws', () async {
       final marker = InMemoryPendingWipeMarker();
-      await marker.write('old');
+      await marker.add('old');
       final wipe = _ThrowingWipe();
 
       final ran = await finishInterruptedWipe(
@@ -167,7 +203,7 @@ void main() {
 
       expect(ran, isFalse);
       expect(wipe.attempts, ['old']);
-      expect(await marker.read(), 'old',
+      expect(await marker.read(), {'old'},
           reason: 'the next launch must be able to retry');
     });
   });
@@ -176,7 +212,7 @@ void main() {
     for (final garbage in ['', '.', '..', 'a/b', r'a\b']) {
       test('a garbage marker "$garbage" is cleared and never wiped', () async {
         final marker = InMemoryPendingWipeMarker();
-        await marker.write(garbage);
+        await marker.add(garbage);
         final wipe = RecordingLocalDataWipe();
 
         final ran = await finishInterruptedWipe(
@@ -185,7 +221,7 @@ void main() {
         expect(ran, isFalse);
         expect(wipe.wiped, isEmpty,
             reason: 'the value becomes a directory name; it must not be used');
-        expect(await marker.read(), isNull);
+        expect(await marker.read(), isEmpty);
       });
     }
 
@@ -199,10 +235,10 @@ void main() {
       expect(wipe.wiped, isEmpty);
     });
 
-    test('a marker.clear failure after a good wipe returns false, no throw',
+    test('a marker.remove failure after a good wipe returns false, no throw',
         () async {
-      final marker = _ThrowingMarkerClear();
-      await marker.write('old');
+      final marker = _ThrowingMarkerRemove();
+      await marker.add('old');
       final wipe = RecordingLocalDataWipe();
 
       final ran = await finishInterruptedWipe(
@@ -212,10 +248,10 @@ void main() {
       expect(wipe.wiped, ['old']);
     });
 
-    test('a marker.clear failure on a garbage marker returns false, no throw',
+    test('a marker.remove failure on a garbage marker returns false, no throw',
         () async {
-      final marker = _ThrowingMarkerClear();
-      await marker.write('a/b');
+      final marker = _ThrowingMarkerRemove();
+      await marker.add('a/b');
       final wipe = RecordingLocalDataWipe();
 
       final ran = await finishInterruptedWipe(
@@ -227,31 +263,157 @@ void main() {
   });
 
   group('PrefsPendingWipeMarker', () {
-    test('round trips a uid under the documented key, and clears it',
+    test('round trips a uid under the documented key, and removes it',
         () async {
       SharedPreferences.setMockInitialValues({});
       final marker = PrefsPendingWipeMarker();
 
-      expect(await marker.read(), isNull);
+      expect(await marker.read(), isEmpty);
 
-      await marker.write('uid-42');
-      expect(await marker.read(), 'uid-42');
+      await marker.add('uid-42');
+      expect(await marker.read(), {'uid-42'});
       final prefs = await SharedPreferences.getInstance();
-      expect(PrefsPendingWipeMarker.key, 'account_deletion.pending_wipe_uid');
-      expect(prefs.getString('account_deletion.pending_wipe_uid'), 'uid-42');
-      expect(prefs.getKeys(), {'account_deletion.pending_wipe_uid'},
-          reason: 'the marker stores the uid only');
+      expect(PrefsPendingWipeMarker.key, 'account_deletion.pending_wipe_uids');
+      expect(prefs.getStringList('account_deletion.pending_wipe_uids'),
+          ['uid-42']);
+      expect(prefs.getKeys(), {'account_deletion.pending_wipe_uids'},
+          reason: 'the marker stores uids only');
 
-      await marker.clear();
-      expect(await marker.read(), isNull);
+      await marker.remove('uid-42');
+      expect(await marker.read(), isEmpty);
       expect(prefs.getKeys(), isEmpty);
     });
 
-    test('reads a marker persisted by an earlier process', () async {
-      SharedPreferences.setMockInitialValues(
-          {'account_deletion.pending_wipe_uid': 'left-over'});
+    test('reads a set persisted by an earlier process', () async {
+      SharedPreferences.setMockInitialValues({
+        'account_deletion.pending_wipe_uids': ['left-over', 'another']
+      });
 
-      expect(await PrefsPendingWipeMarker().read(), 'left-over');
+      expect(await PrefsPendingWipeMarker().read(), {'left-over', 'another'});
+    });
+
+    test('F-02: a second add keeps the first uid; remove drops only its own',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final marker = PrefsPendingWipeMarker();
+
+      await marker.add('A');
+      await marker.add('B');
+      await marker.add('B'); // idempotent
+      expect(await marker.read(), {'A', 'B'});
+      expect((await SharedPreferences.getInstance())
+          .getStringList(PrefsPendingWipeMarker.key)!
+          .length, 2);
+
+      await marker.remove('B');
+      expect(await marker.read(), {'A'});
+      await marker.remove('missing');
+      expect(await marker.read(), {'A'});
+      await marker.remove('A');
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('F-02: concurrent adds do not lose a uid', () async {
+      SharedPreferences.setMockInitialValues({});
+      final marker = PrefsPendingWipeMarker();
+
+      await Future.wait([marker.add('A'), marker.add('B'), marker.add('C')]);
+
+      expect(await marker.read(), {'A', 'B', 'C'});
+    });
+  });
+
+  group('InMemoryPendingWipeMarker', () {
+    test('F-02: add/remove are set semantics and read is a snapshot',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('A');
+      await marker.add('B');
+      final snapshot = await marker.read();
+      await marker.remove('A');
+
+      expect(snapshot, {'A', 'B'}, reason: 'read() must not alias live state');
+      expect(await marker.read(), {'B'});
+    });
+  });
+
+  group('finishInterruptedWipe with several pending uids', () {
+    test('F-02: wipes every pending uid except the signed-in one', () async {
+      final marker = InMemoryPendingWipeMarker();
+      for (final u in ['A', 'B', 'C']) {
+        await marker.add(u);
+      }
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: 'B');
+
+      expect(ran, isTrue);
+      expect(wipe.wiped.toSet(), {'A', 'C'});
+      expect(await marker.read(), {'B'});
+    });
+
+    test('F-02: a failure of one uid keeps only that uid and continues',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      for (final u in ['A', 'B', 'C']) {
+        await marker.add(u);
+      }
+      final wipe = _SelectiveWipe({'B'});
+
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+
+      expect(ran, isTrue, reason: 'at least one wipe completed');
+      expect(wipe.attempts.toSet(), {'A', 'B', 'C'});
+      expect(wipe.wiped.toSet(), {'A', 'C'});
+      expect(await marker.read(), {'B'});
+    });
+
+    test('F-02: all failing returns false and keeps every uid', () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('A');
+      await marker.add('B');
+      final wipe = _SelectiveWipe({'A', 'B'});
+
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+
+      expect(ran, isFalse);
+      expect(await marker.read(), {'A', 'B'});
+    });
+
+    test('F-02: a garbage uid is dropped without a wipe, valid ones still run',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('a/b');
+      await marker.add('A');
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+
+      expect(ran, isTrue);
+      expect(wipe.wiped, ['A']);
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('F-02: first wipe fails, a later sweep wipes both uids', () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('A');
+      await marker.add('B');
+      final wipe = _SelectiveWipe({'A', 'B'});
+      await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+      expect(await marker.read(), {'A', 'B'});
+
+      wipe.failFor = {};
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+
+      expect(ran, isTrue);
+      expect(wipe.wiped.toSet(), {'A', 'B'});
+      expect(await marker.read(), isEmpty);
     });
   });
 
@@ -286,9 +448,9 @@ void main() {
       await c.read(accountDeletionActionProvider.notifier).deleteAccount();
 
       expect(wipe.wiped, ['u1']);
-      expect(wipe.markerSeenDuringWipe, 'u1',
+      expect(wipe.markerSeenDuringWipe, {'u1'},
           reason: 'the marker must exist before the wipe starts');
-      expect(await marker.read(), isNull);
+      expect(await marker.read(), isEmpty);
       expect(repo.signOutCalls, 1);
       expect(c.read(accountDeletionActionProvider).hasError, isFalse);
     });
@@ -305,7 +467,7 @@ void main() {
 
       await c.read(accountDeletionActionProvider.notifier).deleteAccount();
 
-      expect(await marker.read(), 'u1');
+      expect(await marker.read(), {'u1'});
       expect(repo.signOutCalls, 1);
       expect(c.read(accountDeletionActionProvider).hasError, isFalse);
     });
@@ -324,7 +486,7 @@ void main() {
 
       await c.read(accountDeletionActionProvider.notifier).deleteAccount();
 
-      expect(await marker.read(), isNull,
+      expect(await marker.read(), isEmpty,
           reason: 'a marker while the account is alive could later erase a '
               'live account\'s data');
       expect(wipe.wiped, isEmpty);
@@ -339,7 +501,7 @@ void main() {
       final c = build(
           service: MockAccountDeletionService(),
           wipe: wipe,
-          marker: _ThrowingMarkerWrite(),
+          marker: _ThrowingMarkerAdd(),
           repo: repo);
 
       await c.read(accountDeletionActionProvider.notifier).deleteAccount();
@@ -347,6 +509,57 @@ void main() {
       expect(wipe.wiped, ['u1']);
       expect(repo.signOutCalls, 1);
       expect(c.read(accountDeletionActionProvider).hasError, isFalse);
+    });
+
+    test('F-02: two deletions, first wipe fails: B does not erase A\'s record',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      final wipe = _SelectiveWipe({'A', 'B'});
+      final repo = _AuthRepo(user: const AuthUser(uid: 'A', displayName: 'A'));
+      final c = build(
+          service: MockAccountDeletionService(),
+          wipe: wipe,
+          marker: marker,
+          repo: repo);
+
+      await c.read(accountDeletionActionProvider.notifier).deleteAccount();
+      expect(await marker.read(), {'A'});
+
+      repo.user = const AuthUser(uid: 'B', displayName: 'B');
+      await c.read(accountDeletionActionProvider.notifier).deleteAccount();
+      expect(await marker.read(), {'A', 'B'},
+          reason: 'the second deletion must not overwrite the first record');
+
+      // A later sweep finishes both; a failure of one leaves only that one.
+      wipe.failFor = {'B'};
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+      expect(ran, isTrue);
+      expect(wipe.wiped, ['A']);
+      expect(await marker.read(), {'B'});
+
+      wipe.failFor = {};
+      await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+      expect(wipe.wiped, ['A', 'B']);
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('F-02: a clean deletion of B removes only B from a pending {A}',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('A');
+      final wipe = _SelectiveWipe({});
+      final c = build(
+          service: MockAccountDeletionService(),
+          wipe: wipe,
+          marker: marker,
+          repo: _AuthRepo(user: const AuthUser(uid: 'B', displayName: 'B')));
+
+      await c.read(accountDeletionActionProvider.notifier).deleteAccount();
+
+      expect(wipe.wiped, ['B']);
+      expect(await marker.read(), {'A'});
     });
 
     test('no uid at deletion time: no marker is written and no wipe runs',
@@ -361,7 +574,7 @@ void main() {
 
       await c.read(accountDeletionActionProvider.notifier).deleteAccount();
 
-      expect(await marker.read(), isNull);
+      expect(await marker.read(), isEmpty);
       expect(wipe.wiped, isEmpty);
       expect(c.read(accountDeletionActionProvider).hasError, isFalse);
     });
@@ -387,34 +600,116 @@ void main() {
       final auth = StreamController<AuthUser?>();
       addTearDown(auth.close);
       final marker = _TrackedMarker();
-      await marker.write('old');
+      await marker.add('old');
       final wipe = RecordingLocalDataWipe();
       final c = build(auth: auth, marker: marker, wipe: wipe);
 
       c.read(interruptedWipeSweepProvider);
       await _settle();
       expect(wipe.wiped, isEmpty, reason: 'auth state is still unknown');
-      expect(await marker.read(), 'old');
+      expect(await marker.read(), {'old'});
 
       auth.add(null);
       await _until(() => wipe.wiped.isNotEmpty);
       await _until(() => !marker.hasPending);
       expect(wipe.wiped, ['old']);
 
-      // Further auth emissions must not re-run the sweep.
-      await marker.write('second');
+      // F-01: the sweep is NOT once-only; a later auth change runs it again.
+      await marker.add('second');
       auth.add(const AuthUser(uid: 'other', displayName: 'O'));
-      auth.add(null);
+      await _until(() => wipe.wiped.length == 2);
+      await _until(() => !marker.hasPending);
+      expect(wipe.wiped, ['old', 'second']);
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('F-01: marker {u1}, auth emits u1 then null: wipe only after null',
+        () async {
+      final auth = StreamController<AuthUser?>();
+      addTearDown(auth.close);
+      final marker = _TrackedMarker();
+      await marker.add('u1');
+      final wipe = RecordingLocalDataWipe();
+      final c = build(auth: auth, marker: marker, wipe: wipe);
+
+      c.read(interruptedWipeSweepProvider);
+      auth.add(const AuthUser(uid: 'u1', displayName: 'U'));
       await _settle();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(wipe.wiped, isEmpty,
+          reason: 'u1 is still signed in; its data must not be wiped');
+      expect(await marker.read(), {'u1'});
+
+      auth.add(null);
+      await _until(() => wipe.wiped.isNotEmpty);
+      await _until(() => !marker.hasPending);
+      expect(wipe.wiped, ['u1']);
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('F-01: two quick emissions never overlap and each gets its own run',
+        () async {
+      final auth = StreamController<AuthUser?>();
+      addTearDown(auth.close);
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('old');
+      await marker.add('older');
+      final wipe = _GatedWipe();
+      final c = build(auth: auth, marker: marker, wipe: wipe);
+
+      c.read(interruptedWipeSweepProvider);
+      auth.add(null);
+      auth.add(const AuthUser(uid: 'x', displayName: 'X'));
+      await _until(() => wipe.started.isNotEmpty);
+      await _settle();
+      expect(wipe.started, hasLength(1),
+          reason: 'the second run must wait for the first to finish');
+
+      wipe.releaseNext();
+      await _until(() => wipe.started.length == 2);
+      await _settle();
+      expect(wipe.started, hasLength(2),
+          reason: 'still inside the first run, which wipes uids one by one');
+
+      wipe.releaseNext();
+      // Second run finds nothing left; wait for the chain to drain.
+      await _until(() => wipe.finished.length == 2);
+      await _settle();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(wipe.maxActive, 1, reason: 'wipes must never run concurrently');
+      expect(wipe.finished.toSet(), {'old', 'older'});
+      expect(wipe.started, hasLength(2),
+          reason: 'the second run found no pending uid left');
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('F-01: a failing sweep does not break later runs of the chain',
+        () async {
+      final auth = StreamController<AuthUser?>();
+      addTearDown(auth.close);
+      final marker = _TrackedMarker();
+      await marker.add('old');
+      final wipe = _SelectiveWipe({'old'});
+      final c = build(auth: auth, marker: marker, wipe: wipe);
+
+      c.read(interruptedWipeSweepProvider);
+      auth.add(null);
+      await _until(() => wipe.attempts.length == 1);
+
+      wipe.failFor = {};
+      auth.add(const AuthUser(uid: 'other', displayName: 'O'));
+      await _until(() => wipe.wiped.isNotEmpty);
+      await _until(() => !marker.hasPending);
+      expect(wipe.attempts, ['old', 'old']);
       expect(wipe.wiped, ['old']);
-      expect(await marker.read(), 'second');
     });
 
     test('wipes the leftover marker for a different signed-in user', () async {
       final auth = StreamController<AuthUser?>();
       addTearDown(auth.close);
       final marker = _TrackedMarker();
-      await marker.write('old');
+      await marker.add('old');
       final wipe = RecordingLocalDataWipe();
       final c = build(auth: auth, marker: marker, wipe: wipe);
 
@@ -431,7 +726,7 @@ void main() {
       final auth = StreamController<AuthUser?>();
       addTearDown(auth.close);
       final marker = InMemoryPendingWipeMarker();
-      await marker.write('u1');
+      await marker.add('u1');
       final wipe = RecordingLocalDataWipe();
       final c = build(auth: auth, marker: marker, wipe: wipe);
 
@@ -441,7 +736,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 20));
 
       expect(wipe.wiped, isEmpty);
-      expect(await marker.read(), 'u1');
+      expect(await marker.read(), {'u1'});
     });
   });
 }

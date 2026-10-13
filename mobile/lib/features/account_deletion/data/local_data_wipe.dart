@@ -42,89 +42,105 @@ abstract class LocalDataWipe {
   Future<void> wipe(String uid);
 }
 
-/// Remembers WHICH account's device data still has to be erased.
+/// Remembers WHICH accounts' device data still has to be erased.
 ///
-/// Written right AFTER the server confirms the deletion, cleared only after the
-/// wipe finished. Written after, not before, on purpose: a marker that existed
-/// while the account was still alive could later erase the only copy of a live
-/// account's health answers. If the process dies between confirmation and the
-/// wipe, the uid is still known and the next launch finishes the job. Holds a
-/// uid only, never health data.
+/// A uid is added right AFTER the server confirms the deletion and removed only
+/// after that uid's wipe finished. Added after, not before, on purpose: a marker
+/// that existed while the account was still alive could later erase the only
+/// copy of a live account's health answers. If the process dies between
+/// confirmation and the wipe, the uid is still known and the next launch
+/// finishes the job. A SET, not a single value: a second deletion must never
+/// overwrite the record of a first wipe that has not completed. Holds uids only,
+/// never health data.
 abstract class PendingWipeMarker {
-  Future<String?> read();
-  Future<void> write(String uid);
-  Future<void> clear();
+  Future<Set<String>> read();
+  Future<void> add(String uid);
+  Future<void> remove(String uid);
 }
 
 class PrefsPendingWipeMarker implements PendingWipeMarker {
   PrefsPendingWipeMarker({SharedPreferences? prefs}) : _injected = prefs;
   final SharedPreferences? _injected;
-  static const key = 'account_deletion.pending_wipe_uid';
+  static const key = 'account_deletion.pending_wipe_uids';
 
   Future<SharedPreferences> get _prefs async =>
       _injected ?? await SharedPreferences.getInstance();
 
   @override
-  Future<String?> read() async => (await _prefs).getString(key);
+  Future<Set<String>> read() async =>
+      ((await _prefs).getStringList(key) ?? const <String>[]).toSet();
 
+  // Read-modify-write happens with no await between the read and the call to
+  // setStringList, so two concurrent add/remove calls cannot interleave.
   @override
-  Future<void> write(String uid) async {
-    if (!await (await _prefs).setString(key, uid)) {
+  Future<void> add(String uid) async {
+    final prefs = await _prefs;
+    final next = {...?prefs.getStringList(key), uid}.toList();
+    if (!await prefs.setStringList(key, next)) {
       throw StateError('could not record the pending device wipe');
     }
   }
 
   @override
-  Future<void> clear() async {
-    await (await _prefs).remove(key);
+  Future<void> remove(String uid) async {
+    final prefs = await _prefs;
+    final next = [...?prefs.getStringList(key)]..remove(uid);
+    if (next.isEmpty) {
+      await prefs.remove(key);
+    } else {
+      await prefs.setStringList(key, next);
+    }
   }
 }
 
 class InMemoryPendingWipeMarker implements PendingWipeMarker {
-  String? _uid;
+  final Set<String> _uids = {};
   @override
-  Future<String?> read() async => _uid;
+  Future<Set<String>> read() async => {..._uids};
   @override
-  Future<void> write(String uid) async => _uid = uid;
+  Future<void> add(String uid) async => _uids.add(uid);
   @override
-  Future<void> clear() async => _uid = null;
+  Future<void> remove(String uid) async => _uids.remove(uid);
 }
 
 /// Finishes a device wipe that an interrupted account deletion left behind.
 ///
-/// Call once the signed-in user is known (null when signed out). A marker for
-/// the account that is STILL signed in is left alone: that deletion has not
-/// completed and its own retry will handle the wipe. Returns true when a wipe
-/// ran to completion and the marker was cleared.
+/// Call whenever the signed-in user changes (null when signed out). A marker for
+/// the account that is STILL signed in is left alone for now: its own deletion
+/// retry handles it, or the sign-out that follows triggers the next call.
+/// Every other pending uid is wiped independently, so one failure never blocks
+/// the rest. Returns true when at least one wipe ran to completion.
 Future<bool> finishInterruptedWipe({
   required PendingWipeMarker marker,
   required LocalDataWipe wipe,
   required String? signedInUid,
 }) async {
+  var wiped = false;
   try {
-    final pending = await marker.read();
-    if (pending == null || pending == signedInUid) return false;
-    if (!_looksLikeUid(pending)) {
-      // The uid becomes a directory name below. A value that is empty or
-      // carries a path separator is not ours; drop it instead of acting on it.
-      await marker.clear();
-      return false;
+    for (final pending in await marker.read()) {
+      if (pending == signedInUid) continue;
+      if (!_looksLikeUid(pending)) {
+        // The uid becomes a directory name below. A value that is empty or
+        // carries a path separator is not ours; drop it instead of acting on it.
+        await marker.remove(pending);
+        continue;
+      }
+      try {
+        await wipe.wipe(pending);
+      } catch (e) {
+        // Keep the marker so the next sweep tries again.
+        debugPrint(
+            'interrupted account deletion: device wipe still incomplete: ${e.runtimeType}');
+        continue;
+      }
+      await marker.remove(pending);
+      wiped = true;
     }
-    try {
-      await wipe.wipe(pending);
-    } catch (e) {
-      // Keep the marker so the next launch tries again.
-      debugPrint(
-          'interrupted account deletion: device wipe still incomplete: ${e.runtimeType}');
-      return false;
-    }
-    await marker.clear();
-    return true;
   } catch (e) {
     // A preferences failure must not become an unhandled async error.
     debugPrint('interrupted account deletion sweep failed: ${e.runtimeType}');
-    return false;
   }
+  return wiped;
 }
 
 bool _looksLikeUid(String uid) =>

@@ -55750,3 +55750,7 @@ Focused tests for the undo bookkeeping, the interrupted-wipe marker guard and th
 ## 2026-10-13 - Commit: tail closure registry update
 
 Engineering tails closed or carried with evidence; Stripe customers retained by operator decision (tax retention); VER-01/04/05/07 closed by development rule 8. Detail: core/changes/2026-10-13-tail-registry-closure.md.
+
+## 2026-10-13 - Commit: fixes for the final GPT-PM review (round 1)
+
+GPT-PM returned REJECT with three MAJOR findings; all verified against source and fixed (sweep on every auth change, pending-wipe uid set, hard export response ceiling) with tests. Detail: core/changes/2026-10-13-gptpm-final-review-fixes.md.

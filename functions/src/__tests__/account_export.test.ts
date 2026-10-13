@@ -75,7 +75,11 @@ jest.mock("firebase-functions/logger", () => ({
 }));
 
 import { HttpsError } from "firebase-functions/v2/https";
-import { exportAccountData, MAX_EXPORT_BYTES } from "../account_export";
+import {
+  exportAccountData,
+  HARD_RESPONSE_BYTES,
+  MAX_EXPORT_BYTES,
+} from "../account_export";
 import { QUOTAS } from "../abuse_guard";
 
 const req = (uid: string | null = "u1"): any => ({
@@ -297,6 +301,43 @@ test("an export under the byte ceiling is returned untouched, with no truncated 
     expect(res.debugSessions).toHaveLength(700);
     expect(res.truncated).toEqual([]);
     expect((res.notes as string[]).join(" ")).not.toContain("bytes");
+  });
+
+test("F-03: a single oversized non-array section over the hard ceiling is rejected, no data",
+  async () => {
+    // The byte guard only trims array sections; a 10 MiB profile document
+    // cannot be trimmed and must not be returned as a success.
+    docs.set("users/u1/profile/main", {
+      blob: "x".repeat(HARD_RESPONSE_BYTES + 1024),
+    });
+
+    let caught: any;
+    let res: any;
+    try {
+      res = await exportAccountData.run(req());
+    } catch (e) {
+      caught = e;
+    }
+
+    expect(res).toBeUndefined();
+    expect(caught).toBeInstanceOf(HttpsError);
+    expect(caught.code).toBe("resource-exhausted");
+    expect(String(caught.message)).not.toContain("xxxx");
+  });
+
+test("F-03: a non-array response between the soft and hard ceilings still succeeds",
+  async () => {
+    // ~8.5 MiB: over MAX_EXPORT_BYTES (nothing to trim), under the hard ceiling.
+    const size = MAX_EXPORT_BYTES + 512 * 1024;
+    expect(size).toBeLessThan(HARD_RESPONSE_BYTES);
+    docs.set("users/u1/profile/main", { blob: "x".repeat(size) });
+
+    const res = await exportAccountData.run(req());
+
+    expect((res.profile as { blob: string }).blob).toHaveLength(size);
+    const bytes = Buffer.byteLength(JSON.stringify(res), "utf8");
+    expect(bytes).toBeGreaterThan(MAX_EXPORT_BYTES);
+    expect(bytes).toBeLessThanOrEqual(HARD_RESPONSE_BYTES);
   });
 
 test("every section trimmed for size is named, once, and keeps its leading rows",

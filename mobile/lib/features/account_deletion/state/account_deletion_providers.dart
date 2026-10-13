@@ -20,18 +20,23 @@ final localDataWipeProvider =
 final pendingWipeMarkerProvider =
     Provider<PendingWipeMarker>((_) => InMemoryPendingWipeMarker());
 
-/// Once the signed-in user is known after launch, finishes a device wipe that an
-/// interrupted account deletion left behind. Read from the app root.
+/// Whenever the signed-in user is known or changes, finishes a device wipe that
+/// an interrupted account deletion left behind. Read from the app root.
+///
+/// Runs on EVERY resolved auth value, not once: a marker for the account that is
+/// still signed in at launch is skipped, and the sign-out that follows must get
+/// another chance to erase it. Runs are chained so two never overlap.
 final interruptedWipeSweepProvider = Provider<void>((ref) {
-  var done = false;
+  Future<void> running = Future<void>.value();
   ref.listen(authUserProvider, (_, next) {
-    if (done || !next.hasValue) return;
-    done = true;
-    unawaited(finishInterruptedWipe(
-      marker: ref.read(pendingWipeMarkerProvider),
-      wipe: ref.read(localDataWipeProvider),
-      signedInUid: next.value?.uid,
-    ));
+    if (!next.hasValue) return;
+    final signedInUid = next.value?.uid;
+    running = running.then((_) => finishInterruptedWipe(
+          marker: ref.read(pendingWipeMarkerProvider),
+          wipe: ref.read(localDataWipeProvider),
+          signedInUid: signedInUid,
+        ));
+    unawaited(running);
   }, fireImmediately: true);
 });
 
@@ -80,7 +85,7 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
       final marker = ref.read(pendingWipeMarkerProvider);
       if (uid != null) {
         try {
-          await marker.write(uid);
+          await marker.add(uid);
         } catch (e) {
           debugPrint('could not record the pending device wipe: $e');
         }
@@ -99,7 +104,7 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
       if (uid != null) {
         try {
           await ref.read(localDataWipeProvider).wipe(uid);
-          await marker.clear();
+          await marker.remove(uid);
         } catch (e) {
           // The marker stays, so the next launch retries the wipe.
           debugPrint('local data wipe after account deletion failed: $e');

@@ -54,6 +54,11 @@ const MAX_ROWS = 2000;
 /** Serialized-size ceiling, kept well under the 10 MiB callable response limit. */
 export const MAX_EXPORT_BYTES = 8 * 1024 * 1024;
 
+/** Last-resort ceiling on the final response, notes included. */
+export const HARD_RESPONSE_BYTES = 9 * 1024 * 1024 + 512 * 1024;
+
+class ExportTooLarge extends Error {}
+
 const jsonBytes = (v: unknown): number =>
   Buffer.byteLength(JSON.stringify(v) ?? "", "utf8");
 
@@ -351,7 +356,7 @@ export const exportAccountData = onCall(
     // After the row caps, so the byte guard only trims what they let through.
     fitToByteBudget(body, truncated);
 
-    return {
+    const response = {
       ...body,
       notes: [
         ...(truncated.length
@@ -367,7 +372,27 @@ export const exportAccountData = onCall(
           "are listed in the app's own export.",
       ],
     };
+
+    // Measured on the object actually returned (notes included). The byte guard
+    // above only trims array sections, so a single oversized non-array field
+    // could still leave the body over the transport limit; that must fail
+    // loudly here rather than as an opaque transport error on the client.
+    if (jsonBytes(response) > HARD_RESPONSE_BYTES) {
+      throw new ExportTooLarge();
+    }
+    return response;
   } catch (err) {
+    if (err instanceof ExportTooLarge) {
+      logger.error(EXPORT_ACCOUNT_FAILED, {
+        event: EXPORT_ACCOUNT_FAILED,
+        uid,
+        err: "export exceeds the response size limit after trimming",
+      });
+      throw new HttpsError(
+        "resource-exhausted",
+        "Your data is too large to export in one response. Contact support.",
+      );
+    }
     // Surfaced, never partially returned. An export missing a collection
     // because one read failed is worse than no export: it reads as "this is
     // everything" while being silently short, which is the precise failure
