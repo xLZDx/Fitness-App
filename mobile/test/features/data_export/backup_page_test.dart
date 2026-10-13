@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/data_export/backup_envelope.dart';
 import 'package:fitness_app/features/data_export/backup_page.dart';
+import 'package:fitness_app/features/data_export/backup_providers.dart';
 import 'package:fitness_app/features/data_export/backup_transfer.dart';
 import 'package:fitness_app/features/profile/data/local_sensitive_store.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
@@ -35,12 +38,16 @@ Future<InMemorySensitiveStore> _pump(WidgetTester tester) async {
   addTearDown(tester.view.reset);
 
   final store = InMemorySensitiveStore();
+  // Synchronous controller: the restore notifier subscribes to auth while the
+  // page builds (inside the fake-async zone), and a `Stream.value` would then
+  // deliver its event through a fake-zone microtask that the real-time section
+  // of these tests can never flush.
+  final auth = StreamController<AuthUser?>(sync: true);
+  addTearDown(auth.close);
   await tester.pumpWidget(ProviderScope(
     overrides: [
       localSensitiveStoreProvider.overrideWithValue(store),
-      authUserProvider.overrideWith(
-        (ref) => Stream.value(const AuthUser(uid: 'u1', displayName: 'U')),
-      ),
+      authUserProvider.overrideWith((ref) => auth.stream),
     ],
     child: MaterialApp(
       theme: AppTheme.dark(),
@@ -51,7 +58,39 @@ Future<InMemorySensitiveStore> _pump(WidgetTester tester) async {
     ),
   ));
   await tester.pump();
+  auth.add(const AuthUser(uid: 'u1', displayName: 'U'));
+  await tester.pump();
   return store;
+}
+
+/// Waits (real time, bounded) until the restore action has left `loading`.
+/// compute() needs a real isolate round-trip whose latency varies by machine
+/// load, so a fixed sleep is a race; the action state is the condition.
+///
+/// The notifier lives in the fake-async zone (it subscribes to auth while the
+/// page builds), so the tap stays in that zone and each real-time wait is
+/// followed by a pump that flushes the zone's microtasks.
+Future<void> _tapAndSettle(WidgetTester tester, Finder target) async {
+  final container =
+      ProviderScope.containerOf(tester.element(find.byType(BackupPage)));
+  await tester.ensureVisible(target);
+  await tester.tap(target);
+  await tester.pump();
+  for (var i = 0;
+      i < 600 && container.read(backupRestoreActionProvider).isLoading;
+      i++) {
+    await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump();
+  }
+  expect(container.read(backupRestoreActionProvider).isLoading, isFalse,
+      reason: 'restore action did not finish in 30 s');
+  // The page continues (setState) after the action's future resolves; give
+  // that continuation a real tick and a frame.
+  await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)));
+  await tester.pump();
+  await tester.pump();
 }
 
 Future<void> _fillAndRestore(WidgetTester tester, String envelope) async {
@@ -59,14 +98,7 @@ Future<void> _fillAndRestore(WidgetTester tester, String envelope) async {
   await tester.enterText(
       find.byKey(const Key('backup-restore-passphrase')), 'phrase');
   await tester.pump();
-  final button = find.byKey(const Key('backup-restore-button'));
-  await tester.ensureVisible(button);
-  await tester.runAsync(() async {
-    await tester.tap(button);
-    // compute() needs a real isolate round-trip; give it real time.
-    await Future<void>.delayed(const Duration(seconds: 2));
-  });
-  await tester.pump();
+  await _tapAndSettle(tester, find.byKey(const Key('backup-restore-button')));
 }
 
 void main() {
@@ -83,12 +115,7 @@ void main() {
     expect((await store.read('u1')).isEmpty, isTrue);
 
     final anyway = find.byKey(const Key('backup-restore-anyway'));
-    await tester.ensureVisible(anyway);
-    await tester.runAsync(() async {
-      await tester.tap(anyway);
-      await Future<void>.delayed(const Duration(seconds: 2));
-    });
-    await tester.pump();
+    await _tapAndSettle(tester, anyway);
 
     expect((await store.read('u1')).health.medications, ['ramipril']);
     expect(find.byKey(const Key('backup-restore-anyway')), findsNothing);
@@ -106,15 +133,15 @@ void main() {
     final undo = find.byKey(const Key('backup-restore-undo'));
     expect(undo, findsOneWidget);
 
-    await tester.ensureVisible(undo);
-    await tester.runAsync(() async {
-      await tester.tap(undo);
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    });
-    await tester.pump();
+    await _tapAndSettle(tester, undo);
 
     // Nothing was on the device before, so undo clears it.
     expect(await store.readChecked('u1'), isA<SensitiveMissing>());
     expect(find.byKey(const Key('backup-restore-undo')), findsNothing);
+    expect(
+        find.text(
+            'Undone. This phone is back to how it was before the restore.',
+            skipOffstage: false),
+        findsOneWidget);
   });
 }

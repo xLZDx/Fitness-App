@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -286,5 +287,117 @@ void main() {
       await action.undoLastRestore();
       expect((await t.store.read('u1')).health.medications, ['metformin']);
     });
+
+    test('a restore whose WRITE fails offers no undo', () async {
+      final store = _FlakyWriteStore()..failWrites = true;
+      final container = ProviderContainer(overrides: [
+        localSensitiveStoreProvider.overrideWithValue(store),
+        authUserProvider.overrideWith(
+          (ref) => Stream.value(const AuthUser(uid: 'u1', displayName: 'U')),
+        ),
+      ]);
+      addTearDown(container.dispose);
+      final action = container.read(backupRestoreActionProvider.notifier);
+
+      await action.restore(
+          envelope: seal(_sensitive, ownerUid: 'u1'), passphrase: 'phrase');
+
+      expect(container.read(backupRestoreActionProvider).hasError, isTrue);
+      expect(action.canUndo, isFalse,
+          reason: 'nothing changed on the device, so there is nothing to undo');
+    });
+
+    test('a restore whose WRITE fails keeps the earlier undo target',
+        () async {
+      final store = _FlakyWriteStore();
+      final container = ProviderContainer(overrides: [
+        localSensitiveStoreProvider.overrideWithValue(store),
+        authUserProvider.overrideWith(
+          (ref) => Stream.value(const AuthUser(uid: 'u1', displayName: 'U')),
+        ),
+      ]);
+      addTearDown(container.dispose);
+      await store.write('u1', other);
+      final action = container.read(backupRestoreActionProvider.notifier);
+      await action.restore(
+          envelope: seal(_sensitive, ownerUid: 'u1'), passphrase: 'phrase');
+      expect(action.canUndo, isTrue);
+
+      store.failWrites = true;
+      await action.restore(
+          envelope: seal(_sensitive, ownerUid: 'u1'), passphrase: 'phrase');
+      expect(container.read(backupRestoreActionProvider).hasError, isTrue);
+      expect(action.canUndo, isTrue,
+          reason: 'the failed second restore must not discard the first undo');
+
+      store.failWrites = false;
+      await action.undoLastRestore();
+      expect(container.read(backupRestoreActionProvider).hasError, isFalse);
+      expect((await store.read('u1')).health.medications, ['metformin']);
+    });
+
+    group('undo is tied to the signed-in account', () {
+      late StreamController<AuthUser?> auth;
+      late ProviderContainer container;
+      late BackupRestoreAction action;
+
+      Future<void> signedInAndRestored() async {
+        auth = StreamController<AuthUser?>();
+        addTearDown(auth.close);
+        final store = InMemorySensitiveStore();
+        container = ProviderContainer(overrides: [
+          localSensitiveStoreProvider.overrideWithValue(store),
+          authUserProvider.overrideWith((ref) => auth.stream),
+          // The real one re-reads auth after an await and trips riverpod's
+          // "dependency changed" assertion when the test swaps the account.
+          currentProfileProvider
+              .overrideWith((ref) => Stream<UserProfile?>.value(null)),
+        ]);
+        addTearDown(container.dispose);
+        action = container.read(backupRestoreActionProvider.notifier);
+        auth.add(const AuthUser(uid: 'u1', displayName: 'U'));
+        await action.restore(
+            envelope: seal(_sensitive, ownerUid: 'u1'), passphrase: 'phrase');
+        expect(action.canUndo, isTrue);
+      }
+
+      Future<void> deliver() async {
+        for (var i = 0; i < 10; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
+      }
+
+      test('the same account re-emitting keeps the undo', () async {
+        await signedInAndRestored();
+        auth.add(const AuthUser(uid: 'u1', displayName: 'Renamed'));
+        await deliver();
+        expect(action.canUndo, isTrue);
+      });
+
+      test('switching to another account clears it', () async {
+        await signedInAndRestored();
+        auth.add(const AuthUser(uid: 'u2', displayName: 'Other'));
+        await deliver();
+        expect(action.canUndo, isFalse);
+      });
+
+      test('signing out clears it', () async {
+        await signedInAndRestored();
+        auth.add(null);
+        await deliver();
+        expect(action.canUndo, isFalse);
+      });
+    });
   });
+}
+
+/// An in-memory store whose writes can be made to fail on demand.
+class _FlakyWriteStore extends InMemorySensitiveStore {
+  bool failWrites = false;
+
+  @override
+  Future<void> write(String uid, SensitiveProfile value) async {
+    if (failWrites) throw StateError('disk full');
+    await super.write(uid, value);
+  }
 }

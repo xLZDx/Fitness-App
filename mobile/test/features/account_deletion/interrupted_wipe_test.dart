@@ -74,6 +74,16 @@ class _ThrowingMarkerWrite extends InMemoryPendingWipeMarker {
   Future<void> write(String uid) async => throw StateError('prefs down');
 }
 
+class _ThrowingMarkerRead extends InMemoryPendingWipeMarker {
+  @override
+  Future<String?> read() async => throw StateError('prefs down');
+}
+
+class _ThrowingMarkerClear extends InMemoryPendingWipeMarker {
+  @override
+  Future<void> clear() async => throw StateError('prefs down');
+}
+
 /// Waits (bounded, condition-based) for the unawaited sweep to finish.
 Future<void> _until(bool Function() done) async {
   for (var i = 0; i < 200 && !done(); i++) {
@@ -159,6 +169,60 @@ void main() {
       expect(wipe.attempts, ['old']);
       expect(await marker.read(), 'old',
           reason: 'the next launch must be able to retry');
+    });
+  });
+
+  group('finishInterruptedWipe hardening', () {
+    for (final garbage in ['', '.', '..', 'a/b', r'a\b']) {
+      test('a garbage marker "$garbage" is cleared and never wiped', () async {
+        final marker = InMemoryPendingWipeMarker();
+        await marker.write(garbage);
+        final wipe = RecordingLocalDataWipe();
+
+        final ran = await finishInterruptedWipe(
+            marker: marker, wipe: wipe, signedInUid: null);
+
+        expect(ran, isFalse);
+        expect(wipe.wiped, isEmpty,
+            reason: 'the value becomes a directory name; it must not be used');
+        expect(await marker.read(), isNull);
+      });
+    }
+
+    test('a marker.read failure returns false instead of throwing', () async {
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: _ThrowingMarkerRead(), wipe: wipe, signedInUid: null);
+
+      expect(ran, isFalse);
+      expect(wipe.wiped, isEmpty);
+    });
+
+    test('a marker.clear failure after a good wipe returns false, no throw',
+        () async {
+      final marker = _ThrowingMarkerClear();
+      await marker.write('old');
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+
+      expect(ran, isFalse);
+      expect(wipe.wiped, ['old']);
+    });
+
+    test('a marker.clear failure on a garbage marker returns false, no throw',
+        () async {
+      final marker = _ThrowingMarkerClear();
+      await marker.write('a/b');
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: marker, wipe: wipe, signedInUid: null);
+
+      expect(ran, isFalse);
+      expect(wipe.wiped, isEmpty);
     });
   });
 

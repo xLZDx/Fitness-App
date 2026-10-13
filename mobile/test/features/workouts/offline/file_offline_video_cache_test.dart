@@ -87,6 +87,26 @@ void main() {
       expect(await orphan.exists(), isFalse);
       expect(filesIn(dir).length, 1);
     });
+
+    test('a failed first sweep does not fail the next download', () async {
+      // A plain file where the cache directory must be created makes the first
+      // sweep (and so the first download) fail; removing it lets a retry work.
+      final blocker = File('${dir.path}/blocked');
+      await blocker.writeAsBytes([1]);
+      final cache = FileOfflineVideoCache(
+        directory: Directory(blocker.path),
+        fetch: _fetch(),
+      );
+
+      await expectLater(
+          cache.download('clip-a'), throwsA(isA<FileSystemException>()));
+
+      await blocker.delete();
+      final file = await cache.download('clip-a');
+
+      expect(await file.exists(), isTrue);
+      expect(await file.length(), greaterThan(0));
+    });
   });
 
   /// Backdates a cached clip.

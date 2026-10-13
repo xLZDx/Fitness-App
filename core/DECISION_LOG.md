@@ -55742,3 +55742,7 @@ Focused tests for the eight tail-closure fixes, written and run by test agents a
 ## 2026-10-13 - Commit: fixes for valid review minors
 
 Small valid MINOR findings of the four sprint-end specialist reviews are closed as one batch (undo bookkeeping, sweep retry, wear await timeouts, marker guard, logging); larger or pre-existing items go to the tail registry backlog. Detail: core/changes/2026-10-13-review-minors.md.
+
+## 2026-10-13 - Commit: tests for the review-minor fixes
+
+Focused tests for the undo bookkeeping, the interrupted-wipe marker guard and the failed-sweep retry; the page test's auth stub no longer depends on fake-async delivery. All touched test files green. Detail: core/changes/2026-10-13-review-minors-tests.md.
