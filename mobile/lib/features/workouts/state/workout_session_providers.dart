@@ -90,6 +90,9 @@ class LogSessionAction extends Notifier<AsyncValue<void>> {
   AsyncValue<void> build() => const AsyncValue.data(null);
 
   Future<void> log(WorkoutSession session) async {
+    // NEW-OFFLINE-LOG: a second tap while the first write is in flight must
+    // not start another one.
+    if (state.isLoading) return;
     state = const AsyncValue.loading();
     try {
       final user = ref.read(authUserProvider).valueOrNull;
@@ -131,7 +134,12 @@ class LogSessionAction extends Notifier<AsyncValue<void>> {
           .expand((s) => s.asLogEntries())
           .toList();
       final streak = deriveProgress(logs).currentStreakDays;
-      if (streak > 0) await repo.recordStreak(uid, streak);
+      // Bounded: the streak write is a transaction, which cannot complete
+      // offline and must not hold the completion spinner. A timeout is
+      // swallowed below like any other failure of this cosmetic write.
+      if (streak > 0) {
+        await repo.recordStreak(uid, streak).timeout(const Duration(seconds: 4));
+      }
     } catch (_) {
       // Deliberate, and narrow: see LogWorkoutAction._rememberStreak.
     }

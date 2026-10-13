@@ -55730,3 +55730,7 @@ The phone-side Wear bridge (MainActivity.kt, not wear/) no longer answers "succe
 ## 2026-10-13 — Commit: finish a device wipe after an interrupted account deletion (NEW-DELETE-INTERRUPT)
 
 A pending-wipe marker (uid only) is recorded right after the server confirms an account deletion and cleared when the device wipe completes; at launch, once the signed-in user is known, a leftover marker for a different account triggers the wipe. The marker is written after confirmation, never before, so it cannot erase a live account's only local health data. Detail: core/changes/2026-10-13-interrupted-deletion-wipe.md.
+
+## 2026-10-13 — Commit: offline "Mark complete" and concurrent prefetch (NEW-OFFLINE-LOG, NEW-PREFETCH-CONCURRENT)
+
+Code written by the second session `fitness-app-93`, which stopped before committing and which my operator did not recognise. I read the 39-line diff in full and committed it unchanged under my own record so the sprint's test and review phase covers it. Detail and limits: core/changes/2026-10-13-offline-log-and-prefetch.md.

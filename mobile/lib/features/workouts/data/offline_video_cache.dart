@@ -159,13 +159,33 @@ class FileOfflineVideoCache implements OfflineVideoCache {
     return f;
   }
 
+  /// Downloads in flight, by url. Two callers asking for the same clip used to
+  /// write the same `.part` file, and the failure cleanup of one deleted the
+  /// file under the other (NEW-PREFETCH-CONCURRENT). They now share one run;
+  /// the second caller's [onProgress] is not called.
+  final Map<String, Future<File>> _inFlight = {};
+
   @override
   Future<File> download(String url,
+      {String? from, ProgressCallback? onProgress}) {
+    final running = _inFlight[url];
+    if (running != null) return running;
+    final run = _download(url, from: from, onProgress: onProgress);
+    _inFlight[url] = run;
+    return run.whenComplete(() => _inFlight.remove(url));
+  }
+
+  Future<File> _download(String url,
       {String? from, ProgressCallback? onProgress}) async {
     await _sweepPartials();
     final dir = await _cacheDir();
     final dest = File('${dir.path}/${_filenameFor(url)}');
-    if (await dest.exists()) return dest;
+    if (await dest.exists()) {
+      // An empty file cannot be a finished clip; treat it as a miss and
+      // fetch again instead of serving it forever.
+      if (await dest.length() > 0) return dest;
+      await _deleteQuietly(dest, 'empty cached clip');
+    }
     final tmp = File('${dest.path}$_partSuffix');
     try {
       await _fetch(from ?? url, tmp.path, onProgress: onProgress);
