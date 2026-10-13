@@ -191,6 +191,46 @@ describe("enforceAiGatewayEnabled", () => {
     expect(accessSecretVersionCalls).toBe(1);
   });
 
+  // The cache is a bound, not a permanent state: once CONTROL_CACHE_TTL_MS
+  // (5_000 ms in abuse_guard.ts) has elapsed, a flipped kill switch must be
+  // re-read, otherwise an operator could never disable AI on a warm instance.
+  // Only Date is faked; promise/microtask scheduling stays real.
+  describe("cache expiry", () => {
+    beforeEach(() => {
+      jest.useFakeTimers({
+        now: new Date("2026-01-01T00:00:00Z"),
+        doNotFake: [
+          "nextTick",
+          "setImmediate",
+          "clearImmediate",
+          "setTimeout",
+          "clearTimeout",
+          "setInterval",
+          "clearInterval",
+          "queueMicrotask",
+        ],
+      });
+    });
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test("a flipped secret is served from cache before the TTL and re-read after it", async () => {
+      await expect(enforceAiGatewayEnabled("aiCoachAdvice")).resolves.toBeUndefined();
+      expect(accessSecretVersionCalls).toBe(1);
+
+      controlSecret = { payload: JSON.stringify({ enabled: false, reason: "cost_abuse" }) };
+
+      jest.setSystemTime(new Date("2026-01-01T00:00:04.999Z"));
+      await expect(enforceAiGatewayEnabled("aiCoachAdvice")).resolves.toBeUndefined();
+      expect(accessSecretVersionCalls).toBe(1);
+
+      jest.setSystemTime(new Date("2026-01-01T00:00:05.000Z"));
+      await expect(enforceAiGatewayEnabled("aiCoachAdvice")).rejects.toThrow(/temporarily unavailable/i);
+      expect(accessSecretVersionCalls).toBe(2);
+    });
+  });
+
   // The cache must still log a distinct event per call -- proof point 5
   // (observability) requires every refused call to be individually visible,
   // not just the one that actually hit Secret Manager.
@@ -200,5 +240,29 @@ describe("enforceAiGatewayEnabled", () => {
     await enforceAiGatewayEnabled("aiCoachAdvice").catch(() => undefined);
     expect(accessSecretVersionCalls).toBe(1);
     expect(logger.warn).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("refundQuota", () => {
+  test("a failed refund is a named error event, never swallowed silently", async () => {
+    // withEnv re-requires the module in an isolated registry, so the mock
+    // must be registered with doMock rather than spied on the outer copy.
+    jest.doMock("firebase-admin", () => ({
+      firestore: () => ({
+        doc: () => ({}),
+        runTransaction: async () => {
+          throw new Error("txn aborted");
+        },
+      }),
+    }));
+    const logger = require("firebase-functions/logger");
+    logger.error.mockClear();
+    const mod = withEnv({});
+    await expect(mod.refundQuota("u1", "clipUrl", 2)).resolves.toBeUndefined();
+    expect(logger.error).toHaveBeenCalledWith(
+      "quota refund failed",
+      expect.objectContaining({ event: "quota refund failed", uid: "u1", action: "clipUrl", amount: 2 }),
+    );
+    jest.dontMock("firebase-admin");
   });
 });

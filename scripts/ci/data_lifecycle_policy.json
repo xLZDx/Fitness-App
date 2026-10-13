@@ -212,7 +212,7 @@
     },
     "equipment_identity_sessions": {
       "classification": "DELETE",
-      "reason": "Subcollection under users/{uid} -- automatically covered by deleteAccount's recursiveDelete cascade. Reserved in firestore.rules ahead of the runtime that writes it (P2.G3); functions-equipment-identity/src has no live Admin SDK writer yet, so there is no data today requiring export. Reclassify to BOTH once a real writer exists and the collection is confirmed to hold exportable user content.",
+      "reason": "Subcollection under users/{uid} -- automatically covered by deleteAccount's recursiveDelete cascade. EXPORT GAP: needs follow-up. functions-equipment-identity/src/p2/session_repository.ts writes these documents today (tx.set of pending/superseded/resolved session records), so live per-user data exists that exportAccountData does not return (it lives in a different functions package). Classification stays DELETE because BOTH would claim an export that does not exist; reclassify to BOTH once an export path is added or the content is explicitly judged exempt.",
       "clientAccess": [
         {
           "path": "/users/{uid}/equipment_identity_sessions/{sessionId}",
@@ -227,7 +227,7 @@
     },
     "equipment_identity_telemetry": {
       "classification": "DELETE",
-      "reason": "Same status as equipment_identity_sessions: DELETE-covered by the recursiveDelete cascade, not yet wired to a live writer. Telemetry data (latency/outcome counts) is also unlikely to warrant user-facing export even once live -- revisit when P6's shadow-evaluation runtime lands.",
+      "reason": "EXPORT GAP: needs follow-up. functions-equipment-identity/src/p2/telemetry_repository.ts writes these documents today (server terminal telemetry and mobile telemetry fragments), so live per-user data exists that exportAccountData does not return. DELETE-covered by the recursiveDelete cascade. Latency/outcome counts may be judged exempt from export, but that decision has not been made; classification stays DELETE until it is (BOTH or EXEMPT with a rationale).",
       "clientAccess": [
         {
           "path": "/users/{uid}/equipment_identity_telemetry/{docId}",
@@ -494,7 +494,7 @@
     },
     "stats": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid}/stats/workouts (all-time workout totals). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's one(users/${uid}/stats/workouts).",
+      "reason": "Subcollection under users/{uid}/stats holding two docs: stats/workouts (all-time workout totals) and stats/workout_sessions (session totals written by the mobile firestore_workout_session_repository). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's one(users/${uid}/stats/workouts) and one(users/${uid}/stats/workout_sessions).",
       "clientAccess": [
         {
           "path": "/users/{uid}/stats/{docId}",
@@ -584,7 +584,7 @@
     },
     "equipment_identity_latest_session": {
       "classification": "DELETE",
-      "reason": "Subcollection under users/{uid} (P2.G3: per-user pointer to the most recently pinned recognitionSessionId, firestore_paths.ts's userEquipmentIdentityLatestSessionDocPath). DELETE-covered by recursiveDelete cascade. Same status as equipment_identity_sessions/equipment_identity_telemetry: not yet exported, server-internal-only, reclassify to BOTH if a real export need is ever identified.",
+      "reason": "Subcollection under users/{uid} (P2.G3: per-user pointer to the most recently pinned recognitionSessionId, firestore_paths.ts's userEquipmentIdentityLatestSessionDocPath). DELETE-covered by recursiveDelete cascade. EXPORT GAP: needs follow-up. Same status as equipment_identity_sessions/equipment_identity_telemetry: functions-equipment-identity/src/p2/session_repository.ts writes this pointer today (tx.set of latestRef) and exportAccountData does not return it; reclassify to BOTH or EXEMPT once decided.",
       "clientAccess": [
         {
           "path": "/users/{uid}/equipment_identity_latest_session/{docId}",

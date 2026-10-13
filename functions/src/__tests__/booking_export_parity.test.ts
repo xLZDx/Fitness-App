@@ -97,7 +97,10 @@ describe("booking export parity", () => {
     // named by the call shape that reaches the document, not by one spelling.
     // Each target is the text immediately before the object literal written.
     const targets = [
-      "coach_bookings/${bookingId}`).set(", // the webhook's status merge
+      // The webhook's status write. It is an `update` (not a `set` merge) since
+      // WS2: a booking removed by an account-deletion sweep must not be
+      // re-created by a late event, so a missing document answers NOT_FOUND.
+      "coach_bookings/${bookingId}`).update(",
       "bookingRef.create(", // the claim: the full row
       "tx.update(bookingRef,", // claim -> pending, with the intent id
     ];

@@ -53,6 +53,13 @@ export const QUOTA_EXCEEDED_EVENT = "quota exceeded";
  */
 export const QUOTA_CHECK_FAILED_EVENT = "quota check failed";
 
+/**
+ * `abuse_guard.ts` refundQuota -- a quota refund transaction failed, so a user
+ * who was charged for a call that did not deliver keeps the lost budget. Error
+ * level and alertable; no alert policy is wired yet.
+ */
+export const QUOTA_REFUND_FAILED_EVENT = "quota refund failed";
+
 /** `canary_schedule.ts` -- the Step 9B production canary's scheduled run failed. */
 export const CANARY_PROBE_FAILED_EVENT = "production canary probe failed";
 

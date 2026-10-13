@@ -120,17 +120,24 @@ export interface TextKeyStore {
   writeMany(records: DerivedTextKeyRecord[]): Promise<void>;
 }
 
+/** Writes per Firestore batch (hard limit is 500). */
+export const TEXT_KEY_BATCH_SIZE = 450;
+
 /** The real, Firestore-backed writer. */
 export class FirestoreTextKeyStore implements TextKeyStore {
   async writeMany(records: DerivedTextKeyRecord[]): Promise<void> {
     if (records.length === 0) return;
-    const batch = db().batch();
-    for (const record of records) {
-      const id = textKeyDocId(record.catalogVersion, record.lookupKey, record.modelId);
-      const ref = db().collection(P2CollectionPaths.textKeys).doc(id);
-      batch.set(ref, record);
+    // A Firestore batch holds at most 500 writes; chunk below that so a model
+    // with many aliases cannot make the whole publish fail.
+    for (let i = 0; i < records.length; i += TEXT_KEY_BATCH_SIZE) {
+      const batch = db().batch();
+      for (const record of records.slice(i, i + TEXT_KEY_BATCH_SIZE)) {
+        const id = textKeyDocId(record.catalogVersion, record.lookupKey, record.modelId);
+        const ref = db().collection(P2CollectionPaths.textKeys).doc(id);
+        batch.set(ref, record);
+      }
+      await batch.commit();
     }
-    await batch.commit();
   }
 }
 

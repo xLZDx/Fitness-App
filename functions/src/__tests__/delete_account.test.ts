@@ -35,6 +35,7 @@ const getRef = (path: string): any => {
 
 const recursiveDelete = jest.fn(async (_ref?: any) => undefined);
 const deleteUser = jest.fn(async () => undefined);
+const revokeRefreshTokens = jest.fn(async (_uid?: string) => undefined);
 
 /**
  * A1 — the shared-record sweep needs three things the original mock did not
@@ -113,7 +114,7 @@ jest.mock("firebase-admin", () => {
   return {
     initializeApp: jest.fn(),
     firestore: firestoreFn,
-    auth: jest.fn(() => ({ deleteUser })),
+    auth: jest.fn(() => ({ deleteUser, revokeRefreshTokens })),
     __getRef: getRef,
     __reset: () => refs.clear(),
   };
@@ -138,6 +139,7 @@ jest.mock("firebase-functions/logger", () => ({
   error: jest.fn(),
 }));
 
+import * as logger from "firebase-functions/logger";
 import { HttpsError } from "firebase-functions/v2/https";
 import { deleteAccount } from "../index";
 
@@ -168,6 +170,7 @@ beforeEach(() => {
   listSubscriptions.mockReset().mockResolvedValue({ data: [] });
   recursiveDelete.mockReset().mockResolvedValue(undefined);
   deleteUser.mockReset().mockResolvedValue(undefined);
+  revokeRefreshTokens.mockReset().mockResolvedValue(undefined);
   cancel.mockReset().mockResolvedValue(undefined);
   // Not-yet-canceled by default -- most tests exercise the ordinary path
   // where cancel() is actually expected to run. The idempotency tests below
@@ -193,7 +196,34 @@ describe("deleteAccount", () => {
       expect(retrieve).toHaveBeenCalledWith("sub_123");
       expect(cancel).toHaveBeenCalledWith("sub_123");
       // Three collections: users/{uid}, donor_wall/{uid}, coach_listings/{uid}.
-      expect(recursiveDelete).toHaveBeenCalledTimes(3);
+      expect(recursiveDelete).toHaveBeenCalledTimes(6);
+      expect(deleteUser).toHaveBeenCalledWith("u1");
+    });
+
+  test("revokes refresh tokens before any data is touched", async () => {
+    const order: string[] = [];
+    revokeRefreshTokens.mockImplementation(async () => {
+      order.push("revoke");
+    });
+    recursiveDelete.mockImplementation(async () => {
+      order.push("recursiveDelete");
+    });
+    await deleteAccount.run(req({ uid: "u1" }));
+    expect(revokeRefreshTokens).toHaveBeenCalledWith("u1");
+    expect(order[0]).toBe("revoke");
+    expect(order).toContain("recursiveDelete");
+  });
+
+  test("a failed token revocation is logged by name and does not block deletion",
+    async () => {
+      revokeRefreshTokens.mockRejectedValue(new Error("auth backend down"));
+      const res = await deleteAccount.run(req({ uid: "u1" }));
+      expect(res).toEqual({ success: true });
+      expect(logger.error).toHaveBeenCalledWith(
+        "delete_account_revoke_tokens_failed",
+        expect.objectContaining({ uid: "u1" }),
+      );
+      expect(recursiveDelete).toHaveBeenCalledTimes(6);
       expect(deleteUser).toHaveBeenCalledWith("u1");
     });
 
@@ -209,9 +239,13 @@ describe("deleteAccount", () => {
 
       await deleteAccount.run(req({ uid: "u1" }));
 
+      // Each is swept twice: before and after the Auth deletion.
       expect(targeted.sort()).toEqual([
         "coach_listings/u1",
+        "coach_listings/u1",
         "donor_wall/u1",
+        "donor_wall/u1",
+        "users/u1",
         "users/u1",
       ]);
     });
@@ -224,7 +258,7 @@ describe("deleteAccount", () => {
       expect(res).toEqual({ success: true });
       expect(retrieve).not.toHaveBeenCalled();
       expect(cancel).not.toHaveBeenCalled();
-      expect(recursiveDelete).toHaveBeenCalledTimes(3);
+      expect(recursiveDelete).toHaveBeenCalledTimes(6);
       expect(deleteUser).toHaveBeenCalledWith("u1");
     });
 
@@ -304,6 +338,10 @@ describe("deleteAccount", () => {
         "recursiveDelete",
         "recursiveDelete",
         "deleteUser",
+        // Final sweep after the Auth deletion.
+        "recursiveDelete",
+        "recursiveDelete",
+        "recursiveDelete",
       ]);
     });
 
@@ -634,5 +672,192 @@ describe("deleteAccount", () => {
     await deleteAccount.run(req({ uid: "u1" }));
 
     expect(batchOps).toEqual([]);
+  });
+
+  // -------------------------------------------------------------------
+  // Partial failure, retries, pagination edges.
+  // -------------------------------------------------------------------
+
+  test("a self-booking (both sides u1) is deleted once, not anonymised twice", async () => {
+    // The row matches BOTH booking queries. Two updates against one ref leave
+    // a row naming deleted_user on both sides, which nobody can read again.
+    seed("coach_bookings", [
+      { id: "self", data: { clientUid: "u1", coachUid: "u1" } },
+    ]);
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(batchOps).toEqual([{ op: "delete", path: "coach_bookings/self" }]);
+    expect(seededDocs.get("coach_bookings")).toEqual([]);
+  });
+
+  test("a customer's subscriptions are listed across pages and every one is cancelled", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeCustomerId: "cus_1" });
+    listSubscriptions
+      .mockResolvedValueOnce({ data: [{ id: "s1" }, { id: "s2" }], has_more: true })
+      .mockResolvedValueOnce({ data: [{ id: "s3" }], has_more: false });
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(listSubscriptions).toHaveBeenCalledTimes(2);
+    expect(listSubscriptions).toHaveBeenLastCalledWith({
+      customer: "cus_1",
+      status: "all",
+      limit: 100,
+      starting_after: "s2",
+    });
+    expect(cancel.mock.calls.map((c) => c[0]).sort()).toEqual(["s1", "s2", "s3"]);
+  });
+
+  test("subscription paging is bounded at 20 pages even if Stripe never stops", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeCustomerId: "cus_1" });
+    let n = 0;
+    listSubscriptions.mockImplementation(async () => ({
+      data: [{ id: `s${n++}` }],
+      has_more: true,
+    }));
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(listSubscriptions).toHaveBeenCalledTimes(20);
+  });
+
+  test("a failing subscription listing aborts before cancelling or deleting anything", async () => {
+    getRef("users/u1/subscription/main").__setStored({
+      stripeSubscriptionId: "sub_1",
+      stripeCustomerId: "cus_1",
+    });
+    listSubscriptions.mockRejectedValue(new Error("stripe list 500"));
+
+    await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(recursiveDelete).not.toHaveBeenCalled();
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  test("a failing status lookup aborts before any data is deleted", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeSubscriptionId: "sub_1" });
+    retrieve.mockRejectedValue(new Error("stripe retrieve 500"));
+
+    await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(recursiveDelete).not.toHaveBeenCalled();
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  test("half-cancelled then retried: the retry cancels only what is still live and finishes", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeCustomerId: "cus_1" });
+    listSubscriptions.mockResolvedValue({ data: [{ id: "sA" }, { id: "sB" }], has_more: false });
+    const live = new Set(["sA", "sB"]);
+    retrieve.mockImplementation(async (id: string) => ({
+      status: live.has(id) ? "active" : "canceled",
+    }));
+    cancel.mockImplementation(async (id: string) => {
+      if (id === "sB") throw new Error("stripe cancel 500");
+      live.delete(id);
+    });
+
+    await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+    expect(recursiveDelete).not.toHaveBeenCalled();
+    expect(deleteUser).not.toHaveBeenCalled();
+
+    // Retry once Stripe recovers: sA is already gone and must not be cancelled again.
+    cancel.mockClear();
+    cancel.mockImplementation(async (id: string) => {
+      live.delete(id);
+    });
+    await expect(deleteAccount.run(req({ uid: "u1" }))).resolves.toEqual({ success: true });
+
+    expect(cancel.mock.calls.map((c) => c[0])).toEqual(["sB"]);
+    expect(deleteUser).toHaveBeenCalledTimes(1);
+    expect(deleteUser).toHaveBeenCalledWith("u1");
+  });
+
+  test("a Firestore failure leaves the Auth user, and the retry completes the deletion", async () => {
+    recursiveDelete.mockRejectedValueOnce(new Error("bulkwriter failed"));
+
+    await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+    expect(deleteUser).not.toHaveBeenCalled();
+
+    await expect(deleteAccount.run(req({ uid: "u1" }))).resolves.toEqual({ success: true });
+    expect(deleteUser).toHaveBeenCalledTimes(1);
+    expect(deleteUser).toHaveBeenCalledWith("u1");
+  });
+
+  test("a failed sweep commit after a successful Stripe cancel reports the data failure, not a Stripe one", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeSubscriptionId: "sub_1" });
+    seed("debug_sessions", [{ id: "d1", data: { uid: "u1" } }]);
+    commit.mockRejectedValueOnce(new Error("commit failed"));
+
+    const err = await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(cancel).toHaveBeenCalledWith("sub_1");
+    expect(err.message).toMatch(/some of your data could not be deleted/);
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteAccount ordering and the final sweep", () => {
+  const trace = (order: string[]) => {
+    cancel.mockImplementation(async () => {
+      order.push("cancel");
+    });
+    revokeRefreshTokens.mockImplementation(async () => {
+      order.push("revoke");
+    });
+    recursiveDelete.mockImplementation(async (ref: any) => {
+      order.push(`sweep:${ref.path}`);
+    });
+    deleteUser.mockImplementation(async () => {
+      order.push("deleteUser");
+    });
+  };
+
+  test("cancel, then revoke, then sweep, then deleteUser, then the final sweep", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeSubscriptionId: "sub_1" });
+    const order: string[] = [];
+    trace(order);
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    const sweeps = (from: number, to: number) => order.slice(from, to).sort();
+    const paths = ["sweep:coach_listings/u1", "sweep:donor_wall/u1", "sweep:users/u1"];
+    expect(order.slice(0, 2)).toEqual(["cancel", "revoke"]);
+    expect(sweeps(2, 5)).toEqual(paths);
+    expect(order[5]).toBe("deleteUser");
+    expect(sweeps(6, 9)).toEqual(paths);
+    expect(order).toHaveLength(9);
+  });
+
+  test("the final sweep failure is logged by name and does not fail the call", async () => {
+    let afterDeleteUser = false;
+    deleteUser.mockImplementation(async () => {
+      afterDeleteUser = true;
+    });
+    recursiveDelete.mockImplementation(async () => {
+      if (afterDeleteUser) throw new Error("firestore down");
+    });
+
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(res).toEqual({ success: true });
+    expect(recursiveDelete).toHaveBeenCalledTimes(6);
+    expect(logger.error).toHaveBeenCalledWith(
+      "delete_account_final_sweep_failed",
+      expect.objectContaining({ uid: "u1" }),
+    );
+  });
+
+  test("a failed Stripe cancel leaves refresh tokens unrevoked", async () => {
+    getRef("users/u1/subscription/main").__setStored({ stripeSubscriptionId: "sub_1" });
+    cancel.mockRejectedValue(new Error("stripe down"));
+
+    await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(revokeRefreshTokens).not.toHaveBeenCalled();
+    expect(recursiveDelete).not.toHaveBeenCalled();
+    expect(deleteUser).not.toHaveBeenCalled();
   });
 });

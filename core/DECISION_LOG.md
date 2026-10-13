@@ -55766,3 +55766,7 @@ Operator approved (GO) the fix-all sprint: hide mock-only features in release, c
 ## 2026-10-13 - Commit: hardening sprint documentation, QA reports and byte-pinning rules
 
 Plan revision 2 answers the GPT-PM documentation-gate REJECT of 07d8e4a (eight MAJOR findings about completeness and verifiability, none against the operator's decisions): safety and release contracts, dependency order, exception register, F1..F13 traceability. The whole-project QA reports are added as the evidence base. `.gitattributes` pins LF for the files the CT-1 registry hashes. Detail: core/changes/2026-10-13-hardening-docs-and-process.md.
+
+## 2026-10-13 - Commit: deletion and webhook hardening, export coverage, functions silent-failure fixes
+
+Stripe webhooks no longer write user data for a deleted Auth user (guard before the write, recheck after it), deleteAccount revokes tokens only after the Stripe cancel succeeded and ends with a final idempotent sweep, the export covers stats/workout_sessions, and the equipment-identity server stores are recorded as an explicit export gap. Residual risk: an ID token issued before deletion stays valid up to about an hour; a tombstone store was rejected as a new identifier store. Verification: both Jest packages (679 and 518 tests), the data-access and data-lifecycle policy checkers and the checker's own self-test pass; the emulator and rules suites cannot run on this host. Detail: core/changes/2026-10-13-hardening-backend.md.

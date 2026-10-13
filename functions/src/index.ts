@@ -926,6 +926,76 @@ function tierFromSubscription(s: Stripe.Subscription): string {
  * the event body, so a replay rewrites the same fields and there is no
  * double-grant -- and this makes that property deliberate rather than lucky.
  */
+const WEBHOOK_EVENT_FOR_DELETED_ACCOUNT = "webhook_event_for_deleted_account";
+const WEBHOOK_BOOKING_ID_MISSING = "webhook_booking_confirm_missing_booking_id";
+const WEBHOOK_BOOKING_DOC_MISSING = "webhook_booking_confirm_booking_doc_missing";
+const DELETE_ACCOUNT_REVOKE_TOKENS_FAILED = "delete_account_revoke_tokens_failed";
+const DELETE_ACCOUNT_FINAL_SWEEP_FAILED = "delete_account_final_sweep_failed";
+const WEBHOOK_RACED_WRITE_REMOVED = "webhook_write_for_deleted_account_removed";
+const WEBHOOK_RACED_WRITE_REMOVE_FAILED =
+  "webhook_write_for_deleted_account_remove_failed";
+
+/**
+ * Stripe keeps delivering events for a user whose account was deleted
+ * (deleteAccount cancels the subscriptions, which itself emits events). The
+ * handlers write `users/{uid}/...` with set(merge), which would recreate a
+ * ghost document, including `stripeCustomerId`, that nothing ever sweeps.
+ * Returns false (after a named log) when the Auth user is gone so the caller
+ * answers 200 without writing. Any other lookup failure throws, so the
+ * webhook answers 500 and Stripe retries.
+ */
+async function authUserExistsForWebhook(
+  uid: string,
+  source: string,
+  logWhenGone = true,
+): Promise<boolean> {
+  try {
+    await admin.auth().getUser(uid);
+    return true;
+  } catch (e) {
+    if ((e as { code?: string })?.code === "auth/user-not-found") {
+      if (!logWhenGone) return false;
+      logger.warn(WEBHOOK_EVENT_FOR_DELETED_ACCOUNT, {
+        event: WEBHOOK_EVENT_FOR_DELETED_ACCOUNT,
+        uid,
+        source,
+      });
+      return false;
+    }
+    throw e;
+  }
+}
+
+/**
+ * Post-write recheck: the pre-write guard cannot see a deleteUser that lands
+ * between the guard and the write. If the Auth user is gone now, remove the
+ * document just written so it does not survive the account deletion (best
+ * effort, named log). Lookup errors other than user-not-found still throw so
+ * the webhook answers 500 and Stripe retries.
+ */
+async function removeWriteIfAccountGone(
+  uid: string,
+  source: string,
+  ref: FirebaseFirestore.DocumentReference,
+): Promise<void> {
+  if (await authUserExistsForWebhook(uid, source, false)) return;
+  try {
+    await ref.delete();
+    logger.warn(WEBHOOK_RACED_WRITE_REMOVED, {
+      event: WEBHOOK_RACED_WRITE_REMOVED,
+      uid,
+      source,
+    });
+  } catch (err) {
+    logger.error(WEBHOOK_RACED_WRITE_REMOVE_FAILED, {
+      event: WEBHOOK_RACED_WRITE_REMOVE_FAILED,
+      uid,
+      source,
+      err,
+    });
+  }
+}
+
 async function applySubscription(
   s: Stripe.Subscription,
   eventCreated?: number,
@@ -941,6 +1011,7 @@ async function applySubscription(
     });
     return;
   }
+  if (!(await authUserExistsForWebhook(uid, `subscription:${s.id}`))) return;
 
   const status = mapStatus(s.status);
   const tier = tierFromSubscription(s);
@@ -971,6 +1042,7 @@ async function applySubscription(
     // No clock to compare against -- an internal caller rather than the
     // webhook. Write as before rather than invent an ordering.
     await ref.set(payload, { merge: true });
+    await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
     return;
   }
 
@@ -992,6 +1064,7 @@ async function applySubscription(
       { merge: true },
     );
   });
+  await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
 }
 
 /**
@@ -1009,7 +1082,9 @@ async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
     });
     return;
   }
-  await db.doc(`users/${uid}/subscription/main`).set(
+  if (!(await authUserExistsForWebhook(uid, `lifetime:${pi.id}`))) return;
+  const lifetimeRef = db.doc(`users/${uid}/subscription/main`);
+  await lifetimeRef.set(
     {
       tier,
       status: "active",
@@ -1024,6 +1099,7 @@ async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
     },
     { merge: true },
   );
+  await removeWriteIfAccountGone(uid, `lifetime:${pi.id}`, lifetimeRef);
   logger.info("lifetime payment applied", { uid, tier });
 }
 
@@ -1110,15 +1186,33 @@ export const stripeWebhook = onRequest(
             await applyLifetimePayment(pi);
           } else if (pi.metadata?.kind === "coach_booking") {
             const bookingId = pi.metadata.bookingId;
-            if (bookingId) {
-              await db.doc(`coach_bookings/${bookingId}`).set(
-                {
+            if (!bookingId) {
+              logger.error(WEBHOOK_BOOKING_ID_MISSING, {
+                event: WEBHOOK_BOOKING_ID_MISSING,
+                paymentIntentId: pi.id,
+              });
+            } else {
+              // update() fails on a missing doc instead of creating a stub
+              // {status, confirmedAt}; NOT_FOUND (gRPC code 5) is a data
+              // condition, not a transient failure, so it is acknowledged.
+              try {
+                await db.doc(`coach_bookings/${bookingId}`).update({
                   status: "confirmed",
                   confirmedAt:
                     admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true },
-              );
+                });
+              } catch (e) {
+                const code = (e as { code?: unknown })?.code;
+                if (code === 5 || code === "not-found") {
+                  logger.error(WEBHOOK_BOOKING_DOC_MISSING, {
+                    event: WEBHOOK_BOOKING_DOC_MISSING,
+                    paymentIntentId: pi.id,
+                    bookingId,
+                  });
+                } else {
+                  throw e;
+                }
+              }
             }
           }
           break;
@@ -1888,14 +1982,21 @@ export const reportEquipment = onCall(
  *   1. Cancel Stripe first. Reversible in principle (the operator can
  *      resurrect a cancelled subscription from the Stripe dashboard if this
  *      call is ever made in error); nothing else here is.
+ *   1b. Revoke refresh tokens (non-fatal), only after the cancel succeeded so
+ *      a failed cancel/sweep still lets the user refresh a token and retry.
+ *      This does not invalidate an already-issued ID token (~1 hour).
  *   2. Delete Firestore data. `recursiveDelete` is safe to re-run --
  *      "the provided reference is deleted regardless of whether all deletes
  *      succeeded" (`@google-cloud/firestore` `recursiveDelete` doc) -- so a
  *      partial failure here can be retried without re-running step 1.
- *   3. Delete the Auth user LAST. This is the one truly irreversible step:
+ *   3. Delete the Auth user. This is the one truly irreversible step:
  *      once gone, the uid can never sign back in, by anyone, including this
- *      function on a retry. Doing it last means every earlier failure mode
- *      still leaves an account someone could get back into and try again.
+ *      function on a retry. Doing it after every retryable step means every
+ *      earlier failure mode still leaves an account someone could get back
+ *      into and try again.
+ *   4. One more idempotent sweep after the Auth deletion, to remove anything
+ *      a Stripe webhook re-created between step 2 and step 3. Failure is
+ *      logged, never surfaced (the deletion is complete and not retryable).
  *
  * `firestore.rules` needs no change for this. The plan flagged one, written
  * against a client-driven deletion flow; the Admin SDK this function runs
@@ -2291,6 +2392,22 @@ export const deleteAccount = onCall(
       }
     }
 
+    // Step 1b — revoke refresh tokens, only now that the Stripe cancel has
+    // succeeded: if the cancel or the sweep fails the user must still be able
+    // to refresh a token and retry. Revocation stops NEW ID tokens being
+    // minted from the refresh token; it does NOT invalidate an ID token that
+    // was already issued (valid for up to ~1 hour), and Firestore rules only
+    // check request.auth.uid. Non-fatal: deletion must proceed.
+    try {
+      await admin.auth().revokeRefreshTokens(uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_REVOKE_TOKENS_FAILED, {
+        event: DELETE_ACCOUNT_REVOKE_TOKENS_FAILED,
+        uid,
+        err,
+      });
+    }
+
     // Step 2 — delete every document under this uid, plus the two other
     // top-level collections a user can be written into elsewhere in this
     // file: `donor_wall/{uid}` (optInDonorWall) and `coach_listings/{uid}`
@@ -2348,6 +2465,29 @@ export const deleteAccount = onCall(
             "Please contact support to finish closing your account.",
         );
       }
+    }
+
+    // Step 4 — final idempotent sweep, AFTER the Auth user is gone. Cancelling
+    // Stripe makes Stripe emit `customer.subscription.deleted`; a webhook
+    // handler that passed its Auth-existence guard between the Step 2 wipe and
+    // the deleteUser above can re-create `users/{uid}/subscription/main`
+    // (with the stripeCustomerId) and nothing would ever sweep it. Events that
+    // arrive after deleteUser are stopped by that Auth existence check, so this
+    // sweep closes the remaining window. A failure here is logged only: the
+    // Auth user is already gone, so a client retry is impossible and the
+    // deletion itself did complete.
+    try {
+      await Promise.all([
+        db.recursiveDelete(db.collection("users").doc(uid)),
+        db.recursiveDelete(db.collection("donor_wall").doc(uid)),
+        db.recursiveDelete(db.collection("coach_listings").doc(uid)),
+      ]);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_FINAL_SWEEP_FAILED, {
+        event: DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+        uid,
+        err,
+      });
     }
 
     // KNOWN, UNCLOSED GAP: a Firebase ID token minted just before this call
