@@ -55746,3 +55746,7 @@ Small valid MINOR findings of the four sprint-end specialist reviews are closed 
 ## 2026-10-13 - Commit: tests for the review-minor fixes
 
 Focused tests for the undo bookkeeping, the interrupted-wipe marker guard and the failed-sweep retry; the page test's auth stub no longer depends on fake-async delivery. All touched test files green. Detail: core/changes/2026-10-13-review-minors-tests.md.
+
+## 2026-10-13 - Commit: tail closure registry update
+
+Engineering tails closed or carried with evidence; Stripe customers retained by operator decision (tax retention); VER-01/04/05/07 closed by development rule 8. Detail: core/changes/2026-10-13-tail-registry-closure.md.
