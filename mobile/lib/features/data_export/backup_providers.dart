@@ -64,7 +64,8 @@ class BackupCreateAction extends Notifier<AsyncValue<void>> {
       final sealed = await compute(
         _seal,
         (
-          payload: buildTransferPayload(sensitive),
+          payload: buildTransferPayload(sensitive,
+              ownerTag: ownerTagFor(user.uid)),
           passphrase: passphrase,
           filename: 'fitness-app-backup-$stamp.json',
         ),
@@ -89,9 +90,19 @@ class BackupRestoreAction extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
+  /// What the device held before the last restore, kept in memory only: an undo
+  /// that wrote a second copy of the health answers to disk would be a new
+  /// place for them to leak from. `previous == null` means there was nothing.
+  ({String uid, SensitiveProfile? previous})? _undo;
+
+  bool get canUndo => _undo != null;
+
+  /// [acceptOtherAccount] is the user's explicit "restore it anyway" for a
+  /// backup made under a different account.
   Future<void> restore({
     required String envelope,
     required String passphrase,
+    bool acceptOtherAccount = false,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -108,14 +119,55 @@ class BackupRestoreAction extends Notifier<AsyncValue<void>> {
       if (sensitive.isEmpty) {
         throw const TransferPayloadException('this backup is empty');
       }
+      final owner = readTransferOwner(payload);
+      if (owner != null &&
+          owner != ownerTagFor(user.uid) &&
+          !acceptOtherAccount) {
+        throw const BackupAccountMismatch();
+      }
+
+      final store = ref.read(localSensitiveStoreProvider);
+      // An unreadable blob is already quarantined by the store, so only a
+      // valid or absent one needs an in-memory undo.
+      final before = await store.readChecked(user.uid);
+      _undo = switch (before) {
+        SensitiveValid(:final profile) => (uid: user.uid, previous: profile),
+        SensitiveMissing() => (uid: user.uid, previous: null),
+        SensitiveCorrupt() => null,
+      };
 
       // Straight into the store, then a re-read. Saving through the repository
       // would round-trip the whole profile to Firestore for a change that only
       // concerns the device -- and would push a restored profile's non-health
       // half over whatever the server already holds, which is newer.
-      await ref.read(localSensitiveStoreProvider).write(user.uid, sensitive);
+      await store.write(user.uid, sensitive);
       ref.invalidate(currentProfileProvider);
 
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Puts back what the device held before the last restore.
+  Future<void> undoLastRestore() async {
+    final undo = _undo;
+    if (undo == null) return;
+    state = const AsyncValue.loading();
+    try {
+      final user = await ref.read(authUserProvider.future);
+      if (user == null || user.uid != undo.uid) {
+        throw StateError('Cannot undo under a different account');
+      }
+      final store = ref.read(localSensitiveStoreProvider);
+      final previous = undo.previous;
+      if (previous == null) {
+        await store.clear(undo.uid);
+      } else {
+        await store.write(undo.uid, previous);
+      }
+      _undo = null;
+      ref.invalidate(currentProfileProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

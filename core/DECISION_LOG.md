@@ -55713,3 +55713,7 @@ Rebuilt both `reports/code_ci_snapshot_2026-10-06.html` and `.ru.html` with the 
 ## 2026-10-13 — Commit: bounded deletion sweep and export size guard (NEW-DELETE-OOM)
 
 Account deletion no longer reads whole shared collections at once: `sweepSharedRecords` works in pages of 450, and the export is guarded by size (8 MiB) as well as row count, naming any section it had to trim. Operator decisions recorded this day: GO to close the remaining tails; Stripe customers are not deleted for now because of tax retention (NEW-STRIPE-CUSTOMER carried as "retain, no code change, disclosure wording left to the operator/legal"). Full detail, known edges and verification state: core/changes/2026-10-13-server-delete-paging.md. A catch-up record for the eight earlier commits is core/changes/2026-10-13-landing-batch-record.md. Tests are written and run by the test agents at sprint end; nothing is pushed.
+
+## 2026-10-13 — Commit: backup iteration ceiling, account binding and undo (NEW-BACKUP-ITER, NEW-RESTORE-BIND)
+
+A backup file can no longer demand unbounded PBKDF2 work, and a backup made under another account is refused unless the user chooses "Restore anyway"; the previous on-device answers can be undone (kept in memory only). Detail and limits: core/changes/2026-10-13-backup-account-binding.md.
