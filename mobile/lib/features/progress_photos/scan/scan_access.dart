@@ -48,8 +48,14 @@ final scanAccessClockProvider =
 final scanAccessProvider = Provider<ScanAccess>((ref) {
   final uid = ref.watch(authUserProvider).valueOrNull?.uid;
   final year = ref.watch(scanAccessClockProvider)().year;
-  final age =
-      ref.watch(currentProfileProvider).valueOrNull?.personal.ageAt(year);
+  // The LOWEST age the stored birth year allows, not the calendar-year
+  // difference: someone who turns 18 in December must not pass the adults-only
+  // gate on 1 January (`PersonalInfo.lowestAgeAt`).
+  final age = ref
+      .watch(currentProfileProvider)
+      .valueOrNull
+      ?.personal
+      .lowestAgeAt(year);
   final tier = ref.watch(effectiveTierProvider);
   final consent = ref.watch(scanConsentAcceptedProvider).valueOrNull ?? false;
   return evaluateScanAccess(

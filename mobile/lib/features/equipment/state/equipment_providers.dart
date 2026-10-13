@@ -15,6 +15,8 @@ import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
 import '../data/exercise_name_matcher.dart';
 import '../data/mock_equipment_report_service.dart';
+import '../../personalisation/data/recommendation_hints.dart';
+import '../../safety/data/age_policy.dart';
 import '../../safety/data/eligibility.dart';
 import '../../safety/data/health_flags.dart' show MovementRestriction;
 import '../../safety/data/par_q.dart' as par_q;
@@ -561,12 +563,19 @@ Future<ExerciseResolution> _resolveExercise(
   // Equipment is deliberately NOT part of this context. A user who taps a leg
   // press they do not own has said something explicit about what they want to
   // look at, and refusing it would turn a browse into a prescription.
+  //
+  // The age band and gentle-selection switch ARE copied (the same values
+  // `safetyContextFor` uses): they are safety rules about the person, not
+  // preferences, so a minor or senior must not see a max-effort exercise
+  // unwithheld. `maxDifficulty` is not copied: an explicit tap stays free of it.
   final context = profile == null
       ? SafetyContext(screening: par_q.kUnscreened)
       : SafetyContext(
           screening: par_q.screen(profile.health.screening),
           injuries: profile.health.injuries,
           health: profile.health.flags,
+          ageBand: ageBandForPersonal(profile.personal, DateTime.now().year),
+          gentleSelection: gentleSelectionFor(profile),
         );
 
   ExerciseResolution screenOne(ExerciseItem? found) {

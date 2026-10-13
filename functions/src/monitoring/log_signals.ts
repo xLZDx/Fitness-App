@@ -21,6 +21,36 @@ export const DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED =
 export const DELETE_ACCOUNT_AUTH_DELETE_FAILED =
   "account deletion: failed to delete the Auth user";
 
+/**
+ * `index.ts` `deleteAccount` -- the final sweep (run after the Auth user is
+ * deleted) failed. The durable intent record written before the Auth deletion
+ * (`accountDeletionRetries/{uid}`) stays and `reconcileAccountDeletions`
+ * retries, so this is an early signal, not by itself data loss. ERROR level,
+ * `event` field set.
+ */
+export const DELETE_ACCOUNT_FINAL_SWEEP_FAILED =
+  "delete_account_final_sweep_failed";
+
+/**
+ * `index.ts` `reconcileAccountDeletions` (scheduled) -- a retry record used
+ * up all of its attempts and is now `failed_terminal`: the reconciler gave up
+ * and an operator must finish or close it before the TTL removes the record.
+ * ERROR level, `event` field set.
+ */
+export const ACCOUNT_DELETION_RECONCILE_EXHAUSTED =
+  "account_deletion_reconcile_exhausted";
+
+/**
+ * `index.ts` `reconcileAccountDeletions` (scheduled) -- the run could not even
+ * list its due records (for example the composite index is missing or
+ * Firestore is unreachable), so no record was attempted. Without this event a
+ * broken reconciler would stay silent while pending deletions pile up. ERROR
+ * level, `event` field set; the run then rethrows so the platform marks it
+ * failed too.
+ */
+export const ACCOUNT_DELETION_RECONCILE_RUN_FAILED =
+  "account_deletion_reconcile_run_failed";
+
 export const EXPORT_ACCOUNT_FAILED = "account export failed";
 
 /**

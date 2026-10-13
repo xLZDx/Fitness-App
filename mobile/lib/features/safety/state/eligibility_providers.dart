@@ -64,8 +64,8 @@ SafetyContext safetyContextFor(UserProfile profile, {DateTime? now}) =>
       injuries: profile.health.injuries,
       health: profile.health.flags,
       equipment: profile.equipment,
-      ageBand: ageBandFor(
-          profile.personal.ageAt((now ?? DateTime.now()).year)),
+      ageBand: ageBandForPersonal(
+          profile.personal, (now ?? DateTime.now()).year),
       gentleSelection: gentleSelectionFor(profile),
       maxDifficulty: switch (profile.level.tier) {
         FitnessTier.never || FitnessTier.beginner => ExerciseDifficulty.beginner,

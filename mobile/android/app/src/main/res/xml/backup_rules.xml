@@ -17,16 +17,27 @@
   sits directly under the app data root, which is what `domain="root"` means
   here - `domain="file"` is `getFilesDir()` and would miss it entirely.
 
-  Deliberately NOT excluded: the Flutter `SharedPreferences` file. It holds the
-  consent flag, which is harmless to restore, and on installs that predate
-  A2-sec it may still hold the legacy `progress_photos.key.v1` AES key. A key
-  with no ciphertext to open is not a disclosure, and excluding the whole prefs
-  file to reach one entry would throw away every app setting on restore -
-  backup rules exclude files, not keys.
+  The Flutter `SharedPreferences` file IS excluded (privacy decision B). It
+  holds `profile.sensitive.<uid>` and `profile.sensitive.corrupt.<uid>`
+  (plaintext health/injury data), the per-account training-context answer and
+  the legacy `progress_photos.key.v1` AES key. Backup rules exclude files, not
+  keys, so the whole file goes: the cost is that locale/theme/notification
+  settings are not restored either, and on a new device the user is asked the
+  profile and training-context questions again. Flutter's `shared_preferences`
+  on Android stores everything in `FlutterSharedPreferences.xml`
+  (`domain="sharedpref"` is `shared_prefs/`).
+
+  The `flutter_secure_storage` preference files are excluded too:
+  `FlutterSecureStorage.xml` (values) and `FlutterSecureKeyStorage.xml`
+  (wrapped cipher keys). Wrapped keys restored without the original Keystore
+  entry cannot be unwrapped, so they must not travel.
 
   Everything else in the app stays backed up. This is an exclusion list, not a
   switch: `android:allowBackup` is untouched.
 -->
 <full-backup-content>
     <exclude domain="root" path="app_flutter/progress_photos" />
+    <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
 </full-backup-content>

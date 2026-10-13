@@ -339,10 +339,17 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       // programme" refuses. Equipment is not a safety rule; this is a safety
       // gate. Found by an independent reviewer and confirmed by measurement,
       // not by re-reading the code that had just been written.
+      //
+      // The age band and gentle-selection switch ARE copied from `resolved`:
+      // they are safety rules about the person, so a minor or senior must not
+      // be able to add a max-effort exercise the plan itself would refuse.
+      // Equipment and maxDifficulty stay out (explicit choice, not a feed).
       final safety = SafetyContext(
         screening: resolved.screening,
         injuries: resolved.injuries,
         health: resolved.health,
+        ageBand: resolved.ageBand,
+        gentleSelection: resolved.gentleSelection,
       );
       // `isAllowed` is the hierarchy's own verdict, so this branch does not
       // enumerate the variants and cannot fall out of step with them. It is
@@ -515,7 +522,7 @@ bool canBuildProgrammeFromProfile(UserProfile? profile) {
 int programmeDaysPerWeek(int templateDays, UserProfile? profile,
     {DateTime? now}) {
   final band =
-      ageBandFor(profile?.personal.ageAt((now ?? DateTime.now()).year));
+      ageBandForPersonal(profile?.personal, (now ?? DateTime.now()).year);
   return cappedProgrammeDays(templateDays, profile, band);
 }
 

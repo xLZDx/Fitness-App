@@ -1,6 +1,21 @@
 {
   "_comment": "Two independent axes share this file, one row per collection, one entry per axis. RETENTION (MVP1.G3-CI-8, check_data_lifecycle_coverage.js): classification is one of DELETE / EXPORT / BOTH / EXEMPT -- DELETE means covered by deleteAccount, EXPORT means covered by exportAccountData, BOTH means both, EXEMPT means neither applies and why. ACCESS CONTROL (P2-ACCESS-1, check_data_access_policy.js): `clientAccess` is an array of {path, access, conditionalRefs?} entries -- `path` is the full firestore.rules-shaped path (one entry even when there is exactly one path, for one shape to maintain), `access` gives each of read/create/update/delete exactly one of NONE / OWNER / AUTHENTICATED / PUBLIC / CONDITIONAL, and `conditionalRefs` names the emulator test proving each CONDITIONAL cell (required, and only valid, there). See scripts/ci/DATA_ACCESS_POLICY_DESIGN.md for the full design and scripts/ci/lib/rules_parser.js for how PLAIN_OWNER/NON_TRIVIAL is decided from firestore.rules itself. Every collection discovered by EITHER checker's own discovery (firestore.rules match-blocks UNION literal .collection('name') calls in production source UNION registered path-registry exports, see the access checker for the third source) must have an entry here, both axes required. `users` itself is intentionally absent -- it is the root container, not a distinct data class; every subcollection under it is classified individually below.",
   "collections": {
+    "accountDeletionRetries": {
+      "classification": "EXEMPT",
+      "reason": "Deletion bookkeeping, not user content: durable deletion intent, one document per uid, written by functions/src/index.ts deleteAccount (recordAccountDeletionIntent) after the first sweep and BEFORE the Auth user is deleted (if the write fails the Auth user is not deleted). Holds ONLY uid (doc id), status (pending | failed_terminal), attempts, createdAt, nextAttemptAt, expireAt and, once a sweep has failed, lastErrorCode (bare code, never a message) -- no profile, email or payload data, so there is nothing to export. Lifecycle: written Admin-SDK-only; a clean final sweep in deleteAccount deletes the record (best effort); otherwise the scheduled reconcileAccountDeletions (every 15 min) claims the attempt first (attempts + 1, backoff) and then re-runs the shared sweep, DELETING the record on success (no uid retained); a failed_terminal record (12 attempts, ERROR event account_deletion_reconcile_exhausted) is kept for operator follow-up; every record is removed by the Firestore TTL policy on expireAt (createdAt + 30 days, firestore.indexes.json fieldOverrides). Not removed by deleteAccount's own recursiveDelete sweep by design: it must outlive the Auth user.",
+      "clientAccess": [
+        {
+          "path": "/accountDeletionRetries/{uid}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
     "_canary": {
       "classification": "EXEMPT",
       "reason": "Not real user data -- the synthetic runtime-monitor identity's own namespace (firestore.rules' isCanaryToken()/_canary block, MVP1.G3 Step 9A, functions/src/canary_probe.ts). Top-level, not nested under users/, so deleteAccount's recursiveDelete never touches it; the probe writes and deletes its own single document within one call, so nothing durable is expected to accumulate there for exportAccountData to miss.",

@@ -21,6 +21,13 @@ final localDataWipeProvider =
 final pendingWipeMarkerProvider =
     Provider<PendingWipeMarker>((_) => InMemoryPendingWipeMarker());
 
+/// The uid whose deletion the server has confirmed and whose device data is
+/// being erased. Set BEFORE the pending-wipe marker and the wipe, while
+/// `authUserProvider` still reports that uid, so in-flight writers bound to the
+/// account (e.g. the scan save) can see the account is going away and abort
+/// instead of recreating data after the wipe. Never reset: the account is gone.
+final accountBeingDeletedUidProvider = StateProvider<String?>((_) => null);
+
 /// Whenever the signed-in user is known or changes, finishes a device wipe that
 /// an interrupted account deletion left behind. Read from the app root.
 ///
@@ -90,6 +97,10 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
       // device data is still to be erased BEFORE touching it: if the process
       // dies from here on, no signed-in user exists to read the uid from and
       // the next launch finishes the wipe from this marker instead.
+      if (uid != null) {
+        // Idempotent: a re-entrant second attempt just sets the same value.
+        ref.read(accountBeingDeletedUidProvider.notifier).state = uid;
+      }
       final marker = ref.read(pendingWipeMarkerProvider);
       if (uid != null) {
         try {

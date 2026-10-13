@@ -135,29 +135,34 @@ void main() {
   });
 
   group('rollover (birthYear has year precision only)', () {
-    // The questionnaire stores a birth YEAR, so the age is `calendarYear -
-    // birthYear`: the band flips on 1 January, whatever the real birthday is.
+    // The questionnaire stores a birth YEAR, so the age is one of two values:
+    // `calendarYear - birthYear` (birthday already passed) or one less. The
+    // boundary year is resolved on the cautious side: the minor band lasts
+    // while the calendar-year difference is 18 or less, and the senior band
+    // starts at a difference of 65.
     SafetyContext at(int birthYear, DateTime now) =>
         safetyContextFor(_profile(birthYear: birthYear), now: now);
 
-    test('year precision: 17 -> 18 flips on 1 Jan of the year, not on a birthday',
+    test('minor -> adult flips on 1 Jan of the year AFTER the difference reaches 18',
         () {
-      // Born 2008: age 17 in 2025, age 18 in 2026.
+      // Born 2008: difference 17 in 2025, 18 in 2026 (could still be 17 until a
+      // December birthday), 19 in 2027.
       expect(at(2008, DateTime(2025, 12, 31)).ageBand, AgeBand.minor);
-      expect(at(2008, DateTime(2026, 1, 1)).ageBand, AgeBand.adult);
-      // Within one calendar year the band never changes, even if the person is
-      // really still 17 until a December birthday (what the code does).
-      expect(at(2008, DateTime(2026, 1, 1)).ageBand,
-          at(2008, DateTime(2026, 12, 31)).ageBand);
+      expect(at(2008, DateTime(2026, 1, 1)).ageBand, AgeBand.minor);
+      expect(at(2008, DateTime(2026, 6, 15)).ageBand, AgeBand.minor);
+      expect(at(2008, DateTime(2026, 12, 31)).ageBand, AgeBand.minor);
+      expect(at(2008, DateTime(2027, 1, 1)).ageBand, AgeBand.adult);
       // The advisory rolls over with the band.
-      expect(at(2008, DateTime(2025, 12, 31)).advisories.single.reason,
+      expect(at(2008, DateTime(2026, 1, 1)).advisories.single.reason,
           BlockReason.ageMinorAdvisory);
-      expect(at(2008, DateTime(2026, 1, 1)).advisories, isEmpty);
+      expect(at(2008, DateTime(2026, 12, 31)).advisories.single.reason,
+          BlockReason.ageMinorAdvisory);
+      expect(at(2008, DateTime(2027, 1, 1)).advisories, isEmpty);
     });
 
-    test('year precision: 64 -> 65 flips on 1 Jan of the year, not on a birthday',
+    test('adult -> senior flips on 1 Jan of the year the difference reaches 65',
         () {
-      // Born 1961: age 64 in 2025, age 65 in 2026.
+      // Born 1961: difference 64 in 2025, 65 in 2026 (conservative: senior).
       expect(at(1961, DateTime(2025, 12, 31)).ageBand, AgeBand.adult);
       expect(at(1961, DateTime(2026, 1, 1)).ageBand, AgeBand.senior);
       expect(at(1961, DateTime(2026, 1, 1)).ageBand,
@@ -167,7 +172,7 @@ void main() {
           BlockReason.ageSeniorAdvisory);
     });
 
-    test('year precision: the programme day cap follows the same rollover', () {
+    test('the programme day cap follows the same rollover', () {
       expect(
           programmeDaysPerWeek(5, _profile(birthYear: 1961),
               now: DateTime(2025, 12, 31)),
@@ -180,10 +185,95 @@ void main() {
           programmeDaysPerWeek(5, _profile(birthYear: 2008),
               now: DateTime(2025, 12, 31)),
           4);
+      // Difference 18 is still the minor cap (changed by the boundary-year
+      // decision; it used to be 5 here).
       expect(
           programmeDaysPerWeek(5, _profile(birthYear: 2008),
               now: DateTime(2026, 1, 1)),
+          4);
+      expect(
+          programmeDaysPerWeek(5, _profile(birthYear: 2008),
+              now: DateTime(2026, 12, 31)),
+          4);
+      expect(
+          programmeDaysPerWeek(5, _profile(birthYear: 2008),
+              now: DateTime(2027, 1, 1)),
           5);
+    });
+  });
+
+  group('lowestAgeAt / ageBandForPersonal table', () {
+    // Clocks: 1 Jan, mid-year, 31 Dec. The result may only depend on the
+    // calendar YEAR, never on the day, so every clock must give the same row.
+    final clocks = [
+      DateTime(2026, 1, 1),
+      DateTime(2026, 6, 15),
+      DateTime(2026, 12, 31),
+    ];
+
+    // difference -> (lowest age, band). Literal expectations: lowest = diff - 1;
+    // minor while lowest < 18 (diff <= 18); senior from diff 65.
+    final rows = <int, (int, AgeBand)>{
+      0: (-1, AgeBand.minor),
+      15: (14, AgeBand.minor),
+      16: (15, AgeBand.minor),
+      17: (16, AgeBand.minor),
+      18: (17, AgeBand.minor),
+      19: (18, AgeBand.adult),
+      20: (19, AgeBand.adult),
+      64: (63, AgeBand.adult),
+      65: (64, AgeBand.senior),
+      66: (65, AgeBand.senior),
+    };
+
+    for (final clock in clocks) {
+      for (final MapEntry(key: diff, value: (lowest, band)) in rows.entries) {
+        test('${clock.month}/${clock.day}: year difference $diff', () {
+          final p = PersonalInfo(birthYear: clock.year - diff);
+          expect(p.lowestAgeAt(clock.year), lowest);
+          expect(p.ageAt(clock.year), diff,
+              reason: 'ageAt stays the highest possible age');
+          expect(ageBandForPersonal(p, clock.year), band);
+        });
+      }
+    }
+
+    test('no birth year and no stored age: unknown, adult', () {
+      const p = PersonalInfo();
+      expect(p.lowestAgeAt(2026), isNull);
+      expect(ageBandForPersonal(p, 2026), AgeBand.adult);
+      expect(ageBandForPersonal(null, 2026), AgeBand.adult);
+    });
+
+    test('a legacy stored age passes through unchanged and uses the plain bands',
+        () {
+      const minor = PersonalInfo(age: 17);
+      const adult = PersonalInfo(age: 18);
+      const senior = PersonalInfo(age: 65);
+      for (final year in [2026, 2040]) {
+        expect(minor.lowestAgeAt(year), 17);
+        expect(adult.lowestAgeAt(year), 18);
+        expect(senior.lowestAgeAt(year), 65);
+      }
+      expect(ageBandForPersonal(minor, 2026), AgeBand.minor);
+      expect(ageBandForPersonal(adult, 2026), AgeBand.adult);
+      expect(ageBandForPersonal(senior, 2026), AgeBand.senior);
+    });
+
+    test('a future birth year is the cautious (minor) band', () {
+      final p = const PersonalInfo(birthYear: 2030);
+      expect(p.lowestAgeAt(2026), -5);
+      expect(ageBandForPersonal(p, 2026), AgeBand.minor);
+    });
+
+    test('safetyContextFor and programmeDaysPerWeek use the bracketed rule', () {
+      final now = DateTime(2026, 12, 31);
+      expect(safetyContextFor(_profile(birthYear: 2008), now: now).ageBand,
+          AgeBand.minor);
+      expect(safetyContextFor(_profile(birthYear: 2007), now: now).ageBand,
+          AgeBand.adult);
+      expect(programmeDaysPerWeek(5, _profile(birthYear: 2008), now: now), 4);
+      expect(programmeDaysPerWeek(5, _profile(birthYear: 2007), now: now), 5);
     });
   });
 

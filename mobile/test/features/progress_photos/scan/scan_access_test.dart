@@ -11,8 +11,10 @@ import 'package:fitness_app/features/progress_photos/state/progress_photos_provi
 import 'package:fitness_app/features/subscription/data/subscription_models.dart';
 import 'package:fitness_app/features/subscription/state/subscription_providers.dart';
 
-// Fixed "now": ages are year arithmetic (now.year - birthYear), so literal
-// birth years below do not depend on the wall clock.
+// Fixed "now": only the stored birth YEAR is known, so the gate uses the LOWEST
+// age that year allows (now.year - birthYear - 1): the boundary year counts as
+// the safer (underage) side. Literal birth years below do not depend on the
+// wall clock.
 final fixedNow = DateTime(2026, 10, 13);
 
 void main() {
@@ -127,9 +129,11 @@ void main() {
       int? birthYear,
       SubscriptionTier tier = SubscriptionTier.standard,
       bool consent = true,
+      DateTime? now,
     }) {
+      final clock = now ?? fixedNow;
       final c = ProviderContainer(overrides: [
-        scanAccessClockProvider.overrideWithValue(() => fixedNow),
+        scanAccessClockProvider.overrideWithValue(() => clock),
         authUserProvider.overrideWith((_) => Stream.value(
             uid == null ? null : AuthUser(uid: uid, displayName: 'x'))),
         currentProfileProvider.overrideWith((_) => Stream.value(UserProfile(
@@ -175,9 +179,73 @@ void main() {
       expect(await access(make(birthYear: adultYear, consent: false)),
           ScanAccess.needsConsent);
     });
-    test('birth-year boundary with a fixed now: 2008 is 18, 2009 is 17', () async {
-      expect(await access(make(birthYear: 2008)), ScanAccess.allowed);
+    test(
+        'birth-year boundary with a fixed now (2026-10-13): 2008 may still be 17, '
+        '2007 is at least 18', () async {
+      // Changed by the boundary-year decision: 2008 used to be allowed.
+      expect(await access(make(birthYear: 2008)), ScanAccess.underage);
+      expect(await access(make(birthYear: 2007)), ScanAccess.allowed);
       expect(await access(make(birthYear: 2009)), ScanAccess.underage);
+    });
+
+    group('December-2008 case through the real provider and a moving clock', () {
+      // Born December 2008: 17 until 1 Dec 2026, so NOT an adult at any point
+      // of 2026, and only certainly 18 from 1 Jan 2027. Fails if the provider
+      // goes back to the calendar-year difference (`ageAt`).
+      for (final d in [
+        DateTime(2026, 1, 1),
+        DateTime(2026, 6, 15),
+        DateTime(2026, 12, 31),
+      ]) {
+        test('birthYear 2008 on ${d.toIso8601String().substring(0, 10)} is underage',
+            () async {
+          expect(await access(make(birthYear: 2008, now: d)),
+              ScanAccess.underage);
+        });
+      }
+      test('birthYear 2008 becomes allowed on 2027-01-01', () async {
+        expect(await access(make(birthYear: 2008, now: DateTime(2027, 1, 1))),
+            ScanAccess.allowed);
+      });
+      test('birthYear 2007 is allowed from 2026-01-01 through 2026-12-31',
+          () async {
+        for (final d in [
+          DateTime(2026, 1, 1),
+          DateTime(2026, 6, 15),
+          DateTime(2026, 12, 31),
+        ]) {
+          expect(await access(make(birthYear: 2007, now: d)),
+              ScanAccess.allowed,
+              reason: '$d');
+        }
+      });
+      test('birthYear null is ageUnknown on every clock', () async {
+        for (final d in [DateTime(2026, 1, 1), DateTime(2027, 1, 1)]) {
+          expect(await access(make(birthYear: null, now: d)),
+              ScanAccess.ageUnknown);
+        }
+      });
+      test('signed out still wins first, even for the December-2008 user',
+          () async {
+        expect(
+            await access(make(
+                uid: null,
+                birthYear: 2008,
+                now: DateTime(2026, 6, 15),
+                tier: SubscriptionTier.free,
+                consent: false)),
+            ScanAccess.signedOut);
+      });
+      test('supporter tier and accepted consent do not rescue a possible minor',
+          () async {
+        expect(
+            await access(make(
+                birthYear: 2008,
+                now: DateTime(2026, 12, 31),
+                tier: SubscriptionTier.standard,
+                consent: true)),
+            ScanAccess.underage);
+      });
     });
     test('a supporter with an under-18 profile is underage, not needsSupporter',
         () async {

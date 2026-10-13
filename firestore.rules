@@ -338,6 +338,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Durable account-deletion retry records (index.ts `deleteAccount` /
+    // `reconcileAccountDeletions`). One document per uid whose deletion is
+    // not yet confirmed complete, written before the Auth user is deleted:
+    // uid, status, retry bookkeeping and a bare error code, no user data.
+    // Admin SDK only -- a client must never read, create, change or delete
+    // one (it exists to outlive the Auth user, so no legitimate client caller
+    // can exist).
+    match /accountDeletionRetries/{uid} {
+      allow read, write: if false;
+    }
+
     // P1.G1 T2/T4 (SPTR Equipment Recognition v4.4, core/design/
     // sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_
     // CONTRACTS_AND_AC_DOD_2026-08-22.md). A user's resolved exact-model

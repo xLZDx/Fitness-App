@@ -25,6 +25,9 @@ import {
   DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
   DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
   DELETE_ACCOUNT_AUTH_DELETE_FAILED,
+  DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+  ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+  ACCOUNT_DELETION_RECONCILE_RUN_FAILED,
   EXPORT_ACCOUNT_FAILED,
   PLATFORM_UNHANDLED_ERROR,
   APP_CHECK_EVENT,
@@ -78,6 +81,14 @@ const CANARY_PROBE_FUNCTION_NAME = "runProductionCanary";
  * match, same check every other name here already received.
  */
 const ENFORCEMENT_STATE_CHECK_FUNCTION_NAME = "runEnforcementStateCheck";
+/**
+ * Durable account-deletion reconciler (`index.ts`, `onSchedule`, every 15
+ * minutes). A scheduled function, same Gen2 shape as the two above:
+ * `toCloudRunServiceName` derives `reconcileaccountdeletions`. DERIVED, NOT
+ * YET CONFIRMED against a live deployment -- unlike the three names above, no
+ * `gcloud run services list` check has been performed for this function.
+ */
+const ACCOUNT_DELETION_RECONCILE_FUNCTION_NAME = "reconcileAccountDeletions";
 
 /** Standard rate limit/auto-close for every log-match policy defined here. */
 const NOTIFICATION_RATE_LIMIT_PERIOD = "300s"; // 5 min: avoid renotifying on every raw log line
@@ -110,6 +121,10 @@ export const DELETE_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
     DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
     DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
     DELETE_ACCOUNT_AUTH_DELETE_FAILED,
+    // The final sweep (after the Auth user is gone) failed. Early signal: the
+    // durable intent record written before the Auth deletion stays and the
+    // reconciler retries.
+    DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
   ],
   messageContains: [PLATFORM_UNHANDLED_ERROR],
 };
@@ -207,6 +222,25 @@ export const ENFORCEMENT_STATE_FAILURE_FILTER: LogMatchFilterSpec = {
   eventEquals: [ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT],
 };
 
+/**
+ * `reconcileAccountDeletions` logs this ERROR event when a retry record used
+ * up its attempts and became `failed_terminal` (personal data may remain; an
+ * operator must act before the record's TTL expires). `eventEquals` only, same
+ * convention as the canary and enforcement-state filters: `onSchedule`'s
+ * wrapper never logs the onCall-specific `PLATFORM_UNHANDLED_ERROR`, so no
+ * `messageContains` backstop applies. The second event covers a run that could
+ * not list its due records at all (for example a missing composite index on
+ * `accountDeletionRetries`): the function logs it before rethrowing, so a
+ * broken reconciler is not silent.
+ */
+export const ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER: LogMatchFilterSpec = {
+  exportName: ACCOUNT_DELETION_RECONCILE_FUNCTION_NAME,
+  eventEquals: [
+    ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+    ACCOUNT_DELETION_RECONCILE_RUN_FAILED,
+  ],
+};
+
 export function stripeReconciliationAlertFilterString(): string {
   return toGcpFilterString(STRIPE_RECONCILIATION_FAILURE_FILTER);
 }
@@ -225,6 +259,10 @@ export function canaryProbeAlertFilterString(): string {
 
 export function enforcementStateAlertFilterString(): string {
   return toGcpFilterString(ENFORCEMENT_STATE_FAILURE_FILTER);
+}
+
+export function accountDeletionReconcileAlertFilterString(): string {
+  return toGcpFilterString(ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER);
 }
 
 /**
@@ -309,6 +347,25 @@ export const ENFORCEMENT_STATE_ALERT_POLICY: AlertPolicySpec = {
 
 export function enforcementStateAlertPolicyJson(): object {
   return toAlertPolicyJson(ENFORCEMENT_STATE_ALERT_POLICY);
+}
+
+/**
+ * Permanent alert on the durable account-deletion reconciler giving up on a
+ * record (`failed_terminal`): the one case where personal data of an already
+ * deleted account may remain with no further automatic retry. Like every
+ * policy here, `notificationChannels` stays empty until DECISION FA-D1.
+ */
+export const ACCOUNT_DELETION_RECONCILE_ALERT_POLICY: AlertPolicySpec = {
+  displayName: "Account deletion reconciliation exhausted",
+  conditionDisplayName:
+    "Any exhausted account-deletion retry in reconcileAccountDeletions",
+  filter: ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
+export function accountDeletionReconcileAlertPolicyJson(): object {
+  return toAlertPolicyJson(ACCOUNT_DELETION_RECONCILE_ALERT_POLICY);
 }
 
 /**

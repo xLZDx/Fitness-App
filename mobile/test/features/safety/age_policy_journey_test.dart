@@ -1,8 +1,14 @@
 // J4: the age policy end to end through the REAL builders (plan builder, home
 // suggestions builder, programme builder) on the real bundled catalogue, for
-// otherwise-identical healthy profiles aged 15, 17, 18, 64, 65, 70 and one with
-// no age. Expectations are LITERAL numbers (0.8 / 4 days, 0.85 / 3 days) and do
-// not read the policy constants.
+// otherwise-identical healthy profiles whose birth year is 15, 17, 18, 19, 64,
+// 65 and 70 calendar years before the clock, and one with no birth year.
+// Expectations are LITERAL numbers (0.8 / 4 days, 0.85 / 3 days) and do not
+// read the policy constants.
+//
+// Birth-year precision: only the year is stored, so a "year difference" of 18
+// may still be 17 (birthday later in the year). The decision resolves that on
+// the cautious side: a difference of 18 or less is the MINOR band, adults start
+// at a difference of 19, and a difference of 65 is already the senior band.
 import 'dart:convert';
 import 'dart:io';
 
@@ -84,6 +90,7 @@ void main() {
   });
 
   UserProfile profile(int? age) => UserProfile.empty('age_$age').copyWith(
+        // [age] is the calendar-year difference (clock year - birth year).
         personal: PersonalInfo(birthYear: age == null ? null : 2026 - age),
         health: HealthHistory(
           injuries: const [],
@@ -161,8 +168,8 @@ void main() {
       }..removeWhere((x) =>
           x != BlockReason.ageMinorAdvisory && x != BlockReason.ageSeniorAdvisory);
 
-  for (final age in [15, 17]) {
-    test('minor aged $age: no max-effort work, intensity <= 0.8, <= 4 days, warning shown',
+  for (final age in [15, 17, 18]) {
+    test('minor (birth-year difference $age): no max-effort work, intensity <= 0.8, <= 4 days, warning shown',
         () {
       final r = run(age);
       expect(r.plan, isA<PlanReady>());
@@ -182,7 +189,7 @@ void main() {
   }
 
   for (final age in [65, 70]) {
-    test('senior aged $age: no max-effort or impact titles, intensity <= 0.85, 3 days, '
+    test('senior (birth-year difference $age): no max-effort or impact titles, intensity <= 0.85, 3 days, '
         'balance/mobility present, warning shown', () {
       final r = run(age);
       expect(r.plan, isA<PlanReady>());
@@ -200,8 +207,8 @@ void main() {
     });
   }
 
-  for (final age in [18, 64, null]) {
-    test('adult (age ${age ?? "unknown"}): no age warning, no age cap on days or intensity', () {
+  for (final age in [19, 64, null]) {
+    test('adult (birth-year difference ${age ?? "unknown"}): no age warning, no age cap on days or intensity', () {
       final r = run(age);
       expect(r.plan, isA<PlanReady>());
       expect(ageWarnings(r), isEmpty);
@@ -214,8 +221,11 @@ void main() {
     });
   }
 
-  test('17 and 18 (identical otherwise) produce different outputs; 64 and 65 too', () {
-    expect(run(17).signature, isNot(run(18).signature));
+  test('difference 18 and 19 (identical otherwise) produce different outputs; 64 and 65 too',
+      () {
+    expect(run(18).signature, isNot(run(19).signature));
+    expect(run(17).signature, run(18).signature,
+        reason: 'differences 17 and 18 are both the minor band: same output');
     expect(run(64).signature, isNot(run(65).signature));
   });
 }

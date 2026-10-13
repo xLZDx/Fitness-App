@@ -36,6 +36,17 @@ class _AuthRepo implements AuthRepository {
   Future<void> signOut() async => signOuts++;
 }
 
+class _SpyWipe implements LocalDataWipe {
+  _SpyWipe(this.inner, this.onWipe);
+  final LocalDataWipe inner;
+  final Future<void> Function(String uid) onWipe;
+  @override
+  Future<void> wipe(String uid) async {
+    await onWipe(uid);
+    await inner.wipe(uid);
+  }
+}
+
 void main() {
   late Directory docs;
   late SharedPreferences prefs;
@@ -170,6 +181,46 @@ void main() {
     expect(forgotten, ['A']);
     expect(await marker.read(), isEmpty);
     expectBIntact();
+  });
+
+  test('F1: the being-deleted uid is set after server success and BEFORE the wipe, while auth still shows A', () async {
+    String? seenInWipe;
+    String? authUidInWipe;
+    bool markerHadAInWipe = false;
+    late ProviderContainer c;
+    final inner = wipeImpl();
+    c = ProviderContainer(overrides: [
+      accountDeletionServiceProvider.overrideWithValue(server),
+      localDataWipeProvider.overrideWithValue(_SpyWipe(inner, (uid) async {
+        seenInWipe = c.read(accountBeingDeletedUidProvider);
+        authUidInWipe = auth.currentUser?.uid;
+        markerHadAInWipe = (await marker.read()).contains(uid);
+      })),
+      pendingWipeMarkerProvider.overrideWithValue(marker),
+      authRepositoryProvider.overrideWithValue(auth),
+      notificationServiceProvider.overrideWithValue(notes),
+    ]);
+    addTearDown(c.dispose);
+    expect(c.read(accountBeingDeletedUidProvider), isNull,
+        reason: 'precondition: nothing is being deleted');
+
+    await c.read(accountDeletionActionProvider.notifier).deleteAccount();
+
+    expect(seenInWipe, 'A', reason: 'set before the wipe runs');
+    expect(authUidInWipe, 'A', reason: 'auth still reports A during the wipe');
+    expect(markerHadAInWipe, isTrue);
+    expect(c.read(accountBeingDeletedUidProvider), 'A',
+        reason: 'never reset after a successful deletion');
+    expect(auth.signOuts, 1);
+  });
+
+  test('F1: a failed server deletion does NOT set the being-deleted uid', () async {
+    server.failWith = const AccountDeletionException('stripe down');
+    final c = container();
+
+    await c.read(accountDeletionActionProvider.notifier).deleteAccount();
+
+    expect(c.read(accountBeingDeletedUidProvider), isNull);
   });
 
   test('a failed server deletion touches nothing on the device', () async {

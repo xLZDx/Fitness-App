@@ -55790,3 +55790,7 @@ The live coach reads exercises from a validated JSON registry through one generi
 ## 2026-10-14 - Commit: journey tests for the hardening sprint, live-router flag seam, scan lifecycle fix
 
 Test review asked for falsifiable proof of release gating, account-switch isolation, age policy, deletion fence and body-scan behaviour. Journey tests were written and run by the e2e-runner agents (649 Flutter and 119 Jest focused tests green). Two production changes came out of them: demoFeaturesEnabledProvider so the live router can be driven with the release flag, and a lifecycle observer so a scan countdown cannot survive the app leaving the foreground. Open product decisions recorded in the plan: year-precision age bands, authored coach rows never fault. Detail: core/changes/2026-10-14-hardening-journey-tests.md.
+
+## 2026-10-14 - Commit: Remediation of the final-gate review round 1
+
+Decision: adopt GPT Decisions A (cautious boundary year for under-18 and body scan; 65 conservative) and B (exclude sensitive SharedPreferences from Android backup and device transfer). Deletion cleanup is durable: intent record before Auth deletion, scheduled reconciler with claim-before-sweep, terminal state, TTL 30 days, alert definitions in source (live policy is an operator step). Evidence: focused Jest 191 and focused Flutter runs by agents, see core/changes/2026-10-14-hardening-gpt-round1-remediation.md. Unverified: emulator rules suite, real backup/restore, device camera, live alert policy.

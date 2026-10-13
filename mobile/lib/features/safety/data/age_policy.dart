@@ -26,9 +26,18 @@
 ///
 /// An unknown age is [AgeBand.adult]: the app does not guess a band for a
 /// person who did not answer.
+///
+/// ## Birth-year precision
+///
+/// The questionnaire stores a birth YEAR, never a month, so an age is one of
+/// two values. Wherever an age restricts something, the boundary year resolves
+/// on the cautious side: see [ageBandForPersonal] (minor band while the person
+/// might still be 17, senior band from a year difference of 65) and
+/// `PersonalInfo.lowestAgeAt` (the adults-only body scan).
 library;
 
 import '../../equipment/data/equipment_models.dart';
+import '../../profile/data/profile_models.dart' show PersonalInfo;
 
 /// The policy band an age falls in.
 enum AgeBand { adult, minor, senior }
@@ -44,6 +53,25 @@ AgeBand ageBandFor(int? age) {
   if (age == null) return AgeBand.adult;
   if (age < kAdultFromAge) return AgeBand.minor;
   if (age >= kSeniorFromAge) return AgeBand.senior;
+  return AgeBand.adult;
+}
+
+/// The band for a person whose age is known only as a birth YEAR.
+///
+/// The questionnaire never asked for the month, so the age is one of two
+/// values. The boundary year is resolved on the cautious side at both edges:
+/// the minor band applies while the person MIGHT still be under 18 (calendar
+/// year difference of 18 or less, so someone born in December 2008 stays on the
+/// minor path through the whole of 2026), and the senior band applies from a
+/// year difference of 65, since either of the two possible ages is at or next
+/// to the line. An unknown age is [AgeBand.adult], as before. [year] is
+/// injectable for tests.
+AgeBand ageBandForPersonal(PersonalInfo? personal, int year) {
+  final lowest = personal?.lowestAgeAt(year);
+  final highest = personal?.ageAt(year);
+  if (lowest == null || highest == null) return AgeBand.adult;
+  if (lowest < kAdultFromAge) return AgeBand.minor;
+  if (highest >= kSeniorFromAge) return AgeBand.senior;
   return AgeBand.adult;
 }
 

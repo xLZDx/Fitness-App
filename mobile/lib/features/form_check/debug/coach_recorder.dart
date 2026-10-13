@@ -138,10 +138,38 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
   File? _saved;
   String? _error;
 
+  /// The uid that started the current recording. Immutable for that recording;
+  /// the save destination is derived only from it, never from a later session.
+  String? _recUid;
+
   @override
   void dispose() {
     _sub?.cancel();
+    _rec = null;
+    _recUid = null;
     super.dispose();
+  }
+
+  /// Cancels the capture and drops the in-memory frames without saving.
+  void _discard({String? error}) {
+    _sub?.cancel();
+    _sub = null;
+    _rec = null;
+    _recUid = null;
+    if (mounted) {
+      setState(() {
+        _saved = null;
+        _error = error;
+      });
+    }
+  }
+
+  void _onAuthChanged(AsyncValue<dynamic> next) {
+    if (_rec == null) return;
+    // A transient reload with no value is not an identity change.
+    if (next.isLoading && !next.hasValue) return;
+    final uid = (next.valueOrNull as dynamic)?.uid as String?;
+    if (uid != _recUid) _discard(error: 'recording-discarded:auth-changed');
   }
 
   void _start() {
@@ -169,6 +197,7 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
     });
     setState(() {
       _rec = rec;
+      _recUid = uid;
       _saved = null;
       _error = null;
     });
@@ -178,16 +207,27 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
     await _sub?.cancel();
     _sub = null;
     final rec = _rec;
-    final uid = ref.read(authUserProvider).valueOrNull?.uid;
-    if (rec == null || uid == null) return;
+    final startUid = _recUid;
+    if (rec == null || startUid == null) return;
+    final currentUid = ref.read(authUserProvider).valueOrNull?.uid;
+    if (currentUid == null || currentUid != startUid) {
+      // Identity changed or signed out: save nothing, never use another path.
+      _discard(error: 'recording-discarded:auth-changed');
+      return;
+    }
     try {
       final file =
-          await (widget.store ?? CoachRecordingStore()).save(uid, rec);
-      if (mounted) setState(() => _saved = file);
+          await (widget.store ?? CoachRecordingStore()).save(startUid, rec);
+      if (mounted && identical(_rec, rec)) setState(() => _saved = file);
     } catch (e) {
       if (mounted) setState(() => _error = 'save-failed:${e.runtimeType}');
     }
-    if (mounted) setState(() => _rec = null);
+    if (mounted && identical(_rec, rec)) {
+      setState(() {
+        _rec = null;
+        _recUid = null;
+      });
+    }
   }
 
   Future<void> _export() async {
@@ -199,6 +239,7 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
   @override
   Widget build(BuildContext context) {
     if (!ref.watch(coachHarnessEnabledProvider)) return const SizedBox.shrink();
+    ref.listen(authUserProvider, (_, next) => _onAuthChanged(next));
     final recording = _rec != null;
     return Card(
       key: const Key('coach.recorder'),

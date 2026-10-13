@@ -22,6 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../account_deletion/state/account_deletion_providers.dart'
+    show accountBeingDeletedUidProvider;
+import '../../../auth/state/auth_providers.dart';
 import '../../../form_check/data/pose_landmark.dart';
 import '../../../form_check/state/form_check_providers.dart'
     show voiceMutedProvider;
@@ -57,6 +60,11 @@ class ScanCaptureScreen extends ConsumerWidget {
 }
 
 enum _Phase { capture, review, saving }
+
+/// Thrown inside `_save` when the initiating account is gone mid-transaction.
+class _SaveAborted implements Exception {
+  const _SaveAborted();
+}
 
 class _ScanCaptureBody extends ConsumerStatefulWidget {
   const _ScanCaptureBody();
@@ -343,6 +351,50 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
       }
     }
 
+    // The whole transaction is bound to the account that started it: the
+    // repositories above belong to it, and every write is re-checked against
+    // the live uid so a sign-out / deletion / switch mid-save cannot recreate
+    // or commit data after the local wipe, nor write under the new account.
+    final initiatingUid = container.read(authUserProvider).valueOrNull?.uid;
+    bool accountChanged() {
+      try {
+        // Account deletion flags the uid BEFORE its local wipe, while auth
+        // still reports the same uid: without this a write finishing after
+        // the wipe would recreate the deleted account's photos.
+        if (initiatingUid != null &&
+            container.read(accountBeingDeletedUidProvider) == initiatingUid) {
+          return true;
+        }
+        return container.read(authUserProvider).valueOrNull?.uid !=
+            initiatingUid;
+      } catch (_) {
+        // A disposed scope is as good as a changed account.
+        return true;
+      }
+    }
+
+    String? writtenScanId;
+    // Best effort, through the ORIGINAL account's repositories only; never
+    // resolves a repository for the current user and never throws.
+    Future<void> abortSave() async {
+      final scanId = writtenScanId;
+      if (scanId != null) {
+        try {
+          await scans.delete(scanId);
+        } catch (e) {
+          debugPrint('scan: could not remove aborted scan $scanId: $e');
+        }
+      }
+      for (final id in _savedPhotoIds.values.toList()) {
+        try {
+          await photos.delete(id);
+        } catch (e) {
+          debugPrint('scan: could not remove aborted photo $id: $e');
+        }
+      }
+      _savedPhotoIds.clear();
+    }
+
     setState(() {
       _phase = _Phase.saving;
       _saveError = null;
@@ -351,12 +403,16 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
       for (final pose in ScanPose.ordered) {
         // A retry after a partial failure reuses photos already written.
         if (_savedPhotoIds.containsKey(pose)) continue;
+        if (accountChanged()) throw const _SaveAborted();
         final photo = await photos.save(
           _bytes[pose]!,
           angle: _angleOf(pose),
         );
+        // Recorded before the re-check so the abort cleanup removes it too.
         _savedPhotoIds[pose] = photo.id;
+        if (accountChanged()) throw const _SaveAborted();
       }
+      if (accountChanged()) throw const _SaveAborted();
       final now = DateTime.now();
       final record = ScanRecord(
         id: 'scan_${now.microsecondsSinceEpoch}',
@@ -385,6 +441,8 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
         invalidate();
         rethrow;
       }
+      writtenScanId = record.id;
+      if (accountChanged()) throw const _SaveAborted();
       invalidate();
       try {
         unawaited(reminder.sync().catchError((Object e) {
@@ -398,6 +456,25 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
       messenger.showSnackBar(SnackBar(content: Text(savedText)));
       navigator.maybePop();
     } catch (e, st) {
+      if (e is _SaveAborted || accountChanged()) {
+        // Another account owns the app now: clean up quietly, report nothing.
+        debugPrint('scan: save aborted, account changed');
+        await abortSave();
+        // A screen that survives the switch must not keep the old account's
+        // photos or ids. Silent: no snackbar, no error.
+        if (mounted) {
+          setState(() {
+            _bytes.clear();
+            _landmarks.clear();
+            _savedPhotoIds.clear();
+            _phase = _Phase.capture;
+            _saveError = null;
+            _countdown = null;
+          });
+          navigator.maybePop();
+        }
+        return;
+      }
       debugPrint('scan: save failed: $e\n$st');
       if (!mounted) return;
       setState(() {

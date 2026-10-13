@@ -110,6 +110,10 @@ class PhotoStore {
   Future<void> remove(String id) async {
     final file = _blobFile(id);
     if (await file.exists()) await file.delete();
+    // No index on disk means there is nothing to rewrite. Writing one anyway
+    // would recreate the account's folder after a local wipe, which is what a
+    // cleanup of an aborted save (account deleted mid-write) must never do.
+    if (!await _indexFile.exists()) return;
     final all = (await index()).where((p) => p.id != id).toList();
     await _writeIndex(all);
   }

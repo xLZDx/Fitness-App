@@ -158,11 +158,16 @@ bool _isPortableOnly(ExerciseItem e) {
 }
 
 /// The safety context a recommendation under [context] must use: identical to
-/// [base] (injuries, screening, age band, gentle selection all kept) except
-/// that the equipment question is answered by [narrowToTrainingContext] on the
-/// pool, so it is dropped here (the profile's own equipment answer would
-/// otherwise reject a jump rope or a yoga strap the context allows). Null
-/// context returns [base] itself.
+/// [base] (injuries, screening, age band, gentle selection and the difficulty
+/// ceiling all kept) except that the equipment question is answered by
+/// [narrowToTrainingContext] on the pool, so it is dropped here (the profile's
+/// own equipment answer would otherwise reject a jump rope or a yoga strap the
+/// context allows). Null context returns [base] itself.
+///
+/// Every field of [SafetyContext] other than `equipment` is copied. The first
+/// version omitted `maxDifficulty`, so a beginner who chose a context lost the
+/// "nothing above your level" ceiling and the plan and programme builders could
+/// hand them advanced work; a test now pins every field.
 SafetyContext safetyContextForTrainingContext(
   SafetyContext base,
   TrainingContext? context,
@@ -175,6 +180,7 @@ SafetyContext safetyContextForTrainingContext(
     equipment: null,
     ageBand: base.ageBand,
     gentleSelection: base.gentleSelection,
+    maxDifficulty: base.maxDifficulty,
   );
 }
 

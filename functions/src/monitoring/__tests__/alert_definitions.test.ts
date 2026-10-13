@@ -4,12 +4,15 @@ import {
   EXPORT_ACCOUNT_FAILURE_FILTER,
   CANARY_PROBE_FAILURE_FILTER,
   ENFORCEMENT_STATE_FAILURE_FILTER,
+  ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER,
   APP_CHECK_ATTESTED_RATIO_METRIC,
   stripeReconciliationAlertFilterString,
   deleteAccountAlertFilterString,
   exportAccountAlertFilterString,
   canaryProbeAlertFilterString,
   enforcementStateAlertFilterString,
+  accountDeletionReconcileAlertFilterString,
+  accountDeletionReconcileAlertPolicyJson,
   stripeReconciliationAlertPolicyJson,
   deleteAccountAlertPolicyJson,
   exportAccountAlertPolicyJson,
@@ -139,6 +142,35 @@ describe("deleteAccount operational-failure alert filter", () => {
         ),
       ).toBe(true);
     }
+  });
+
+  it("matches the final-sweep failure event with its exact name", () => {
+    expect(signals.DELETE_ACCOUNT_FINAL_SWEEP_FAILED).toBe(
+      "delete_account_final_sweep_failed",
+    );
+    expect(DELETE_ACCOUNT_FAILURE_FILTER.eventEquals).toContain(
+      signals.DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+    );
+    // The "unrecorded" outcome no longer exists: the durable record is written
+    // before the Auth user is deleted.
+    expect(DELETE_ACCOUNT_FAILURE_FILTER.eventEquals).not.toContain(
+      "delete_account_final_sweep_unrecorded",
+    );
+    expect(
+      matchesLogMatchFilter(
+        DELETE_ACCOUNT_FAILURE_FILTER,
+        entry(
+          "deleteaccount",
+          `Error: ${signals.DELETE_ACCOUNT_FINAL_SWEEP_FAILED}\n    at entryFromArgs (...)`,
+          "ERROR",
+          signals.DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+        ),
+      ),
+    ).toBe(true);
+    const filter = deleteAccountAlertFilterString();
+    expect(filter).toContain(
+      `jsonPayload.event="${signals.DELETE_ACCOUNT_FINAL_SWEEP_FAILED}"`,
+    );
   });
 
   it("does NOT match on the raw undecorated event string as a message with no event field (the pre-fix bug)", () => {
@@ -431,6 +463,71 @@ describe("enforcement-state check failure alert filter", () => {
   });
 });
 
+describe("account-deletion reconciler exhausted alert filter", () => {
+  it("matches the exhausted event on the reconcileaccountdeletions service via the event field", () => {
+    expect(signals.ACCOUNT_DELETION_RECONCILE_EXHAUSTED).toBe(
+      "account_deletion_reconcile_exhausted",
+    );
+    expect(
+      matchesLogMatchFilter(
+        ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER,
+        entry(
+          "reconcileaccountdeletions",
+          `Error: ${signals.ACCOUNT_DELETION_RECONCILE_EXHAUSTED}\n    at entryFromArgs (...)`,
+          "ERROR",
+          signals.ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("does not match the same event from another service, the raw message without an event field, or a platform-unhandled line", () => {
+    expect(
+      matchesLogMatchFilter(
+        ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER,
+        entry(
+          "deleteaccount",
+          "irrelevant",
+          "ERROR",
+          signals.ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+        ),
+      ),
+    ).toBe(false);
+    expect(
+      matchesLogMatchFilter(
+        ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER,
+        entry(
+          "reconcileaccountdeletions",
+          signals.ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+        ),
+      ),
+    ).toBe(false);
+    // onSchedule never logs the onCall-specific literal; same convention as
+    // the canary and enforcement-state filters.
+    expect(ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER.messageContains).toBeUndefined();
+  });
+
+  it("renders a Gen2-shaped filter string scoped to the reconcileaccountdeletions Cloud Run service, keyed on jsonPayload.event", () => {
+    const filter = accountDeletionReconcileAlertFilterString();
+    expect(filter).toContain('resource.type="cloud_run_revision"');
+    expect(filter).toContain(
+      'resource.labels.service_name="reconcileaccountdeletions"',
+    );
+    expect(filter).toContain(
+      `jsonPayload.event="${signals.ACCOUNT_DELETION_RECONCILE_EXHAUSTED}"`,
+    );
+  });
+
+  it("has the standard policy shape with the agreed display name and no notification channel", () => {
+    const p = accountDeletionReconcileAlertPolicyJson() as {
+      displayName: string;
+      notificationChannels: unknown[];
+    };
+    expect(p.displayName).toBe("Account deletion reconciliation exhausted");
+    expect(p.notificationChannels).toEqual([]);
+  });
+});
+
 describe("enforcement-state Scheduler staleness policy (metric-absence, GPT-PM remediation)", () => {
   it("renders a conditionAbsent condition, not conditionMatchedLog", () => {
     const policy = enforcementStateStalenessPolicyJson() as {
@@ -488,6 +585,7 @@ describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST s
     ["exportAccountData", exportAccountAlertPolicyJson()],
     ["production canary probe", canaryProbeAlertPolicyJson()],
     ["enforcement-state check", enforcementStateAlertPolicyJson()],
+    ["account-deletion reconciler", accountDeletionReconcileAlertPolicyJson()],
   ])("%s policy has the full deployable shape, not a bare filter", (_label, policy) => {
     const p = policy as {
       displayName: string;
@@ -516,6 +614,7 @@ describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST s
     ["exportAccountData", exportAccountAlertPolicyJson()],
     ["production canary probe", canaryProbeAlertPolicyJson()],
     ["enforcement-state check", enforcementStateAlertPolicyJson()],
+    ["account-deletion reconciler", accountDeletionReconcileAlertPolicyJson()],
   ])("%s policy has an empty notificationChannels list (no live paging until FA-D1)", (_label, policy) => {
     const p = policy as { notificationChannels: unknown[] };
     expect(p.notificationChannels).toEqual([]);

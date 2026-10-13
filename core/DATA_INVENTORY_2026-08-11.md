@@ -38,6 +38,7 @@ than from memory: `firestore.rules` `match` blocks; every `db.doc(`/
 | `coach_bookings/{id}` | `clientUid` + `coachUid`, times, price, payment intent | **NO** | **no** |
 | `equipment_reports/{id}` | `reporterUid`, gym, fault, note | **NO** | **no** |
 | `debug_sessions/{id}` | `uid`, device telemetry | **NO** | **no** |
+| `accountDeletionRetries/{uid}` | deletion bookkeeping only: uid, status, attempts, timestamps, bare error code (no profile, email or payload) | removed by the reconciler on success, else by TTL | n/a (no user content) |
 | `gyms/*`, `equipment/*`, `exercises/*` | shared reference data, no user key | n/a | n/a |
 
 Three orphans, and they are not symmetrical: `coach_bookings` names the deleted
@@ -46,6 +47,62 @@ leaves a coach's own bookings behind. `debug_sessions` is create-only by its
 own rule (`firestore.rules:82-87`: `allow update, delete: if false`) — the
 client cannot delete it even for itself, so this one can only be swept
 server-side.
+
+### Deletion reconciliation records (`accountDeletionRetries/{uid}`)
+
+`deleteAccount` ends with a final sweep after the Auth user is deleted (a
+Stripe webhook can write subscription data for the uid while the deletion
+runs). Once the Auth user is gone the user can no longer retry, so the
+function writes a durable **intent record** after the first sweep and BEFORE
+deleting the Auth user. A crash, timeout or kill at any later point therefore
+still leaves a record for the reconciler. If the record cannot be written, the
+Auth user is not deleted and the call fails with an internal error (the user
+is still signed in and can repeat it). A clean final sweep deletes the record
+(best effort; a failed delete is harmless because the reconciler sweeps and
+removes it). The response carries `finalCleanup`: `complete`, or `scheduled`
+when the final sweep failed and the reconciler will finish the job.
+
+- **Contents:** `uid` (document id), `status` (`pending` | `failed_terminal`),
+  `attempts` (0 at creation, 1 after a failed final sweep), `createdAt`,
+  `nextAttemptAt`, `expireAt`, and `lastErrorCode` once a sweep has failed (bare
+  code, never an error message). No profile, email, Stripe id or payload.
+- **Who can read or write:** nobody from a client (`firestore.rules`:
+  `allow read, write: if false`); the Admin SDK only, i.e. `deleteAccount` and
+  the scheduled `reconcileAccountDeletions` (service account
+  `fn-account-delete`). Operators read it through the Firebase console.
+- **Retry:** `reconcileAccountDeletions` runs every 15 minutes, takes up to 50
+  due `pending` records and re-runs the same sweep `deleteAccount` uses, with no
+  user authentication (it only reads Auth to confirm the account is really gone;
+  a record whose Auth user still exists, i.e. an aborted deletion, is dropped
+  without sweeping). It CLAIMS each record before sweeping: `attempts` + 1 and
+  `nextAttemptAt` pushed out (15 min doubling, capped at 6 h) are written first,
+  so a sweep that hangs, times out or kills the instance still used up an
+  attempt and a poison record cannot starve the queue or silently outlive its
+  TTL. Success deletes the record (no uid is retained) and logs
+  `account_deletion_reconciled`; failure logs a warning and stays `pending`. No
+  new record is started after 240 s of the 300 s timeout.
+- **Terminal state:** at 12 attempts the record becomes `failed_terminal` and
+  the ERROR event `account_deletion_reconcile_exhausted` is logged (a record
+  already at 12 attempts, left by a crash on the last attempt, is terminated
+  without another sweep). `delete_account_final_sweep_failed` (ERROR, early
+  signal) and `account_deletion_reconcile_run_failed` (ERROR, the due query
+  itself failed) are logged too. The alert definitions are source-controlled in
+  `functions/src/monitoring/alert_definitions.ts` (not deployed by this repo);
+  creating the live policy and attaching a notification channel remains the
+  separate operator step recorded in `functions/src/monitoring/README.md`
+  (DECISION FA-D1).
+- **Retention:** every record carries `expireAt` = `createdAt` + 30 days;
+  a Firestore TTL policy on `accountDeletionRetries.expireAt`
+  (`firestore.indexes.json` `fieldOverrides`) deletes it. TTL deletion is
+  asynchronous and can lag by up to a day.
+- **Operator action on `failed_terminal`:** the uid is the document id. Find the
+  cause from the logs (`delete_account_final_sweep_failed`,
+  `account_deletion_reconcile_attempt_failed`), fix it (permissions, index,
+  outage), then set `status` back to `pending`, `attempts` to 0 and
+  `nextAttemptAt` to now; the next run sweeps it and deletes the record. If the
+  data was removed by hand, delete the record. If nothing is done the TTL
+  removes the record and the uid with it, so a failure must be acted on within
+  30 days.
 
 ## Device — SharedPreferences
 
@@ -69,6 +126,20 @@ the exact per-uid keys above (never a `profile.sensitive.` prefix, which would
 erase another account's blob on a shared phone), runs every step even when one
 fails, and throws `LocalWipeIncomplete` naming what remains. An interrupted
 deletion is finished on a later launch from the pending-wipe set.
+
+**Backup and device transfer.** The whole SharedPreferences file
+(`FlutterSharedPreferences.xml`) is excluded from Android Auto Backup (Google
+Drive) and from device-to-device transfer, together with the
+`flutter_secure_storage` files `FlutterSecureStorage.xml` and
+`FlutterSecureKeyStorage.xml`: `<exclude domain="sharedpref" .../>` in
+`mobile/android/app/src/main/res/xml/backup_rules.xml` (Android 11 and below)
+and in both the `cloud-backup` and `device-transfer` sections of
+`data_extraction_rules.xml` (Android 12+); both are referenced from
+`AndroidManifest.xml`. Android cannot exclude single keys, so the plaintext
+health/injury blobs stay device-local at the cost of every key in the table
+above. Consequence: on a new or restored device the user is asked the profile
+and training-context questions again, and language, theme and notification
+preferences are not restored either.
 
 ## Device — files
 

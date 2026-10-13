@@ -159,7 +159,7 @@ List<WorkoutSuggestion> buildSuggestions({
       goals != null && (goals.strength || goals.muscleGain);
   final hints = RecommendationHints.fromProfile(profile);
   final senior = profile != null &&
-      ageBandFor(profile.personal.age).needsBalanceAndMobility;
+      ageBandForPersonal(profile.personal, at.year).needsBalanceAndMobility;
   final targetMinutes = _targetMinutes(profile?.motivation.preferredDuration);
 
   final scored = <_Scored>[];
