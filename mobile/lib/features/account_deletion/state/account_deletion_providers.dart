@@ -30,12 +30,19 @@ final interruptedWipeSweepProvider = Provider<void>((ref) {
   Future<void> running = Future<void>.value();
   ref.listen(authUserProvider, (_, next) {
     if (!next.hasValue) return;
-    final signedInUid = next.value?.uid;
-    running = running.then((_) => finishInterruptedWipe(
-          marker: ref.read(pendingWipeMarkerProvider),
-          wipe: ref.read(localDataWipeProvider),
-          signedInUid: signedInUid,
-        ));
+    // The uid is NOT captured here: a run that waits behind an earlier one must
+    // judge "who is signed in" at the moment it executes, not when it was
+    // queued, or it could wipe an account that has signed in since.
+    running = running.then((_) {
+      final now = ref.read(authUserProvider);
+      if (!now.hasValue) return false; // a later emission re-runs the sweep
+      return finishInterruptedWipe(
+        marker: ref.read(pendingWipeMarkerProvider),
+        wipe: ref.read(localDataWipeProvider),
+        signedInUid: now.value?.uid,
+        currentUid: () => ref.read(authUserProvider).valueOrNull?.uid,
+      );
+    });
     unawaited(running);
   }, fireImmediately: true);
 });

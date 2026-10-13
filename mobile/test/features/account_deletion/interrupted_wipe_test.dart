@@ -398,6 +398,57 @@ void main() {
       expect(await marker.read(), isEmpty);
     });
 
+    test('R2-01: currentUid naming the pending uid beats a stale null',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('B');
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: marker,
+          wipe: wipe,
+          signedInUid: null,
+          currentUid: () => 'B');
+
+      expect(ran, isFalse);
+      expect(wipe.wiped, isEmpty);
+      expect(await marker.read(), {'B'});
+    });
+
+    test('R2-01: currentUid null beats a stale signedInUid and wipes',
+        () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('B');
+      final wipe = RecordingLocalDataWipe();
+
+      final ran = await finishInterruptedWipe(
+          marker: marker,
+          wipe: wipe,
+          signedInUid: 'B',
+          currentUid: () => null);
+
+      expect(ran, isTrue);
+      expect(wipe.wiped, ['B']);
+      expect(await marker.read(), isEmpty);
+    });
+
+    test('R2-01: currentUid is asked before every wipe, not once', () async {
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('A');
+      await marker.add('B');
+      final wipe = RecordingLocalDataWipe();
+      var asked = 0;
+
+      await finishInterruptedWipe(
+          marker: marker,
+          wipe: wipe,
+          signedInUid: null,
+          currentUid: () => ++asked == 1 ? null : 'B');
+
+      expect(wipe.wiped, ['A'], reason: 'B became the signed-in user mid-sweep');
+      expect(await marker.read(), {'B'});
+    });
+
     test('F-02: first wipe fails, a later sweep wipes both uids', () async {
       final marker = InMemoryPendingWipeMarker();
       await marker.add('A');
@@ -682,6 +733,37 @@ void main() {
       expect(wipe.started, hasLength(2),
           reason: 'the second run found no pending uid left');
       expect(await marker.read(), isEmpty);
+    });
+
+    test('R2-01: a uid that signs in while a sweep is blocked is not wiped',
+        () async {
+      final auth = StreamController<AuthUser?>();
+      addTearDown(auth.close);
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('X');
+      await marker.add('B');
+      final wipe = _GatedWipe();
+      final c = build(auth: auth, marker: marker, wipe: wipe);
+
+      c.read(interruptedWipeSweepProvider);
+      auth.add(null); // sweep 1: blocks inside the wipe of X
+      await _until(() => wipe.started.isNotEmpty);
+      expect(wipe.started, ['X']);
+
+      auth.add(const AuthUser(uid: 'B', displayName: 'B')); // sweep 2 queued
+      await _settle();
+      expect(wipe.started, ['X'], reason: 'sweep 1 is still blocked');
+
+      wipe.releaseNext();
+      await _until(() => wipe.finished.isNotEmpty);
+      await _settle();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(wipe.started, ['X'],
+          reason: 'B signed in before its turn; the live auth value must win '
+              'over the stale snapshot sweep 1 was started with');
+      expect(wipe.finished, ['X']);
+      expect(await marker.read(), {'B'});
     });
 
     test('F-01: a failing sweep does not break later runs of the chain',

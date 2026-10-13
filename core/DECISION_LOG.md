@@ -55754,3 +55754,7 @@ Engineering tails closed or carried with evidence; Stripe customers retained by 
 ## 2026-10-13 - Commit: fixes for the final GPT-PM review (round 1)
 
 GPT-PM returned REJECT with three MAJOR findings; all verified against source and fixed (sweep on every auth change, pending-wipe uid set, hard export response ceiling) with tests. Detail: core/changes/2026-10-13-gptpm-final-review-fixes.md.
+
+## 2026-10-13 - Commit: stale auth snapshot in the wipe sweep (GPT-PM round 2)
+
+R2-01 verified and fixed: queued sweep runs judge the signed-in uid at execution time, with a re-check right before each wipe. Detail: core/changes/2026-10-13-gptpm-round2-stale-auth.md.

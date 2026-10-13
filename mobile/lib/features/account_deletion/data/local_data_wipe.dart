@@ -110,15 +110,22 @@ class InMemoryPendingWipeMarker implements PendingWipeMarker {
 /// retry handles it, or the sign-out that follows triggers the next call.
 /// Every other pending uid is wiped independently, so one failure never blocks
 /// the rest. Returns true when at least one wipe ran to completion.
+///
+/// [currentUid], when given, is asked again right before each irreversible wipe
+/// and wins over [signedInUid]: a sweep that waited in a queue must not act on
+/// the sign-in state of the moment it was scheduled.
 Future<bool> finishInterruptedWipe({
   required PendingWipeMarker marker,
   required LocalDataWipe wipe,
   required String? signedInUid,
+  String? Function()? currentUid,
 }) async {
   var wiped = false;
   try {
     for (final pending in await marker.read()) {
-      if (pending == signedInUid) continue;
+      if (pending == (currentUid != null ? currentUid() : signedInUid)) {
+        continue;
+      }
       if (!_looksLikeUid(pending)) {
         // The uid becomes a directory name below. A value that is empty or
         // carries a path separator is not ours; drop it instead of acting on it.
