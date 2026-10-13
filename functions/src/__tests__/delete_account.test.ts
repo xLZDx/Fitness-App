@@ -50,12 +50,19 @@ const commit = jest.fn(async () => undefined);
 const seed = (collection: string, docs: Array<{ id: string; data: any }>) =>
   seededDocs.set(collection, docs);
 
-const makeQuery = (name: string, field?: string, value?: unknown): any => ({
-  where: (f: string, _op: string, v: unknown) => makeQuery(name, f, v),
+const makeQuery = (
+  name: string,
+  field?: string,
+  value?: unknown,
+  max = Infinity,
+): any => ({
+  where: (f: string, _op: string, v: unknown) => makeQuery(name, f, v, max),
+  limit: (n: number) => makeQuery(name, field, value, n),
   get: jest.fn(async () => {
     const all = seededDocs.get(name) ?? [];
-    const matched =
-      field === undefined ? all : all.filter((d) => d.data[field] === value);
+    const matched = (
+      field === undefined ? all : all.filter((d) => d.data[field] === value)
+    ).slice(0, max);
     return {
       docs: matched.map((d) => ({
         id: d.id,
@@ -73,12 +80,34 @@ jest.mock("firebase-admin", () => {
       doc: jest.fn((id: string) => getRef(`${name}/${id}`)),
       where: (f: string, op: string, v: unknown) => makeQuery(name, f, v),
     })),
-    batch: jest.fn(() => ({
-      update: (ref: any, data: any) =>
-        batchOps.push({ op: "update", path: ref.path, data }),
-      delete: (ref: any) => batchOps.push({ op: "delete", path: ref.path }),
-      commit,
-    })),
+    // Commit applies the writes to `seededDocs`, as Firestore would, so a paged
+    // sweep sees its own deletions and updates on the next page.
+    batch: jest.fn(() => {
+      const pending: Array<{ op: string; path: string; data?: any }> = [];
+      return {
+        update: (ref: any, data: any) => {
+          batchOps.push({ op: "update", path: ref.path, data });
+          pending.push({ op: "update", path: ref.path, data });
+        },
+        delete: (ref: any) => {
+          batchOps.push({ op: "delete", path: ref.path });
+          pending.push({ op: "delete", path: ref.path });
+        },
+        commit: async () => {
+          await commit();
+          for (const p of pending) {
+            const [col, id] = p.path.split("/");
+            const rows = seededDocs.get(col) ?? [];
+            if (p.op === "delete") {
+              seededDocs.set(col, rows.filter((r) => r.id !== id));
+            } else {
+              const row = rows.find((r) => r.id === id);
+              if (row) row.data = { ...row.data, ...p.data };
+            }
+          }
+        },
+      };
+    }),
     recursiveDelete,
   }));
   return {
@@ -463,6 +492,45 @@ describe("deleteAccount", () => {
 
       expect(batchOps).toHaveLength(600);
       expect(commit).toHaveBeenCalledTimes(2); // 450 + 150
+    });
+
+  test("pages the sweep: more rows than one page are all deleted, none left",
+    async () => {
+      const total = 1000; // more than two pages of 450
+      seed(
+        "debug_sessions",
+        Array.from({ length: total }, (_, i) => ({
+          id: `p${i}`,
+          data: { uid: "u1" },
+        })),
+      );
+      seed("debug_sessions", [
+        ...(seededDocs.get("debug_sessions") ?? []),
+        { id: "other", data: { uid: "someone_else" } },
+      ]);
+
+      await deleteAccount.run(req({ uid: "u1" }));
+
+      expect(batchOps.filter((o) => o.op === "delete")).toHaveLength(total);
+      expect(seededDocs.get("debug_sessions")).toEqual([
+        { id: "other", data: { uid: "someone_else" } },
+      ]);
+      expect(commit).toHaveBeenCalledTimes(3); // 450 + 450 + 100
+    });
+
+  test("a failed page commit still surfaces the same internal error",
+    async () => {
+      seed(
+        "debug_sessions",
+        Array.from({ length: 600 }, (_, i) => ({
+          id: `f${i}`,
+          data: { uid: "u1" },
+        })),
+      );
+      commit.mockRejectedValueOnce(new Error("commit failed"));
+
+      await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+      expect(deleteUser).not.toHaveBeenCalled();
     });
 
   test("leaves other users' shared records alone", async () => {

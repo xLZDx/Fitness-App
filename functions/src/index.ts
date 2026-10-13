@@ -2096,14 +2096,62 @@ async function commitInChunks(
  * index that a fresh project would not already have.
  */
 async function sweepSharedRecords(uid: string): Promise<void> {
-  const ops: Array<(batch: FirebaseFirestore.WriteBatch) => void> = [];
+  // Booking sides are merged per page, so one document seen only on one side
+  // here is finished on a later page (its other side is then "gone").
+  await sweepInPages(
+    [
+      db.collection("coach_bookings").where("clientUid", "==", uid),
+      db.collection("coach_bookings").where("coachUid", "==", uid),
+    ],
+    ([asClient, asCoach]) => bookingOps(asClient, asCoach),
+  );
+  await sweepInPages(
+    [db.collection("equipment_reports").where("reporterUid", "==", uid)],
+    ([reports]) =>
+      reports.docs.map(
+        (doc) => (b: FirebaseFirestore.WriteBatch) =>
+          b.update(doc.ref, { reporterUid: DELETED_UID }),
+      ),
+  );
+  await sweepInPages(
+    [db.collection("debug_sessions").where("uid", "==", uid)],
+    ([debugSessions]) =>
+      debugSessions.docs.map(
+        (doc) => (b: FirebaseFirestore.WriteBatch) => b.delete(doc.ref),
+      ),
+  );
+}
 
-  const [asClient, asCoach, reports, debugSessions] = await Promise.all([
-    db.collection("coach_bookings").where("clientUid", "==", uid).get(),
-    db.collection("coach_bookings").where("coachUid", "==", uid).get(),
-    db.collection("equipment_reports").where("reporterUid", "==", uid).get(),
-    db.collection("debug_sessions").where("uid", "==", uid).get(),
-  ]);
+/** Documents read and written per sweep round; one commit chunk. */
+const SWEEP_PAGE = 450;
+
+/**
+ * Reads each query one bounded page at a time and commits the ops built from
+ * it, until no query returns a full page. Safe because every op removes its
+ * document from the query that found it (deleted, or uid replaced).
+ */
+async function sweepInPages(
+  queries: FirebaseFirestore.Query[],
+  buildOps: (
+    snaps: FirebaseFirestore.QuerySnapshot[],
+  ) => Array<(batch: FirebaseFirestore.WriteBatch) => void>,
+): Promise<void> {
+  for (;;) {
+    const snaps = await Promise.all(
+      queries.map((q) => q.limit(SWEEP_PAGE).get()),
+    );
+    const ops = buildOps(snaps);
+    await commitInChunks(ops);
+    if (ops.length === 0) break;
+    if (snaps.every((s) => s.docs.length < SWEEP_PAGE)) break;
+  }
+}
+
+function bookingOps(
+  asClient: FirebaseFirestore.QuerySnapshot,
+  asCoach: FirebaseFirestore.QuerySnapshot,
+): Array<(batch: FirebaseFirestore.WriteBatch) => void> {
+  const ops: Array<(batch: FirebaseFirestore.WriteBatch) => void> = [];
 
   // Both sides queried separately rather than with an `or`: a user can be the
   // client on one booking and the coach on another, and one query per field
@@ -2160,14 +2208,7 @@ async function sweepSharedRecords(uid: string): Promise<void> {
       );
     }
   }
-  for (const doc of reports.docs) {
-    ops.push((b) => b.update(doc.ref, { reporterUid: DELETED_UID }));
-  }
-  for (const doc of debugSessions.docs) {
-    ops.push((b) => b.delete(doc.ref));
-  }
-
-  await commitInChunks(ops);
+  return ops;
 }
 
 export const deleteAccount = onCall(

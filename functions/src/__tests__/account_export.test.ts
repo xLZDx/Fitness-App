@@ -75,7 +75,7 @@ jest.mock("firebase-functions/logger", () => ({
 }));
 
 import { HttpsError } from "firebase-functions/v2/https";
-import { exportAccountData } from "../account_export";
+import { exportAccountData, MAX_EXPORT_BYTES } from "../account_export";
 import { QUOTAS } from "../abuse_guard";
 
 const req = (uid: string | null = "u1"): any => ({
@@ -257,6 +257,28 @@ test("a capped section is named, never silently short", async () => {
   expect(res.truncated).toContain("debug_sessions.uid");
   expect((res.notes as string[]).join(" ")).toContain("capped at 2000");
 });
+
+test("an export over the byte ceiling is trimmed and named, never silently short",
+  async () => {
+    // 1500 rows is under MAX_ROWS, but ~15 MB serialized is over the ceiling.
+    const blob = "x".repeat(10_000);
+    collections.set(
+      "debug_sessions",
+      Array.from({ length: 1500 }, (_, i) => ({
+        id: `d${i}`,
+        data: { uid: "u1", blob },
+      })),
+    );
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.truncated).toContain("debugSessions");
+    expect(res.debugSessions.length).toBeLessThan(1500);
+    expect(Buffer.byteLength(JSON.stringify(res), "utf8")).toBeLessThanOrEqual(
+      MAX_EXPORT_BYTES + 4096,
+    );
+    expect((res.notes as string[]).join(" ")).toContain("bytes");
+  });
 
 test("exactly at the cap is not reported as truncated", async () => {
   collections.set(
