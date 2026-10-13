@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../account_deletion/state/account_deletion_providers.dart'
+    show accountBeingDeletedUidProvider;
 import '../../auth/state/auth_providers.dart';
 import '../data/measured_rep_configs.dart' show jointAngleDeg;
 import '../data/pose_landmark.dart';
@@ -120,6 +122,18 @@ class CoachRecordingStore {
     await file.writeAsString(jsonEncode(rec.toJson()));
     return file;
   }
+
+  /// Removes a file [save] wrote, and its uid folder when that leaves it empty.
+  /// Best effort and never throws: it must not recreate anything.
+  Future<void> discard(String uid, File file) async {
+    try {
+      if (await file.exists()) await file.delete();
+      final dir = await directoryFor(uid);
+      if (await dir.exists() && await dir.list().isEmpty) await dir.delete();
+    } catch (e) {
+      debugPrint('coach recorder: could not remove an aborted recording: $e');
+    }
+  }
 }
 
 /// The panel. Returns an empty box when the harness is not enabled, so a
@@ -209,15 +223,35 @@ class _CoachRecorderPanelState extends ConsumerState<CoachRecorderPanel> {
     final rec = _rec;
     final startUid = _recUid;
     if (rec == null || startUid == null) return;
-    final currentUid = ref.read(authUserProvider).valueOrNull?.uid;
-    if (currentUid == null || currentUid != startUid) {
+    // The account is still the one that started this recording: same uid and
+    // not being deleted. Read through the container so it still works after
+    // this widget is disposed; an unreadable scope counts as "not valid".
+    final container = ProviderScope.containerOf(context, listen: false);
+    bool accountStillValid() {
+      try {
+        return container.read(authUserProvider).valueOrNull?.uid == startUid &&
+            container.read(accountBeingDeletedUidProvider) != startUid;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    if (!accountStillValid()) {
       // Identity changed or signed out: save nothing, never use another path.
       _discard(error: 'recording-discarded:auth-changed');
       return;
     }
+    final store = widget.store ?? CoachRecordingStore();
     try {
-      final file =
-          await (widget.store ?? CoachRecordingStore()).save(startUid, rec);
+      final file = await store.save(startUid, rec);
+      if (!accountStillValid()) {
+        // The account changed or was deleted DURING the write (the local wipe
+        // may already have run): remove what this save just wrote, from the
+        // original uid's folder only, and report nothing.
+        await store.discard(startUid, file);
+        if (mounted && identical(_rec, rec)) _discard();
+        return;
+      }
       if (mounted && identical(_rec, rec)) setState(() => _saved = file);
     } catch (e) {
       if (mounted) setState(() => _error = 'save-failed:${e.runtimeType}');

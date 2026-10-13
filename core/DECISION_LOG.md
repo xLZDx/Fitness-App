@@ -55794,3 +55794,7 @@ Test review asked for falsifiable proof of release gating, account-switch isolat
 ## 2026-10-14 - Commit: Remediation of the final-gate review round 1
 
 Decision: adopt GPT Decisions A (cautious boundary year for under-18 and body scan; 65 conservative) and B (exclude sensitive SharedPreferences from Android backup and device transfer). Deletion cleanup is durable: intent record before Auth deletion, scheduled reconciler with claim-before-sweep, terminal state, TTL 30 days, alert definitions in source (live policy is an operator step). Evidence: focused Jest 191 and focused Flutter runs by agents, see core/changes/2026-10-14-hardening-gpt-round1-remediation.md. Unverified: emulator rules suite, real backup/restore, device camera, live alert policy.
+
+## 2026-10-14 - Commit: Coach recorder save fenced against account change and deletion
+
+Decision: a recording save in flight is re-validated after the write and rolled back under the original uid if the account changed or is being deleted (GPT round 2 MAJOR-01). Evidence: focused Flutter run, 30 tests, see core/changes/2026-10-14-hardening-recorder-save-fence.md. Unverified: device.

@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
+import 'package:fitness_app/features/account_deletion/state/account_deletion_providers.dart'
+    show accountBeingDeletedUidProvider;
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/form_check/data/pose_detector_service.dart';
@@ -79,7 +84,8 @@ class _Rig {
   }
 }
 
-Future<_Rig> _pump(WidgetTester t, {String? firstUid = 'A'}) async {
+Future<_Rig> _pump(WidgetTester t,
+    {String? firstUid = 'A', CoachRecordingStore? store}) async {
   final docs = Directory.systemTemp.createTempSync('rec_acct');
   addTearDown(() => docs.deleteSync(recursive: true));
   final svc = _Service();
@@ -93,7 +99,8 @@ Future<_Rig> _pump(WidgetTester t, {String? firstUid = 'A'}) async {
     ],
     child: MaterialApp(
       home: Scaffold(
-          body: CoachRecorderPanel(store: CoachRecordingStore(documents: docs))),
+          body: CoachRecorderPanel(
+              store: store ?? CoachRecordingStore(documents: docs))),
     ),
   ));
   final container =
@@ -113,7 +120,7 @@ Future<void> _emit(WidgetTester t, _Rig r, AuthUser? u) async {
 
 /// Lets real file IO finish, pumping so fake-zone microtasks resume.
 Future<void> _settle(WidgetTester t) async {
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 30; i++) {
     await t.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 50)));
     await t.pump();
@@ -127,7 +134,160 @@ void _expectToggle(String label) {
       findsOneWidget);
 }
 
+/// A store whose `save` parks until [release], then writes for real.
+class _GatedStore extends CoachRecordingStore {
+  _GatedStore(Directory docs) : super(documents: docs);
+  final entered = Completer<void>();
+  final _gate = Completer<void>();
+  void release() => _gate.complete();
+
+  @override
+  Future<File> save(String uid, CoachRecording rec) async {
+    entered.complete();
+    await _gate.future;
+    return super.save(uid, rec);
+  }
+}
+
+/// Records with A, presses Stop and waits until the save is parked.
+Future<_GatedStore> _stopWithPausedSave(WidgetTester t, _Rig r, _GatedStore s) async {
+  await t.tap(_toggle);
+  await t.pump();
+  r.svc.frames$.add(_frame(10));
+  r.svc.frames$.add(_frame(50));
+  await t.pump();
+  await t.tap(_toggle);
+  for (var i = 0; i < 40 && !s.entered.isCompleted; i++) {
+    await t.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 25)));
+    await t.pump();
+  }
+  expect(s.entered.isCompleted, isTrue, reason: 'save must be in flight');
+  return s;
+}
+
+Directory _dirOf(_Rig r, String uid) =>
+    Directory('${r.docs.path}/$kCoachRecordingsDir/$uid');
+
 void main() {
+  testWidgets(
+      '(g) save in flight, account deleted and real wipe ran: nothing is left',
+      (t) async {
+    final docs = Directory.systemTemp.createTempSync('rec_acct_g');
+    addTearDown(() => docs.deleteSync(recursive: true));
+    final store = _GatedStore(docs);
+    final r = await _pump(t, store: store);
+    // _pump created its own docs; the gated store writes under [docs].
+    await _stopWithPausedSave(t, r, store);
+
+    r.container.read(accountBeingDeletedUidProvider.notifier).state = 'A';
+    SharedPreferences.setMockInitialValues({});
+    await t.runAsync(() async {
+      final prefs = await SharedPreferences.getInstance();
+      await DeviceLocalDataWipe(
+        prefs: prefs,
+        documentsDir: docs,
+        forgetPhotoKey: (_) async {},
+      ).wipe('A');
+    });
+
+    store.release();
+    await _settle(t);
+
+    final root = Directory('${docs.path}/$kCoachRecordingsDir');
+    expect(Directory('${root.path}/A').existsSync(), isFalse);
+    expect(Directory('${root.path}/B').existsSync(), isFalse);
+    expect(
+        root.existsSync()
+            ? root.listSync(recursive: true).whereType<File>()
+            : <File>[],
+        isEmpty);
+    expect(find.byKey(const Key('coach.recorder.export')), findsNothing);
+    expect(find.textContaining('save-failed'), findsNothing);
+    expect(find.textContaining('recording-discarded'), findsNothing);
+    _expectToggle('Record');
+  });
+
+  testWidgets('(h) save in flight, auth switches A -> B: A file removed, none under B',
+      (t) async {
+    final docs = Directory.systemTemp.createTempSync('rec_acct_h');
+    addTearDown(() => docs.deleteSync(recursive: true));
+    final store = _GatedStore(docs);
+    final r = await _pump(t, store: store);
+    await _stopWithPausedSave(t, r, store);
+
+    await _emit(t, r, _user('B'));
+    store.release();
+    await _settle(t);
+
+    final root = Directory('${docs.path}/$kCoachRecordingsDir');
+    expect(Directory('${root.path}/A').existsSync(), isFalse);
+    expect(Directory('${root.path}/B').existsSync(), isFalse);
+    expect(
+        root.existsSync()
+            ? root.listSync(recursive: true).whereType<File>()
+            : <File>[],
+        isEmpty);
+    expect(find.byKey(const Key('coach.recorder.export')), findsNothing);
+    expect(find.textContaining('save-failed'), findsNothing);
+    _expectToggle('Record');
+  });
+
+  testWidgets('(i) control: gated save with no account change keeps the file',
+      (t) async {
+    final docs = Directory.systemTemp.createTempSync('rec_acct_i');
+    addTearDown(() => docs.deleteSync(recursive: true));
+    final store = _GatedStore(docs);
+    final r = await _pump(t, store: store);
+    await _stopWithPausedSave(t, r, store);
+
+    store.release();
+    await _settle(t);
+
+    final files = Directory('${docs.path}/$kCoachRecordingsDir/A')
+        .listSync()
+        .whereType<File>()
+        .toList();
+    expect(files, hasLength(1));
+    expect(find.byKey(const Key('coach.recorder.export')), findsOneWidget);
+    expect(find.textContaining('recording-discarded'), findsNothing);
+    _expectToggle('Record');
+  });
+
+  group('CoachRecordingStore.discard', () {
+    late Directory docs;
+    setUp(() => docs = Directory.systemTemp.createTempSync('rec_discard'));
+    tearDown(() => docs.deleteSync(recursive: true));
+
+    test('removes the file and the now-empty uid folder', () async {
+      final store = CoachRecordingStore(documents: docs);
+      final f = await store.save('A', CoachRecording(exercise: 'curl'));
+      expect(f.existsSync(), isTrue);
+      await store.discard('A', f);
+      expect(f.existsSync(), isFalse);
+      expect(Directory('${docs.path}/$kCoachRecordingsDir/A').existsSync(),
+          isFalse);
+    });
+
+    test('keeps the folder when another file is in it', () async {
+      final store = CoachRecordingStore(documents: docs);
+      final f = await store.save('A', CoachRecording(exercise: 'curl'));
+      final other = File('${f.parent.path}/other.json')..writeAsStringSync('{}');
+      await store.discard('A', f);
+      expect(f.existsSync(), isFalse);
+      expect(other.existsSync(), isTrue);
+      expect(f.parent.existsSync(), isTrue);
+    });
+
+    test('never throws and creates nothing when the folder is missing', () async {
+      final store = CoachRecordingStore(documents: docs);
+      final ghost = File('${docs.path}/$kCoachRecordingsDir/A/x.json');
+      await expectLater(store.discard('A', ghost), completes);
+      expect(Directory('${docs.path}/$kCoachRecordingsDir').existsSync(),
+          isFalse);
+    });
+  });
+
   testWidgets('(a) A records, account switches to B: discarded, nothing saved',
       (t) async {
     final r = await _pump(t);
