@@ -55758,3 +55758,7 @@ GPT-PM returned REJECT with three MAJOR findings; all verified against source an
 ## 2026-10-13 - Commit: stale auth snapshot in the wipe sweep (GPT-PM round 2)
 
 R2-01 verified and fixed: queued sweep runs judge the signed-in uid at execution time, with a re-check right before each wipe. Detail: core/changes/2026-10-13-gptpm-round2-stale-auth.md.
+
+## 2026-10-13 - Commit: product hardening sprint plan
+
+Operator approved (GO) the fix-all sprint: hide mock-only features in release, cautious path plus warning for minors and seniors, catalog repair, training-context question for recommendations, data-driven coach engine, tripod/self-timer body comparison. Detail: core/changes/2026-10-13-hardening-sprint-plan.md.
