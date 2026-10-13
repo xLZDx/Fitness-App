@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fitness_app/features/training_context/state/training_context_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
@@ -53,6 +54,30 @@ void main() {
     SharedPreferences.setMockInitialValues(values);
     return SharedPreferences.getInstance();
   }
+
+  test('a failing photo-key forget still runs the remaining steps and is reported',
+      () async {
+    final prefs = await prefsWith({
+      trainingContextKeyFor('u1'): 'yoga',
+      'settings.tier_override': 'pro',
+    });
+    final rec = Directory('${docs.path}/coach_recordings/u1')
+      ..createSync(recursive: true);
+    File('${rec.path}/a.json').writeAsStringSync('{}');
+    final wipe = DeviceLocalDataWipe(
+      prefs: prefs,
+      documentsDir: docs,
+      forgetPhotoKey: (_) async => throw StateError('keystore'),
+    );
+    await expectLater(
+      wipe.wipe('u1'),
+      throwsA(isA<LocalWipeIncomplete>()
+          .having((e) => e.remaining, 'remaining', contains('photo_key'))),
+    );
+    expect(prefs.getString(trainingContextKeyFor('u1')), isNull);
+    expect(prefs.getString('settings.tier_override'), isNull);
+    expect(rec.existsSync(), isFalse);
+  });
 
   test('one key that fails to erase does not stop the others, and the caller is told',
       () async {

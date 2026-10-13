@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
@@ -99,8 +100,9 @@ class LogWorkoutAction extends Notifier<AsyncValue<void>> {
       ];
       final streak = deriveProgress(logs).currentStreakDays;
       if (streak > 0) await repo.recordStreak(uid, streak);
-    } catch (_) {
-      // Deliberate, and narrow: see above.
+    } catch (e) {
+      // Deliberate, and narrow: see above. Logged, type only.
+      debugPrint('streak record not written: ${e.runtimeType}');
     }
   }
 }

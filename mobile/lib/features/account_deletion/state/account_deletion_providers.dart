@@ -3,6 +3,7 @@ import 'dart:async' show unawaited;
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/notifications/notification_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/account_deletion_service.dart';
 import '../data/local_data_wipe.dart';
@@ -129,6 +130,16 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
           'local data wipe SKIPPED: no uid at deletion time. '
           'Device-local data for the deleted account remains.',
         );
+      }
+
+      // Pending OS notifications (workout, scan and photo reminders) carry
+      // the deleted account's text and are re-armed by the boot receiver, so
+      // the next person on this phone would see them. Best effort: never
+      // throws. Ordinary sign-out keeps workout reminders (not cancelled).
+      try {
+        await ref.read(notificationServiceProvider).cancelAll();
+      } catch (e) {
+        debugPrint('could not cancel notifications after deletion: $e');
       }
 
       // Explicit, not relied-upon. The server just deleted this Firebase

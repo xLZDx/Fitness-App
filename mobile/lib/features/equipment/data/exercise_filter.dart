@@ -44,6 +44,21 @@ bool isContraindicated(ExerciseItem exercise, Iterable<Injury> injuries) {
   return false;
 }
 
+/// Whether the injury filter CAN act on [injury] at all.
+///
+/// True for a mapped region, and for legacy free text that overlaps one of the
+/// closed region tags by the same rule [isContraindicated] applies. False means
+/// the injury (a rib, a toe, "tailbone") can never remove a single exercise, so
+/// any surface that talks about injury screening must say it did not cover this
+/// one rather than staying silent.
+bool injuryIsScreenable(Injury injury) {
+  if (injury.region != null) return true;
+  for (final region in InjuryRegion.values) {
+    if (_injuryHits(injury.bodyPart, region.tag)) return true;
+  }
+  return false;
+}
+
 /// Exact on a mapped region, substring on legacy free text.
 ///
 /// A mapped [Injury.region] and an exercise tag are drawn from the same closed

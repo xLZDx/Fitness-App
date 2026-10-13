@@ -66,7 +66,7 @@ class MockNotificationService implements NotificationService {
   }
 
   @override
-  Future<void> scheduleReminder(
+  Future<ReminderOutcome> scheduleReminder(
     ScheduledSession session, {
     required String title,
     required String body,
@@ -80,18 +80,18 @@ class MockNotificationService implements NotificationService {
       );
 
   @override
-  Future<void> scheduleAt(
+  Future<ReminderOutcome> scheduleAt(
     String id, {
     required DateTime fireAt,
     required String title,
     required String body,
   }) async {
-    if (!await ensurePermission()) return;
+    if (!await ensurePermission()) return ReminderOutcome.denied;
     if (!fireAt.isAfter(now())) {
-      // The reminder window already passed — drop silently rather than
-      // spam a notification on save. Caller doesn't need to care.
+      // The reminder window already passed — drop rather than spam a
+      // notification on save; the outcome tells the caller.
       _store.remove(id);
-      return;
+      return ReminderOutcome.past;
     }
     _store[id] = _ScheduledReminder(
       sessionId: id,
@@ -99,6 +99,7 @@ class MockNotificationService implements NotificationService {
       title: title,
       body: body,
     );
+    return ReminderOutcome.scheduled;
   }
 
   @override

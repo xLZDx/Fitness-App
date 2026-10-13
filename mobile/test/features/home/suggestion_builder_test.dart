@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/home/data/suggestion_builder.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
+import 'package:fitness_app/features/training_context/data/training_context.dart';
 import 'package:fitness_app/features/workouts/data/workout_log.dart';
 
 final now = DateTime(2026, 7, 30, 12);
@@ -324,6 +325,28 @@ void main() {
       );
       expect(out.single.reason, SuggestionReason.buildsStrength);
       expect(out.single.reasonMuscle, isNull);
+    });
+  });
+  group('training context on suggestions', () {
+    test('every suggestion carries the chosen context; none when skipped', () {
+      final cands = [ex('a', primary: ['chest']), ex('b', primary: ['lats'])];
+      final chosen = buildSuggestions(
+        candidates: cands,
+        profile: profileWith(),
+        recentLogs: const [],
+        now: now,
+        trainingContext: TrainingContext.outdoorMinimal,
+      );
+      expect(chosen, hasLength(2));
+      expect(chosen.every((s) => s.trainingContext == TrainingContext.outdoorMinimal),
+          isTrue);
+      final skipped = buildSuggestions(
+        candidates: cands,
+        profile: profileWith(),
+        recentLogs: const [],
+        now: now,
+      );
+      expect(skipped.every((s) => s.trainingContext == null), isTrue);
     });
   });
 }

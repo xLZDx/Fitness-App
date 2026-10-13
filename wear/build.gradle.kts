@@ -24,6 +24,17 @@ android {
         versionName = "1.0.0"
     }
 
+    buildTypes {
+        // Same scheme as the phone module (mobile/android/app/build.gradle,
+        // buildTypes.debug): a debug phone build is
+        // `com.fitnessapp.fitness_app.sptr.debug`, so the debug watch build must
+        // carry the same suffix or the two never pair. `release` stays the bare
+        // id. Not compiled or paired on a device in this change.
+        debug {
+            applicationIdSuffix = ".debug"
+        }
+    }
+
     buildFeatures { compose = true }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.10" }
 

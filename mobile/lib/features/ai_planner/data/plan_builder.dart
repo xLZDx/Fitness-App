@@ -2,9 +2,13 @@ import 'dart:math' as math;
 
 import '../../cycle_aware/data/cycle_phase.dart';
 import '../../equipment/data/equipment_models.dart';
+import '../../equipment/data/exercise_filter.dart' show isContraindicated;
+import '../../personalisation/data/recommendation_hints.dart';
 import '../../personalisation/data/volume_ledger.dart';
 import '../../recovery/data/deload_detector.dart';
+import '../../safety/data/age_policy.dart';
 import '../../safety/data/eligibility.dart';
+import '../../training_context/data/training_context.dart' show TrainingContext;
 import 'workout_plan.dart';
 
 /// Pure plan-builder. Combines:
@@ -34,6 +38,17 @@ PlanOutcome buildPlan({
   CycleState cycle = const CycleUnknown(CycleUnavailable.notTracked),
   CycleSelfReport? cycleSelfReport,
   int targetMinutes = 45,
+
+  /// What the questionnaire says about the mix and starting volume (goal,
+  /// activity level, sleep/stress, basics). [RecommendationHints.none] keeps
+  /// the pre-hints behaviour for callers without a profile.
+  RecommendationHints hints = RecommendationHints.none,
+
+  /// The stated training context, or null (never asked / skipped). The caller
+  /// has already narrowed [candidatePool] and [safety] to it with
+  /// `narrowToTrainingContext` / `safetyContextForTrainingContext`; this only
+  /// makes the plan say so.
+  TrainingContext? trainingContext,
 }) {
   // 0. The floor. Before any pool is read, any deficit consulted, any
   //    exercise scored — because a refusal that depends on the catalogue
@@ -53,7 +68,8 @@ PlanOutcome buildPlan({
   //    eligibility layer, so the same pool that the feed, the programme
   //    builder and the catalogue use is the pool here — injuries, normalised
   //    movement restrictions and equipment, decided once.
-  final safe = eligibleExercises(candidatePool, safety);
+  final safe = recommendableAtLevel(
+      eligibleExercises(candidatePool, safety), safety);
 
   // 2. Score each remaining exercise by adaptive priority; novelty is broken
   //    by insertion order.
@@ -124,27 +140,65 @@ PlanOutcome buildPlan({
   for (final opinion in [safety.intensityCeiling, cycleAdjustment.intensityCeiling]) {
     if (opinion != null && opinion < ceiling) ceiling = opinion;
   }
+  // The age band and the answer-driven starting-volume cap are separate from
+  // the screening ceiling on purpose: the screening ceiling's wording says the
+  // app has not cleared the user's HEALTH answers, which is false for a healthy
+  // 15-year-old. Both only ever lower the factor.
+  final baseFactor = factor.clamp(0.5, ceiling).toDouble();
+  final ageCap = safety.ageBand.intensityCap;
+  if (ageCap != null && ageCap < ceiling) ceiling = ageCap;
+  final hintCap = hints.volumeCap;
+  if (hintCap != null && hintCap < ceiling) ceiling = hintCap;
   factor = factor.clamp(0.5, ceiling).toDouble();
 
-  // 4. Greedy fill, against a budget the factor has already shrunk (with the
-  //    same small buffer so we don't overshoot). A 0.5 factor now produces
-  //    roughly half a session rather than a full one with a smaller number
-  //    printed above it.
+  // 4. Greedy fill against a budget the factor has already shrunk.
   //
-  //    The 10-minute floor is what stops a low factor over a short target
-  //    from producing an empty plan — which would be a refusal with no
-  //    reason attached, the failure mode Gate M exists to end.
+  //    The session never exceeds the minutes the user stated: the budget is
+  //    capped by `targetMinutes` itself. (It used to allow `budget + 5`, so a
+  //    45-minute answer could be handed a 50-minute plan.) The 10-minute floor
+  //    on the budget still stops a low factor over a short target from
+  //    producing an empty plan.
+  //
+  //    Goal-driven items are RESERVED first, in score order, so the mix the
+  //    user's answers ask for (mobility, conditioning, a senior's balance
+  //    work) is present whenever the eligible pool has such an item that fits.
   final budget = math.max(10, (targetMinutes * factor).round());
-  final picked = <ExerciseItem>[];
+  final limit = math.min(budget, targetMinutes);
+  final chosen = <int>{}; // indexes into `scored`
   var minutes = 0;
-  for (final entry in scored) {
-    if (minutes + entry.ex.durationMinutes > budget + 5) {
-      continue;
+  bool fits(ExerciseItem e) => minutes + e.durationMinutes <= limit;
+  int? reserve(bool Function(ExerciseItem) wanted) {
+    for (var i = 0; i < scored.length; i++) {
+      final ex = scored[i].ex;
+      if (chosen.contains(i) || !wanted(ex) || !fits(ex)) continue;
+      chosen.add(i);
+      minutes += ex.durationMinutes;
+      return i;
     }
-    picked.add(entry.ex);
-    minutes += entry.ex.durationMinutes;
-    if (picked.length >= 6) break;
+    return null;
   }
+
+  final mixes = <GoalMix>[];
+  final senior = safety.ageBand.needsBalanceAndMobility;
+  if (hints.wantsMobility) {
+    if (reserve((e) => e.isStretch) != null) {
+      mixes.add(GoalMix.mobility);
+      if (senior) mixes.add(GoalMix.seniorBalance);
+    }
+  } else if (senior) {
+    if (reserve(isMobilityOrBalanceExercise) != null) {
+      mixes.add(GoalMix.seniorBalance);
+    }
+  }
+  if (hints.wantsConditioning) {
+    if (reserve(isConditioningExercise) != null) mixes.add(GoalMix.conditioning);
+  }
+  for (var i = 0; i < scored.length && chosen.length < 6; i++) {
+    if (chosen.contains(i) || !fits(scored[i].ex)) continue;
+    chosen.add(i);
+    minutes += scored[i].ex.durationMinutes;
+  }
+  final picked = [for (final i in (chosen.toList()..sort())) scored[i].ex];
 
   // 5. State the reasons, as codes.
   //
@@ -177,13 +231,30 @@ PlanOutcome buildPlan({
     reasons.add(CyclePhaseReason(phase));
   }
   for (final advisory in safety.advisories) {
-    reasons.add(UntaggedRestrictionReason(advisory.restriction));
+    reasons.add(advisory.reason == BlockReason.unscreenableRestriction
+        ? UntaggedRestrictionReason(advisory.restriction)
+        : SafetyAdvisoryReason(advisory));
   }
+  // Only what the injuries themselves removed. `candidatePool - safe` also
+  // counted equipment, age-policy and movement-restriction removals, so the
+  // sentence "conflicts with an injury you reported" was false for most users.
   if (injuryList.isNotEmpty) {
-    final filteredOut = candidatePool.length - safe.length;
-    if (filteredOut > 0) {
-      reasons.add(InjuryFilterReason(filteredOut));
+    final byInjury =
+        candidatePool.where((e) => isContraindicated(e, injuryList)).length;
+    if (byInjury > 0) {
+      reasons.add(InjuryFilterReason(byInjury));
     }
+  }
+  for (final mix in mixes) {
+    reasons.add(GoalMixReason(mix));
+  }
+  // Said only when the answer-driven cap really lowered the factor, and not
+  // when the age cap is the tighter one (the age advisory already says so).
+  if (hintCap != null &&
+      hints.volumeCapCause != null &&
+      factor < baseFactor - 1e-9 &&
+      hintCap <= (ageCap ?? 2.0)) {
+    reasons.add(VolumeCapReason((factor * 100).round(), hints.volumeCapCause!));
   }
   if (reasons.isEmpty) {
     // The fallback used to read "Built from your latest difficulty ratings —
@@ -196,6 +267,8 @@ PlanOutcome buildPlan({
         ? const NoHistoryReason()
         : const DeficitOrderReason());
   }
+
+  if (trainingContext != null) reasons.add(TrainingContextReason(trainingContext));
 
   return PlanReady(GeneratedPlan(
     title: safety.intensityCeiling != null

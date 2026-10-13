@@ -51,26 +51,40 @@ server-side.
 
 | Key | Holds | Wiped on delete | Exported |
 |---|---|---|---|
-| `profile.sensitive.{uid}` | **health/injury blob**, JSON, plaintext | **NO** | via profile, partially |
-| `progress_photos.key.v1` | AES-256 key, base64, **not uid-scoped** | **NO** | no (correctly) |
-| `settings.language`, `settings.theme_mode`, `settings.notifications_enabled`, `settings.tier_override` | preferences | **NO** | **no** |
-| `moment.first_launch_at`, `moment.launch_count`, `moment.injury_filter_uses`, `moment.shown.*` | in-app moment counters | **NO** | **no** |
+| `profile.sensitive.<uid>` | **health/injury blob**, JSON, plaintext | yes (exact key) | via profile, partially |
+| `profile.sensitive.corrupt.<uid>` | raw copy of an unreadable health blob (plaintext) | yes | no |
+| `training_context.v1.<uid>` | training-context answer | yes | no |
+| `progress_photos.consent.v1.<uid>` | photo consent record | yes | no |
+| `progress_photos.scan_reminder.v1.<uid>` | scan reminder toggle | yes | no |
+| `progress_photos.key.v1` | pre-A2-sec install-wide AES key, base64, **not uid-scoped** (legacy; the current key is in the Keystore, see Files) | yes, only when the legacy owner marker is unset or this uid | no (correctly) |
+| legacy photo migration marker (`kLegacyPhotoMigrationMarker`) | names the account that adopted the legacy photos | yes, only when it names this uid | no |
+| `account_deletion.pending_wipe_uids` | uids whose device wipe is still pending (uids only) | removed per uid once that wipe completes | no |
+| `settings.tier_override` | debug entitlement | yes | **no** |
+| `moment.*` (`first_launch_at`, `launch_count`, `injury_filter_uses`, `shown.*`) | in-app moment counters | yes (prefix) | **no** |
+| `settings.language`, `settings.theme_mode`, `settings.notifications_enabled` | device preferences | **NO, kept on purpose** (`DeviceLocalDataWipe.kept`) | **no** |
 
-`profile.sensitive.{uid}` is the one that already has the right shape: it is
-uid-keyed and `PrefsSensitiveStore.clear(uid)` exists
-(`local_sensitive_store.dart:51,76`). Nothing calls it on deletion — the client
-action calls the function and signs out, and that is all
-(`account_deletion_providers.dart:16-56`).
+Source of truth for the "Wiped" column: `DeviceLocalDataWipe.wipe(uid)` in
+`mobile/lib/features/account_deletion/data/local_data_wipe.dart`. It removes
+the exact per-uid keys above (never a `profile.sensitive.` prefix, which would
+erase another account's blob on a shared phone), runs every step even when one
+fails, and throws `LocalWipeIncomplete` naming what remains. An interrupted
+deletion is finished on a later launch from the pending-wipe set.
 
 ## Device — files
 
 | Path | Holds | Wiped on delete | Exported |
 |---|---|---|---|
-| `<docs>/progress_photos/` | AES-GCM envelopes + **plaintext metadata index** | **NO** | metadata only |
-| `<temp>/` camera stills | **plaintext JPEG** of the shot just encrypted | **NO** | no |
+| `<docs>/progress_photos/<uid>/` | AES-GCM envelopes + metadata index for that account | yes (whole per-uid directory) | metadata only |
+| `<docs>/progress_photos/` loose `index.json` / `*.bin` | pre-A2-sec legacy files no account adopted | yes, same condition as the legacy key | no |
+| Android Keystore entry `key.v2` (via `SecurePhotoKeyStore`) | the current AES key for photos and scans | yes (`SecurePhotoKeyStore.forget(uid)`, best-effort) | no (correctly) |
+| `<docs>/coach_recordings/<uid>/` | developer coach recordings: joint angles + timestamps only (debug and profile builds) | yes | no |
+| `<docs>/progress_photos/<uid>/scans/<id>.scan` | Guided body-scan record: photo ids and pose landmarks (body-shape data), one AES-GCM envelope per scan, **no plaintext index**; same key as the photos | yes (whole per-uid directory) | no |
+| `<temp>/` camera stills | **plaintext JPEG** of the shot just encrypted | **NO** (not in `local_data_wipe.dart`) | no |
 | `<docs>/offline_videos/` | cached exercise clips (catalogue content) | no | n/a |
 | `<docs>/<model asset path>` | ML model files unpacked by `AssetBootstrap` | no | n/a |
 | `<temp>/` export file | the export itself | n/a | n/a |
+
+Scan reminder toggle: pref `progress_photos.scan_reminder.v1.<uid>` (bool, per account), erased by the local wipe; photos and landmarks never leave the device.
 
 The photo directory is shared across accounts, and so is its key. Sign out of
 account A, sign in as account B on the same device, and B's photo grid reads
