@@ -55721,3 +55721,8 @@ A backup file can no longer demand unbounded PBKDF2 work, and a backup made unde
 ## 2026-10-13 — Commit: Wear bridge reports real delivery (NEW-WEAR)
 
 The phone-side Wear bridge (MainActivity.kt, not wear/) no longer answers "success" before delivery, runs its node lookup off the main thread, and surfaces lookup and send failures instead of reporting "no watch". Detail: core/changes/2026-10-13-wear-bridge-delivery.md.
+
+## 2026-10-13 - Commit: health read failures shown as failures (NEW-HEALTH-ERR)
+
+**What and why:** readSnapshots rethrows instead of returning an empty list, so a Health Connect failure is no longer displayed as "No health data today"; an empty today read re-checks the auth status and refreshes the cached provider so a revoked permission is noticed without a restart. Detail: core/changes/2026-10-13-health-read-errors.md.
+**Unverified:** not compiled or run (sprint-end test agents do that); no device check. Revocation is detected only on an empty read, not on app resume.

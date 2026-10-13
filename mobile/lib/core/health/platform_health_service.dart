@@ -198,7 +198,9 @@ class PlatformHealthService implements HealthService {
       return out;
     } catch (e) {
       _recordError('readSnapshots', e);
-      return const [];
+      // NEW-HEALTH-ERR: a failed read is not "no data today". Callers are the
+      // two UI providers, whose error branch already says the read failed.
+      rethrow;
     }
   }
 
