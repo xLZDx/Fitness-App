@@ -119,3 +119,17 @@ core/equipment_identity/p0/terms_snapshots/** -text
 # checked it out as CRLF and the rebuilt registry differed (70e49a.. vs the
 # committed 1a23d6..). Same fix as equipment.json above.
 mobile/assets/data/joint_rom_reference.json text eol=lf
+
+# CT-1 content QA (2026-10-13). scripts/ml/dataset_registry.py records the raw
+# byte sha256 of the CT-1 dataset, the three review batches, the clinical
+# worklist and of the exercise catalogue the worklist was built from, and tests
+# re-derive them. With core.autocrlf=true a Windows checkout hands these files
+# out as CRLF while a Linux CI runner gets LF: same content, two hashes, and a
+# registry that verifies on one machine and fails on the other. Pinning eol=lf
+# makes every checkout produce the committed bytes.
+core/ml/datasets/** text eol=lf
+core/ml/review/** text eol=lf
+core/ml/DATASET_REGISTRY.json text eol=lf
+core/review/worklist/** text eol=lf
+mobile/assets/data/exercises_vendor.json text eol=lf
+mobile/assets/data/exercises_vendor.ru.json text eol=lf

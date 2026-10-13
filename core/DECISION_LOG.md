@@ -55762,3 +55762,7 @@ R2-01 verified and fixed: queued sweep runs judge the signed-in uid at execution
 ## 2026-10-13 - Commit: product hardening sprint plan
 
 Operator approved (GO) the fix-all sprint: hide mock-only features in release, cautious path plus warning for minors and seniors, catalog repair, training-context question for recommendations, data-driven coach engine, tripod/self-timer body comparison. Detail: core/changes/2026-10-13-hardening-sprint-plan.md.
+
+## 2026-10-13 - Commit: hardening sprint documentation, QA reports and byte-pinning rules
+
+Plan revision 2 answers the GPT-PM documentation-gate REJECT of 07d8e4a (eight MAJOR findings about completeness and verifiability, none against the operator's decisions): safety and release contracts, dependency order, exception register, F1..F13 traceability. The whole-project QA reports are added as the evidence base. `.gitattributes` pins LF for the files the CT-1 registry hashes. Detail: core/changes/2026-10-13-hardening-docs-and-process.md.
