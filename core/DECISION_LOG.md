@@ -55858,3 +55858,7 @@ Decision: static Paint objects and a figure-bounded alpha layer for the target f
 ## 2026-10-14 - Commit: Squat review fixes: silent rejection, hysteresis gap, voice fallback
 
 Decision: the incomplete-squat shallow cue is keyed on the rejection reason alone (target withdrawn in avatar mode); the back rule restarts its streak across frame gaps and on a new set; a failed language bundle falls back to English or silence, never a cue key. Evidence: 577 focused Flutter tests green, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device.
+
+## 2026-10-14 - Commit: Review fixes for hero and scan tests
+
+Decision: strengthen the tests behind the hero and scan fixes after independent review: injury screening of the header, a pinned machine-to-hero map, scanId forwarding on the confident path (reachable via the printed-text anchor, so no call site removed), working-directory independence; curate squat_rack and barbell heroes; the dumbbell/band bench press ambiguity of the alias index is a documented limit covered by curation. Evidence: focused Flutter run, 327 tests; Jest ai_exercise_generation 33/33 after npm ci. See core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: device rendering.

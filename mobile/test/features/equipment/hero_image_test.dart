@@ -5,6 +5,7 @@ import 'package:fitness_app/features/equipment/data/asset_equipment_repository.d
 import 'package:fitness_app/features/equipment/data/equipment_alias_index.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
 
 /// The image at the top of a machine's page.
 ///
@@ -24,6 +25,7 @@ void main() {
     List<String> frames = const [],
     List<String> imageUrls = const [],
     String? label,
+    List<String> contraindications = const [],
   }) =>
       ExerciseItem(
         id: id,
@@ -38,6 +40,7 @@ void main() {
         poster: poster,
         frames: frames,
         imageUrls: imageUrls,
+        contraindications: contraindications,
       );
 
   final index = EquipmentAliasIndex.fromJson({
@@ -51,7 +54,7 @@ void main() {
   // repository is also the more honest fixture — it exercises the same lookup
   // the app performs.
   Future<String?> heroFor(List<ExerciseItem> exercises,
-      {String? preferred}) async {
+      {String? preferred, UserProfile? profile}) async {
     final repo = AssetEquipmentRepository()
       ..seedForTests(
         equipment: [
@@ -73,7 +76,7 @@ void main() {
       // before it can answer. Stated rather than inherited: an unresolved
       // profile leaves it loading forever, which is the correct behaviour and
       // a confusing test failure.
-      screeningProfileProvider.overrideWith((ref) async => null),
+      screeningProfileProvider.overrideWith((ref) async => profile),
     ]);
     addTearDown(container.dispose);
     return container.read(equipmentHeroImageProvider('lat_pulldown').future);
@@ -194,6 +197,58 @@ void main() {
         ex(id: 'ea_chosen_variation'),
       ], preferred: 'ea_chosen_variation');
       expect(hero, 'assets/posters/men/plain.jpg');
+    });
+  });
+
+  group('injury screening applies to the header', () {
+    const kneeInjury = UserProfile(
+      uid: 'u1',
+      health: HealthHistory(
+        injuries: [Injury(bodyPart: 'knee', type: 'strain')],
+      ),
+    );
+    final curated = ex(
+        id: 'ea_chosen_variation',
+        contraindications: const ['knee'],
+        poster: const {'men': 'assets/posters/men/chosen.jpg'});
+    final plain = ex(
+        id: 'ea_lat_pulldown',
+        poster: const {'men': 'assets/posters/men/plain.jpg'});
+
+    test('control: with no injuries the curated, knee-flagged hero is shown',
+        () async {
+      expect(await heroFor([curated, plain], preferred: 'ea_chosen_variation'),
+          'assets/posters/men/chosen.jpg');
+    });
+
+    test('a hero contraindicated by the injury is never shown; the '
+        'next safe naming exercise is', () async {
+      expect(
+          await heroFor([curated, plain],
+              preferred: 'ea_chosen_variation', profile: kneeInjury),
+          'assets/posters/men/plain.jpg',
+          reason: 'the unscreened list would have chosen the knee-flagged '
+              'curated exercise');
+    });
+
+    test('with no safe naming exercise the header is empty, not unsafe',
+        () async {
+      expect(
+          await heroFor([curated], preferred: 'ea_chosen_variation',
+              profile: kneeInjury),
+          isNull);
+    });
+
+    test('screening runs before ranking, not after', () async {
+      final shortUnsafe = ex(
+          id: 'ea_lat_pulldown',
+          contraindications: const ['knee'],
+          poster: const {'men': 'assets/posters/men/short.jpg'});
+      final longSafe = ex(
+          id: 'ea_wide_grip_lat_pulldown',
+          poster: const {'men': 'assets/posters/men/long.jpg'});
+      expect(await heroFor([shortUnsafe, longSafe], profile: kneeInjury),
+          'assets/posters/men/long.jpg');
     });
   });
 }

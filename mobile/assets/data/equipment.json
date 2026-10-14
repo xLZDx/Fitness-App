@@ -18,7 +18,8 @@
   "name": "Squat rack",
   "manufacturer": "Any",
   "category": "strength",
-  "description": "Uprights with adjustable J-hooks and safety arms for squats, presses and rack pulls."
+  "description": "Uprights with adjustable J-hooks and safety arms for squats, presses and rack pulls.",
+  "heroExerciseId": "ea_barbell_full_squat"
  },
  {
   "id": "bench_press",
@@ -54,7 +55,8 @@
   "name": "Barbell",
   "manufacturer": "Any",
   "category": "free_weights",
-  "description": "Olympic bar plus plates. The heaviest-loading tool in the room and the base of most strength programmes."
+  "description": "Olympic bar plus plates. The heaviest-loading tool in the room and the base of most strength programmes.",
+  "heroExerciseId": "ea_barbell_deadlift"
  },
  {
   "id": "dumbbell",
