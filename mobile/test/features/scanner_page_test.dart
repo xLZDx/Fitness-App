@@ -344,6 +344,10 @@ void main() {
           builder: (_, s) =>
               Scaffold(body: Text('equipment ${s.pathParameters['id']}')),
         ),
+        GoRoute(
+          path: '/scan-history',
+          builder: (_, __) => const Scaffold(body: Text('history page')),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -677,6 +681,23 @@ void main() {
       await tester.pump();
       expect(find.byKey(const Key('scan-camera-unavailable')), findsOneWidget);
       expect(find.byKey(const Key('scan-zoom-label')), findsNothing);
+    });
+
+    testWidgets('the history button over the camera opens the scan history and '
+        'releases the camera', (tester) async {
+      final spy = _SpySession();
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(spy)]);
+      final before = spy.stops;
+      final Rect button = tester.getRect(find.byKey(const Key('scan-history-open')));
+      expect(button.top, greaterThan(0));
+      expect(button.right, lessThanOrEqualTo(tester.view.physicalSize.width));
+
+      await tester.tap(find.byKey(const Key('scan-history-open')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.text('history page'), findsOneWidget);
+      expect(spy.stops, greaterThan(before),
+          reason: 'a screen above the Scan tab must not leave the camera on');
     });
 
     testWidgets('the hint says RECOGNISING while a capture is classified',

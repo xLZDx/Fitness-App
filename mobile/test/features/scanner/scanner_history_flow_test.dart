@@ -284,4 +284,115 @@ void main() {
     expect(records, hasLength(2));
     expect(records.map((r) => r.id).toSet(), hasLength(2));
   });
+
+  group('optional OK / NOT OK marks on the candidate rows', () {
+    Finder ok(String id) => find.byKey(Key('scan-rate-ok-$id'));
+    Finder notOk(String id) => find.byKey(Key('scan-rate-notok-$id'));
+
+    Future<CandidateRating?> savedRating(_Rig rig, String id) async {
+      final r = (await rig.records(
+          until: (l) => l.isNotEmpty))
+          .first;
+      return r.candidates.firstWhere((c) => c.equipmentId == id).rating;
+    }
+
+    testWidgets('every candidate shows both marks right after its % match',
+        (tester) async {
+      final rig = await _pump(tester, _Service(), docs, photo);
+      await rig.scan();
+      for (final id in ['chest_press_machine', 'pec_deck', 'leg_press', 'elliptical']) {
+        await tester.ensureVisible(ok(id));
+        expect(ok(id), findsOneWidget, reason: 'OK mark for $id');
+        expect(notOk(id), findsOneWidget, reason: 'NOT OK mark for $id');
+      }
+      // Marks sit on the confidence line, to the right of the percentage.
+      final pct = tester.getRect(find.text('41% confidence'));
+      final mark = tester.getRect(ok('pec_deck'));
+      expect(mark.left, greaterThanOrEqualTo(pct.right));
+      expect((mark.center.dy - pct.center.dy).abs(), lessThan(20));
+    });
+
+    testWidgets('OK and NOT OK are saved with the scan; tapping again clears; '
+        'a mark never opens the machine', (tester) async {
+      final rig = await _pump(tester, _Service(), docs, photo);
+      await rig.scan();
+      await rig.records();
+
+      await tester.ensureVisible(ok('pec_deck'));
+      await tester.tap(ok('pec_deck'));
+      await tester.pump();
+      expect(rig.landed, isEmpty, reason: 'rating must not navigate');
+      expect(
+          tester.widget<Icon>(find.descendant(of: ok('pec_deck'), matching: find.byType(Icon))).icon,
+          Icons.check_circle_rounded,
+          reason: 'the active mark is drawn filled');
+      expect(
+          await (() async {
+            for (var i = 0; i < 40; i++) {
+              await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+              await tester.pump();
+              final r = (await tester.runAsync(() => rig.store.list('u1')))!.first;
+              if (r.candidates[1].rating != null) return r.candidates[1].rating;
+            }
+            return null;
+          })(),
+          CandidateRating.ok);
+
+      // NOT OK replaces OK (one verdict per candidate)...
+      await tester.tap(notOk('pec_deck'));
+      await tester.pump();
+      for (var i = 0; i < 40; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+        await tester.pump();
+        final r = (await tester.runAsync(() => rig.store.list('u1')))!.first;
+        if (r.candidates[1].rating == CandidateRating.notOk) break;
+      }
+      expect(await savedRating(rig, 'pec_deck'), CandidateRating.notOk);
+      expect(await savedRating(rig, 'chest_press_machine'), isNull,
+          reason: 'only the tapped candidate is rated');
+
+      // ... and tapping the active mark again clears it.
+      await tester.tap(notOk('pec_deck'));
+      await tester.pump();
+      for (var i = 0; i < 40; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+        await tester.pump();
+        final r = (await tester.runAsync(() => rig.store.list('u1')))!.first;
+        if (r.candidates[1].rating == null) break;
+      }
+      expect(await savedRating(rig, 'pec_deck'), isNull);
+      expect(
+          tester.widget<Icon>(find.descendant(of: notOk('pec_deck'), matching: find.byType(Icon))).icon,
+          Icons.cancel_outlined);
+    });
+
+    testWidgets('rating is optional: an unrated candidate still opens its page',
+        (tester) async {
+      final rig = await _pump(tester, _Service(), docs, photo);
+      await rig.scan();
+      await tester.ensureVisible(find.text('Бабочка (пек-дек)'));
+      await tester.tap(find.text('Бабочка (пек-дек)'));
+      await _settle(tester);
+      expect(rig.landed.single, startsWith('/equipment/pec_deck'));
+    });
+
+    testWidgets('a new scan starts with no marks', (tester) async {
+      final rig = await _pump(tester, _Service(), docs, photo);
+      await rig.scan();
+      await tester.ensureVisible(ok('leg_press'));
+      await tester.tap(ok('leg_press'));
+      await tester.pump();
+      expect(
+          tester.widget<Icon>(find.descendant(of: ok('leg_press'), matching: find.byType(Icon))).icon,
+          Icons.check_circle_rounded);
+      await tester.tap(find.byKey(const Key('scan-recognise-camera'))); // scan again
+      await _settle(tester);
+      await rig.scan();
+      await tester.ensureVisible(ok('leg_press'));
+      expect(
+          tester.widget<Icon>(find.descendant(of: ok('leg_press'), matching: find.byType(Icon))).icon,
+          Icons.check_circle_outline_rounded,
+          reason: 'the verdict of the previous scan must not carry over');
+    });
+  });
 }

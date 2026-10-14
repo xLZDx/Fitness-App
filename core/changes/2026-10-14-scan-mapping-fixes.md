@@ -133,3 +133,20 @@ Not changed on purpose. That file classifies Firestore collections only (retenti
 
 ### Verification state
 Focused Flutter run from `mobile/`: `scan_history_store_test.dart` 30/30 (record content, rating persistence and clearing, serialised writes, retention by count and by bytes, wipe, export, recorder incl. cloud and on-device fallback records), `scanner_history_flow_test.dart` 6/6 (cloud scan, on-device fallback scan, failed scan, opened candidate, manual pick, two scans through the real ScannerPage), `account_deletion/*`, `scan_controller_test`, `gemini_equipment_service_test`, `scanner_page_test`: green; `backup_rules_test.dart`: 10 of 11 (the lock test above fails).
+
+## Addendum 7: optional OK / NOT OK marks, scan history screen, export, clear
+
+### What changed
+- `mobile/lib/features/scanner/widgets/rating_marks.dart` (new): two small marks (check = OK, cross = NOT OK) on each candidate row right after the "% confidence" text, and under the locked card. Optional: nothing depends on them, tapping the active mark again clears it, a mark swallows its own tap (rating a row does not open it), a new scan starts with no marks. A rating is written to the scan's saved record (`ScanHistoryRecorder.rate`, which waits for the record if the photo is still being written).
+- `mobile/lib/features/scanner/history/scan_history_page.dart` (new): "История сканов" screen (RU) / "Scan history" (EN). List newest first of this account's scans with thumbnail (the saved resized photo, a neutral tile for live readings), top candidate name, time, source, who answered (cloud / on-device fallback / printed text / no answer) and the rating marks given. Detail page: photo, every candidate with editable marks, what the user opened or chose by hand, the model's raw reply (selectable), app build and git sha. Entry: a history button over the camera (top right of the Scan screen); routes `/scan-history` and `/scan-history/:id` are top-level, so the camera is released while they are open.
+- Export: one JSON (`scan_history.json`, every record with its app build and the relative photo path) plus a `photos/` folder, written to app temp storage and handed to the system share sheet (`share_plus` is already a dependency). The share sheet is the only way the history leaves the phone, and only after the user taps Export. A failure shows a message and keeps everything.
+- "Очистить историю" / "Clear history": confirm dialog (cancel deletes nothing), then deletes this account's scans and photos only.
+- l10n RU + EN (parity tests green): 23 new keys (`scanRateOk`, `scanRateNotOk`, `scanHistory*`).
+
+### Limits
+- Export is plaintext on purpose (the operator compares it by hand); the exported files sit in app temp storage until the OS clears it. There is no zip (no archive package is a dependency): the JSON and the photos are shared as separate files.
+- Ratings of a scan can be changed later only from the history detail or from the live result list while that scan is still on screen.
+- Not verified on a device: the real share sheet, the look of the history screen, thumbnails of large histories (decoded at 2x thumbnail size).
+
+### Verification state
+Focused Flutter run from `mobile/`: `scan_history_page_test.dart` 6/6 (list, empty state, detail and rating there, export content, share failure, clear with cancel/confirm), `scanner_history_flow_test.dart` 10/10 (4 new for the marks: both marks per row after the %, OK / NOT OK saved and cleared by tapping again without opening the machine, optional, no carry-over to the next scan), `scanner_page_test.dart` 60/60 (history button opens the screen and releases the camera), plus l10n, scanner, router, account-deletion suites.

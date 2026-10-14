@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show compute, debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../auth/state/auth_providers.dart';
 import '../../visual_equipment/data/gemini_equipment_service.dart'
@@ -187,3 +190,29 @@ ScanAnsweredBy answeredByOf(ScanResult r) {
   }
   return r.answeredOffline ? ScanAnsweredBy.onDevice : ScanAnsweredBy.cloud;
 }
+
+/// The saved photo of one scan, or null (live readings have none).
+final scanPhotoFileProvider =
+    FutureProvider.autoDispose.family<File?, String>((ref, scanId) async {
+  final uid = ref.watch(scanHistoryUidProvider);
+  if (uid == null) return null;
+  return ref.watch(scanHistoryStoreProvider).photoFile(uid, scanId);
+});
+
+/// Where an export is written before it is handed to the share sheet. App-private
+/// temp storage; overridden in tests.
+final scanExportDirProvider = Provider<Future<Directory> Function()>(
+    (_) => getTemporaryDirectory);
+
+/// Hands the exported files to the system share sheet. The ONLY place the
+/// history can leave the phone, and only because the user tapped Export.
+/// Overridden in tests (a real share sheet is a platform channel).
+final scanShareProvider = Provider<Future<void> Function(List<File> files)>(
+  (_) => (List<File> files) async {
+    await Share.shareXFiles(<XFile>[
+      for (final f in files)
+        XFile(f.path,
+            mimeType: f.path.endsWith('.json') ? 'application/json' : 'image/jpeg'),
+    ]);
+  },
+);

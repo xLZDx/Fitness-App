@@ -910,6 +910,50 @@
   "scannerManualPickerTitle": "Choose the machine",
   "scannerManualPickerSearchHint": "Search by name",
   "scannerManualPickerNoResults": "No machine matches this search",
+  "scanRateOk": "Mark as correct",
+  "scanRateNotOk": "Mark as wrong",
+  "scanHistoryTitle": "Scan history",
+  "scanHistoryEmpty": "No scans saved yet. Every scan you make is kept here, on this phone only.",
+  "scanHistoryLocalOnly": "Kept on this phone only. Never uploaded.",
+  "scanHistoryExport": "Export",
+  "scanHistoryExportFailed": "Could not export the history.",
+  "scanHistoryClear": "Clear history",
+  "scanHistoryClearConfirmTitle": "Clear scan history?",
+  "scanHistoryClearConfirmBody": "All saved scans and their photos will be deleted from this phone. This cannot be undone.",
+  "scanHistorySourceCamera": "Camera",
+  "scanHistorySourceGallery": "Gallery",
+  "scanHistorySourceLive": "Live mode",
+  "scanHistoryAnsweredCloud": "Cloud answered",
+  "scanHistoryAnsweredOnDevice": "On-device fallback answered",
+  "scanHistoryAnsweredPrintedText": "Read from printed text",
+  "scanHistoryAnsweredNone": "No answer",
+  "scanHistoryRawAnswer": "Model reply",
+  "scanHistoryCandidates": "Candidates",
+  "scanHistoryNoCandidates": "No candidates",
+  "scanHistoryOpened": "Opened: {arg0}",
+  "@scanHistoryOpened": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scanHistoryPickedManually": "Chosen manually: {arg0}",
+  "@scanHistoryPickedManually": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
+  "scanHistoryBuild": "App build: {arg0}",
+  "@scanHistoryBuild": {
+    "placeholders": {
+      "arg0": {
+        "type": "Object"
+      }
+    }
+  },
   "equipmentNoCuratedYet": "No curated exercises for this machine yet — ask the AI coach below for ideas.",
   "aiCoachButton": "AI coach",
   "aiCoachButtonHint": "Technique, mistakes and where to start on this machine",

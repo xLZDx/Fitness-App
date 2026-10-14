@@ -108,7 +108,17 @@ class ScanHistoryStore {
     // record, never half a JSON document.
     final tmp = File('${dir.path}/record.json.tmp');
     await tmp.writeAsString(r.encode(), flush: true);
-    await tmp.rename('${dir.path}/record.json');
+    // A reader (the history screen) can hold record.json open for a moment;
+    // on Windows that makes the rename-over fail. Retry briefly.
+    for (var attempt = 1;; attempt++) {
+      try {
+        await tmp.rename('${dir.path}/record.json');
+        return;
+      } on FileSystemException {
+        if (attempt >= 5) rethrow;
+        await Future<void>.delayed(Duration(milliseconds: 40 * attempt));
+      }
+    }
   }
 
   Future<ScanRecord?> _read(Directory dir) async {

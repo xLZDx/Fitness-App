@@ -32,6 +32,7 @@ import '../../features/data_export/backup_page.dart';
 import '../../features/posture/posture_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
 import '../../features/progress_photos/scan/ui/scan_capture_screen.dart';
+import '../../features/scanner/history/scan_history_page.dart';
 import '../../features/progress_photos/scan/ui/scan_compare_screen.dart';
 import '../../features/social_feed/social_feed_page.dart';
 import '../../features/profile/data/profile_repository.dart';
@@ -411,6 +412,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding/edit',
         pageBuilder: (_, __) => _fadeThrough(const OnboardingPage()),
+      ),
+      // The on-phone scan history (operator order 2026-10-14). Top-level, like
+      // `/equipment/:id`, so the Scan page's route listener releases the camera
+      // while it is open.
+      GoRoute(
+        path: '/scan-history',
+        pageBuilder: (_, __) => _fadeThrough(const ScanHistoryPage()),
+      ),
+      GoRoute(
+        path: '/scan-history/:id',
+        pageBuilder: (_, state) => _fadeThrough(
+            ScanHistoryDetailPage(scanId: state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/equipment/:id',

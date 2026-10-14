@@ -44,6 +44,7 @@ import 'state/scan_match_providers.dart';
 import 'state/scan_preview_provider.dart';
 import 'widgets/equipment_identity_badge.dart';
 import 'widgets/machine_thumb.dart';
+import 'widgets/rating_marks.dart';
 import 'widgets/manual_machine_picker.dart';
 import 'widgets/scan_frame.dart';
 import 'widgets/scan_glyph.dart';
@@ -556,6 +557,27 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// provider's own dispose lifecycle.
   String? _currentScanId;
 
+  /// The user's optional OK / NOT OK marks for the candidates of the scan on
+  /// screen, by equipment id. Local to this scan (cleared on a new scan and on
+  /// "Scan again"); the on-phone history holds the persistent copy.
+  final Map<String, CandidateRating> _ratings = <String, CandidateRating>{};
+
+  /// Sets or clears (null) one candidate's rating. Optional by design: nothing
+  /// else on the screen depends on it, and a failed history write is silent.
+  void _rate(String equipmentId, CandidateRating? rating) {
+    final String? scanId = _currentScanId;
+    if (scanId == null) return;
+    setState(() {
+      if (rating == null) {
+        _ratings.remove(equipmentId);
+      } else {
+        _ratings[equipmentId] = rating;
+      }
+    });
+    unawaited(
+        ref.read(scanHistoryRecorderProvider).rate(scanId, equipmentId, rating));
+  }
+
   /// Where the last scanned image came from, kept for a retry on the same shot.
   ScanSource _lastSource = ScanSource.camera;
 
@@ -564,6 +586,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     if (mounted) setState(() => _attempted = true);
     _lastScannedPath = path;
     _lastSource = source;
+    if (mounted && !isRetry) setState(_ratings.clear);
 
     // A retry re-runs recognition on the SAME photo -- it is still the same
     // scan attempt, so it reuses the existing scanId rather than minting a
@@ -647,6 +670,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       _attempted = false;
       _lastScannedPath = null;
       _currentScanId = null;
+      _ratings.clear();
     });
     _setSheetExtent(_minSheet);
   }
@@ -893,6 +917,18 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                       _openEquipment(locked.equipmentId, fromCurrentScan: true)),
                 ),
               ),
+              // The same optional marks for the locked answer.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: RatingMarks(
+                    equipmentId: locked.equipmentId,
+                    rating: _ratings[locked.equipmentId],
+                    onChanged: (r) => _rate(locked.equipmentId, r),
+                  ),
+                ),
+              ),
             ],
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -966,6 +1002,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                               onOpen: (id) =>
                                   _openEquipment(id, fromCurrentScan: true),
                               onPickManually: _pickManually,
+                              ratings: _ratings,
+                              onRate: _rate,
                             )
                           : const SizedBox.shrink(),
                       // FITAPP-EQUIP-ACC-2026-09-17 (GPT-PM review, round 2):
@@ -991,6 +1029,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                             await _openEquipment(id, fromCurrentScan: true);
                           },
                           onPickManually: _pickManually,
+                          ratings: _ratings,
+                          onRate: _rate,
                         ),
                       // Not in the catalogue, but the describer could name it.
                       // That card IS the answer -- "не удалось понять" stops
@@ -1124,6 +1164,26 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             // The live reading rides just above the sheet, over the preview,
             // wherever the sheet currently is: it is feedback for the user
             // aiming the camera and must not hide in a collapsed sheet.
+            // History: every scan is kept on the phone; this is the way in. Over
+            // the camera, top right, below the status bar.
+            Positioned(
+              top: topInset + 6,
+              right: 8,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppSemanticColors.dark.cameraOverlay,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  key: const Key('scan-history-open'),
+                  tooltip: l10n.scanHistoryTitle,
+                  icon: Icon(Icons.history_rounded,
+                      color: AppSemanticColors.dark.textPrimary),
+                  onPressed: () => unawaited(
+                      GoRouter.of(context).push('/scan-history')),
+                ),
+              ),
+            ),
             Positioned(
               key: const Key('scan-over-sheet'),
               left: 16,
@@ -1743,7 +1803,14 @@ class _Matches extends ConsumerWidget {
     required this.heading,
     required this.onOpen,
     this.onPickManually,
+    this.ratings = const <String, CandidateRating>{},
+    this.onRate,
   });
+
+  /// The user's optional marks for these candidates, and the way to change one
+  /// (null hides the marks). The marks never gate opening a machine.
+  final Map<String, CandidateRating> ratings;
+  final void Function(String equipmentId, CandidateRating? rating)? onRate;
 
   /// Routed through the page so navigation is uniform; the route listener is
   /// what releases the camera.
@@ -1780,6 +1847,13 @@ class _Matches extends ConsumerWidget {
                   child: _MatchDetails(
                     match: m,
                     name: equipmentDisplayName(ref, m.equipmentId),
+                    marks: onRate == null
+                        ? null
+                        : RatingMarks(
+                            equipmentId: m.equipmentId,
+                            rating: ratings[m.equipmentId],
+                            onChanged: (r) => onRate!(m.equipmentId, r),
+                          ),
                   ),
                 ),
                 const Icon(Icons.chevron_right_rounded),
@@ -1816,10 +1890,14 @@ class _Matches extends ConsumerWidget {
 /// place, so the honesty rule on [VisualMatch.labelHint] (only captioned
 /// "read on the machine" for [MatchSource.printedText]) cannot drift.
 class _MatchDetails extends StatelessWidget {
-  const _MatchDetails({required this.match, required this.name});
+  const _MatchDetails(
+      {required this.match, required this.name, this.marks});
 
   final VisualMatch match;
   final String name;
+
+  /// The optional OK / NOT OK marks, shown right after the % match.
+  final Widget? marks;
 
   @override
   Widget build(BuildContext context) {
@@ -1833,11 +1911,16 @@ class _MatchDetails extends StatelessWidget {
           style:
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
-        Text(
-          AppLocalizations.of(context)
-              .scannerConfidence((match.confidence * 100).toStringAsFixed(0)),
-          style: theme.textTheme.labelSmall
-              ?.copyWith(color: theme.colors.textSecondary),
+        Row(
+          children: [
+            Text(
+              AppLocalizations.of(context).scannerConfidence(
+                  (match.confidence * 100).toStringAsFixed(0)),
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+            if (marks != null) ...[const SizedBox(width: 6), marks!],
+          ],
         ),
         if (match.source == MatchSource.printedText && match.labelHint != null)
           Text(
