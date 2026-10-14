@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:fitness_app/features/scanner/history/scan_history_store.dart'
+    show kScanHistoryDir;
 import 'package:flutter_test/flutter_test.dart';
 
 // Decision B: Android Auto Backup / device transfer must not carry the
@@ -17,6 +19,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _expected = {
   'root|app_flutter/progress_photos',
+  // The on-phone scan history (scanned photos, raw answers, ratings).
+  'root|app_flutter/scan_history',
   'sharedpref|FlutterSharedPreferences.xml',
   'sharedpref|FlutterSecureStorage.xml',
   'sharedpref|FlutterSecureKeyStorage.xml',
@@ -57,12 +61,12 @@ void main() {
     _expectExactly(_excludes(xml, 'full-backup-content'), 'full-backup-content');
   });
 
-  test('data_extraction_rules.xml cloud-backup excludes the same four', () {
+  test('data_extraction_rules.xml cloud-backup excludes the same five', () {
     final xml = _read('$res/data_extraction_rules.xml');
     _expectExactly(_excludes(xml, 'cloud-backup'), 'cloud-backup');
   });
 
-  test('data_extraction_rules.xml device-transfer excludes the same four', () {
+  test('data_extraction_rules.xml device-transfer excludes the same five', () {
     final xml = _read('$res/data_extraction_rules.xml');
     _expectExactly(_excludes(xml, 'device-transfer'), 'device-transfer');
   });
@@ -132,6 +136,27 @@ void main() {
     }
   });
 
+  test('the scan history folder the app really writes is the one excluded', () {
+    // The exclusion names `app_flutter/scan_history` as a string; the store
+    // names the folder through `kScanHistoryDir`. If either is renamed alone
+    // the history would silently ride into Google Drive / device transfer.
+    final String expected = 'root|app_flutter/$kScanHistoryDir';
+    expect(_excludes(_read('$res/backup_rules.xml'), 'full-backup-content'),
+        contains(expected));
+    for (final section in ['cloud-backup', 'device-transfer']) {
+      expect(_excludes(_read('$res/data_extraction_rules.xml'), section),
+          contains(expected),
+          reason: section);
+    }
+    expect(kScanHistoryDir, 'scan_history');
+  });
+
+  test('the account-deletion wipe removes the scan history folder', () {
+    final wipe =
+        _read('lib/features/account_deletion/data/local_data_wipe.dart');
+    expect(wipe, contains(r'$kScanHistoryDir/$uid'));
+  });
+
   test('the data inventory documents the exclusion', () {
     final inv = _read('../core/DATA_INVENTORY_2026-08-11.md');
     expect(inv, contains('FlutterSharedPreferences.xml'));
@@ -139,5 +164,12 @@ void main() {
     expect(inv, contains('FlutterSecureKeyStorage.xml'));
     expect(inv, contains('backup_rules.xml'));
     expect(inv, contains('data_extraction_rules.xml'));
+  });
+
+  test('the data inventory documents the scan history data class', () {
+    final md = _read('../core/DATA_INVENTORY_2026-08-11.md');
+    expect(md, contains('<docs>/scan_history/<uid>/'));
+    final csv = _read('../core/DATA_INVENTORY_2026-08-11.csv');
+    expect(csv, contains('<docs>/scan_history/<uid>/'));
   });
 }

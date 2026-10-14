@@ -37,6 +37,8 @@ import '../visual_equipment/state/machine_card_providers.dart';
 import '../visual_equipment/state/recognition_history_providers.dart';
 import '../visual_equipment/state/visual_equipment_providers.dart';
 import '../visual_equipment/widgets/machine_card_view.dart';
+import 'history/scan_history_providers.dart';
+import 'history/scan_record.dart';
 import 'scan_evidence.dart';
 import 'state/scan_match_providers.dart';
 import 'state/scan_preview_provider.dart';
@@ -440,6 +442,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     final String? id = await showManualMachinePicker(context);
     if (id == null || !mounted) return;
     _remember(id, 1.0, RecognitionSource.manual);
+    final scanId = _currentScanId;
+    if (scanId != null) {
+      unawaited(ref
+          .read(scanHistoryRecorderProvider)
+          .choose(scanId, id, manual: true));
+    }
     await _openEquipment(id);
   }
 
@@ -456,6 +464,9 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     // `/equipment/:id` -> `/exercise/:id` -> `/workout/:id` -- see
     // `WorkoutPlayerPage.scanId`'s own doc comment for why.
     final scanId = fromCurrentScan ? _currentScanId : null;
+    if (scanId != null) {
+      unawaited(ref.read(scanHistoryRecorderProvider).choose(scanId, id));
+    }
     await GoRouter.of(context).push(
       scanId == null ? '/equipment/$id' : '/equipment/$id?scanId=$scanId',
     );
@@ -500,7 +511,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             ScanViewfinder.windowNormalized(card, guideInsets: _guideInsets),
       );
       if (kScanEvidence) await saveScanEvidenceCrop(cropped);
-      await _classify(cropped);
+      await _classify(cropped, ScanSource.camera);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -522,7 +533,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         imageQuality: 88,
       );
       if (picked == null) return;
-      await _classify(picked.path);
+      await _classify(picked.path, ScanSource.gallery);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -545,9 +556,14 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// provider's own dispose lifecycle.
   String? _currentScanId;
 
-  Future<void> _classify(String path, {bool isRetry = false}) async {
+  /// Where the last scanned image came from, kept for a retry on the same shot.
+  ScanSource _lastSource = ScanSource.camera;
+
+  Future<void> _classify(String path, ScanSource source,
+      {bool isRetry = false}) async {
     if (mounted) setState(() => _attempted = true);
     _lastScannedPath = path;
+    _lastSource = source;
 
     // A retry re-runs recognition on the SAME photo -- it is still the same
     // scan attempt, so it reuses the existing scanId rather than minting a
@@ -586,6 +602,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     // throw there instead of just being a no-op.
     if (!mounted) return;
     final result = ref.read(visualEquipmentControllerProvider).valueOrNull;
+    // Every scan is saved on the phone automatically (never uploaded), whatever
+    // it ended in -- a timeout or "could not tell" is data too. Fire and forget:
+    // the recorder never throws and must not delay the answer on screen.
+    if (result != null) {
+      unawaited(ref.read(scanHistoryRecorderProvider).saveScan(
+            scanId: scanId,
+            source: source,
+            result: result,
+            photoPath: path,
+          ));
+    }
     // The rule lives on ScanResult, not as an `if` here: this method needs a
     // real camera file to run, so a decision written inline would be one no
     // host test can reach. See ScanResult.isWorthRemembering.
@@ -639,7 +666,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     if (path == null || _handling) return;
     setState(() => _handling = true);
     try {
-      await _classify(path, isRetry: true);
+      await _classify(path, _lastSource, isRetry: true);
     } finally {
       if (mounted) setState(() => _handling = false);
     }
@@ -690,6 +717,19 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       if (r == null || !r.settled) return;
       if (!_shouldWriteLive(r.equipmentId, DateTime.now())) return;
       _remember(r.equipmentId, r.confidence, RecognitionSource.live);
+      // A settled live reading is a scan too (no photo): same throttle as the
+      // "My machines" write above, so a held camera is one record per window.
+      unawaited(ref.read(scanHistoryRecorderProvider).saveScan(
+            scanId: 'live-${DateTime.now().microsecondsSinceEpoch}',
+            source: ScanSource.live,
+            result: ScanResult.confident(
+              <VisualMatch>[
+                VisualMatch(
+                    equipmentId: r.equipmentId, confidence: r.confidence)
+              ],
+              answeredOffline: true,
+            ),
+          ));
     });
 
     // A scan that answered opens the sheet over the preview; "Scan again"

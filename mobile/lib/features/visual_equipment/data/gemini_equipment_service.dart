@@ -86,7 +86,8 @@ CloudRecognitionAsk cloudFunctionsEquipmentAsk({FirebaseFunctions? functions}) {
 /// entirely client-side (that logic never touched the network), so the model
 /// cannot invent a machine we have no page for: an unresolvable answer
 /// degrades to "no match", never to a guess.
-class GeminiVisualEquipmentService implements VisualEquipmentService {
+class GeminiVisualEquipmentService
+    implements VisualEquipmentService, RawAnswerReporting {
   GeminiVisualEquipmentService({
     Future<EquipmentAliasIndex>? index,
     CloudRecognitionAsk? ask,
@@ -141,6 +142,12 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   /// the user as a timeout every time, never as the success it was.
   static const Duration kSlowInferenceThreshold = Duration(seconds: 20);
 
+  String? _lastRawAnswer;
+
+  /// The model's reply to the last call, verbatim (before alias resolution).
+  @override
+  String? get lastRawAnswer => _lastRawAnswer;
+
   late final CloudRecognitionAsk _cloud =
       _ask ?? cloudFunctionsEquipmentAsk(functions: _injected);
 
@@ -152,6 +159,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     int topK = kScanCandidateCount,
   }) async {
     final index = await _index;
+    _lastRawAnswer = null;
     // Resized off the UI isolate: a camera still can run several MB, and on
     // gym wifi/LTE the upload itself was a real chunk of the reported delay.
     // 1024px keeps the model's answer quality (verified live) while cutting
@@ -263,6 +271,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     if (text == null || text.trim().isEmpty) {
       throw VisualEquipmentException('cloud recognition returned no answer');
     }
+    _lastRawAnswer = text;
     return parseResponse(text, index, topK: topK);
   }
 
@@ -398,7 +407,10 @@ Uint8List resizeForCloud(String path) {
 /// the user in a basement gym still gets an answer — the weaker one, honestly
 /// scored. Only when BOTH fail does the user see an error.
 class HybridVisualEquipmentService
-    implements VisualEquipmentService, FallbackReportingRecogniser {
+    implements
+        VisualEquipmentService,
+        FallbackReportingRecogniser,
+        RawAnswerReporting {
   HybridVisualEquipmentService({required this.cloud, required this.local});
 
   final VisualEquipmentService cloud;
@@ -413,6 +425,16 @@ class HybridVisualEquipmentService
   /// being absent.
   @override
   bool get lastAnsweredOffline => _lastAnsweredOffline;
+
+  /// The cloud's verbatim reply when the cloud answered the last call; null
+  /// when the on-device fallback answered (it has no such text).
+  @override
+  String? get lastRawAnswer {
+    final c = cloud;
+    return !_lastAnsweredOffline && c is RawAnswerReporting
+        ? c.lastRawAnswer
+        : null;
+  }
 
   @override
   Future<List<VisualMatch>> classifyFile({

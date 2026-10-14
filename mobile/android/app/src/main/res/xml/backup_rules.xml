@@ -32,11 +32,17 @@
   (wrapped cipher keys). Wrapped keys restored without the original Keystore
   entry cannot be unwrapped, so they must not travel.
 
+  The on-phone scan history (`app_flutter/scan_history`, every scanned machine
+  photo with the model's raw answers and the user's ratings) is excluded as
+  well: it is private to the phone by design and is handed over only by the
+  user's own export action.
+
   Everything else in the app stays backed up. This is an exclusion list, not a
   switch: `android:allowBackup` is untouched.
 -->
 <full-backup-content>
     <exclude domain="root" path="app_flutter/progress_photos" />
+    <exclude domain="root" path="app_flutter/scan_history" />
     <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
     <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
     <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />

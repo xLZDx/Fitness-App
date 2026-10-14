@@ -128,6 +128,7 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
         matches,
         answeredOffline: service is FallbackReportingRecogniser &&
             service.lastAnsweredOffline,
+        rawAnswer: service is RawAnswerReporting ? service.lastRawAnswer : null,
       );
       // In the catalog → the catalog answers, and it answers immediately.
       // Operator: *"если есть в каталоге то показывать из каталога сразу"*.

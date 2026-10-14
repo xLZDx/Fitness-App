@@ -57,6 +57,14 @@ abstract interface class FallbackReportingRecogniser
   bool get lastAnsweredOffline;
 }
 
+/// Implemented by a service that can report the cloud model's verbatim reply
+/// for the LAST `classifyFile` (null when the cloud did not answer it). Read
+/// right after the awaited call, like [FallbackReportingRecogniser]; used only
+/// by the on-phone scan history.
+abstract interface class RawAnswerReporting implements VisualEquipmentService {
+  String? get lastRawAnswer;
+}
+
 class MockVisualEquipmentService implements VisualEquipmentService {
   MockVisualEquipmentService({this.fixedResults = const []});
   final List<VisualMatch> fixedResults;

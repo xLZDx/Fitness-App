@@ -111,3 +111,25 @@ Focused Flutter run from `mobile/`: `scanner_page_test.dart` 55 of 55, `test/fea
 
 ### Verification state
 Focused Flutter run: `scan_zoom_test.dart` 17/17, `scanner_page_test.dart`, `test/features/scanner/*`, `test/l10n`: all passed (7 retired skips from Addendum 4).
+
+## Addendum 6: automatic on-phone scan history (storage layer)
+
+### What changed
+- `mobile/lib/features/scanner/history/scan_record.dart`, `scan_history_store.dart`, `scan_history_providers.dart` (new). Every scan is saved automatically, ON THE PHONE ONLY, in `<docs>/scan_history/<uid>/<scanId>/` (`record.json` + `photo.jpg`). One record holds: timestamp (UTC), source (camera / gallery / live), outcome, who answered (cloud / on-device fallback / printed text / nobody), the model's raw reply verbatim, every candidate in the order shown with its confidence and the user's optional rating (ok / not ok / none), which machine the user opened or chose by hand, and the app build (git sha, version). The photo is the same resized JPEG the cloud was sent (`resizeForCloud` is deterministic on the classified file). Live readings are recorded without a photo, under the same 5-minute throttle as "My machines". Scans that ended in a timeout, a failure or "could not tell" are recorded too.
+- Retention: the newest 500 scans or 1 GiB, whichever is hit first, per account; the scan just saved always survives. `clear(uid)` is the "Clear history" action (UI in the next step). Writes are serialised and `record.json` is replaced atomically; folder deletes retry briefly (Windows/antivirus handle locks).
+- Raw answer plumbing: `RawAnswerReporting` (like `FallbackReportingRecogniser`) on the cloud and hybrid recognisers, and `ScanResult.rawAnswer`; no screen renders it.
+- `mobile/lib/features/scanner/scanner_page.dart`: saves after every classification (fire and forget, never throws into recognition), records the opened candidate and the manual pick against the scan. A rating or choice made before the photo has been written waits for the record instead of being lost.
+- Wipe: `DeviceLocalDataWipe` now deletes `<docs>/scan_history/<uid>/` (own try block, reported as `scan_history` in `LocalWipeIncomplete`). Another account's history is untouched.
+- Backup: `backup_rules.xml` and both sections of `data_extraction_rules.xml` exclude `app_flutter/scan_history`; `backup_rules_test.dart` now expects five exclusions, ties the excluded name to `kScanHistoryDir`, and checks the wipe path and the inventory entry.
+- Inventory: `core/DATA_INVENTORY_2026-08-11.md` (device files table plus a backup paragraph) and `.csv` document the new data class.
+
+### scripts/ci/data_lifecycle_policy.json
+Not changed on purpose. That file classifies Firestore collections only (retention and access axes) and its checker reports any entry it cannot discover in `firestore.rules` or in production `.collection(...)` calls as stale; this data class never touches Firestore. The device-only class is recorded in the inventory and pinned by `backup_rules_test.dart` and `scan_history_store_test.dart` instead. (The checker itself was not run: the project rules allow only focused tests.)
+
+### Limits
+- Stored in the clear (app-private sandbox, no encryption at rest), because the operator must be able to export it readable; excluded from backup and device transfer and wiped with the account. The progress-photo AES store was not reused: its key is bound to the photo directory and an encrypted export would be unreadable.
+- Not uploaded by the app. Whether a user-initiated export leaves the phone is the user's choice (next step).
+- `backup_rules_test.dart` "pubspec.lock pins the plugins" fails in this checkout with `shared_preferences missing from pubspec.lock` although the lock contains it; it does not touch anything changed here and was failing before this change was made (not investigated further).
+
+### Verification state
+Focused Flutter run from `mobile/`: `scan_history_store_test.dart` 30/30 (record content, rating persistence and clearing, serialised writes, retention by count and by bytes, wipe, export, recorder incl. cloud and on-device fallback records), `scanner_history_flow_test.dart` 6/6 (cloud scan, on-device fallback scan, failed scan, opened candidate, manual pick, two scans through the real ScannerPage), `account_deletion/*`, `scan_controller_test`, `gemini_equipment_service_test`, `scanner_page_test`: green; `backup_rules_test.dart`: 10 of 11 (the lock test above fails).

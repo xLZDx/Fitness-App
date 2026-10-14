@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../progress_photos/data/photo_directory.dart';
 import '../../progress_photos/data/photo_key_store.dart';
+import '../../scanner/history/scan_history_store.dart' show kScanHistoryDir;
 
 /// Erases everything about a user that lives on the DEVICE.
 ///
@@ -331,6 +332,19 @@ class DeviceLocalDataWipe implements LocalDataWipe {
       debugPrint(
           'local data wipe: could not delete coach recordings: ${e.runtimeType}');
       failed.add('coach_recordings');
+    }
+
+    // The on-phone scan history (`<docs>/scan_history/<uid>/`): every scanned
+    // photo, the model's raw answers and the user's ratings. Its own try, like
+    // the coach recordings, so it neither skips nor is skipped by the others.
+    try {
+      final dir = _injectedDir ?? await getApplicationDocumentsDirectory();
+      final history = Directory('${dir.path}/$kScanHistoryDir/$uid');
+      if (await history.exists()) await history.delete(recursive: true);
+    } catch (e) {
+      debugPrint(
+          'local data wipe: could not delete scan history: ${e.runtimeType}');
+      failed.add('scan_history');
     }
 
     // Every step has run by now. The caller logs this and still treats the

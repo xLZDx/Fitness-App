@@ -13,6 +13,10 @@
   delete from a screen that will not list them, which is worse than not
   transferring them at all.
 
+  `app_flutter/scan_history` (the on-phone scan history: scanned machine photos,
+  raw model answers, ratings) is excluded from both sections for the same
+  reason: private to the phone, handed over only by the user's own export.
+
   The same two sections also exclude the sensitive preference files (privacy
   decision B): `FlutterSharedPreferences.xml` (plaintext health/injury profile,
   training-context answer) and the `flutter_secure_storage` files
@@ -22,12 +26,14 @@
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="root" path="app_flutter/progress_photos" />
+        <exclude domain="root" path="app_flutter/scan_history" />
         <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
         <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
         <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="root" path="app_flutter/progress_photos" />
+        <exclude domain="root" path="app_flutter/scan_history" />
         <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
         <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
         <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />

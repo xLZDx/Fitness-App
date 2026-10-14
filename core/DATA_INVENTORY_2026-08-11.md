@@ -150,10 +150,13 @@ preferences are not restored either.
 | Android Keystore entry `key.v2` (via `SecurePhotoKeyStore`) | the current AES key for photos and scans | yes (`SecurePhotoKeyStore.forget(uid)`, best-effort) | no (correctly) |
 | `<docs>/coach_recordings/<uid>/` | developer coach recordings: joint angles + timestamps only (debug and profile builds) | yes | no |
 | `<docs>/progress_photos/<uid>/scans/<id>.scan` | Guided body-scan record: photo ids and pose landmarks (body-shape data), one AES-GCM envelope per scan, **no plaintext index**; same key as the photos | yes (whole per-uid directory) | no |
+| `<docs>/scan_history/<uid>/<scanId>/` (`record.json`, `photo.jpg`) | the on-phone scan history (operator order 2026-10-14): per scan the resized JPEG that was sent to the recogniser, timestamp, source (camera/gallery/live), the model's raw reply, every candidate with its confidence and the user's optional OK/NOT OK rating, which machine was opened or chosen by hand, whether the cloud or the on-device fallback answered, app build/git sha. **Plaintext, app-private, never uploaded** (a stated limit: not encrypted at rest, because the operator must be able to export it readable). Capped at the newest 500 scans or 1 GiB, whichever first; "Clear history" deletes it | yes (`DeviceLocalDataWipe`, whole per-uid directory) | only by the user's own export action (one JSON + `photos/`, handed to the share sheet); not in the account export function |
 | `<temp>/` camera stills | **plaintext JPEG** of the shot just encrypted | **NO** (not in `local_data_wipe.dart`) | no |
 | `<docs>/offline_videos/` | cached exercise clips (catalogue content) | no | n/a |
 | `<docs>/<model asset path>` | ML model files unpacked by `AssetBootstrap` | no | n/a |
 | `<temp>/` export file | the export itself | n/a | n/a |
+
+Scan history and backup: `<docs>/scan_history/` is excluded from Android Auto Backup and from device-to-device transfer (`<exclude domain="root" path="app_flutter/scan_history" />` in `backup_rules.xml` and in both sections of `data_extraction_rules.xml`), so it exists only on the phone that scanned. `scripts/ci/data_lifecycle_policy.json` classifies Firestore collections only and flags any name it cannot discover in rules or source as stale, so this device-only class is recorded here and pinned by `mobile/test/android/backup_rules_test.dart` (exclusion names, wipe path, this entry) rather than by a policy row.
 
 Scan reminder toggle: pref `progress_photos.scan_reminder.v1.<uid>` (bool, per account), erased by the local wipe; photos and landmarks never leave the device.
 
