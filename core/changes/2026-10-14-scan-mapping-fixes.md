@@ -19,3 +19,23 @@ Focused Flutter run from `mobile/` (8 files, 228 tests, all passed): the two new
 - Navigation test: real `ScannerPage`, GoRouter, `EquipmentDetailPage` and Russian catalogue; each alternatives row (chest press, pec deck, leg press) opens its own page; remembered chips open their own page with no `scanId`; a second scan never reuses the first scan's `scanId` or rows.
 
 NOT verified: no live camera or real device run; no real Gemini answers; the Jest parity test for `EQUIPMENT_NAMES_EN` was not run (no `functions/node_modules` in this worktree), so the one-line map edit rests on reading that test; the operator's exact "elliptical" scan was not reproduced, so it may also have been a plain model misclassification, which the client cannot detect.
+
+## Addendum: machine page hero picture (follow-up, branch sprint/coach-form-fixes-2026-10)
+
+### What changed
+- `mobile/lib/features/equipment/state/equipment_providers.dart`: `equipmentHeroImageProvider` no longer returns the poster of the first injury-safe exercise linked to the machine. It calls the new pure `pickHeroExercise` (`mobile/lib/features/equipment/data/equipment_hero.dart`) and gets the alias index from a new `equipmentAliasIndexProvider`.
+- Rule: (0) the machine row's optional `heroExerciseId`, if present among the candidates; (1) an exercise whose English id slug resolves through the alias index to this machine; (2) an exercise whose vendor equipment label does; otherwise no hero (the page already draws its placeholder). Within a tier the shortest slug wins, then the id, so the pick is stable across catalogue order and language (translated titles are never read).
+- `mobile/lib/features/equipment/data/equipment_models.dart`: `EquipmentItem.heroExerciseId` (optional, kept through translation overlays).
+- `mobile/assets/data/equipment.json`: `bench_press` gets `heroExerciseId: ea_barbell_bench_press`.
+- `mobile/assets/data/equipment_aliases.json`: added aliases `airbike` (air_bike), `ski ergometer` (ski_erg), `sissy squat` (sissy_squat_machine), so the exercises the vendor named that way are recognised as their machine.
+- Tests: new `mobile/test/features/equipment/equipment_hero_contract_test.dart`; `mobile/test/features/equipment/hero_image_test.dart` fixtures renamed so they name the machine, plus new cases for non-naming exercises, ordering stability, label fallback and the curated id.
+
+### Why
+Operator screenshot: the "Жим лёжа (стойка)" page (bench_press) showed a man seated on a bench curling dumbbells. A machine's exercise list holds everything that can merely use it, so "first with a poster" was an accident of file order. The same defect shape existed for most machines (dip station showed an ab tuck, vertical pole a dragonfly, barbell a split squat). Other uses of `posterFor` (exercise thumbnails, player, exercise reference) show an exercise's own poster and are not affected; the scanner result rows and "My machines" chips show no pictures.
+
+### Measured effect (real assets, unscreened by injuries)
+Of 69 machines: 35 changed hero, 29 unchanged, 5 without a hero. Of those 5, four never had a poster-bearing exercise (recumbent_bike, glute_kickback_machine, t_bar_row, rotary_torso_machine) and one lost a wrong hero (sliding_disc, whose only poster exercise is a towel-slide lunge). bench_press now resolves to the barbell bench press; the old rule picked `ea_alternating_biceps_curl_seated_dumbbells`. The operator's reference example "Жим JM со штангой" (`ea_barbell_jm_bench_press`) was not chosen: JM press is a triceps variation, and the plain barbell bench press is the movement this station is for; changing `heroExerciseId` swaps it.
+
+### Verification state
+Focused Flutter run from `mobile/` of 16 files, 320 tests, all passed: the new contract test, `hero_image_test`, the scan catalogue contract test, the scanner navigation test, and the existing asset/registry/label/vendor/recognition/equipment-detail/router tests that read the files touched. The contract test asserts every chosen hero names its machine (or is the curated one), curated ids exist/belong/have a poster, the pick is order-independent over shuffled input, the no-hero set is pinned, and the old rule really picked the curl for bench_press.
+NOT verified: how the new posters look on a device; injury screening on top of the ranking (the contract test uses unscreened exercises; a screened-out hero falls to the next ranked one); several non-bench picks are plausible rather than ideal (for example squat_rack picks `ea_back_lever`, which names the rack only by vendor label) and were not reviewed one by one.

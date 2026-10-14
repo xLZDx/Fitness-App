@@ -55834,3 +55834,7 @@ Decision: the live squat counts on hip-below-knee in torso lengths (near-side vi
 ## 2026-10-14 - Commit: Scan result to equipment page mapping fixes
 
 Decision: fix the client-side defects found behind the operator report that the Scan list and the opened page disagree: bench_press catalogue name collided with the adjustable_bench alias, the text anchor named a non-existent hip_thrust_machine id, and history/live taps carried the current scan scanId into another machine. Evidence: focused Flutter run, 228 tests, see core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: live camera, real model answers, Jest parity test for EQUIPMENT_NAMES_EN (no node_modules).
+
+## 2026-10-14 - Commit: Machine page hero depicts the machine
+
+Decision: the equipment page header is chosen by an explicit rule (curated heroExerciseId, then an exercise whose id slug or vendor label names the machine, else no hero) instead of the first exercise with a poster, which showed a dumbbell curl on the bench-press page. Evidence: focused Flutter run, 320 tests, 35 of 69 machines changed hero, 1 lost a wrong hero; see core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: device rendering, injury-screened picks.
