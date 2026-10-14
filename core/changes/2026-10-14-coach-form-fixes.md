@@ -292,3 +292,85 @@ squat; (d) key-name fallback would have read an identifier aloud (now English or
 silence). Not found in code, device-only hypotheses: no ru-RU voice installed,
 engine or volume.
 
+## Operator order: the squat demonstration is back
+
+Operator order (2026-10-14): bring back the squat demonstration in the coach; it
+showed "Показа для этого движения пока нет". This closes the open product
+decision recorded in Follow-up C and overrides, for the squat only, the
+2026-09-09 GPT-PM interim ruling (G1-interim) that replaced it with a stated
+absence.
+
+What the ruling excluded (core/DECISION_LOG.md, 2026-09-09, G1.2): the prototype
+recording as a production asset (O4), a chrome-free crop (O3, anatomically
+unusable), and a drawn figure for the squat (O2, which contradicts the
+operator's 2026-09-04 decision after three rejected drawn stand-ins). Target O1:
+new chrome-free side-on footage plus the app's own overlay; that input is not in
+the repository.
+
+Source search (FACT, read in `mobile/assets/data/exercises_vendor.json`, `git
+ls-files`, `clip_url_resolver.dart`):
+- The only video files tracked in git are the design-reference uploads and
+  `mobile/assets/coach_demo/squat_side.mp4` (the crop of the same recording).
+- The vendor squat clips (`ea_bodyweight_squats`, `ea_barbell_full_squat`,
+  `ea_barbell_full_squat_side_pov`) are object paths in a private bucket
+  served through short-lived signed URLs (`clipUrl` function); the vendor
+  permission forbids shipping raw files or permanent links, so they cannot be
+  bundled and the coach demo (a bundled-asset player) cannot use them.
+- The vendor posters are ONE still per clip (`assets/posters/men/
+  ea_bodyweight_squats.jpg`, 1 file; no frame sequence exists), so a "poster
+  sequence" is not available either; one still is not a demonstration of a
+  movement.
+- Result: there is no acceptable chrome-free squat footage in the repo. The
+  only real-person squat clip available is the one already rejected as
+  defective. The only other option, the drawn figure, is the one the operator
+  rejected three times.
+
+What was implemented (the operator's order, the literal "bring back"):
+- `coachDemoFor(FormExercise.squat)` returns `CoachDemoClipSource` for
+  `assets/coach_demo/squat_side.mp4` with poster
+  `assets/coach_demo/squat_side_poster.jpg`, through the existing
+  `CoachDemoClip` (lifecycle contract unchanged: plays only while active,
+  pauses in the background, never plays under reduce-motion where the poster is
+  the demonstration, disposed on unmount, failures terminal and reported). The
+  explicit branch stays so a missing branch cannot fall through to the drawn
+  figure.
+- `mobile/pubspec.yaml` declares `assets/coach_demo/` again.
+- `CoachDemoUnavailableSource`, its panel and the source-aware screen-reader
+  label are kept (no movement maps to them today), so a future absent
+  demonstration is still stated honestly.
+
+Known limits, accepted by the order and NOT fixed here:
+- The clip is a screen recording of an older prototype: an English coach line
+  "stand tall to start counting" in all 240 frames across the figure's head, a
+  rep counter frozen at 0, and a toast "Too dark or too blurry to read your
+  position". The localized readiness band sits over the same panel on the live
+  screen. The approved fix is O1 (chrome-free footage plus app-owned overlay),
+  which needs content this repository lacks.
+- The selection golden master `mobile/test/golden/goldens/form_coach_selection.png`
+  was recorded for the absence state and was not re-recorded (goldens are only
+  judged in the Linux container; no full/golden run was made). The golden test
+  precaches the squat poster again. `form_coach_live.png` and
+  `form_coach_faulted.png` are not expected to move (a body is drawn, the demo is
+  faded out).
+- The clip itself was not watched on a device in this change.
+
+Tests (pin presence; each fails if the demo is removed again):
+- `coach_demo_test.dart`: squat maps to the clip source with the two asset paths
+  (and is neither the absence nor the figure); the two files exist and
+  `assets/coach_demo/` is an uncommented pubspec asset.
+- `demo_silhouette_test.dart`: picker preview and live screen before any body is
+  tracked show `form_check.demo_clip` and its poster, not the absence and not the
+  figure.
+- `live_demo_test.dart`: before a body is tracked the decoder is initialized and
+  playing; it is paused after the fade, still running mid-fade, resumes when the
+  body is lost, never plays under reduce motion (decoder calls restored next to
+  the `active` flag).
+- `coach_selection_screen_test.dart`: picker shows the clip; the screen reader
+  hears the demonstration label and not the "no demonstration" one; no visible
+  absence sentence; switching to the curl switches to the drawn figure.
+- Focused run: those four files, 49 tests, all passed. A wider run of
+  `test/features/form_check` (826 tests) had one failure,
+  `pose_roll_diagnostics_test.dart` ("a completed rep logs the stance frozen at
+  its descent", Expected 1, Actual 2), a rep-session test with no demonstration
+  reference, not touched by this change; not investigated further here.
+
