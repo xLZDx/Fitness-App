@@ -55838,3 +55838,7 @@ Decision: fix the client-side defects found behind the operator report that the 
 ## 2026-10-14 - Commit: Machine page hero depicts the machine
 
 Decision: the equipment page header is chosen by an explicit rule (curated heroExerciseId, then an exercise whose id slug or vendor label names the machine, else no hero) instead of the first exercise with a poster, which showed a dumbbell curl on the bench-press page. Evidence: focused Flutter run, 320 tests, 35 of 69 machines changed hero, 1 lost a wrong hero; see core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: device rendering, injury-screened picks.
+
+## 2026-10-14 - Commit: Rep-end cues are paced by the rep, not by the gate stopwatch
+
+Decision: rep-end cues are marked `repScoped` and bypass the CueGate repeat window and minimum gap, so every rep that shows a cue also speaks it; per-frame cues keep the stopwatch filters. Voice wiring moved to `buildLocalizedTtsVoiceCoach` for testability. Evidence: focused Flutter run (132 tests green), see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device speech (first-cue silence, if any, is a device hypothesis).

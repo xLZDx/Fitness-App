@@ -146,3 +146,42 @@ Not verified
   shapes and synthetic bodies, not measured on the operator's phone.
 - Golden images, full suite, analyzer, build: not run (policy).
 
+## Follow-up A: squat cues written but not spoken (operator, real phone)
+
+Trace (FACT, read in code): rep end in `RepSessionController` -> `coach.cue(cue)`
+-> `GatedVoiceCoach.cue` -> `CueGate.peek` -> `resolveText(cueKey)` ->
+`TtsVoiceCoach.utter` -> `flutter_tts speak`. The on-screen banner
+(`lastRepCue`) is set on every counted rep without going through the gate.
+Mute defaults to false, the severity floor is 1 (both new cues clear it), and
+`formCueText` maps every new key (exhaustive switch).
+
+Root cause reproduced by a test (FACT): `CueGate` applied its same-cue repeat
+window (20 s) and minimum gap (3 s) on top of the per-rep pacing the controller
+already provides. Three identical rep-end cues gave ONE utterance and three
+banners (shallow cue, and the generic silhouette cue, were both affected; the
+back cue at severity 2 is only held back by the 1.2 s interrupt gap).
+
+Fix:
+- `FormFeedback.repScoped` and `asRepScoped()` (`data/form_classifier.dart`);
+  `CueGate.peek` (`data/voice_coach.dart`) skips the repeat window and the
+  minimum gap for such cues (severity floor and mute still apply); the controller
+  marks both rep-end cue sites (completed and rejected) as rep-scoped.
+- The production voice wiring was moved out of `main.dart` into
+  `data/localized_tts_voice_coach.dart` (`buildLocalizedTtsVoiceCoach`) so the real
+  Russian resolver and `TtsVoiceCoach` can be driven by a test; `main.dart` calls
+  it. Behaviour is unchanged.
+
+Tests: new `test/features/form_check/squat_voice_spoken_test.dart` drives the real
+controller, gate, resolver and `TtsVoiceCoach` over a fake `flutter_tts`
+channel whose `speak` never completes until released, and asserts the Russian
+text reaches `speak` once per rep for shallow, back-rounding and generic
+silhouette cues (and that the specific cue wins over the generic one). Gate unit
+test added to `squat_cues_test.dart`. `squat_body_relative_signal_test.dart`
+fixtures are now exported (`squatRep`, `squatBody`).
+
+HYPOTHESIS (not reproducible without a device): total silence from the very
+first cue would come from the device, e.g. no ru-RU voice installed (the coach
+latches `voiceUnavailable` and the page shows the voice-error card), or the TTS
+engine/volume. The code path to `speak` is proven end to end only up to the
+platform channel.
+

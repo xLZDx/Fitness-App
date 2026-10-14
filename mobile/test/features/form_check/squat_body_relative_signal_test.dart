@@ -29,7 +29,7 @@ PoseLandmark _lm(LandmarkType t, double x, double y, double likelihood) =>
 /// [leanDeg] the trunk off vertical. [scale] resizes the whole body about the
 /// hip (the phone being further away) and [dy] shifts it (the phone being
 /// higher or lower).
-PoseFrame _body(
+PoseFrame squatBody(
   int ts, {
   required double elevDeg,
   double leanDeg = 10,
@@ -63,7 +63,7 @@ PoseFrame _body(
 
 /// One repetition down to [bottomElev] and back, with the trunk at
 /// [bottomLean] at the bottom.
-List<PoseFrame> _rep(
+List<PoseFrame> squatRep(
   int startMs, {
   required double bottomElev,
   double bottomLean = 20,
@@ -75,7 +75,7 @@ List<PoseFrame> _rep(
   final out = <PoseFrame>[];
   var ts = startMs;
   void add(double elev, double lean) {
-    out.add(_body(ts,
+    out.add(squatBody(ts,
         elevDeg: elev,
         leanDeg: lean,
         scale: scale,
@@ -143,11 +143,11 @@ void main() {
         'distances and heights', () {
       final near = _count([
         for (var i = 0; i < 3; i++)
-          ..._rep(i * 10000, bottomElev: -5),
+          ...squatRep(i * 10000, bottomElev: -5),
       ]);
       final far = _count([
         for (var i = 0; i < 3; i++)
-          ..._rep(i * 10000, bottomElev: -5, scale: 0.55, dy: 0.18),
+          ...squatRep(i * 10000, bottomElev: -5, scale: 0.55, dy: 0.18),
       ]);
       expect(near.repCount, 3);
       expect(far.repCount, 3, reason: 'a smaller, lower body is the same squat');
@@ -156,53 +156,53 @@ void main() {
     });
 
     test('CONTRAST: the old raw signal changes with the same two views', () {
-      final a = squatDepthSignal(_body(0, elevDeg: 85), 0.5)!;
+      final a = squatDepthSignal(squatBody(0, elevDeg: 85), 0.5)!;
       final b = squatDepthSignal(
-          _body(0, elevDeg: 85, scale: 0.55, dy: 0.18), 0.5)!;
+          squatBody(0, elevDeg: 85, scale: 0.55, dy: 0.18), 0.5)!;
       expect((a - b).abs(), greaterThan(0.05),
           reason: 'this is the flakiness the new signal removes');
-      final c = squatBodyRelativeSignal(_body(0, elevDeg: 85), 0.5)!;
+      final c = squatBodyRelativeSignal(squatBody(0, elevDeg: 85), 0.5)!;
       final d = squatBodyRelativeSignal(
-          _body(0, elevDeg: 85, scale: 0.55, dy: 0.18), 0.5)!;
+          squatBody(0, elevDeg: 85, scale: 0.55, dy: 0.18), 0.5)!;
       expect(c, closeTo(d, 1e-9));
     });
 
     test('standing, parallel and below-parallel read in the documented range',
         () {
-      final standing = squatBodyRelativeSignal(_body(0, elevDeg: 85), 0.5)!;
-      final parallel = squatBodyRelativeSignal(_body(0, elevDeg: 0), 0.5)!;
-      final below = squatBodyRelativeSignal(_body(0, elevDeg: -10), 0.5)!;
+      final standing = squatBodyRelativeSignal(squatBody(0, elevDeg: 85), 0.5)!;
+      final parallel = squatBodyRelativeSignal(squatBody(0, elevDeg: 0), 0.5)!;
+      final below = squatBodyRelativeSignal(squatBody(0, elevDeg: -10), 0.5)!;
       expect(standing, lessThan(squatBodyRelativeConfig.topEnter));
       expect(parallel, closeTo(0, 1e-9));
       expect(below, greaterThan(0));
     });
 
     test('a side-on view with only the near side visible still counts', () {
-      final c = _count(_rep(0,
+      final c = _count(squatRep(0,
           bottomElev: -5, nearLikelihood: 0.95, farLikelihood: 0.1));
       expect(c.repCount, 1);
     });
 
     test('nothing is read when no side has shoulder, hip and knee', () {
-      final f = _body(0,
+      final f = squatBody(0,
           elevDeg: 85, nearLikelihood: 0.2, farLikelihood: 0.2);
       expect(squatBodyRelativeSignal(f, 0.5), isNull);
     });
 
     test('a shallow squat is still counted, but flagged below full depth', () {
-      final shallow = _count(_rep(0, bottomElev: 17));
+      final shallow = _count(squatRep(0, bottomElev: 17));
       expect(shallow.repCount, 1, reason: 'thigh 17 deg off horizontal counts');
       expect(shallow.reps.single.peakSignal,
           lessThan(kSquatFullDepthSignal));
       expect(shallow.reps.single.severityByRule['squat.depth'], 1);
 
-      final deep = _count(_rep(0, bottomElev: -5));
+      final deep = _count(squatRep(0, bottomElev: -5));
       expect(deep.repCount, 1);
       expect(deep.reps.single.severityByRule['squat.depth'] ?? 0, 0);
     });
 
     test('a quarter squat is not a repetition at all', () {
-      final c = _count(_rep(0, bottomElev: 25));
+      final c = _count(squatRep(0, bottomElev: 25));
       expect(c.repCount, 0);
     });
   });
@@ -210,19 +210,19 @@ void main() {
   group('spoken result on the live controller', () {
     test('a shallow rep says shallow; a deep rep says nothing', () async {
       final (shallowState, shallowCoach) =
-          await _session(_rep(0, bottomElev: 17));
+          await _session(squatRep(0, bottomElev: 17));
       expect(shallowState.repCount, 1);
       expect(shallowCoach.spoken, [FormCueKey.squatDepthShallow.name]);
       expect(shallowState.lastRepCue?.cueKey, FormCueKey.squatDepthShallow);
 
-      final (deepState, deepCoach) = await _session(_rep(0, bottomElev: -5));
+      final (deepState, deepCoach) = await _session(squatRep(0, bottomElev: -5));
       expect(deepState.repCount, 1);
       expect(deepCoach.spoken, isEmpty);
     });
 
     test('a deep rep with the trunk folded says round back', () async {
       final (state, coach) =
-          await _session(_rep(0, bottomElev: -5, bottomLean: 75));
+          await _session(squatRep(0, bottomElev: -5, bottomLean: 75));
       expect(state.repCount, 1);
       expect(coach.spoken, [FormCueKey.squatBackRounding.name]);
     });
@@ -230,7 +230,7 @@ void main() {
     test('a deep, upright rep from a small far-away body says nothing',
         () async {
       final (state, coach) = await _session(
-          _rep(0, bottomElev: -5, scale: 0.55, dy: 0.18));
+          squatRep(0, bottomElev: -5, scale: 0.55, dy: 0.18));
       expect(state.repCount, 1);
       expect(coach.spoken, isEmpty);
     });
@@ -241,7 +241,7 @@ void main() {
       // counting depth and is rejected as incomplete. With the silhouette
       // target on, the voice says "shallow", not the generic shape miss.
       final (state, coach) =
-          await _session(_rep(0, bottomElev: 25), withTarget: true);
+          await _session(squatRep(0, bottomElev: 25), withTarget: true);
       expect(state.repCount, 0);
       expect(state.lastReject, RepRejectReason.incomplete);
       expect(coach.spoken, [FormCueKey.squatDepthShallow.name]);

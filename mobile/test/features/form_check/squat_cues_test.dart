@@ -151,6 +151,24 @@ void main() {
           contains('Неглубокий'));
     });
 
+    test('a rep-scoped cue is spoken on every rep; a per-frame one is gated',
+        () {
+      var now = 1000;
+      final gate = CueGate(clock: () => now);
+      const plain = FormFeedback(
+          rule: 'squat.depth',
+          severity: 1,
+          cueKey: FormCueKey.squatDepthShallow);
+      expect(gate.decide(plain), CueDecision.speak);
+      now += 4000; // one rep later
+      expect(gate.decide(plain), CueDecision.suppress,
+          reason: 'control: the stopwatch filter still guards per-frame cues');
+      expect(gate.decide(plain.asRepScoped()), CueDecision.speak,
+          reason: 'the rep paces a rep-end cue, not the 20 s repeat window');
+      now += 100;
+      expect(gate.decide(plain.asRepScoped()), CueDecision.speak);
+    });
+
     test('the voice gate lets both cues through (severity floor)', () async {
       final coach = MockVoiceCoach(
           resolveText: (k) => k.name); // identity: key name is the text

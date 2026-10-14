@@ -62,7 +62,29 @@ class FormFeedback {
     this.metric,
     this.cueId,
     this.advisory = false,
+    this.repScoped = false,
   });
+
+  /// True for a cue that is already paced by the repetition: the controller
+  /// speaks at most one per completed (or rejected) rep. `CueGate` then skips
+  /// its stopwatch filters (same-cue repeat window, minimum gap) for it.
+  ///
+  /// Why: with those filters on top of the per-rep pacing, only the FIRST of
+  /// several identical rep-end cues was spoken -- "shallow squat" on reps 2..N
+  /// was written on the banner and never said (operator, real phone,
+  /// 2026-10-14). Per-frame cues keep the stopwatch filters.
+  final bool repScoped;
+
+  /// This feedback, marked as paced by the repetition. See [repScoped].
+  FormFeedback asRepScoped() => FormFeedback(
+        rule: rule,
+        severity: severity,
+        cueKey: cueKey,
+        metric: metric,
+        cueId: cueId,
+        advisory: advisory,
+        repScoped: true,
+      );
 
   /// Registry cue id (see `registry_cue_text.dart`), set only when [cueKey] is
   /// [FormCueKey.registry]. Null for every legacy rule.

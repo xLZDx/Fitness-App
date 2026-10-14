@@ -1892,7 +1892,11 @@ class RepSessionController extends Notifier<RepSessionState> {
     // for as long as the position held, which is what made it unbearable.
     if (cue != null) {
       final coach = ref.read(voiceCoachProvider);
-      unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
+      // One utterance per completed rep: the rep paces it, not the gate's
+      // stopwatch (see `FormFeedback.repScoped`).
+      unawaited(coach
+          .cue(cue.asRepScoped())
+          .whenComplete(() => _publishVoiceError(coach)));
     }
   }
 
@@ -2005,7 +2009,9 @@ class RepSessionController extends Notifier<RepSessionState> {
 
     if (cue != null) {
       final coach = ref.read(voiceCoachProvider);
-      unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
+      unawaited(coach
+          .cue(cue.asRepScoped())
+          .whenComplete(() => _publishVoiceError(coach)));
     }
   }
 
