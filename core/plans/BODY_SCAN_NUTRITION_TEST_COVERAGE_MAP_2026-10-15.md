@@ -1,8 +1,8 @@
 # Body Scan + Nutrition Coach - requirements-to-test coverage map
 
-**Status:** MAP v1, authored by the functional-test-reviewer role (design only). Date 2026-10-15. Branch `feature/body-scan-nutrition-coach`, base `master` `42d1b84`. Nothing here was executed: no test, analyzer, build, emulator or CI run. Every test file below is to be CREATED (`N`) or EXTENDED (`X`) in the test phase by `e2e-runner`, using the assertions in this map as the specification.
+**Status:** MAP v1.1 (v1 plus section 12 "Review-fix additions": 258 requirement ids, 135 test files; section 12 is authoritative where it differs from sections 4, 8-11), authored by the functional-test-reviewer role (design only). Date 2026-10-15. Branch `feature/body-scan-nutrition-coach`, base `master` `42d1b84`. Nothing here was executed: no test, analyzer, build, emulator or CI run. Every test file below is to be CREATED (`N`) or EXTENDED (`X`) in the test phase by `e2e-runner`, using the assertions in this map as the specification.
 
-**Inputs (read, not re-derived):** operator brief 2026-10-15 (scratchpad `body_scan_brief.md`), `core/plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md` (sections 6, 7, 12-17, 20, 28-31, decisions D-1..D-36), `core/plans/BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md` (section 6.2 file names are reused where they exist), and the existing test layout (`mobile/test/...`, `functions/src/__tests__`, `functions/src/__rules__`, `functions/src/__e2e__`, `functions/scripts/run_emulator_tests.js`).
+**Inputs (read, not re-derived):** operator brief 2026-10-15 (scratchpad `body_scan_brief.md`), `core/plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md` (sections 6, 7, 12-17, 20, 28-31, decisions D-1..D-45 and D-52..D-85), `core/plans/BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md` (section 6.2 file names are reused where they exist), and the existing test layout (`mobile/test/...`, `functions/src/__tests__`, `functions/src/__rules__`, `functions/src/__e2e__`, `functions/scripts/run_emulator_tests.js`).
 
 ## 0. Operating policy for the test phase (operator update 2026-10-15)
 
@@ -685,4 +685,136 @@ Rows for the section 6 items are filled with `UNVERIFIED (NOT_RUN: reason)`; att
 
 Test-case counts (individual `test()` cases) are not predicted here; the authoring agents report them per file. Expected vectors are hand-computed and must be re-derived by the author.
 
-**Residual notes.** (1) Rows PROG-11 and the programme builder hook depend on decision SD-7 (small seam or provider only). (2) TI-1 and TI-2 are test-infrastructure changes and are committed with their own change record. (3) Hard-coded literals such as the hold time 1000 ms, countdown 3-2-1 and quotas are assertions on purpose: changing them must change a test. (4) The map does not claim any accuracy of the body-fat estimate: SCAN-30 verifies the formula and honesty properties only.
+**Residual notes.** (1) Rows PROG-11 and the programme builder hook depend on decision SD-7 (small seam or provider only). (2) TI-1 and TI-2 are test-infrastructure changes and are committed with their own change record. (3) Hard-coded literals such as the hold time 1000 ms, countdown 3-2-1 and quotas are assertions on purpose: changing them must change a test. (4) The map does not claim any accuracy of the body-fat estimate: SCAN-30 verifies the formula and honesty properties only. (5) v1.1: the counts above are v1; the review-fix additions, amended rows and the v1.1 counts are in section 12 and are authoritative where they differ.
+
+## 12. Review-fix additions (map v1.1, 2026-10-15)
+
+Added after the one-time documentation review (design v1.1, decisions D-52..D-85). Nothing was run. The operating policy of section 0 is unchanged: the agent-written complete set runs after EACH epic and the complete final set runs at the end; section 12.4 lists what is added to those sets. Existing rows stay; where a v1 row is superseded it is named in 12.3.
+
+### 12.1 New requirement ids (57)
+
+Level, test ids and "fails if broken" as in section 4. Finding ids in brackets: A = architect, F = security, D = database, UX = product-ux, Y-F = accessibility.
+
+| ID | Behaviour | Lvl | Test | Key assertions (fail if broken) |
+|---|---|---|---|---|
+| SCAN-41 | Estimate idempotency and lease [A1, D4; D-53] | J | T75 | second estimate on a `done` doc returns the stored entry with ZERO provider calls and ZERO quota writes; two concurrent calls on `pending` -> one provider call, one write, the loser gets `estimate-in-progress`; delete racing the estimate -> nothing written, `scan-cancelled`; provider error before output -> refund and lease cleared |
+| SCAN-42 | Create idempotency, quota on first creation only [A8, D10; D-53] | J | T74 | replay of a `done`/`pending` scan charges no quota; `ALREADY_EXISTS` is a re-read, not an error; `failed` -> `pending` charges once; 31st NEW creation `resource-exhausted`; flag-off and kill-switch calls charge no quota |
+| SCAN-43 | Server-side age and tier [F4; D-58] | J | T74 | birthYear giving 17 refused; absent birthYear refused (`age-required`); client `ageYears: 25` with a minor profile refused; mismatched client age -> server value stored; free tier refused (`tier-required`) when the gate is on; `accountDeletionRetries/{uid}` present -> `account-deleting` |
+| SCAN-44 | Edit weight re-derives the rough estimate locally [A7; D-52] | U | T22, T78 | provisional estimate recomputed from the new weight (BMI changes the formula output); fat/lean recomputed; subject weight 251-300 kg accepted everywhere (no 30-250 split); `estimateFarFromProfile` not raised for provisional |
+| SCAN-45 | Baseline and trend segmented per estimator [D11, A1, UX5; D-54] | U, W | T20, T66 | baseline = earliest `done` scan by `takenAt` in the active `modelId`+`modelVersion` series, survives deleting the first scan; two model ids -> two independent series and NO cross-model change label; chart shows a "new estimator" marker |
+| SCAN-46 | `failed`/`cancelled` recovery [D11; D-78] | U, J | T55, T74 | `scan-cancelled` from the server rotates `remoteId` (`<id>_r1`, regex-valid) and re-queues; the estimate path writes `failed` on a terminal provider error and a repeated create resets it |
+| SCAN-47 | Resume card and terminal failure [UX12; D-78] | W | T129 | a non-terminal record shows "Finish your scan" with Resume and Cancel on Progress and Home; after 5 attempts the terminal card offers Retry, Keep on this device, Delete; terminal/cancelled record shows no resume card |
+| SCAN-48 | `manageBodyScanData` [D12, F12, F14; D-62] | J | T127 | `applyRetention` lowering to 30 d sets `photosExpireAt = min(old, takenAt+30d)` and deletes already-past objects, paged with a cursor; `deleteAllPhotos`/`deleteAllScans` are not blocked by the 60/day single-delete quota (61st single delete refused, bulk still works); `exportLinks` returns 1-hour URLs, newest first, max 60, with a cursor; other uid untouched; flag off -> `feature-disabled` |
+| SCAN-49 | Orphan and late-PUT handling [F7, D6, A10; D-59] | J | T74, T76, T77 | non-photosOnly delete writes a `cancelled` tombstone kept 48 h; an object uploaded after the delete is removed by the next purge; an object older than 1 h with no/cancelled/`deleted` scan doc is removed by the unmatched sweep, a younger one is kept; create for a uid with `accountDeletionRetries` refused |
+| SCAN-50 | Purge cursor and failure counter [D12; D-59] | J | T77 | 201 docs with 200 failing -> the 201st is still processed (`startAfter`, no starvation); `purgeAttempts` increments, at 10 a `purge-stuck` event (scan id only) and no further daily retry; sweep page token persisted and resumed |
+| SCAN-51 | Retention semantics [F12, D12; D-62] | J, U | T75, T119 | retention 0: inline delete then `photosState = deleted` (export/history never point at deleted objects); inline delete failure sets `photosExpireAt = now`; the copy states "within 48 hours" (privacy copy test matches the bound) |
+| SCAN-52 | Provisional scan is fully on-device [A7, UX8; D-52] | U | T55, T56 | cloud flag off: save -> done with ZERO callable and ZERO PUT calls, also with connectivity off; result stored in the local record with modelId `provisional-anthropometric`; legacy v1 record still never uploaded |
+| PLAN-22 | Atomic weekly review [A4, D2; D-57] | U | T81 | two simulated devices applying the same week -> exactly one review doc and one kcal change; failure injected between the two writes -> either both or neither; stale `planVersion` aborts; cooldown re-checked inside the transaction; offline defers without a partial write |
+| PLAN-23 | Undo record and new-device behaviour [D2, A4; D-57] | U | T81, T82 | the 7-day undo lives on the plan doc (`reviewUndo`), review docs stay immutable; undo is a `planVersion`-checked write; a device with no local flags -> `needsAnswer`, no review written |
+| PLAN-24 | One current weight [A9, D14; D-72] | U | T131, T19 | entry within 14 days wins else profile; all new-feature readers use `currentWeightProvider`; same-day manual vs scan: a scan prompt never overwrites a manual entry unless the user changed it; timezone change producing two entries leaves slope math (uses `at`) correct |
+| PLAN-25 | Weight log and first-review expectation [UX4; D-72] | W | T128 | add/edit/delete a weigh-in; a free-tier user logs weights and the first review returns `needMoreData` until 3 entries over 7 days; the plan card states "after about 3 weigh-ins over 2 weeks"; editing a scan's weight changes the plan input (the day's `weight_entries` row) |
+| PLAN-26 | Provisional result presentation [UX2, UX3; D-73] | W | T64, T66, T87 | `provisional == true`: label "rough estimate from height, weight and age; photos are for your own comparison" on intro, entry card, history row, result; headline is the weight trend; NO goal ring, points-to-go, fat/lean CHANGE tiles, ETA or plan-decision card; "See your plan" action present |
+| PLAN-27 | Scan surfaces follow eligibility [UX1; D-74] | W, U | T64, T87, T88, T83 | eligibility `referProfessional` or `needsAnswer` -> `measurementOnly`: no ring, points-to-go, ETA, target UI, plan decision, Home/Progress card figures, default reminder OFF; estimate behind a neutral ask; capture/compare/history still reachable; the context-source adapter maps each verdict correctly |
+| PLAN-28 | Neutral target copy, ETA gate, pause [UX10; D-77] | W, U | T86, T64, T50 | copy keys for `underweightNoDeficit`/`targetBelowHealthyRange` exist and are neutral; ETA hidden when goal BMI < 20 and for provisional; `paused` hides due-nudges and cancels the reminder |
+| PLAN-29 | Acyclic feature graph and safe port defaults [A3; D-71] | U, Y | T132, T89, T83 | import-graph test over `data/` and `state/` of the new features finds no cycle and only the allowed edges (`body_scan`/`food_diary` -> `nutrition_plan`; none the other way); `food_suggestions.dart` in `food_diary/data`; `series_math.dart` in `core/math`; unwired ports -> `measurementOnly`, no decision; the journey test with real wiring shows the decision (fails if the root override is missing) |
+| ONB-13 | Onboarding order and no premature pace text [UX6; D-75] | U, W | T39, T42 | order is `... healthFlags, nutrition, screening, preview`; no pace line, no default goal text when either safety answer is unanswered or `reported`; neutral lock-out copy shown instead |
+| ONB-14 | Exact exclusion-question copy [UX7; D-75] | W, U | T43, T120 | EN and RU strings of design 16.2 present, answer labels "None of these"/"One or more applies" (RU equivalents), "why we ask" line, no diagnostic words; pregnancy question names breastfeeding; parity test covers every key |
+| ONB-15 | Target weight not asked twice [UX6; D-75] | W | T42 | the nutrition step has no target-weight field and reads `personal.weightTargetKg`; target body-fat is optional |
+| ONB-16 | `excludedFoods` device-only, `sexAtBirth` classification [A2, F6; D-55] | U, R | T30, T34, T03 | `stripSensitive`/server JSON omits `excludedFoods`; local persistence merge keeps it; rules refuse a profile with `nutrition.excludedFoods`; `sexAtBirth` accepted only from the enum |
+| SAFE-19 | Ineligible verdict never persisted [A2, D3, F2; D-55] | U, R | T81, T03 | for `referProfessional`, `needsAnswer` and `needsProfile` the repository performs NO plan and NO review write; rules refuse `status: "referProfessional"` and `decision: "referProfessional"`; the notice renders from local state with no plan doc present |
+| PRIV-22 | Post-blur face check seam [F13; D-69] | U | T54, T56 | blurred output with one detected face -> `blurUnavailable`, no PUT; the default port answers "cannot verify" and the pipeline refuses; zero faces -> proceeds |
+| PRIV-23 | First-use data notice [F6; D-79] | W | T61, T128, T100 | first weight entry, plan save, diary write and food-AI call are deferred until the versioned notice is acknowledged; a version bump re-shows it; acknowledgement is device-local |
+| PRIV-24 | Log and Crashlytics redaction [F10; D-67] | J, U | T74, T75, T76, T77, T73 | log-spy over create/estimate/delete/purge FAILURE paths with a fixture uid and object path: neither appears; new-action quota events carry no raw uid; static guard fails if a new `body_scan`/`food_diary` file passes a raw exception to `recordError`; `scrubbedError` strips URLs |
+| PRIV-25 | Export ordering and paging [D5, A11; D-61] | J, U | T114, T117 | 2,500 `food_entries` + 800 `weight_entries` -> newest-first deterministic subset with correct `truncated`/`cursor`; the client export loop concatenates pages until `hasMore` false; the new collections carry an explicit `orderBy` |
+| PRIV-26 | Deletion storage behaviour [F1, D7; D-60] | J | T112, T113 | bucket unset -> no-op; 404 -> no throw; 403 -> sweep throws, Firestore sweep completed, retry record persists; success; same bucket constant used by `deleteAccount`, the reconciler and body-scan functions |
+| PRIV-27 | Export links on demand, 1 h [F14; D-61] | J | T127, T114 | the export response contains no signed URL and no fn-data bucket access; `exportLinks` expiry is 1 hour |
+| FOOD-30 | Hostile model strings [F9; D-66] | J | T104 | meal/item names containing a URL, e-mail, phone, HTML, or 200 chars are sanitised to <= 80 chars with the restricted charset; a matched USDA/OFF name replaces the model name for display |
+| FOOD-31 | Outbound request construction [F8; D-65] | J | T130, T108, T109 | `queryTerms` `x&api_key=evil` is encoded as one value; a cross-host redirect is rejected; an oversized body aborts; a timeout maps to a closed slug; the USDA key is in `X-Api-Key` and a log-spy never sees it |
+| FOOD-32 | Upstream budget and burst limit [F5; D-64] | J | T108, T109, T07 | fake clock: N distinct barcodes within a minute stop upstream calls after the budget (10 reads / 6 searches) with the calm `upstream-unavailable`; per-uid burst limit (5 misses/min); a negative OFF result is charged; `FOOD_LOOKUP` uses the fail-closed App Check flag |
+| FOOD-33 | Flag check before quota [A6; D-63] | J | T110, T111, T108, T109, T02 | with the flag off or the kill switch on, the call is refused and the quota doc is not written |
+| FOOD-34 | Diary states [UX11; D-78] | W | T100 | empty day (no ring colouring, no "below range"), loading, error (cached entries still shown) and AI-off (tiles hidden, search and quick log remain); "remaining" is secondary text and can be hidden |
+| RULES-17 | `cloudConsent` rule [F3, D1; D-56] | R | T03 | consent create ok; later retention update carrying the old consent ok; new consent with an old timestamp refused; changed version with an old timestamp refused; version decrease refused; removal accepted |
+| RULES-18 | Old rules accept the new client's empty flags [A5, D8; D-70] | R, U | T03, T31, T33 | serializer test: empty `HealthFlags` has no `nutritionGuidance`/`foodAllergens` key; the five-key legacy flags shape is ACCEPTED by the new rules; explicit-null variants accepted without a rules error |
+| RULES-19 | Shape gaps [F11, D9; D-68] | R | T03 | `excludedFoods` rejected on the server profile; `mealsPerDay` -1 and 7 refused; `food_entries` with non-map items refused; update touching only `weightKg` on a doc without `clientNote` accepted; `clientNote` removal defined |
+| RULES-20 | Plan/review enum and version keys [D3, A4; D-55, D-57] | R | T03 | `referProfessional` refused in both enums; plan update without `planVersion + 1` refused; review with `basePlanVersion` accepted; `body_scan_purge_state` and budget docs deny-all |
+| RULES-21 | Release guard and identities [A6, F1; D-60, D-63] | J | T06, T07 | guard set is 6 callables (AI_CALLABLES, AI_SOURCE_FILES, messages) and passes; `BODY_SCAN` profile runs as `fn-bodyscan`; with `BODY_SCAN_BUCKET` set the flag-gated check fails when a binding is missing and is skipped when unset |
+| I18N-10 | RU plurals and decimals [Y-F10; D-84] | U | T123, T124 | decimals 0.4, 1.0, 1.5, 2.1, 5.0, 24.1 render with non-inflecting abbreviations in RU and EN; every new RU plural key defines one/few/many/other |
+| I18N-11 | Locale formatting everywhere [Y-F11; D-85] | W | T65, T66, T135, T64, T86 | RU decimal comma and localised weekday/month in the chart summary and data table, history list, diary, reminder editor ("воскресенье 08:00"), "N days ago", ETA range |
+| I18N-12 | Distinct user-facing titles [UX9; D-76] | U | T47 | no duplicate user-facing title among the tabs and the new pages ("Body check-in", "Nutrition targets", "Food diary", "Weight log") |
+| A11Y-12 | Manual shutter timer [Y-F1; D-80] | W | T68 | manual tap with readiness red -> no capture until the timer elapses; ticks announced; cancel aborts; `manualOverride` true when it fires; timer length 3/5/10 s from settings |
+| A11Y-13 | Non-visual cue channel [Y-F2; D-80] | W | T68, T59 | `accessibleNavigation` true with a failing speaker fake -> a live-region node carries the current hint; the fake haptics receive the ready pattern on the first all-pass frame and distinct patterns per failing class; 20 frames of the same hint -> one announcement; "all four checks OK, hold still" announced |
+| A11Y-14 | One channel per countdown tick [Y-F3; D-80] | W | T68 | `accessibleNavigation` true -> `speaker.say` never called for tick values; false -> TTS speaks every tick and no duplicate live-region tick |
+| A11Y-15 | Progress announcements [Y-F4; D-81] | W | T63 | fake clock 30 s -> exactly: each stage change, the 20 s notice, the 25 s timeout; no announcement contains elapsed seconds; at 25 s focus is on Retry with Keep waiting and Cancel reachable |
+| A11Y-16 | Capture at large text [Y-F5, Y-F16; D-80] | W | T126, T68 | `ScanCaptureScreen` plus the four-row panel at text scale 2.0, RU, 360x640: no overflow exception, `scan.shutter` hit-testable and >= 48 dp, Cancel/Close outside the scroll area; countdown glyph and chip text come from theme styles |
+| A11Y-17 | Range slider contract [Y-F6; D-82] | W | T84 | increase action on the low thumb moves 10 and fires one announcement; at a bound the announcement is not silent ("minimum reached, 1200"); low cannot cross high - 100 with the gap announcement; EN and RU; numeric steppers (+/-10, +/-100) equal the thumbs |
+| A11Y-18 | Contrast [Y-F7; D-83] | U, W | T133, T126 | pure-Dart ratio for every semantic token pair used by the new widgets in light, dark, Glass and HUD: < 4.5 text or < 3 graphics fails; `textContrastGuideline` and `androidTapTargetGuideline` pass in light and dark over a high-luminance backdrop |
+| A11Y-19 | Reduced motion [Y-F8; D-81] | W | T63, T68 | `disableAnimations` true -> no running `AnimationController` in `analysis_progress_view`, the stage text still changes; the countdown glyph and skeleton painter have static fallbacks |
+| A11Y-20 | Review screen labels and errors [Y-F9; D-85] | W | T68 | three retake buttons have three distinct labels in EN and RU; thumbnails have `semanticLabel`; `_saveError` and camera error are live regions; the save spinner is labelled |
+| A11Y-21 | Chart text alternative [Y-F12; D-85] | W | T65 | the semantics tree has ONE summary node (with an expand action) and no per-point nodes; the table rows include date, raw value with range, smoothed value and outlier flag; the RU summary uses the decimal comma |
+| A11Y-22 | Check-these chip state [Y-F13; D-85] | W | T99, T64 | per-chip state label; exactly one "N items to check" announcement when the result card appears; after resolving a chip focus lands on the next chip or the heading; low confidence is text plus icon |
+| A11Y-23 | Modal focus [Y-F14; D-85] | W | T134 | for `weight_prompt_sheet`, `cloud_consent_sheet`, data-notice sheet, `food_detail_sheet` and the delete/cancel confirmations: semantics outside are blocked while open and focus returns to the trigger after close |
+| A11Y-24 | Tap-target sweep [Y-F15; D-85] | W | T125 | `androidTapTargetGuideline` and `labeledTapTargetGuideline` pass on every new page in EN and RU at scale 1.0 and 2.0 |
+
+### 12.2 New test files (9; ids continue the section 8 index)
+
+| Id | Lvl | Epic | N/X | Path | Cmd | Requirements covered |
+|---|---|---|---|---|---|---|
+| T127 | J | E3 | N | `functions/src/__tests__/body_scan_manage.test.ts` | JT | SCAN-48, PRIV-27 |
+| T128 | W | E4 | N | `mobile/test/features/nutrition_plan/weight_log_page_test.dart` | FT | PLAN-25, PRIV-23 |
+| T129 | W | E3 | N | `mobile/test/features/body_scan/widgets/resume_scan_card_test.dart` | FT | SCAN-47 |
+| T130 | J | E5 | N | `functions/src/__tests__/nutrition_http.test.ts` | JT | FOOD-31 |
+| T131 | U | E3 | N | `mobile/test/features/nutrition_plan/state/weight_providers_test.dart` | FT | PLAN-24 |
+| T132 | U | E1 | N | `mobile/test/core/architecture/import_graph_guard_test.dart` | FT | PLAN-29 |
+| T133 | U | E7 | N | `mobile/test/core/theme/contrast_tokens_test.dart` | FT | A11Y-18 |
+| T134 | W | E7 | N | `mobile/test/features/accessibility/modal_focus_test.dart` | FT | A11Y-23 |
+| T135 | W | E3 | N | `mobile/test/features/progress_photos/scan/ui/scan_reminder_editor_test.dart` | FT | I18N-11, PLAN-28 |
+
+Moved or re-pathed files: T78 is now `mobile/test/features/body_scan/data/provisional_estimator_test.dart` (level U, epic E1, cmd FT; the provisional estimator is Dart-only, D-52; V-DEU vectors, clamp to [5, 55], half-width exactly 5.0, confidence `low`, `provisionalEstimator` check code, sex unspecified s = 0.5, weight 30-300) and the server file `provisional_estimator.test.ts` no longer exists; T97 is now `mobile/test/features/food_diary/data/food_suggestions_test.dart` (D-71). T80 `estimator_registry.test.ts` now asserts the registry is `licensed-api` (throws `provider-not-configured`) and `test-fake` only, with no provisional entry.
+
+### 12.3 Amended v1 rows (read together with section 4)
+
+SCAN-12 stage UI: no elapsed-seconds announcement (A11Y-15); SCAN-13 provisional rows per PLAN-26; SCAN-23 "exactly one baseline" is derived per estimator, not stored (SCAN-45); SCAN-30 and SCAN-31 as above (Dart; no server provisional); SCAN-32 drops the "provisional provider -> no uploads" bullet (the provisional path never calls the server, SCAN-52), subject weight 30..300, adds the order of the age/tier/deletion gates (SCAN-43); SCAN-33 drops `isBaseline` and adds the lease (SCAN-41); SCAN-35/36 add the tombstone, the unmatched sweep and the counter (SCAN-49, SCAN-50); RULES-02 drops `isBaseline` and adds `affectedKeys`-only checking with a missing `clientNote`; RULES-04/05 enums exclude `referProfessional`; RULES-07 per RULES-17; RULES-16 per RULES-21; PRIV-07 is also covered by SCAN-52; PRIV-10 per PRIV-26; PRIV-12 per PRIV-25 and PRIV-27; A11Y-03 per A11Y-15; A11Y-05 per A11Y-17; A11Y-06 adds the capture screen (A11Y-16); I18N-03 per I18N-10; I18N-08 adds text scale 2.0 for the capture screen; FOOD-21 path per T97; ONB-01 order per ONB-13.
+
+### 12.4 Negative paths added (12) and not-testable-here additions (2)
+
+| # | Trigger | Required outcome | Covered by |
+|---|---|---|---|
+| N-41 | duplicate or concurrent `estimateBodyScan` | one provider call, one write, one quota charge | SCAN-41 |
+| N-42 | offline replay of `createBodyScan` | no extra quota charge | SCAN-42 |
+| N-43 | direct callable with `ageYears` 25 and a minor profile | refused | SCAN-43 |
+| N-44 | write of `referProfessional` to plan or review | refused by rules, never attempted by the client | SAFE-19, RULES-20 |
+| N-45 | settings update carrying an old `cloudConsent` | accepted; forged old timestamp refused | RULES-17 |
+| N-46 | PUT after delete or account deletion | create refused; late object purged | SCAN-49 |
+| N-47 | meal name with a URL or HTML | sanitised | FOOD-30 |
+| N-48 | many distinct barcodes in a minute | upstream budget stops calls | FOOD-32 |
+| N-49 | two devices apply the same week | one review, one change | PLAN-22 |
+| N-50 | `queryTerms` with `&api_key=evil`, cross-host redirect | encoded; rejected | FOOD-31 |
+| N-51 | bucket 403 or 404 during account deletion | 403 retries, 404 is nothing to delete | PRIV-26 |
+| N-52 | manual shutter tapped while readiness is red | timer, not an instant capture | A11Y-12 |
+
+Not testable here (added to section 6): (19) the real post-blur face detector and real blur quality on devices (proxy: the port tests of PRIV-22), reported `UNVERIFIED (NOT_RUN: device)`; (20) the bucket IAM canary (write and `deleteFiles` as `fn-bodyscan` and `fn-account-delete`), reported `UNVERIFIED (NOT_RUN: bucket not provisioned)`. TalkBack/VoiceOver and real contrast over the live camera stay NOT_RUN as in section 6; the token-pair test is the proxy.
+
+### 12.5 Gates and commands for the added files
+
+Per epic, the added files join the cumulative set (nothing sampled): E1 += T78 (Dart) and T132; E3 += T127, T129, T131, T135 and the Dart T78 moves out of the E3 jest list; E4 += T128; E5 += T130 and T97 at its new path; E7 += T133 and T134. The extended files keep their ids. The final set (section 10) is therefore 135 files: the 126 of section 8 with T78 and T97 re-pathed, plus T127..T135, each listed explicitly in the same three-part order (jest, emulator, flutter). Example added commands:
+
+```powershell
+Set-Location D:/Repo/Fitness_App_bodyscan/mobile; flutter test test/features/body_scan/data/provisional_estimator_test.dart test/core/architecture/import_graph_guard_test.dart test/features/nutrition_plan/state/weight_providers_test.dart test/features/body_scan/widgets/resume_scan_card_test.dart test/features/progress_photos/scan/ui/scan_reminder_editor_test.dart test/features/nutrition_plan/weight_log_page_test.dart test/core/theme/contrast_tokens_test.dart test/features/accessibility/modal_focus_test.dart test/features/food_diary/data/food_suggestions_test.dart
+```
+
+```powershell
+Set-Location D:/Repo/Fitness_App_bodyscan/functions; npx --no-install jest src/__tests__/body_scan_manage.test.ts src/__tests__/nutrition_http.test.ts
+```
+
+### 12.6 Counts v1.1 (before authoring)
+
+| Item | Count |
+|---|---|
+| Requirement ids | 258: SCAN 52, PLAN 29, ONB 16, SAFE 19, PRIV 27, FOOD 34, ACT 13, PROG 11, RULES 21, I18N 12, A11Y 24 |
+| Test files | 135 (100 to create, 35 to extend) |
+| By level | U 70, W 31, J 26, R 2, S 1, Y 5 |
+| By epic | E0 11, E1 28, E2 10, E3 36, E4 10, E5 23, E6 8, E7 9 |
+| Negative-path items | 52 |
+| Not-testable-here items | 20 |
+| Planned quarantines | 0 |
+

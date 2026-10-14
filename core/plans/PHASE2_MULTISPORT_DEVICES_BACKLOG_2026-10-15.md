@@ -4,6 +4,8 @@
 
 **Estimates** are order-of-magnitude engineering effort for one developer in person-weeks (pw), with the assumptions stated; they are planning inputs, not commitments, and exclude partner-approval waiting time and device-lab time. Capability statements about vendors are HYPOTHESES to be confirmed by the competitive/API study (epic E10) against official documentation.
 
+**Research package import (2026-10-15).** Section 8 imports the 40 stories of the PRODUCT_PHASE2_EXPANSION research package (`P2-000..P2-039`; 13 P0 / 20 P1 / 7 P2) with their package ids as cross-references. Reconciliation, conflicts and the provider status check are in `PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md`. Where the package and the approved design disagree, the design wins.
+
 ## 1. Principles
 
 1. Android first, nothing blocks iOS (`core/CONVENTIONS.md`); all device data enters through abstractions (`HealthService`, `DeviceSource`), never a platform API called from feature code.
@@ -30,9 +32,12 @@ Priority is by coverage per effort and by dependency on earlier items.
 | 10 | Withings (scales, body composition) into `weight_entries` | smart scales | 2 | OAuth | partner access |
 | 11 | Garmin Health / Activity API | Garmin devices | 4+ | partner programme approval | approval time, business terms |
 | 12 | Wahoo Cloud API | Wahoo devices | 2-3 | OAuth | partner access |
-| 13 | Fitbit / Google health APIs | Fitbit users | 3 | OAuth | API transition status must be verified in the study |
+| 13 | Google Health API (successor of the Fitbit Web API; NO legacy Fitbit integration: the Fitbit Web API is turned off on 2026-10-30 per Google's developer pages, see the reconciliation file section 5) | Fitbit and Pixel Watch users | 3 | OAuth, operator decision O-4 | access model for a private project unverified; users must re-consent; never link one user to both APIs |
 | 14 | Suunto API | Suunto devices | 3 | partner access | approval |
-| 15 | Apple Watch companion | Apple Watch | 8+ | iOS build pipeline, 1 | needs an iOS device and developer programme |
+| 15 | Apple Watch companion (HealthKit / WorkoutKit / watchOS) | Apple Watch | 8+ | iOS build pipeline, 1 | needs an iOS device and developer programme |
+| 16 | Oura API v2 (sleep, readiness) | Oura users | 2 | OAuth | membership and rate limits unverified; added from package P2-032 |
+| 17 | WHOOP API v2 (recovery, sleep, workouts) | WHOOP users | 2 | OAuth | app review and membership unverified; added from package P2-032 |
+| 18 | TrainingPeaks API | TrainingPeaks users | 3 | partner access | approved developers only per the package; added from package P2-032 |
 
 Cross-cutting: server-side OAuth token vault (Secret Manager/Firestore with owner-only deletion on disconnect) for items 8-14, about 2 pw once.
 
@@ -135,3 +140,72 @@ E1 -> E2/E3/E5/E7; E2 and E8 before E7; item 2 (file import) early because its c
 ## 7. Legal alternatives to reverse engineering (reference list)
 
 Official APIs and SDKs; partner programmes; documented file formats (FIT, GPX, TCX); documented BLE GATT profiles; published academic validation studies; open-source projects read under their licences; user-initiated data exports (GDPR portability) from apps the user owns, used to test importers; direct vendor contact for data-sharing agreements.
+
+## 8. Imported stories from the PRODUCT_PHASE2_EXPANSION research package
+
+Source: package `backlog/stories.csv` (40 stories). Every package story has one row. "Home" says where the story lives in our plan: **S** = delivered or covered by the current sprint (sprint-plan commit or design section), **E#** = a Phase 2 epic above, **X-nn** = a NEW story entry defined in 8.2. Status of all rows is the one derived from the sprint plan: rows with an S home are "in current sprint (not yet implemented)", every other row is "not started". No package story is marked done without commit and test evidence. All are subject to the epic DoD in section 3 and to DEVELOPMENT RULES v4 (no automatic checks beyond focused functional tests).
+
+### 8.1 Story table (id, title, priority, dependency, acceptance)
+
+| Package id | Title | P | Depends on (package ids) | Home | Acceptance (ours; package acceptance in brackets where it adds something) |
+|---|---|---|---|---|---|
+| P2-000 | Program charter, scope, design authority | P0 | none | S (design s0, s1.2; this file s1) | Scope and out-of-scope lists exist and match the sprint plan s9; flags default off |
+| P2-001 | Repo inventory and dirty-tree safety | P0 | P2-000 | S (design s2); E1 start | Recon fact sheet refreshed at the start of each epic; no overwrite of other sessions' edits |
+| P2-002 | Two-video extraction and numeric provenance | P0 | P2-000 | S (design s3, s29; behaviour notes) | Every adopted reference number tagged OBS/PUB/OWN; no hidden-algorithm claim; recordings stay out of git |
+| P2-003 | Competitive product catalogue | P0 | P2-000 | E10 | Matrix cells sourced or "unknown"; package app list used as seed; evidence grades A-D |
+| P2-004 | APK acquisition and static privacy audit | P0 | P2-003 | X-04 (rewritten) | Open-source apps only (OWASP MASVS/MASTG); commercial apps: public-material dossier; reviewer confirms no prohibited method (D-35) |
+| P2-005 | Observed API contracts and vendor public APIs | P0 | P2-003 | E10, E7 | Documented public APIs only: scopes, rate limits, terms, partner blockers marked FACT / UNVERIFIED; no private endpoints |
+| P2-006 | Canonical sport+health+nutrition ontology | P0 | P2-001 | S (design s31.1, C08; s5, s17) | Unknown sport degrades to `other`; tolerant JSON; schema round-trip seeds (s31.8); E1 adds persistence provenance fields (A-5) |
+| P2-007 | Device connector architecture, anti-corruption layer | P0 | P2-006 | S (design s31.2-31.3, C08); E1, E2 | Fake source drives merge; idempotent re-import; capability discovery; E1 adds quarantine, cursors, `healthStatus` (A-1..A-3) |
+| P2-008 | Personal-data consent, privacy, retention | P0 | P2-006 | S (design s9, s20, C25); E11 | Deny/revoke/delete/export tests per collection; no non-consensual upload; GPS redaction default |
+| P2-009 | Metric calculator v1 and replay tests | P0 | P2-006 | S (design s12, s13; C05, C07); E3/E4 for sport metrics | Replay values reproduced (reconciliation s3); formulas versioned; sport formulas per A-6 |
+| P2-010 | HUD-native navigation integration | P0 | P2-001 | S (design s21; C11, C15, C17, C19, C23); E12 | Entry cards and nested routes, no sixth tab; EN + RU; accessibility checklist (s24) |
+| P2-011 | Nutrition provider and rights assessment | P0 | P2-008 | S (design s17.9, D-31; C20, C24) | Attribution file lists source, licence, what is used; ODbL share-alike noted for any public release |
+| P2-012 | Manual meal diary with provenance | P1 | P2-006, P2-011 | S (design s17; C22, C23) | Offline CRUD, exact sums with ranges, per-item source tag, per-user separation |
+| P2-013 | Barcode and food-label scan | P1 | P2-011, P2-012 | S (design s17.4, s17.6; C20, C24) | GTIN check digit; unknown-product path; label parse always confirmed by the user before save |
+| P2-014 | AI photo meal identification | P1 | P2-011, P2-012 | S (design s17.3; C20, C24; flag `FOOD_AI`) | Never auto-saved; closed "Check these" codes; flag-off fallback works |
+| P2-015 | Portion estimation with honest uncertainty | P1 | P2-014 | S (ranges, design s17.3, s17.7); X-15 (evaluation) | Ranges not false grams; Phase 2: measured food-scale holdout with error and coverage before any accuracy claim |
+| P2-016 | Goal ownership modes | P1 | P2-009, P2-008 | S (design s18; C19) | Coached/Shared/Manual semantics tested; clamps bind every mode |
+| P2-017 | Weekly adaptive nutrition + training review | P1 | P2-016, P2-012 | S (design s15, s30; C06, C09, C18, C19); E9 | One review per ISO week; bounded change; neutral when data is missing; training side only lowers load |
+| P2-018 | Three-pose capture and quality state machine | P1 | P2-008, P2-010 | S (design s10, s11; C13-C15) | Works locally; manual shutter recorded; permission and camera errors handled |
+| P2-019 | Body measurement and trend charts | P1 | P2-009, P2-018 | S (design s12; C07, C15, C16) | Raw reading, smoothed trend, target separated; raw vs trend labelled on every derived mass (reconciliation C-7) |
+| P2-020 | Body-fat ML build-vs-buy viability | P2 | P2-018, P2-008 | X-20 | No medical claim; calibrated independent holdout and subgroup coverage before showing a photo-based percent (design Q-1) |
+| P2-021 | Generated "Future You" visualisation evaluation | P2 | P2-020 | X-21 (deferred) | Default OFF; no minors; explicit operator and legal decision first (design s1.2) |
+| P2-022 | Running workout engine | P1 | P2-006, P2-007 | E3 | Recording survives app kill and clock change; pace/splits/moving vs elapsed; route privacy; replay of a FIT/GPS fixture |
+| P2-023 | Cycling engine | P1 | P2-006, P2-007 | E3, E5 | Indoor/outdoor; time-weighted power; sensor drop and duplicate import tested |
+| P2-024 | Walking / steps engine | P1 | P2-006, P2-007 | E3 | No phantom calories without a sensor or on a duplicate import; indoor/manual path |
+| P2-025 | Swimming engine | P1 | P2-006, P2-007 | E4 | Pool length entered, no GPS for pool; lengths x pool length; open-water confidence and route privacy |
+| P2-026 | Multisport workout and unified load model | P1 | P2-022..P2-025 | X-26, E9, E12 | Separate load per modality, never collapsed to calories; recovery guard never raises load against injury filter |
+| P2-027 | Health Connect granular permissions | P1 | P2-007, P2-008 | E2 | Per-datatype permission and revoke on a real Android device; manual fallback; account switch test; read-only (D-44) |
+| P2-028 | Wear OS exercise recording and offline sync | P1 | P2-027 | E6 | Session saved after disconnect with original timestamps; provenance `companionApp`; signing issue decided first |
+| P2-029 | FIT / GPX / TCX import and export | P1 | P2-007 | E1 (table item 2) | Same file twice gives one session; corrupt file handled; size/XML/zip limits (A-1) |
+| P2-030 | BLE HR / CSC / Power / FTMS adapters | P2 | P2-007 | E5 | Pure parsers with recorded fixtures; wraparound; drop/reconnect; permission denial does not crash |
+| P2-031 | Garmin / Polar / Strava / Wahoo cloud adapters | P2 | P2-007, P2-005 | E7 | Terms review recorded; contract tests from public docs; token vault; kill switch; no unapproved production use |
+| P2-032 | Oura / WHOOP / Withings / Suunto / TrainingPeaks adapters | P2 | P2-007, P2-005 | E7 (items 10, 14, 16-18) | No support claimed before an approved end-to-end smoke test |
+| P2-033 | Google Health API migration / availability | P2 | P2-007, P2-005 | E7 (item 13) | No dependency on the Fitbit Web API (off 2026-10-30); never dual-link a user; built only on operator decision O-4 |
+| P2-034 | Cross-provider dedup and source arbitration | P1 | P2-007, P2-009 | S (design s31.3, C08); E8 | Clock skew, DST (UTC compare), late events, user edits win; false-merge and missed-merge rates measured on a real corpus |
+| P2-035 | Security, privacy and clinical guard gates | P0 | P2-008 | S (sprint plan s7.3, design s13.6, s14); E11 | Zero critical leakage; deletion/export coverage per collection; no diagnostic wording; under-18 lockout |
+| P2-036 | Accessibility and language parity | P1 | P2-010 | S (design s23-s24; C26); E12 | EN/RU key parity and plurals; screen-reader semantics; 200 % text scale |
+| P2-037 | Measured phased rollout and rollback | P1 | P2-035, P2-034 | S (flags, SD-2); X-37 | Per-feature flags default off; staged enabling; rollback path recorded; no PII in telemetry |
+| P2-038 | Sport plugin registry / future sports | P2 | P2-006, P2-026 | X-38 | One new sport added without changing existing sport contracts (model already tolerant, design s31.1) |
+| P2-039 | Equipment recognition >= 90 % sealed-holdout research | P1 | P2-001 | XREF (existing recognition track) | Not part of this programme; no accuracy claim until an independent sealed holdout reports it |
+
+### 8.2 New story entries (no existing home)
+
+| ID | Story | Priority | Depends on | Acceptance |
+|---|---|---|---|---|
+| X-04 | Open-source app review and commercial public-material dossiers (replaces package P2-004) | P0 for the study | E10 | One note per OSS app (OpenTracks, openScale, Waistline): source URL, tag, licence, SHA-256, signer, manifest permissions, SDK list, findings graded FACT/INFERENCE/HYPOTHESIS; one dossier per commercial app from public sources with access dates; no proprietary binary analysis, no traffic capture, no APK extraction |
+| X-15 | Meal photo and portion evaluation holdout | P1 | E5 flags on, real provider | Scale-weighed meals across cuisines, plates, lighting; food top-1/top-3, gram MAE, kcal %APE, per-macro MAE, abstention rate; wrong-food and wrong-portion reported separately; no accuracy claim before this report |
+| X-20 | Body-fat provider build-vs-buy study | P2 | design Q-1, consent flow | Comparator device ground truth, age/sex coverage, photo privacy review, vendor terms; estimator stays provisional until a calibrated holdout exists |
+| X-21 | "Future You" preview evaluation (deferred) | P2 | operator and legal decision | Not started; default OFF; no minors |
+| X-26 | Unified training-load model across sports | P1 | E3, E4, E9 | Per-modality load, cross-day planning, transitions, recovery guard; reviewed by a qualified professional before any claim beyond "sensible default" |
+| X-37 | Phased rollout for sport and device features | P1 | per-epic | Per-feature compile-time and server flags default off, staged enabling, rollback documented, no PII in telemetry |
+| X-38 | Sport plugin registry | P2 | E3, X-26 | Adding rowing, hiking or triathlon needs no schema migration |
+
+### 8.3 Additions to existing epics from the package (details in the reconciliation file section 4)
+
+A-1 quarantine and untrusted-input limits (E1, E2); A-2 sync cursors and reversible imports (E2); A-3 adapter surface `healthStatus`, `deleteCached`, optional workout stream, no write-back (E1); A-4 per-metric source authority and conflicts screen (E8); A-5 provenance fields `formulaVersion`, `metricDefinitionVersion`, `thresholdPolicyVersion`, `sourceTermsSnapshot` (E1); A-6 sport DoD details: time-weighted power, watts/kg with body mass at activity time, moving vs elapsed, no phantom calories, swim pool length entered, SWOLF only when justified (E3, E4, E5); A-7 aggregator build-vs-buy pilot, option only (E7); A-8 ANT+ not planned (E5); A-9 WorkoutKit/watchOS (item 15); A-10 Oura, WHOOP, TrainingPeaks, Google Health API (items 13, 16-18).
+
+### 8.4 Import summary
+
+40 package stories imported: 7 new entries (X-04, X-15, X-20, X-21, X-26, X-37, X-38) and 33 merged into existing items, epics or design sections. Package priorities: 13 P0, 20 P1, 7 P2 (CSV count; the request text said 12/20/8).
