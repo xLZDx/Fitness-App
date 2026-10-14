@@ -185,3 +185,21 @@ latches `voiceUnavailable` and the page shows the voice-error card), or the TTS
 engine/volume. The code path to `speak` is proven end to end only up to the
 platform channel.
 
+## Follow-up B: the target looks like a body figure, not a second skeleton
+
+Operator: "green corners on the figure" -- the first target layer (thin green
+lines, 9 px joint rings, theme `poseCorrect`) read as a duplicate skeleton.
+`_TargetOutlinePainter` (`form_check_page.dart`) now draws a translucent body
+figure: round-capped limbs 16 px, trunk 24 px, arms 11 px, a filled head
+(`PoseTarget.head`), pale cyan `0xFF8FE9FF` (not the green/red verdict colours,
+not the white skeleton), no joint rings, the whole figure inside one
+`saveLayer` at alpha 0.42 so joint overlaps do not double up. Placement is
+unchanged (`alignTargetToBody`, `projectLandmark`). Stack order is unchanged:
+between the avatar and the skeleton overlay. In avatar mode the avatar's own
+bones are part of the avatar layer below, so the figure tints over them; moving
+the target under the avatar would hide it behind the avatar's near-opaque body.
+
+Tests: `coach_target_layer_test.dart` now asserts the stroke widths, colour,
+filled head, absence of stroked joint rings, the layer order, and that nothing
+opaque sits under the layer.
+

@@ -75,6 +75,57 @@ void main() {
     expect(_outline, findsOneWidget);
   });
 
+  testWidgets('the target is a thick translucent body figure, not a second '
+      'skeleton: wide round limbs, one alpha layer, a head, no joint rings, '
+      'a colour that is neither the verdict green nor red', (t) async {
+    _phoneSized(t);
+    final c = _container(oneSquat(0));
+    await t.pumpWidget(_page(c));
+    await _settle(t);
+
+    final box = t.renderObject(_outline);
+    const figure = Color(0xFF8FE9FF);
+    expect(
+        box,
+        paints
+          ..line(color: figure, strokeWidth: 24.0) // trunk
+          ..line(color: figure, strokeWidth: 16.0) // thigh
+          ..line(color: figure, strokeWidth: 16.0) // shin
+          ..line(color: figure, strokeWidth: 11.0) // upper arm
+          ..line(color: figure, strokeWidth: 11.0) // forearm
+          ..circle(color: figure, style: PaintingStyle.fill), // head
+        reason: 'limbs are 16-24 px wide round strokes plus a filled head');
+    expect(box, isNot(paints..circle(style: PaintingStyle.stroke)),
+        reason: 'no joint rings: they read as a duplicate skeleton');
+  });
+
+  testWidgets('the target layer sits between the avatar and the skeleton '
+      'layers and is opaque nowhere', (t) async {
+    _phoneSized(t);
+    final c = _container(oneSquat(0));
+    await t.pumpWidget(_page(c));
+    await _settle(t);
+
+    final stack = t.widget<Stack>(find
+        .ancestor(of: _layer, matching: find.byType(Stack))
+        .first);
+    final keys = [for (final w in stack.children) w.key];
+    final a = keys.indexOf(const Key('form_check.layer.avatar'));
+    final g = keys.indexOf(const Key('form_check.layer.target'));
+    final s = keys.indexOf(const Key('form_check.layer.skeleton'));
+    expect(a, greaterThanOrEqualTo(0));
+    expect(g, a + 1);
+    expect(s, g + 1);
+    // Painted on a transparent canvas: no Container/ColoredBox under the layer.
+    expect(
+        find.descendant(
+            of: _layer,
+            matching: find.byWidgetPredicate(
+                (w) => w is ColoredBox || w is DecoratedBox)),
+        findsNothing,
+        reason: 'the layer must not paint an opaque background over the camera');
+  });
+
   testWidgets('a tracked body: the target outline is painted (camera mode)',
       (t) async {
     _phoneSized(t);

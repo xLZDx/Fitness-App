@@ -55842,3 +55842,7 @@ Decision: the equipment page header is chosen by an explicit rule (curated heroE
 ## 2026-10-14 - Commit: Rep-end cues are paced by the rep, not by the gate stopwatch
 
 Decision: rep-end cues are marked `repScoped` and bypass the CueGate repeat window and minimum gap, so every rep that shows a cue also speaks it; per-frame cues keep the stopwatch filters. Voice wiring moved to `buildLocalizedTtsVoiceCoach` for testability. Evidence: focused Flutter run (132 tests green), see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device speech (first-cue silence, if any, is a device hypothesis).
+
+## 2026-10-14 - Commit: Target figure restyled as a translucent body
+
+Decision: the target is drawn as a thick-limbed translucent cyan body figure (one alpha layer, head, no joint rings) instead of green lines with rings, after the operator read it as a duplicate skeleton. Evidence: coach_target_layer_test (6 tests), see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device look.

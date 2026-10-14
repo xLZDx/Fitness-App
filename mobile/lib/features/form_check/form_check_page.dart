@@ -1329,8 +1329,10 @@ class _PreviewScrim extends StatelessWidget {
 /// (`coachBodyDrawableProvider`), and the demonstration still owns the panel
 /// while nobody is tracked. Placed with [alignTargetToBody] -- the same
 /// anchoring and mirror choice the score uses -- and projected with
-/// [projectLandmark] exactly like [_SkeletonPainter], so the outline sits where
-/// the body is drawn.
+/// [projectLandmark] exactly like [_SkeletonPainter], so the figure sits where
+/// the body is drawn. Drawn as a translucent, thick-limbed body figure (no
+/// joint rings) UNDER the skeleton, so it cannot be mistaken for a second
+/// skeleton.
 ///
 /// Static paint, no animation: nothing here needs a reduce-motion branch, and
 /// the layer repaints only when the frame or the aligned target changes.
@@ -1355,12 +1357,16 @@ class _TargetOutline extends ConsumerWidget {
           target: target,
           alignment: alignment,
           frameAspect: frame.aspectRatio,
-          color: Theme.of(context).colors.poseCorrect,
+          color: _kTargetFigureColour,
         ),
       ),
     );
   }
 }
+
+/// Pale cyan: clearly not the green/red verdict glow and not the white skeleton,
+/// so the target reads as its own thing under the tracked body.
+const _kTargetFigureColour = Color(0xFF8FE9FF);
 
 class _TargetOutlinePainter extends CustomPainter {
   const _TargetOutlinePainter({
@@ -1375,6 +1381,17 @@ class _TargetOutlinePainter extends CustomPainter {
   final double frameAspect;
   final Color color;
 
+  /// Limb thickness in logical pixels. Thick on purpose: a thin line over the
+  /// user's own skeleton read as a second, green skeleton ("green corners on
+  /// the figure", operator 2026-10-14), not as a shape to stand inside.
+  static const _limbWidth = 16.0;
+  static const _trunkWidth = 24.0;
+  static const _armWidth = 11.0;
+
+  /// Overall opacity of the whole figure, applied ONCE to a layer so the
+  /// overlaps at the joints do not double up into darker blobs.
+  static const _figureAlpha = 0.42;
+
   @override
   void paint(Canvas canvas, Size size) {
     Offset place(LandmarkType t) {
@@ -1382,26 +1399,50 @@ class _TargetOutlinePainter extends CustomPainter {
       return projectLandmark(p.$1, p.$2, frameAspect: frameAspect, canvas: size);
     }
 
-    // Visible but see-through: the body must stay readable underneath.
-    final line = Paint()
-      ..color = color.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
+    canvas.saveLayer(Offset.zero & size,
+        Paint()..color = Colors.white.withValues(alpha: _figureAlpha));
     for (final (a, b) in target.bones) {
       if (!target.joints.containsKey(a) || !target.joints.containsKey(b)) {
         continue;
       }
-      canvas.drawLine(place(a), place(b), line);
+      final isTrunk = {a, b}.containsAll(
+          {LandmarkType.leftShoulder, LandmarkType.leftHip});
+      final isArm = a == LandmarkType.leftElbow ||
+          b == LandmarkType.leftElbow ||
+          a == LandmarkType.leftWrist ||
+          b == LandmarkType.leftWrist;
+      canvas.drawLine(
+        place(a),
+        place(b),
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..strokeWidth = isTrunk
+              ? _trunkWidth
+              : isArm
+                  ? _armWidth
+                  : _limbWidth,
+      );
     }
-    final ring = Paint()
-      ..color = color.withValues(alpha: 0.7)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-    for (final t in target.joints.keys) {
-      if (target.unscoredJoints.contains(t)) continue;
-      canvas.drawCircle(place(t), 9, ring);
+    final head = target.head;
+    if (head != null) {
+      final c = alignment((head.$1, head.$2));
+      final at = projectLandmark(c.$1, c.$2,
+          frameAspect: frameAspect, canvas: size);
+      final unit = (projectLandmark(0, 1,
+                  frameAspect: frameAspect, canvas: size) -
+              projectLandmark(0, 0, frameAspect: frameAspect, canvas: size))
+          .distance;
+      canvas.drawCircle(
+          at,
+          head.$3 * alignment.scale * unit,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.fill);
     }
+    canvas.restore();
   }
 
   @override
