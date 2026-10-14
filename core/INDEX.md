@@ -58,6 +58,8 @@ Also here: `context_baseline.csv` — measured AI-context cost over time, append
 | [ROADMAP_2026_V2.md](plans/ROADMAP_2026_V2.md) | Sequenced P0/P1/P2 + the 7 Tier-X features |
 | [NEXT_TICKETS.md](plans/NEXT_TICKETS.md) | Concrete, ready-to-pick-up tickets |
 | [IMPLEMENTATION_PLAN.md](plans/IMPLEMENTATION_PLAN.md) | Live phase/sequence roadmap |
+| [BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md) | Body Scan + Nutrition Coach technical design: data model, rules, Cloud Functions, safety clamps, onboarding, food scanning, programme hook, activity model (DESIGN, not implemented) |
+| [PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md](plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md) | Priority Phase 2 backlog: multi-sport tracking, device ecosystem order and effort, nutrition-aware programmes, legal competitive study plan |
 | [PLAN_AI_RESTRUCTURE_2026-07-28.md](plans/PLAN_AI_RESTRUCTURE_2026-07-28.md) | This restructure: gates, baseline, progress tracker |
 | [PLAN_REDESIGN_REMAINDER_2026-08-12.md](plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md) | **Where the redesign block stands and what to pick up next** — prototype screen map with line numbers, why R11h is one gate and not four, the six-point chain R11f's metadata fix has to walk |
 | [PLAN_R11_DECISIONS_2026-08-12.md](plans/PLAN_R11_DECISIONS_2026-08-12.md) | The operator's six answers and the sub-gates they produced — P1 done, P2/P3/P4-lite pending, the O-series that rebuilds onboarding on the Figma design at 7 screens |
