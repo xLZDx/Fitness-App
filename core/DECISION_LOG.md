@@ -55846,3 +55846,7 @@ Decision: rep-end cues are marked `repScoped` and bypass the CueGate repeat wind
 ## 2026-10-14 - Commit: Target figure restyled as a translucent body
 
 Decision: the target is drawn as a thick-limbed translucent cyan body figure (one alpha layer, head, no joint rings) instead of green lines with rings, after the operator read it as a duplicate skeleton. Evidence: coach_target_layer_test (6 tests), see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device look.
+
+## 2026-10-14 - Commit: Preview and squat demonstration findings recorded
+
+Decision: no code change for the preview/demo report. The squat demonstration is a deliberate stated absence since 2026-09-09 and was already so at 42d1b84; the target layer is transparent and cannot hide the preview. Evidence: git diff 42d1b84..HEAD on the widgets is empty; 570 focused Flutter tests green. See core/changes/2026-10-14-coach-form-fixes.md. Open product decision: a squat demonstration.

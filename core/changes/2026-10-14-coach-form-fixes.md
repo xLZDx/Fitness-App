@@ -203,3 +203,44 @@ Tests: `coach_target_layer_test.dart` now asserts the stroke widths, colour,
 filled head, absence of stroked joint rings, the layer order, and that nothing
 opaque sits under the layer.
 
+## Follow-up C: preview area and the missing squat demonstration (findings, no code change)
+
+FACT (read in code and in `git diff 42d1b84..HEAD` / `git show 42d1b84:`):
+- `git diff 42d1b84..HEAD -- mobile/lib/features/form_check/widgets` is empty:
+  none of my commits touched the demonstration widgets. At master 42d1b84
+  `coachDemoFor(FormExercise.squat)` already returned
+  `CoachDemoUnavailableSource()` (the squat clip was removed on 2026-09-09 and
+  the figure stand-in was rejected by the same ruling), and that source is what
+  renders "Показа для этого движения пока нет" (`formcheckDemoUnavailable`). So
+  squat did not lose a demonstration because of this sprint; it never had one at
+  this base. Nothing was restored: re-adding a drawn stand-in contradicts the
+  2026-09-09 ruling, and `live_demo_test`/`demo_silhouette_test` pin the
+  absence. Whether squat gets a demonstration back is a product decision.
+- My `form_check.layer.target` is a `Positioned.fill` > `IgnorePointer` >
+  `RepaintBoundary` > `CustomPaint` with no child and no background: it paints
+  only the figure and is transparent everywhere else; it sits above the
+  backdrop/preview, so it cannot hide them. `coach_target_layer_test` asserts
+  there is no `ColoredBox`/`DecoratedBox` under it and the layer order. The only
+  other new overlay code is the same layer.
+- `avatarModeProvider` defaults to true: in that mode the camera image is NOT
+  shown at all, the panel is the photo backdrop (`_AvatarBackdrop`, scrim up to
+  65% black at the bottom) with the avatar drawn on it. An "empty/dark" panel
+  before a body is tracked is therefore the backdrop plus the demonstration slot.
+  In camera mode the existing `_PreviewScrim` (radial, 34% to 86% dark) darkens
+  the preview heavily; it predates this sprint (present at 42d1b84).
+- "Слишком темно или размыто, чтобы разобрать позу" is `formcheckGateLowConfidence`,
+  the `lowConfidence` gate verdict: some joint the active rules or the target
+  scoring need is reported below 0.7 likelihood. The effective verdict also
+  includes the silhouette's scored joints (shoulder, hip, knee, ankle), so a poorly
+  visible ankle alone triggers it. This logic predates the sprint.
+
+HYPOTHESIS (needs the device): the dark preview and that hint came from low light
+or a body the detector could not place (no tracked body, so no avatar and no target
+figure, only the unavailable-demo text). Whether the squat counter/classifiers now
+reject frames the old ones accepted is not expected (they require fewer joints than
+before: one side of hip and knee, plus shoulder for the back rule and the signal)
+but is unmeasured.
+
+Final focused run for the whole follow-up: 570 tests green (50 files under
+`test/features/form_check` plus `test/l10n`, listed in the report).
+
