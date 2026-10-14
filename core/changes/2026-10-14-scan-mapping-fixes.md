@@ -53,3 +53,25 @@ NOT verified: how the new posters look on a device; injury screening on top of t
 ### Verification state
 Focused Flutter run from `mobile/` of 16 files, 327 tests, all passed. `functions/src/__tests__/ai_exercise_generation.test.ts`: ran after `npm ci --prefix functions` (setup only; `node_modules` is not tracked): 33 of 33 passed, including the three `EQUIPMENT_NAMES_EN/RU parity with the live mobile assets` cases that check the `bench_press` rename.
 NOT verified: poster appearance on a device; the working-directory helper was exercised only from the package root (the only place `flutter test` runs); several generic (uncurated) picks remain plausible rather than ideal and are now pinned, not endorsed.
+
+## Addendum 3: confirmation experience (candidate pictures, 3 alternatives, manual picker)
+
+### What changed
+- `functions/src/ai_equipment_recognition.ts`: the prompt now asks for exactly 3 alternatives (the 3 most plausible OTHER machines, ordered by confidence) instead of "up to 2 only when genuinely plausible". `maxOutputTokens` stays 256 (best + 3 is about 100 tokens). Test: `functions/src/__tests__/ai_equipment_recognition.test.ts` (new prompt assertion).
+- `mobile/lib/features/visual_equipment/data/visual_equipment_service.dart`: `kScanCandidateCount = 4` (best + 3). The controller asks the service for it, and the cloud service's `classifyFile`/`parseResponse` defaults use it, so `rankTopK` no longer cuts the 4th candidate.
+- `mobile/lib/features/scanner/widgets/machine_thumb.dart` (new): each candidate row shows the machine's hero image (`equipmentHeroImageProvider`), or a neutral gradient icon tile when there is none.
+- `mobile/lib/features/scanner/widgets/manual_machine_picker.dart` (new): "Not it - choose manually" row at the end of the candidate list opens a searchable list of ALL catalogue machines (localised names, thumbnails). Search matches the display name and any alias (`EquipmentAliasIndex.idsMatching`, new).
+- Picking a machine opens `/equipment/<id>` (without this scan's id, because the scan described a different answer) and records it through the same `_remember` path with the new `RecognitionSource.manual` and confidence 1.0. A tapped candidate is still the user's own identification, unchanged.
+- l10n (RU + EN): `scannerNotThisPickManually`, `scannerManualPickerTitle`, `scannerManualPickerSearchHint`, `scannerManualPickerNoResults`.
+
+### Why
+Measured on 33 labelled photos (`core/ml/eval`): model top-1 is 16/33 and the right machine is in the top 3 alternatives for 20/33; prompt variants (thinking, chain of thought, 2048px) did not help. The operator should not have to guess: every answer is a candidate list, the rows are recognisable by picture, and there is always a way out when the machine is not listed.
+
+### Limits (read before relying on this)
+- This does NOT raise model accuracy. It makes correction one tap.
+- The 3-alternatives prompt only takes effect after the Cloud Function `aiEquipmentRecognition` is DEPLOYED. The deploy has NOT been done. Until then the app still works but receives the old 1 + up to 2 answer (the extra row space is simply unused).
+- The pictures are the posters of the clips that demonstrate each machine (5 machines have none and show the neutral tile); they are not photos of the real gym equipment.
+- `RecognitionSource.manual` is a new persisted value; an older build reading it gets `null` source (already handled by `recognitionSourceByName`).
+
+### Verification state
+Jest `ai_equipment_recognition.test.ts`: 22 of 22. Flutter, focused, from `mobile/`: new `scanner_manual_pick_test.dart` (5 tests: thumbnails + names + confidence + topK 4; order of 4 candidates and manual row last; "жим" finds `Жим лёжа (стойка)`, opens `/equipment/bench_press` without scanId and remembers a manual pick at 1.0; alias search and empty state; dismissing files nothing), `scan_controller_test` (topK 4), `gemini_equipment_service_test` (best + 3 kept in order, fifth cut), and the neighbouring scanner, history and l10n suites. NOT verified: appearance on a device, the deployed prompt's real effect on accuracy.

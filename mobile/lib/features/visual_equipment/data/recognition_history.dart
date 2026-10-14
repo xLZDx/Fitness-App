@@ -24,6 +24,11 @@ enum RecognitionSource {
 
   /// A QR code on the machine — the only exact-by-construction source.
   qr,
+
+  /// The user picked the machine themselves from the full catalogue ("Not it
+  /// — choose manually" on the Scan results). An identification by the user,
+  /// not by a model, so it is recorded with confidence 1.0.
+  manual,
 }
 
 /// One remembered machine: which one, when it was last seen, and how sure

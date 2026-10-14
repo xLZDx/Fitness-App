@@ -117,8 +117,9 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
       }
 
       final service = ref.read(visualEquipmentServiceProvider);
-      final matches =
-          await service.classifyFile(path: path).timeout(timeout);
+      final matches = await service
+          .classifyFile(path: path, topK: kScanCandidateCount)
+          .timeout(timeout);
       // Read straight after the awaited call, which is what the flag
       // describes. Only one scan runs at a time, so there is no second call
       // to have overwritten it in between. Services without a fallback do not

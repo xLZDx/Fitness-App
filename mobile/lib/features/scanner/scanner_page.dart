@@ -40,6 +40,8 @@ import 'scan_evidence.dart';
 import 'state/scan_match_providers.dart';
 import 'state/scan_preview_provider.dart';
 import 'widgets/equipment_identity_badge.dart';
+import 'widgets/machine_thumb.dart';
+import 'widgets/manual_machine_picker.dart';
 import 'widgets/scan_frame.dart';
 import 'widgets/scan_glyph.dart';
 import 'widgets/scan_match_card.dart';
@@ -382,6 +384,18 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         debugPrintStack(stackTrace: st);
       }),
     );
+  }
+
+  /// "Not it -- choose manually": the user names the machine themselves from
+  /// the whole catalogue. Their own identification, so it is recorded like a
+  /// tapped candidate but with source manual and confidence 1.0. It does NOT
+  /// carry this scan's id: the scan's evidence described a different answer
+  /// than the machine the user chose.
+  Future<void> _pickManually() async {
+    final String? id = await showManualMachinePicker(context);
+    if (id == null || !mounted) return;
+    _remember(id, 1.0, RecognitionSource.manual);
+    await _openEquipment(id);
   }
 
   /// Navigates away. The route listener releases the camera on its own.
@@ -881,6 +895,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                           heading: l10n.scannerBestMatches,
                           onOpen: (id) =>
                               _openEquipment(id, fromCurrentScan: true),
+                          onPickManually: _pickManually,
                         )
                       : const SizedBox.shrink(),
                   // FITAPP-EQUIP-ACC-2026-09-17 (GPT-PM review, round 2):
@@ -905,6 +920,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                             RecognitionSource.photo);
                         await _openEquipment(id, fromCurrentScan: true);
                       },
+                      onPickManually: _pickManually,
                     ),
                   // Not in the catalogue, but the describer could name it.
                   // That card IS the answer -- "не удалось понять" stops
@@ -1404,6 +1420,7 @@ class _Matches extends ConsumerWidget {
     required this.matches,
     required this.heading,
     required this.onOpen,
+    this.onPickManually,
   });
 
   /// Routed through the page so navigation is uniform; the route listener is
@@ -1411,6 +1428,10 @@ class _Matches extends ConsumerWidget {
   final Future<void> Function(String equipmentId) onOpen;
   final List<VisualMatch> matches;
   final String heading;
+
+  /// When set, the list ends with "Not it -- choose manually". The way out for
+  /// a scan whose right machine is not among the candidates.
+  final Future<void> Function()? onPickManually;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1429,6 +1450,10 @@ class _Matches extends ConsumerWidget {
             onTap: () => onOpen(m.equipmentId),
             child: Row(
               children: [
+                // The machine's own picture, so the user can recognise it by
+                // sight. Tapping the row is still the user's identification.
+                MachineThumb(equipmentId: m.equipmentId),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _MatchDetails(
                     match: m,
@@ -1441,6 +1466,25 @@ class _Matches extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
         ],
+        if (onPickManually != null)
+          HudPanel(
+            key: const Key('scan-pick-manually'),
+            onTap: () => unawaited(onPickManually!()),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).scannerNotThisPickManually,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
+          ),
       ],
     );
   }

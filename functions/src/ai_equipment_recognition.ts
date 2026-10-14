@@ -95,9 +95,10 @@ export const CANONICAL_MACHINES: readonly string[] = [
   "push-up blocks", "aerobic step",
 ] as const;
 
-/** Exact copy of `GeminiVisualEquipmentService.buildPrompt()`. No input is
- * interpolated — the whole string is a fixed constant plus the machine list
- * above, both server-owned. */
+/** Port of the former `GeminiVisualEquipmentService.buildPrompt()` (2026-10-14:
+ * now asks for exactly 3 alternatives so the app can show best + 3 and the
+ * user can confirm). No input is interpolated — the whole string is a fixed
+ * constant plus the machine list above, both server-owned. */
 function buildPrompt(): string {
   return `You identify gym equipment. Look ONLY at the machine closest to the center of
 the photo; ignore machines at the edges — gyms are crowded and the user aimed
@@ -107,8 +108,10 @@ Answer with JSON only:
 {"machine": "<name from the list below, or unknown>", "confidence": <0.0-1.0>,
  "alternatives": [{"machine": "<name>", "confidence": <0.0-1.0>}]}
 
-"confidence" is YOUR honest certainty; use low values when unsure. Give up to
-2 alternatives only when they are genuinely plausible. Machine list:
+"confidence" is YOUR honest certainty; use low values when unsure. Always give
+exactly 3 alternatives: the 3 most plausible OTHER machines from the list,
+ordered by confidence (highest first), each with its own honest confidence.
+Machine list:
 ${CANONICAL_MACHINES.join(", ")}`;
 }
 
@@ -154,8 +157,8 @@ export const aiEquipmentRecognition = onCall(AI_METERED, async (request) => {
     temperature: 0,
     disableThinking: true,
     timeoutMs: 20_000,
-    // The JSON reply is at most one machine name, a confidence float, and up
-    // to 2 alternatives — a few short fields. 256 tokens is generous headroom
+    // The JSON reply is at most one machine name, a confidence float, and 3
+    // alternatives — a few short fields (about 100 tokens). 256 is generous headroom
     // over any real reply while still being a real ceiling, matching
     // `ai_coach_advice.ts`'s reasoning for why `maxOutputTokens` is required
     // rather than left to the "answer with JSON only" instruction alone.

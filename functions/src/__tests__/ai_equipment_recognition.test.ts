@@ -210,6 +210,15 @@ describe("aiEquipmentRecognition", () => {
     expect(prompt).toContain("unknown");
   });
 
+  test("the prompt asks for exactly 3 ordered alternatives, not 'up to 2 when plausible'", async () => {
+    await aiEquipmentRecognition.run(req(VALID));
+    const prompt = generate.mock.calls[0][0].prompt as string;
+    expect(prompt).toContain("exactly 3 alternatives");
+    expect(prompt).toContain("ordered by confidence");
+    expect(prompt).not.toContain("up to\n2 alternatives");
+    expect(prompt).not.toMatch(/only when they are genuinely plausible/);
+  });
+
   test("charges the aiEquipmentRecognition quota before calling the model", async () => {
     usage = { aiEquipmentRecognition: QUOTAS.aiEquipmentRecognition };
     await expect(aiEquipmentRecognition.run(req(VALID))).rejects.toThrow(/limit for this action/);

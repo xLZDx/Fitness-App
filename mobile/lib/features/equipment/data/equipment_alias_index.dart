@@ -43,6 +43,20 @@ class EquipmentAliasIndex {
       .replaceAll(RegExp(r'[^a-zа-я0-9]+'), ' ')
       .trim();
 
+  /// Every equipmentId that has at least one alias CONTAINING [query]
+  /// (normalised, substring) -- the "search box" half of this index, used by
+  /// the manual machine picker so typing an alternative name ("bench press
+  /// station", "стойка для жима") finds the machine even when the localised
+  /// display name does not contain it. An empty query matches nothing.
+  Set<String> idsMatching(String query) {
+    final q = normalise(query);
+    if (q.isEmpty) return const <String>{};
+    return <String>{
+      for (final e in _exact.entries)
+        if (e.key.contains(q)) e.value,
+    };
+  }
+
   /// Resolves free text to an equipmentId, or null when nothing matches.
   ///
   /// Three passes, strictest first:

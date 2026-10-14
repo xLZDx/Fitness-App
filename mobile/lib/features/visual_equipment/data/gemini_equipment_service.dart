@@ -149,7 +149,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   @override
   Future<List<VisualMatch>> classifyFile({
     required String path,
-    int topK = 3,
+    int topK = kScanCandidateCount,
   }) async {
     final index = await _index;
     // Resized off the UI isolate: a camera still can run several MB, and on
@@ -312,7 +312,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   static List<VisualMatch> parseResponse(
     String text,
     EquipmentAliasIndex index, {
-    int topK = 3,
+    int topK = kScanCandidateCount,
   }) {
     final cleaned = text
         .replaceAll(RegExp(r'^\s*```(?:json)?', multiLine: true), '')
