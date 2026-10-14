@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -52,10 +53,25 @@ import 'widgets/scan_match_card.dart';
 import 'widgets/scan_viewfinder.dart';
 import 'widgets/zoom_controls.dart';
 
-/// Height of the collapsed result sheet, in logical pixels: the drag handle,
-/// the primary button and the Gallery/Live row, so the shutter and both
-/// controls are always reachable over the full-screen preview.
+/// Smallest height of the collapsed result sheet, in logical pixels: the drag
+/// handle, the primary button, the Gallery/Live row and the upload disclosure,
+/// so the shutter and both controls are always reachable over the full-screen
+/// preview. It is a FLOOR: the page measures the real header and uses the
+/// larger of the two, so a big text scale or a long translation grows the
+/// header instead of clipping it.
 const double kScanSheetCollapsedPx = 226;
+
+/// The sheet never covers more than this fraction of the screen area.
+const double kScanSheetMaxExtent = 0.92;
+
+/// Above this sheet extent the zoom and live overlay is hidden: riding on a
+/// tall sheet it would cover the title and the history button.
+const double kScanOverlayHideAbove = 0.61;
+
+/// The aiming window keeps at least this many pixels (or 30% of the height on
+/// a very short screen), so landscape and split-screen layouts still have a
+/// frame to aim through.
+const double kScanMinGuideWindowPx = 120;
 
 /// The title block drawn over the top of the camera (below the status bar).
 const double kScanTitleBlockPx = 84;
@@ -152,6 +168,20 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// The collapsed sheet's size as a fraction; written by `build`.
   double _minSheet = 0.2;
 
+  /// The pinned header's real height (at least [kScanSheetCollapsedPx]),
+  /// measured from its content after layout: it grows with the text scale and
+  /// with long translations instead of clipping the shutter row.
+  double _headerPx = kScanSheetCollapsedPx;
+  final GlobalKey _headerContentKey = GlobalKey(debugLabel: 'scan-sheet-header');
+
+  void _measureHeader() {
+    if (!mounted) return;
+    final RenderObject? box = _headerContentKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final double h = math.max(kScanSheetCollapsedPx, box.size.height.ceilToDouble());
+    if ((h - _headerPx).abs() > 0.5) setState(() => _headerPx = h);
+  }
+
   /// The sheet's current extent as a fraction of its area; things that ride
   /// above it (the live reading, the zoom control) follow it.
   double _sheetExtent = 0.2;
@@ -165,7 +195,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     if (!_sheet.isAttached) return;
     // A jump, not an animation: the answer should be readable the moment it
     // lands, and a jump is deterministic under test.
-    _sheet.jumpTo(extent);
+    _sheet.jumpTo(extent.clamp(_minSheet, kScanSheetMaxExtent).toDouble());
   }
 
   @override
@@ -489,7 +519,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// separate activity — the app backgrounds, the preview freezes on return,
   /// and it is not what was asked for.
   Future<void> _recogniseWithCamera() async {
-    if (_handling) return;
+    if (_handling || _cameraFailure != null) return;
     _handling = true;
     try {
       final shot = await ref.read(scanCameraSessionProvider).captureStill();
@@ -834,16 +864,38 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         final double topInset = MediaQuery.paddingOf(context).top;
         final double navInset = shellBottomObstruction(context);
         final double sheetAvail = (box.maxHeight - navInset).clamp(1.0, double.infinity);
+        final double headerPx = _headerPx;
+        // The collapsed sheet is exactly its measured header, however tall that
+        // is on this screen (a short landscape window just gets a taller
+        // fraction); it may not exceed the sheet's own maximum.
         final double minSheet =
-            (kScanSheetCollapsedPx / sheetAvail).clamp(0.05, 0.6).toDouble();
+            (headerPx / sheetAvail).clamp(0.05, kScanSheetMaxExtent).toDouble();
         _minSheet = minSheet;
         if (!_sheetMoved) _sheetExtent = minSheet;
         // The brackets frame the part of the preview that is neither under the
         // title nor under the collapsed sheet; the capture crop uses the same.
-        _guideInsets = EdgeInsets.only(
-          top: topInset + kScanTitleBlockPx,
-          bottom: navInset + kScanSheetCollapsedPx + 12,
-        );
+        // On a short screen the two would leave no window at all, so the title
+        // allowance and then the sheet allowance give way until the window has
+        // its minimum height.
+        double guideTop = topInset + kScanTitleBlockPx;
+        double guideBottom = navInset + headerPx + 12;
+        final double minWindow =
+            math.min(kScanMinGuideWindowPx, box.maxHeight * 0.3);
+        double excess = guideTop +
+            guideBottom +
+            2 * ScanFrame.inset +
+            minWindow -
+            box.maxHeight;
+        if (excess > 0) {
+          final double cutTop = math.min(excess, kScanTitleBlockPx);
+          guideTop -= cutTop;
+          excess -= cutTop;
+          if (excess > 0) {
+            guideBottom = math.max(navInset, guideBottom - excess);
+          }
+        }
+        _guideInsets = EdgeInsets.only(top: guideTop, bottom: guideBottom);
+        WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeader());
         final List<Widget> sheetChildren = <Widget>[
 
             // The one primary button (shutter), always in the collapsed sheet.
@@ -853,7 +905,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 key: const Key('scan-recognise-camera'),
                 label: scanned ? l10n.scannerScanAgain : l10n.scannerRecognise,
                 onPressed: scanned ? _scanAgain : _recogniseWithCamera,
-                enabled: !scan.isLoading,
+                // Off while the camera is unavailable (permission refused, no
+                // camera, a stalled stream): a shutter that waits eight seconds
+                // and then says "camera unavailable" is a button that lies.
+                // "Scan again" does not need the camera, so it stays enabled.
+                enabled: !scan.isLoading && (scanned || _cameraFailure == null),
                 glass: t.scanPrimaryButton,
                 // See `HudSurface.shadowOutsideOnly`'s doc -- Scan opts in, the
                 // panel-family default (every other button) does not.
@@ -1225,7 +1281,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 controller: _sheet,
                 initialChildSize: minSheet,
                 minChildSize: minSheet,
-                maxChildSize: 0.92,
+                maxChildSize: kScanSheetMaxExtent,
                 snap: true,
                 builder: (context, scrollController) {
                   // The first three entries are the shutter, the Gallery/Live
@@ -1233,6 +1289,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   // answer, which scrolls.
                   return _ScanSheet(
                     controller: scrollController,
+                    headerKey: _headerContentKey,
+                    headerHeight: headerPx,
                     pinned: sheetChildren.sublist(0, 3),
                     body: sheetChildren.sublist(3),
                   );
@@ -1258,11 +1316,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
 class _ScanSheet extends StatelessWidget {
   const _ScanSheet({
     required this.controller,
+    required this.headerKey,
+    required this.headerHeight,
     required this.pinned,
     required this.body,
   });
 
   final ScrollController controller;
+
+  /// Keys the header's content so the page can measure its natural height.
+  final GlobalKey headerKey;
+  final double headerHeight;
   final List<Widget> pinned;
   final List<Widget> body;
 
@@ -1283,9 +1347,10 @@ class _ScanSheet extends StatelessWidget {
           SliverPersistentHeader(
             pinned: true,
             delegate: _PinnedHeaderDelegate(
-              height: kScanSheetCollapsedPx,
+              height: headerHeight,
               color: surface,
               child: Column(
+                key: headerKey,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Center(
@@ -1338,7 +1403,17 @@ class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
         height: height,
         child: ColoredBox(
           color: color,
-          child: ClipRect(child: Align(alignment: Alignment.topCenter, child: child)),
+          // Unbounded height: the content lays out at its natural size (which
+          // the page measures) and is only clipped to the header box, never
+          // squeezed into a guessed one.
+          child: ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.topCenter,
+              minHeight: 0,
+              maxHeight: double.infinity,
+              child: child,
+            ),
+          ),
         ),
       );
 
@@ -2327,8 +2402,9 @@ class _ScanPrivacyStrip extends StatelessWidget {
           child: Text(
             AppLocalizations.of(context).scannerCloudDisclosure,
             key: const Key('scan-privacy-strip'),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
+            // Never ellipsised: this is the claim the user consents to by
+            // tapping the shutter. A larger text scale makes the pinned header
+            // taller (it is measured) rather than hiding part of the sentence.
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colors.textSecondary,
             ),
