@@ -166,6 +166,9 @@ void main() {
       'SLEEP': h.HealthDataType.SLEEP_ASLEEP,
       'HEART_RATE_VARIABILITY': h.HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
       'EXERCISE': h.HealthDataType.WORKOUT,
+      // Pulled in by the plugin's WORKOUT READ_WRITE request (see manifest).
+      'TOTAL_CALORIES_BURNED': h.HealthDataType.WORKOUT,
+      'DISTANCE': h.HealthDataType.WORKOUT,
     };
     final requested = <h.HealthDataType>{
       ...healthReadTypes(android: true),

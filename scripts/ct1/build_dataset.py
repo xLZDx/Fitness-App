@@ -38,8 +38,10 @@ import argparse
 import collections
 import hashlib
 import json
+import os
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -70,10 +72,30 @@ def git_commit() -> str:
             capture_output=True, text=True, timeout=30, check=True,
         )
         return out.stdout.strip() or "UNKNOWN"
-    except Exception:
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         # Same word the model registry uses for the same situation. Never a
         # placeholder that looks like a real value.
         return "UNKNOWN"
+
+
+def write_json_atomic(path: Path, obj: Any) -> None:
+    """Serialise first, write LF-only to a temp file, then os.replace."""
+    text = json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True,
+                      allow_nan=False) + "\n"
+    tmp = path.with_name(path.name + ".tmp")
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        for attempt in range(5):  # bounded retry for transient Windows handles
+            try:
+                os.replace(tmp, path)
+                return
+            except OSError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 def file_digest(path: Path) -> str:
@@ -241,15 +263,9 @@ def main(argv: list[str] | None = None) -> int:
     built = build(args.en, args.ru, args.equipment, args.version)
     target = args.out / f"{DATASET_ID}_{args.version}"
     target.mkdir(parents=True, exist_ok=True)
-    (target / "manifest.json").write_text(
-        json.dumps(built["manifest"], ensure_ascii=False, indent=2,
-                   sort_keys=True) + "\n", encoding="utf-8")
-    (target / "corpus_observations.json").write_text(
-        json.dumps(built["corpus"], ensure_ascii=False, indent=2,
-                   sort_keys=True) + "\n", encoding="utf-8")
-    (target / "dataset.json").write_text(
-        json.dumps(built["content"], ensure_ascii=False, indent=2,
-                   sort_keys=True) + "\n", encoding="utf-8")
+    write_json_atomic(target / "manifest.json", built["manifest"])
+    write_json_atomic(target / "corpus_observations.json", built["corpus"])
+    write_json_atomic(target / "dataset.json", built["content"])
 
     m = built["manifest"]
     print(f"{m['dataset_id']} {m['dataset_version']}")

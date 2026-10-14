@@ -1,7 +1,10 @@
 import '../../cycle_aware/data/cycle_phase.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../safety/data/eligibility.dart';
+import '../../personalisation/data/recommendation_hints.dart'
+    show VolumeCapCause;
 import '../../safety/data/health_flags.dart';
+import '../../training_context/data/training_context.dart' show TrainingContext;
 
 /// What a plan request produced.
 ///
@@ -115,6 +118,40 @@ final class UntaggedRestrictionReason extends PlanReason {
 final class InjuryFilterReason extends PlanReason {
   const InjuryFilterReason(this.count);
   final int count;
+}
+
+/// An advisory the user must see: the age-band caution, or an injury the
+/// exercise data could not be filtered for. Carries the eligibility reason so
+/// the wording is the same one every other safety surface renders.
+final class SafetyAdvisoryReason extends PlanReason {
+  const SafetyAdvisoryReason(this.advisory);
+  final EligibilityReason advisory;
+}
+
+/// What the plan actually contains because of the user's goal or age.
+///
+/// Emitted ONLY when the plan really includes such an item, so the sentence is
+/// true of the plan on screen.
+enum GoalMix { mobility, conditioning, seniorBalance }
+
+final class GoalMixReason extends PlanReason {
+  const GoalMixReason(this.mix);
+  final GoalMix mix;
+}
+
+/// The intensity factor was capped by an answer (activity level, sleep/stress,
+/// "cannot do the basics"). Emitted only when the cap really lowered it.
+final class VolumeCapReason extends PlanReason {
+  const VolumeCapReason(this.percent, this.cause);
+  final int percent;
+  final VolumeCapCause cause;
+}
+
+/// The plan was built for a stated training context (gym / outdoors / home /
+/// yoga), so the filtering behind it is said out loud.
+final class TrainingContextReason extends PlanReason {
+  const TrainingContextReason(this.context);
+  final TrainingContext context;
 }
 
 /// Nothing else applied and there is no training history yet.

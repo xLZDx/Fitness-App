@@ -63,9 +63,9 @@ quality (§5).
 
 ## 1. Module applicability matrix
 
-39 feature modules exist under `mobile/lib/features/` (counted, not estimated). Assessed by what the
+40 feature modules exist under `mobile/lib/features/` (counted, not estimated). Assessed by what the
 module actually does, not by what could theoretically be learned. The five classes below are a
-**partition**: every module appears exactly once, and the counts sum to 39. That constraint is the
+**partition**: every module appears exactly once, and the counts sum to 40. That constraint is the
 point — a matrix where a module can sit in two classes is a matrix nobody has to finish.
 
 ### ML_CORE — the module IS a model (3)
@@ -99,18 +99,20 @@ point — a matrix where a module can sit in two classes is a matrix nobody has 
 `body_comp`, `buddy`, `community`, `goal_photo`, `home` (suggestion ordering), `marketplace`,
 `progress`, `recovery`, `social_feed`, `workouts` (progression).
 
-### ML_NOT_JUSTIFIED — stated as a decision, not an omission (16)
+### ML_NOT_JUSTIFIED — stated as a decision, not an omission (17)
 
 `about`, `auth`, `celebrity_plans`, `cycle_aware`, `donor_wall`, `legal`, `licences`, `moments`,
 `onboarding`, `profile`, `progress_photos`, `scanner` (the UI shell only — the model itself lives in the
-visual_equipment module, classified ML_CORE above), `sdk_export`, `settings`, `splash`, `voice`.
+visual_equipment module, classified ML_CORE above), `sdk_export`, `settings`, `splash`, `training_context` (a
+three-state question and a fixed table that turns the answer into an equipment filter: deterministic by
+design, there is nothing to learn), `voice`.
 
 **A good `ML_NOT_JUSTIFIED` is worth more than a fake integration.** `cycle_aware` is the clearest
 case: its phase notes are a published, citable model of a menstrual cycle, and replacing them with
 a learned one would make a health claim nobody could audit.
 
 **Partition check: ML_CORE 3 · ML_AUGMENTED 5 · RULE_BASED_WITH_ML_MONITORING 5 · ML_OPTIONAL 10 ·
-ML_NOT_JUSTIFIED 16 = 39.** Matches the measured module count.
+ML_NOT_JUSTIFIED 17 = 40.** Matches the measured module count.
 
 ---
 

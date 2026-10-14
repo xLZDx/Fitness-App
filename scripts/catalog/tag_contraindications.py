@@ -567,6 +567,58 @@ def unknown_regions() -> list[str]:
     return sorted(set(RULES) - legal)
 
 
+# Rows whose tag was earned while the vendor sheet gave them no muscles, so the
+# muscle gates stood down and the word match decided alone (see `Rule.known`).
+# When the catalogue corrections layer (`catalog_corrections.json`, 2026-10)
+# derived muscles for those rows the gates started to apply and a gate vetoed
+# a tag that is still correct (`Front Lever Raise` loads the shoulder; a
+# neck curl was tagged by its word). Dropping a safety tag because a data gap
+# was filled is the wrong direction, so these stay, by id, until a rule that
+# does not need the gate stands in for them.
+PINNED = {
+    "ankle": [
+        "ea_low_rotational_med_ball_chops_quarter_squat_rotating_med_ball_left_and_ride_across_core"
+    ],
+    "elbow": [
+        "ea_lying_neck_curls"
+    ],
+    "hip": [
+        "ea_air_swing_running",
+        "ea_air_swing_side_to_side_swing",
+        "ea_air_swing_walking",
+        "ea_arms_lateral_raise_and_rotation_up",
+        "ea_front_lever_raise",
+        "ea_front_lever_raise_to_hold",
+        "ea_monkey_bar_swings"
+    ],
+    "knee": [
+        "ea_calves_stretch_on_step",
+        "ea_dumbbell_curl_press_extend",
+        "ea_elbow_extension",
+        "ea_extension_and_inclination_neck_stretch",
+        "ea_landmine_rotational_lift_to_press",
+        "ea_lying_neck_extension"
+    ],
+    "shoulder": [
+        "ea_front_lever_raise",
+        "ea_front_lever_raise_to_hold",
+        "ea_plate_clean_and_press"
+    ],
+    "wrist": [
+        "ea_arms_lateral_raise_and_rotation_up",
+        "ea_dumbbell_curl_press_extend",
+        "ea_easy_seated_twist_pose",
+        "ea_elbow_extension",
+        "ea_extension_and_inclination_neck_stretch",
+        "ea_landmine_alternating_lunge_and_twist",
+        "ea_lying_neck_curls",
+        "ea_lying_neck_extension",
+        "ea_scorpion_twist_pose",
+        "ea_seated_figure_four_with_twist_glute_stretch"
+    ]
+}
+
+
 def classify(row: dict, region: str) -> tuple[str, str] | None:
     """The first rule that fires for [region], and the token it matched.
 
@@ -602,6 +654,8 @@ def classify(row: dict, region: str) -> tuple[str, str] | None:
         found = rule.match(row)
         if found:
             return rule.name, found
+    if row["id"] in PINNED.get(region, ()):
+        return "pinned_pre_muscle_derivation", "id"
     return None
 
 

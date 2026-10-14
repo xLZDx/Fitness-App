@@ -19,6 +19,8 @@ import '../moments/widgets/day3_welcome_modal.dart';
 import '../recovery/widgets/deload_banner.dart';
 import '../safety/state/eligibility_providers.dart';
 import '../safety/widgets/eligibility_notice.dart';
+import '../training_context/state/training_context_providers.dart';
+import '../training_context/widgets/training_context_selector.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../programmes/data/programme_labels.dart';
@@ -28,6 +30,7 @@ import '../workouts/state/day_result_providers.dart';
 import '../workouts/state/session_digest_providers.dart';
 import '../workouts/state/session_screening_providers.dart';
 import 'data/home_dashboard.dart';
+import '../ai_planner/plan_reason_text.dart' show trainingContextReasonText;
 import 'data/suggestion_builder.dart';
 import 'state/home_dashboard_providers.dart';
 import 'state/suggestion_providers.dart';
@@ -167,7 +170,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             onReviewProfile: () =>
                 GoRouter.of(context).push('/onboarding/edit'),
           ))
-        else
+        else ...[
+          _gutter(const TrainingContextSelector()),
+          const SizedBox(height: 12),
+          // Ask before generating: no suggestions until answered or skipped.
+          if (ref.watch(trainingContextProvider).valueOrNull?.answered ?? false)
           ...ref.watch(suggestionsProvider).when(
                 loading: () => [_gutter(const _SuggestionsPlaceholder())],
                 error: (e, _) =>
@@ -185,6 +192,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ],
                       ],
               ),
+        ],
       ],
     );
   }
@@ -1150,6 +1158,19 @@ class _SuggestionCard extends StatelessWidget {
                     color: theme.colors.textSecondary,
                   ),
                 ),
+                // The pool was narrowed by the chosen training context, so the
+                // card says which one (nothing when skipped / unanswered).
+                if (s.trainingContext != null)
+                  Text(
+                    trainingContextReasonText(
+                        AppLocalizations.of(context), s.trainingContext!),
+                    key: Key('suggestion-context-${s.exerciseId}'),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colors.textSecondary,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -1177,6 +1198,7 @@ String _reasonText(AppLocalizations l, WorkoutSuggestion s) =>
       SuggestionReason.cardioForEndurance => l.suggestionReasonCardioEndurance,
       SuggestionReason.buildsStrength => l.suggestionReasonBuildsStrength,
       SuggestionReason.buildsMuscle => l.suggestionReasonBuildsMuscle,
+      SuggestionReason.buildsMobility => l.suggestionReasonMobility,
       SuggestionReason.fitsSessionLength => l.suggestionReasonFitsSessionLength,
       SuggestionReason.matchesProfile => l.suggestionReasonMatchesProfile,
     };

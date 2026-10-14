@@ -106,6 +106,82 @@ void main() {
           reason: 'a real repository must make the card tappable again');
     });
   });
+
+  group('service-layer guard', () {
+    ProviderContainer container({
+      required bool realListings,
+      required bool demoFeatures,
+      required _RecordingMarketplaceService svc,
+    }) {
+      final c = ProviderContainer(overrides: [
+        if (realListings)
+          coachListingRepositoryProvider
+              .overrideWithValue(const _RealListing()),
+        marketplaceDemoFeaturesProvider.overrideWithValue(demoFeatures),
+        coachMarketplaceServiceProvider.overrideWithValue(svc),
+      ]);
+      addTearDown(c.dispose);
+      return c;
+    }
+
+    test('mock listings: booking and onboarding throw before the backend',
+        () async {
+      final svc = _RecordingMarketplaceService();
+      final guarded = container(
+              realListings: false, demoFeatures: true, svc: svc)
+          .read(guardedCoachMarketplaceServiceProvider);
+      await expectLater(
+          guarded.bookSession(coachUid: 'x', startsAt: DateTime(2030)),
+          throwsA(isA<MarketplaceUnavailableException>()));
+      await expectLater(guarded.startOnboarding(),
+          throwsA(isA<MarketplaceUnavailableException>()));
+      expect(svc.bookings, isEmpty);
+      expect(svc.onboardings, isEmpty);
+    });
+
+    test('release (no payment sheet): real listings still cannot book',
+        () async {
+      final svc = _RecordingMarketplaceService();
+      final guarded = container(
+              realListings: true, demoFeatures: false, svc: svc)
+          .read(guardedCoachMarketplaceServiceProvider);
+      await expectLater(
+          guarded.bookSession(coachUid: 'x', startsAt: DateTime(2030)),
+          throwsA(isA<MarketplaceUnavailableException>()));
+      expect(svc.bookings, isEmpty);
+    });
+
+    test('debug build with real listings keeps the demo path', () async {
+      final svc = _RecordingMarketplaceService();
+      final guarded = container(
+              realListings: true, demoFeatures: true, svc: svc)
+          .read(guardedCoachMarketplaceServiceProvider);
+      await guarded.bookSession(coachUid: 'x', startsAt: DateTime(2030));
+      expect(svc.bookings, ['x']);
+    });
+
+    testWidgets(
+        'release: real listings show "not available yet", card is inert',
+        (tester) async {
+      final svc = _RecordingMarketplaceService();
+      await tester.pumpWidget(_host(
+        const MarketplacePage(),
+        overrides: [
+          coachListingRepositoryProvider
+              .overrideWithValue(const _RealListing()),
+          marketplaceDemoFeaturesProvider.overrideWithValue(false),
+          coachMarketplaceServiceProvider.overrideWithValue(svc),
+        ],
+      ));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Booking is not available yet'),
+          findsOneWidget);
+      await tester.tap(find.text('Real Coach'));
+      await tester.pumpAndSettle();
+      expect(svc.bookings, isEmpty);
+      expect(find.textContaining('Booked'), findsNothing);
+    });
+  });
 }
 
 class _RealListing implements CoachListingRepository {

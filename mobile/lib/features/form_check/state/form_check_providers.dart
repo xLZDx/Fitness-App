@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/coach_counters.dart';
+import '../data/coach_registry.dart';
+import '../data/coach_signal.dart';
+import '../data/coach_spec.dart';
+import '../data/generic_rule_classifier.dart';
+import '../data/hold_counter.dart';
 import '../data/coach_phases.dart';
 import '../data/form_classifier.dart';
 import '../data/measured_rep_configs.dart';
@@ -39,6 +45,16 @@ enum FormExercise {
   lunge,
   situp,
   overheadPress,
+  // Registry-only movements (WS7): no silhouette, coached from
+  // `assets/data/coach_exercises.json`; offered only while a spec exists.
+  bentOverRow,
+  lateralRaise,
+  plank,
+  gluteBridge,
+  pullUp,
+  stepUp,
+  tricepDip,
+  goodMorning,
 }
 
 /// Catalog pattern id -> the movement this coach knows, or null.
@@ -73,7 +89,76 @@ String? poseTagFor(FormExercise e) => switch (e) {
       // files its exercises under `hinge`, which is the same movement with a
       // shape authored for it.
       FormExercise.deadlift => null,
+      // Registry movements: the tag is the registry alias / id the spec is
+      // looked up by. No silhouette targets or rep signals exist for them.
+      FormExercise.bentOverRow => 'bent_over_row',
+      FormExercise.lateralRaise => 'lateral_raise',
+      FormExercise.plank => 'plank',
+      FormExercise.gluteBridge => 'glute_bridge',
+      FormExercise.pullUp => 'pull_up',
+      FormExercise.stepUp => 'step_up',
+      FormExercise.tricepDip => 'tricep_dip',
+      FormExercise.goodMorning => 'good_morning',
     };
+
+/// Movements that exist only as registry rows: listed in the picker solely
+/// while a spec is present (never as a disabled "not taught yet" chip).
+const Set<FormExercise> kRegistryOnlyExercises = {
+  FormExercise.bentOverRow,
+  FormExercise.lateralRaise,
+  FormExercise.plank,
+  FormExercise.gluteBridge,
+  FormExercise.pullUp,
+  FormExercise.stepUp,
+  FormExercise.tricepDip,
+  FormExercise.goodMorning,
+};
+
+/// The registry row that coaches [e], or null. Looked up by catalogue tag
+/// (alias or id), then by the enum name.
+CoachSpec? coachSpecFor(CoachRegistry? registry, FormExercise e) {
+  if (registry == null) return null;
+  final tag = poseTagFor(e);
+  return (tag == null ? null : registry.lookup(tag)) ?? registry.lookup(e.name);
+}
+
+/// The bundled registry. Never throws: a load or validation failure is logged
+/// and yields null, and the coach keeps its legacy behaviour.
+final coachRegistryLoaderProvider =
+    Provider<Future<CoachRegistry> Function()>((_) => CoachRegistry.load);
+
+final coachRegistryProvider = FutureProvider<CoachRegistry?>((ref) async {
+  try {
+    return await ref.read(coachRegistryLoaderProvider)();
+  } catch (e, st) {
+    debugPrint('coach registry failed to load, using legacy coach only: $e');
+    // Fire-and-forget, sanitized (error + stack trace only), same as
+    // TtsVoiceCoach: a bundled-asset failure must not stay debug-only.
+    try {
+      unawaited(
+        FirebaseCrashlytics.instance.recordError(
+          e,
+          st,
+          fatal: false,
+          reason: 'coachRegistryProvider load failed',
+        ),
+      );
+    } catch (_) {
+      // Reporting failure is not itself reportable.
+    }
+    return null;
+  }
+});
+
+/// Synchronous view of [coachRegistryProvider] (null while loading or failed).
+/// Tests override THIS one with a value.
+final coachRegistrySnapshotProvider = Provider<CoachRegistry?>(
+    (ref) => ref.watch(coachRegistryProvider).valueOrNull);
+
+/// The registry row of the selected movement, or null.
+final coachSpecProvider = Provider<CoachSpec?>((ref) => coachSpecFor(
+    ref.watch(coachRegistrySnapshotProvider),
+    ref.watch(selectedExerciseProvider)));
 
 /// Whether the Form Coach can judge [poseTargetId] well enough to offer it.
 ///
@@ -105,8 +190,9 @@ bool formCoachSupports(String? poseTargetId) {
 /// a silhouette and a counter that never moved, and `deadlift` gave no shape at
 /// all: the screen the feature is named after was the one place its own support
 /// gate did not run.
-bool formCoachTeaches(FormExercise e) =>
-    poseTargetsFor(e) != null && countsRepsFor(e);
+bool formCoachTeaches(FormExercise e, {CoachRegistry? registry}) =>
+    (poseTargetsFor(e) != null && countsRepsFor(e)) ||
+    coachSpecFor(registry, e) != null;
 
 /// The two ends of [e]'s movement, or null when nothing is authored.
 ///
@@ -158,14 +244,15 @@ bool countsRepsFor(FormExercise e) {
 /// [repSignalFor]. Squat is the one exception: [squatDepthSignal] stays --
 /// a measured squat config exists too, but replacing a tuned, shipped signal
 /// for no accuracy gain is not what the measurement was for.
-(RepSignalExtractor, RepCounterConfig)? liveRepSignalFor(FormExercise e) {
+(RepSignalExtractor, RepCounterConfig)? liveRepSignalFor(FormExercise e,
+    {CoachSpec? spec}) {
   if (e == FormExercise.squat) return repSignalFor(e);
   final tag = poseTagFor(e);
   final measured = tag == null ? null : measuredRepConfigs[tag];
   if (measured != null && measured.countsReps) {
     return (measured.signal, measured.toConfig());
   }
-  return repSignalFor(e);
+  return repSignalFor(e) ?? (spec == null ? null : coachRepSignal(spec));
 }
 
 /// The per-side extractor for [e], or null when this movement has none.
@@ -197,7 +284,8 @@ double? coachFullAmplitudeSignalFor(FormExercise e) =>
 final coachCountersProvider = Provider<CoachCounters>((ref) {
   final session = ref.watch(repSessionControllerProvider);
   final exercise = ref.watch(selectedExerciseProvider);
-  final signal = liveRepSignalFor(exercise);
+  final signal =
+      liveRepSignalFor(exercise, spec: ref.watch(coachSpecProvider));
   return coachCountersFor(
     session.reps.isEmpty ? null : session.reps.last,
     config: signal?.$2 ?? const RepCounterConfig(),
@@ -214,8 +302,15 @@ final coachCountersProvider = Provider<CoachCounters>((ref) {
 /// the two movements MM-Fit measured below the 80% bar -- a count that is
 /// wrong more often than right is worse than no count, the same contract
 /// [MeasuredRepConfig.countsReps] states for [counterFor].
-bool showRepCountFor(FormExercise e) {
+bool showRepCountFor(FormExercise e, {CoachSpec? spec}) {
   if (e == FormExercise.squat) return true;
+  // Registry rows: a count is shown only for a measured, stable row; authored
+  // beta rows are on-screen advisory and never display a number (ship gate).
+  if (!countsRepsFor(e) && spec != null) {
+    return spec.counting.mode == CoachCountingMode.reps &&
+        spec.provenance.kind == CoachProvenanceKind.measured &&
+        spec.provenance.status == CoachProvenanceStatus.stable;
+  }
   final tag = poseTagFor(e);
   final measured = tag == null ? null : measuredRepConfigs[tag];
   if (measured != null) return measured.countsReps;
@@ -556,7 +651,21 @@ final poseMatchProvider = StateProvider<double?>((_) => null);
 /// корпуса" for eight consecutive squats; half of that was a push-up rule
 /// grading a squat, and it was never going to be fixed by tuning it.
 final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
-  return switch (ref.watch(selectedExerciseProvider)) {
+  final exercise = ref.watch(selectedExerciseProvider);
+  // Legacy rule classifiers stay for squat/push-up/deadlift (registry parity
+  // is not provable: see the WS7 P2 notes). Every other movement is registry
+  // driven when a spec exists, otherwise empty as before.
+  final spec = ref.watch(coachSpecProvider);
+  if (spec != null &&
+      exercise != FormExercise.squat &&
+      exercise != FormExercise.pushup &&
+      exercise != FormExercise.deadlift) {
+    return [
+      GenericRuleClassifier(spec,
+          gateConfig: ref.watch(poseGateConfigProvider)),
+    ];
+  }
+  return switch (exercise) {
     FormExercise.squat => [SquatDepthClassifier()],
     FormExercise.pushup => [PushupAlignmentClassifier()],
     FormExercise.deadlift => [DeadliftHipHingeClassifier()],
@@ -573,7 +682,15 @@ final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
     FormExercise.hinge ||
     FormExercise.lunge ||
     FormExercise.situp ||
-    FormExercise.overheadPress =>
+    FormExercise.overheadPress ||
+    FormExercise.bentOverRow ||
+    FormExercise.lateralRaise ||
+    FormExercise.plank ||
+    FormExercise.gluteBridge ||
+    FormExercise.pullUp ||
+    FormExercise.stepUp ||
+    FormExercise.tricepDip ||
+    FormExercise.goodMorning =>
       const [],
   };
 });
@@ -1059,7 +1176,11 @@ class RepSessionState {
     this.lastRepEvaluated = false,
     this.isArmed = false,
     this.lastReject,
+    this.holdMs = 0,
   });
+
+  /// Time held in band (hold exercises only), ms. 0 for rep exercises.
+  final int holdMs;
 
   /// Whether the counter has seen the lifter standing at the top and is
   /// therefore willing to start a repetition.
@@ -1178,6 +1299,9 @@ const double _minObservedRatio = 0.5;
 class RepSessionController extends Notifier<RepSessionState> {
   StreamSubscription<PoseFrame>? _sub;
   RepCounter? _counter;
+  HoldCounter? _hold;
+  CoachSpec? _spec;
+  CoachSignalBand? _holdBand;
 
   /// Timestamp of the last frame processed while counting was live, or null
   /// before any live frame has been seen.
@@ -1280,7 +1404,16 @@ class RepSessionController extends Notifier<RepSessionState> {
     final svc = ref.watch(poseDetectorServiceProvider);
     final coach = ref.watch(voiceCoachProvider);
     final exercise = ref.watch(selectedExerciseProvider);
-    final signal = liveRepSignalFor(exercise);
+    final spec = ref.watch(coachSpecProvider);
+    _spec = spec;
+    final holdMin = spec?.counting.minHoldMs;
+    _hold = (spec != null &&
+            spec.counting.mode == CoachCountingMode.hold &&
+            holdMin != null)
+        ? HoldCounter(minHoldMs: holdMin)
+        : null;
+    _holdBand = _hold == null ? null : CoachSignalBand(spec!.signal);
+    final signal = liveRepSignalFor(exercise, spec: spec);
     _counter = RepCounter(
       config: signal?.$2 ?? const RepCounterConfig(),
       signal: signal?.$1,
@@ -1476,6 +1609,7 @@ class RepSessionController extends Notifier<RepSessionState> {
     // is what stops a selfie of a face from producing six reps and an endless
     // repeated safety warning.
     if (!result.scorable) {
+      _hold?.update(false, atMs: frame.timestampMs);
       _publishMatch(null);
       return;
     }
@@ -1525,6 +1659,20 @@ class RepSessionController extends Notifier<RepSessionState> {
     // running" — the same reason R11h put the pre-set stages behind the gate
     // verdict instead of behind a second copy of it.
     if (!countingLive) {
+      return;
+    }
+
+    final hold = _hold;
+    final spec = _spec;
+    if (hold != null && spec != null) {
+      final view = coachFrameFor(spec, frame);
+      final value = coachSignalValue(spec, view,
+          minLikelihood: gateConfig.minLikelihood);
+      hold.update(_holdBand!.update(value), atMs: frame.timestampMs);
+      // Republished per whole second (and on run/pause edges), not per frame.
+      if (hold.heldMs ~/ 1000 != state.holdMs ~/ 1000) {
+        state = RepSessionState(holdMs: hold.heldMs);
+      }
       return;
     }
 
@@ -1833,6 +1981,8 @@ class RepSessionController extends Notifier<RepSessionState> {
   /// Start a new set: clear the count and the quality log.
   void resetSet() {
     _counter?.reset();
+    _hold?.reset();
+    _holdBand?.reset();
     _worstThisRep = null;
     // Also the silhouette peak. Left behind, the best shape of the previous
     // set would be credited to the first rep of the next one.

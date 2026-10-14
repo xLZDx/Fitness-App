@@ -37,6 +37,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -207,6 +208,23 @@ class Ledger:
         return entry
 
 
+def _replace_with_bounded_retry(source: Path | str, target: Path) -> None:
+    """`os.replace`, retried briefly (copied from
+    scripts/equipment_identity/capture_terms.py::_replace_with_bounded_retry).
+
+    Windows can raise winerror 5/32 from a transient indexer/scanner handle.
+    The last error is re-raised, never swallowed.
+    """
+    for attempt in range(5):
+        try:
+            os.replace(source, target)
+            return
+        except OSError:
+            if attempt == 4:
+                raise
+            time.sleep(0.05 * (attempt + 1))
+
+
 def atomic_write_text(path: Path, text: str) -> None:
     """Write a whole file or leave the old one intact. Used for generated manifests."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -216,7 +234,7 @@ def atomic_write_text(path: Path, text: str) -> None:
             fh.write(text)
             fh.flush()
             os.fsync(fh.fileno())
-        os.replace(tmp, path)
+        _replace_with_bounded_retry(tmp, path)
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise

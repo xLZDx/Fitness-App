@@ -105,6 +105,7 @@ test("carries every store the inventory lists for this user", async () => {
   docs.set("users/u1/profile/main", { goal: "strength", injuries: ["knee"] });
   docs.set("users/u1/subscription/main", { tier: "standard" });
   docs.set("users/u1/stats/workouts", { total: 12 });
+  docs.set("users/u1/stats/workout_sessions", { longestStreakDays: 5 });
   docs.set("donor_wall/u1", { name: "Ivan" });
   docs.set("coach_listings/u1", { bio: "coach" });
   collections.set("users/u1/workout_logs", [{ id: "l1", data: { reps: 8 } }]);
@@ -136,6 +137,7 @@ test("carries every store the inventory lists for this user", async () => {
   expect(res.profile).toMatchObject({ injuries: ["knee"] });
   expect(res.subscription).toMatchObject({ tier: "standard" });
   expect(res.stats).toMatchObject({ total: 12 });
+  expect(res.workoutSessionStats).toMatchObject({ longestStreakDays: 5 });
   expect(res.workoutLogs).toHaveLength(1);
   expect(res.workoutSessions).toHaveLength(1);
   expect(res.scheduledSessions).toHaveLength(1);
@@ -242,6 +244,46 @@ test("a coach's export does not carry their clients' uids or payment ids",
     expect(booking.startsAt).toBe("2026-08-01T10:00:00Z");
     expect(booking.priceCents).toBe(5000);
     expect(booking.yourRole).toBe("coach");
+  });
+
+test("a self-booking matched by both queries is exported once, as the client's own row",
+  async () => {
+    // One session must not be counted twice in someone's data export, and a
+    // row that is the user's own as client keeps its id (the client's own
+    // reference) and is not relabelled as the coach side.
+    collections.set("coach_bookings", [
+      {
+        id: "bk_self",
+        data: { clientUid: "u1", coachUid: "u1", priceCents: 4000, stripePaymentIntentId: "pi_x" },
+      },
+    ]);
+
+    const res = await exportAccountData.run(req());
+
+    expect(res.coachBookings).toHaveLength(1);
+    expect(res.coachBookings[0]).toMatchObject({
+      id: "bk_self",
+      yourRole: "client",
+      priceCents: 4000,
+    });
+    expect(JSON.stringify(res)).not.toContain("pi_x");
+  });
+
+test("bookings where the user is client and where the user is coach are both listed, each with its own role",
+  async () => {
+    collections.set("coach_bookings", [
+      { id: "asClient", data: { clientUid: "u1", coachUid: "c9" } },
+      { id: "asCoach", data: { clientUid: "c8", coachUid: "u1" } },
+    ]);
+
+    const res = await exportAccountData.run(req());
+
+    const byRole = Object.fromEntries(
+      res.coachBookings.map((b: any) => [b.yourRole, b]),
+    );
+    expect(res.coachBookings).toHaveLength(2);
+    expect(byRole.client.id).toBe("asClient");
+    expect(byRole.coach).not.toHaveProperty("id");
   });
 
 test("a capped section is named, never silently short", async () => {

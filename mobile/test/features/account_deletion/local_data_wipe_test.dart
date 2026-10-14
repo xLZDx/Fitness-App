@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fitness_app/features/training_context/state/training_context_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
@@ -53,6 +54,30 @@ void main() {
     SharedPreferences.setMockInitialValues(values);
     return SharedPreferences.getInstance();
   }
+
+  test('a failing photo-key forget still runs the remaining steps and is reported',
+      () async {
+    final prefs = await prefsWith({
+      trainingContextKeyFor('u1'): 'yoga',
+      'settings.tier_override': 'pro',
+    });
+    final rec = Directory('${docs.path}/coach_recordings/u1')
+      ..createSync(recursive: true);
+    File('${rec.path}/a.json').writeAsStringSync('{}');
+    final wipe = DeviceLocalDataWipe(
+      prefs: prefs,
+      documentsDir: docs,
+      forgetPhotoKey: (_) async => throw StateError('keystore'),
+    );
+    await expectLater(
+      wipe.wipe('u1'),
+      throwsA(isA<LocalWipeIncomplete>()
+          .having((e) => e.remaining, 'remaining', contains('photo_key'))),
+    );
+    expect(prefs.getString(trainingContextKeyFor('u1')), isNull);
+    expect(prefs.getString('settings.tier_override'), isNull);
+    expect(rec.existsSync(), isFalse);
+  });
 
   test('one key that fails to erase does not stop the others, and the caller is told',
       () async {
@@ -298,5 +323,60 @@ void main() {
     expect(prefs.getString('settings.theme_mode'), 'dark');
     expect(prefs.getBool('settings.notifications_enabled'), isTrue);
     expect(DeviceLocalDataWipe.kept, contains('settings.language'));
+  });
+
+  test(
+      'two accounts on one phone: wiping A removes every item of A '
+      '(scans, scan reminder, training context, consent, coach recordings) and none of B',
+      () async {
+    final seeded = <String, Object>{};
+    for (final uid in ['A', 'B']) {
+      seeded['profile.sensitive.$uid'] = '{"blob":"$uid"}';
+      seeded[trainingContextKeyFor(uid)] = 'home';
+      seeded['progress_photos.scan_reminder.v1.$uid'] = true;
+      seeded['progress_photos.consent.v1.$uid'] = true;
+    }
+    final prefs = await prefsWith(seeded);
+    for (final uid in ['A', 'B']) {
+      final scans = Directory('${docs.path}/progress_photos/$uid/scans')
+        ..createSync(recursive: true);
+      File('${scans.path}/scan1.bin').writeAsBytesSync([1, 2, 3]);
+      File('${scans.path}/scan1.json').writeAsStringSync('{}');
+      final rec = Directory('${docs.path}/coach_recordings/$uid')
+        ..createSync(recursive: true);
+      File('${rec.path}/set1.json').writeAsStringSync('{}');
+    }
+    final forgotten = <String>[];
+    final wipe = DeviceLocalDataWipe(
+      prefs: prefs,
+      documentsDir: docs,
+      forgetPhotoKey: (uid) async => forgotten.add(uid),
+    );
+
+    await wipe.wipe('A');
+
+    for (final key in [
+      'profile.sensitive.A',
+      trainingContextKeyFor('A'),
+      'progress_photos.scan_reminder.v1.A',
+      'progress_photos.consent.v1.A',
+    ]) {
+      expect(prefs.containsKey(key), isFalse, reason: '$key must be gone');
+    }
+    expect(Directory('${docs.path}/progress_photos/A').existsSync(), isFalse);
+    expect(Directory('${docs.path}/coach_recordings/A').existsSync(), isFalse);
+    expect(forgotten, ['A']);
+
+    // B is untouched, byte for byte.
+    expect(prefs.getString('profile.sensitive.B'), '{"blob":"B"}');
+    expect(prefs.getString(trainingContextKeyFor('B')), 'home');
+    expect(prefs.getBool('progress_photos.scan_reminder.v1.B'), isTrue);
+    expect(prefs.getBool('progress_photos.consent.v1.B'), isTrue);
+    expect(
+        File('${docs.path}/progress_photos/B/scans/scan1.bin').readAsBytesSync(),
+        [1, 2, 3]);
+    expect(File('${docs.path}/progress_photos/B/scans/scan1.json').existsSync(),
+        isTrue);
+    expect(File('${docs.path}/coach_recordings/B/set1.json').existsSync(), isTrue);
   });
 }

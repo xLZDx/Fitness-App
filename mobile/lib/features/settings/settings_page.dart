@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../core/config/demo_features.dart';
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/state/settings_providers.dart';
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
@@ -275,23 +276,27 @@ class SettingsPage extends ConsumerWidget {
           // the Firestore rules enforce the moderator claim, and a client flag
           // would be decoration over the real gate. A curious user who taps it
           // sees an empty queue, which is the truth.
-          HudPanel(
-            key: const Key('settings-moderation'),
-            onTap: () => context.push('/moderate'),
-            child: Row(
-              children: [
-                Icon(Icons.rule_folder_outlined,
-                    color: theme.colorScheme.primary),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                      AppLocalizations.of(context).catalogModerationQueue,
-                      style: theme.textTheme.titleMedium),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
+          //
+          // Demo-backed (Mock repository): hidden in release builds, see
+          // `kDemoFeaturesEnabled`.
+          if (kDemoFeaturesEnabled)
+            HudPanel(
+              key: const Key('settings-moderation'),
+              onTap: () => context.push('/moderate'),
+              child: Row(
+                children: [
+                  Icon(Icons.rule_folder_outlined,
+                      color: theme.colorScheme.primary),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                        AppLocalizations.of(context).catalogModerationQueue,
+                        style: theme.textTheme.titleMedium),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
             ),
-          ),
           const SizedBox(height: 24),
           // L0b. Visually separated from every tile above it -- error colour
           // throughout, not just the icon -- because this is the one action

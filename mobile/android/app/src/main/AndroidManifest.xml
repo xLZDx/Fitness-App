@@ -5,8 +5,6 @@
 
     <!-- flutter_local_notifications: deliver + reschedule on boot -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -20,27 +18,21 @@
     <uses-permission android:name="android.permission.health.READ_SLEEP"/>
     <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
-    <!-- health 11.1.1 README (Android setup): "Accessing fitness data
-         (e.g. Steps) requires permission to access the 'Activity
-         Recognition' API." Runtime-dangerous; declared here, granted
-         via the system prompt. -->
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
-
-    <!-- BLE (TX.3 buddy matching, in-gym presence). -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation"
-        tools:targetApi="31"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="31"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" tools:targetApi="31"/>
-
-    <!-- Audio (TX.6 voice-only). speech_to_text + flutter_tts. -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-
-    <!-- Foreground service for an active workout (rest timer, voice
-         control). FOREGROUND_SERVICE_HEALTH is the Android 14 channel
-         that wears down the kill-on-background risk. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH"/>
+    <!-- health 11.1.1 writeWorkoutData inserts a TotalCaloriesBurnedRecord (and
+         asks for DistanceRecord) alongside the ExerciseSessionRecord in one
+         insertRecords call, and its READ_WRITE request for WORKOUT adds these
+         four grants (HealthPlugin.kt ~L548-L580). Undeclared, the request
+         cannot be fully granted. The app itself never reads or writes distance. -->
+    <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.WRITE_DISTANCE"/>
+    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+    <!-- No ACTIVITY_RECOGNITION and no RECORD_AUDIO: no code requests them.
+         Health Connect reads need only the health.* grants above (the plugin
+         manifests in the pub cache declare no permissions), and speech_to_text
+         is not imported anywhere in mobile/lib (only flutter_tts speech OUTPUT
+         is used). Re-add a permission only together with the feature, the
+         privacy text and the Play declaration. -->
 
     <application
         android:label="fitness_app"

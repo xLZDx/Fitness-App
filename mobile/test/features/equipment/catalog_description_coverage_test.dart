@@ -7,21 +7,16 @@ import 'package:flutter_test/flutter_test.dart';
 /// description — requested by the operator after finding an exercise whose
 /// "How to do it" card was empty on their phone (2026-08-12).
 ///
-/// This does NOT assert that every exercise has a description. 403 of 1,887 do
-/// not, and that is the vendor's own gap: their metadata sheet is ~79% filled
-/// (`scripts/catalog/build_vendor_catalog.py`, header), every builder derives
-/// `summary` as `steps[0]`, and so the two fields are empty on exactly the same
-/// rows. Asserting full coverage would be asserting a fact that is false today
-/// and can only be made true by authoring 403 technique descriptions — which is
-/// content work, not a code change, and not something to invent for a fitness
-/// app where a wrong cue is an injury.
+/// Every exercise ships with steps and a summary, so the allowance is zero.
+/// The vendor's own sheet was ~79% filled, and the rows it left empty have since
+/// been authored; a row that loses its text again
+/// lands here with the new count in the message.
 ///
-/// What it asserts is that the number cannot QUIETLY grow. Adding vendor rows
-/// without descriptions, or a regression in the build that drops the text for
-/// rows that had it, both land here as a failure with the new count in the
-/// message. Filling descriptions lowers the number, and lowering [_kMaxMissing]
-/// is then part of that change.
-const int _kMaxMissing = 403;
+/// A second ratchet below covers `purpose`: every row has one except the
+/// quarantined `ea_major_groups_muscle_body`, which is not an exercise.
+/// Both fields are re-applied after every catalogue build by
+/// `scripts/catalog/catalog_corrections.py`.
+const int _kMaxMissing = 0;
 
 /// Guards the ratchet from the other direction: a build that DROPS rows would
 /// otherwise lower the missing count and look like an improvement.
@@ -77,5 +72,26 @@ void main() {
         .toSet();
 
     expect(noSteps, equals(noSummary));
+  });
+
+  test('every exercise except the quarantined one has a purpose, en and ru', () {
+    final rows = (jsonDecode(
+      File('assets/data/exercises_vendor.json').readAsStringSync(),
+    ) as List)
+        .cast<Map<String, dynamic>>();
+    final ru = jsonDecode(
+      File('assets/data/exercises_vendor.ru.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    bool blank(Object? v) => v == null || (v is String && v.trim().isEmpty);
+
+    final noPurpose = rows.where((r) => blank(r['purpose'])).map((r) => r['id']);
+    expect(noPurpose.toList(), ['ea_major_groups_muscle_body']);
+
+    final noRu = rows
+        .where((r) => !blank(r['purpose']))
+        .where((r) => blank((ru[r['id']] as Map<String, dynamic>?)?['purpose']))
+        .map((r) => r['id'])
+        .toList();
+    expect(noRu, isEmpty, reason: 'Russian purpose missing for $noRu');
   });
 }

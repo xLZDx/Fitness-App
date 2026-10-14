@@ -2,6 +2,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'form_classifier.dart';
 import 'pose_gate.dart';
+import 'registry_cue_text.dart';
 import 'rep_counter.dart';
 
 /// The boundary where the form coach's internal identifiers become words.
@@ -33,7 +34,18 @@ String formCueText(AppLocalizations l10n, FormCueKey cueKey) =>
       FormCueKey.pushupAlignTuck => l10n.formcheckCuePushupAlignTuck,
       FormCueKey.pushupAlignSagging => l10n.formcheckCuePushupAlignSagging,
       FormCueKey.silhouetteMissed => l10n.formcheckCueSilhouetteMissed,
+      // Registry cues are worded by cueId (see [formFeedbackText]); a key-only
+      // resolver has nothing to say, which keeps them unspoken.
+      FormCueKey.registry => '',
     };
+
+/// Text for a whole [FormFeedback]: registry wording by [FormFeedback.cueId]
+/// when present, otherwise the legacy key. Null when a registry id is unknown.
+String? formFeedbackText(AppLocalizations l10n, FormFeedback feedback) {
+  final id = feedback.cueId;
+  if (id != null) return registryCueText(l10n, id);
+  return formCueText(l10n, feedback.cueKey);
+}
 
 /// The calm explanation of a fault: what exactly is wrong, and why it matters.
 ///
@@ -59,6 +71,7 @@ String? formFaultExplanation(AppLocalizations l10n, FormFeedback feedback) {
     FormCueKey.pushupAlignTuck => l10n.formcheckExplainPushupTuck,
     FormCueKey.pushupAlignSagging => l10n.formcheckExplainPushupSagging,
     FormCueKey.silhouetteMissed => l10n.formcheckExplainSilhouetteMissed,
+    FormCueKey.registry => null,
     // Every remaining cue belongs to a rule that reports without judging, and
     // reaches severity 0 only. Listed rather than swept into a default arm, so
     // that a new cue which CAN fault is a compile error here instead of a

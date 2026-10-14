@@ -34,7 +34,7 @@ void main() {
       });
 
       test('every cue key resolves to real text', () {
-        for (final key in FormCueKey.values) {
+        for (final key in _legacyKeys) {
           final text = formCueText(l10n, key);
           expect(text.trim(), isNotEmpty, reason: '$key has no text');
           expect(text, isNot(equals(key.name)),
@@ -84,7 +84,7 @@ void main() {
       // the bar and hit depth." both looked like on the operator's screen.
       final english = RegExp(r'[A-Za-z]{3,}\s+[A-Za-z]{3,}');
       final strings = <String>[
-        for (final k in FormCueKey.values) formCueText(ru, k),
+        for (final k in _legacyKeys) formCueText(ru, k),
         for (final c in [
           'squat.depth',
           'deadlift.hip_hinge',
@@ -108,7 +108,7 @@ void main() {
       // spelled out as "not a Cyrillic letter".
       const informal = ['вставай', 'опустись', 'напряги', 'подверни', 'убавь',
           'держи', 'садись', 'опусти', 'поднимай'];
-      for (final key in FormCueKey.values) {
+      for (final key in _legacyKeys) {
         final text = formCueText(ru, key).toLowerCase();
         for (final word in informal) {
           final whole = RegExp('(^|[^а-яё])$word([^а-яё]|\$)');
@@ -119,3 +119,7 @@ void main() {
     });
   });
 }
+
+/// `registry` is a sentinel worded by cueId (`registry_cue_text.dart`).
+final _legacyKeys =
+    FormCueKey.values.where((k) => k != FormCueKey.registry).toList();

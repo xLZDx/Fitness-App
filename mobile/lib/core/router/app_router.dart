@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../config/demo_features.dart';
 import '../../features/about/about_page.dart';
 import '../../features/account_deletion/account_deletion_page.dart';
 import '../../features/legal/privacy_page.dart';
@@ -30,6 +31,8 @@ import '../../features/onboarding/onboarding_page.dart';
 import '../../features/data_export/backup_page.dart';
 import '../../features/posture/posture_page.dart';
 import '../../features/progress_photos/progress_photos_page.dart';
+import '../../features/progress_photos/scan/ui/scan_capture_screen.dart';
+import '../../features/progress_photos/scan/ui/scan_compare_screen.dart';
 import '../../features/social_feed/social_feed_page.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/injuries_page.dart';
@@ -57,6 +60,15 @@ const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences', '/t
 // itself still demands recent re-authentication before it deletes anything.
 const _accountActionPaths = {'/delete-account'};
 
+/// Routes backed by Mock repositories; see `kDemoFeaturesEnabled`.
+/// `/coaches` is deliberately absent: the marketplace has its own demo banner
+/// and booking is disabled.
+@visibleForTesting
+bool isDemoGatedPath(String location) =>
+    const {'/community', '/celebrity-plans', '/contribute', '/moderate'}
+        .contains(location) ||
+    location.startsWith('/team/');
+
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.
 String? resolveRedirect({
@@ -64,10 +76,15 @@ String? resolveRedirect({
   required bool isOnboarded,
   required String location,
   required bool isAnonymous,
+  bool demoFeaturesEnabled = kDemoFeaturesEnabled,
 }) {
   if (location == '/splash') return null;
   final isPublic = _publicPaths.contains(location);
   if (!isSignedIn && !isPublic) return '/login';
+  // Demo-backed routes (Mock repositories) are unreachable when demo features
+  // are off, so a deep link cannot bypass the hidden entry points. Runs after
+  // the sign-in rule; `/home` then goes through the onboarding rules below.
+  if (!demoFeaturesEnabled && isDemoGatedPath(location)) return '/home';
   // A guest reaching /login is the ONLY way to keep their data.
   //
   // `isSignedIn` is `user != null`, and an anonymous user is not null, so this
@@ -147,21 +164,6 @@ CustomTransitionPage<void> _fadeThrough(Widget child) {
   );
 }
 
-/// Bridges a [Stream] to a [Listenable] so go_router can refresh redirects
-/// whenever the source stream emits.
-class _StreamListenable extends ChangeNotifier {
-  _StreamListenable(Stream<dynamic> stream) {
-    _sub = stream.listen((_) => notifyListeners());
-  }
-  late final StreamSubscription<dynamic> _sub;
-
-  @override
-  void dispose() {
-    _sub.cancel();
-    super.dispose();
-  }
-}
-
 /// Bridges multiple streams into a single [Listenable].
 class _MultiSourceListenable extends ChangeNotifier {
   _MultiSourceListenable(List<Stream<dynamic>> streams) {
@@ -170,6 +172,9 @@ class _MultiSourceListenable extends ChangeNotifier {
     }
   }
   final List<StreamSubscription<dynamic>> _subs = [];
+
+  /// Forces a redirect re-evaluation without a stream event.
+  void ping() => notifyListeners();
 
   @override
   void dispose() {
@@ -294,16 +299,32 @@ Stream<dynamic> profileWatchOf(
 String? redirectFor(
   dynamic authRepo,
   ProfileRepository profileRepo,
-  String location,
-) {
+  String location, {
+  // Whether the profile watch has delivered its first snapshot for the
+  // current user. `cached()` is null both before that snapshot and when the
+  // user genuinely has no profile document; only this flag tells them apart.
+  bool profileLoaded = true,
+  bool demoFeaturesEnabled = kDemoFeaturesEnabled,
+}) {
   final AuthUser? user = authRepo.currentUser as AuthUser?;
   final profile = user == null ? null : profileRepo.cached(user.uid);
-  return resolveRedirect(
+  final target = resolveRedirect(
     isSignedIn: user != null,
     isAnonymous: user?.provider == AuthProvider.anonymous,
     isOnboarded: profile?.hasCompletedOnboarding ?? false,
     location: location,
+    demoFeaturesEnabled: demoFeaturesEnabled,
   );
+  // Cold start: auth restored, profile snapshot not here yet. Sending the
+  // user to /onboarding now would bounce an already-onboarded user through
+  // the questionnaire, so hold on the splash route until it arrives.
+  if (target == '/onboarding' &&
+      user != null &&
+      profile == null &&
+      !profileLoaded) {
+    return '/splash';
+  }
+  return target;
 }
 
 /// The application router. Reads auth state via Riverpod and redirects
@@ -311,20 +332,61 @@ String? redirectFor(
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
   final profileRepo = ref.watch(profileRepositoryProvider);
-  final authListenable = _StreamListenable(authRepo.authStateChanges());
-  final profileListenable = _MultiSourceListenable([
+  final profileStream = profileWatchOf(authRepo, profileRepo);
+
+  // The uid whose profile snapshot (or error) has been delivered. Subscribed
+  // BEFORE the refresh listenable so that, on a broadcast stream, it is
+  // updated before the router re-runs its redirect for the same event.
+  String? loadedUid;
+  var held = false;
+  Timer? holdTimer;
+  late final _MultiSourceListenable profileListenable;
+  void markLoaded(dynamic _) {
+    loadedUid = (authRepo.currentUser as AuthUser?)?.uid;
+  }
+
+  final loadSub = profileStream.listen(markLoaded, onError: markLoaded);
+  profileListenable = _MultiSourceListenable([
     authRepo.authStateChanges(),
-    profileWatchOf(authRepo, profileRepo),
+    profileStream,
   ]);
-  ref.onDispose(authListenable.dispose);
+  ref.onDispose(loadSub.cancel);
+  ref.onDispose(() => holdTimer?.cancel());
   ref.onDispose(profileListenable.dispose);
 
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: '/splash',
     refreshListenable: profileListenable,
-    redirect: (context, state) =>
-        redirectFor(authRepo, profileRepo, state.matchedLocation),
+    redirect: (context, state) {
+      final uid = (authRepo.currentUser as AuthUser?)?.uid;
+      final loaded = uid != null && loadedUid == uid;
+      final location = state.matchedLocation;
+      // The profile arrived while we were holding on the splash route: leave
+      // it, and let the normal rules place the user from /home.
+      if (held && location == '/splash' && (loaded || uid == null)) {
+        held = false;
+        holdTimer?.cancel();
+        // A cancelled Timer is still non-null: clear it so a later hold
+        // arms a fresh bound instead of `??=` keeping the dead one.
+        holdTimer = null;
+        return '/home';
+      }
+      final target = redirectFor(authRepo, profileRepo, location,
+          profileLoaded: loaded,
+          demoFeaturesEnabled: ref.read(demoFeaturesEnabledProvider));
+      if (target == '/splash' && location != '/splash') {
+        held = true;
+        // A profile stream that never delivers must not strand the user on
+        // the splash route: after the bound, decide with what is cached.
+        holdTimer ??= Timer(const Duration(seconds: 5), () {
+          holdTimer = null;
+          loadedUid = (authRepo.currentUser as AuthUser?)?.uid;
+          profileListenable.ping();
+        });
+      }
+      return target;
+    },
     routes: [
       GoRoute(
         path: '/splash',
@@ -448,6 +510,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/photos',
         pageBuilder: (_, __) => _fadeThrough(const ProgressPhotosPage()),
+      ),
+      GoRoute(
+        // Guided self-timer body scan and the before/after compare. Both screens
+        // gate themselves (age, Supporter, consent) through scanAccessProvider;
+        // the redirect above already keeps signed-out and not-onboarded users out.
+        path: '/photos/scan',
+        pageBuilder: (_, __) => _fadeThrough(const ScanCaptureScreen()),
+      ),
+      GoRoute(
+        path: '/photos/compare',
+        pageBuilder: (_, __) => _fadeThrough(const ScanCompareScreen()),
       ),
       GoRoute(
         path: '/backup',

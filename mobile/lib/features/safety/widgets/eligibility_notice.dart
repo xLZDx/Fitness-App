@@ -74,6 +74,12 @@ String eligibilityReasonText(AppLocalizations l10n, EligibilityReason r) =>
           r.restriction == null
               ? l10n.restrictionOther
               : movementRestrictionText(l10n, r.restriction!)),
+      BlockReason.agePolicy => l10n.eligReasonAgePolicy,
+      BlockReason.gentlePolicy => l10n.eligReasonGentlePolicy,
+      BlockReason.ageMinorAdvisory => l10n.eligAdvisoryAgeMinor,
+      BlockReason.ageSeniorAdvisory => l10n.eligAdvisoryAgeSenior,
+      BlockReason.unscreenableInjury =>
+        l10n.eligAdvisoryUnscreenableInjury(r.detail ?? ''),
     };
 
 /// What a surface shows where work would have been.

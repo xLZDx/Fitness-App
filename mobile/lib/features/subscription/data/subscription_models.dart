@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Three-tier subscription ladder. Order matters: a higher index implies
@@ -201,6 +202,14 @@ class Subscription {
     final tierName = j['tier'] as String? ?? 'free';
     final statusName = j['status'] as String? ?? 'none';
     final periodName = j['period'] as String? ?? 'monthly';
+    // Mapped values are unchanged; an unrecognised string is logged so a
+    // server-side rename does not silently downgrade a paying user.
+    if (!SubscriptionTier.values.any((t) => t.name == tierName)) {
+      debugPrint('subscription: unknown tier "$tierName" mapped to free');
+    }
+    if (!SubscriptionStatus.values.any((s) => s.name == statusName)) {
+      debugPrint('subscription: unknown status "$statusName" mapped to none');
+    }
     return Subscription(
       uid: uid,
       tier: SubscriptionTier.values.firstWhere(

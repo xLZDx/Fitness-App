@@ -84,19 +84,19 @@ class _SilentNotifications implements NotificationService {
   @override
   Future<void> cancelAll() async {}
   @override
-  Future<void> scheduleAt(
+  Future<ReminderOutcome> scheduleAt(
     String id, {
     required DateTime fireAt,
     required String title,
     required String body,
-  }) async {}
+  }) async => ReminderOutcome.scheduled;
   @override
-  Future<void> scheduleReminder(
+  Future<ReminderOutcome> scheduleReminder(
     ScheduledSession session, {
     required String title,
     required String body,
     Duration leadTime = const Duration(minutes: 30),
-  }) async {}
+  }) async => ReminderOutcome.scheduled;
 }
 
 void main() {

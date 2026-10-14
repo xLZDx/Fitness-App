@@ -153,12 +153,24 @@ class PlatformHealthService implements HealthService {
       await _ensureConfigured();
       final blocked = await _providerBlocker();
       if (blocked != null) return blocked;
-      final requested = [..._readTypes, ..._writeTypes];
+      // Read types first, then write types. Without `permissions` the plugin
+      // requests READ only for every type (health 11.1.1 health_plugin.dart
+      // requestAuthorization), so the WRITE_EXERCISE / WRITE_TOTAL_CALORIES_BURNED
+      // grants `writeWorkout` needs would never be asked for.
+      final reads = _readTypes;
+      final writes = _writeTypes.where((t) => !reads.contains(t)).toList();
+      final requested = [...reads, ...writes];
       if (requested.isEmpty) {
         _lastError = 'No health metrics are readable on this platform.';
         return HealthAuthStatus.unsupported;
       }
-      final ok = await h.Health().requestAuthorization(requested);
+      final ok = await h.Health().requestAuthorization(
+        requested,
+        permissions: [
+          for (final _ in reads) h.HealthDataAccess.READ,
+          for (final _ in writes) h.HealthDataAccess.READ_WRITE,
+        ],
+      );
       return ok ? HealthAuthStatus.granted : HealthAuthStatus.denied;
     } catch (e) {
       _recordError('requestAuthorization', e);

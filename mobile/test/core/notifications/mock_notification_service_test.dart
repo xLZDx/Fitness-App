@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/notifications/mock_notification_service.dart';
+import 'package:fitness_app/core/notifications/notification_service.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 
 ScheduledSession _s({
@@ -60,8 +61,10 @@ void main() {
 
     test('a denied prompt schedules nothing', () async {
       svc.initResult = false;
-      await svc.scheduleReminder(_s(when: DateTime.utc(2026, 5, 9, 9)),
+      final outcome = await svc.scheduleReminder(
+          _s(when: DateTime.utc(2026, 5, 9, 9)),
           title: 'T', body: 'B');
+      expect(outcome, ReminderOutcome.denied);
       // A reminder the OS will never deliver must not sit in our state
       // pretending it will.
       expect(svc.scheduled, isEmpty);
@@ -69,8 +72,10 @@ void main() {
 
     test('scheduleReminder adds an entry fired ahead of the session', () async {
       final session = _s(when: DateTime.utc(2026, 5, 9, 9));
-      await svc.scheduleReminder(session, title: 'T', body: 'B');
+      final outcome =
+          await svc.scheduleReminder(session, title: 'T', body: 'B');
 
+      expect(outcome, ReminderOutcome.scheduled);
       expect(svc.scheduled, hasLength(1));
       final r = svc.scheduled.first;
       expect(r.sessionId, 's_1');
@@ -110,7 +115,9 @@ void main() {
       final session = _s(
           id: 'past',
           when: DateTime.utc(2026, 5, 8, 12, 15));
-      await svc.scheduleReminder(session, title: 'T', body: 'B');
+      final outcome =
+          await svc.scheduleReminder(session, title: 'T', body: 'B');
+      expect(outcome, ReminderOutcome.past);
       expect(svc.scheduled, isEmpty);
     });
 

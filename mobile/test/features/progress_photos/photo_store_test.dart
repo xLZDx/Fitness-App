@@ -100,6 +100,42 @@ void main() {
     expect(await File(photo.storagePath).exists(), isFalse);
   });
 
+  test('remove on a folder that does not exist creates neither folder nor index',
+      () async {
+    // The cleanup of an aborted scan save runs after the account's local wipe;
+    // it must not resurrect the wiped folder by writing an empty index.
+    expect(await dir.exists(), isTrue, reason: 'setUp made it');
+    await dir.delete(recursive: true);
+    await store.remove('p_gone');
+    expect(await dir.exists(), isFalse, reason: 'folder must not be recreated');
+    expect(await File('${dir.path}/index.json').exists(), isFalse);
+  });
+
+  test('remove on an existing folder without an index writes no index',
+      () async {
+    await File('${dir.path}/p_orphan.bin').writeAsBytes([1, 2, 3]);
+    await store.remove('p_orphan');
+    expect(await File('${dir.path}/p_orphan.bin').exists(), isFalse,
+        reason: 'the blob is still deleted');
+    expect(await File('${dir.path}/index.json').exists(), isFalse,
+        reason: 'no index existed, so none is created');
+  });
+
+  test('remove of one photo rewrites the index without it and keeps the rest',
+      () async {
+    final a =
+        await store.put(pixels, takenAt: DateTime(2026, 5, 1), id: 'keep');
+    final b =
+        await store.put(pixels, takenAt: DateTime(2026, 6, 1), id: 'drop');
+    await store.remove(b.id);
+    expect((await store.index()).map((p) => p.id), ['keep']);
+    expect(await File(b.storagePath).exists(), isFalse);
+    expect(await File(a.storagePath).exists(), isTrue);
+    final onDisk = File('${dir.path}/index.json').readAsStringSync();
+    expect(onDisk.contains('drop'), isFalse, reason: 'the row is gone on disk');
+    expect(onDisk.contains('keep'), isTrue);
+  });
+
   test('prune deletes orphan blobs and keeps referenced ones', () async {
     final kept = await store.put(pixels, takenAt: DateTime(2026, 5, 1));
     // Simulate the crash window: a blob written, the index update lost.

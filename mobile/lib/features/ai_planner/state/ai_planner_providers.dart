@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/state/auth_providers.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../equipment/state/equipment_providers.dart';
+import '../../personalisation/data/recommendation_hints.dart';
 import '../../personalisation/state/personalisation_providers.dart';
 import '../../profile/state/profile_providers.dart';
 import '../../recovery/state/recovery_providers.dart';
 import '../../safety/state/eligibility_providers.dart';
+import '../../training_context/data/training_context.dart';
+import '../../training_context/state/training_context_providers.dart';
 import '../data/plan_builder.dart';
 import '../data/workout_plan.dart';
 
@@ -35,6 +38,9 @@ final generatedPlanProvider = FutureProvider<PlanOutcome?>((ref) async {
   final deload = ref.watch(deloadVerdictProvider);
   final safety = await ref.watch(safetyContextProvider.future);
   final deficit = await ref.watch(weeklyVolumeDeficitProvider.future);
+  // Never asked: the page shows the chooser and does not read this provider;
+  // any other reader gets today's behaviour (profile equipment answers).
+  final tc = (await ref.watch(trainingContextProvider.future)).context;
 
   // Build the candidate pool from the catalog. Limit to body-weight +
   // every available equipment so the planner doesn't propose machines
@@ -47,9 +53,15 @@ final generatedPlanProvider = FutureProvider<PlanOutcome?>((ref) async {
   ];
 
   return buildPlan(
-    candidatePool: pool,
+    candidatePool: narrowToTrainingContext(pool, safety, tc),
     deficit: deficit,
     deload: deload,
-    safety: safety,
+    safety: safetyContextForTrainingContext(safety, tc),
+    trainingContext: tc,
+    // The stated session length was never passed here (the default 45 applied
+    // to everyone), and the questionnaire's goal/activity answers shaped
+    // nothing.
+    targetMinutes: profile.schedule.sessionMinutes ?? 45,
+    hints: RecommendationHints.fromProfile(profile),
   );
 });

@@ -375,6 +375,27 @@ describe("coach listings are closed to clients", () => {
   });
 });
 
+// Durable account-deletion retry records: Admin SDK only. Nobody -- not a
+// signed-in user, not the (already deleted) uid's old token, not a signed-out
+// caller -- may read or write one.
+describe("account deletion retry records are closed to clients", () => {
+  test("no read and no write, signed in or signed out", async () => {
+    await assertFails(getDoc(doc(asAlice(), `accountDeletionRetries/${ALICE}`)));
+    await assertFails(
+      setDoc(doc(asAlice(), `accountDeletionRetries/${ALICE}`), {
+        uid: ALICE,
+        status: "pending",
+      }),
+    );
+    await assertFails(getDoc(doc(signedOut(), `accountDeletionRetries/${ALICE}`)));
+    await assertFails(
+      setDoc(doc(signedOut(), `accountDeletionRetries/${ALICE}`), {
+        status: "pending",
+      }),
+    );
+  });
+});
+
 // MVP1.G3 Step 8/9 -- the synthetic canary identity's whole permission
 // surface (core/G3_STEP8_RUNTIME_PREREQUISITES.md Sec 3/9). `canary: true`
 // mirrors the custom claim `admin.auth().createCustomToken(uid, {canary:

@@ -280,9 +280,9 @@ def _tracked_text_files() -> tuple[str, ...]:
     try:
         out = subprocess.run(
             ["git", "-C", str(REPO), "ls-files"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, check=True, timeout=30,
         ).stdout.split("\n")
-    except Exception:
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return ()
     skip = {".png", ".jpg", ".jpeg", ".webp", ".tflite", ".ttf", ".otf",
             ".ico", ".zip", ".jar", ".keystore", ".pdf", ".mp4"}

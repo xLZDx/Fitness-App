@@ -338,7 +338,8 @@ ProgrammeBuildResult buildProgramme(ProgrammeBuildRequest request) {
     return const ProgrammeRefused([ProgrammeFinding(ProgrammeFault.emptySession)]);
   }
 
-  final eligible = eligibleExercises(request.catalogue, request.safety);
+  final eligible = recommendableAtLevel(
+      eligibleExercises(request.catalogue, request.safety), request.safety);
   final pools = byMovementRole(eligible);
 
   // Deterministic order before any ranking, so an unranked build is

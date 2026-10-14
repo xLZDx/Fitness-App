@@ -53,7 +53,11 @@ import 'package:fitness_app/features/profile/data/profile_models.dart';
 /// into `wrist_weight_bearing`, a new `shoulder_loaded_arm_balance`, and "wild
 /// thing" into `lumbar_extension` for the backbend. Found by an audit asking
 /// why an advanced pose was screening nobody.
-const int kSafetyCoverageFloor = 1527;
+// 1527 -> 1535 (catalogue corrections, 2026-10): muscles were derived for 180 rows
+// that had none, the tagger now sees them, and 8 rows gained a tag (elbow +1,
+// lower_back +9, upper_back +15). No tag was removed: the rows whose tag relied
+// on the muscle gate standing down are pinned by id in `tag_contraindications.py`.
+const int kSafetyCoverageFloor = 1535;
 
 ExerciseItem _ex(String id, {List<String> contraindications = const []}) =>
     ExerciseItem(
@@ -200,7 +204,7 @@ void main() {
         InjuryRegion.knee: 362, // S3b-1
         // +1 (Gate E): "wild thing" joins `lumbar_extension` -- the pose is a
         // backbend entered from a side plank, the same mechanism as cobra.
-        InjuryRegion.lowerBack: 313, // S3b-2
+        InjuryRegion.lowerBack: 322, // S3b-2
         // +1 from a title typo fix, then +2 (Gate E) from the new
         // `shoulder_loaded_arm_balance` rule: Crow Pose and Wild Thing Pose are
         // `advanced` and were carrying no tags at all, because holding
@@ -212,14 +216,14 @@ void main() {
         // +2 (Gate E): the same two arm balances, added to
         // `wrist_weight_bearing` alongside handstand/plank/bear crawl.
         InjuryRegion.wrist: 190, // S3b-3
-        InjuryRegion.elbow: 371, // S3b-3
+        InjuryRegion.elbow: 372, // S3b-3
         InjuryRegion.neck: 117, // S3b-3
         // The ninth and last region to be batched. It had been selectable on
         // the body diagram since 2026-08-12 and screening nothing, because the
         // tagger had no rule key for it and no guard read a legal-but-ruleless
         // region as wrong — `test_every_legal_region_has_rules`
         // (`scripts/catalog/test_tag_contraindications.py`) is what now does.
-        InjuryRegion.upperBack: 265, // P3, then the Codex round-2 fix (+2/-1)
+        InjuryRegion.upperBack: 280, // P3, then the Codex round-2 fix (+2/-1)
       };
       final raw = File('assets/data/exercises_vendor.json').readAsStringSync();
       final catalog = (jsonDecode(raw) as List)

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/core/notifications/mock_notification_service.dart';
+import 'package:fitness_app/core/notifications/notification_providers.dart';
 import 'package:fitness_app/features/account_deletion/data/account_deletion_service.dart';
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
 import 'package:fitness_app/features/account_deletion/state/account_deletion_providers.dart';
@@ -56,6 +58,44 @@ void main() {
 
     expect(wipe.wiped, ['u1']);
     expect(container.read(accountDeletionActionProvider).hasError, isFalse);
+  });
+
+  test('a successful deletion cancels every pending notification', () async {
+    final notes = MockNotificationService();
+    await notes.scheduleAt('body_scan_next',
+        fireAt: DateTime.now().add(const Duration(days: 3)),
+        title: 't',
+        body: 'b');
+    expect(notes.scheduled, hasLength(1));
+    final container = ProviderContainer(overrides: [
+      accountDeletionServiceProvider
+          .overrideWithValue(MockAccountDeletionService()),
+      localDataWipeProvider.overrideWithValue(RecordingLocalDataWipe()),
+      authRepositoryProvider.overrideWithValue(_RecordingAuthRepo()),
+      notificationServiceProvider.overrideWithValue(notes),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(accountDeletionActionProvider.notifier).deleteAccount();
+    expect(notes.scheduled, isEmpty);
+  });
+
+  test('a failed deletion keeps the pending notifications', () async {
+    final notes = MockNotificationService();
+    await notes.scheduleAt('body_scan_next',
+        fireAt: DateTime.now().add(const Duration(days: 3)),
+        title: 't',
+        body: 'b');
+    final container = ProviderContainer(overrides: [
+      accountDeletionServiceProvider.overrideWithValue(
+          MockAccountDeletionService()
+            ..failWith = const AccountDeletionException('boom')),
+      localDataWipeProvider.overrideWithValue(RecordingLocalDataWipe()),
+      authRepositoryProvider.overrideWithValue(_RecordingAuthRepo()),
+      notificationServiceProvider.overrideWithValue(notes),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(accountDeletionActionProvider.notifier).deleteAccount();
+    expect(notes.scheduled, hasLength(1));
   });
 
   test('a failed deletion wipes nothing on the device', () async {

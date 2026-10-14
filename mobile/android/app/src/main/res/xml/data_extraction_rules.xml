@@ -12,12 +12,24 @@
   never left the old phone's Keystore - undecryptable files the user cannot
   delete from a screen that will not list them, which is worse than not
   transferring them at all.
+
+  The same two sections also exclude the sensitive preference files (privacy
+  decision B): `FlutterSharedPreferences.xml` (plaintext health/injury profile,
+  training-context answer) and the `flutter_secure_storage` files
+  `FlutterSecureStorage.xml` / `FlutterSecureKeyStorage.xml`. See
+  `backup_rules.xml` for the reasoning and the consequence on restore.
 -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="root" path="app_flutter/progress_photos" />
+        <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="root" path="app_flutter/progress_photos" />
+        <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
     </device-transfer>
 </data-extraction-rules>

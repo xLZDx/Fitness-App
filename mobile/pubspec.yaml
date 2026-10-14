@@ -67,7 +67,6 @@ dependencies:
   audioplayers: ^6.1.0
   encrypt: ^5.0.3
   permission_handler: ^11.3.1
-  flutter_blue_plus: ^1.32.12
   # tflite_flutter REMOVED 2026-08-07. It was never imported -- `grep -rn
   # "package:tflite_flutter" lib/ test/` returns nothing, and the only mention
   # anywhere is the comment in mlkit_visual_equipment_service.dart explaining

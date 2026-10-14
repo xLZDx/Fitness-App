@@ -261,7 +261,7 @@ def test_the_clinical_worklist_is_registered_with_its_zero():
     assert worklist["may_train_on"] is False
     assert worklist["row_count"] == 1887
     assert (worklist["splits"]["tagged"], worklist["splits"]["untagged"]) \
-        == (1527, 360)
+        == (1535, 352)
 
 
 def test_the_worklist_entry_is_pinned_to_its_source_not_to_the_last_commit():

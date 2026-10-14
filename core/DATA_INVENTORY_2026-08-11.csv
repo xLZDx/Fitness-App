@@ -14,6 +14,7 @@ firestore,coach_listings/{uid},coach profile,path,yes,no,A3
 firestore,coach_bookings/{id},"times, price, payment intent",clientUid+coachUid,NO,no,A1+A3
 firestore,equipment_reports/{id},"gym, fault, note",reporterUid,NO,no,A1+A3
 firestore,debug_sessions/{id},device telemetry,uid,NO,no,A1+A3
+firestore,accountDeletionRetries/{uid},"deletion intent record: uid, status, attempts, timestamps, error code",path,"reconciler on success, else TTL",n/a,-
 firestore,gyms/*,shared reference data,none,n/a,n/a,-
 firestore,equipment/*,shared reference data,none,n/a,n/a,-
 firestore,exercises/*,shared reference data,none,n/a,n/a,-

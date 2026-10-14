@@ -3,6 +3,7 @@ import 'dart:async' show unawaited;
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/notifications/notification_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/account_deletion_service.dart';
 import '../data/local_data_wipe.dart';
@@ -19,6 +20,13 @@ final localDataWipeProvider =
 /// Overridden in `main.dart` with the SharedPreferences implementation.
 final pendingWipeMarkerProvider =
     Provider<PendingWipeMarker>((_) => InMemoryPendingWipeMarker());
+
+/// The uid whose deletion the server has confirmed and whose device data is
+/// being erased. Set BEFORE the pending-wipe marker and the wipe, while
+/// `authUserProvider` still reports that uid, so in-flight writers bound to the
+/// account (e.g. the scan save) can see the account is going away and abort
+/// instead of recreating data after the wipe. Never reset: the account is gone.
+final accountBeingDeletedUidProvider = StateProvider<String?>((_) => null);
 
 /// Whenever the signed-in user is known or changes, finishes a device wipe that
 /// an interrupted account deletion left behind. Read from the app root.
@@ -89,6 +97,10 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
       // device data is still to be erased BEFORE touching it: if the process
       // dies from here on, no signed-in user exists to read the uid from and
       // the next launch finishes the wipe from this marker instead.
+      if (uid != null) {
+        // Idempotent: a re-entrant second attempt just sets the same value.
+        ref.read(accountBeingDeletedUidProvider.notifier).state = uid;
+      }
       final marker = ref.read(pendingWipeMarkerProvider);
       if (uid != null) {
         try {
@@ -129,6 +141,16 @@ class AccountDeletionAction extends Notifier<AsyncValue<void>> {
           'local data wipe SKIPPED: no uid at deletion time. '
           'Device-local data for the deleted account remains.',
         );
+      }
+
+      // Pending OS notifications (workout, scan and photo reminders) carry
+      // the deleted account's text and are re-armed by the boot receiver, so
+      // the next person on this phone would see them. Best effort: never
+      // throws. Ordinary sign-out keeps workout reminders (not cancelled).
+      try {
+        await ref.read(notificationServiceProvider).cancelAll();
+      } catch (e) {
+        debugPrint('could not cancel notifications after deletion: $e');
       }
 
       // Explicit, not relied-upon. The server just deleted this Firebase

@@ -23,6 +23,7 @@ independently re-verified since Step 9B closed.
 | AI Gateway investigation queries (7, `ai_gateway_definitions.ts`) | `DEFINED`/`TESTED` | `READY_TO_USE` -- plain filter strings, no GCP resource to create |
 | Production canary probe-failure alert | `DEFINED`/`TESTED` | **LIVE** -- `runProductionCanary` deployed and scheduled, permanent policy active with real end-to-end proof |
 | Enforcement-state check degraded/failed alert | `DEFINED`/`TESTED` (this entry) | Not yet activated -- see "Step 10A: enforcement-state visibility" below |
+| Account-deletion reconciler exhausted alert (`ACCOUNT_DELETION_RECONCILE_ALERT_POLICY`) | `DEFINED`/`TESTED` | Not created live -- creating the policy and attaching a notification channel is the separate operator step gated on DECISION FA-D1. Service name `reconcileaccountdeletions` is derived, not yet confirmed against a live deployment |
 
 Every alert policy renders the real `google.monitoring.v3.AlertPolicy` REST
 shape (`toAlertPolicyJson` in `types.ts`) with `notificationChannels: []` --
@@ -103,6 +104,21 @@ DELETE_FAILED`) and re-throwing as `HttpsError("internal", ...)`. One path is
 NOT inside any of those three try blocks: the initial subscription-document
 read at `index.ts:2086` (`await db.doc(...).get()`), which runs before the
 first `try`. If that read throws, none of the three named messages fires.
+
+**Final sweep and durable reconciliation (MAJOR-03 follow-up).** `deleteAccount`'s
+final sweep runs after the Auth user is deleted, so a client retry is impossible.
+`deleteAccount` therefore writes the durable intent record
+`accountDeletionRetries/{uid}` BEFORE deleting the Auth user (and aborts, leaving the
+user able to retry, if that write fails); the scheduled `reconcileAccountDeletions`
+(every 15 minutes) finishes any deletion whose record is still there. ERROR events with
+an `event` field, all defined in `log_signals.ts`:
+`delete_account_final_sweep_failed` (early signal) was added to
+`DELETE_ACCOUNT_FAILURE_FILTER`; `account_deletion_reconcile_exhausted` (a record hit
+12 attempts and is `failed_terminal`) and `account_deletion_reconcile_run_failed` (the
+run could not list its due records, e.g. a missing composite index) are matched by
+`ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER` / `ACCOUNT_DELETION_RECONCILE_ALERT_POLICY`,
+scoped to the scheduled function's Cloud Run service. As for the other scheduled
+functions, no `PLATFORM_UNHANDLED_ERROR` backstop applies.
 
 **`exportAccountData` (`functions/src/account_export.ts:174-320`)** has one
 explicit catch, logging `EXPORT_ACCOUNT_FAILED`. Its own top of function has no

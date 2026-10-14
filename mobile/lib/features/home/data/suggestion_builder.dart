@@ -1,5 +1,8 @@
 import '../../equipment/data/equipment_models.dart';
+import '../../personalisation/data/recommendation_hints.dart';
 import '../../profile/data/profile_models.dart';
+import '../../safety/data/age_policy.dart';
+import '../../training_context/data/training_context.dart' show TrainingContext;
 import '../../workouts/data/workout_log.dart';
 
 /// Why an exercise was suggested.
@@ -18,6 +21,10 @@ enum SuggestionReason {
   cardioForEndurance,
   buildsStrength,
   buildsMuscle,
+
+  /// A stretch, mobility, yoga/pilates or balance exercise, said as what it
+  /// is. Used instead of a strength/muscle reason for such items.
+  buildsMobility,
   fitsSessionLength,
 
   /// Nothing more specific applied. Deliberately weak: the alternative was
@@ -37,6 +44,7 @@ class WorkoutSuggestion {
     required this.reason,
     this.reasonMuscle,
     this.exercise,
+    this.trainingContext,
   });
 
   final String exerciseId;
@@ -59,6 +67,11 @@ class WorkoutSuggestion {
   /// construct suggestions directly without a catalog row.
   final ExerciseItem? exercise;
 
+  /// The training context (gym / outdoors / home / yoga) the list was built
+  /// for, or null when the person skipped the question or never answered. The
+  /// card says so, because the pool was narrowed by it. Part of equality.
+  final TrainingContext? trainingContext;
+
   /// Excluded from equality and [hashCode]: [exerciseId] already identifies
   /// the row, so two suggestions with the same id and different exercise
   /// objects would be a catalog bug, not two distinct suggestions.
@@ -69,11 +82,13 @@ class WorkoutSuggestion {
       other.title == title &&
       other.durationMinutes == durationMinutes &&
       other.reason == reason &&
-      other.reasonMuscle == reasonMuscle;
+      other.reasonMuscle == reasonMuscle &&
+      other.trainingContext == trainingContext;
 
   @override
   int get hashCode =>
-      Object.hash(exerciseId, title, durationMinutes, reason, reasonMuscle);
+      Object.hash(exerciseId, title, durationMinutes, reason, reasonMuscle,
+          trainingContext);
 
   @override
   String toString() => 'WorkoutSuggestion($exerciseId, ${reason.name})';
@@ -109,7 +124,17 @@ List<WorkoutSuggestion> buildSuggestions({
   required List<WorkoutLogEntry> recentLogs,
   DateTime? now,
   int limit = 5,
+  TrainingContext? trainingContext,
 }) {
+  // A beginner is not recommended work above their stated level. Applied here
+  // (a recommendation) and not in the shared eligibility filter (browsing).
+  final tier = profile?.level.tier;
+  if (tier == FitnessTier.never || tier == FitnessTier.beginner) {
+    candidates = [
+      for (final e in candidates)
+        if (e.difficulty == ExerciseDifficulty.beginner) e
+    ];
+  }
   if (candidates.isEmpty) return const [];
   final at = now ?? DateTime.now();
 
@@ -132,6 +157,9 @@ List<WorkoutSuggestion> buildSuggestions({
       goals != null && (goals.weightLoss || goals.endurance);
   final wantsStrength =
       goals != null && (goals.strength || goals.muscleGain);
+  final hints = RecommendationHints.fromProfile(profile);
+  final senior = profile != null &&
+      ageBandForPersonal(profile.personal, at.year).needsBalanceAndMobility;
   final targetMinutes = _targetMinutes(profile?.motivation.preferredDuration);
 
   final scored = <_Scored>[];
@@ -139,7 +167,11 @@ List<WorkoutSuggestion> buildSuggestions({
     final ex = candidates[i];
     if (justDid.contains(ex.id)) continue;
 
-    final isCardio = _cardioEquipment.contains(ex.equipmentId);
+    // Conditioning work by equipment OR by the vendor's conditioning group, so
+    // a cardio goal can surface cardio items that need no machine.
+    final isCardio =
+        _cardioEquipment.contains(ex.equipmentId) || isConditioningExercise(ex);
+    final isMobility = isMobilityOrBalanceExercise(ex);
     final untrained = ex.primaryMuscles
         .where((m) => !trainedMuscles.contains(m))
         .toList(growable: false);
@@ -159,11 +191,17 @@ List<WorkoutSuggestion> buildSuggestions({
           ? SuggestionReason.cardioForWeightLoss
           : SuggestionReason.cardioForEndurance;
     }
-    if (wantsStrength && !isCardio) {
+    // Stretch / mobility / yoga items are never labelled "builds strength" or
+    // "builds muscle": the reason has to describe the exercise, not the goal.
+    if (wantsStrength && !isCardio && !isMobility) {
       score += 2;
       reason ??= goals.strength
           ? SuggestionReason.buildsStrength
           : SuggestionReason.buildsMuscle;
+    }
+    if (isMobility) {
+      if ((hints.wantsMobility && ex.isStretch) || senior) score += 2;
+      reason ??= SuggestionReason.buildsMobility;
     }
     if (targetMinutes != null &&
         (ex.durationMinutes - targetMinutes).abs() <= 4) {
@@ -218,6 +256,7 @@ List<WorkoutSuggestion> buildSuggestions({
       reason: s.reason,
       reasonMuscle: s.reasonMuscle,
       exercise: s.exercise,
+      trainingContext: trainingContext,
     ));
   }
 
@@ -233,6 +272,7 @@ List<WorkoutSuggestion> buildSuggestions({
         title: s.exercise.title,
         durationMinutes: s.exercise.durationMinutes,
         reason: s.reason,
+        trainingContext: trainingContext,
       ));
     }
   }

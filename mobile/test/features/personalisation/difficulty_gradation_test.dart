@@ -58,9 +58,9 @@ void main() {
 
     expect(rows, hasLength(1887),
         reason: 'the catalogue changed; re-measure before trusting the rest');
-    expect(byDifficulty['beginner'], 1877);
+    expect(byDifficulty['beginner'], 1878);
     expect(byDifficulty['advanced'], 8);
-    expect(byDifficulty['intermediate'], 2);
+    expect(byDifficulty['intermediate'], 1);
 
     // The figure the finding turns on, stated as a ratio rather than a count
     // so it survives a catalogue that grows without being graded.
