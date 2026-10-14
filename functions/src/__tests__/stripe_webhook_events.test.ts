@@ -132,6 +132,10 @@ beforeEach(() => {
   jest.clearAllMocks();
   getUser.mockReset().mockResolvedValue({});
   stripeMock.subscriptions.list.mockResolvedValue({ data: [], has_more: false });
+  // `clearAllMocks` keeps implementations, so a `retrieve` result set by one
+  // test used to leak into the next. A same-second tie now calls `retrieve`
+  // from the subscription-event path, so the leak would decide outcomes.
+  stripeMock.subscriptions.retrieve.mockReset();
 });
 
 describe("transport-level refusals", () => {
@@ -581,7 +585,10 @@ describe("webhook replay journey: redelivery of the same event converges on one 
     const afterPartial = { ...getRef(SUB_DOC).__read() };
     expect(afterPartial).toMatchObject({ status: "active", lastStripeEventCreated: 2000 });
 
-    // Stripe redelivers the same event id: lookups now succeed.
+    // Stripe redelivers the same event id: lookups now succeed. The redelivery
+    // is a same-second tie (OLD behaviour: plain re-apply), so it re-reads the
+    // subscription; Stripe's current state is the one the event described.
+    stripeMock.subscriptions.retrieve.mockResolvedValue(subscriptionObject("active"));
     const second = await deliver(event);
     expect(second.status).toHaveBeenCalledWith(200);
     expect(getRef(SUB_DOC).__read()).toEqual(afterPartial);
@@ -682,6 +689,121 @@ describe("webhook replay journey: redelivery of the same event converges on one 
     const replay = await deliver(event);
     expect(replay.status).toHaveBeenCalledWith(200);
     expect(userRefs()).toEqual([]);
+  });
+});
+
+describe("same-second event ties are settled by re-reading the subscription (F13)", () => {
+  const subEvent = (created: number, status: string, id = "sub_1") => ({
+    id: `evt_${created}_${status}`,
+    type: "customer.subscription.updated",
+    created,
+    data: { object: { ...subscriptionObject(status), id } },
+  });
+  /** Lands the first event of the second `created`, so the next one can tie or not. */
+  const seed2000 = async () => {
+    const res = await deliver(subEvent(2000, "trialing"));
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({ lastStripeEventCreated: 2000 });
+    // The very first event for a subscription has nothing to tie with.
+    expect(stripeMock.subscriptions.retrieve).not.toHaveBeenCalled();
+  };
+
+  test("a tie triggers exactly one retrieve and the stored doc reflects the FRESH object, not the event", async () => {
+    await seed2000();
+    const fresh = subscriptionObject("canceled");
+    stripeMock.subscriptions.retrieve.mockResolvedValue(fresh);
+
+    // Same second, but this event says "active"; Stripe's current state is canceled.
+    const res = await deliver(subEvent(2000, "active"));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(stripeMock.subscriptions.retrieve).toHaveBeenCalledTimes(1);
+    expect(stripeMock.subscriptions.retrieve).toHaveBeenCalledWith("sub_1");
+    const stored = getRef(SUB_DOC).__read();
+    expect(stored).toMatchObject({ status: "cancelled", stripeSubscriptionId: "sub_1" });
+    // Applied without an event clock: the ordering marker did not move.
+    expect(stored.lastStripeEventCreated).toBe(2000);
+    // Both writes happened, tie-applied first and the fresh state last.
+    const statuses = getRef(SUB_DOC).set.mock.calls.map((c: any[]) => c[0].status);
+    // (`mapStatus` stores Stripe "trialing" as "trial".)
+    expect(statuses).toEqual(["trial", "active", "cancelled"]);
+  });
+
+  test("a strictly newer event is applied without any retrieve", async () => {
+    await seed2000();
+    stripeMock.subscriptions.retrieve.mockResolvedValue(subscriptionObject("canceled"));
+
+    const res = await deliver(subEvent(2001, "active"));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(stripeMock.subscriptions.retrieve).not.toHaveBeenCalled();
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "active",
+      lastStripeEventCreated: 2001,
+    });
+  });
+
+  test("an older event is ignored and does not retrieve", async () => {
+    await seed2000();
+    stripeMock.subscriptions.retrieve.mockResolvedValue(subscriptionObject("canceled"));
+    const before = { ...getRef(SUB_DOC).__read() };
+
+    const res = await deliver(subEvent(1999, "active"));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(stripeMock.subscriptions.retrieve).not.toHaveBeenCalled();
+    expect(getRef(SUB_DOC).__read()).toEqual(before);
+    expect(logger.info).toHaveBeenCalledWith(
+      "ignoring out-of-order stripe event",
+      expect.objectContaining({ eventCreated: 1999, alreadyApplied: 2000 }),
+    );
+  });
+
+  test("a retrieve rejection keeps the tie-applied event, logs a warning and does not fail the webhook", async () => {
+    await seed2000();
+    stripeMock.subscriptions.retrieve.mockRejectedValue(new Error("stripe 503"));
+
+    const res = await deliver(subEvent(2000, "active"));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).not.toHaveBeenCalledWith(500);
+    expect(stripeMock.subscriptions.retrieve).toHaveBeenCalledTimes(1);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "active",
+      lastStripeEventCreated: 2000,
+    });
+    expect(logger.warn).toHaveBeenCalledWith(
+      "same-second stripe tie: could not re-read the subscription",
+      expect.objectContaining({ uid: "u1", subscriptionId: "sub_1" }),
+    );
+  });
+
+  test("a re-read that returns a different subscription id is not applied", async () => {
+    await seed2000();
+    stripeMock.subscriptions.retrieve.mockResolvedValue({
+      ...subscriptionObject("canceled"),
+      id: "sub_other",
+    });
+
+    const res = await deliver(subEvent(2000, "active"));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "active",
+      stripeSubscriptionId: "sub_1",
+    });
+  });
+
+  test("a tie for an account whose Auth user is gone writes nothing and never retrieves", async () => {
+    getUser.mockRejectedValue(
+      Object.assign(new Error("no user"), { code: "auth/user-not-found" }),
+    );
+
+    const res = await deliver(subEvent(2000, "active"));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(stripeMock.subscriptions.retrieve).not.toHaveBeenCalled();
+    expect(refs.has(SUB_DOC)).toBe(false);
   });
 });
 

@@ -11,7 +11,9 @@
  * Unlike delete_account.test.ts, whose Firestore mock is stateless, this file
  * uses a small STATEFUL in-memory Firestore: documents live in one map keyed by
  * path, `recursiveDelete` really removes everything under a path, queries
- * really filter/order/limit, and write batches really apply. That is what lets
+ * really filter/order/limit, write batches really apply, and transactions are
+ * optimistic (commit-time validation + retry, with an interleaving hook for
+ * concurrent-sweep tests; booking rows are settled by them). That is what lets
  * the acceptance test assert "the data is gone afterwards" rather than "a mock
  * was called". The module under test is the real `../index`.
  *
@@ -36,6 +38,14 @@ const sw: {
   recursiveThrow: (() => unknown) | null;
   /** Side effect at the start of every recursiveDelete (e.g. advance the clock). */
   onSweep: ((path: string) => void) | null;
+  /** Makes every transaction commit fail (a booking-sweep transaction abort). */
+  failTxCommit: boolean;
+  /**
+   * Awaited inside a transaction right after each `tx.get`, BEFORE the commit.
+   * This is the interleaving point: two concurrent transactions can both be
+   * held here after reading, then released, so both commit from their reads.
+   */
+  afterTxRead: ((path: string, attempt: number) => Promise<void>) | null;
 } = {
   recursiveFails: () => false,
   failRecordWrite: false,
@@ -44,7 +54,12 @@ const sw: {
   recursiveHang: false,
   recursiveThrow: null,
   onSweep: null,
+  failTxCommit: false,
+  afterTxRead: null,
 };
+/** Transaction accounting: committed writes and optimistic-conflict retries. */
+const txCommitted: Array<{ op: "update" | "delete"; path: string; attempt: number }> = [];
+let txRetries = 0;
 const writes: Array<{ op: "set" | "delete"; path: string; merge: boolean }> = [];
 const queries: Array<{
   col: string;
@@ -175,6 +190,62 @@ jest.mock("firebase-admin", () => {
         },
       };
     },
+    /**
+     * A faithful optimistic transaction. Reads see COMMITTED state only;
+     * writes are buffered and applied atomically at commit; if any document
+     * the transaction read changed before its commit, nothing is applied and
+     * the callback re-runs on fresh state (as Firestore retries on
+     * contention), up to 5 attempts, then `aborted`. `update` of a missing
+     * document fails with `not-found` as in Firestore. Commit validation and
+     * apply contain no `await`, so they are atomic under the JS event loop.
+     */
+    runTransaction: async (fn: (tx: any) => Promise<unknown>) => {
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        const reads = new Map<string, string>();
+        const pending: Array<{ op: "update" | "delete"; path: string; data?: Doc }> = [];
+        const tx = {
+          get: async (ref: any) => {
+            const current = store.get(ref.path);
+            reads.set(ref.path, JSON.stringify(current ?? null));
+            const snap = {
+              exists: current !== undefined,
+              id: ref.id,
+              ref,
+              data: () => (current !== undefined ? { ...current } : undefined),
+            };
+            if (sw.afterTxRead) await sw.afterTxRead(ref.path, attempt);
+            return snap;
+          },
+          update: (ref: any, data: Doc) => {
+            pending.push({ op: "update", path: ref.path, data });
+          },
+          delete: (ref: any) => {
+            pending.push({ op: "delete", path: ref.path });
+          },
+        };
+        const result = await fn(tx);
+        if (sw.failTxCommit) throw firestoreError("transaction commit failed", "aborted");
+        const stale = [...reads].some(
+          ([p, seen]) => JSON.stringify(store.get(p) ?? null) !== seen,
+        );
+        if (stale) {
+          txRetries++;
+          continue;
+        }
+        for (const p of pending) {
+          if (p.op === "update" && !store.has(p.path)) {
+            throw firestoreError("no document to update", "not-found");
+          }
+        }
+        for (const p of pending) {
+          if (p.op === "delete") store.delete(p.path);
+          else store.set(p.path, { ...store.get(p.path), ...p.data });
+          txCommitted.push({ op: p.op, path: p.path, attempt });
+        }
+        return result;
+      }
+      throw firestoreError("too much contention", "aborted");
+    },
     recursiveDelete,
   }));
   firestoreFn.Timestamp = { fromMillis: (ms: number) => ({ __ts: ms }) };
@@ -270,6 +341,10 @@ beforeEach(() => {
   sw.recursiveHang = false;
   sw.recursiveThrow = null;
   sw.onSweep = null;
+  sw.failTxCommit = false;
+  sw.afterTxRead = null;
+  txCommitted.length = 0;
+  txRetries = 0;
   recursiveDelete.mockClear();
   getUser.mockReset().mockImplementation(async () => {
     throw notFound();
@@ -904,5 +979,222 @@ describe("deleteAccount: the durable intent record", () => {
     // The fresh intent was written and then removed by the clean final sweep.
     expect(writes.some((w) => w.op === "set" && w.path === RECORD && !w.merge)).toBe(true);
     expect(recordKeys()).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Booking sweep (F13): one transaction per booking, decided on a fresh read.
+// ---------------------------------------------------------------------------
+
+const A = "uid_a";
+const B = "uid_b";
+const bookingKeys = (): string[] =>
+  [...store.keys()].filter((k) => k.startsWith("coach_bookings/"));
+
+/**
+ * Holds the first transaction read of `path` at its first attempt until two
+ * transactions have read it, then lets them commit ONE AFTER THE OTHER from
+ * those (now stale for the second) reads. `first` picks which arrival commits
+ * first. One-shot: later reads (retries, final sweeps) pass straight through.
+ */
+function interleaveTwoReads(path: string, first: "first-arrival" | "last-arrival"): void {
+  const resolvers: Array<() => void> = [];
+  let done = false;
+  sw.afterTxRead = async (p, attempt) => {
+    if (p !== path || attempt !== 1 || done) return;
+    const mine = new Promise<void>((r) => resolvers.push(r));
+    if (resolvers.length < 2) return mine;
+    done = true;
+    const [r0, r1] = resolvers;
+    const [one, two] = first === "first-arrival" ? [r0, r1] : [r1, r0];
+    // Not awaited: this hook must return for its own transaction to proceed.
+    void (async () => {
+      one();
+      while (txCommitted.length === 0) await new Promise((r) => setImmediate(r));
+      two();
+    })();
+    return mine;
+  };
+}
+
+describe("the transaction fake itself (instrument check)", () => {
+  test("two interleaved read-modify-write transactions do not lose an update: the second retries on fresh state", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const admin = require("firebase-admin");
+    const db = admin.firestore();
+    store.set("counters/c", { n: 0 });
+    const ref = db.doc("counters/c");
+    const resolvers: Array<() => void> = [];
+    const hold = () => new Promise<void>((r) => resolvers.push(r));
+    const incr = () =>
+      db.runTransaction(async (tx: any) => {
+        const snap = await tx.get(ref);
+        // First attempts block until released; retries do not wait.
+        if (resolvers.length < 2) await hold();
+        tx.update(ref, { n: snap.data().n + 1 });
+      });
+    const both = Promise.all([incr(), incr()]);
+    while (resolvers.length < 2) await new Promise((r) => setImmediate(r));
+    resolvers[0]();
+    while (txCommitted.length === 0) await new Promise((r) => setImmediate(r));
+    resolvers[1]();
+    await both;
+
+    expect(store.get("counters/c")).toEqual({ n: 2 });
+    expect(txRetries).toBe(1);
+    expect(txCommitted.map((c) => c.attempt).sort()).toEqual([1, 2]);
+  });
+});
+
+describe("booking sweep under concurrent deletions (F13)", () => {
+  test.each(["first-arrival", "last-arrival"] as const)(
+    "both parties delete at the same moment (%s commits first): the booking row ends DELETED, never with both sides deleted_user",
+    async (first) => {
+      seedUserData(A);
+      seedUserData(B);
+      store.set("coach_bookings/ab", { clientUid: A, coachUid: B, note: "shared" });
+      // Rows with a third party must keep that party's side.
+      store.set("coach_bookings/a_c", { clientUid: A, coachUid: "coach_c" });
+      store.set("coach_bookings/c_b", { clientUid: "client_c", coachUid: B });
+      store.set("coach_bookings/other", { clientUid: "x", coachUid: "y" });
+      interleaveTwoReads("coach_bookings/ab", first);
+
+      const [ra, rb] = await Promise.all([
+        deleteAccount.run(callReq(A)),
+        deleteAccount.run(callReq(B)),
+      ]);
+
+      expect(ra).toEqual({ success: true, finalCleanup: "complete" });
+      expect(rb).toEqual({ success: true, finalCleanup: "complete" });
+      // The interleaving really happened: exactly one transaction lost the
+      // race and re-ran on the other's committed write.
+      expect(txRetries).toBe(1);
+      const onAb = txCommitted.filter((c) => c.path === "coach_bookings/ab");
+      expect(onAb.map((c) => [c.op, c.attempt])).toEqual([
+        ["update", 1],
+        ["delete", 2],
+      ]);
+      // End state.
+      expect(store.has("coach_bookings/ab")).toBe(false);
+      expect(store.get("coach_bookings/a_c")).toEqual({
+        clientUid: "deleted_user",
+        coachUid: "coach_c",
+      });
+      expect(store.get("coach_bookings/c_b")).toEqual({
+        clientUid: "client_c",
+        coachUid: "deleted_user",
+      });
+      expect(store.get("coach_bookings/other")).toEqual({ clientUid: "x", coachUid: "y" });
+      // No row anywhere has both sides gone.
+      for (const k of bookingKeys()) {
+        const d = store.get(k)!;
+        expect(d.clientUid === "deleted_user" && d.coachUid === "deleted_user").toBe(false);
+      }
+    },
+  );
+
+  test("many shared bookings (more than one 450-row page) deleted concurrently by both parties: every row is deleted, others untouched", async () => {
+    seedUserData(A);
+    seedUserData(B);
+    const N = 460; // one page (450) plus a remainder
+    for (let i = 0; i < N; i++) {
+      store.set(`coach_bookings/ab${i}`, { clientUid: i % 2 ? A : B, coachUid: i % 2 ? B : A });
+    }
+    store.set("coach_bookings/keep", { clientUid: "x", coachUid: "y" });
+
+    await Promise.all([deleteAccount.run(callReq(A)), deleteAccount.run(callReq(B))]);
+
+    expect(bookingKeys()).toEqual(["coach_bookings/keep"]);
+    expect(txRetries).toBeLessThanOrEqual(N); // at most one lost race per row
+  });
+
+  test("a self-booking is deleted by one transaction, not anonymised", async () => {
+    seedUserData(A);
+    store.set("coach_bookings/self", { clientUid: A, coachUid: A });
+
+    await deleteAccount.run(callReq(A));
+
+    expect(store.has("coach_bookings/self")).toBe(false);
+    const onSelf = txCommitted.filter((c) => c.path === "coach_bookings/self");
+    expect(onSelf).toEqual([{ op: "delete", path: "coach_bookings/self", attempt: 1 }]);
+  });
+
+  test("a booking with another counterparty keeps the other side (client and coach roles)", async () => {
+    seedUserData(A);
+    store.set("coach_bookings/as_client", { clientUid: A, coachUid: "coach_c", price: 10 });
+    store.set("coach_bookings/as_coach", { clientUid: "client_c", coachUid: A, price: 20 });
+
+    await deleteAccount.run(callReq(A));
+
+    expect(store.get("coach_bookings/as_client")).toEqual({
+      clientUid: "deleted_user",
+      coachUid: "coach_c",
+      price: 10,
+    });
+    expect(store.get("coach_bookings/as_coach")).toEqual({
+      clientUid: "client_c",
+      coachUid: "deleted_user",
+      price: 20,
+    });
+  });
+
+  test("a booking whose other side is missing or already deleted is deleted", async () => {
+    seedUserData(A);
+    store.set("coach_bookings/gone_side", { clientUid: A, coachUid: "deleted_user" });
+    store.set("coach_bookings/no_side", { clientUid: A });
+
+    await deleteAccount.run(callReq(A));
+
+    expect(bookingKeys()).toEqual([]);
+  });
+
+  test("more than one page for one user: 1000 bookings are settled, counterparties survive, other users untouched", async () => {
+    seedUserData(A);
+    for (let i = 0; i < 1000; i++) {
+      store.set(`coach_bookings/p${i}`, {
+        clientUid: i % 3 === 0 ? "deleted_user" : A,
+        coachUid: i % 3 === 0 ? A : `coach_${i}`,
+      });
+    }
+    store.set("coach_bookings/keep", { clientUid: "x", coachUid: "y" });
+
+    await deleteAccount.run(callReq(A));
+
+    // i % 3 === 0: the other side was already gone -> row deleted (334 rows).
+    expect(bookingKeys()).toHaveLength(1000 - 334 + 1);
+    for (let i = 0; i < 1000; i++) {
+      if (i % 3 === 0) expect(store.has(`coach_bookings/p${i}`)).toBe(false);
+      else {
+        expect(store.get(`coach_bookings/p${i}`)).toEqual({
+          clientUid: "deleted_user",
+          coachUid: `coach_${i}`,
+        });
+      }
+    }
+    expect(store.get("coach_bookings/keep")).toEqual({ clientUid: "x", coachUid: "y" });
+    expect(txRetries).toBe(0);
+  });
+
+  test("a failed booking transaction keeps the deletion record pending; the next reconciler run finishes the row", async () => {
+    seedUserData(U);
+    store.set("coach_bookings/b1", { clientUid: U, coachUid: "coach_9" });
+    seedRecord(U, { nextAttemptAt: T0 });
+    sw.failTxCommit = true;
+
+    await runReconciler();
+
+    expect(store.get(RECORD)!.attempts).toBe(2);
+    expect(store.get(RECORD)!.lastErrorCode).toBe("aborted");
+    expect(store.get("coach_bookings/b1")).toEqual({ clientUid: U, coachUid: "coach_9" });
+
+    sw.failTxCommit = false;
+    now = T0 + 30 * MIN;
+    await runReconciler();
+
+    expect(store.has(RECORD)).toBe(false);
+    expect(store.get("coach_bookings/b1")).toEqual({
+      clientUid: "deleted_user",
+      coachUid: "coach_9",
+    });
   });
 });
