@@ -162,7 +162,23 @@ class RepCounterConfig {
     this.minLikelihood = 0.5,
     this.minObservedRatio = 0.5,
     this.minSideLikelihood = 0.7,
+    this.fullDepthSignal,
+    this.shallowRule = 'squat.depth',
   });
+
+  /// Signal value a repetition must reach to count as FULL depth, or null when
+  /// the movement has no such notion (the default: nothing changes).
+  ///
+  /// Separate from [bottomEnter] on purpose. [bottomEnter] is the depth at
+  /// which a lap is ACCEPTED as a repetition; this is the depth the coach asks
+  /// for. A completed rep whose peak stayed below it is still counted, but is
+  /// recorded as faulted under [shallowRule] at severity 1 so the set summary,
+  /// the verdict and the voice can say "shallow squat" instead of staying
+  /// silent about it.
+  final double? fullDepthSignal;
+
+  /// Rule id recorded in [RepQuality.severityByRule] for a shallow rep.
+  final String shallowRule;
 
   /// Signal at or below this counts as standing at the top.
   ///
@@ -655,6 +671,11 @@ class RepCounter {
     final duration = timestampMs - _repStartMs;
     if (duration < config.minRepDurationMs) {
       return _discard(RepRejectReason.tooFast);
+    }
+    final fullDepth = config.fullDepthSignal;
+    if (fullDepth != null && _peakSignal < fullDepth) {
+      final prev = _severity[config.shallowRule] ?? 0;
+      if (prev < 1) _severity[config.shallowRule] = 1;
     }
     final quality = RepQuality(
       index: _reps.length + 1,

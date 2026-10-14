@@ -144,8 +144,13 @@ void main() {
       expect(s.lastRepPeakMatch, isNull);
       expect(s.lastRepMissedTarget, isNull,
           reason: 'cannot tell is not a miss');
-      expect(s.lastRepEvaluated, isFalse,
-          reason: 'squat depth cannot fault, so nothing judged this rep');
+      // Since 2026-10-14 the squat also runs the back-position rule, which
+      // CAN fault and reads shoulder/hip/knee (not the cropped ankle), so a
+      // rule was entitled to disagree with this rep even though the shape
+      // could not be scored. Depth alone still cannot fault.
+      expect(s.lastRepEvaluated, isTrue,
+          reason: 'the back-position rule was entitled to fault this rep');
+      expect(SquatDepthClassifier().canFault, isFalse);
     });
 
     test(

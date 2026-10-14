@@ -42,3 +42,52 @@ Verification
 Not verified
 - No live pose test on a device: placement on a real body, the look of the
   outline over the real camera/avatar, golden images (not run).
+
+## Piece 2: specific squat voice cues (back rounding, shallow squat)
+
+What changed
+- Registry check: `assets/data/coach_exercises.json` has no squat row (squat is
+  deliberately a legacy-classifier movement), so a dedicated classifier was
+  added instead of lifting the squat exclusion.
+- `lib/features/form_check/data/form_classifier.dart`: new `FormCueKey`
+  values `squatBackRounding` and `squatDepthShallow`; new `SquatBackClassifier`
+  (rule `squat.back`, `canFault` true, fault vertex hip). It measures the
+  shoulder-to-hip line off vertical while the hip is within
+  `minDepthRatio` of the knee (in torso lengths), enters at 60 degrees, releases
+  at 50 degrees, needs 5 consecutive bad frames (hysteresis against flicker),
+  and judges the better-visible side (`FrameSelectingClassifier`). Front-on it
+  stays silent. It is a proxy: BlazePose has no spine landmarks, so true
+  curvature is not observable; the explanation text says so.
+- `lib/features/form_check/data/rep_counter.dart`: `RepCounterConfig.fullDepthSignal`
+  (null by default, so every other movement is unchanged) and `shallowRule`.
+  A completed rep whose peak stayed below `fullDepthSignal` is recorded as
+  severity 1 under `squat.depth`.
+- `lib/features/form_check/state/form_check_providers.dart`: squat now runs
+  `[SquatDepthClassifier(), SquatBackClassifier()]`; `avatarVerdictSeverity`
+  also colours the body for a later fault-capable rule; at rep completion a
+  shallow rep produces the shallow cue and a specific squat cue is no longer
+  overwritten by the generic `silhouette.match` cue; an `incomplete` rejection
+  on squat speaks the shallow cue instead of the generic miss.
+- `lib/features/form_check/data/cue_text.dart` and `lib/l10n/app_en.arb`,
+  `app_ru.arb`: cue text, calm explanation and rule name (`squat.back`) for both
+  languages. Voice floor checked: `CueGate` speaks severity >= 1; back is 2
+  (preempts), shallow is 1 (3 s gap, same-cue repeat window 20 s). No gate change
+  was needed.
+
+Why
+- The only fault the squat could raise was `silhouette.match`; depth and any
+  back rule were severity 0 or absent, so the voice was generic.
+
+Contracts affected
+- `activeClassifiersProvider` for squat has two entries (depth first).
+- `lastRepEvaluated` is now true for squat reps (a fault-capable rule ran);
+  `scoring_gate_session_test` expectation updated accordingly.
+
+Verification (focused)
+- New `test/features/form_check/squat_cues_test.dart` (back rule fires on a
+  folded sequence, not on an upright one, not before the min frames, hysteresis,
+  not while standing, right-side-only view; texts RU/EN; voice floor; shallow
+  vs deep vs unconfigured counter).
+- Updated for the new contract: generic_coach_engine_test (`.first`),
+  one_cue_per_rep_test, scoring_gate_session_test, cue_text_test.
+

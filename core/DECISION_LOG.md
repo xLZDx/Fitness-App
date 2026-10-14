@@ -55822,3 +55822,7 @@ Decision: replace the marker guard with a write-revision compare-and-swap after 
 ## 2026-10-14 - Commit: Target silhouette drawn again on the live coach
 
 Decision: the operator's explicit instruction overrides the G17 removal of the target outline; the target of `poseTargetProvider` is drawn over the tracked body (layer `form_check.layer.target`). Evidence: focused Flutter tests, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device.
+
+## 2026-10-14 - Commit: Specific squat voice cues
+
+Decision: squat gets a fault-capable back-position rule (trunk fold proxy, hysteresis) and a shallow-depth fault on completed or incomplete reps; specific squat cues win over the generic silhouette-miss cue. No registry row exists for squat, so no registry change. Evidence: focused Flutter runs, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device; thresholds are PRODUCT_HEURISTIC.

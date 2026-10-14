@@ -278,7 +278,7 @@ void main() {
       container.read(selectedExerciseProvider.notifier).state =
           FormExercise.squat;
       final rules = container.read(activeClassifiersProvider);
-      expect(rules.map((c) => c.rule), ['squat.depth']);
+      expect(rules.map((c) => c.rule), ['squat.depth', 'squat.back']);
       expect(rules.map((c) => c.rule), isNot(contains('pushup.alignment')));
     });
 

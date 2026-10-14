@@ -506,6 +506,8 @@
   "formcheckCueSquatDepthGood": "Хорошая глубина. Поднимайтесь.",
   "formcheckCueSquatDepthAlmost": "Почти. Опуститесь чуть ниже.",
   "formcheckCueSquatDepthHalf": "Полповторения. Убавьте вес и садитесь глубже.",
+  "formcheckCueSquatBackRounding": "Спина круглится. Грудь выше, спину держите прямой.",
+  "formcheckCueSquatDepthShallow": "Неглубокий присед. Опуститесь ниже, до уровня колен.",
   "formcheckCueDeadliftHipHingeShallow": "Корпус почти прямой.",
   "formcheckCueDeadliftHipHingeDeep": "Глубокий наклон в тазобедренном суставе.",
   "formcheckCuePushupAlignStraight": "Корпус в одну линию.",
@@ -525,6 +527,7 @@
   "formcheckRegistryGoodMorningKnees": "Наклоняйтесь от бёдер, не приседайте.",
   "formcheckRegistryGoodMorningTooDeep": "Уменьшите глубину наклона.",
   "formcheckRuleSquatDepth": "Глубина приседа",
+  "formcheckRuleSquatBack": "Положение спины",
   "formcheckRuleDeadliftHipHinge": "Наклон корпуса",
   "formcheckRulePushupAlignment": "Линия корпуса",
   "formcheckPhaseReady": "готов",
@@ -1641,6 +1644,14 @@
   "formcheckExplainSilhouetteMissed": "Повторение не дошло до целевой формы. Тренер сравнивает положение суставов с эталонной позой целиком, поэтому дело может быть и в глубине, и в наклоне корпуса — двигайтесь медленнее, как в демонстрации.",
   "@formcheckExplainSilhouetteMissed": {
     "description": "Form coach fault explanation (gate G7): the silhouette-match rule."
+  },
+  "formcheckExplainSquatBack": "В нижней точке приседа корпус сильно наклонился вперёд — обычно это сопровождается круглой спиной. Тренер видит линию от плеча к тазу, а не сам позвоночник, поэтому отмечает устойчивый наклон вперёд. Держите грудь выше, взгляд вперёд и напрягите живот до начала спуска.",
+  "@formcheckExplainSquatBack": {
+    "description": "Form coach fault explanation: the squat back-position rule (trunk lean proxy)."
+  },
+  "formcheckExplainSquatShallow": "Таз остался заметно выше колен. Глубина считается по углу бедра относительно длины вашего корпуса, поэтому не зависит от расстояния до телефона. Отведите таз назад и вниз, пока бёдра не окажутся примерно параллельно полу, как в демонстрации.",
+  "@formcheckExplainSquatShallow": {
+    "description": "Form coach fault explanation: a completed squat that never reached target depth."
   },
   "formcheckExplainMeasuredAngle": "Измерено: {value}°. Одна линия — от {target}°.",
   "@formcheckExplainMeasuredAngle": {

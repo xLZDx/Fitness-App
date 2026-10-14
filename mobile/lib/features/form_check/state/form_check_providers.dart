@@ -666,7 +666,11 @@ final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
     ];
   }
   return switch (exercise) {
-    FormExercise.squat => [SquatDepthClassifier()],
+    // The depth rule reports and never faults (camera-dependent); the back rule
+    // is the one entitled to fault. Order matters: `avatarVerdictSeverity`
+    // reads the FIRST entry for the silhouette fallback, and the extra
+    // fault-capable entries only add their own live severity.
+    FormExercise.squat => [SquatDepthClassifier(), SquatBackClassifier()],
     FormExercise.pushup => [PushupAlignmentClassifier()],
     FormExercise.deadlift => [DeadliftHipHingeClassifier()],
     // Empty ON PURPOSE, not pending work. The movements added 2026-08-08 are
@@ -939,6 +943,15 @@ int? avatarVerdictSeverity(
   // by the detector) there is no verdict colour — neither a live green nor a
   // stale red from the last rep. The completed rep's own record is untouched;
   // only this live overlay goes neutral.
+  // A later, fault-capable rule (squat back position) colours the live body
+  // while its own fault is on screen; otherwise the fallback below applies.
+  if (feedback != null &&
+      feedback.severity > 0 &&
+      activeClassifiers
+          .skip(1)
+          .any((c) => c.canFault && c.rule == feedback.rule)) {
+    return feedback.severity;
+  }
   if (!currentFrameReliable) return null;
   // `classifier` names a real, known movement that has simply chosen not to
   // fault it (camera-angle-confounded, e.g. squat depth / hip hinge) — unlike
@@ -1824,7 +1837,25 @@ class RepSessionController extends Notifier<RepSessionState> {
     }());
 
     var cue = _worstThisRep;
-    if (missed) {
+    // A completed rep that stayed above the depth the coach asks for. Only a
+    // movement whose counter declares `fullDepthSignal` (squat) can produce it.
+    final fullDepth = counter.config.fullDepthSignal;
+    final completed = event.rep;
+    if (cue == null &&
+        fullDepth != null &&
+        completed != null &&
+        completed.peakSignal < fullDepth) {
+      cue = FormFeedback(
+        rule: counter.config.shallowRule,
+        severity: 1,
+        cueKey: FormCueKey.squatDepthShallow,
+        metric: completed.peakSignal,
+      );
+    }
+    // A specific squat diagnosis (back rounding, shallow) is worth more than
+    // the generic "you did not reach the shape", so the silhouette cue does not
+    // overwrite it. Every other movement keeps the old precedence.
+    if (missed && !(cue != null && cue.rule.startsWith('squat.'))) {
       cue = FormFeedback(
         rule: 'silhouette.match',
         severity: 2,
@@ -1936,16 +1967,27 @@ class RepSessionController extends Notifier<RepSessionState> {
     // minute earlier. GPT-PM, reviewing the first version of this gate: the
     // discard removes the phantom rep from the count and the voice then
     // re-invents it as a technique fault.
+    // For a squat, a lap that started and came back up without reaching the
+    // counting depth is a shallow squat: say so instead of the generic miss.
+    final shallowSquat = event.rejectReason == RepRejectReason.incomplete &&
+        ref.read(selectedExerciseProvider) == FormExercise.squat;
     final cue = (target != null &&
             peak != null &&
             peak < kPoseMatchPassing &&
             event.rejectReason != RepRejectReason.abandoned)
-        ? FormFeedback(
-            rule: 'silhouette.match',
-            severity: 2,
-            cueKey: FormCueKey.silhouetteMissed,
-            metric: peak,
-          )
+        ? (shallowSquat
+            ? FormFeedback(
+                rule: 'squat.depth',
+                severity: 1,
+                cueKey: FormCueKey.squatDepthShallow,
+                metric: peak,
+              )
+            : FormFeedback(
+                rule: 'silhouette.match',
+                severity: 2,
+                cueKey: FormCueKey.silhouetteMissed,
+                metric: peak,
+              ))
         : null;
 
     state = RepSessionState(

@@ -34,6 +34,8 @@ String formCueText(AppLocalizations l10n, FormCueKey cueKey) =>
       FormCueKey.pushupAlignTuck => l10n.formcheckCuePushupAlignTuck,
       FormCueKey.pushupAlignSagging => l10n.formcheckCuePushupAlignSagging,
       FormCueKey.silhouetteMissed => l10n.formcheckCueSilhouetteMissed,
+      FormCueKey.squatBackRounding => l10n.formcheckCueSquatBackRounding,
+      FormCueKey.squatDepthShallow => l10n.formcheckCueSquatDepthShallow,
       // Registry cues are worded by cueId (see [formFeedbackText]); a key-only
       // resolver has nothing to say, which keeps them unspoken.
       FormCueKey.registry => '',
@@ -71,6 +73,8 @@ String? formFaultExplanation(AppLocalizations l10n, FormFeedback feedback) {
     FormCueKey.pushupAlignTuck => l10n.formcheckExplainPushupTuck,
     FormCueKey.pushupAlignSagging => l10n.formcheckExplainPushupSagging,
     FormCueKey.silhouetteMissed => l10n.formcheckExplainSilhouetteMissed,
+    FormCueKey.squatBackRounding => l10n.formcheckExplainSquatBack,
+    FormCueKey.squatDepthShallow => l10n.formcheckExplainSquatShallow,
     FormCueKey.registry => null,
     // Every remaining cue belongs to a rule that reports without judging, and
     // reaches severity 0 only. Listed rather than swept into a default arm, so
@@ -115,6 +119,7 @@ String formRuleName(AppLocalizations l10n, String ruleId) => switch (ruleId) {
       'squat.depth' => l10n.formcheckRuleSquatDepth,
       'deadlift.hip_hinge' => l10n.formcheckRuleDeadliftHipHinge,
       'pushup.alignment' => l10n.formcheckRulePushupAlignment,
+      'squat.back' => l10n.formcheckRuleSquatBack,
       // NOT a `FormClassifier`, and that is why it was missing. The silhouette
       // match is synthesised in `RepSessionController` when a repetition never
       // reached the shape on screen, so the l10n coverage test — which walks

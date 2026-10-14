@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'pose_gate.dart';
 import 'pose_landmark.dart';
+import 'pose_scoring_gate.dart' show chooseScoringSide;
 
 /// Identifies every cue a rule can emit.
 ///
@@ -34,6 +35,14 @@ enum FormCueKey {
   /// The repetition never reached the shape on screen. Emitted by the
   /// silhouette match rather than by a per-frame rule.
   silhouetteMissed,
+
+  /// The trunk folded far forward at depth, which is how a rounded back shows
+  /// up from the side (see [SquatBackClassifier]).
+  squatBackRounding,
+
+  /// A completed repetition never reached target depth, or a started one came
+  /// back up without reaching the counting depth.
+  squatDepthShallow,
 
   /// Sentinel for feedback produced by a data-driven registry rule
   /// (`GenericRuleClassifier`). The wording is NOT a function of this key: it
@@ -220,6 +229,105 @@ class SquatDepthClassifier implements FormClassifier {
               : FormCueKey.squatDepthHalf,
       metric: ratio,
     );
+  }
+}
+
+/// Squat back position: flags a trunk folded far forward at depth, the
+/// side-view signature of a rounded back.
+///
+/// **What this does and does not measure.** BlazePose has no spinal landmark
+/// (see [DeadliftHipHingeClassifier]), so curvature itself is not observable.
+/// The shoulder-to-hip line IS, and its angle off vertical is stable under
+/// camera height and distance because both points sit in one image plane. A
+/// sustained lean beyond [leanEnterDeg] while the hips are low is the
+/// observable proxy for "chest dropped, back rounding" and is named honestly
+/// in the explanation text. Front-on, a forward lean runs toward the camera
+/// and shows no sideways offset, so this rule stays silent there rather than
+/// guessing.
+///
+/// Thresholds are `PRODUCT_HEURISTIC`: a normal back squat bottoms out at
+/// roughly 30-55 degrees off vertical, so the rule starts at 60 and releases at
+/// 50. It only runs once the hip is within [minDepthRatio] of the knee in torso
+/// lengths (not while standing or bending to reach the phone), and it needs
+/// [minFaultFrames] consecutive bad frames to fire so one jittery frame cannot
+/// speak (hysteresis against flicker).
+class SquatBackClassifier implements FormClassifier, FrameSelectingClassifier {
+  static const leanEnterDeg = 60.0;
+  static const leanExitDeg = 50.0;
+  static const minFaultFrames = 5;
+
+  /// (hipY - kneeY) / torso at or above which the lifter counts as squatting.
+  /// -0.5 is a thigh about 25 degrees above horizontal for average proportions.
+  static const minDepthRatio = -0.5;
+
+  int _badFrames = 0;
+  bool _faulting = false;
+
+  @override
+  String get rule => 'squat.back';
+
+  @override
+  Set<LandmarkType> get requiredLandmarks => const {
+        LandmarkType.leftShoulder,
+        LandmarkType.leftHip,
+        LandmarkType.leftKnee,
+      };
+
+  @override
+  bool get canFault => true;
+
+  /// The hip: the trunk-to-thigh angle turns on it.
+  @override
+  LandmarkType? get faultVertex => LandmarkType.leftHip;
+
+  /// Side-on, the better-visible side is the one that is judged, mapped into the
+  /// left slots (same helper the rep-shape scoring uses).
+  @override
+  PoseFrame frameFor(PoseFrame raw) =>
+      chooseScoringSide(raw, requiredLandmarks).frame;
+
+  @override
+  FormFeedback? evaluate(PoseFrame frame) {
+    final shoulder = frame.landmarks[LandmarkType.leftShoulder];
+    final hip = frame.landmarks[LandmarkType.leftHip];
+    final knee = frame.landmarks[LandmarkType.leftKnee];
+    if (shoulder == null || hip == null || knee == null) {
+      _reset();
+      return null;
+    }
+    final torso = math.sqrt(math.pow(shoulder.x - hip.x, 2) +
+        math.pow(shoulder.y - hip.y, 2));
+    if (torso < 1e-6) {
+      _reset();
+      return null;
+    }
+    if ((hip.y - knee.y) / torso < minDepthRatio) {
+      _reset();
+      return null;
+    }
+    final leanDeg = math.atan2((shoulder.x - hip.x).abs(),
+            (hip.y - shoulder.y).abs()) *
+        180 /
+        math.pi;
+    if (_faulting) {
+      if (leanDeg < leanExitDeg) _reset();
+    } else if (leanDeg >= leanEnterDeg) {
+      if (++_badFrames >= minFaultFrames) _faulting = true;
+    } else {
+      _badFrames = 0;
+    }
+    if (!_faulting) return null;
+    return FormFeedback(
+      rule: rule,
+      severity: 2,
+      cueKey: FormCueKey.squatBackRounding,
+      metric: leanDeg,
+    );
+  }
+
+  void _reset() {
+    _badFrames = 0;
+    _faulting = false;
   }
 }
 

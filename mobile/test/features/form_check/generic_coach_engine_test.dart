@@ -269,7 +269,7 @@ void main() {
       addTearDown(container.dispose);
       expect(await container.read(coachRegistryProvider.future), isNull);
       expect(container.read(coachRegistrySnapshotProvider), isNull);
-      expect(container.read(activeClassifiersProvider).single,
+      expect(container.read(activeClassifiersProvider).first,
           isA<SquatDepthClassifier>());
       container.read(selectedExerciseProvider.notifier).state =
           FormExercise.plank;
@@ -282,7 +282,7 @@ void main() {
       addTearDown(container.dispose);
       final reg = await container.read(coachRegistryProvider.future);
       expect(reg, isNotNull);
-      expect(container.read(activeClassifiersProvider).single,
+      expect(container.read(activeClassifiersProvider).first,
           isA<SquatDepthClassifier>());
     });
 
@@ -297,7 +297,7 @@ void main() {
       addTearDown(container.dispose);
       final n = container.read(selectedExerciseProvider.notifier);
       n.state = FormExercise.squat;
-      expect(container.read(activeClassifiersProvider).single,
+      expect(container.read(activeClassifiersProvider).first,
           isA<SquatDepthClassifier>());
       n.state = FormExercise.pushup;
       expect(container.read(activeClassifiersProvider).single,

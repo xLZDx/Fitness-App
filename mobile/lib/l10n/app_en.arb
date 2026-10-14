@@ -1070,6 +1070,8 @@
   "formcheckCueSquatDepthGood": "Good depth. Drive up.",
   "formcheckCueSquatDepthAlmost": "Almost there - sink a touch lower.",
   "formcheckCueSquatDepthHalf": "Half-rep. Lighten the bar and hit depth.",
+  "formcheckCueSquatBackRounding": "Your back is rounding. Chest up, keep your back straight.",
+  "formcheckCueSquatDepthShallow": "Shallow squat. Sit deeper, down to knee level.",
   "formcheckCueDeadliftHipHingeShallow": "Torso is close to upright.",
   "formcheckCueDeadliftHipHingeDeep": "Deep hip hinge.",
   "formcheckCuePushupAlignStraight": "Plank line is straight.",
@@ -1089,6 +1091,7 @@
   "formcheckRegistryGoodMorningKnees": "Hinge from the hips - don't squat.",
   "formcheckRegistryGoodMorningTooDeep": "Ease off the depth.",
   "formcheckRuleSquatDepth": "Squat depth",
+  "formcheckRuleSquatBack": "Back position",
   "formcheckRuleDeadliftHipHinge": "Hip hinge",
   "formcheckRulePushupAlignment": "Body line",
   "formcheckPhaseReady": "ready",
@@ -2760,6 +2763,14 @@
   "formcheckExplainSilhouetteMissed": "The repetition did not reach the target shape. The coach compares your joints against the whole reference pose, so this can be depth or trunk angle alike — move slower, as in the demonstration.",
   "@formcheckExplainSilhouetteMissed": {
     "description": "Form coach fault explanation (gate G7): the silhouette-match rule."
+  },
+  "formcheckExplainSquatBack": "Your torso leaned far forward at the bottom of the squat, which usually goes with a rounded back. The coach sees the line from shoulder to hip, not the spine itself, so it flags a sustained forward fold. Keep the chest up and the gaze ahead, and brace the stomach before you descend.",
+  "@formcheckExplainSquatBack": {
+    "description": "Form coach fault explanation: the squat back-position rule (trunk lean proxy)."
+  },
+  "formcheckExplainSquatShallow": "The hips stayed well above the knees. Depth is judged from your thigh angle against your own torso length, so it does not depend on how far the phone is. Sit back and down until the thighs are about level with the floor, as in the demonstration.",
+  "@formcheckExplainSquatShallow": {
+    "description": "Form coach fault explanation: a completed squat that never reached target depth."
   },
   "formcheckExplainMeasuredAngle": "Measured: {value}°. One line is {target}° or more.",
   "@formcheckExplainMeasuredAngle": {
