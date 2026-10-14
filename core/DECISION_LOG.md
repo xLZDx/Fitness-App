@@ -55806,3 +55806,7 @@ Decision: close GPT round 3 MINOR-01/02 with an epoch counter and a three-attemp
 ## 2026-10-14 - Commit: Final report of the hardening sprint
 
 Evidence: reports/HARDENING_SPRINT_FINAL_2026-10-14.ru.html and .html record the closure table of the final gate (GPT-PM round 4 APPROVE on e219df3), rules emulator 279/279 and deletion e2e 11/11. Open: device checks, functions deploy, live alert policy, golden_src removal.
+
+## 2026-10-14 - Commit: Final report of the hardening sprint
+
+Evidence: reports/HARDENING_SPRINT_FINAL_2026-10-14.ru.html and .html record the closure table of the final gate (GPT-PM round 4 APPROVE on e219df3), rules emulator 279/279 and deletion e2e 11/11. Open: device checks, functions deploy, live alert policy, golden_src removal.
