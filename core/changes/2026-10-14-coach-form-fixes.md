@@ -244,3 +244,12 @@ but is unmeasured.
 Final focused run for the whole follow-up: 570 tests green (50 files under
 `test/features/form_check` plus `test/l10n`, listed in the report).
 
+## Review follow-up 1: target painter cost
+
+`_TargetOutlinePainter` (`form_check_page.dart`): the stroke, head and layer
+`Paint` objects are now static (built once, never mutated, one stroke paint per
+width) and the alpha `saveLayer` is bounded to the figure's rectangle instead of
+the whole canvas, so no full-screen offscreen buffer is allocated per camera
+frame. The look is unchanged (same widths, colour and 0.42 layer alpha); the
+painter no longer takes a colour argument. Verified by `coach_target_layer_test`.
+

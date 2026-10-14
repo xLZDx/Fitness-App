@@ -55850,3 +55850,7 @@ Decision: the target is drawn as a thick-limbed translucent cyan body figure (on
 ## 2026-10-14 - Commit: Preview and squat demonstration findings recorded
 
 Decision: no code change for the preview/demo report. The squat demonstration is a deliberate stated absence since 2026-09-09 and was already so at 42d1b84; the target layer is transparent and cannot hide the preview. Evidence: git diff 42d1b84..HEAD on the widgets is empty; 570 focused Flutter tests green. See core/changes/2026-10-14-coach-form-fixes.md. Open product decision: a squat demonstration.
+
+## 2026-10-14 - Commit: Cheaper target figure painter
+
+Decision: static Paint objects and a figure-bounded alpha layer for the target figure, same look. Evidence: coach_target_layer_test. See core/changes/2026-10-14-coach-form-fixes.md.

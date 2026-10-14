@@ -1357,7 +1357,6 @@ class _TargetOutline extends ConsumerWidget {
           target: target,
           alignment: alignment,
           frameAspect: frame.aspectRatio,
-          color: _kTargetFigureColour,
         ),
       ),
     );
@@ -1373,13 +1372,11 @@ class _TargetOutlinePainter extends CustomPainter {
     required this.target,
     required this.alignment,
     required this.frameAspect,
-    required this.color,
   });
 
   final PoseTarget target;
   final PoseAlignment alignment;
   final double frameAspect;
-  final Color color;
 
   /// Limb thickness in logical pixels. Thick on purpose: a thin line over the
   /// user's own skeleton read as a second, green skeleton ("green corners on
@@ -1392,6 +1389,24 @@ class _TargetOutlinePainter extends CustomPainter {
   /// overlaps at the joints do not double up into darker blobs.
   static const _figureAlpha = 0.42;
 
+  // Paint objects are constants of the look, not of the frame: built once, and
+  // never mutated (the stroke widths differ, so there is one per width).
+  static final _trunkPaint = _stroke(_trunkWidth);
+  static final _limbPaint = _stroke(_limbWidth);
+  static final _armPaint = _stroke(_armWidth);
+  static final _headPaint = Paint()
+    ..color = _kTargetFigureColour
+    ..style = PaintingStyle.fill;
+  static final _layerPaint = Paint()
+    ..color = Colors.white.withValues(alpha: _figureAlpha);
+
+  static Paint _stroke(double width) => Paint()
+    ..color = _kTargetFigureColour
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round
+    ..strokeWidth = width;
+
   @override
   void paint(Canvas canvas, Size size) {
     Offset place(LandmarkType t) {
@@ -1399,49 +1414,64 @@ class _TargetOutlinePainter extends CustomPainter {
       return projectLandmark(p.$1, p.$2, frameAspect: frameAspect, canvas: size);
     }
 
-    canvas.saveLayer(Offset.zero & size,
-        Paint()..color = Colors.white.withValues(alpha: _figureAlpha));
+    final segments = <(Offset, Offset, Paint)>[];
     for (final (a, b) in target.bones) {
       if (!target.joints.containsKey(a) || !target.joints.containsKey(b)) {
         continue;
       }
-      final isTrunk = {a, b}.containsAll(
-          {LandmarkType.leftShoulder, LandmarkType.leftHip});
+      final isTrunk = {a, b}
+          .containsAll({LandmarkType.leftShoulder, LandmarkType.leftHip});
       final isArm = a == LandmarkType.leftElbow ||
           b == LandmarkType.leftElbow ||
           a == LandmarkType.leftWrist ||
           b == LandmarkType.leftWrist;
-      canvas.drawLine(
+      segments.add((
         place(a),
         place(b),
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round
-          ..strokeWidth = isTrunk
-              ? _trunkWidth
-              : isArm
-                  ? _armWidth
-                  : _limbWidth,
-      );
+        isTrunk ? _trunkPaint : (isArm ? _armPaint : _limbPaint),
+      ));
     }
+    Offset? headAt;
+    var headRadius = 0.0;
     final head = target.head;
     if (head != null) {
       final c = alignment((head.$1, head.$2));
-      final at = projectLandmark(c.$1, c.$2,
+      headAt = projectLandmark(c.$1, c.$2,
           frameAspect: frameAspect, canvas: size);
       final unit = (projectLandmark(0, 1,
                   frameAspect: frameAspect, canvas: size) -
               projectLandmark(0, 0, frameAspect: frameAspect, canvas: size))
           .distance;
-      canvas.drawCircle(
-          at,
-          head.$3 * alignment.scale * unit,
-          Paint()
-            ..color = color
-            ..style = PaintingStyle.fill);
+      headRadius = head.$3 * alignment.scale * unit;
     }
+    if (segments.isEmpty && headAt == null) return;
+
+    // One alpha layer so the joint overlaps do not double up into darker blobs,
+    // but bounded to the figure: a full-canvas offscreen buffer every camera
+    // frame is what this used to cost.
+    var minX = double.infinity, minY = double.infinity;
+    var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
+    void grow(Offset o, double r) {
+      minX = o.dx - r < minX ? o.dx - r : minX;
+      minY = o.dy - r < minY ? o.dy - r : minY;
+      maxX = o.dx + r > maxX ? o.dx + r : maxX;
+      maxY = o.dy + r > maxY ? o.dy + r : maxY;
+    }
+
+    for (final (p, q, _) in segments) {
+      grow(p, _trunkWidth);
+      grow(q, _trunkWidth);
+    }
+    if (headAt != null) grow(headAt, headRadius);
+    final bounds = Rect.fromLTRB(minX, minY, maxX, maxY)
+        .intersect(Offset.zero & size);
+    if (bounds.isEmpty) return;
+
+    canvas.saveLayer(bounds, _layerPaint);
+    for (final (p, q, paint) in segments) {
+      canvas.drawLine(p, q, paint);
+    }
+    if (headAt != null) canvas.drawCircle(headAt, headRadius, _headPaint);
     canvas.restore();
   }
 
@@ -1449,8 +1479,7 @@ class _TargetOutlinePainter extends CustomPainter {
   bool shouldRepaint(_TargetOutlinePainter old) =>
       old.target.id != target.id ||
       old.alignment != alignment ||
-      old.frameAspect != frameAspect ||
-      old.color != color;
+      old.frameAspect != frameAspect;
 }
 
 /// The body as the detector sees it, drawn over the preview.
