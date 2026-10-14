@@ -143,12 +143,17 @@ void main() {
           reason: 'a counted rep clears the rejection banner');
     });
 
-    test('is not narrated when nothing trustworthy measured it', () async {
-      // The counter rejects on hip-height-minus-knee-height, which depends on
-      // where the phone is standing. Blaming the user with that number is the
-      // mistake that produced "прогнись ниже" at the bottom of a full squat.
+    test('a squat that never reached counting depth says so, with no target',
+        () async {
+      // History: the counter used to reject on raw hip-height-minus-knee-height,
+      // which depends on where the phone is standing, so blaming the user with
+      // that number produced "прогнись ниже" at the bottom of a full squat and
+      // the rejection was left silent without a silhouette target. The squat now
+      // counts on a torso-relative signal (`squatBodyRelativeSignal`), so an
+      // `incomplete` rejection is a trustworthy "did not go deep enough" even
+      // with the target withdrawn (operator review, 2026-10-14).
       final (_, coach) = await run(halfSquat(0));
-      expect(coach.spoken, isEmpty);
+      expect(coach.spoken, [FormCueKey.squatDepthShallow.name]);
     });
 
     test('IS narrated when the silhouette says the shape was missed', () async {
@@ -173,7 +178,9 @@ void main() {
       expect(state.lastRepCue, isNull,
           reason: 'the clean rep must not inherit the discarded one\'s fault');
       expect(state.lastRepClean, isTrue);
-      expect(coach.spoken, isEmpty);
+      // Only the half rep's own shallow cue; the discarded lap's TEST fault
+      // (`_FaultsFirst`) was not spoken at the end of the next one.
+      expect(coach.spoken, [FormCueKey.squatDepthShallow.name]);
     });
   });
 

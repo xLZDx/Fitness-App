@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -77,6 +78,32 @@ void main() {
       expect(out[n - 1]!.metric, closeTo(72, 0.5));
     });
 
+    test('a dropout between bad frames breaks the streak (3 + gap + 2 does '
+        'not fire)', () {
+      final c = SquatBackClassifier();
+      FormFeedback? at(int ms) => c.evaluate(_side(ms, 72));
+      // Frames at 0/40/80 ms, then the gate drops frames until 1000 ms.
+      expect([at(0), at(40), at(80)], everyElement(isNull));
+      expect(at(1000), isNull);
+      expect(at(1040), isNull,
+          reason: '2 bad frames after the gap: the old streak must be gone');
+      // And control: 5 consecutive frames with no gap DO fire.
+      final d = SquatBackClassifier();
+      final out = [for (var i = 0; i < 5; i++) d.evaluate(_side(i * 40, 72))];
+      expect(out.last, isNotNull);
+    });
+
+    test('reset() forgets a latched fault (new set)', () {
+      final c = SquatBackClassifier();
+      for (var i = 0; i < 6; i++) {
+        c.evaluate(_side(i * 40, 72));
+      }
+      expect(c.evaluate(_side(240, 56)), isNotNull, reason: 'latched');
+      c.reset();
+      expect(c.evaluate(_side(280, 56)), isNull,
+          reason: 'between the thresholds and no streak: nothing latched');
+    });
+
     test('one jittery frame does not flicker the cue', () {
       // 4 bad frames, one good, 4 bad: the streak restarts, so it never fires.
       final leans = [
@@ -121,6 +148,22 @@ void main() {
       expect(c.canFault, isTrue);
       expect(c.faultVertex, LandmarkType.leftHip);
     });
+  });
+
+  test('both ARB files carry every squat cue string', () {
+    for (final name in ['app_en.arb', 'app_ru.arb']) {
+      final text = File('lib/l10n/$name').readAsStringSync();
+      for (final key in [
+        'formcheckCueSquatBackRounding',
+        'formcheckCueSquatDepthShallow',
+        'formcheckCueSilhouetteMissed',
+        'formcheckExplainSquatBack',
+        'formcheckExplainSquatShallow',
+        'formcheckRuleSquatBack',
+      ]) {
+        expect(text, contains('"$key":'), reason: '$name lacks $key');
+      }
+    }
   });
 
   group('words and voice', () {

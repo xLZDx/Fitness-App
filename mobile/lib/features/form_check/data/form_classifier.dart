@@ -167,6 +167,14 @@ abstract class FormClassifier {
   FormFeedback? evaluate(PoseFrame frame);
 }
 
+/// A classifier that keeps state across frames (hysteresis, streaks) and can
+/// be asked to forget it -- at a new set. Separate from [FormClassifier] for the
+/// same reason as [FrameSelectingClassifier]: test doubles `implement` that
+/// interface and a new abstract member would break every one of them.
+abstract interface class ResettableClassifier {
+  void reset();
+}
+
 /// A classifier that must be gated and evaluated on a frame of its own choosing
 /// rather than on the raw one -- today only `GenericRuleClassifier`, which maps
 /// the better-visible body side into the left slots so that a side view filmed
@@ -275,7 +283,8 @@ class SquatDepthClassifier
 /// lengths (not while standing or bending to reach the phone), and it needs
 /// [minFaultFrames] consecutive bad frames to fire so one jittery frame cannot
 /// speak (hysteresis against flicker).
-class SquatBackClassifier implements FormClassifier, FrameSelectingClassifier {
+class SquatBackClassifier
+    implements FormClassifier, FrameSelectingClassifier, ResettableClassifier {
   static const leanEnterDeg = 60.0;
   static const leanExitDeg = 50.0;
   static const minFaultFrames = 5;
@@ -284,8 +293,23 @@ class SquatBackClassifier implements FormClassifier, FrameSelectingClassifier {
   /// -0.5 is a thigh about 25 degrees above horizontal for average proportions.
   static const minDepthRatio = -0.5;
 
+  /// Longest gap between two evaluated frames over which the streak survives.
+  /// `evaluateGated` simply does not call [evaluate] on frames it drops
+  /// (unscorable, low confidence), so "consecutive" is checked on the frame
+  /// clock: 3 bad frames, a dropout, then 2 bad frames is NOT 5 in a row.
+  static const maxFrameGapMs = 250;
+
   int _badFrames = 0;
   bool _faulting = false;
+  int? _lastTimestampMs;
+
+  /// Forget the streak and the latched fault (new set).
+  @override
+  void reset() {
+    _badFrames = 0;
+    _faulting = false;
+    _lastTimestampMs = null;
+  }
 
   @override
   String get rule => 'squat.back';
@@ -312,6 +336,9 @@ class SquatBackClassifier implements FormClassifier, FrameSelectingClassifier {
 
   @override
   FormFeedback? evaluate(PoseFrame frame) {
+    final last = _lastTimestampMs;
+    if (last != null && frame.timestampMs - last > maxFrameGapMs) _reset();
+    _lastTimestampMs = frame.timestampMs;
     final shoulder = frame.landmarks[LandmarkType.leftShoulder];
     final hip = frame.landmarks[LandmarkType.leftHip];
     final knee = frame.landmarks[LandmarkType.leftKnee];

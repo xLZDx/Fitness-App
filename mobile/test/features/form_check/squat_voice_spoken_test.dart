@@ -10,9 +10,10 @@ import 'package:fitness_app/features/form_check/data/form_classifier.dart';
 import 'package:fitness_app/features/form_check/data/localized_tts_voice_coach.dart';
 import 'package:fitness_app/features/form_check/data/pose_detector_service.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
+import 'package:fitness_app/features/form_check/data/rep_counter.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
-import 'squat_body_relative_signal_test.dart' show squatRep;
+import 'squat_body_relative_signal_test.dart' show squatBody, squatRep;
 
 /// Operator, real phone, 2026-10-14: "the squat coach writes a cue as text but
 /// does not speak it".
@@ -73,7 +74,7 @@ class _FakeEngine {
 }
 
 Future<(RepSessionState, _FakeEngine)> _run(List<PoseFrame> frames,
-    {bool withTarget = false}) async {
+    {bool withTarget = false, bool avatar = false}) async {
   final engine = _FakeEngine()..install();
   addTearDown(engine.uninstall);
   final svc = MockPoseDetectorService(frames);
@@ -85,7 +86,7 @@ Future<(RepSessionState, _FakeEngine)> _run(List<PoseFrame> frames,
       return coach;
     }),
     if (!withTarget) poseTargetProvider.overrideWithValue(null),
-    avatarModeProvider.overrideWith((_) => false),
+    avatarModeProvider.overrideWith((_) => avatar),
   ]);
   addTearDown(container.dispose);
   container.read(repSessionControllerProvider);
@@ -154,10 +155,57 @@ void main() {
         reason: 'the specific diagnosis wins over the generic miss');
   });
 
+  test('avatar mode, no target: a squat rejected as incomplete still speaks '
+      'the shallow cue, once', () async {
+    // The silhouette target is withdrawn here, so there is no peak match to
+    // compare: the rejection reason alone must carry the cue.
+    final (state, engine) = await _run(_reps(1, elev: 25), avatar: true);
+    expect(state.repCount, 0);
+    expect(state.lastReject, RepRejectReason.incomplete);
+    expect(engine.spoken, [ru.formcheckCueSquatDepthShallow]);
+  });
+
+  test('an abandoned lap is not charged to the lifter as a shallow squat',
+      () async {
+    final (state, engine) = await _run([
+      ..._reps(1, elev: 25).take(18),
+      // The lifter stops for a long time half-way down, then leaves.
+      for (var i = 0; i < 5; i++)
+        squatBody(30000 + i * 10000, elevDeg: 25, leanDeg: 20),
+    ], avatar: true);
+    expect(state.lastReject, RepRejectReason.abandoned);
+    expect(engine.spoken, isEmpty);
+  });
+
+  test('a failed Russian bundle falls back to English text, never to an '
+      'identifier', () async {
+    final en = await AppLocalizations.delegate.load(const Locale('en'));
+    final coach = buildLocalizedTtsVoiceCoach('ru',
+        loadLocalizations: (locale) => locale.languageCode == 'ru'
+            ? Future.error(StateError('no ru bundle'))
+            : AppLocalizations.delegate.load(locale));
+    addTearDown(coach.dispose);
+    await pumpEventQueue();
+    expect(coach.resolveText(FormCueKey.squatDepthShallow),
+        en.formcheckCueSquatDepthShallow);
+  });
+
+  test('if even English fails the coach is silent, not reading a key aloud',
+      () async {
+    final coach = buildLocalizedTtsVoiceCoach('ru',
+        loadLocalizations: (_) => Future.error(StateError('no bundles')));
+    addTearDown(coach.dispose);
+    await pumpEventQueue();
+    for (final k in FormCueKey.values) {
+      expect(coach.resolveText(k), isEmpty, reason: '$k');
+    }
+  });
+
   test('the production resolver maps every new cue key to its Russian text',
-      () {
+      () async {
     final coach = buildLocalizedTtsVoiceCoach('ru');
     addTearDown(coach.dispose);
+    await pumpEventQueue();
     expect(coach.resolveText(FormCueKey.squatBackRounding),
         ru.formcheckCueSquatBackRounding);
     expect(coach.resolveText(FormCueKey.squatDepthShallow),

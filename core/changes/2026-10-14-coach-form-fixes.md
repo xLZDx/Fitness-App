@@ -253,3 +253,42 @@ the whole canvas, so no full-screen offscreen buffer is allocated per camera
 frame. The look is unchanged (same widths, colour and 0.42 layer alpha); the
 painter no longer takes a colour argument. Verified by `coach_target_layer_test`.
 
+## Review follow-up 2: rejected squat speaks without a target; hysteresis; fallback
+
+1. MAJOR fixed. `_onRepRejected` (`state/form_check_providers.dart`) now speaks the
+   squat shallow cue on the `incomplete` rejection reason alone. Before, it needed
+   a silhouette target and a peak match below passing, so in avatar mode (target
+   withdrawn) a squat that never reached counting depth was rejected silently.
+   The generic silhouette miss still requires the target and a low peak. An
+   `abandoned` lap still speaks nothing. Two older `rep_rejection_test` cases
+   encoded the previous contract ("not narrated when nothing trustworthy measured
+   it", from when the counter used a phone-position-dependent signal); they now
+   assert the shallow cue is spoken once, and the next rep does not inherit the
+   test fault.
+2. MINOR fixed. `SquatBackClassifier` tracks the frame clock: a gap above
+   `maxFrameGapMs` (250 ms; `evaluateGated` does not call `evaluate` on dropped
+   frames) restarts the streak, and it implements the new `ResettableClassifier`
+   so `RepSessionController.resetSet` clears it. Tests: 3 bad frames + gap + 2 bad
+   frames does not fire; 5 consecutive do; `reset()` clears a latched fault.
+3. MINOR fixed. `buildLocalizedTtsVoiceCoach` falls back to the English bundle if
+   the app-language bundle fails to load, and to silence (empty text, skipped by
+   the gate) if English fails too; it never returns a cue key name. Tests cover
+   both paths. Note: English text is then read by the ru-RU voice (the voice tag
+   is fixed at construction).
+4. MINOR perf fixed (see follow-up 1).
+5. Checked: `formcheckExplainSquatShallow`, `formcheckExplainSquatBack`,
+   `formcheckCueSquatBackRounding`, `formcheckCueSquatDepthShallow`,
+   `formcheckRuleSquatBack` and `formcheckCueSilhouetteMissed` exist in both
+   `app_en.arb` and `app_ru.arb`; `squat_cues_test` now asserts that explicitly,
+   `translation_completeness_test` guards parity/blank/untranslated, and
+   `squat_voice_spoken_test`/`cue_text_test` resolve them.
+
+All reasons a squat cue could be shown but not spoken (found and fixed):
+(a) CueGate repeat window and minimum gap stacked on per-rep pacing, so only the
+first of several identical rep-end cues was spoken (`repScoped`);
+(b) the `incomplete` rejection cue required a silhouette target, silent in avatar
+mode; (c) the on-screen reason-for-rejection existed without any speech path for
+squat; (d) key-name fallback would have read an identifier aloud (now English or
+silence). Not found in code, device-only hypotheses: no ru-RU voice installed,
+engine or volume.
+

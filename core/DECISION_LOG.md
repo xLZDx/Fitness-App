@@ -55854,3 +55854,7 @@ Decision: no code change for the preview/demo report. The squat demonstration is
 ## 2026-10-14 - Commit: Cheaper target figure painter
 
 Decision: static Paint objects and a figure-bounded alpha layer for the target figure, same look. Evidence: coach_target_layer_test. See core/changes/2026-10-14-coach-form-fixes.md.
+
+## 2026-10-14 - Commit: Squat review fixes: silent rejection, hysteresis gap, voice fallback
+
+Decision: the incomplete-squat shallow cue is keyed on the rejection reason alone (target withdrawn in avatar mode); the back rule restarts its streak across frame gaps and on a new set; a failed language bundle falls back to English or silence, never a cue key. Evidence: 577 focused Flutter tests green, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device.

@@ -1976,24 +1976,30 @@ class RepSessionController extends Notifier<RepSessionState> {
     // counting depth is a shallow squat: say so instead of the generic miss.
     final shallowSquat = event.rejectReason == RepRejectReason.incomplete &&
         ref.read(selectedExerciseProvider) == FormExercise.squat;
-    final cue = (target != null &&
-            peak != null &&
-            peak < kPoseMatchPassing &&
-            event.rejectReason != RepRejectReason.abandoned)
-        ? (shallowSquat
+    //
+    // Keyed on the rejection reason ALONE, not on a silhouette score: the
+    // target is withdrawn in some modes (avatar), and a squat that never
+    // reached the counting depth was rejected silently there, with no peak to
+    // compare. The counter's own `incomplete` verdict is the evidence.
+    final silhouetteMiss = target != null &&
+        peak != null &&
+        peak < kPoseMatchPassing &&
+        event.rejectReason != RepRejectReason.abandoned;
+    final cue = shallowSquat
+        ? FormFeedback(
+            rule: 'squat.depth',
+            severity: 1,
+            cueKey: FormCueKey.squatDepthShallow,
+            metric: peak,
+          )
+        : (silhouetteMiss
             ? FormFeedback(
-                rule: 'squat.depth',
-                severity: 1,
-                cueKey: FormCueKey.squatDepthShallow,
-                metric: peak,
-              )
-            : FormFeedback(
                 rule: 'silhouette.match',
                 severity: 2,
                 cueKey: FormCueKey.silhouetteMissed,
                 metric: peak,
-              ))
-        : null;
+              )
+            : null);
 
     state = RepSessionState(
       repCount: counter.repCount,
@@ -2029,6 +2035,11 @@ class RepSessionController extends Notifier<RepSessionState> {
 
   /// Start a new set: clear the count and the quality log.
   void resetSet() {
+    // Rule state that spans frames (hysteresis) belongs to the set that is
+    // ending.
+    for (final c in ref.read(activeClassifiersProvider)) {
+      if (c is ResettableClassifier) (c as ResettableClassifier).reset();
+    }
     _counter?.reset();
     _hold?.reset();
     _holdBand?.reset();

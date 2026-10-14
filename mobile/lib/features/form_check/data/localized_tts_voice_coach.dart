@@ -27,19 +27,25 @@ TtsVoiceCoach buildLocalizedTtsVoiceCoach(
   Future<AppLocalizations> Function(Locale locale)? loadLocalizations,
 }) {
   AppLocalizations? l10n;
-  Object? l10nError;
   // `unawaited` silences the lint, not the error -- without an explicit
   // handler a failed load left `l10n` null forever and every cue resolved to
   // nothing. A coach that goes permanently, invisibly mute is the exact defect
-  // this wiring exists to remove.
+  // this wiring exists to remove. A failed load falls back to English text;
+  // if even that fails the coach stays silent -- it never reads an internal
+  // identifier (a cue key) aloud.
   final load = loadLocalizations ?? AppLocalizations.delegate.load;
-  unawaited(load(Locale(lang)).then(
-    (loaded) => l10n = loaded,
-    onError: (Object e, StackTrace st) {
-      l10nError = e;
-      debugPrint('form-coach localisation failed to load: $e');
-    },
-  ));
+  Future<void> bind(Locale locale, {required bool allowFallback}) async {
+    try {
+      l10n = await load(locale);
+    } catch (e) {
+      debugPrint('form-coach localisation failed to load ($locale): $e');
+      if (allowFallback && locale.languageCode != 'en') {
+        await bind(const Locale('en'), allowFallback: false);
+      }
+    }
+  }
+
+  unawaited(bind(Locale(lang), allowFallback: true));
   return TtsVoiceCoach(
     tts: tts,
     languageTag: lang == 'ru' ? 'ru-RU' : 'en-US',
@@ -48,11 +54,10 @@ TtsVoiceCoach buildLocalizedTtsVoiceCoach(
     // than reading a raw key out loud.
     resolveText: (key) {
       final loaded = l10n;
-      if (loaded != null) return formCueText(loaded, key);
-      // Still loading: stay quiet, the next cue will resolve. Failed outright:
-      // say the key. It is ugly on purpose -- a broken coach the user can hear
-      // is recoverable, a silent one is not.
-      return l10nError == null ? '' : key.name;
+      // Still loading, or nothing loaded at all: stay quiet (empty text is
+      // skipped by `GatedVoiceCoach`). The visible banner and the voice-error
+      // card carry the failure; an identifier read aloud helps nobody.
+      return loaded == null ? '' : formCueText(loaded, key);
     },
   );
 }
