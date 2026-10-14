@@ -55870,3 +55870,7 @@ Decision: the operator ordered the squat demonstration back; this overrides, for
 ## 2026-10-14 - Commit: Scan confirmation experience (pictures, 3 alternatives, manual picker)
 
 Decision: because model top-1 is 16/33 (top 3 alternatives: 20/33) and prompt variants did not help, accuracy is not chased further here; the result list becomes a confirmation surface instead: best + 3 candidates (prompt asks for exactly 3 alternatives, client topK 4), a hero-image thumbnail per row, and a "Not it - choose manually" row opening a searchable list of the whole catalogue; a manual pick is recorded as source manual, confidence 1.0, and does not carry the scan's id. Limit: this does not raise accuracy, and the prompt change needs a deploy of `aiEquipmentRecognition`, which has NOT been done. Evidence: Jest 22/22; focused Flutter run, see core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 3). Unverified: device appearance.
+
+## 2026-10-14 - Commit: Fix stale squat fixture in pose_roll_diagnostics_test
+
+Decision: the incomplete-attempt fixture was re-based to the body-relative counting depth (0.64 became 0.60); the failure was ours (a shallow rep is now counted), the base passes. Evidence: base 42d1b84 +16 pass, HEAD before fix +15 -1, after fix pass; golden test fails identically at base. See core/changes/2026-10-14-coach-form-fixes.md.

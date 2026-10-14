@@ -374,3 +374,22 @@ Tests (pin presence; each fails if the demo is removed again):
   its descent", Expected 1, Actual 2), a rep-session test with no demonstration
   reference, not touched by this change; not investigated further here.
 
+## Review follow-up 3: pose_roll_diagnostics_test regression
+
+FACT: `test/features/form_check/pose_roll_diagnostics_test.dart` case "a completed
+rep logs the stance frozen at its descent..." passes at base 42d1b84 (temporary
+worktree `../Fitness_App_basecheck`: `+16: All tests passed`) and failed at HEAD 8071a84
+(`+15 -1`, expected repCount 1, got 2). Cause: ours, but a stale fixture, not a
+double log. The "attempt that never reaches the bottom" dips the hip to 0.64 with
+the knee at 0.72 and a 0.28 torso, i.e. -0.286 torso lengths, which the old raw
+ladder rejected (bottomEnter -0.04) and the body-relative squat counter accepts
+(bottomEnter -0.30) as a shallow rep, so the count went to 2 and a second
+`[rep] segments` line was logged. Fixed by lowering the fixture's incomplete
+bottom to 0.60 (-0.43), the same adjustment as `rep_rejection_test`. This file
+was not in my earlier focused run lists (my omission); after the fix 49 tests pass
+across `pose_roll_diagnostics_test`, `joint_rom_reference_test` and
+`coach_registry_content_test`. A grep of tests using the squat fixtures or
+controller shows no other unrun file except `test/golden/form_coach_golden_test.dart`,
+which fails identically at base (`+0 -3`, pixel diffs on goldens; CI-only known
+limit) and was not touched.
+
