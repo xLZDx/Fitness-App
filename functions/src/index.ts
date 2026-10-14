@@ -1009,6 +1009,12 @@ async function removeWriteIfAccountGone(
 async function applySubscription(
   s: Stripe.Subscription,
   eventCreated?: number,
+  // Set only by the same-second tie settle: the write revision (`stripeWriteSeq`)
+  // the tie's own write produced. The fresh write is applied only while the
+  // document still carries that revision, so ANY write that landed during the
+  // Stripe round trip (a newer event, or another event in the same second,
+  // which the `event.created` marker cannot tell apart) wins.
+  settleIfSeqIs?: number,
 ) {
   const uid = s.metadata?.firebaseUid as string | undefined;
   if (!uid) {
@@ -1048,6 +1054,25 @@ async function applySubscription(
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
+  if (eventCreated === undefined && settleIfSeqIs !== undefined) {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const seq = (snap.data()?.stripeWriteSeq as number | undefined) ?? 0;
+      if (seq !== settleIfSeqIs) {
+        logger.info("same-second stripe tie: a later write already applied", {
+          uid,
+          subscriptionId: s.id,
+          seq,
+          settleIfSeqIs,
+        });
+        return;
+      }
+      tx.set(ref, { ...payload, stripeWriteSeq: seq + 1 }, { merge: true });
+    });
+    await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
+    return;
+  }
+
   if (eventCreated === undefined) {
     // No clock to compare against -- an internal caller rather than the
     // webhook. Write as before rather than invent an ordering.
@@ -1056,9 +1081,17 @@ async function applySubscription(
     return;
   }
 
+  // `event.created` has one-second resolution, so two events in the same
+  // second cannot be ordered by it. Such a tie is applied as before and then
+  // settled by re-reading the subscription from Stripe, which is the one
+  // authoritative current state.
+  let sameSecondTie = false;
+  let tieSeq = 0;
   await db.runTransaction(async (tx) => {
+    sameSecondTie = false;
     const snap = await tx.get(ref);
     const seen = snap.data()?.lastStripeEventCreated as number | undefined;
+    const seq = (snap.data()?.stripeWriteSeq as number | undefined) ?? 0;
     if (seen !== undefined && eventCreated < seen) {
       logger.info("ignoring out-of-order stripe event", {
         uid,
@@ -1068,13 +1101,36 @@ async function applySubscription(
       });
       return;
     }
+    sameSecondTie = seen !== undefined && eventCreated === seen;
+    tieSeq = seq + 1;
     tx.set(
       ref,
-      { ...payload, lastStripeEventCreated: eventCreated },
+      {
+        ...payload,
+        lastStripeEventCreated: eventCreated,
+        stripeWriteSeq: tieSeq,
+      },
       { merge: true },
     );
   });
   await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
+  if (sameSecondTie) {
+    try {
+      const fresh = await (await stripeClient()).subscriptions.retrieve(s.id);
+      // No event clock: written as the current truth without moving the
+      // ordering marker.
+      if (fresh.id === s.id) {
+        await applySubscription(fresh, undefined, tieSeq);
+      }
+    } catch (err) {
+      // The tie-applied event stays; this is the pre-existing behaviour.
+      logger.warn("same-second stripe tie: could not re-read the subscription", {
+        uid,
+        subscriptionId: s.id,
+        err,
+      });
+    }
+  }
 }
 
 /**
@@ -2209,13 +2265,12 @@ async function commitInChunks(
 async function sweepSharedRecords(uid: string): Promise<void> {
   // Booking sides are merged per page, so one document seen only on one side
   // here is finished on a later page (its other side is then "gone").
-  await sweepInPages(
-    [
-      db.collection("coach_bookings").where("clientUid", "==", uid),
-      db.collection("coach_bookings").where("coachUid", "==", uid),
-    ],
-    ([asClient, asCoach]) => bookingOps(asClient, asCoach),
-  );
+  // One transaction per booking. When both parties delete their accounts at
+  // the same moment, each sweep used to decide from its own stale snapshot and
+  // neither saw the other side as gone, leaving a booking whose two sides both
+  // read `deleted_user`. The transaction re-reads the document, so the second
+  // sweep sees the first one's write and deletes the row.
+  await sweepBookings(uid);
   await sweepInPages(
     [db.collection("equipment_reports").where("reporterUid", "==", uid)],
     ([reports]) =>
@@ -2258,68 +2313,50 @@ async function sweepInPages(
   }
 }
 
-function bookingOps(
-  asClient: FirebaseFirestore.QuerySnapshot,
-  asCoach: FirebaseFirestore.QuerySnapshot,
-): Array<(batch: FirebaseFirestore.WriteBatch) => void> {
-  const ops: Array<(batch: FirebaseFirestore.WriteBatch) => void> = [];
-
-  // Both sides queried separately rather than with an `or`: a user can be the
-  // client on one booking and the coach on another, and one query per field
-  // is what keeps "which field do I anonymise" decidable per document.
-  //
-  // The two result sets are then MERGED per document before any op is built.
-  // They can overlap: `bookCoachSession` (index.ts:1150-1199) never compares
-  // `coachUid` to `auth.uid`, so a coach with a listing can book themselves,
-  // and that document comes back in both queries. Building an op per query
-  // instead of per document queued two updates against the same ref. Measured
-  // against the emulator, not reasoned about: the two updates apply without
-  // error, and the row SURVIVES -- a booking whose every side reads
-  // `deleted_user`, which is exactly the unreadable record the "delete once
-  // both sides are gone" rule above exists to prevent. Found by the e2e's act
-  // gate; the mocked suite could not see it, having never seeded a
-  // self-booking.
-  type Side = {
-    ref: FirebaseFirestore.DocumentReference;
-    data: FirebaseFirestore.DocumentData;
-    isClient: boolean;
-    isCoach: boolean;
-  };
-  const bookings = new Map<string, Side>();
-  const mark = (
-    doc: FirebaseFirestore.QueryDocumentSnapshot,
-    side: "isClient" | "isCoach",
-  ) => {
-    const found = bookings.get(doc.ref.path) ?? {
-      ref: doc.ref,
-      data: doc.data() ?? {},
-      isClient: false,
-      isCoach: false,
-    };
-    found[side] = true;
-    bookings.set(doc.ref.path, found);
-  };
-  for (const doc of asClient.docs) mark(doc, "isClient");
-  for (const doc of asCoach.docs) mark(doc, "isCoach");
-
-  // `undefined` counts as gone for the same reason `DELETED_UID` does: a
-  // booking with no counterparty field is already unreachable by anyone.
+/**
+ * Anonymises this user's side of every booking and deletes the row once both
+ * sides are gone, deciding on a fresh read inside a transaction per booking
+ * (see `sweepSharedRecords`). Paged like `sweepInPages`; every transaction
+ * removes its document from the queries that found it, so the loop ends.
+ * A failed transaction rejects, failing the sweep so it is retried.
+ */
+async function sweepBookings(uid: string): Promise<void> {
   const gone = (v: unknown) => v === undefined || v === DELETED_UID;
-  for (const b of bookings.values()) {
-    const client = b.isClient ? DELETED_UID : b.data.clientUid;
-    const coach = b.isCoach ? DELETED_UID : b.data.coachUid;
-    if (gone(client) && gone(coach)) {
-      ops.push((batch) => batch.delete(b.ref));
-    } else {
-      ops.push((batch) =>
-        batch.update(b.ref, {
-          ...(b.isClient ? { clientUid: DELETED_UID } : {}),
-          ...(b.isCoach ? { coachUid: DELETED_UID } : {}),
-        }),
+  for (;;) {
+    const snaps = await Promise.all([
+      db.collection("coach_bookings").where("clientUid", "==", uid).limit(SWEEP_PAGE).get(),
+      db.collection("coach_bookings").where("coachUid", "==", uid).limit(SWEEP_PAGE).get(),
+    ]);
+    const refs = new Map<string, FirebaseFirestore.DocumentReference>();
+    for (const snap of snaps) for (const d of snap.docs) refs.set(d.ref.path, d.ref);
+    const list = [...refs.values()];
+    for (let i = 0; i < list.length; i += 10) {
+      await Promise.all(
+        list.slice(i, i + 10).map((ref) =>
+          db.runTransaction(async (tx) => {
+            const snap = await tx.get(ref);
+            if (!snap.exists) return;
+            const data = snap.data() ?? {};
+            const isClient = data.clientUid === uid;
+            const isCoach = data.coachUid === uid;
+            if (!isClient && !isCoach) return;
+            const client = isClient ? DELETED_UID : data.clientUid;
+            const coach = isCoach ? DELETED_UID : data.coachUid;
+            if (gone(client) && gone(coach)) {
+              tx.delete(ref);
+            } else {
+              tx.update(ref, {
+                ...(isClient ? { clientUid: DELETED_UID } : {}),
+                ...(isCoach ? { coachUid: DELETED_UID } : {}),
+              });
+            }
+          }),
+        ),
       );
     }
+    if (list.length === 0) break;
+    if (snaps.every((x) => x.docs.length < SWEEP_PAGE)) break;
   }
-  return ops;
 }
 
 /**
