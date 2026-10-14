@@ -29,7 +29,8 @@ prefs,moment.launch_count,moment counter,none,NO,no,A1
 prefs,moment.injury_filter_uses,moment counter,none,NO,no,A1
 prefs,moment.shown.*,moment seen flags,none,NO,no,A1
 file,<docs>/progress_photos/,AES envelopes + plaintext index,NONE,NO,metadata only,A1+A2+A3
-file,<docs>/scan_history/<uid>/,"scan photos + raw model answers + ratings (plaintext, app-private, never uploaded, excluded from backup)",path,yes,user export only,A1
+file,<docs>/scan_history/<uid>/,"scan photos + raw model answers + ratings (plaintext, app-private, never uploaded, excluded from backup; cap 500 scans / 1 GiB is per account)",path,yes,user export only,A1
+file,<temp>/scan_history_export/,"plaintext export copy (photos + JSON) made for the share sheet; deleted after the share call (success or failure), by Clear history and by the account wipe",none,yes,this is the export,A1
 file,<temp>/camera stills,plaintext JPEG,none,NO,no,A2
 file,<docs>/offline_videos/,cached catalogue clips,none,no,n/a,-
 file,<docs>/<model assets>,ML model files,none,no,n/a,-

@@ -28,6 +28,10 @@ class _Rig {
   final ScanHistoryStore store;
   final List<List<File>> shared;
 
+  /// What the share sheet was handed, read AT share time: the export copy is
+  /// deleted as soon as the share call returns, so the files are gone later.
+  final List<Map<String, String>> snapshots = <Map<String, String>>[];
+
   /// Real file IO completes in real time and its continuations need a pump:
   /// alternate the two. With [until], stop as soon as it is true.
   Future<void> settle([int rounds = 10, bool Function()? until]) async {
@@ -81,7 +85,8 @@ Future<_Rig> _pump(
 
   final repo = AssetEquipmentRepository(languageCode: 'ru');
   await tester.runAsync(() => repo.listEquipment());
-  final store = ScanHistoryStore(documents: docs);
+  final store =
+      ScanHistoryStore(documents: docs, temporary: () async => docs);
   final shared = <List<File>>[];
   final rig = _Rig(tester, store, shared);
   await seed(rig);
@@ -107,6 +112,11 @@ Future<_Rig> _pump(
       scanHistoryUidProvider.overrideWithValue('u1'),
       scanExportDirProvider.overrideWithValue(() async => docs),
       scanShareProvider.overrideWithValue((files) async {
+        rig.snapshots.add(<String, String>{
+          for (final f in files)
+            f.path.split(RegExp(r'[\\/]')).last:
+                f.path.endsWith('.json') ? f.readAsStringSync() : 'bytes',
+        });
         if (shareFails) throw StateError('no share sheet');
         shared.add(files);
       }),
@@ -243,15 +253,21 @@ void main() {
     await rig.settle(60, () => rig.shared.isNotEmpty);
 
     expect(rig.shared, hasLength(1));
-    final files = rig.shared.single;
-    final json = files.firstWhere((f) => f.path.endsWith('scan_history.json'));
-    expect(files.where((f) => f.path.endsWith('.jpg')), hasLength(1),
+    final snap = rig.snapshots.single;
+    expect(snap.keys.where((k) => k.endsWith('.jpg')), hasLength(1),
         reason: 'one scan has a photo');
-    final body = jsonDecode(json.readAsStringSync()) as Map;
+    final body = jsonDecode(snap['scan_history.json']!) as Map;
     expect(body['count'], 2, reason: 'only this account\'s two scans');
     final ids = (body['scans'] as List).map((s) => s['id']).toList();
     expect(ids, ['newer', 'older']);
     expect(ids, isNot(contains('theirs')));
+
+    // The plaintext copy is gone as soon as the share call returned.
+    await rig.settle(
+        60, () => !Directory('${docs.path}/$kScanExportDirName').existsSync());
+    expect(Directory('${docs.path}/$kScanExportDirName').existsSync(), isFalse,
+        reason: 'plaintext photos + JSON must not linger in temp storage');
+    expect(rig.shared.single.every((f) => !f.existsSync()), isTrue);
   });
 
   testWidgets('a share sheet that fails says so, and nothing is lost',
@@ -262,6 +278,11 @@ void main() {
         () => find.text('Could not export the history.').evaluate().isNotEmpty);
     expect(find.text('Could not export the history.'), findsOneWidget);
     expect((await rig.stored()), hasLength(2));
+    expect(rig.snapshots, hasLength(1), reason: 'the share was attempted');
+    await rig.settle(
+        60, () => !Directory('${docs.path}/$kScanExportDirName').existsSync());
+    expect(Directory('${docs.path}/$kScanExportDirName').existsSync(), isFalse,
+        reason: 'a failed share must still clean up the plaintext copy');
   });
 
   testWidgets('clear history asks first; cancel keeps everything, confirm '

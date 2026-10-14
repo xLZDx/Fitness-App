@@ -84,16 +84,30 @@ class ScanHistoryPage extends ConsumerWidget {
   Future<void> _export(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    Directory? written;
     try {
       final uid = ref.read(scanHistoryUidProvider);
       if (uid == null) return;
       final dir = await ref.read(scanExportDirProvider)();
       final export =
           await ref.read(scanHistoryStoreProvider).export(uid, dir);
+      written = export.directory;
       await ref.read(scanShareProvider)(export.files);
     } catch (e) {
       debugPrint('scan history export failed: ${e.runtimeType}');
       messenger.showSnackBar(SnackBar(content: Text(l10n.scanHistoryExportFailed)));
+    } finally {
+      // The export copy is plaintext (photos + JSON) in temp storage: it must
+      // not outlive the share, whether the share worked or failed. A leftover
+      // is still removed by the next export, "Clear history" and the account
+      // wipe.
+      if (written != null) {
+        try {
+          if (await written.exists()) await written.delete(recursive: true);
+        } catch (e) {
+          debugPrint('scan history: export copy not removed (${e.runtimeType})');
+        }
+      }
     }
   }
 

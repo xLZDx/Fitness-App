@@ -35,6 +35,7 @@ import 'features/donor_wall/state/donor_wall_providers.dart';
 import 'features/account_deletion/data/cloud_functions_account_deletion_service.dart';
 import 'features/account_deletion/data/local_data_wipe.dart';
 import 'features/account_deletion/state/account_deletion_providers.dart';
+import 'features/scanner/history/scan_history_providers.dart' show scanHistoryStoreProvider;
 import 'features/data_export/data_export_sink.dart';
 import 'features/data_export/data_export_providers.dart';
 import 'features/data_export/server_export.dart';
@@ -538,7 +539,8 @@ Future<void> main() async {
         // A1 — the on-device half of the same operation. Real implementation
         // only here: the default provider records instead of deleting, so a
         // widget test can never wipe the host machine's documents directory.
-        localDataWipeProvider.overrideWith((_) => DeviceLocalDataWipe()),
+        localDataWipeProvider.overrideWith((ref) =>
+            DeviceLocalDataWipe(scanHistory: ref.read(scanHistoryStoreProvider))),
         pendingWipeMarkerProvider.overrideWith((_) => PrefsPendingWipeMarker()),
 
         // Nurture moments + notifications.

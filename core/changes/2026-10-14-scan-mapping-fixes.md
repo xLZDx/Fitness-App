@@ -150,3 +150,19 @@ Focused Flutter run from `mobile/`: `scan_history_store_test.dart` 30/30 (record
 
 ### Verification state
 Focused Flutter run from `mobile/`: `scan_history_page_test.dart` 6/6 (list, empty state, detail and rating there, export content, share failure, clear with cancel/confirm), `scanner_history_flow_test.dart` 10/10 (4 new for the marks: both marks per row after the %, OK / NOT OK saved and cleared by tapping again without opening the machine, optional, no carry-over to the next scan), `scanner_page_test.dart` 60/60 (history button opens the screen and releases the camera), plus l10n, scanner, router, account-deletion suites.
+
+## Addendum 8: privacy-review fixes for the scan history (export copy, wipe race, per-account cap)
+
+### What changed
+- Plaintext export copy: `ScanHistoryStore.export` writes `<temp>/scan_history_export/` (named by `kScanExportDirName`). `ScanHistoryPage._export` now deletes that folder in a `finally` as soon as the share call returns, on success and on failure. `ScanHistoryStore.clear(uid)` ("Clear history") and `DeviceLocalDataWipe` (account deletion) delete it too, so it cannot outlive the history it was copied from. The store takes a `temporary` directory resolver (default `getTemporaryDirectory`) so tests use a real temp folder.
+- Same-uid race: `ScanHistoryStore.wipeAccount(uid)` runs inside the store's serial queue, deletes `scan_history/<uid>` and remembers the uid; after that `save`, `setRating` and `setChoice` for that uid return null and write nothing, so a scan whose photo was still being resized when the account was deleted can no longer recreate the folder. `DeviceLocalDataWipe(scanHistory: ...)` goes through it; `main.dart` passes the live store. Without a live store (headless sweep) the folder is deleted directly as before. Only an account wipe locks a uid for the process lifetime; the user's own "Clear history" does not.
+- When only the documents folder is injected into `DeviceLocalDataWipe` (tests), the temp folder defaults to `<docs>/_temp`, so no test reaches the real platform temp directory.
+- Inventory: `core/DATA_INVENTORY_2026-08-11.md` and `.csv` state that the 500 scans / 1 GiB cap is PER ACCOUNT and describe `<temp>/scan_history_export/` honestly (plaintext, temp storage, deleted after share / clear / wipe). `backup_rules_test.dart` pins those statements.
+
+### Limits
+- On Android the share target may read the file after `Share.shareXFiles` returns; deleting right then can cut a very large export short for the receiving app. Accepted: a plaintext copy lingering in temp storage is the worse failure, and the user can export again.
+- A crash between writing the export and the `finally` leaves the folder until the next export, "Clear history" or the account wipe.
+- The wipe lock is in memory: after a process restart a late in-flight save cannot exist any more (the save belongs to the dead process).
+
+### Verification state
+Focused Flutter run from `mobile/`: `scan_history_store_test.dart` (now includes export-then-clear leaves no temp folder, wipe removes the export copy with and without the live store, a deferred save reaching the store after the wipe leaves no `scan_history/<uid>`, a save queued behind the wipe is deleted by it, rating/choice after the wipe are dropped, another account stays writable), `scan_history_page_test.dart` (export copy gone after a successful share, and after a failing share), `scanner_history_flow_test.dart`, `local_data_wipe_test.dart`, `account_deletion_journey_test.dart`, `interrupted_wipe_test.dart`, `account_deletion_providers_test.dart`: 124/124 passed. `backup_rules_test.dart`: 10/11, the one failure is the pre-existing "pubspec.lock pins the plugins" check (`shared_preferences missing from pubspec.lock`), untouched by this change. Not run: analyzer, full suites, a real device share sheet.

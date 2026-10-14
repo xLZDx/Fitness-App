@@ -126,7 +126,8 @@ Future<_Rig> _pump(WidgetTester tester, _Service service, Directory docs,
   final repo = AssetEquipmentRepository(languageCode: 'ru');
   await tester.runAsync(() => repo.listEquipment());
   final aliases = await tester.runAsync(EquipmentAliasIndex.load);
-  final store = ScanHistoryStore(documents: docs);
+  final store =
+      ScanHistoryStore(documents: docs, temporary: () async => docs);
   final landed = <String>[];
   final router = GoRouter(
     initialLocation: '/scan',

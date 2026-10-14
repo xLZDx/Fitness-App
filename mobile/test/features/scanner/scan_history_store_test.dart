@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -42,20 +43,24 @@ Uint8List _jpeg(int w, int h) =>
 
 void main() {
   late Directory docs;
+  late Directory temp;
   late ScanHistoryStore store;
 
   setUp(() {
     docs = Directory.systemTemp.createTempSync('scan_history_test');
-    store = ScanHistoryStore(documents: docs);
+    temp = Directory.systemTemp.createTempSync('scan_history_tmp');
+    store = ScanHistoryStore(documents: docs, temporary: () async => temp);
   });
   tearDown(() async {
     // Windows can keep a handle on a just-written file for a moment (indexer,
     // antivirus); a bounded retry keeps the cleanup from failing the test.
-    for (var i = 0; i < 6 && docs.existsSync(); i++) {
-      try {
-        docs.deleteSync(recursive: true);
-      } on FileSystemException {
-        await Future<void>.delayed(const Duration(milliseconds: 150));
+    for (final d in [docs, temp]) {
+      for (var i = 0; i < 6 && d.existsSync(); i++) {
+        try {
+          d.deleteSync(recursive: true);
+        } on FileSystemException {
+          await Future<void>.delayed(const Duration(milliseconds: 150));
+        }
       }
     }
   });
@@ -147,7 +152,8 @@ void main() {
       await store.setRating('u1', 's', 'leg_press', CandidateRating.ok);
       await store.setRating('u1', 's', 'hack_squat', CandidateRating.notOk);
 
-      final fresh = ScanHistoryStore(documents: docs);
+      final fresh =
+          ScanHistoryStore(documents: docs, temporary: () async => temp);
       final r = (await fresh.get('u1', 's'))!;
       expect(r.candidates[0].rating, CandidateRating.ok);
       expect(r.candidates[1].rating, CandidateRating.notOk);
@@ -209,7 +215,8 @@ void main() {
 
   group('retention cap', () {
     test('keeps only the newest N scans', () async {
-      final capped = ScanHistoryStore(documents: docs, maxScans: 3);
+      final capped = ScanHistoryStore(
+          documents: docs, temporary: () async => temp, maxScans: 3);
       for (var i = 0; i < 6; i++) {
         await capped.save(
             'u1', _rec('s$i', t0.add(Duration(minutes: i))),
@@ -223,7 +230,8 @@ void main() {
 
     test('keeps the total under the byte limit, oldest first', () async {
       final big = Uint8List(40 * 1024); // 40 KiB of "photo" per scan
-      final capped = ScanHistoryStore(documents: docs, maxBytes: 100 * 1024);
+      final capped = ScanHistoryStore(
+          documents: docs, temporary: () async => temp, maxBytes: 100 * 1024);
       for (var i = 0; i < 5; i++) {
         await capped.save('u1', _rec('s$i', t0.add(Duration(minutes: i))),
             photo: big);
@@ -235,7 +243,8 @@ void main() {
 
     test('the scan just saved survives even when it alone exceeds the limit',
         () async {
-      final capped = ScanHistoryStore(documents: docs, maxBytes: 10);
+      final capped = ScanHistoryStore(
+          documents: docs, temporary: () async => temp, maxBytes: 10);
       await capped.save('u1', _rec('only', t0), photo: Uint8List(1024));
       expect((await capped.list('u1')).map((r) => r.id), ['only']);
     });
@@ -248,7 +257,8 @@ void main() {
     });
 
     test('another account is never trimmed by this one\'s cap', () async {
-      final capped = ScanHistoryStore(documents: docs, maxScans: 1);
+      final capped = ScanHistoryStore(
+          documents: docs, temporary: () async => temp, maxScans: 1);
       await capped.save('u2', _rec('other', t0));
       for (var i = 0; i < 3; i++) {
         await capped.save('u1', _rec('s$i', t0.add(Duration(minutes: i))));
@@ -473,7 +483,9 @@ void main() {
     test('a store that fails does not throw into recognition', () async {
       final broken = ProviderContainer(overrides: [
         scanHistoryStoreProvider.overrideWithValue(
-            ScanHistoryStore(documents: Directory('${docs.path}/file-not-dir'))),
+            ScanHistoryStore(
+                documents: Directory('${docs.path}/file-not-dir'),
+                temporary: () async => temp)),
         scanHistoryUidProvider.overrideWithValue('u1'),
       ]);
       addTearDown(broken.dispose);
@@ -503,4 +515,147 @@ void main() {
       expect(await store.list('u1'), isEmpty);
     });
   });
+
+  group('the plaintext export copy in temp storage', () {
+    Directory exportCopy() => Directory('${temp.path}/$kScanExportDirName');
+
+    test('clear history also removes it', () async {
+      await store.save('u1', _rec('a', t0), photo: _jpeg(8, 8));
+      await store.export('u1', temp);
+      expect(exportCopy().existsSync(), isTrue);
+      await store.clear('u1');
+      expect(exportCopy().existsSync(), isFalse,
+          reason: 'plaintext photos + JSON must not survive "Clear history"');
+      expect(await store.list('u1'), isEmpty);
+    });
+
+    test('the account wipe removes it, with and without the live store',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      await store.save('A', _rec('a', t0), photo: _jpeg(8, 8));
+
+      await store.export('A', temp);
+      await DeviceLocalDataWipe(
+        prefs: prefs,
+        documentsDir: docs,
+        temporaryDir: temp,
+        forgetPhotoKey: (_) async {},
+      ).wipe('A');
+      expect(exportCopy().existsSync(), isFalse, reason: 'directory wipe');
+
+      await store.save('A', _rec('a2', t0), photo: _jpeg(8, 8));
+      await store.export('A', temp);
+      await DeviceLocalDataWipe(
+        prefs: prefs,
+        documentsDir: docs,
+        temporaryDir: temp,
+        scanHistory: store,
+        forgetPhotoKey: (_) async {},
+      ).wipe('A');
+      expect(exportCopy().existsSync(), isFalse, reason: 'through the store');
+      expect(Directory('${docs.path}/$kScanHistoryDir/A').existsSync(), isFalse);
+    });
+
+    test('clearing with no export copy present is quiet', () async {
+      await store.clear('u1');
+      expect(exportCopy().existsSync(), isFalse);
+    });
+  });
+
+  group('wipe versus a save still in flight', () {
+    DeviceLocalDataWipe wipeFor(ScanHistoryStore st, SharedPreferences prefs) =>
+        DeviceLocalDataWipe(
+          prefs: prefs,
+          documentsDir: docs,
+          temporaryDir: temp,
+          scanHistory: st,
+          forgetPhotoKey: (_) async {},
+        );
+
+    test('a save that reaches the store AFTER the wipe never recreates the '
+        'folder', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final gated = _GatedStore(docs, temp);
+      final c = ProviderContainer(overrides: [
+        scanHistoryStoreProvider.overrideWithValue(gated),
+        scanHistoryUidProvider.overrideWithValue('A'),
+        scanBuildInfoProvider.overrideWithValue(
+            const ScanBuildInfo(gitSha: 'x', version: '1')),
+      ]);
+      addTearDown(c.dispose);
+
+      // The scan is "still resizing its photo": it has not reached the store.
+      final inFlight = c.read(scanHistoryRecorderProvider).saveScan(
+            scanId: 'scan-late',
+            source: ScanSource.camera,
+            result: const ScanResult.timeout(),
+          );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      await wipeFor(gated, prefs).wipe('A'); // account deletion's wipe step
+
+      gated.gate.complete(); // ... and only now does the save arrive
+      expect(await inFlight, isNull, reason: 'the save is refused, not written');
+
+      expect(Directory('${docs.path}/$kScanHistoryDir/A').existsSync(), isFalse,
+          reason: 'scan_history/<uid> must not exist after the wipe, '
+              'whatever was in flight');
+      expect(await gated.list('A'), isEmpty);
+    });
+
+    test('a save already queued when the wipe starts is deleted by it',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      // Both calls are issued without awaiting: the save is first in the
+      // serial chain, the wipe queues right behind it.
+      final save = store.save('A', _rec('a', t0), photo: _jpeg(64, 64));
+      final wipe = wipeFor(store, prefs).wipe('A');
+      await Future.wait([save, wipe]);
+      expect(Directory('${docs.path}/$kScanHistoryDir/A').existsSync(), isFalse);
+    });
+
+    test('a rating or choice after the wipe is dropped, not written',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      await store.save('A', _rec('a', t0));
+      await wipeFor(store, prefs).wipe('A');
+      expect(await store.setRating('A', 'a', 'leg_press', CandidateRating.ok),
+          isNull);
+      expect(await store.setChoice('A', 'a', 'leg_press'), isNull);
+      expect(Directory('${docs.path}/$kScanHistoryDir/A').existsSync(), isFalse);
+    });
+
+    test('wiping one account leaves another writable, and "Clear history" '
+        'does not lock the account', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      await wipeFor(store, prefs).wipe('A');
+      expect(await store.save('B', _rec('b', t0)), isNotNull);
+      expect((await store.list('B')).map((r) => r.id), ['b']);
+
+      await store.clear('B');
+      expect(await store.save('B', _rec('b2', t0)), isNotNull,
+          reason: 'clearing is not deleting the account');
+    });
+  });
+}
+
+/// A store whose save waits at a gate: stands in for a scan whose photo is still
+/// being resized when the account-deletion wipe runs.
+class _GatedStore extends ScanHistoryStore {
+  _GatedStore(Directory docs, Directory temp)
+      : super(documents: docs, temporary: () async => temp);
+
+  final Completer<void> gate = Completer<void>();
+
+  @override
+  Future<ScanRecord?> save(String uid, ScanRecord record,
+      {Uint8List? photo}) async {
+    await gate.future;
+    return super.save(uid, record, photo: photo);
+  }
 }

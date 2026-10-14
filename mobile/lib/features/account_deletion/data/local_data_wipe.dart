@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../progress_photos/data/photo_directory.dart';
 import '../../progress_photos/data/photo_key_store.dart';
-import '../../scanner/history/scan_history_store.dart' show kScanHistoryDir;
+import '../../scanner/history/scan_history_store.dart'
+    show kScanExportDirName, kScanHistoryDir, ScanHistoryStore;
 
 /// Erases everything about a user that lives on the DEVICE.
 ///
@@ -175,9 +176,21 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     SharedPreferences? prefs,
     Directory? documentsDir,
     Future<void> Function(String uid)? forgetPhotoKey,
+    ScanHistoryStore? scanHistory,
+    Directory? temporaryDir,
   })  : _injectedPrefs = prefs,
         _injectedDir = documentsDir,
-        _forgetPhotoKey = forgetPhotoKey ?? SecurePhotoKeyStore.forget;
+        _forgetPhotoKey = forgetPhotoKey ?? SecurePhotoKeyStore.forget,
+        _scanHistory = scanHistory,
+        _injectedTemp = temporaryDir;
+
+  /// The app's live scan-history store, when there is one. The wipe goes
+  /// THROUGH it (serialised with its writes, and it refuses later writes for
+  /// the uid) so a scan still being saved cannot recreate the folder after the
+  /// delete. Without it (tests, the headless sweep) the folder is deleted
+  /// directly.
+  final ScanHistoryStore? _scanHistory;
+  final Directory? _injectedTemp;
 
   final SharedPreferences? _injectedPrefs;
   final Directory? _injectedDir;
@@ -338,9 +351,25 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     // photo, the model's raw answers and the user's ratings. Its own try, like
     // the coach recordings, so it neither skips nor is skipped by the others.
     try {
-      final dir = _injectedDir ?? await getApplicationDocumentsDirectory();
-      final history = Directory('${dir.path}/$kScanHistoryDir/$uid');
-      if (await history.exists()) await history.delete(recursive: true);
+      final history = _scanHistory;
+      if (history != null) {
+        await history.wipeAccount(uid);
+      } else {
+        final dir = _injectedDir ?? await getApplicationDocumentsDirectory();
+        final folder = Directory('${dir.path}/$kScanHistoryDir/$uid');
+        if (await folder.exists()) await folder.delete(recursive: true);
+      }
+      // The plaintext export copy (photos + JSON written for the share sheet)
+      // lives in temp storage, outside the per-uid folder.
+      // A test that injects only the documents folder gets an isolated temp
+      // folder beside it, so it never reaches the real platform temp directory.
+      final injectedDocs = _injectedDir;
+      final temp = _injectedTemp ??
+          (injectedDocs != null
+              ? Directory('${injectedDocs.path}/_temp')
+              : await getTemporaryDirectory());
+      final export = Directory('${temp.path}/$kScanExportDirName');
+      if (await export.exists()) await export.delete(recursive: true);
     } catch (e) {
       debugPrint(
           'local data wipe: could not delete scan history: ${e.runtimeType}');

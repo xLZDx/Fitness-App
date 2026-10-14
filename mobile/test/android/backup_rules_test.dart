@@ -171,5 +171,12 @@ void main() {
     expect(md, contains('<docs>/scan_history/<uid>/'));
     final csv = _read('../core/DATA_INVENTORY_2026-08-11.csv');
     expect(csv, contains('<docs>/scan_history/<uid>/'));
+    // The retention cap is per account, and the plaintext export copy in temp
+    // storage is a data class of its own.
+    expect(md, contains('**per account**'));
+    expect(csv, contains('is per account'));
+    expect(md, contains('<temp>/scan_history_export/'));
+    expect(csv, contains('<temp>/scan_history_export/'));
+    expect(md, contains('Deleted right after the share call returns'));
   });
 }

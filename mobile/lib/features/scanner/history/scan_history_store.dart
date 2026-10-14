@@ -16,6 +16,9 @@ const String kScanHistoryDir = 'scan_history';
 const int kScanHistoryMaxScans = 500;
 const int kScanHistoryMaxBytes = 1024 * 1024 * 1024; // 1 GiB
 
+/// Folder name (under the temp directory) of the plaintext export copy.
+const String kScanExportDirName = 'scan_history_export';
+
 final RegExp _safeId = RegExp(r'^[A-Za-z0-9_\-]{1,80}$');
 
 /// The on-phone scan history.
@@ -36,13 +39,26 @@ final RegExp _safeId = RegExp(r'^[A-Za-z0-9_\-]{1,80}$');
 class ScanHistoryStore {
   ScanHistoryStore({
     Directory? documents,
+    Future<Directory> Function()? temporary,
     this.maxScans = kScanHistoryMaxScans,
     this.maxBytes = kScanHistoryMaxBytes,
-  }) : _documents = documents;
+  })  : _documents = documents,
+        _temporary = temporary ?? getTemporaryDirectory;
 
   final Directory? _documents;
+  final Future<Directory> Function() _temporary;
+
+  /// Per ACCOUNT: the newest [maxScans] scans or [maxBytes] of one account's
+  /// history, whichever is reached first. Another account's history is never
+  /// counted against, or trimmed by, this one.
   final int maxScans;
   final int maxBytes;
+
+  /// Accounts whose device data was wiped (account deletion). Later writes for
+  /// them are dropped: a save that was still resizing its photo when the wipe
+  /// ran must not recreate `scan_history/<uid>` afterwards. Never reopened in
+  /// this process -- a deleted account's uid is not reused.
+  final Set<String> _wiped = <String>{};
 
   Future<void> _chain = Future<void>.value();
 
@@ -74,8 +90,9 @@ class ScanHistoryStore {
   /// Writes [record] (and [photo], when there is one) and then applies the
   /// retention cap. The record's `hasPhoto` is what is trusted on read, so a
   /// photo is only declared when its bytes were written.
-  Future<ScanRecord> save(String uid, ScanRecord record, {Uint8List? photo}) {
-    return _serial(() async {
+  Future<ScanRecord?> save(String uid, ScanRecord record, {Uint8List? photo}) {
+    return _serial<ScanRecord?>(() async {
+      if (_wiped.contains(uid)) return null; // account wiped meanwhile
       final dir = await _scanDir(uid, record.id);
       await dir.create(recursive: true);
       final bool withPhoto = photo != null && photo.isNotEmpty;
@@ -161,6 +178,7 @@ class ScanHistoryStore {
   Future<ScanRecord?> setRating(
       String uid, String id, String equipmentId, CandidateRating? rating) {
     return _serial(() async {
+      if (_wiped.contains(uid)) return null;
       final dir = await _scanDir(uid, id);
       final r = await _read(dir);
       if (r == null) return null;
@@ -186,6 +204,7 @@ class ScanHistoryStore {
   Future<ScanRecord?> setChoice(String uid, String id, String equipmentId,
       {bool manual = false}) {
     return _serial(() async {
+      if (_wiped.contains(uid)) return null;
       final dir = await _scanDir(uid, id);
       final r = await _read(dir);
       if (r == null) return null;
@@ -196,11 +215,35 @@ class ScanHistoryStore {
     });
   }
 
-  /// "Очистить историю": removes every scan of this account.
+  /// "Очистить историю": removes every scan of this account AND the plaintext
+  /// export copy in temp storage. Queued behind any save already in flight, so
+  /// that save cannot land after the delete.
   Future<void> clear(String uid) => _serial(() async {
         final root = await userDir(uid);
         if (await root.exists()) await _deleteDir(root);
+        await deleteExportCopy();
       });
+
+  /// The account-deletion wipe: [clear], then refuse every later write for
+  /// [uid] (a save still resizing its photo, a rating tapped a moment ago).
+  /// Serialised with the writes, so nothing in flight can recreate the folder.
+  Future<void> wipeAccount(String uid) {
+    _requireSafe(uid);
+    return _serial(() async {
+      _wiped.add(uid);
+      final root = await userDir(uid);
+      if (await root.exists()) await _deleteDir(root);
+      await deleteExportCopy();
+    });
+  }
+
+  /// Deletes `<temp>/scan_history_export` (plaintext photos + JSON written for
+  /// the share sheet). Best effort for a missing folder; rethrows a real
+  /// failure so a caller that must not leave it can say so.
+  Future<void> deleteExportCopy() async {
+    final dir = Directory('${(await _temporary()).path}/$kScanExportDirName');
+    if (await dir.exists()) await _deleteDir(dir);
+  }
 
   /// Recursive delete with a short bounded retry. On Windows (and on phones
   /// with an indexer or antivirus) a file written a moment ago can stay locked
@@ -265,7 +308,7 @@ class ScanHistoryStore {
   Future<ScanHistoryExport> export(String uid, Directory target,
       {DateTime? now}) async {
     final records = await list(uid);
-    final out = Directory('${target.path}/scan_history_export');
+    final out = Directory('${target.path}/$kScanExportDirName');
     if (await out.exists()) await out.delete(recursive: true);
     final photosDir = Directory('${out.path}/photos');
     await photosDir.create(recursive: true);
