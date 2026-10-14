@@ -1009,10 +1009,12 @@ async function removeWriteIfAccountGone(
 async function applySubscription(
   s: Stripe.Subscription,
   eventCreated?: number,
-  // Set only by the same-second tie settle: the ordering marker the tie left
-  // behind. The fresh write is applied only while the marker still has this
-  // value, so a newer event that landed during the Stripe round trip wins.
-  settleIfMarkerIs?: number,
+  // Set only by the same-second tie settle: the write revision (`stripeWriteSeq`)
+  // the tie's own write produced. The fresh write is applied only while the
+  // document still carries that revision, so ANY write that landed during the
+  // Stripe round trip (a newer event, or another event in the same second,
+  // which the `event.created` marker cannot tell apart) wins.
+  settleIfSeqIs?: number,
 ) {
   const uid = s.metadata?.firebaseUid as string | undefined;
   if (!uid) {
@@ -1052,20 +1054,20 @@ async function applySubscription(
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
-  if (eventCreated === undefined && settleIfMarkerIs !== undefined) {
+  if (eventCreated === undefined && settleIfSeqIs !== undefined) {
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
-      const marker = snap.data()?.lastStripeEventCreated as number | undefined;
-      if (marker !== settleIfMarkerIs) {
-        logger.info("same-second stripe tie: a newer event already applied", {
+      const seq = (snap.data()?.stripeWriteSeq as number | undefined) ?? 0;
+      if (seq !== settleIfSeqIs) {
+        logger.info("same-second stripe tie: a later write already applied", {
           uid,
           subscriptionId: s.id,
-          marker,
-          settleIfMarkerIs,
+          seq,
+          settleIfSeqIs,
         });
         return;
       }
-      tx.set(ref, payload, { merge: true });
+      tx.set(ref, { ...payload, stripeWriteSeq: seq + 1 }, { merge: true });
     });
     await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
     return;
@@ -1084,10 +1086,12 @@ async function applySubscription(
   // settled by re-reading the subscription from Stripe, which is the one
   // authoritative current state.
   let sameSecondTie = false;
+  let tieSeq = 0;
   await db.runTransaction(async (tx) => {
     sameSecondTie = false;
     const snap = await tx.get(ref);
     const seen = snap.data()?.lastStripeEventCreated as number | undefined;
+    const seq = (snap.data()?.stripeWriteSeq as number | undefined) ?? 0;
     if (seen !== undefined && eventCreated < seen) {
       logger.info("ignoring out-of-order stripe event", {
         uid,
@@ -1098,9 +1102,14 @@ async function applySubscription(
       return;
     }
     sameSecondTie = seen !== undefined && eventCreated === seen;
+    tieSeq = seq + 1;
     tx.set(
       ref,
-      { ...payload, lastStripeEventCreated: eventCreated },
+      {
+        ...payload,
+        lastStripeEventCreated: eventCreated,
+        stripeWriteSeq: tieSeq,
+      },
       { merge: true },
     );
   });
@@ -1111,7 +1120,7 @@ async function applySubscription(
       // No event clock: written as the current truth without moving the
       // ordering marker.
       if (fresh.id === s.id) {
-        await applySubscription(fresh, undefined, eventCreated);
+        await applySubscription(fresh, undefined, tieSeq);
       }
     } catch (err) {
       // The tie-applied event stays; this is the pre-existing behaviour.

@@ -39,12 +39,37 @@ const getRef = (path: string): any => {
 const getUser = jest.fn(async (_uid?: string) => ({}));
 
 jest.mock("firebase-admin", () => {
-  const runTransaction = jest.fn(async (fn: (tx: any) => Promise<any>) =>
-    fn({
-      get: (ref: any) => ref.get(),
-      set: (ref: any, data: any, opts?: any) => ref.set(data, opts),
-    }),
-  );
+  // A faithful optimistic transaction (the previous mock ran the callback once
+  // and wrote straight through, so it could not tell a stale read from a fresh
+  // one). Reads see the COMMITTED document; writes are buffered and applied
+  // together at commit; if any document read changed before the commit, nothing
+  // is applied and the callback re-runs on fresh state (up to 5 attempts).
+  // Validation and the issuing of the writes contain no `await` in between, so
+  // they are atomic under the JS event loop.
+  const runTransaction = jest.fn(async (fn: (tx: any) => Promise<any>) => {
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      const reads = new Map<any, string>();
+      const pending: Array<{ ref: any; data: any; opts?: any }> = [];
+      const tx = {
+        get: async (ref: any) => {
+          const snap = await ref.get();
+          reads.set(ref, JSON.stringify(snap.data() ?? null));
+          return snap;
+        },
+        set: (ref: any, data: any, opts?: any) => {
+          pending.push({ ref, data, opts });
+        },
+      };
+      const result = await fn(tx);
+      const stale = [...reads].some(
+        ([ref, seen]) => JSON.stringify(ref.__read() ?? null) !== seen,
+      );
+      if (stale) continue;
+      await Promise.all(pending.map((p) => p.ref.set(p.data, p.opts)));
+      return result;
+    }
+    throw Object.assign(new Error("too much contention"), { code: "aborted" });
+  });
   const firestoreFn: any = jest.fn(() => ({
     doc: jest.fn((path: string) => getRef(path)),
     runTransaction,
@@ -591,13 +616,20 @@ describe("webhook replay journey: redelivery of the same event converges on one 
     stripeMock.subscriptions.retrieve.mockResolvedValue(subscriptionObject("active"));
     const second = await deliver(event);
     expect(second.status).toHaveBeenCalledWith(200);
-    expect(getRef(SUB_DOC).__read()).toEqual(afterPartial);
+    // OLD expectation (document byte-identical) replaced: each same-second
+    // redelivery now also bumps the internal write revision `stripeWriteSeq`
+    // (tie-applied write + settle write). Everything else must be unchanged.
+    const { stripeWriteSeq: seqPartial, ...businessPartial } = afterPartial;
+    const { stripeWriteSeq: seqSecond, ...businessSecond } = getRef(SUB_DOC).__read();
+    expect(businessSecond).toEqual(businessPartial);
+    expect(seqSecond).toBeGreaterThan(seqPartial);
     expect(userRefs()).toEqual([SUB_DOC]);
 
     // A third delivery after success is a no-op as well.
     const third = await deliver(event);
     expect(third.status).toHaveBeenCalledWith(200);
-    expect(getRef(SUB_DOC).__read()).toEqual(afterPartial);
+    const { stripeWriteSeq: _seqThird, ...businessThird } = getRef(SUB_DOC).__read();
+    expect(businessThird).toEqual(businessPartial);
   });
 
   test("a lifetime write that failed outright (500, nothing stored) is completed by the redelivery", async () => {
@@ -745,7 +777,7 @@ describe("same-second event ties are settled by re-reading the subscription (F13
     }
   };
 
-  test("the settle write goes through one transaction that re-reads the marker", async () => {
+  test("the settle write goes through one transaction that re-reads the write revision", async () => {
     await seed2000();
     const txRunner = (jest.requireMock("firebase-admin").firestore() as any).runTransaction;
     txRunner.mockClear();
@@ -758,6 +790,7 @@ describe("same-second event ties are settled by re-reading the subscription (F13
     expect(getRef(SUB_DOC).__read()).toMatchObject({
       status: "cancelled",
       lastStripeEventCreated: 2000,
+      stripeWriteSeq: 3, // seed 1, tie-applied 2, settle 3
     });
   });
 
@@ -786,33 +819,140 @@ describe("same-second event ties are settled by re-reading the subscription (F13
     expect(getRef(SUB_DOC).__read()).toMatchObject({
       status: "cancelled",
       lastStripeEventCreated: 2001,
+      stripeWriteSeq: 3, // seed 1, tie-applied 2, newer event 3; the settle added nothing
     });
     const statuses = getRef(SUB_DOC).set.mock.calls.map((c: any[]) => c[0].status);
     expect(statuses).toEqual(["trial", "active", "cancelled"]); // no later "active"
+    // Log text changed with the guard: it is now the write revision, not the marker.
     expect(logger.info).toHaveBeenCalledWith(
-      "same-second stripe tie: a newer event already applied",
-      expect.objectContaining({ uid: "u1", marker: 2001, settleIfMarkerIs: 2000 }),
+      "same-second stripe tie: a later write already applied",
+      expect.objectContaining({ uid: "u1", seq: 3, settleIfSeqIs: 2 }),
     );
   });
 
-  test("when the marker is unchanged after a slow retrieve, the fresh state is written", async () => {
+
+  /** Next `retrieve` call returns a promise that the test settles later. */
+  const holdNextRetrieve = () => {
+    let release!: (v: unknown) => void;
+    stripeMock.subscriptions.retrieve.mockReturnValueOnce(
+      new Promise((r) => {
+        release = r;
+      }),
+    );
+    return release;
+  };
+
+  test("REGRESSION: two events in the SAME second - the earlier one's slow settle must not overwrite the later one", async () => {
+    // The `lastStripeEventCreated` marker is equal (2000) for A and B, so only
+    // the write revision can tell that B landed while A was waiting on Stripe.
     await seed2000();
-    const resolveRetrieve = deferredRetrieve();
+    stripeMock.subscriptions.retrieve.mockReset();
+    const releaseA = holdNextRetrieve(); // A's re-read (first call) is slow
+    // B is also a tie, so it re-reads too; Stripe's truth for B is "canceled".
+    stripeMock.subscriptions.retrieve.mockResolvedValueOnce(subscriptionObject("canceled"));
 
-    const tie = deliver(subEvent(2000, "active"));
+    const a = deliver(subEvent(2000, "active")); // A: created 2000, says active
     await untilRetrieveCalled();
-    resolveRetrieve(subscriptionObject("canceled"));
-    const tieRes = await tie;
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "active",
+      lastStripeEventCreated: 2000,
+      stripeWriteSeq: 2,
+    });
 
-    expect(tieRes.status).toHaveBeenCalledWith(200);
+    // B: SAME created=2000, cancelled state, applied while A is pending.
+    const b = await deliver({ ...subEvent(2000, "canceled"), id: "evt_B" });
+    expect(b.status).toHaveBeenCalledWith(200);
+    const afterB = getRef(SUB_DOC).__read();
+    expect(afterB).toMatchObject({ status: "cancelled", lastStripeEventCreated: 2000 });
+    const seqAfterB = afterB.stripeWriteSeq;
+    expect(seqAfterB).toBeGreaterThan(2);
+
+    // A's (older) Stripe answer finally arrives and says "active".
+    releaseA(subscriptionObject("active"));
+    const aRes = await a;
+
+    expect(aRes.status).toHaveBeenCalledWith(200);
     expect(getRef(SUB_DOC).__read()).toMatchObject({
       status: "cancelled",
       lastStripeEventCreated: 2000,
+      stripeWriteSeq: seqAfterB, // A's settle wrote nothing
+    });
+    // After A's own tie-applied "active", no write ever stored "active" again.
+    const statuses = getRef(SUB_DOC).set.mock.calls.map((c: any[]) => c[0].status);
+    expect(statuses.lastIndexOf("active")).toBe(1);
+    expect(statuses[statuses.length - 1]).toBe("cancelled");
+    expect(logger.info).toHaveBeenCalledWith(
+      "same-second stripe tie: a later write already applied",
+      expect.objectContaining({ uid: "u1", seq: seqAfterB, settleIfSeqIs: 2 }),
+    );
+  });
+
+  test("REGRESSION variant: B's own re-read fails, so B stays tie-applied; A's late 'active' still must not overwrite it", async () => {
+    await seed2000();
+    stripeMock.subscriptions.retrieve.mockReset();
+    const releaseA = holdNextRetrieve();
+    stripeMock.subscriptions.retrieve.mockRejectedValueOnce(new Error("stripe 503"));
+
+    const a = deliver(subEvent(2000, "active"));
+    await untilRetrieveCalled();
+    const b = await deliver({ ...subEvent(2000, "canceled"), id: "evt_B" });
+    expect(b.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({ status: "cancelled", stripeWriteSeq: 3 });
+
+    releaseA(subscriptionObject("active"));
+    await a;
+
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "cancelled",
+      lastStripeEventCreated: 2000,
+      stripeWriteSeq: 3,
+    });
+  });
+
+  test("with no intervening write, a slow settle applies the fresh state and bumps the revision", async () => {
+    await seed2000();
+    stripeMock.subscriptions.retrieve.mockReset();
+    const release = holdNextRetrieve();
+
+    const a = deliver(subEvent(2000, "active"));
+    await untilRetrieveCalled();
+    release(subscriptionObject("canceled"));
+    const aRes = await a;
+
+    expect(aRes.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "cancelled",
+      lastStripeEventCreated: 2000,
+      stripeWriteSeq: 3, // seed 1, tie-applied 2, settle 3
     });
     expect(logger.info).not.toHaveBeenCalledWith(
-      "same-second stripe tie: a newer event already applied",
+      "same-second stripe tie: a later write already applied",
       expect.anything(),
     );
+  });
+
+  test("the transaction mock itself is faithful: of two interleaved read-modify-write transactions, the second re-runs on committed state", async () => {
+    const runTx = (jest.requireMock("firebase-admin").firestore() as any).runTransaction;
+    const ref = getRef("counters/c");
+    await ref.set({ n: 0 });
+    const holds: Array<() => void> = [];
+    let runs = 0;
+    const incr = () =>
+      runTx(async (tx: any) => {
+        runs++;
+        const snap = await tx.get(ref);
+        if (holds.length < 2) await new Promise<void>((r) => holds.push(r));
+        tx.set(ref, { n: snap.data().n + 1 }, { merge: true });
+      });
+    const both = Promise.all([incr(), incr()]);
+    while (holds.length < 2) await new Promise((r) => setImmediate(r));
+    holds[0]();
+    await new Promise((r) => setImmediate(r));
+    holds[1]();
+    await both;
+
+    expect(ref.__read()).toEqual({ n: 2 }); // no lost update
+    expect(runs).toBe(3); // the loser ran twice
   });
 
   test("a strictly newer event is applied without any retrieve", async () => {

@@ -55807,10 +55807,6 @@ Decision: close GPT round 3 MINOR-01/02 with an epoch counter and a three-attemp
 
 Evidence: reports/HARDENING_SPRINT_FINAL_2026-10-14.ru.html and .html record the closure table of the final gate (GPT-PM round 4 APPROVE on e219df3), rules emulator 279/279 and deletion e2e 11/11. Open: device checks, functions deploy, live alert policy, golden_src removal.
 
-## 2026-10-14 - Commit: Final report of the hardening sprint
-
-Evidence: reports/HARDENING_SPRINT_FINAL_2026-10-14.ru.html and .html record the closure table of the final gate (GPT-PM round 4 APPROVE on e219df3), rules emulator 279/279 and deletion e2e 11/11. Open: device checks, functions deploy, live alert policy, golden_src removal.
-
 ## 2026-10-14 - Commit: F13 follow-ups: booking sweep transaction and Stripe tie
 
 Decision: close two F13 leftovers on a follow-up branch; Stripe tie settled by re-reading the subscription. Evidence: focused Jest 34/53/43/3/56 and emulator e2e 11/11, see core/changes/2026-10-14-hardening-f13-booking-and-stripe-tie.md. Not done: Firestore shape rules, bench/rack option (product scope).
@@ -55818,3 +55814,7 @@ Decision: close two F13 leftovers on a follow-up branch; Stripe tie settled by r
 ## 2026-10-14 - Commit: Stripe tie settle marker guard
 
 Decision: settle write guarded by the ordering marker after a reliability review MAJOR. Evidence: focused Jest 46/53/34, see core/changes/2026-10-14-hardening-stripe-settle-marker-guard.md.
+
+## 2026-10-14 - Commit: Stripe tie settle revision CAS
+
+Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
