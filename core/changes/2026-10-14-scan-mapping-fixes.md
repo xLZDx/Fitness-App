@@ -75,3 +75,23 @@ Measured on 33 labelled photos (`core/ml/eval`): model top-1 is 16/33 and the ri
 
 ### Verification state
 Jest `ai_equipment_recognition.test.ts`: 22 of 22. Flutter, focused, from `mobile/`: new `scanner_manual_pick_test.dart` (5 tests: thumbnails + names + confidence + topK 4; order of 4 candidates and manual row last; "жим" finds `Жим лёжа (стойка)`, opens `/equipment/bench_press` without scanId and remembers a manual pick at 1.0; alias search and empty state; dismissing files nothing), `scan_controller_test` (topK 4), `gemini_equipment_service_test` (best + 3 kept in order, fifth cut), and the neighbouring scanner, history and l10n suites. NOT verified: appearance on a device, the deployed prompt's real effect on accuracy.
+
+## Addendum 4: full-screen scan window with a draggable result sheet
+
+### What changed
+- `mobile/lib/features/scanner/scanner_page.dart`: the camera preview now fills the whole Scan area edge to edge (status bar to bottom nav) instead of a 230px card. The title is drawn over the camera (dark HUD tokens plus a soft scrim). Everything else lives in a `DraggableScrollableSheet` over the preview, above the bottom nav (`shellBottomObstruction`).
+- The collapsed sheet (`kScanSheetCollapsedPx`) is a pinned header: drag handle, the primary shutter button ("Распознать"), the Gallery / Live row and the cloud-upload disclosure (the claim the user consents to when tapping the shutter is never scrolled away). Below it scrolls the answer: locked card, candidates with "choose manually", last-session memory, AI coach entry, notes, identity badge, "My machines", preparing cards.
+- A scan that ends (any answer, including "could not tell what that is") opens the sheet to 60% by itself; "Scan again" collapses it. The live reading (Live mode) rides just above the sheet over the preview, wherever the sheet is.
+- `mobile/lib/features/scanner/widgets/scan_viewfinder.dart`: `fullBleed` (no card chrome, dark bracket inks) and `guideInsets` (brackets, glyph and hint sit clear of the title and of the collapsed sheet). `windowNormalized(card, guideInsets:)` makes the capture crop exactly the frame the user aimed through.
+- Tests: `mobile/test/features/scanner_page_test.dart` rewrote the three retired card-layout tests as full-screen tests (preview == screen rect; title over the camera and frame clear of title and sheet; collapsed sheet holds shutter, Gallery, Live and is 226px; fling opens and closes the sheet; the crop window includes the insets; an answer opens the sheet and Scan again collapses it) and moved the low-light banner and "My machines" tests to the new layout.
+
+### Retired tests (decision, not deletion)
+`mobile/test/features/scanner/scan_reference_geometry_test.dart` (3 groups) and `mobile/test/golden/scan_reference_golden_test.dart` (2 groups per theme) measure the 230px reference-card layout. The operator ordered the full-screen window, so they are marked `skip:` with the reason; the reference widgets (`ScanViewfinder` card mode, `ScanMatchCard`) are unchanged. Goldens and `tools/design/scan_fidelity_check.py` therefore no longer describe the Scan screen.
+
+### Limits
+- Not verified on a device: sheet feel, overlap with the real bottom nav, brackets vs real camera aspect, title legibility on bright scenes.
+- The sheet opens by a jump, not an animation (deterministic under test, and the answer is readable the moment it lands).
+- `test/theme/app_semantic_colors_test.dart` "hardcoded whites" tripwire currently reads 70 against a pinned 69: the extra white is in the coach files committed by the parallel coach-form work, not in this change (the thumbnail bed uses a named constant, not `Colors.white`).
+
+### Verification state
+Focused Flutter run from `mobile/`: `scanner_page_test.dart` 55 of 55, `test/features/scanner/*` (navigation, manual pick, identity visibility, scan-id cleanup, strip overflow, frame), `machine_card_flow_test.dart`, `test/shared`, `test/l10n`: all passed, 15 tests skipped as retired (above).

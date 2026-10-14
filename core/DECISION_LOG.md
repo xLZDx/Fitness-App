@@ -55874,3 +55874,7 @@ Decision: because model top-1 is 16/33 (top 3 alternatives: 20/33) and prompt va
 ## 2026-10-14 - Commit: Fix stale squat fixture in pose_roll_diagnostics_test
 
 Decision: the incomplete-attempt fixture was re-based to the body-relative counting depth (0.64 became 0.60); the failure was ours (a shallow rep is now counted), the base passes. Evidence: base 42d1b84 +16 pass, HEAD before fix +15 -1, after fix pass; golden test fails identically at base. See core/changes/2026-10-14-coach-form-fixes.md.
+
+## 2026-10-14 - Commit: Full-screen scan window with a draggable result sheet
+
+Decision: the operator's real phone showed the 230px card could not fit a machine, so the Scan preview now fills the screen and all results live in a draggable sheet over it (pinned shutter, Gallery/Live and the cloud-upload disclosure; the answer scrolls below and opens by itself). The reference-card geometry/golden tests are skipped as retired by that order (not deleted); structural full-screen tests replace them. Evidence: scanner_page_test 55/55 and the neighbouring scanner suites green (15 retired skips). Unverified: device feel and bottom-nav overlap. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 4).

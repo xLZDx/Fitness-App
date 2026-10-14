@@ -103,6 +103,16 @@ AssetEquipmentRepository _seededRepo() => AssetEquipmentRepository()
 
 const Key _rootKey = Key('scan-golden-root');
 
+// Retired by the operator's 2026-10-14 order for a full-screen scan window
+// (core/changes/2026-10-14-scan-mapping-fixes.md, Addendum 4): this file
+// measures the 230px reference-card layout, which the Scan screen no longer
+// has. The new layout is covered by the structural tests in
+// `test/features/scanner_page_test.dart` (preview fills the screen, sheet
+// collapsed/expanded, controls reachable). Kept for the day a card layout
+// returns; the reference viewfinder/card widgets themselves are unchanged.
+const String _kRetiredLayout =
+    'reference-card layout retired by the full-screen scan order (2026-10-14)';
+
 void main() {
   setUpAll(loadHudGoldenFonts);
 
@@ -235,7 +245,7 @@ void main() {
     ('dark', Brightness.dark),
     ('light', Brightness.light),
   ]) {
-    group('fidelity ($theme, flat base)', () {
+    group('fidelity ($theme, flat base)', skip: _kRetiredLayout, () {
       testWidgets('aiming', (tester) => withRealShadows(() async {
             await pumpScan(tester, brightness: brightness, flat: true);
             expect(find.text('ALIGN THE MACHINE IN FRAME'), findsOneWidget);
@@ -257,7 +267,7 @@ void main() {
           }));
     });
 
-    group('composed ($theme, sky)', () {
+    group('composed ($theme, sky)', skip: _kRetiredLayout, () {
       testWidgets('aiming', (tester) => withRealShadows(() async {
             await pumpScan(tester, brightness: brightness, flat: false);
             await expectLater(

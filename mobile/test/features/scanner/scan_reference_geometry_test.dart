@@ -164,6 +164,16 @@ void _expectColor(Color actual, Color expected, String what) {
 FontVariation? _axis(TextStyle s, String tag) =>
     s.fontVariations?.where((v) => v.axis == tag).firstOrNull;
 
+// Retired by the operator's 2026-10-14 order for a full-screen scan window
+// (core/changes/2026-10-14-scan-mapping-fixes.md, Addendum 4): this file
+// measures the 230px reference-card layout, which the Scan screen no longer
+// has. The new layout is covered by the structural tests in
+// `test/features/scanner_page_test.dart` (preview fills the screen, sheet
+// collapsed/expanded, controls reachable). Kept for the day a card layout
+// returns; the reference viewfinder/card widgets themselves are unchanged.
+const String _kRetiredLayout =
+    'reference-card layout retired by the full-screen scan order (2026-10-14)';
+
 void main() {
   setUpAll(loadHudGoldenFonts);
 
@@ -254,7 +264,7 @@ void main() {
 
   Text textOf(WidgetTester tester, Finder f) => tester.widget<Text>(f);
 
-  group('aiming, dark', () {
+  group('aiming, dark', skip: _kRetiredLayout, () {
     late Map<String, dynamic> a;
     setUpAll(() => a = _anchors('dark_aiming'));
 
@@ -372,7 +382,7 @@ void main() {
     });
   });
 
-  group('found, dark', () {
+  group('found, dark', skip: _kRetiredLayout, () {
     late Map<String, dynamic> a;
     setUpAll(() => a = _anchors('dark_found'));
 
@@ -510,7 +520,7 @@ void main() {
     });
   });
 
-  group('light', () {
+  group('light', skip: _kRetiredLayout, () {
     testWidgets('the same geometry, the light inks', (tester) async {
       final Map<String, dynamic> a = _anchors('light_found');
       await pumpScan(tester, brightness: Brightness.light);

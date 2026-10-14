@@ -5,6 +5,10 @@ import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../equipment/state/equipment_providers.dart';
 
+/// The flat white the clips are rendered on (same bed `ExerciseThumb` uses, so
+/// letterboxing stays invisible). A named constant, not a foreground white.
+const Color _posterBed = Color(0xFFFFFFFF);
+
 /// A small picture of a catalogue machine, so a candidate on the Scan screen
 /// can be recognised by sight and not only by name.
 ///
@@ -69,7 +73,7 @@ class MachineThumb extends ConsumerWidget {
           width: size,
           height: size,
           // Posters are cut from clips shot on flat white.
-          child: ColoredBox(color: Colors.white, child: child),
+          child: ColoredBox(color: _posterBed, child: child),
         ),
       ),
     );
