@@ -509,7 +509,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     //
     // This supersedes "the live screen never demonstrates" (2026-09-02, GPT-PM
     // MAJOR: the picker owns the loop, the live screen a still target), which
-    // was a rule about the white target outline. The outline is gone; what the
+    // was a rule about the white target outline. NOTE 2026-10-14: the operator
+    // overrode the removal of the outline -- `_TargetOutline` draws the target
+    // again, but only over a tracked body, so the demonstration still never
+    // runs under it. Originally: the outline is gone; what the
     // live screen shows before a body is tracked is the reference's own figure
     // performing the movement, and it hands over to the user's figure the
     // moment there is one (`_LiveDemo`). The defect that rule fixed — a user at
@@ -817,6 +820,15 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                                       key: Key('form_check.layer.avatar'),
                                       child:
                                           IgnorePointer(child: _PoseAvatar()),
+                                    ),
+                                    // The shape the rep is judged against, drawn on the
+                                    // tracked body (operator 2026-10-14: the voice refers
+                                    // to a silhouette, so the silhouette must be on
+                                    // screen). Between the avatar and the skeleton.
+                                    const Positioned.fill(
+                                      key: Key('form_check.layer.target'),
+                                      child:
+                                          IgnorePointer(child: _TargetOutline()),
                                     ),
                                     const Positioned.fill(
                                       key: Key('form_check.layer.skeleton'),
@@ -1305,6 +1317,99 @@ class _PreviewScrim extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// The target shape of the selected movement, placed on the tracked body.
+///
+/// Operator, 2026-10-14, after a real-phone test: the coach says «вы не дошли
+/// до силуэта» while no silhouette is on screen. This overrides the G17 decision
+/// that removed the outline: the target (the very `poseTargetProvider` shape
+/// the match score and the `silhouette.match` cue are computed against) is drawn
+/// again whenever the user's own body is drawable
+/// (`coachBodyDrawableProvider`), and the demonstration still owns the panel
+/// while nobody is tracked. Placed with [alignTargetToBody] -- the same
+/// anchoring and mirror choice the score uses -- and projected with
+/// [projectLandmark] exactly like [_SkeletonPainter], so the outline sits where
+/// the body is drawn.
+///
+/// Static paint, no animation: nothing here needs a reduce-motion branch, and
+/// the layer repaints only when the frame or the aligned target changes.
+class _TargetOutline extends ConsumerWidget {
+  const _TargetOutline();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(coachBodyDrawableProvider)) return const SizedBox.shrink();
+    final target = ref.watch(poseTargetProvider);
+    final frame = ref.watch(latestPoseFrameProvider);
+    final body = ref.watch(stabilisedBodyProvider);
+    if (target == null || frame == null || body == null) {
+      return const SizedBox.shrink();
+    }
+    final alignment = alignTargetToBody(body.joints, target);
+    if (alignment == null) return const SizedBox.shrink();
+    return RepaintBoundary(
+      child: CustomPaint(
+        key: const Key('form_check.target'),
+        painter: _TargetOutlinePainter(
+          target: target,
+          alignment: alignment,
+          frameAspect: frame.aspectRatio,
+          color: Theme.of(context).colors.poseCorrect,
+        ),
+      ),
+    );
+  }
+}
+
+class _TargetOutlinePainter extends CustomPainter {
+  const _TargetOutlinePainter({
+    required this.target,
+    required this.alignment,
+    required this.frameAspect,
+    required this.color,
+  });
+
+  final PoseTarget target;
+  final PoseAlignment alignment;
+  final double frameAspect;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Offset place(LandmarkType t) {
+      final p = alignment(target.joints[t]!);
+      return projectLandmark(p.$1, p.$2, frameAspect: frameAspect, canvas: size);
+    }
+
+    // Visible but see-through: the body must stay readable underneath.
+    final line = Paint()
+      ..color = color.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    for (final (a, b) in target.bones) {
+      if (!target.joints.containsKey(a) || !target.joints.containsKey(b)) {
+        continue;
+      }
+      canvas.drawLine(place(a), place(b), line);
+    }
+    final ring = Paint()
+      ..color = color.withValues(alpha: 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    for (final t in target.joints.keys) {
+      if (target.unscoredJoints.contains(t)) continue;
+      canvas.drawCircle(place(t), 9, ring);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_TargetOutlinePainter old) =>
+      old.target.id != target.id ||
+      old.alignment != alignment ||
+      old.frameAspect != frameAspect ||
+      old.color != color;
 }
 
 /// The body as the detector sees it, drawn over the preview.

@@ -55818,3 +55818,7 @@ Decision: settle write guarded by the ordering marker after a reliability review
 ## 2026-10-14 - Commit: Stripe tie settle revision CAS
 
 Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
+
+## 2026-10-14 - Commit: Target silhouette drawn again on the live coach
+
+Decision: the operator's explicit instruction overrides the G17 removal of the target outline; the target of `poseTargetProvider` is drawn over the tracked body (layer `form_check.layer.target`). Evidence: focused Flutter tests, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device.
