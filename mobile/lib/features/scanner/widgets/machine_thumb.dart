@@ -42,6 +42,12 @@ class MachineThumb extends ConsumerWidget {
               size: size * 0.46, color: AppSemanticColors.onGradientInk),
         );
 
+    // Decode at the size it is drawn at, not at the poster's full resolution:
+    // a list of dozens of thumbnails would otherwise keep dozens of full-size
+    // bitmaps in the image cache.
+    final int decodePx =
+        (size * MediaQuery.devicePixelRatioOf(context)).round();
+
     final Widget child;
     if (hero == null) {
       child = fallback();
@@ -49,6 +55,7 @@ class MachineThumb extends ConsumerWidget {
       child = Image.network(
         hero,
         key: Key('machine-thumb-image-$equipmentId'),
+        cacheWidth: decodePx,
         fit: BoxFit.cover,
         excludeFromSemantics: true,
         errorBuilder: (_, __, ___) => fallback(),
@@ -57,6 +64,7 @@ class MachineThumb extends ConsumerWidget {
       child = Image.asset(
         hero,
         key: Key('machine-thumb-image-$equipmentId'),
+        cacheWidth: decodePx,
         fit: BoxFit.cover,
         alignment: const Alignment(0, -0.35),
         excludeFromSemantics: true,

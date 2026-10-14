@@ -183,8 +183,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   }
 
   /// The sheet's current extent as a fraction of its area; things that ride
-  /// above it (the live reading, the zoom control) follow it.
-  double _sheetExtent = 0.2;
+  /// above it (the live reading, the zoom control) follow it. A notifier, not
+  /// page state: a drag changes it every frame, and only that overlay may
+  /// rebuild for it, not the whole screen. Until the sheet has moved, the
+  /// overlay uses the collapsed fraction ([_minSheet]) instead.
+  final ValueNotifier<double> _extent = ValueNotifier<double>(0.2);
   bool _sheetMoved = false;
 
   /// The result sheet: collapsed to its handle, shutter and controls until a
@@ -218,6 +221,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   @override
   void dispose() {
     _sheet.dispose();
+    _extent.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _router?.routerDelegate.removeListener(_onRouteChanged);
     // The session outlives this page (it is app-lifetime, by design), so a
@@ -271,7 +275,44 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// change, app resume. The system dialog belongs to the moment the user
   /// asks for the camera, not to every foreground event; without that split
   /// a refusal re-prompted on each resume.
-  Future<void> _arm({bool requestPermission = false}) async {
+  Future<void> _arm({bool requestPermission = false}) {
+    if (!mounted) return Future<void>.value();
+    _wantArmed = true;
+    return _enqueueLifecycle(() {
+      // A disarm that arrived after this arm was queued wins: the camera is
+      // not wanted any more, and starting it only to stop it again is the
+      // churn this queue exists to remove.
+      if (!_wantArmed) return Future<void>.value();
+      return _armNow(requestPermission: requestPermission);
+    });
+  }
+
+  /// What the page wants right now: the camera open (visible, foreground) or
+  /// released. The last of [_arm] / [_disarm] sets it, and every queued step
+  /// re-checks it when its turn comes.
+  bool _wantArmed = false;
+  Future<void> _lifecycleTail = Future<void>.value();
+  int _lifecycleBusy = 0;
+
+  /// Runs camera arm/disarm steps ONE AT A TIME, in call order.
+  ///
+  /// They used to run concurrently: an `inactive` disarm spends a few
+  /// milliseconds in `zoom.reset()` before it calls `stop()`, and a `resumed`
+  /// arm landing in that window called `start()` while the session still
+  /// reported `_running` (a no-op), after which the disarm finished the stop:
+  /// the screen was back in the foreground with the camera released and nothing
+  /// left to restart it. Serialised, the arm starts after the stop completed.
+  Future<void> _enqueueLifecycle(Future<void> Function() step) {
+    final Future<void> prev = _lifecycleTail;
+    final Future<void> next =
+        _lifecycleBusy == 0 ? step() : prev.then((_) => step());
+    _lifecycleBusy++;
+    _lifecycleTail =
+        next.whenComplete(() => _lifecycleBusy--).catchError((Object _) {});
+    return next;
+  }
+
+  Future<void> _armNow({required bool requestPermission}) async {
     if (!mounted) return;
     try {
       // Inside the try, not above it: these are `ref` reads on a path that
@@ -385,7 +426,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     ));
   }
 
-  Future<void> _disarm({bool flipLiveMode = true}) async {
+  Future<void> _disarm({bool flipLiveMode = true}) {
     // Fields only — no `ref` anywhere on this path, it also runs from
     // dispose(). The try guards the teardown race where the ProviderScope is
     // being destroyed right after this page (test teardown, app shutdown).
@@ -397,6 +438,16 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         debugPrint('live-mode off on disarm skipped: $e');
       }
     }
+    _wantArmed = false;
+    return _enqueueLifecycle(() {
+      // An arm that arrived after this disarm was queued wins (a quick
+      // inactive -> resumed): the camera stays open.
+      if (_wantArmed) return Future<void>.value();
+      return _disarmNow();
+    });
+  }
+
+  Future<void> _disarmNow() async {
     try {
       // Leaving the screen resets zoom to 1x, so the next visit does not start
       // zoomed in. Before stop(): a released camera has nothing to reset.
@@ -871,7 +922,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         final double minSheet =
             (headerPx / sheetAvail).clamp(0.05, kScanSheetMaxExtent).toDouble();
         _minSheet = minSheet;
-        if (!_sheetMoved) _sheetExtent = minSheet;
         // The brackets frame the part of the preview that is neither under the
         // title nor under the collapsed sheet; the capture crop uses the same.
         // On a short screen the two would leave no window at all, so the title
@@ -1240,24 +1290,42 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 ),
               ),
             ),
-            Positioned(
-              key: const Key('scan-over-sheet'),
-              left: 16,
-              right: 16,
-              bottom: navInset + _sheetExtent * sheetAvail + 8,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  if (liveOn && _cameraFailure == null) ...<Widget>[
-                    _LiveSection(onOpen: _openEquipment),
-                    const SizedBox(height: 8),
-                  ],
-                  // Zoom presets (0.6/1/2/3/5/10x as the device allows); the
-                  // pinch gesture over the preview is the other way in.
-                  if (_cameraFailure == null)
-                    Center(child: ZoomControls(zoom: session.zoom)),
-                ],
+            // Rebuilt by the sheet's extent alone (a drag changes it every
+            // frame), not by the page. Hidden while the sheet is tall: riding
+            // up with it, the zoom chips and live card would cover the title
+            // and the history button.
+            Positioned.fill(
+              child: ValueListenableBuilder<double>(
+                valueListenable: _extent,
+                builder: (context, dragged, _) {
+                  final double extent = _sheetMoved ? dragged : minSheet;
+                  if (extent > kScanOverlayHideAbove) {
+                    return const SizedBox.shrink();
+                  }
+                  return Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          16, 0, 16, navInset + extent * sheetAvail + 8),
+                      child: Column(
+                        key: const Key('scan-over-sheet'),
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          if (liveOn && _cameraFailure == null) ...<Widget>[
+                            _LiveSection(onOpen: _openEquipment),
+                            const SizedBox(height: 8),
+                          ],
+                          // Zoom presets (0.6/1/2/3/5/10x as the device
+                          // allows); the pinch gesture over the preview is the
+                          // other way in.
+                          if (_cameraFailure == null)
+                            Center(child: ZoomControls(zoom: session.zoom)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             Positioned(
@@ -1270,9 +1338,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               bottom: navInset,
               child: NotificationListener<DraggableScrollableNotification>(
                 onNotification: (n) {
-                  if ((n.extent - _sheetExtent).abs() > 0.001) {
+                  // No setState: only the overlay listens to this.
+                  if ((n.extent - _extent.value).abs() > 0.001) {
                     _sheetMoved = true;
-                    setState(() => _sheetExtent = n.extent);
+                    _extent.value = n.extent;
                   }
                   return false;
                 },

@@ -433,6 +433,7 @@
   "scannerManualPickerTitle": "Выберите тренажёр",
   "scannerManualPickerSearchHint": "Поиск по названию",
   "scannerManualPickerNoResults": "Нет тренажёров по этому запросу",
+  "scannerManualPickerLoadFailed": "Не удалось загрузить список тренажёров",
   "scanRateOk": "Это верно",
   "scanRateNotOk": "Это неверно",
   "scanHistoryTitle": "История сканов",

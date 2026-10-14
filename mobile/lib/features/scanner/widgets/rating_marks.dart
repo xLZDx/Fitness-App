@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
 import '../history/scan_record.dart';
+import 'zoom_controls.dart' show kScanTouchTarget;
 
 /// Two small optional marks for a candidate: OK (check) and NOT OK (cross).
 ///
@@ -92,10 +93,11 @@ class _Mark extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        // A 36px target around a 22px glyph: small on screen, still tappable.
+        // A 44px target around a 22px glyph: small on screen, a full-size
+        // touch target.
         child: SizedBox(
-          width: 36,
-          height: 36,
+          width: kScanTouchTarget,
+          height: kScanTouchTarget,
           child: Icon(
             active ? icon : outline,
             size: 22,

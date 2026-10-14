@@ -44,8 +44,10 @@ class _ManualMachinePickerState extends ConsumerState<ManualMachinePicker> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final AsyncValue<List<EquipmentItem>> catalogue =
+        ref.watch(equipmentListProvider);
     final List<EquipmentItem> all =
-        ref.watch(equipmentListProvider).valueOrNull ?? const <EquipmentItem>[];
+        catalogue.valueOrNull ?? const <EquipmentItem>[];
     // While the alias asset is still loading the name match alone is used.
     final EquipmentAliasIndex? aliases =
         ref.watch(equipmentAliasIndexProvider).valueOrNull;
@@ -93,7 +95,34 @@ class _ManualMachinePickerState extends ConsumerState<ManualMachinePicker> {
               ),
             ),
             Expanded(
-              child: shown.isEmpty
+              child: all.isEmpty && catalogue.isLoading
+                  // Still loading: "no machine matches" would be a lie.
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          key: Key('scan-manual-loading')))
+                  : all.isEmpty && catalogue.hasError
+                      // The catalogue failed to load: say so and offer a retry
+                      // instead of an empty-search message.
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                l10n.scannerManualPickerLoadFailed,
+                                key: const Key('scan-manual-error'),
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton(
+                                key: const Key('scan-manual-retry'),
+                                onPressed: () =>
+                                    ref.invalidate(equipmentListProvider),
+                                child: Text(l10n.commonRetry),
+                              ),
+                            ],
+                          ),
+                        )
+                      : shown.isEmpty
                   ? Center(
                       child: Text(
                         l10n.scannerManualPickerNoResults,

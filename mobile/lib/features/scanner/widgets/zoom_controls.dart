@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../core/camera/camera_zoom.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 
+/// Smallest touch target on the Scan screen, in logical pixels (the zoom chips
+/// and the OK / NOT OK marks).
+const double kScanTouchTarget = 44;
+
 /// Phone-camera style zoom for the Scan preview (operator order 2026-10-14, B):
 /// a small current-zoom label and one chip per preset the DEVICE really has
 /// (0.6, 1, 2, 3, 5, 10x -- see [CameraZoom.presetsFor]), the active one
@@ -36,8 +40,12 @@ class ZoomControls extends StatelessWidget {
             borderRadius: BorderRadius.circular(22),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-            child: Row(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            // Six 44 px targets plus the label need ~330 px: scale down on a
+            // narrower window instead of overflowing.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Padding(
@@ -59,6 +67,7 @@ class ZoomControls extends StatelessWidget {
                     onTap: () => zoom.requestLevel(p),
                   ),
               ],
+            ),
             ),
           ),
         );
@@ -92,10 +101,12 @@ class _PresetChip extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          constraints: const BoxConstraints(minWidth: 40, minHeight: 36),
+          // A 44 x 44 touch target (the accessibility minimum), with no outer
+          // margin so neighbouring targets do not overlap or leave dead gaps.
+          constraints: const BoxConstraints(
+              minWidth: kScanTouchTarget, minHeight: kScanTouchTarget),
           alignment: Alignment.center,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             shape: selected ? BoxShape.circle : BoxShape.rectangle,
             borderRadius: selected ? null : BorderRadius.circular(18),

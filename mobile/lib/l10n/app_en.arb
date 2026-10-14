@@ -910,6 +910,7 @@
   "scannerManualPickerTitle": "Choose the machine",
   "scannerManualPickerSearchHint": "Search by name",
   "scannerManualPickerNoResults": "No machine matches this search",
+  "scannerManualPickerLoadFailed": "Could not load the list of machines",
   "scanRateOk": "Mark as correct",
   "scanRateNotOk": "Mark as wrong",
   "scanHistoryTitle": "Scan history",

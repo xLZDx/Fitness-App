@@ -55898,3 +55898,7 @@ Decision: the plaintext export copy in `<temp>/scan_history_export/` is deleted 
 ## 2026-10-14 - Commit: Scan screen review fixes part 1 (shutter without camera, measured header, short screens)
 
 Decision: the shutter is disabled while the camera is unavailable instead of waiting 8 s and failing; the pinned sheet header height is measured from its content (226 px is only a floor) so large text scales cannot clip the shutter row or the upload disclosure, which is now shown in full; on short or landscape screens the collapsed sheet may take up to 92% and the aiming window keeps at least min(120 px, 30% of the height). `CameraSession.awaitReady` stays as is because the progress-photo flows share it. Details: `core/changes/2026-10-14-scan-mapping-fixes.md` Addendum 9.
+
+## 2026-10-14 - Commit: Scan screen review fixes part 2 (drag rebuilds, overlay, picker states, thumbnails, 44 px targets, arm/disarm queue)
+
+Decision: the scan page serialises camera arm and disarm through one queue that honours the last wish, because a quick inactive -> resumed used to leave the camera released (the resume's start() was a no-op while the stop was still finishing); the sheet extent drives only the overlay (no page rebuild per drag frame) and the overlay hides above 0.61; the manual picker distinguishes loading, load failure (with Retry) and an empty search; thumbnails decode at drawn size; zoom chips and rating marks are 44 px targets. Trade-off: a disarm waits behind a start still in flight. Details: `core/changes/2026-10-14-scan-mapping-fixes.md` Addendum 10.

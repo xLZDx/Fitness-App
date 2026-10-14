@@ -183,3 +183,22 @@ Focused Flutter run from `mobile/`: `scan_history_store_test.dart` (now includes
 
 ### Verification state
 Focused Flutter run from `mobile/`: `test/features/scanner` (all files, including the new one) plus `test/features/scanner_page_test.dart`: 180 passed, 7 skipped (the retired small-window geometry/golden groups), 0 failed. Not run: analyzer, full suite.
+
+## Addendum 10: scan screen review fixes, part 2 (drag rebuilds, overlay, picker states, thumbnails, touch targets, arm/disarm race)
+
+### What changed
+- Sheet drag: the sheet extent is a `ValueNotifier` (`_extent`) read only by the overlay; the notification handler no longer calls `setState`, so a drag no longer rebuilds the whole page every frame.
+- Overlay: the zoom chips and the live card (`scan-over-sheet`) are hidden while the sheet extent is above `kScanOverlayHideAbove` (0.61), where they would cover the title and the history button; they come back when the sheet is lowered. At the automatic result extent (0.6) they stay.
+- Manual picker (`manual_machine_picker.dart`): a spinner while the catalogue loads, an error line plus a Retry button (`ref.invalidate(equipmentListProvider)`) when it fails to load, and "No machine matches this search" only for a real empty search result. New l10n key `scannerManualPickerLoadFailed` (EN + RU); Retry reuses `commonRetry`.
+- Thumbnails (`machine_thumb.dart`): `cacheWidth = size x devicePixelRatio` for asset and network images, so lists no longer keep full-size poster bitmaps in the image cache.
+- Touch targets: zoom chips and OK / NOT OK marks are 44 x 44 (`kScanTouchTarget`); the chip row is wrapped in a scale-down `FittedBox` so six 44 px chips plus the label do not overflow a narrow window.
+- Lifecycle race (hypothesis CONFIRMED by reading the code): `inactive` ran `_disarm`, which awaits `zoom.reset()` before `stop()`; a `resumed` arriving in that window ran `_arm`, whose `CameraSession.start()` returned at once because `_running` was still true, and then the disarm finished the stop: foreground with the camera released and nothing to restart it. Arm and disarm now run one at a time through a queue (`_enqueueLifecycle`) and each step re-checks the last wish (`_wantArmed`): a disarm queued before a later arm is skipped, an arm queued before a later disarm is skipped, and an arm that follows a running stop starts after it. Live mode is still switched off immediately on disarm. `CameraSession` itself is unchanged.
+- Tests: `mobile/test/features/scanner/scanner_screen_review2_test.dart` (12): no page rebuilds across twelve drag frames (counted through the preview builder); overlay above the sheet and hidden on a tall sheet, back when lowered; picker spinner, load error and Retry, empty-search message; thumbnail `ResizeImage` width 104 at dpr 2 and size 52; 44 px marks and chips without overflow; resume during a held-open stop leaves the camera running with a second start; inactive+resumed in the same instant; inactive+paused still releases.
+
+### Limits
+- A disarm now waits behind an arm that is still in `start()` (for example while the system permission dialog is up), so leaving the tab during the dialog releases the camera after the dialog is answered instead of during it.
+- The tests use a fake session that mimics the real `start()` no-op while running; the real plugin was not driven.
+- Not verified on a device: touch feel of the 44 px chips, real image-cache memory with the decode size.
+
+### Verification state
+Focused Flutter run from `mobile/`: `test/features/scanner` (all files) + `test/features/scanner_page_test.dart` + `test/l10n`: 209 passed, 7 skipped (the retired small-window geometry/golden groups), 0 failed. Not run: analyzer, full suite, mutation runs.
