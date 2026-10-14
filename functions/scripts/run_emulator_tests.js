@@ -1,7 +1,7 @@
 /**
  * Runs a jest suite inside the Firebase emulators, choosing a JDK they accept.
  *
- *     node scripts/run_emulator_tests.js <jest-config> <emulators> <projectId>
+ *     node scripts/run_emulator_tests.js <jest-config> <emulators> <projectId> [jest args...]
  *
  * Two suites use it — the rules tests (`firestore`) and the account-deletion
  * e2e (`firestore,auth`). It was `run_rules_tests.js` and served only the
@@ -32,14 +32,30 @@ const { spawnSync } = require("child_process");
 const { existsSync, readdirSync } = require("fs");
 const { join, delimiter: pathSep } = require("path");
 
-const [config, emulators, projectId] = process.argv.slice(2);
+const [config, emulators, projectId, ...jestArgs] = process.argv.slice(2);
 if (!config || !emulators || !projectId) {
   console.error(
-    "\nusage: node scripts/run_emulator_tests.js <jest-config> <emulators> <projectId>\n" +
-      "   eg: node scripts/run_emulator_tests.js jest.rules.config.js firestore demo-fitness-rules\n",
+    "\nusage: node scripts/run_emulator_tests.js <jest-config> <emulators> <projectId> [jest args...]\n" +
+      "   eg: node scripts/run_emulator_tests.js jest.rules.config.js firestore demo-fitness-rules\n" +
+      "   eg: node scripts/run_emulator_tests.js jest.rules.config.js firestore,storage demo-fitness-rules " +
+      "src/__rules__/storage_rules.test.ts\n",
   );
   process.exit(1);
 }
+// TI-1: everything after the project id is forwarded to the inner jest
+// command, so a single rules file (or a `-t` filter) can run without the whole
+// suite. With no extra arguments the command is byte-for-byte what it was.
+// The inner command sits inside one double-quoted shell argument, so a
+// forwarded argument must not contain spaces or double quotes; test file paths
+// and simple `-t name` filters never do.
+if (jestArgs.some((a) => /[\s"]/.test(a))) {
+  console.error(
+    "\nForwarded jest arguments must not contain spaces or double quotes: " +
+      `${JSON.stringify(jestArgs)}\n`,
+  );
+  process.exit(1);
+}
+const forwarded = jestArgs.length ? ` ${jestArgs.join(" ")}` : "";
 
 /** Major version of the JDK at `home`, or 0 if it is not usable. */
 function majorVersion(home) {
@@ -115,7 +131,7 @@ const result = spawnSync(
   `npx --no-install firebase emulators:exec --only ${emulators} ` +
     configFlag +
     `--project ${projectId} ` +
-    `"npx jest --config ${config}"`,
+    `"npx jest --config ${config}${forwarded}"`,
   {
     shell: true,
     stdio: "inherit",
