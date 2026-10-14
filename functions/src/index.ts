@@ -1009,6 +1009,10 @@ async function removeWriteIfAccountGone(
 async function applySubscription(
   s: Stripe.Subscription,
   eventCreated?: number,
+  // Set only by the same-second tie settle: the ordering marker the tie left
+  // behind. The fresh write is applied only while the marker still has this
+  // value, so a newer event that landed during the Stripe round trip wins.
+  settleIfMarkerIs?: number,
 ) {
   const uid = s.metadata?.firebaseUid as string | undefined;
   if (!uid) {
@@ -1047,6 +1051,25 @@ async function applySubscription(
     stripeSubscriptionId: s.id,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
+
+  if (eventCreated === undefined && settleIfMarkerIs !== undefined) {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const marker = snap.data()?.lastStripeEventCreated as number | undefined;
+      if (marker !== settleIfMarkerIs) {
+        logger.info("same-second stripe tie: a newer event already applied", {
+          uid,
+          subscriptionId: s.id,
+          marker,
+          settleIfMarkerIs,
+        });
+        return;
+      }
+      tx.set(ref, payload, { merge: true });
+    });
+    await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
+    return;
+  }
 
   if (eventCreated === undefined) {
     // No clock to compare against -- an internal caller rather than the
@@ -1087,7 +1110,9 @@ async function applySubscription(
       const fresh = await (await stripeClient()).subscriptions.retrieve(s.id);
       // No event clock: written as the current truth without moving the
       // ordering marker.
-      if (fresh.id === s.id) await applySubscription(fresh);
+      if (fresh.id === s.id) {
+        await applySubscription(fresh, undefined, eventCreated);
+      }
     } catch (err) {
       // The tie-applied event stays; this is the pre-existing behaviour.
       logger.warn("same-second stripe tie: could not re-read the subscription", {

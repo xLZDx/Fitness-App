@@ -55814,3 +55814,7 @@ Evidence: reports/HARDENING_SPRINT_FINAL_2026-10-14.ru.html and .html record the
 ## 2026-10-14 - Commit: F13 follow-ups: booking sweep transaction and Stripe tie
 
 Decision: close two F13 leftovers on a follow-up branch; Stripe tie settled by re-reading the subscription. Evidence: focused Jest 34/53/43/3/56 and emulator e2e 11/11, see core/changes/2026-10-14-hardening-f13-booking-and-stripe-tie.md. Not done: Firestore shape rules, bench/rack option (product scope).
+
+## 2026-10-14 - Commit: Stripe tie settle marker guard
+
+Decision: settle write guarded by the ordering marker after a reliability review MAJOR. Evidence: focused Jest 46/53/34, see core/changes/2026-10-14-hardening-stripe-settle-marker-guard.md.

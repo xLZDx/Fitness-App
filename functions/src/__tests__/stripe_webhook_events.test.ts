@@ -729,6 +729,92 @@ describe("same-second event ties are settled by re-reading the subscription (F13
     expect(statuses).toEqual(["trial", "active", "cancelled"]);
   });
 
+  /** A `retrieve` that settles only when the test says so (a slow Stripe round trip). */
+  const deferredRetrieve = () => {
+    let resolve!: (v: unknown) => void;
+    stripeMock.subscriptions.retrieve.mockReturnValue(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
+    return resolve;
+  };
+  const untilRetrieveCalled = async () => {
+    while (stripeMock.subscriptions.retrieve.mock.calls.length === 0) {
+      await new Promise((r) => setImmediate(r));
+    }
+  };
+
+  test("the settle write goes through one transaction that re-reads the marker", async () => {
+    await seed2000();
+    const txRunner = (jest.requireMock("firebase-admin").firestore() as any).runTransaction;
+    txRunner.mockClear();
+    stripeMock.subscriptions.retrieve.mockResolvedValue(subscriptionObject("canceled"));
+
+    await deliver(subEvent(2000, "active"));
+
+    // One transaction for the tie-applied event, one for the settle.
+    expect(txRunner).toHaveBeenCalledTimes(2);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "cancelled",
+      lastStripeEventCreated: 2000,
+    });
+  });
+
+  test("a newer event applied while retrieve is in flight wins: the older fresh state is NOT written", async () => {
+    await seed2000();
+    const resolveRetrieve = deferredRetrieve();
+
+    // The tie event is delivered; its settle blocks inside `retrieve`.
+    const tie = deliver(subEvent(2000, "active"));
+    await untilRetrieveCalled();
+    expect(getRef(SUB_DOC).__read()).toMatchObject({ status: "active", lastStripeEventCreated: 2000 });
+
+    // A strictly newer event lands and is applied meanwhile.
+    const newer = await deliver(subEvent(2001, "canceled"));
+    expect(newer.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "cancelled",
+      lastStripeEventCreated: 2001,
+    });
+
+    // Stripe's (older) answer finally arrives and says "active".
+    resolveRetrieve(subscriptionObject("active"));
+    const tieRes = await tie;
+
+    expect(tieRes.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "cancelled",
+      lastStripeEventCreated: 2001,
+    });
+    const statuses = getRef(SUB_DOC).set.mock.calls.map((c: any[]) => c[0].status);
+    expect(statuses).toEqual(["trial", "active", "cancelled"]); // no later "active"
+    expect(logger.info).toHaveBeenCalledWith(
+      "same-second stripe tie: a newer event already applied",
+      expect.objectContaining({ uid: "u1", marker: 2001, settleIfMarkerIs: 2000 }),
+    );
+  });
+
+  test("when the marker is unchanged after a slow retrieve, the fresh state is written", async () => {
+    await seed2000();
+    const resolveRetrieve = deferredRetrieve();
+
+    const tie = deliver(subEvent(2000, "active"));
+    await untilRetrieveCalled();
+    resolveRetrieve(subscriptionObject("canceled"));
+    const tieRes = await tie;
+
+    expect(tieRes.status).toHaveBeenCalledWith(200);
+    expect(getRef(SUB_DOC).__read()).toMatchObject({
+      status: "cancelled",
+      lastStripeEventCreated: 2000,
+    });
+    expect(logger.info).not.toHaveBeenCalledWith(
+      "same-second stripe tie: a newer event already applied",
+      expect.anything(),
+    );
+  });
+
   test("a strictly newer event is applied without any retrieve", async () => {
     await seed2000();
     stripeMock.subscriptions.retrieve.mockResolvedValue(subscriptionObject("canceled"));
