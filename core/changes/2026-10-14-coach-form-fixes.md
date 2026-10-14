@@ -91,3 +91,58 @@ Verification (focused)
 - Updated for the new contract: generic_coach_engine_test (`.first`),
   one_cue_per_rep_test, scoring_gate_session_test, cue_text_test.
 
+## Piece 3: body-relative squat rep signal
+
+What changed
+- `lib/features/form_check/data/rep_signals.dart`: `squatBodyRelativeSignal`
+  (hip height below knee divided by the shoulder-to-hip length of the same
+  frame; each side measured alone and combined by confidence, so a side-on view
+  with only the near side visible counts), `squatBodyRelativeSideDepths` (same
+  unit, for the symmetry counter), `kSquatFullDepthSignal` (-0.20) and
+  `squatBodyRelativeConfig`: top -0.57/-0.47, bottom -0.40/-0.30 (a rep is
+  accepted at about 20 degrees off horizontal), shallow below -0.20. Derived
+  from the authored shapes (`squat.top` -0.78, `squat.bottom` +0.16 in this unit).
+  The torso, not the thigh, is the reference because the thigh foreshortens
+  front-on.
+- `lib/features/form_check/state/form_check_providers.dart`: `repSignalFor(squat)`,
+  `coachSideSignalFor(squat)` and `coachFullAmplitudeSignalFor(squat)` (amplitude
+  100% now means reaching the coach's target depth) use the new pieces. Other
+  movements are untouched (`squatDepthSignal` and `RepCounterConfig` defaults are
+  unchanged).
+- `lib/features/form_check/data/form_classifier.dart`: `SquatDepthClassifier`
+  now reads one side in the left slots (`FrameSelectingClassifier`) so a frame
+  with a hidden far leg is no longer refused before it reaches the counter.
+
+Why
+- The raw hip-minus-knee fraction changed with phone height and distance, needed
+  four joints at 0.5 and both legs visible, and used one fixed depth threshold.
+
+Not changed, on purpose
+- Counting before Start: `countingIsLiveIn` counts in every phase except
+  paused, summary and selection. Eighteen existing cases in five files drive rep
+  streams through the default phase (see the comment at
+  `lib/features/form_check/data/coach_phases.dart`), so it was left alone.
+- Front-on view: the torso reference keeps counting, but the back rule is silent
+  there (a forward fold runs toward the camera). Documented limit.
+- Shoulders are now required for counting (reference length). A squat filmed with
+  the shoulders cropped no longer counts; documented limit.
+
+Verification (focused, all run from `mobile/`)
+- New `test/features/form_check/squat_body_relative_signal_test.dart`: same squat
+  at two scales and heights counts 3/3 with the same peak (and a contrast
+  assertion that the old raw signal differs by more than 0.05); near-side-only
+  view counts; no side with three joints gives null; shallow rep (thigh 17
+  degrees) counted but flagged, deep rep not, quarter squat not counted; live
+  controller speaks shallow only for the shallow rep, round back only for the
+  folded rep, nothing for a deep upright rep from a small far body; an
+  incomplete squat with the silhouette target speaks the shallow cue.
+- Fixture updated for the new unit: `rep_rejection_test.dart` half squat.
+- Command: `flutter test` on the 45 focused files listed in the final report:
+  536 passed, 0 failed.
+
+Not verified
+- No live pose test on a device; thresholds (-0.57/-0.47/-0.40/-0.30/-0.20, lean
+  60/50 degrees, 5 frames) are PRODUCT_HEURISTIC values derived from authored
+  shapes and synthetic bodies, not measured on the operator's phone.
+- Golden images, full suite, analyzer, build: not run (policy).
+

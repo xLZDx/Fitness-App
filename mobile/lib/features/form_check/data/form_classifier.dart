@@ -182,17 +182,25 @@ abstract interface class FrameSelectingClassifier {
 /// target pose, which is what the silhouette match is being built to provide.
 /// Until it exists this rule contributes its metric to the rep record and says
 /// nothing.
-class SquatDepthClassifier implements FormClassifier {
+class SquatDepthClassifier
+    implements FormClassifier, FrameSelectingClassifier {
   @override
   String get rule => 'squat.depth';
 
+  /// One side only, in the left slots (2026-10-14). Seen side-on, the far hip and
+  /// knee are hidden behind the body and the detector only infers them, so
+  /// requiring both sides refused the frame -- and with it the rep count -- for
+  /// the very view the coach asks for. [frameFor] maps the better-visible side
+  /// into these slots.
   @override
   Set<LandmarkType> get requiredLandmarks => const {
         LandmarkType.leftHip,
-        LandmarkType.rightHip,
         LandmarkType.leftKnee,
-        LandmarkType.rightKnee,
       };
+
+  @override
+  PoseFrame frameFor(PoseFrame raw) =>
+      chooseScoringSide(raw, requiredLandmarks).frame;
 
   /// False: every arm of [evaluate] returns severity 0, deliberately.
   @override
@@ -205,17 +213,11 @@ class SquatDepthClassifier implements FormClassifier {
 
   @override
   FormFeedback? evaluate(PoseFrame frame) {
-    final lHip = frame.landmarks[LandmarkType.leftHip];
-    final rHip = frame.landmarks[LandmarkType.rightHip];
-    final lKnee = frame.landmarks[LandmarkType.leftKnee];
-    final rKnee = frame.landmarks[LandmarkType.rightKnee];
-    if (lHip == null || rHip == null || lKnee == null || rKnee == null) {
-      return null;
-    }
-    final hipY = (lHip.y + rHip.y) / 2;
-    final kneeY = (lKnee.y + rKnee.y) / 2;
+    final hip = frame.landmarks[LandmarkType.leftHip];
+    final knee = frame.landmarks[LandmarkType.leftKnee];
+    if (hip == null || knee == null) return null;
     // Image y grows downward; "below knee" means hipY > kneeY.
-    final ratio = hipY - kneeY;
+    final ratio = hip.y - knee.y;
     // Severity 0 in every arm, deliberately. The thresholds below still choose
     // WHICH observation to record, but none of them is entitled to raise an
     // alarm, because the quantity they compare is camera-dependent.

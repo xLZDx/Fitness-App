@@ -211,9 +211,10 @@ bool formCoachTeaches(FormExercise e, {CoachRegistry? registry}) =>
 /// would be hip-versus-knee height, which barely moves during a push-up —
 /// `pushupBottomTarget`'s own comment says so.
 ///
-/// The squat keeps `squatDepthSignal`; every movement added since reads a
-/// body-relative signal from `rep_signals.dart`, so its thresholds do not
-/// depend on how far the lifter stands from the phone.
+/// Every movement, the squat included since 2026-10-14
+/// (`squatBodyRelativeSignal`), reads a body-relative signal from
+/// `rep_signals.dart`, so its thresholds do not depend on how far the lifter
+/// stands from the phone.
 bool countsRepsFor(FormExercise e) {
   if (e == FormExercise.squat) return true;
   final tag = poseTagFor(e);
@@ -228,7 +229,7 @@ bool countsRepsFor(FormExercise e) {
 /// indistinguishable from a camera that cannot see the user.
 (RepSignalExtractor, RepCounterConfig)? repSignalFor(FormExercise e) {
   if (e == FormExercise.squat) {
-    return (squatDepthSignal, const RepCounterConfig());
+    return (squatBodyRelativeSignal, squatBodyRelativeConfig);
   }
   final tag = poseTagFor(e);
   return tag == null ? null : repSignalsByTag[tag];
@@ -241,9 +242,9 @@ bool countsRepsFor(FormExercise e) {
 ///
 /// Prefers a measured config from `measured_rep_configs.dart` (MM-Fit,
 /// [MeasuredRepConfig.countsReps] cleared) over the older, authored-shape
-/// [repSignalFor]. Squat is the one exception: [squatDepthSignal] stays --
-/// a measured squat config exists too, but replacing a tuned, shipped signal
-/// for no accuracy gain is not what the measurement was for.
+/// [repSignalFor]. Squat is the one exception: it keeps the torso-relative
+/// `squatBodyRelativeSignal` (a measured joint-angle squat config exists too,
+/// but it needs the ankle, which is often cropped).
 (RepSignalExtractor, RepCounterConfig)? liveRepSignalFor(FormExercise e,
     {CoachSpec? spec}) {
   if (e == FormExercise.squat) return repSignalFor(e);
@@ -263,7 +264,7 @@ bool countsRepsFor(FormExercise e) {
 /// rather than a gap — a 50/50 split printed for a movement whose legs are not
 /// moving would be a fabricated reassurance.
 RepSideSignalExtractor? coachSideSignalFor(FormExercise e) =>
-    e == FormExercise.squat ? squatSideDepths : null;
+    e == FormExercise.squat ? squatBodyRelativeSideDepths : null;
 
 /// The signal value that counts as FULL amplitude for [e], or null when this
 /// movement has no defensible answer.
@@ -274,7 +275,7 @@ RepSideSignalExtractor? coachSideSignalFor(FormExercise e) =>
 /// other movements run on carry thresholds but no statement of what their own
 /// full range is, so there is nothing here to be a percentage of.
 double? coachFullAmplitudeSignalFor(FormExercise e) =>
-    e == FormExercise.squat ? 0.0 : null;
+    e == FormExercise.squat ? kSquatFullDepthSignal : null;
 
 /// The four trainer counters, read off the last completed repetition.
 ///

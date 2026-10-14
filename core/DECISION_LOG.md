@@ -55826,3 +55826,7 @@ Decision: the operator's explicit instruction overrides the G17 removal of the t
 ## 2026-10-14 - Commit: Specific squat voice cues
 
 Decision: squat gets a fault-capable back-position rule (trunk fold proxy, hysteresis) and a shallow-depth fault on completed or incomplete reps; specific squat cues win over the generic silhouette-miss cue. No registry row exists for squat, so no registry change. Evidence: focused Flutter runs, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device; thresholds are PRODUCT_HEURISTIC.
+
+## 2026-10-14 - Commit: Body-relative squat rep signal
+
+Decision: the live squat counts on hip-below-knee in torso lengths (near-side view accepted) with a counting depth and a separate target depth; shallow reps are counted and faulted, quarter squats are not counted. Counting before Start was left as is because existing tests require it. Evidence: 536 focused Flutter tests green, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device; thresholds are PRODUCT_HEURISTIC.

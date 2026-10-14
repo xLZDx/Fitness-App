@@ -24,9 +24,9 @@ import 'unscorable_frame_test.dart' show oneSquat, squatFrame;
 /// perfect silence. Both are correct behaviour that has to be visible to be
 /// tolerable.
 
-/// Down, but not to depth, and back up. The counter's `bottomEnter` is -0.04
-/// (hips level with the knees); this bottoms out at -0.08, so the lap starts
-/// and is then thrown away as incomplete.
+/// Down, but not to depth, and back up. The squat counter's `bottomEnter` is
+/// -0.30 torso lengths (`squatBodyRelativeConfig`; torso 0.28 here); this bottoms
+/// out at -0.43, so the lap starts and is then thrown away as incomplete.
 List<PoseFrame> halfSquat(int startTs) {
   final out = <PoseFrame>[];
   var ts = startTs;
@@ -38,12 +38,12 @@ List<PoseFrame> halfSquat(int startTs) {
   }
 
   hold(0.42, 4); // standing, well above the knee: this is what arms the counter
-  for (var hipY = 0.46; hipY <= 0.64; hipY += 0.04) {
+  for (var hipY = 0.46; hipY <= 0.60; hipY += 0.04) {
     out.add(squatFrame(ts, hipY));
     ts += 100;
   }
-  hold(0.64, 3); // as low as it goes, still short of depth
-  for (var hipY = 0.60; hipY > 0.42; hipY -= 0.04) {
+  hold(0.60, 3); // as low as it goes, still short of depth
+  for (var hipY = 0.56; hipY > 0.42; hipY -= 0.04) {
     out.add(squatFrame(ts, hipY));
     ts += 100;
   }
