@@ -385,12 +385,18 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   }
 
   /// Navigates away. The route listener releases the camera on its own.
-  Future<void> _openEquipment(String id) async {
+  ///
+  /// [fromCurrentScan] is true only for a row that belongs to the scan on
+  /// screen (the locked card and the matches list). "My machines" chips and the
+  /// live card name a machine that is NOT this scan's answer, so they must not
+  /// carry its scanId: that would attach scan A's identity evidence to machine
+  /// B's equipment/exercise/workout chain.
+  Future<void> _openEquipment(String id, {bool fromCurrentScan = false}) async {
     if (!mounted) return;
     // P2.G4: forwards this scan's scanId (if any) into the 3-hop chain
     // `/equipment/:id` -> `/exercise/:id` -> `/workout/:id` -- see
     // `WorkoutPlayerPage.scanId`'s own doc comment for why.
-    final scanId = _currentScanId;
+    final scanId = fromCurrentScan ? _currentScanId : null;
     await GoRouter.of(context).push(
       scanId == null ? '/equipment/$id' : '/equipment/$id?scanId=$scanId',
     );
@@ -748,7 +754,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
               confidence: locked.confidence,
               name: equipmentDisplayName(ref, locked.equipmentId),
               subtitle: _matchSubtitle(l10n, locked.equipmentId),
-              onOpen: () => unawaited(_openEquipment(locked.equipmentId)),
+              onOpen: () => unawaited(
+                  _openEquipment(locked.equipmentId, fromCurrentScan: true)),
             ),
           ),
         ],
@@ -872,7 +879,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                       ? _Matches(
                           matches: result.matches.skip(1).toList(),
                           heading: l10n.scannerBestMatches,
-                          onOpen: _openEquipment,
+                          onOpen: (id) =>
+                              _openEquipment(id, fromCurrentScan: true),
                         )
                       : const SizedBox.shrink(),
                   // FITAPP-EQUIP-ACC-2026-09-17 (GPT-PM review, round 2):
@@ -895,7 +903,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                             picked.equipmentId,
                             picked.confidence,
                             RecognitionSource.photo);
-                        await _openEquipment(id);
+                        await _openEquipment(id, fromCurrentScan: true);
                       },
                     ),
                   // Not in the catalogue, but the describer could name it.

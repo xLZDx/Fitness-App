@@ -128,7 +128,6 @@ const Map<String, String> _kPhrases = {
   'hack squat': 'hack_squat_machine',
   'smith machine': 'smith_machine',
   'glute kickback': 'glute_kickback_machine',
-  'hip thrust': 'hip_thrust_machine',
   'preacher curl': 'preacher_curl_bench',
   'power cage': 'squat_rack',
   'squat rack': 'squat_rack',
