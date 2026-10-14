@@ -47,6 +47,7 @@ import 'widgets/scan_frame.dart';
 import 'widgets/scan_glyph.dart';
 import 'widgets/scan_match_card.dart';
 import 'widgets/scan_viewfinder.dart';
+import 'widgets/zoom_controls.dart';
 
 /// Height of the collapsed result sheet, in logical pixels: the drag handle,
 /// the primary button and the Gallery/Live row, so the shutter and both
@@ -362,6 +363,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       } catch (e) {
         debugPrint('live-mode off on disarm skipped: $e');
       }
+    }
+    try {
+      // Leaving the screen resets zoom to 1x, so the next visit does not start
+      // zoomed in. Before stop(): a released camera has nothing to reset.
+      await _session?.zoom.reset();
+    } catch (e) {
+      debugPrint('zoom reset on disarm failed: $e');
     }
     try {
       await _session?.stop();
@@ -1012,7 +1020,9 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           fit: StackFit.expand,
           children: <Widget>[
             Positioned.fill(
-              child: ScanViewfinder(
+              child: ZoomPinchLayer(
+                zoom: session.zoom,
+                child: ScanViewfinder(
                 fullBleed: true,
                 guideInsets: _guideInsets,
                   key: _viewfinderKey,
@@ -1050,6 +1060,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                   corner: kScanEvidence && _cameraFailure == null
                       ? ScanEvidenceCounter(session: session)
                       : null,
+                ),
               ),
             ),
             // The title over the camera, in the dark token set: the preview is
@@ -1073,13 +1084,26 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             // The live reading rides just above the sheet, over the preview,
             // wherever the sheet currently is: it is feedback for the user
             // aiming the camera and must not hide in a collapsed sheet.
-            if (liveOn && _cameraFailure == null)
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: navInset + _sheetExtent * sheetAvail + 8,
-                child: _LiveSection(onOpen: _openEquipment),
+            Positioned(
+              key: const Key('scan-over-sheet'),
+              left: 16,
+              right: 16,
+              bottom: navInset + _sheetExtent * sheetAvail + 8,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (liveOn && _cameraFailure == null) ...<Widget>[
+                    _LiveSection(onOpen: _openEquipment),
+                    const SizedBox(height: 8),
+                  ],
+                  // Zoom presets (0.6/1/2/3/5/10x as the device allows); the
+                  // pinch gesture over the preview is the other way in.
+                  if (_cameraFailure == null)
+                    Center(child: ZoomControls(zoom: session.zoom)),
+                ],
               ),
+            ),
             Positioned(
               // Keyed: the live overlay above comes and goes, and a positional
               // match would rebuild the sheet (and re-attach its controller).

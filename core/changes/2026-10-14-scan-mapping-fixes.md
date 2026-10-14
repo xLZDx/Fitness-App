@@ -95,3 +95,19 @@ Jest `ai_equipment_recognition.test.ts`: 22 of 22. Flutter, focused, from `mobil
 
 ### Verification state
 Focused Flutter run from `mobile/`: `scanner_page_test.dart` 55 of 55, `test/features/scanner/*` (navigation, manual pick, identity visibility, scan-id cleanup, strip overflow, frame), `machine_card_flow_test.dart`, `test/shared`, `test/l10n`: all passed, 15 tests skipped as retired (above).
+
+## Addendum 5: camera zoom presets and pinch
+
+### What changed
+- `mobile/lib/core/camera/camera_zoom.dart` (new): `CameraZoom` owns the open camera's zoom range and level. Presets are 0.6, 1, 2, 3, 5, 10x and only those inside the device's real min/max are offered; 0.6x only when the device reports a minimum of 0.6 or less (an ultra-wide lens; 0.5999 counts, 0.7 does not). Every level is clamped to the device range before it reaches the camera. A pinch produces a level per frame, so `requestLevel` keeps one call in flight and only the latest waiting level. `ZoomBackend` is the seam: the real one wraps the plugin `CameraController`, tests supply a fake with any min/max.
+- `mobile/lib/core/camera/camera_session.dart`: the session publishes the range after the camera opens (it still opens at the widest zoom, as before) and clears it on stop or a failed start; `session.zoom` is the one handle.
+- `mobile/lib/features/scanner/widgets/zoom_controls.dart` (new): a small current-zoom label plus one chip per preset, the active one highlighted, over the preview just above the sheet; `ZoomPinchLayer` adds two-finger pinch over the preview (a one-finger drag does nothing). Hidden while no camera is open, for a fixed-zoom camera, and while the camera is blocked.
+- `mobile/lib/features/scanner/scanner_page.dart`: wires both in; leaving the screen resets zoom to 1x before the camera is released.
+- Tests: `mobile/test/features/scanner/scan_zoom_test.dart` (17: presets for 0.6..10 and 1..4 devices and the 0.6 rule, clamping, reset, no camera, coalescing, chips and highlight, pinch ratio, pinch clamped at both ends, one finger ignored), `mobile/test/helpers/fake_zoom_backend.dart`, and four page tests in `scanner_page_test.dart` (presets per device on the real screen and reachable above the sheet, tap zooms, leaving resets to 1x, none when the camera is blocked).
+
+### Limits
+- Not verified on hardware: whether a given phone's plugin reports 0.6 as the minimum (the logical camera must expose the ultra-wide lens), how smooth the pinch feels, and that the picture actually changes (the fake proves the calls, not the optics).
+- The session still opens at the widest zoom the device reports (existing behaviour), so on an ultra-wide phone the first preview is at 0.6x; only leaving the screen resets to 1x as ordered.
+
+### Verification state
+Focused Flutter run: `scan_zoom_test.dart` 17/17, `scanner_page_test.dart`, `test/features/scanner/*`, `test/l10n`: all passed (7 retired skips from Addendum 4).

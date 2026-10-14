@@ -55878,3 +55878,7 @@ Decision: the incomplete-attempt fixture was re-based to the body-relative count
 ## 2026-10-14 - Commit: Full-screen scan window with a draggable result sheet
 
 Decision: the operator's real phone showed the 230px card could not fit a machine, so the Scan preview now fills the screen and all results live in a draggable sheet over it (pinned shutter, Gallery/Live and the cloud-upload disclosure; the answer scrolls below and opens by itself). The reference-card geometry/golden tests are skipped as retired by that order (not deleted); structural full-screen tests replace them. Evidence: scanner_page_test 55/55 and the neighbouring scanner suites green (15 retired skips). Unverified: device feel and bottom-nav overlap. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 4).
+
+## 2026-10-14 - Commit: Camera zoom presets and pinch on the Scan preview
+
+Decision: zoom is owned by a small `CameraZoom` behind a `ZoomBackend` seam so the device-dependent presets (0.6, 1, 2, 3, 5, 10x, only those the device really has; 0.6x only with a reported minimum of 0.6 or less) and the clamping are testable with a fake camera reporting 0.6..10 and 1..4. Pinch is coalesced (one call in flight, latest wins); leaving the screen resets to 1x. Evidence: scan_zoom_test 17/17 plus page tests green. Unverified: real devices. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 5).

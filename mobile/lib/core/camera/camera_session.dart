@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../debug/g3_step10b_probe.dart';
 import 'camera_availability.dart';
+import 'camera_zoom.dart';
 import 'frame_brightness.dart';
 import 'nv21_converter.dart';
 
@@ -36,6 +37,10 @@ class CameraSession {
   })  : _requested = facing,
         _facing = ValueNotifier<SessionFacing>(facing),
         _permissions = permissions;
+
+  /// Zoom range and level of the open camera, with the presets and clamping
+  /// (`camera_zoom.dart`). Empty (null state) while no camera is open.
+  final CameraZoom zoom = CameraZoom();
 
   /// Which camera the caller asked for. Not necessarily the one that opened —
   /// see [facing].
@@ -296,12 +301,19 @@ class CameraSession {
     // to the ultrawide lens this is the 0.6x the operator asked for; the
     // default 1.0x could not fit a machine standing two steps away. Devices
     // report their own floor, so this can never zoom past what exists.
+    var startZoom = 1.0;
     try {
       final minZoom = await _camera!.getMinZoomLevel();
-      if (minZoom < 1.0) await _camera!.setZoomLevel(minZoom);
+      if (minZoom < 1.0) {
+        await _camera!.setZoomLevel(minZoom);
+        startZoom = minZoom;
+      }
     } catch (e) {
       debugPrint('min-zoom unavailable, staying at default: $e');
     }
+    // Publishes the real range so the Scan screen can offer exactly the
+    // presets this device has (0.6x only with an ultra-wide lens).
+    await zoom.attach(_CameraControllerZoom(_camera!), initial: startZoom);
     _running = true;
     // Published only after initialize(): an uninitialized controller cannot be
     // handed to CameraPreview.
@@ -334,6 +346,7 @@ class CameraSession {
   /// for a second, invented reason.
   Future<void> _releaseAfterFailedStart() async {
     _running = false;
+    zoom.detach();
     _watchdog?.cancel();
     _watchdog = null;
     _surface.value = null;
@@ -509,6 +522,7 @@ class CameraSession {
     _watchdog?.cancel();
     _watchdog = null;
     _lastFrameAt = null;
+    zoom.detach();
     // Cleared before disposal so no listener is handed a dead controller.
     _surface.value = null;
     try {
@@ -531,4 +545,21 @@ class CameraSession {
     _selfStopped.dispose();
     await _frames.close();
   }
+}
+
+
+/// [ZoomBackend] over the real plugin controller.
+class _CameraControllerZoom implements ZoomBackend {
+  _CameraControllerZoom(this._camera);
+
+  final CameraController _camera;
+
+  @override
+  Future<double> minZoom() => _camera.getMinZoomLevel();
+
+  @override
+  Future<double> maxZoom() => _camera.getMaxZoomLevel();
+
+  @override
+  Future<void> setZoom(double level) => _camera.setZoomLevel(level);
 }

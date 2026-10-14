@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
+import '../helpers/fake_zoom_backend.dart';
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/camera/camera_availability.dart';
 import 'package:fitness_app/core/camera/camera_session.dart';
@@ -604,6 +605,78 @@ void main() {
           reason: 'Scan again returns to the shutter strip');
       expect(container.read(visualEquipmentControllerProvider).requireValue.outcome,
           ScanOutcome.noEquipment);
+    });
+
+    testWidgets('zoom presets follow the camera: an ultra-wide phone shows 0.6x, '
+        'a 1..4x phone does not show 5x or 10x', (tester) async {
+      final wide = _SpySession();
+      await wide.zoom.attach(FakeZoomBackend(0.6, 10));
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(wide)]);
+      for (final k in ['0.6', '1', '2', '3', '5', '10']) {
+        expect(find.byKey(Key('scan-zoom-$k')), findsOneWidget, reason: k);
+      }
+      expect(find.byKey(const Key('scan-zoom-label')), findsOneWidget);
+      // Reachable: above the collapsed sheet, inside the screen.
+      final Rect chips = tester.getRect(find.byKey(const Key('scan-zoom-1')));
+      final Rect sheet = tester.getRect(find.byKey(const Key('scan-sheet-surface')));
+      expect(chips.bottom, lessThanOrEqualTo(sheet.top));
+      expect(chips.top, greaterThan(0));
+
+      final narrow = _SpySession();
+      await narrow.zoom.attach(FakeZoomBackend(1, 4));
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(narrow)]);
+      await tester.pump();
+      expect(find.byKey(const Key('scan-zoom-0.6')), findsNothing);
+      expect(find.byKey(const Key('scan-zoom-5')), findsNothing);
+      expect(find.byKey(const Key('scan-zoom-10')), findsNothing);
+      expect(find.byKey(const Key('scan-zoom-3')), findsOneWidget);
+    });
+
+    testWidgets('tapping a preset on the Scan screen zooms the camera',
+        (tester) async {
+      final spy = _SpySession();
+      final backend = FakeZoomBackend(0.6, 10);
+      await spy.zoom.attach(backend);
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(spy)]);
+      await tester.tap(find.byKey(const Key('scan-zoom-5')));
+      await tester.pump();
+      await tester.pump();
+      expect(backend.requested, [5.0]);
+      expect(spy.zoom.state.value!.current, 5.0);
+    });
+
+    testWidgets('leaving the screen resets zoom to 1x', (tester) async {
+      final spy = _SpySession();
+      final backend = FakeZoomBackend(0.6, 10);
+      await spy.zoom.attach(backend);
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(spy)]);
+      await tester.tap(find.byKey(const Key('scan-zoom-3')));
+      await tester.pump();
+      await tester.pump();
+      expect(backend.requested.last, 3.0);
+
+      GoRouter.of(tester.element(find.byType(ScannerPage)))
+          .go('/equipment/leg_press');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(backend.requested.last, 1.0,
+          reason: 'the next visit must not start zoomed in');
+    });
+
+    testWidgets('no zoom controls while the camera is unavailable',
+        (tester) async {
+      final failing = _FailingSession(CameraUnavailableReason.noCamera);
+      // Even with a stale range published, a blocked camera shows no zoom.
+      await failing.zoom.attach(FakeZoomBackend(0.6, 10));
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(failing)]);
+      await tester.pump();
+      expect(find.byKey(const Key('scan-camera-unavailable')), findsOneWidget);
+      expect(find.byKey(const Key('scan-zoom-label')), findsNothing);
     });
 
     testWidgets('the hint says RECOGNISING while a capture is classified',
