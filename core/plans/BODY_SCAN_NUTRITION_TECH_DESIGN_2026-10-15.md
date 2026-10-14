@@ -122,7 +122,7 @@ The operator moved AI meal scanning (photo, describe, search), barcode and nutri
 
 ## 3. Behaviour notes from the reference material (clean-room)
 
-Derived from the operator's description of the two recordings in the brief (frame-by-frame re-inspection of `scratchpad/ref1` and `ref2` was NOT repeated during authoring - **TODO for product-ux-reviewer: confirm against frames**). Behaviour only; every string, layout and visual is our own.
+The two recordings WERE reviewed frame by frame after the first draft; the sanitised, our-words result is `core/plans/BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md` (flows, state machines, numbers with OBSERVED/INFERRED tags, formula arithmetic, UX ideas, unclear items). That file is the evidence base for the summary below and for the reconciliation table in section 29. Behaviour only; every string, layout and visual is our own. Reference values come from one test account and are never treated as validated constants; our safety clamps (13.6) win over every reference value.
 
 Weekly scan flow:
 1. Intro screen: consistent clothing, lighting and distance week to week; three guided poses; photos private; about one minute.
@@ -135,7 +135,9 @@ Weekly scan flow:
 
 Nutrition and diary behaviour: daily energy ring with remaining amount, macro bars; add-food via photo, barcode, label, describe, search; uncertainty chips ("check these") instead of silent guesses; diary by meal slot; plan tab with an editable calorie RANGE, protein minimum, steps goal, ownership (coach / shared / manual), per-metric auto-adjust toggle and a weekly review explanation; profile reminder (weekly, default Sunday morning); data-sources and privacy pages (photos face-blurred, retention control, deletion).
 
-What we deliberately do NOT copy: the "exercise credit" added to the calorie budget (D-29), any generative preview, any wording or iconography.
+Additional confirmed behaviours: the headline is the TREND, raw readings are dots; the pre-scan weight sheet appears when the latest weight is not from today; the meal review page asks model-raised questions as chips and shows per-item confidence; a scan cooldown of 7 days is explained in help; the reference's analysis timing hint was shorter than the real latency (design in 10 and 17.3: honest timing UI).
+
+What we deliberately do NOT copy: the "exercise credit" added to the calorie budget (D-29), any generative preview, any wording or iconography, the unreproduced calorie base value (we use our own documented formula, 13.2), numeric confidence percentages, and the day-6 review opening (we use day 7, D-40).
 
 ## 4. Architecture and module layout
 
@@ -444,6 +446,8 @@ Persistence: `ScanRecord` v2 adds `analysis: { status: queued|uploading|analysin
 
 Offline queue: the queue IS the set of `ScanRecord`s with non-terminal `analysis`. The runner (`body_scan_job_runner.dart`) runs on app foreground, on connectivity regain (`connectivity_plus` VERIFY in pubspec; else a retry timer), and when the user opens Progress; never in a background isolate (iOS parity: no background execution is assumed). Concurrency: one scan at a time; a second scan taken while one is queued is queued behind it.
 
+Honest timing UI (D-41): the reference promised nothing for the scan but its meal hint (5-15 s) was shorter than the real 16-20 s, and its scan bar sat on a plateau while the longest stage ran. Ours: show only elapsed time and the current real stage; the estimate stage uses an indeterminate indicator, never a percentage; pure stages (plausibility, trend) tick instantly and are never given artificial delay; no promised duration for the analysis, only for the guided capture ("about 20 seconds"); after 20 s the screen adds "taking longer than usual" with Cancel and keep-waiting; at the 25 s function timeout it offers Retry (and, for meals, manual entry).
+
 Stage UI mapping (section 3 stage names are ours): `Photos secured` (upload done, or "kept on this device" when the provider needs no photos), `Body composition` (estimate call), `Plausibility check` (pure), `Trend verification` (pure), `Result saved` (doc visible), with elapsed time and a Cancel button; each stage is a live-region announcement.
 
 ## 11. Live capture checks and gating
@@ -464,9 +468,13 @@ All in `body_scan/data/` (pure Dart).
 
 **12.4 Plausibility and trend verification (client, pure).** `estimateOutOfRange` (value outside [3, 60]) -> reject display and keep the scan unresolved with a retry; `estimateFarFromProfile` (`|v - deurenberg(profile)| > 12`) -> keep, confidence one level lower, chip; `weightJump` (recorded weight differs from the previous scan by > 3 kg within 7 days) -> chip "check your weight"; `wideRange` (`hw > 4`) -> confidence `low`; `largeJumpVsTrend` (`|v_t - S_{t-1}| > max(4.0, 2.5 * hw_t)`) -> chip, and the smoothing update uses the winsorised input below (the raw dot is still plotted and marked).
 
-**12.5 Smoothing (exact).** Irregular-interval exponential smoothing: `S_0 = x_0`; `S_t = S_{t-1} + alpha_t * (x'_t - S_{t-1})`, `alpha_t = 1 - exp(-dDays / tau)`, `dDays = clamp(days since previous reading, 0.5, 28)`, `x'_t = clamp(x_t, S_{t-1} - 4.0, S_{t-1} + 4.0)` (winsorised for body fat only). Parameters: `tau_bf = 21 days` (weekly scans give `alpha ~ 0.28`, memory about 3-4 scans, damps +-1-2 point noise without hiding a real 4-8 week change); `tau_weight = 7 days` (daily weigh-ins give `alpha ~ 0.13`). Rationale for not using Holt's linear method: with 6-12 noisy points it over-shoots and invents a trend; a robust slope is computed separately: **weight slope** = `7 * median over pairs (i<j, dDays >= 2) of (w_j - w_i) / (d_j - d_i)` (Theil-Sen) on the raw entries of the last 21 days, requiring >= 3 entries spanning >= 7 days, else `null` ("not enough data"). Chart: last 12 scans, dots = raw readings with range whiskers, line = `S_t`; legend states that dots are single noisy readings and the line is the smoothed trend; a data table is provided as the accessible alternative.
+**12.5 Smoothing (exact).** Irregular-interval exponential smoothing: `S_0 = x_0`; `S_t = S_{t-1} + alpha_t * (x'_t - S_{t-1})`, `alpha_t = max(1 - exp(-dDays / tau), 1 / n_t)` for body fat only (`n_t` = number of readings including the new one: the first readings are weighted as a running mean, so the second reading gets 0.5, the third 0.33, then the exponential rule takes over; D-37; `warmupMean` is a config flag), `dDays = clamp(days since previous reading, 0.5, 28)`, `x'_t = clamp(x_t, S_{t-1} - 4.0, S_{t-1} + 4.0)` (winsorised for body fat only). Parameters: `tau_bf = 21 days` (weekly scans give `alpha ~ 0.28`, memory about 3-4 scans, damps +-1-2 point noise without hiding a real 4-8 week change); `tau_weight = 7 days` (daily weigh-ins give `alpha ~ 0.13`). Rationale for not using Holt's linear method: with 6-12 noisy points it over-shoots and invents a trend; a robust slope is computed separately: **weight slope** = `7 * median over pairs (i<j, dDays >= 2) of (w_j - w_i) / (d_j - d_i)` (Theil-Sen) on the raw entries of the last 21 days, requiring >= 3 entries spanning >= 7 days, else `null` ("not enough data"). Chart: last 12 scans, dots = raw readings with range whiskers, line = `S_t`; legend states that dots are single noisy readings and the line is the smoothed trend; a data table is provided as the accessible alternative.
+
+**12.5a Trend interval (D-37).** The displayed trend range is `S_t +- hwTrend`, `hwTrend = hwMean * max(trendIntervalFloor, n_eff^-0.5)` with `trendIntervalFloor = 0.85` (config), `hwMean` = the mean of the readings' half-widths over the EWMA window and `n_eff = (sum w_i)^2 / sum w_i^2` over the EWMA weights. Shown only from the third reading; before that the single reading's own range is shown. Floor rationale: readings from one model share systematic error, so averaging cannot shrink the range below 85 % of a single reading. We never narrow a provider's per-reading range ourselves.
 
 **12.6 Goal progress.** `pointsToGoal = S_t - targetBodyFatPct` (null when no BF target; then weight-based progress `weightTargetKg` is shown). Start value = baseline scan's raw value.
+
+**12.6a Goal weight and ETA (D-38).** With a body-fat target: `goalWeight = LM / (1 - target/100)` where `LM = W * (1 - S_t/100)` (lean mass assumed constant; real loss usually costs some lean mass, so this is optimistic), `toLoseKg = W - goalWeight`, `weeks = toLoseKg / kgPerWeek` using the plan pace AFTER every clamp. Guards: `goalWeight` must satisfy BMI >= 18.5 (else `targetBelowHealthyRange`), and the target body fat is clamped to 10-40 % male / 16-40 % female and unspecified (13.6). The date is shown as a range (`weeks * 0.8` to `weeks * 1.3`) labelled "if the pace holds"; with the provisional estimator (half-width 5) the ETA is not shown, only the weekly pace. Checked against the reference arithmetic: 65.83 / 0.84 = 78.36 kg, 17.04 kg to lose, 29.9 weeks at 0.57 kg/wk (notes file section 4).
 
 **12.7 Closed check-item codes (`CheckCode`, l10n keyed, mapped to actions):** `provisionalEstimator`, `manualCapture`, `poorLighting`, `partialBody`, `looseClothing`, `poseMismatch`, `weightMissing`, `weightStale` (> 7 days), `weightJump`, `wideRange`, `estimateFarFromProfile`, `largeJumpVsTrend`, `blurUnavailable`. Free text from any provider is never displayed (closed set keeps it translatable and removes a prompt-injection surface).
 
@@ -492,7 +500,7 @@ Weekly pace as % of bodyweight [OWN, within PUB ranges: public-health guidance o
 |---|---|---|---|
 | lose, BMI < 25 | 0.50 %/wk | 0.75 %/wk | 0.5 kg/wk |
 | lose, 25 <= BMI < 30 | 0.75 %/wk | 1.00 %/wk | 1.0 kg/wk |
-| lose, BMI >= 30 | 1.00 %/wk | 1.00 %/wk | 1.0 kg/wk |
+| lose, BMI >= 30 | 0.75 %/wk | 1.00 %/wk | 1.0 kg/wk |
 | gain muscle | 0.25 %/wk | 0.50 %/wk | 0.5 kg/wk |
 | maintain | 0 | 0 | - |
 
@@ -501,7 +509,8 @@ Weekly pace as % of bodyweight [OWN, within PUB ranges: public-health guidance o
 - lose: `deficit = min(dailyDelta, 0.25 * TDEE, TDEE - floor)`; `target = TDEE - deficit` [0.25 cap OWN].
 - gain: `surplus = clamp(dailyDelta, 100, min(500, 0.15 * TDEE))`; `target = TDEE + surplus` [OWN].
 - maintain: `target = TDEE`.
-- Calorie RANGE [OWN]: `low = round10(target - 150)`, `high = round10(target + 150)`; then lose: `high <= TDEE`, gain: `low >= TDEE`; always `low >= floor`.
+- Calorie RANGE [OWN; asymmetric for lose after reconciliation with the reference, D-39]: lose: `low = round10(target - 200)`, `high = round10(target + 100)`; maintain and gain: `low = round10(target - 150)`, `high = round10(target + 150)`; then lose: `high <= TDEE`, gain: `low >= TDEE`; always `low >= floor` (raise `low` to the floor, never lower the floor); width stays within 100-400. Rationale: for a deficit goal, overshooting costs more than undershooting; the floor still bounds the low side.
+- Default-rate note: the BMI >= 30 default is 0.75 %/wk (the reference default was about 0.6 %/wk with a 0.8 % cap, a ratio of 0.75; ours is 0.75 default / 1.0 max). The 25 % TDEE deficit cap usually binds first for heavy users (illustrative profile 95.4 kg, 170 cm, 30 y male: TDEE about 2,573, cap 643 kcal/day, about 0.58 kg/wk, close to the reference's 0.57 by coincidence, not by design).
 - Slider BOUNDS [OWN]: lose `[max(floor, TDEE - maxDeficit), TDEE]` with `maxDeficit = min(0.25*TDEE, maxRateKg*7700/7)`; maintain `[max(floor, TDEE - 300), TDEE + 300]`; gain `[TDEE, TDEE + min(500, 0.15*TDEE)]`. The user range width is clamped to `[100, 400]` kcal and must lie inside the bounds; the editor never produces a value outside them and the same function re-validates on every load and before every write.
 - Calorie floor [OWN, informed by widely used consumer minimums of about 1,200 kcal for women and 1,500 kcal for men without medical supervision]: `floor = max(absFloor, round(BMR))`, `absFloor = 1,200` female, `1,500` male and unspecified. Because `TDEE >= 1.2 * BMR >= floor + 0.2*BMR`, the slider interval is never empty.
 - BMI guards: `BMI < 18.5` -> `goalDirection = lose` is refused and coerced to `maintain` with message `underweightNoDeficit`; `18.5 <= BMI < 20` -> deficit allowed only at the `BMI < 25` row's rate capped at 0.25 %/wk; target weight whose BMI < 18.5 is rejected (`targetBelowHealthyRange`).
@@ -513,7 +522,9 @@ Weekly pace as % of bodyweight [OWN, within PUB ranges: public-health guidance o
 - Protein per kg of `Wref` [PUB: ISSN position stand, Jager et al. 2017, J Int Soc Sports Nutr 14:20: 1.4-2.0 g/kg for active adults; Morton et al. 2018, Br J Sports Med 52:376: benefit plateaus near 1.6 g/kg, upper 95% CI 2.2; RDA 0.8 g/kg as the absolute lower bound]: **minimum** 1.4 maintain, 1.6 lose/gain [OWN choice inside the range]; **target** 1.6 maintain, 2.0 lose, 1.8 gain [OWN]; **maximum** 2.2 [PUB upper CI], also `<= 220 g` and `<= 40 %` of `kcalMid` [OWN]. The "protein minimum" shown to the user is the minimum.
 - Fat [PUB: acceptable macronutrient distribution range 20-35 % of energy, IOM 2005 DRI report]: `fatMin = max(0.6 * Wref, 0.20 * kcalMid / 9)` g, `fatMax = 0.35 * kcalMid / 9` g [0.6 g/kg OWN].
 - Carbohydrate: `carbMax = (kcalHigh - 4*proteinMin - 9*fatMin) / 4`, `carbMin = max(100, (kcalLow - 4*proteinMax - 9*fatMax) / 4)` [100 g OWN], clamped so `carbMin <= carbMax`. Point targets for the plan header: protein target above, fat 25 % of `kcalMid` (bounded by min/max), carbs the remainder; if remainder < 100 g, fat moves toward `fatMin`, then protein toward its minimum, and the plan is flagged `lowCarbBySafety`. Macro intervals are independent bounds, not additive; the UI states this.
-- Display rounding: kcal to 10, grams to 1. A high-protein advisory line ("very high protein intake is not suitable for everyone; talk to a professional if you have a kidney condition") is shown with the protein card - generic, no inference from stored health text (the free-text health fields are never read, `health_flags.dart` ruling).
+- Lean-mass protein variant (D-42, reconciliation): when a non-provisional body-fat trend with confidence >= medium exists, `proteinTarget = clamp(2.2 * LM, proteinMin, proteinMax)` replaces the body-weight target (the reference showed 2.2 g per kg lean mass = 145 g for 65.8 kg lean); with the provisional estimator or low confidence the body-weight rule above applies. The clamp makes the min/max (and the 220 g and 40 % caps) win. The reference's fat rule (about 1 g per kg lean, 33 % of kcal) is NOT adopted: our fat point target stays 25 % of `kcalMid` inside 20-35 %.
+- Point-target rounding for display: protein target rounds UP to 5 g (never below `minG`), carbs round to nearest 5 g (never below the 100 g floor), fat to 1 g; the kcal implied by 4/4/9 is allowed to differ from `kcalMid` by up to 5 % because of this rounding. Bounds are not rounded.
+- Display rounding: kcal to 10, grams to 1 (bounds), see above for point targets. A high-protein advisory line ("very high protein intake is not suitable for everyone; talk to a professional if you have a kidney condition") is shown with the protein card - generic, no inference from stored health text (the free-text health fields are never read, `health_flags.dart` ruling).
 
 ### 13.5 Steps goal
 
@@ -537,6 +548,7 @@ Weekly pace as % of bodyweight [OWN, within PUB ranges: public-health guidance o
 | Steps goal (computed) | 6,000-12,000 | [OWN] |
 | Review kcal step | +-150 kcal, cooldown 14 days, cumulative drift +-400 kcal | [OWN] |
 | Range width | 100-400 kcal | [OWN] |
+| Target body fat (when set) | 10-40 % male, 16-40 % female and unspecified; resulting goal weight BMI >= 18.5 | [OWN] (the reference slider reached 6 %, not adopted) |
 
 ## 14. Exclusions and the neutral "talk to a professional" behaviour
 
@@ -648,7 +660,7 @@ Decision D-28: **label text is read by Gemini vision on the server, not by ML Ki
 
 ### 17.7 Day totals and honesty
 
-Per item `Range{low, mid, high}`. Day total: `mid = sum(mid)`; asymmetric half-widths combined by root-sum-square, `loSpread = sqrt(sum((mid_i - low_i)^2))`, `hiSpread = sqrt(sum((high_i - mid_i)^2))` [OWN: assumes independent errors, so the total is not absurdly wide; stated as "likely range"]. Targets: kcal status `below | within | above` the plan range using `mid`; "remaining" is shown against the top of the range; protein "minimum reached" tick; neutral colours and neutral wording for exceeding the range (no red, no "over budget", no "burn it off"). Per-meal targets (17.8) are a share of the day: `mealsPerDay` split with fixed weights [OWN] (3 meals: 30 % / 35 % / 35 %; with snacks the remainder is spread evenly), shown as ranges.
+Per item `Range{low, mid, high}`. Day total: `mid = sum(mid)`; asymmetric half-widths combined by root-sum-square, `loSpread = sqrt(sum((mid_i - low_i)^2))`, `hiSpread = sqrt(sum((high_i - mid_i)^2))` [OWN: assumes independent errors, so the total is not absurdly wide; stated as "likely range"]. Targets: kcal status `below | within | above` the plan range using `mid`; "remaining" is shown against the top of the range; protein "minimum reached" tick; neutral colours and neutral wording for exceeding the range (no red, no "over budget", no "burn it off"). Below the range (D-39a): `belowRangeBy = max(0, low - mid)` (the reference computed the same way: lower bound minus intake); during the current day it is shown only as neutral "to reach the lower end of your range" (the reference showed "under range" at 14:00, which reads as a failure); a closed past day may state "below range". No exercise credit enters any of these numbers (D-29); a per-day exercise figure from the health source, if shown, is informational only. Energy sanity for per-100 g food data is `|kcal - (4P + 4C + 9F)| <= max(25 % of kcal, 10 kcal)`: the reference's own porridge result was 5 % off Atwater (fibre, rounding), so small gaps must not raise `dataInconsistent`, while a 25 %+ gap does. Per-meal targets (17.8) are a share of the day: `mealsPerDay` split with fixed weights [OWN] (3 meals: 30 % / 35 % / 35 %; with snacks the remainder is spread evenly), shown as ranges.
 
 ### 17.8 Food guidance without a meal-planner pillar
 
@@ -764,7 +776,7 @@ Meal planner/recipes, restaurant menus, supplement tracking, imperial units, wea
 
 ### 26.2 Open questions for the operator
 
-Q-1 which real body-composition provider (or "stay provisional"); Q-2 tier gating per feature (section 22); Q-3 confirm the default photo retention "delete after analysis" (D-17); Q-4 contact string for the Open Food Facts `User-Agent` and registration of a free USDA FoodData Central API key stored as a secret; Q-5 provisioning of the private bucket and IAM (6.3) and the secret accessor grant; Q-6 Vertex AI data-retention posture to state on the privacy page; Q-7 minimum age 18 for nutrition (D-9) - confirm; Q-8 imperial units in this sprint or later; Q-9 source of Russian food names (own translation vs none); Q-10 `public/privacy.html` wording owner; Q-11 product-ux-reviewer to confirm section 3 against the reference frames (not re-inspected while authoring).
+Q-1 which real body-composition provider (or "stay provisional"); Q-2 tier gating per feature (section 22); Q-3 confirm the default photo retention "delete after analysis" (D-17); Q-4 contact string for the Open Food Facts `User-Agent` and registration of a free USDA FoodData Central API key stored as a secret; Q-5 provisioning of the private bucket and IAM (6.3) and the secret accessor grant; Q-6 Vertex AI data-retention posture to state on the privacy page; Q-7 minimum age 18 for nutrition (D-9) - confirm; Q-8 imperial units in this sprint or later; Q-9 source of Russian food names (own translation vs none); Q-10 `public/privacy.html` wording owner; Q-11 (closed): the reference frames were reviewed after the first draft; see the behaviour notes file and section 29.1.
 
 ## 27. Decisions (copy into `core/DECISION_LOG.md`)
 
@@ -806,6 +818,15 @@ Q-1 which real body-composition provider (or "stay provisional"); Q-2 tier gatin
 | D-34 | Sport-agnostic activity model, `DeviceSource` interfaces and pure merge/dedup this sprint, no sport UI (section 31) | foundation |
 | D-35 | Reverse engineering of proprietary apps is refused; competitive study uses only public docs, store listings, official APIs/SDK docs, published research and ordinary observation | legality, clean-room |
 | D-36 | Priority Phase 2 backlog lives in `core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md` | one place |
+| D-37 | Smoothing amends D-18: body-fat `alpha = max(1 - exp(-dDays/tau), 1/n)` (running mean for the first readings, 0.5 on the second), configurable; trend interval `hwMean * max(0.85, n_eff^-0.5)` from the third reading, per-reading ranges never narrowed by us (12.5, 12.5a) | one reference data pair is consistent with 0.5 but does not pin it; avoid anchoring on a noisy baseline |
+| D-38 | Goal weight = lean / (1 - target bf), ETA = to-lose / clamped pace, shown as a range and hidden for the provisional estimator; target bf clamp 10-40 % male, 16-40 % female/unspecified; BMI >= 30 default loss rate 0.75 %/wk (12.6a, 13.3, 13.6) | reference arithmetic confirmed; reference 6 % target and 0.56 kg/wk cap exceed our clamps |
+| D-39 | Loss range is target -200 / +100 (maintain/gain +-150); below-range shown neutrally, not mid-day; Atwater tolerance `max(25 %, 10 kcal)` (13.3, 17.7) | reference asymmetry has a safety rationale; clamps unchanged |
+| D-40 | Scan cadence: next scan recommended on day 7, extra scans allowed (not hard-locked); first weekly review on day 7 | trend math handles irregular spacing; our review needs a 7-day span |
+| D-41 | Honest timing UI: elapsed time and real stages, indeterminate indicator, no promised analysis duration, "taking longer" at 20 s, retry at the 25 s timeout (section 10) | reference hint understated real latency; plateau bar misleads |
+| D-42 | Protein: lean-mass variant (2.2 g/kg lean, clamped) when a non-provisional confident body-fat trend exists; point targets rounded to 5 g (protein up, carbs nearest); fat rule stays 25 % kcal | reference 2.2 g/kg lean confirmed; clamps win |
+| D-43 | Meal review shows confidence LEVELS (high/medium/low) per entry and item, not percentages; meal slot defaults by local time: breakfast 05:00-10:29, lunch 10:30-14:59, snack 15:00-16:59, dinner 17:00-21:29, snack 21:30-04:59 (user can change) | percentages imply unvalidated precision |
+| D-44 | Health source read-only, only scopes a shipped feature uses, copy names every scope; reminders: weekly scan Sunday 08:00 on, daily scan off, weight reminder opt-in (default off), no lunch nudge | reference asked for sleep while its copy did not say so; avoid notification fatigue |
+| D-45 | Reference values are inputs, never constants: every one is reconciled in 29.1; clamps win; the reference calorie base and the exercise credit are not used | clean-room and safety |
 
 ## 28. Requirement-to-test seeds
 
@@ -831,12 +852,12 @@ Focused tests only, authored and run by the functional/e2e agents after coding (
 
 ## 29. Numeric parameter provenance
 
-Legend: **OBS** = observed in the operator's reference recordings as described in the brief (frames were not re-inspected while authoring; product-ux-reviewer to confirm, Q-11), **PUB** = published formula or guideline, **OWN** = our own choice, **TECH** = existing repo value.
+Legend: **OBS** = observed in the operator's reference recordings (frames reviewed; see `BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md`; one test account, never a validated constant), **PUB** = published formula or guideline, **OWN** = our own choice, **TECH** = existing repo value.
 
 | Parameter | Value | Tag | Source / note |
 |---|---|---|---|
 | Poses per scan | 3 (front, side, back) | OBS | brief; TECH `ScanPose` |
-| Scan duration promise | about 60 s | OBS | copy is ours |
+| Scan duration promise | guided capture only, about 20 s; no promise for the analysis | OWN | reference promised about 60 s and took 55-60 s end to end (capture 14-16 s, upload about 6 s, estimate 16-18 s) |
 | Countdown | 3-2-1 | OBS + TECH | `AutoShutterConfig` |
 | Readiness hold before countdown | 1000 ms | TECH | `AutoShutterConfig.holdMs` |
 | Live checks | distance, lighting, position (+ pose) | OBS + TECH | |
@@ -883,6 +904,50 @@ Legend: **OBS** = observed in the operator's reference recordings as described i
 | OFF limits | 15/min reads, 10/min search | FINDINGS (documented by OFF) | |
 | USDA limits | DEMO_KEY 30/h and 50/d; registered about 1,000/h | FINDINGS | |
 | Cache TTLs | 30 d product, 1 d negative, 7 d search | OWN | |
+
+### 29.1 Reconciliation with the reference catalogue (adopted values and their sources)
+
+Disposition: **AS-IS** adopted unchanged, **MOD** adopted with our modification, **REJ** rejected. Rule: every adopted value stays inside our clamps (13.6); a clamp always wins over a reference value.
+
+| Reference value (OBS/INFERRED) | Disposition | Our value and why | Clamp interaction |
+|---|---|---|---|
+| fat mass = W x bf; lean = W - fat; points to go = trend - goal (confirmed arithmetic) | AS-IS | 12.1, 12.6 identical | none |
+| goal weight = lean / (1 - target bf); ETA = fat to lose / pace (95.4 kg: 78.36 kg, 17.04 kg, 29.9 wk = 7 May 2027 confirmed) | MOD | 12.6a: shown as a range, hidden for the provisional estimator, uses the pace after clamps | target bf 10-40 / 16-40 %, goal BMI >= 18.5 (reference slider reached 6 %: REJ) |
+| pace cap about 0.8 % BW/wk (0.56 kg at 70 kg); plan pace 0.57 kg = 0.6 % (95.4 kg) | MOD | table in 13.3: BMI >= 30 default lowered to 0.75 %/wk (default/max ratio 0.75 like the reference); caps stay 0.5-1.0 kg/wk | **CONFLICT:** 0.56 kg/wk at 70 kg (BMI 24) exceeds our absolute cap 0.5 kg/wk; ours wins, UI shows 0.5 |
+| plan range = target -200 / +100 | MOD | lose only (D-39); maintain/gain stay +-150 | floor raises `low`; width 100-400; `high <= TDEE` |
+| day target = base + exercise credit (1,760 + 640) | REJ | D-29 stands: active-calorie figures over-state and the credit can push intake above the deficit cap | n/a (a credit could breach the 25 % deficit cap) |
+| implied TDEE factor 1.275 x Mifflin-St Jeor, base 1,760 | REJ | not reproduced by any standard formula; our documented 13.2 formula is used | n/a |
+| "under range" = lower bound - intake (2,200 - 407 = 1,793) | MOD | same formula, neutral wording, not while the day is open (17.7) | n/a |
+| protein 2.2 g/kg lean (145 g at 65.8 kg lean) | MOD | D-42: used when a non-provisional confident body-fat trend exists, clamped | min/max/220 g/40 % kcal win; for the reference profile (BMI 33, `Wref` 86.7 kg) our band is 139-190 g, so 145 is inside |
+| fat about 1 g/kg lean (65 g), carbs = remainder rounded to 5 g (145 g) | MOD | fat stays 25 % kcal inside 20-35 %; point targets rounded to 5 g (protein up, carbs nearest) | carbs >= 100 g, fat >= 0.6 g/kg |
+| Atwater 4/4/9: 406.3 vs 407; porridge 148 vs 156 (5 %) | MOD | tolerance `max(25 %, 10 kcal)` (17.7); >25 % flagged `dataInconsistent`; small gaps are normal | n/a |
+| steps goal = reported average; bands 5k-8k, over 10k | REJ (value), AS-IS (principle) | 13.5 keeps `roundTo500(base + 1,000)` in 6,000-12,000 (a goal equal to the current mean is missed about half the time); TDEE steps bands stay 5,000 / 7,500 / 10,000 | steps clamp 6,000-12,000 |
+| steps goal adjusted weekly by toggle | AS-IS | D-24, +1,000 per review, never reduced | clamp |
+| trend smoothing: new reading weight about 0.5 (one pair, admissible 0.25-0.75, NOT pinned) | MOD | D-37: `alpha = max(1 - exp(-dDays/21), 1/n)`: 0.5 on the second reading, 0.33 on the third, about 0.28 afterwards; tau and `warmupMean` configurable. Our weekly 0.28 lies inside the admissible band | winsorise +-4 pts stays |
+| reading interval half-width 1.8 -> 1.6 | MOD | own rule 12.5a: never narrow a provider's per-reading range; trend range shrinks by `n_eff^-0.5` floored at 0.85 | provisional hw 5 stays |
+| "no meaningful change" and "held" thresholds unknown (0.1 pt, 0.1 kg observed) | REJ (no value), keep 12.3 | ours: `max(1.0, sqrt(hw_t^2 + hw_p^2))` pts; fat/lean "held" when within the same noise-derived bound | n/a |
+| scan unlock 7 days after last | MOD | D-40: recommended on day 7, extra scans allowed and weighted by elapsed time | reminder gap 5 days stays |
+| first review about 6 days after first scan | MOD | D-40: opens on day 7 (our `spanDays >= 7`, 15.2) | review rules unchanged |
+| reminders: weekly scan Sunday 08:00; daily scan off; weight reminder on; lunch nudge 13:00 | MOD | D-44: Sunday 08:00 AS-IS; daily scan reminder off AS-IS; weight reminder offered, default OFF (opt-in notifications); lunch nudge REJ (meal nudges invite obsessive logging) | n/a |
+| health scopes: steps, exercise, active calories, sleep; 30 days | MOD | D-44: read-only; request only scopes a shipped feature uses (steps, active minutes/sessions for the activity model; sleep only for the programme hook, section 30); 14-day median for steps (13.1), 30-day window for the first sync only; copy names every requested scope | privacy doctrine 31.4 |
+| analysis stages (5) and elapsed timer; hint shorter than reality; bar plateau | MOD | D-41, section 10 | n/a |
+| meal stages (4); pills 24/73/75 %; check-these chips; slot by time of day | MOD | D-43 | n/a |
+| streak card, perfect-day rules, completion ring | REJ this sprint | not in scope; rules unclear (Part E) | n/a |
+
+Conflicts between reference values and our clamps (all resolved in favour of the clamps): pace 0.56 kg/wk at 70 kg versus the 0.5 kg/wk absolute cap; goal body fat down to 6 % versus our 10 / 16 % floors; exercise credit versus the 25 % deficit cap and D-29; reference "first review on day 6" versus our 7-day span requirement.
+
+### 29.2 Catalogue Part E follow-ups (unknown; to be validated against our own tests, not the reference)
+
+1. Real thresholds for "no meaningful change" / "held" and the full set of plan-decision outcomes: ours come from our noise model and are validated by our unit tests and, later, real data.
+2. Whether sleep should lower the default pace (reference asked about sleep for pace; effect unknown; any such rule could only LOWER pace): candidate for a later review round, not built.
+3. Exact reference calorie formula and the unexplained 1,840 kcal figure: irrelevant to us; not pursued.
+4. Shared and Manual ownership text and behaviour: ours is defined in section 18 and tested against that table.
+5. Weekly review page, past reviews, explainers; barcode/label/describe/search/saved-meal screens: ours are specified in 15 and 17.
+6. Female goal range and timeline minimum: ours are the clamps in 13.6.
+7. Error and retry paths of both scans: ours are in the 10 state machine and are the test targets.
+8. Streak rules and denominators; paywall and prices (Q-2).
+9. Whether an analysis conditioned on the previous scan reduces noise: NOT adopted (it would double-count with the EWMA and could anchor to a bad baseline); validate only if a real provider offers it.
+10. Actual end-to-end latency of our own providers: measure on the operator's phone (NOT_RUN); the 20 s / 25 s UI thresholds in section 10 are placeholders.
 
 ## 30. Nutrition-aware programme level
 

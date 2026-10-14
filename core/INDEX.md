@@ -59,6 +59,9 @@ Also here: `context_baseline.csv` — measured AI-context cost over time, append
 | [NEXT_TICKETS.md](plans/NEXT_TICKETS.md) | Concrete, ready-to-pick-up tickets |
 | [IMPLEMENTATION_PLAN.md](plans/IMPLEMENTATION_PLAN.md) | Live phase/sequence roadmap |
 | [BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md) | Body Scan + Nutrition Coach technical design: data model, rules, Cloud Functions, safety clamps, onboarding, food scanning, programme hook, activity model (DESIGN, not implemented) |
+| [BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md](plans/BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md) | Body Scan + Nutrition Coach sprint plan: 27 commits, epics, DoD, verification plan, operator-owned items (PLAN, not implemented) |
+| [BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md) | Requirements-to-test coverage map: 201 requirements, 126 focused test files, run order (PLAN) |
+| [BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md](plans/BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md) | Own-words distillation of the operator's reference recordings: flows, numbers, formula checks (NOTES) |
 | [PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md](plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md) | Priority Phase 2 backlog: multi-sport tracking, device ecosystem order and effort, nutrition-aware programmes, legal competitive study plan |
 | [PLAN_AI_RESTRUCTURE_2026-07-28.md](plans/PLAN_AI_RESTRUCTURE_2026-07-28.md) | This restructure: gates, baseline, progress tracker |
 | [PLAN_REDESIGN_REMAINDER_2026-08-12.md](plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md) | **Where the redesign block stands and what to pick up next** — prototype screen map with line numbers, why R11h is one gate and not four, the six-point chain R11f's metadata fix has to walk |
