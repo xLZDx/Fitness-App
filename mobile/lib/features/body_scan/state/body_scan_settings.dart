@@ -16,11 +16,67 @@ const List<int> kRetentionChoices = [0, 30, 90, 365];
 /// change bumps it; the server compares against its own constant.
 const int kBodyScanCloudConsentVersion = 1;
 
+/// The weekly scan reminder choice (`reminder` map, design s19). Null on
+/// [BodyScanSettings] means the user never chose: the default then depends on
+/// the scan history and the surface mode (D-74).
+class ScanReminderPrefs {
+  const ScanReminderPrefs({
+    required this.enabled,
+    this.weekday = kDefaultReminderWeekday,
+    this.minutes = kDefaultReminderMinutes,
+  });
+
+  /// ISO weekday 1 (Monday) .. 7 (Sunday). Default Sunday.
+  static const int kDefaultReminderWeekday = 7;
+
+  /// Minutes after local midnight, 0..1439. Default 08:00.
+  static const int kDefaultReminderMinutes = 480;
+
+  final bool enabled;
+  final int weekday;
+  final int minutes;
+
+  ScanReminderPrefs copyWith({bool? enabled, int? weekday, int? minutes}) =>
+      ScanReminderPrefs(
+        enabled: enabled ?? this.enabled,
+        weekday: weekday ?? this.weekday,
+        minutes: minutes ?? this.minutes,
+      );
+
+  Map<String, Object?> toJson() =>
+      {'enabled': enabled, 'weekday': weekday, 'minutes': minutes};
+
+  /// Tolerant read: out-of-range values fall back to the defaults.
+  static ScanReminderPrefs? tryFromJson(Object? raw) {
+    if (raw is! Map) return null;
+    final e = raw['enabled'];
+    if (e is! bool) return null;
+    final d = raw['weekday'];
+    final m = raw['minutes'];
+    return ScanReminderPrefs(
+      enabled: e,
+      weekday: d is int && d >= 1 && d <= 7 ? d : kDefaultReminderWeekday,
+      minutes: m is int && m >= 0 && m <= 1439 ? m : kDefaultReminderMinutes,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is ScanReminderPrefs &&
+      other.enabled == enabled &&
+      other.weekday == weekday &&
+      other.minutes == minutes;
+
+  @override
+  int get hashCode => Object.hash(enabled, weekday, minutes);
+}
+
 class BodyScanSettings {
   const BodyScanSettings({
     this.retentionDays = 0,
     this.cloudConsentVersion,
     this.paused = false,
+    this.reminder,
   });
 
   final int retentionDays;
@@ -28,6 +84,9 @@ class BodyScanSettings {
   /// Null = no cloud consent given.
   final int? cloudConsentVersion;
   final bool paused;
+
+  /// The stored reminder choice; null = never chosen.
+  final ScanReminderPrefs? reminder;
 
   /// True when the stored consent covers the current text.
   bool get hasCurrentConsent =>
@@ -38,6 +97,7 @@ class BodyScanSettings {
     int? retentionDays,
     int? cloudConsentVersion,
     bool? paused,
+    ScanReminderPrefs? reminder,
     bool clearConsent = false,
   }) =>
       BodyScanSettings(
@@ -45,6 +105,7 @@ class BodyScanSettings {
         cloudConsentVersion:
             clearConsent ? null : (cloudConsentVersion ?? this.cloudConsentVersion),
         paused: paused ?? this.paused,
+        reminder: reminder ?? this.reminder,
       );
 
   /// Tolerant read: an unknown retention reads as 0 (delete after analysis).
@@ -57,6 +118,7 @@ class BodyScanSettings {
       retentionDays: r is int && kRetentionChoices.contains(r) ? r : 0,
       cloudConsentVersion: v is int && v >= 1 ? v : null,
       paused: raw['paused'] == true,
+      reminder: ScanReminderPrefs.tryFromJson(raw['reminder']),
     );
   }
 
@@ -65,10 +127,12 @@ class BodyScanSettings {
       other is BodyScanSettings &&
       other.retentionDays == retentionDays &&
       other.cloudConsentVersion == cloudConsentVersion &&
-      other.paused == paused;
+      other.paused == paused &&
+      other.reminder == reminder;
 
   @override
-  int get hashCode => Object.hash(retentionDays, cloudConsentVersion, paused);
+  int get hashCode =>
+      Object.hash(retentionDays, cloudConsentVersion, paused, reminder);
 }
 
 abstract class BodyScanSettingsStore {
@@ -77,6 +141,9 @@ abstract class BodyScanSettingsStore {
 
   Future<void> setRetentionDays(int days);
   Future<void> setPaused(bool paused);
+
+  /// Stores the weekly reminder choice (`reminder` map).
+  Future<void> setReminder(ScanReminderPrefs prefs);
 
   /// Records consent [version] with a server timestamp.
   Future<void> acceptCloudConsent(int version);
@@ -115,6 +182,10 @@ class FirestoreBodyScanSettingsStore implements BodyScanSettingsStore {
 
   @override
   Future<void> setPaused(bool paused) => _merge({'paused': paused});
+
+  @override
+  Future<void> setReminder(ScanReminderPrefs prefs) =>
+      _merge({'reminder': prefs.toJson()});
 
   @override
   Future<void> acceptCloudConsent(int version) => _merge({
@@ -158,6 +229,10 @@ class InMemoryBodyScanSettingsStore implements BodyScanSettingsStore {
 
   @override
   Future<void> setPaused(bool paused) async => _set(_value.copyWith(paused: paused));
+
+  @override
+  Future<void> setReminder(ScanReminderPrefs prefs) async =>
+      _set(_value.copyWith(reminder: prefs));
 
   @override
   Future<void> acceptCloudConsent(int version) async =>

@@ -56100,3 +56100,13 @@ Decision: one-line import fix; the widget did not compile under the pinned Flutt
 ## 2026-10-15 - Commit: C18 in-memory repository tests
 
 Decision: repository tests prove version-checked saves, one atomic review+plan write, concurrent same-week idempotency and the offline no-write rule. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C17 reminder settings field and check-in ARB keys
+
+Decision: the weekly reminder choice is stored as `body_scan_settings/main.reminder` (ScanReminderPrefs, null = never chosen) with the v1 SharedPreferences bool kept as a read fallback. Evidence: core/changes/2026-10-15-c17-settings-and-arb.md (no checks run yet).
+
+## 2026-10-15 - Commit: C23 part 3 (diary ARB keys)
+
+Decision: diary copy uses non-inflecting units for decimals and neutral, non-budget wording; one integer-only plural carries all four RU forms. Evidence: `core/changes/2026-10-15-c23-arb.md`; no checks run.
+
+Evidence addendum (C21): change record completed with both test files, the halal/kosher fix and commit ids.
