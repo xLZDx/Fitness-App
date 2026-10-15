@@ -129,15 +129,16 @@ describe("every body_scans collection-group query in the purge job is served by 
   const pattern = /collectionGroup\("body_scans"\)\s*\.where\("(\w+)",\s*"=="[^)]*\)\s*\.where\("(\w+)",\s*"<="/g;
   const queries = [...purgeSource.matchAll(pattern)].map((m) => ({ eq: m[1], range: m[2] }));
 
-  test("the purge job has the three expected equality+range queries (so this check is not vacuous)", () => {
+  test("the purge job has the four expected equality+range queries (so this check is not vacuous)", () => {
     expect(queries.map((q) => `${q.eq}+${q.range}`).sort()).toEqual([
       "photosState+photosExpireAt",
+      "status+pendingExpiresAt",
       "status+pendingExpiresAt",
       "status+pendingExpiresAt",
     ]);
   });
 
-  test.each([0, 1, 2])("query #%d has a matching composite index (equality field first, range field second)", (n) => {
+  test.each([0, 1, 2, 3])("query #%d has a matching composite index (equality field first, range field second)", (n) => {
     const q = queries[n];
     expect(q).toBeDefined();
     expect(findIndex("body_scans", [q.eq, q.range]).length).toBeGreaterThanOrEqual(1);

@@ -498,6 +498,21 @@ describe("path guard (P-1): only users/{uid}/body_scans/{scanId} is a scan", () 
     const prefixes = gcs.deleteFilesCalls.map((c) => c.prefix);
     expect(prefixes).toEqual([prefix(A, "scan_real_001")]);
   });
+
+  test("1000 fake due documents ahead of one real scan do not hide it: the real scan is still purged and no fake is touched", async () => {
+    const stored = { status: "done", photosState: "stored", photosExpireAt: ts(now - 10 * DAY), purgeAttempts: 0 };
+    for (let i = 0; i < 1000; i++) store.set(FAKE(`fake_${String(i).padStart(6, "0")}`), stored);
+    seedStored(A, "scan_real_001", -DAY); // sorts after every fake by photosExpireAt
+    putPhotos(A, "scan_real_001", { timeCreated: now - 3 * DAY });
+
+    const counts = await run();
+
+    expect(counts).toMatchObject({ expired: 1, failures: 0 });
+    expect(get(A, "scan_real_001").photosState).toBe("deleted");
+    expect(objectKeys(prefix(A, "scan_real_001"))).toEqual([]);
+    expect(gcs.deleteFilesCalls.map((c) => c.prefix)).toEqual([prefix(A, "scan_real_001")]);
+    expect(store.get(FAKE("fake_000999"))!.photosState).toBe("stored");
+  });
 });
 
 describe("failed scans (DB-F1 / P-3)", () => {

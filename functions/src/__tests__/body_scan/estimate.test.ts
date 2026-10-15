@@ -168,7 +168,8 @@ describe("success path", () => {
 
 describe("retention 0 (delete after analysis)", () => {
   test.each([
-    ["no settings document", undefined],
+    // Consent is re-checked before the provider call, so "no retention setting" means consent present, retentionDays absent.
+    ["no retentionDays field", { cloudConsent: { version: 1 } }],
     ["retentionDays 0", { cloudConsent: { version: 1 }, retentionDays: 0 }],
     ["retentionDays malformed (7)", { cloudConsent: { version: 1 }, retentionDays: 7 }],
     ["retentionDays a string", { cloudConsent: { version: 1 }, retentionDays: "30" }],
@@ -220,9 +221,13 @@ describe("retention 0 (delete after analysis)", () => {
     expect(doc.photosExpireAt).toEqual(ts(now));
   });
 
-  test("a failing settings read falls back to the privacy-protective default (retention 0)", async () => {
-    fx.failOn = (op, path) => (op === "get" && path.endsWith("body_scan_settings/main") ? firestoreError("x", "unavailable") : undefined);
+  test("a failing settings read AFTER the consent check falls back to the privacy-protective default (retention 0)", async () => {
+    let reads = 0;
+    // 1 = the consent re-check (succeeds), 2 = the retention read (fails).
+    fx.failOn = (op, path) =>
+      op === "get" && path.endsWith("body_scan_settings/main") && ++reads === 2 ? firestoreError("x", "unavailable") : undefined;
     await run();
+    expect(reads).toBe(2);
     expect(scanDoc(UID, SCAN)!.photosState).toBe("deleted");
     expect(objectKeys()).toEqual([]);
   });

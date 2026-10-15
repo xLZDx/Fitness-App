@@ -601,7 +601,8 @@ describe("signing failure", () => {
     expect(res.status).toBe("pending");
     expect(Object.keys(res.uploads)).toHaveLength(3);
     expect(usageOf(UID, "bodyScanCreate")).toBe(1);
-    expect(scanWrites().map((w) => w.op)).toEqual(["create"]);
+    // The retry is a re-issue: one pendingExpiresAt refresh, never a second document or charge.
+    expect(scanWrites().map((w) => w.op)).toEqual(["create", "update"]);
   });
 });
 
