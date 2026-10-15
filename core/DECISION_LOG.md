@@ -56240,3 +56240,5 @@ Decision: new stores are listed with deletion and export behaviour; nutrition_ca
 ## 2026-10-15 - Commit: C18 weight providers tests
 
 Decision: weight provider tests prove one current-weight definition (14 days, stale fallback), validation, the deletion fence and that a scan weight never replaces an equal same-day manual entry. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+Progress: manage API client tests added (C16).
