@@ -56598,3 +56598,7 @@ Decision: `body_scan_a11y_test.dart` added (7 tests pass); the capture panel is 
 ## 2026-10-15 - Commit: server review fixes part 1
 
 Decision: erase paths (deleteBodyScan, manageBodyScanData, purge, account-delete sweep) depend on the bucket name only; a separate BODY_SCAN_ACCEPT_UPLOADS switch (default on) gates new scans and estimates, and rollback means flipping it, never unsetting the bucket while objects exist. The purge trusts only documents at users/{uid}/body_scans/{id}. Failed scans are purged after pendingExpiresAt. Estimate attempts per scan are capped at 3 and not reset by refunds. Evidence: core/changes/2026-10-15-server-review-fixes-1.md; no checks run.
+
+## 2026-10-15 - Commit: C26 tap-target sweep test (T125)
+
+Decision: `new_pages_tap_targets_test.dart` sweeps 14 new pages x EN/RU x 1.0/2.0 with the Android tap-target and labeled-tap-target guidelines. First run: 53 pass, 3 fail (result page overflow on 360 dp, product defect). Evidence: `core/changes/2026-10-15-c26-tests.md`.
