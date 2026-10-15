@@ -55914,3 +55914,7 @@ Decision (D-8, D-55, D-57, D-71 as implemented): `decide()` returns null for any
 Decision (operator test policy 2026-10-15): E0 client tests are written by e2e-runner as detailed functional tests: `body_scan_flags_test.dart` (T01), the extended `feature_gates_test.dart` and the new `data_notice_test.dart` (both added to coverage map section 12). Flag-to-define mapping is proven by extra runs with `--dart-define`.
 
 Evidence: written; run results are recorded in the follow-up change record. Change record: core/changes/2026-10-15-e0-tests-client.md.
+
+## 2026-10-15 - Commit: C07 body scan data layer (pure parts)
+
+Decision (D-3, D-37, D-52, D-54, D-69, D-71, D-74 as implemented): the provisional estimator is on-device pure Dart behind a `BodyCompositionEstimator` interface and its range edges stay inside the 3-60 plausibility window; trend series are segmented by `modelId`+`modelVersion` and never compared across estimators; the scan flow machine is pure (state + effects) and fails closed on the face region and on the post-blur face check (default port answers "cannot verify"); the plan decision enters the scan result only through the `ScanPlanContextSource` port whose safe default is measurement only. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-data-layer.md.
