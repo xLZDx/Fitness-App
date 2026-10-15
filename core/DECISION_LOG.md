@@ -56374,3 +56374,7 @@ Progress: retention settings view tests added (C16).
 ## 2026-10-15 - Commit: C23 day summary ring tests
 
 Decision: neutral wording is asserted over all rendered Text in every state. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - cloud_consent_sheet_test
+
+Decision: consent sheet dismissal is always a refusal; only an explicit Agree returns true. Evidence: core/changes/2026-10-15-c15-tests.md.
