@@ -2961,9 +2961,9 @@ describe("review fix: git-ignored deployable files in the clean-tree check", () 
       },
     );
 
-    test("with the same unreadable file node_modules, the build dirs and functions env files are still allowed", async () => {
+    test("with the same unreadable file the build dirs and functions env files are still allowed (node_modules is NOT: it needs the target ignore list)", async () => {
       const result = await run(
-        ["!! functions/node_modules/", "!! functions/lib/", "!! functions-equipment-identity/lib/", "!! functions/.env", "!! functions/.env.x"],
+        ["!! functions/lib/", "!! functions-equipment-identity/lib/", "!! functions/.env", "!! functions/.env.x"],
         "{not json",
       );
       expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
@@ -3085,5 +3085,210 @@ describe("review fix: git-ignored deployable files in the clean-tree check", () 
     const check = byName(result, PROVENANCE_CHECK);
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("public/app.js");
+  });
+});
+
+describe("ignored node_modules is allowed only through the target's own ignore list (unit, git fake)", () => {
+  const FN_IGNORE = ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"];
+  const cfg = (c: { hosting?: unknown; functions?: unknown }): string =>
+    JSON.stringify({
+      hosting: c.hosting ?? { public: "public", ignore: ["**/node_modules/**"] },
+      functions: c.functions ?? [
+        { source: "functions", ignore: FN_IGNORE },
+        { source: "functions-equipment-identity", ignore: FN_IGNORE },
+      ],
+    });
+
+  function gitLines(lines: string[]): Partial<Record<string, CommandHandler>> {
+    return {
+      status: (args) => {
+        const specs = args.slice(4);
+        const shown = lines.filter((l) => {
+          const p = l.slice(3).replace(/\/+$/, "");
+          return p.startsWith('"') || specs.some((s) => p === s || p.startsWith(`${s}/`));
+        });
+        return { ok: true, stdout: shown.length > 0 ? `${shown.join("\n")}\n` : "", stderr: "" };
+      },
+    };
+  }
+  const prov = async (lines: string[], firebaseJson: string | null) =>
+    byName(
+      await runReleaseGuard(makeDeps({ git: gitLines(lines), sourceOverrides: { "firebase.json": firebaseJson } })),
+      PROVENANCE_CHECK,
+    );
+  const expectBlocked = (c: { status: string; detail: string }, path_: string): void => {
+    expect(c.status).toBe("FAILED");
+    expect(c.detail.startsWith("ignored-deployable-files:")).toBe(true);
+    expect(c.detail).toContain(path_);
+  };
+
+  describe("hosting", () => {
+    test.each(["!! public/node_modules/", "!! public/node_modules/pkg/index.js"])(
+      "hosting.ignore [] + %s BLOCKS (Firebase Hosting has no implicit node_modules exclusion)",
+      async (line) => {
+        expectBlocked(await prov([line], cfg({ hosting: { public: "public", ignore: [] } })), line.slice(3));
+      },
+    );
+
+    test("hosting without an ignore key behaves like an empty list: BLOCKS", async () => {
+      expectBlocked(await prov(["!! public/node_modules/"], cfg({ hosting: { public: "public" } })), "public/node_modules/");
+    });
+
+    test("control: hosting.ignore ['**/node_modules/**'] allows the same entries", async () => {
+      for (const line of ["!! public/node_modules/", "!! public/node_modules/pkg/index.js", "!! public/sub/node_modules/"]) {
+        expect({ line, status: (await prov([line], cfg({}))).status }).toEqual({ line, status: "OK" });
+      }
+    });
+
+    test("hosting uses whole-path matching: ['node_modules'] excludes public/node_modules but NOT public/sub/node_modules", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: ["node_modules"] } });
+      expect((await prov(["!! public/node_modules/"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! public/sub/node_modules/"], json), "public/sub/node_modules/");
+    });
+
+    test("hosting does NOT apply functions-style basename matching to any slash-free pattern ('*.tmp' vs public/a/x.tmp)", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: ["*.tmp"] } });
+      expect((await prov(["!! public/x.tmp"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! public/a/x.tmp"], json), "public/a/x.tmp");
+    });
+
+    // The implementation does not model firebase-tools' implicit hosting exclusions
+    // (**/firebase-debug.log, **/firebase-debug.*.log, .firebase/*): they are NOT applied, so these entries block
+    // unless the configured ignore list (or **/.* for dot paths) excludes them. Stricter than firebase-tools; pinned here.
+    test("hosting implicit exclusions are NOT modelled: ignored public/firebase-debug.log and public/firebase-debug.1.log block with hosting.ignore []", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: [] } });
+      expectBlocked(await prov(["!! public/firebase-debug.log"], json), "public/firebase-debug.log");
+      expectBlocked(await prov(["!! public/firebase-debug.1.log"], json), "public/firebase-debug.1.log");
+    });
+
+    test("hosting implicit .firebase/* exclusion is NOT modelled: ignored public/.firebase/x blocks with hosting.ignore [] but is allowed by a configured **/.*", async () => {
+      expectBlocked(await prov(["!! public/.firebase/x"], cfg({ hosting: { public: "public", ignore: [] } })), "public/.firebase/x");
+      expect((await prov(["!! public/.firebase/x"], cfg({ hosting: { public: "public", ignore: ["**/.*"] } }))).status).toBe("OK");
+    });
+
+    test("hosting.ignore that lists firebase-debug patterns excludes them (explicit list works)", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: ["**/firebase-debug.log", "**/firebase-debug.*.log"] } });
+      expect((await prov(["!! public/firebase-debug.log", "!! public/a/firebase-debug.2.log"], json)).status).toBe("OK");
+    });
+  });
+
+  describe("functions", () => {
+    test("no ignore key: Firebase's default ['node_modules', '.git'] applies -> functions/node_modules and functions/.git are allowed", async () => {
+      const json = cfg({ functions: [{ source: "functions" }] });
+      for (const line of ["!! functions/node_modules/", "!! functions/.git/", "!! functions/src/node_modules/x/"]) {
+        expect({ line, status: (await prov([line], json)).status }).toEqual({ line, status: "OK" });
+      }
+    });
+
+    test("no ignore key: the default does NOT include *.local (it blocks), unlike the real config", async () => {
+      expectBlocked(await prov(["!! functions/foo.local"], cfg({ functions: [{ source: "functions" }] })), "functions/foo.local");
+    });
+
+    test("ignore [] (explicit): functions/node_modules and functions/.git BLOCK", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: [] }] });
+      expectBlocked(await prov(["!! functions/node_modules/"], json), "functions/node_modules/");
+      expectBlocked(await prov(["!! functions/.git/"], json), "functions/.git/");
+    });
+
+    test("ignore [] still allows the implicit firebase-debug.log and firebase-debug.*.log", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: [] }] });
+      expect((await prov(["!! functions/firebase-debug.log", "!! functions/firebase-debug.3.log"], json)).status).toBe("OK");
+    });
+
+    test("a configured ignore list that omits them still allows firebase-debug.log and firebase-debug.*.log (implicit)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: ["node_modules"] }] });
+      expect((await prov(["!! functions/firebase-debug.log", "!! functions/firebase-debug.9.log"], json)).status).toBe("OK");
+      // ... but the implicit entries do not widen anything else
+      expectBlocked(await prov(["!! functions/foo.local"], json), "functions/foo.local");
+    });
+
+    test("a non-array ignore value is treated as absent (default list)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: "node_modules" }] });
+      expect((await prov(["!! functions/node_modules/"], json)).status).toBe("OK");
+    });
+
+    test("each codebase uses its OWN list: only the second codebase has ignore []", async () => {
+      const json = cfg({
+        functions: [
+          { source: "functions", ignore: FN_IGNORE },
+          { source: "functions-equipment-identity", ignore: [] },
+        ],
+      });
+      expect((await prov(["!! functions/node_modules/"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! functions-equipment-identity/node_modules/"], json), "functions-equipment-identity/node_modules/");
+    });
+
+    test.each([
+      ["functions/src/node_modules/", "src/node_modules"],
+      ["functions/a/b/c/node_modules/pkg/", "a/b/c/node_modules"],
+    ])("nested %s is allowed by basename matching ('node_modules' listed; functions targets use matchBase)", async (p) => {
+      expect((await prov([`!! ${p}`], cfg({}))).status).toBe("OK");
+    });
+
+    test("basename matching applies to any slash-free functions pattern ('*.tmp' matches functions/a/b/x.tmp)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: ["*.tmp"] }] });
+      expect((await prov(["!! functions/a/b/x.tmp"], json)).status).toBe("OK");
+    });
+
+    test("a pattern WITH a slash is NOT basename-matched for functions ('src/node_modules' matches functions/src/node_modules but not functions/other/src/node_modules)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: ["src/node_modules"] }] });
+      expect((await prov(["!! functions/src/node_modules/"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! functions/other/src/node_modules/"], json), "functions/other/src/node_modules/");
+    });
+
+    test("basename matching still never makes a pattern match a different NAME (node_modules_backup blocks)", async () => {
+      expectBlocked(await prov(["!! functions/node_modules_backup/"], cfg({})), "functions/node_modules_backup/");
+    });
+  });
+
+  describe("unreadable / invalid firebase.json (strict: empty ignore lists)", () => {
+    test.each([["missing file", null], ["invalid JSON", "{not json"], ["JSON null", "null"], ["JSON string", '"x"']])(
+      "%s: ignored functions/node_modules, the second codebase's node_modules and public/node_modules all BLOCK",
+      async (_label, content) => {
+        for (const line of [
+          "!! functions/node_modules/",
+          "!! functions-equipment-identity/node_modules/",
+          "!! public/node_modules/",
+          "!! functions/.git/",
+        ]) {
+          expectBlocked(await prov([line], content), line.slice(3));
+        }
+      },
+    );
+
+    test("with the same unreadable file functions/lib, functions-equipment-identity/lib, .env and .env.<project> are STILL allowed", async () => {
+      const lines = [
+        "!! functions/lib/",
+        "!! functions/lib/index.js",
+        "!! functions-equipment-identity/lib/",
+        "!! functions/.env",
+        "!! functions/.env.fitness-app-phase2-korostelev",
+        "!! functions-equipment-identity/.env.fitness-app-korostelev",
+      ];
+      expect((await prov(lines, "{not json")).status).toBe("OK");
+    });
+  });
+
+  test("lib dirs and env files are allowed independently of the ignore lists (functions ignore [] and hosting ignore [])", async () => {
+    const json = cfg({
+      hosting: { public: "public", ignore: [] },
+      functions: [
+        { source: "functions", ignore: [] },
+        { source: "functions-equipment-identity", ignore: [] },
+      ],
+    });
+    const lines = [
+      "!! functions/lib/",
+      "!! functions-equipment-identity/lib/index.js",
+      "!! functions/.env",
+      "!! functions/.env.fitness-app-phase2-korostelev",
+      "!! functions-equipment-identity/.env.x",
+    ];
+    expect((await prov(lines, json)).status).toBe("OK");
+  });
+
+  test("a node_modules directory OUTSIDE every uploaded dir is not special-cased any more: not reported by git for this pathspec, and a quoted one blocks", async () => {
+    expect((await prov(["!! tools/node_modules/"], cfg({}))).status).toBe("OK"); // outside the pathspec: git never lists it
+    expectBlocked(await prov(['!! "functions/node_modules/caf\\303\\251"'], cfg({})), "caf");
   });
 });

@@ -56711,3 +56711,7 @@ Decision: MAJOR-02A (git-ignored deployable files) is covered by 703 passing jes
 ## 2026-10-16 - Commit: S00 deploy guard node_modules scope
 
 Decision: after GPT-PM round 3 (MAJOR-02B), an ignored node_modules path is no longer allowed unconditionally; it is allowed only when the deploy target's own ignore list in firebase.json excludes it (so hosting.ignore with no node_modules entry plus an ignored public/node_modules now blocks). The functions ignore list mirrors firebase-tools (default node_modules and .git only when no ignore key exists, basename matching for slash-free patterns). functions/lib, functions-equipment-identity/lib and functions .env files stay allowed by design (build output and env config are packaged by firebase deploy). Unreadable firebase.json now also blocks an ignored functions/node_modules (fail closed). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope.md; not yet tested.
+
+## 2026-10-16 - Commit: tests for the node_modules scope fix
+
+Decision: MAJOR-02B (unconditional node_modules allowance) is covered by 742 passing jest tests (505 + 112 + 125), including a real-git end-to-end case where an ignored public/node_modules file blocks the wrapper before firebase is spawned. Hosting implicit exclusions are intentionally not modelled (stricter than firebase-tools). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope-tests.md.
