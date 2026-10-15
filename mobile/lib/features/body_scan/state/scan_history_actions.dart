@@ -17,6 +17,7 @@ import '../../nutrition_plan/data/energy_math.dart';
 import '../../nutrition_plan/data/weight_entry.dart';
 import '../../nutrition_plan/state/weight_providers.dart';
 import '../../profile/state/profile_providers.dart';
+import '../../progress_photos/scan/scan_models.dart' show ScanRecord;
 import '../../progress_photos/scan/scan_repository.dart';
 import '../../progress_photos/scan/ui/scan_compare_screen.dart'
     show deleteScanFiles;

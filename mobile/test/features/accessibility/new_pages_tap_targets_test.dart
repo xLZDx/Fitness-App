@@ -253,10 +253,20 @@ void main() {
             '${page.key} ${locale.languageCode} x$scale: tap targets and labels',
             (tester) async {
           final handle = tester.ensureSemantics();
+          // Keep the full details (render object path) of any layout error.
+          final details = <String>[];
+          final prev = FlutterError.onError;
+          FlutterError.onError = (d) {
+            details.add(d.toString());
+            prev?.call(d);
+          };
+          addTearDown(() => FlutterError.onError = prev);
           await page.value(tester, locale, scale);
           // The page really rendered (not an error placeholder): something
           // is on screen and no exception was thrown while building it.
-          expect(tester.takeException(), isNull);
+          final ex = tester.takeException();
+          expect(ex, isNull,
+              reason: details.join('\n'));
           expect(find.byType(Scaffold), findsWidgets);
           await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
           await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));

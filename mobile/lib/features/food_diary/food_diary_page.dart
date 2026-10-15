@@ -136,6 +136,7 @@ class _DiaryBody extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final locale = Localizations.localeOf(context).toString();
+    ref.watch(diaryDayFollowerProvider); // keeps "today" on the real date
     final day = ref.watch(selectedDiaryDayProvider);
     final entriesAsync = ref.watch(diaryDayEntriesProvider(day));
     final flags = ref.watch(bodyScanFlagsProvider);

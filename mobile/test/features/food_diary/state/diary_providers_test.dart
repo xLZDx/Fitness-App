@@ -97,6 +97,34 @@ void main() {
     });
   });
 
+  group('DiaryDayFollower (FL-F6)', () {
+    test('after midnight the selection follows to the new today', () {
+      var now = DateTime(2026, 3, 9, 23, 30);
+      final c = ProviderContainer(overrides: [
+        nutritionClockProvider.overrideWithValue(() => now),
+      ]);
+      addTearDown(c.dispose);
+      final f = c.read(diaryDayFollowerProvider);
+      expect(c.read(selectedDiaryDayProvider), '2026-03-09');
+      now = DateTime(2026, 3, 10, 0, 5);
+      f.sync();
+      expect(c.read(selectedDiaryDayProvider), '2026-03-10');
+    });
+
+    test('a day the user picked is left alone', () {
+      var now = DateTime(2026, 3, 9, 23, 30);
+      final c = ProviderContainer(overrides: [
+        nutritionClockProvider.overrideWithValue(() => now),
+      ]);
+      addTearDown(c.dispose);
+      final f = c.read(diaryDayFollowerProvider);
+      c.read(selectedDiaryDayProvider.notifier).state = '2026-03-01';
+      now = DateTime(2026, 3, 10, 0, 5);
+      f.sync();
+      expect(c.read(selectedDiaryDayProvider), '2026-03-01');
+    });
+  });
+
   group('diaryDayEntriesProvider', () {
     test('signed out: an empty day, no repository read', () async {
       final c = _container(uid: null);

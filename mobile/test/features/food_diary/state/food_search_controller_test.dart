@@ -54,7 +54,58 @@ class _HeldApi extends FakeFoodApi {
   }
 }
 
+class _ThrowingApi extends FakeFoodApi {
+  @override
+  Future<SearchResults> searchFoods(
+    String query, {
+    required String languageCode,
+    FoodSearchScope scope = FoodSearchScope.both,
+    int limit = 20,
+  }) async =>
+      throw StateError('parse');
+}
+
 void main() {
+  group('table load and failure (FL-F1)', () {
+    test('a table that loads later keeps the query and the server results',
+        () async {
+      final api = FakeFoodApi(search: const [_cand]);
+      final c = _ctrl(api, table: GenericFoodTable.empty());
+      c.submit('rice');
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      expect(c.state.remote, isNotEmpty);
+      expect(c.state.local, isEmpty);
+      c.setTable(_table);
+      expect(c.state.query, 'rice');
+      expect(c.state.remote, isNotEmpty, reason: 'server results survive');
+      expect(c.state.local, isNotEmpty, reason: 'local hits are recomputed');
+      expect(api.searchCalls, 1, reason: 'the cache is intact, no refetch');
+      c.dispose();
+    });
+
+    test('a failed table is an error, never "nothing found"', () {
+      final c = _ctrl(FakeFoodApi(), server: false, table: GenericFoodTable.empty());
+      c.setTableFailed();
+      c.onChanged('rice');
+      expect(c.state.phase, SearchPhase.error);
+      c.setTable(_table);
+      c.onChanged('rice');
+      expect(c.state.phase, SearchPhase.results);
+      c.dispose();
+    });
+  });
+
+  group('unexpected errors (FL-F2)', () {
+    test('a non-FoodApi error ends in the error phase, not a stuck loading',
+        () async {
+      final c = _ctrl(_ThrowingApi(), table: GenericFoodTable.empty());
+      c.submit('rice');
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      expect(c.state.phase, SearchPhase.error);
+      c.dispose();
+    });
+  });
+
   group('typing (no network)', () {
     testWidgets('empty input is idle; 1 and 2 characters are tooShort',
         (tester) async {

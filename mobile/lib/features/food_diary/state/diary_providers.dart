@@ -10,7 +10,10 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/widgets.dart'
+    show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -62,6 +65,46 @@ String dayKeyOf(DateTime d) => DateFormat('yyyy-MM-dd', 'en').format(d);
 final selectedDiaryDayProvider = StateProvider<String>(
   (ref) => dayKeyOf(ref.watch(nutritionClockProvider)()),
 );
+
+/// Keeps [selectedDiaryDayProvider] on the real date: when the clock day has
+/// moved on (the app was open or backgrounded across midnight) and the user is
+/// still on the day that WAS today, the selection follows to the new today. A
+/// day the user picked deliberately is left alone, so a new entry is never
+/// saved to yesterday by accident. Watch it from the diary page; it re-checks
+/// whenever the app resumes.
+class DiaryDayFollower with WidgetsBindingObserver {
+  DiaryDayFollower(this._ref);
+
+  final Ref _ref;
+  late String _lastToday = dayKeyOf(_ref.read(nutritionClockProvider)());
+
+  /// Moves the selection to today when it was on the previous today.
+  void sync() {
+    final today = dayKeyOf(_ref.read(nutritionClockProvider)());
+    if (today == _lastToday) return;
+    final selected = _ref.read(selectedDiaryDayProvider);
+    if (selected == _lastToday) {
+      _ref.read(selectedDiaryDayProvider.notifier).state = today;
+    }
+    _lastToday = today;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) sync();
+  }
+}
+
+final diaryDayFollowerProvider = Provider<DiaryDayFollower>((ref) {
+  final follower = DiaryDayFollower(ref);
+  try {
+    WidgetsBinding.instance.addObserver(follower);
+    ref.onDispose(() => WidgetsBinding.instance.removeObserver(follower));
+  } catch (e) {
+    debugPrint('diary: lifecycle observer unavailable (${e.runtimeType})');
+  }
+  return follower;
+});
 
 /// The diary is shown only to a user for whom the plan numbers are allowed;
 /// for `referProfessional` (and while the verdict is unknown) it is hidden
@@ -242,21 +285,24 @@ class FoodSearchState {
 class FoodSearchController extends StateNotifier<FoodSearchState> {
   FoodSearchController({
     required this.api,
-    required this.table,
+    required GenericFoodTable table,
     required this.serverEnabled,
     required this.languageCode,
     this.debounce = const Duration(milliseconds: 600),
-  }) : super(const FoodSearchState());
+  })  : _table = table,
+        super(const FoodSearchState());
 
   static const int minChars = 3;
 
   final FoodApi api;
-  final GenericFoodTable table;
+  GenericFoodTable _table;
+  GenericFoodTable get table => _table;
   final bool serverEnabled;
   final String languageCode;
   final Duration debounce;
 
   Timer? _timer;
+  bool _tableFailed = false;
   String? _cacheKey;
   List<FoodCandidate> _cache = const [];
 
@@ -270,15 +316,44 @@ class FoodSearchController extends StateNotifier<FoodSearchState> {
       );
       return;
     }
-    final hits = table.search(q);
+    final hits = _table.search(q);
     state = FoodSearchState(
       phase: hits.isEmpty && !serverEnabled
-          ? SearchPhase.empty
+          ? (_tableFailed ? SearchPhase.error : SearchPhase.empty)
           : SearchPhase.results,
       query: q,
       local: hits,
       remote: _cacheKey == _key(q) ? _cache : const [],
     );
+  }
+
+  /// The bundled table finished loading. The search keeps its query, phase,
+  /// server results and cache; only the local hits are recomputed.
+  void setTable(GenericFoodTable table) {
+    if (!mounted) return;
+    _table = table;
+    _tableFailed = false;
+    final q = state.query;
+    if (q.length < minChars) return;
+    final hits = table.search(q);
+    state = state.copyWith(
+      local: hits,
+      phase: (state.phase == SearchPhase.empty ||
+                  state.phase == SearchPhase.error) &&
+              hits.isNotEmpty
+          ? SearchPhase.results
+          : state.phase,
+    );
+  }
+
+  /// The bundled table could not be loaded: "nothing found" would be a lie
+  /// for a search that never had data, so an empty result is an error.
+  void setTableFailed() {
+    if (!mounted) return;
+    _tableFailed = true;
+    if (state.phase == SearchPhase.empty && state.local.isEmpty) {
+      state = state.copyWith(phase: SearchPhase.error);
+    }
   }
 
   String _key(String q) => '$languageCode|${q.toLowerCase()}';
@@ -317,6 +392,14 @@ class FoodSearchController extends StateNotifier<FoodSearchState> {
           rateLimited: e.failure == FoodApiFailure.rateLimited,
         );
       }
+    } catch (e) {
+      // Any other failure (parsing, platform, unexpected) is a closed error
+      // state, never an unhandled error from a timer.
+      debugPrint('food search failed (${e.runtimeType})');
+      if (!mounted || state.query != q) return;
+      state = state.copyWith(
+        phase: state.local.isNotEmpty ? SearchPhase.results : SearchPhase.error,
+      );
     }
   }
 
@@ -330,12 +413,23 @@ class FoodSearchController extends StateNotifier<FoodSearchState> {
 /// Arguments are the table and language; the server flag is read here.
 final foodSearchControllerProvider = StateNotifierProvider.autoDispose
     .family<FoodSearchController, FoodSearchState, String>((ref, lang) {
-  final table = ref.watch(genericFoodTableProvider).valueOrNull ??
-      GenericFoodTable.empty();
-  return FoodSearchController(
+  // The table is read, not watched: its load must not rebuild the controller
+  // (that would drop the query, the results and the cache the user has).
+  final controller = FoodSearchController(
     api: ref.watch(foodApiProvider),
-    table: table,
+    table: ref.read(genericFoodTableProvider).valueOrNull ??
+        GenericFoodTable.empty(),
     serverEnabled: ref.watch(bodyScanFlagsProvider).foodLookup,
     languageCode: lang,
   );
+  ref.listen<AsyncValue<GenericFoodTable>>(genericFoodTableProvider,
+      (previous, next) {
+    next.when(
+      data: controller.setTable,
+      error: (_, __) => controller.setTableFailed(),
+      loading: () {},
+    );
+  }, fireImmediately: false);
+  if (ref.read(genericFoodTableProvider).hasError) controller.setTableFailed();
+  return controller;
 });

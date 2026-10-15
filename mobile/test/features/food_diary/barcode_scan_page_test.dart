@@ -23,6 +23,17 @@ const String kEan8 = '96385074';
 const String kUpcA = '036000291452';
 const String kItf14 = '10012345678902';
 
+class _CrashingApi extends _Api {
+  @override
+  Future<BarcodeLookup> lookupBarcode(String barcodeValue) async =>
+      throw StateError('platform');
+}
+
+class _TorchCrashPort extends FakeBarcodePort {
+  @override
+  Future<void> toggleTorch() async => throw StateError('no torch');
+}
+
 /// Records every barcode and can hold the answer until [release].
 class _Api extends FakeFoodApi {
   _Api({super.barcode, super.failure});
@@ -339,6 +350,29 @@ void main() {
               .writes,
           0);
       expect(p.stubUri, isNull, reason: 'still on the barcode page');
+    });
+  });
+
+  group('unexpected errors (FL-F2, FL-F3)', () {
+    testWidgets('a non-FoodApi error shows the failure with scan-again, not a '
+        'stuck looking state', (tester) async {
+      final port = FakeBarcodePort();
+      await _pump(tester, port, _CrashingApi());
+      await _emit(tester, port, kEan13);
+      expect(find.byKey(const Key('barcode.looking')), findsNothing);
+      expect(find.text(l10nOf(tester).foodBarcodeFailed), findsOneWidget);
+      expect(find.byKey(const Key('barcode.again')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('barcode.again')));
+      await settle(tester);
+      expect(port.resumes, 1, reason: 'the camera resumes');
+    });
+
+    testWidgets('a torch error is handled, not an unhandled async error',
+        (tester) async {
+      await _pump(tester, _TorchCrashPort(), _Api());
+      await tester.tap(find.byKey(const Key('barcode.torch')));
+      await settle(tester);
+      expect(find.byKey(const Key('barcode.torch')), findsOneWidget);
     });
   });
 

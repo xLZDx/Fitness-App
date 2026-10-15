@@ -84,8 +84,9 @@ class _BarcodeScanPageState extends ConsumerState<BarcodeScanPage> {
       _invalidSeen = false;
       _message = null;
     });
-    await _port.pause();
     try {
+      await _port.pause();
+      if (!mounted) return;
       final result = await ref.read(foodApiProvider).lookupBarcode(code);
       if (!mounted) return;
       final cand = result.candidate;
@@ -131,6 +132,23 @@ class _BarcodeScanPageState extends ConsumerState<BarcodeScanPage> {
         _phase = _Phase.failed;
         _message = scanFailureMessage(l10n, e, generic: l10n.foodBarcodeFailed);
       });
+    } catch (e) {
+      // Any other failure must not strand the page in `looking` with the
+      // camera paused: show the failure; "scan again" resumes the camera.
+      debugPrint('barcode lookup failed (${e.runtimeType})');
+      if (!mounted) return;
+      setState(() {
+        _phase = _Phase.failed;
+        _message = l10n.foodBarcodeFailed;
+      });
+    }
+  }
+
+  Future<void> _toggleTorch() async {
+    try {
+      await _port.toggleTorch();
+    } catch (e) {
+      debugPrint('barcode torch failed (${e.runtimeType})');
     }
   }
 
@@ -166,7 +184,7 @@ class _BarcodeScanPageState extends ConsumerState<BarcodeScanPage> {
             key: const Key('barcode.torch'),
             tooltip: l10n.foodBarcodeTorch,
             icon: const Icon(Icons.flashlight_on_outlined),
-            onPressed: _port.toggleTorch,
+            onPressed: () => unawaited(_toggleTorch()),
           ),
         ],
       ),
