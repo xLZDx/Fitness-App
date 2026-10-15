@@ -56114,3 +56114,13 @@ Evidence addendum (C21): change record completed with both test files, the halal
 ## 2026-10-15 - Commit: C13 tests: ScanRecord v2 round trip and v1 tolerance
 
 Decision: scan_models_v2_test covers legacy v1 reading, v2 round trip through JSON text, unknown status as failed, manualOverride strictness. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Note 2026-10-15: C23 ARB keys were swept into earlier path-limited commits of other sessions (same files); the C23 record core/changes/2026-10-15-c23-arb.md documents them.
+
+## 2026-10-15 - Commit: C16 part 2 (history list, privacy view, routes, l10n)
+
+Decision: cloud privacy controls render only when BODY_SCAN_CLOUD is on (no callable otherwise); copy states deletion within 48 hours and that phone-local photos are untouched; weight edit asks the data notice before the weight-log write. Evidence: core/changes/2026-10-15-c16-history-privacy-ui-routes-l10n.md; no checks run.
+
+## 2026-10-15 - Commit: Body scan root wiring
+
+Decision: all body_scan <-> nutrition bridges live in core/wiring/body_scan_wiring.dart so body_scan never imports review state; Firestore repository/settings are bound only when BODY_SCAN_CLOUD is on; the flow effects run through a body_scan-only driver over the existing job runner. Evidence: core/changes/2026-10-15-body-scan-root-wiring.md.

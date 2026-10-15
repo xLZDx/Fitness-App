@@ -10,13 +10,18 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/config/body_scan_flags.dart';
 import '../progress_photos/scan/scan_access.dart';
 import '../progress_photos/scan/ui/scan_gate_view.dart';
 import 'data/body_scan_flow_machine.dart';
 import 'data/scan_plan_context.dart';
+import 'state/body_scan_flow_driver.dart';
+import 'state/body_scan_providers.dart';
+import 'state/body_scan_settings.dart';
 import 'state/scan_flow_controller.dart';
 import 'state/scan_plan_context_provider.dart';
 import 'widgets/analysis_progress_view.dart';
+import 'widgets/cloud_consent_sheet.dart';
 import 'widgets/intro_view.dart';
 import 'widgets/resume_scan_card.dart';
 import 'widgets/weight_prompt_sheet.dart';
@@ -79,12 +84,32 @@ class _BodyScanFlowPageState extends ConsumerState<BodyScanFlowPage> {
     }
   }
 
+  /// The separate cloud-upload consent (D-5): only when this build uploads
+  /// photos (BODY_SCAN_CLOUD) and the stored consent does not cover the current
+  /// text. A refusal keeps the scan on the device (provisional estimate).
+  Future<void> _askCloudConsent() async {
+    if (!ref.read(bodyScanFlagsProvider).cloudPhotos) return;
+    final settings =
+        ref.read(bodyScanSettingsProvider).valueOrNull ?? const BodyScanSettings();
+    if (settings.hasCurrentConsent) return;
+    final store = ref.read(bodyScanSettingsStoreProvider);
+    final agreed = await CloudConsentSheet.show(context);
+    if (!agreed) return;
+    try {
+      await store.acceptCloudConsent(kBodyScanCloudConsentVersion);
+    } catch (_) {
+      // Not recorded: the scan stays on the device.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final access = ref.watch(scanAccessProvider);
     final plan = ref.watch(scanPlanContextValueProvider);
     final snap = ref.watch(scanFlowControllerProvider);
+    // Executes the machine's effects through the job runner (C14).
+    final driver = ref.watch(bodyScanFlowDriverProvider);
     final ctl = ref.read(scanFlowControllerProvider.notifier);
     final stage = snap.state.stage;
 
@@ -94,7 +119,10 @@ class _BodyScanFlowPageState extends ConsumerState<BodyScanFlowPage> {
       if (s == FlowStage.weightPrompt) {
         WidgetsBinding.instance.addPostFrameCallback((_) => _promptWeight());
       } else if (s == FlowStage.capturing && prev?.state.stage != s) {
-        GoRouter.of(context).push('/photos/scan');
+        // The capture screen saves the scan and pops with its id.
+        GoRouter.of(context)
+            .push<String>('/photos/scan')
+            .then(driver.captureReturned);
       } else if (s == FlowStage.done) {
         final id = ref.read(bodyScanActiveScanIdProvider);
         if (id != null) GoRouter.of(context).go('/body-scan/result/$id');
@@ -120,7 +148,11 @@ class _BodyScanFlowPageState extends ConsumerState<BodyScanFlowPage> {
             provisional: snap.context.localOnly,
             measurementOnly:
                 plan.surfaceMode == ScanSurfaceMode.measurementOnly,
-            onStart: () => ctl.dispatch(const FlowEvent(FlowEventKind.start)),
+            onStart: () async {
+              await _askCloudConsent();
+              if (!mounted) return;
+              ctl.dispatch(const FlowEvent(FlowEventKind.start));
+            },
             onClose: () {
               if (GoRouter.of(context).canPop()) GoRouter.of(context).pop();
             },
