@@ -55818,3 +55818,7 @@ Decision: settle write guarded by the ordering marker after a reliability review
 ## 2026-10-14 - Commit: Stripe tie settle revision CAS
 
 Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
+
+## 2026-10-15 - Commit: S00 split of Phase 1 and Phase 2
+
+Decision: operator answers recorded. D-1 phase rule as written (Phase 1 = planned before 2026-10-10, first production MVP, fixes and release readiness only; Phase 2 = planned after; a Phase 2 feature found in the Phase 1 line is an experiment, flag OFF, developed only in Phase 2; `training_context` stays in Phase 1). D-2 PR #5 retargeted to `phase2/main`; the base commit is identical to the previously reviewed base (`42d1b849`), the diff is identical (552 files) and GPT-PM APPROVE on head `cd9d7c3a` was therefore applied; merged as `5137ccda`. D-4 separate Firebase alias for Phase 2 (alias creation is an operator action; Phase 2 stays on the emulator until it exists). D-5 Option A: one repository, branches `phase1/main` and `phase2/main`, tag `phase1-baseline` at `42d1b849`, worktrees `D:\Repo\Fitness_App_Phase1` and `D:\Repo\Fitness_App_Phase2`. Plan package approved: GPT-PM APPROVE on revision 3 (three rounds). Evidence: docs/phase2/split/SNAPSHOT_2026-10-15.md, core/changes/2026-10-15-s00-split-docs.md. Open: backend separation gate, `phase1/main` documentation PR, retirement of old branches and worktrees (operator approval).
