@@ -56402,3 +56402,7 @@ Evidence: complete E0 set green on the recorded heads (jest 409, firestore rules
 ## 2026-10-15 - Commit: C14 tests: body scan job runner (local path, cloud gates, fence, rotation, backoff, cancel)
 
 Decision: Runner tests drive the real runner with fakes for api/uploader/blur/face check and assert call counts, persisted states and slugs. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - weight_prompt_sheet_test
+
+Decision: weight prompt tests keep skip (explicit) distinct from dismissal (null) and bound the weight to 20-400 kg. Evidence: core/changes/2026-10-15-c15-tests.md.
