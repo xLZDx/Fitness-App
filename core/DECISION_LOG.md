@@ -55830,3 +55830,7 @@ Decision: the release guard checks the deploy line (from the git branch) before 
 ## 2026-10-15 - Commit: S00 backend separation gate tests
 
 Decision: the deploy-line gate is proven by deterministic fake-deps tests in release_guard.test.ts (115 tests passing, 0 failing): branch classification, all six block reasons, both PASS paths, phase2 default-project fallback blocks, no override path. No product code changed. Not verified: real CLI execution of run_release_guard.mjs and the real git branch reader. Evidence: core/changes/2026-10-15-s00-backend-gate-tests.md.
+
+## 2026-10-15 - Commit: S01 contract and rights drafts
+
+Decision: S01 starts as documentation only. The GPS privacy contract, lifecycle matrix and rights study are drafts with PROPOSED requirements; D-16, D-17, D-6 and D-7 remain open for the operator with a recommendation each. Evidence: core/changes/2026-10-15-s01-contract-and-rights-drafts.md.
