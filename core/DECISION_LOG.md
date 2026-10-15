@@ -56715,3 +56715,15 @@ Decision: after GPT-PM round 3 (MAJOR-02B), an ignored node_modules path is no l
 ## 2026-10-16 - Commit: tests for the node_modules scope fix
 
 Decision: MAJOR-02B (unconditional node_modules allowance) is covered by 742 passing jest tests (505 + 112 + 125), including a real-git end-to-end case where an ignored public/node_modules file blocks the wrapper before firebase is spawned. Hosting implicit exclusions are intentionally not modelled (stricter than firebase-tools). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope-tests.md.
+
+## 2026-10-15 - Commit: Phase 1 documentation index
+
+Decision: Phase 1 line gets a navigation index (`docs/phase1/README.md`) as part of the S00 split; no documents moved. The tag `phase1-baseline` at `42d1b849` is a historical split point, not a production-ready certificate. Evidence: core/changes/2026-10-15-s00-phase1-docs-index.md.
+
+## 2026-10-15 - Commit: Phase 1 index review fix
+
+Decision: after GPT-PM round 1 (MODIFY, MAJOR-01) the Phase 1 index labels `docs/EXPERIMENTS.md` and the roadmap plan as Phase 2 line files that are absent from `phase1/main` until the Phase 2 documentation PR is merged and synced. Evidence: core/changes/2026-10-15-s00-phase1-docs-index-review-fix.md.
+
+## 2026-10-16 - Commit: sync merge of phase1/main
+
+Decision: the first Phase 1 to Phase 2 sync is a pure merge commit of origin/phase1/main (0eee9ca2, documentation only) so that the sync log can name its exact SHA. Evidence: core/changes/2026-10-16-s00b-sync-merge.md.
