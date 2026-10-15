@@ -56614,3 +56614,7 @@ Decision: bucket runbook rollback is flipping BODY_SCAN_ACCEPT_UPLOADS, never un
 ## 2026-10-15 - Commit: mobile owed deletes
 
 Decision: a photo delete with a possibly existing cloud copy is never reported `deleted` until the server delete succeeded; otherwise it is persisted as owed (photos-only kind), the scan is stopped (terminal cancelled when unfinished) and the runner removes the phone copy after the flush. Evidence: core/changes/2026-10-15-mobile-delete-owed.md; no checks run.
+
+## 2026-10-15 - Commit: mobile fire-and-forget observation
+
+Decision: no runner call is fire-and-forget without an error observer; the runner provider (not the app-root wiring) resumes on profile/weight load so existing wiring tests keep their provider graph. Evidence: core/changes/2026-10-15-mobile-fire-and-forget.md; no checks run.

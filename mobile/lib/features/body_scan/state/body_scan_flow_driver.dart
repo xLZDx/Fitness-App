@@ -17,6 +17,8 @@
 /// body_scan only: nothing here imports the nutrition review state.
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -192,15 +194,14 @@ class BodyScanFlowDriver {
       final id = _ref.read(bodyScanActiveScanIdProvider);
       if (id != null) {
         _cancelSent = false;
-        _ref.read(bodyScanRunnerProvider)?.retry(id);
+        _observe('retry', _ref.read(bodyScanRunnerProvider)?.retry(id));
       }
     }
   }
 
   void _resume() {
     try {
-      final r = _ref.read(bodyScanRunnerProvider);
-      if (r != null) r.resume();
+      _observe('resume', _ref.read(bodyScanRunnerProvider)?.resume());
     } catch (e) {
       debugPrint('body scan: resume skipped (${e.runtimeType})');
     }
@@ -210,7 +211,19 @@ class BodyScanFlowDriver {
     final id = _ref.read(bodyScanActiveScanIdProvider);
     if (id == null || _cancelSent) return;
     _cancelSent = true;
-    _ref.read(bodyScanRunnerProvider)?.cancel(id);
+    try {
+      _observe('cancel', _ref.read(bodyScanRunnerProvider)?.cancel(id));
+    } catch (e) {
+      debugPrint('body scan: cancel skipped (${e.runtimeType})');
+    }
+  }
+
+  /// A fire-and-forget runner call must never fail unobserved.
+  void _observe(String what, Future<void>? call) {
+    if (call == null) return;
+    unawaited(call.catchError((Object e) {
+      debugPrint('body scan: $what failed (${e.runtimeType})');
+    }));
   }
 
   // ---- follow the persisted record --------------------------------------

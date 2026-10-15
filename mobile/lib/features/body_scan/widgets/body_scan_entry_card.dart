@@ -5,6 +5,8 @@
 /// history / privacy links.
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -155,14 +157,20 @@ class _UnfinishedScanState extends ConsumerState<_UnfinishedScan> {
   Future<void> _delete(ScanRecord r) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final outcome = await ref.read(scanHistoryActionsProvider).deletePhotos(
-          ScanHistoryRow(
-            id: r.id,
-            takenAt: r.createdAt,
-            weightKg: r.weightKg,
-            record: r,
-          ),
-        );
+    DeletePhotosOutcome outcome;
+    try {
+      outcome = await ref.read(scanHistoryActionsProvider).deletePhotos(
+            ScanHistoryRow(
+              id: r.id,
+              takenAt: r.createdAt,
+              weightKg: r.weightKg,
+              record: r,
+            ),
+          );
+    } catch (e) {
+      debugPrint('body scan: delete failed (${e.runtimeType})');
+      outcome = DeletePhotosOutcome.failed;
+    }
     final text = switch (outcome) {
       DeletePhotosOutcome.deleted => l10n.bodyScanDeletePhotosDone,
       DeletePhotosOutcome.queuedOffline => l10n.bodyScanDeletePhotosQueued,
@@ -174,10 +182,18 @@ class _UnfinishedScanState extends ConsumerState<_UnfinishedScan> {
   /// Resume / Retry: wake the runner, then open the flow with the scan id.
   Future<void> _open(ScanRecord r, {required bool retry}) async {
     final runner = ref.read(bodyScanRunnerProvider);
-    if (retry) {
-      await runner?.retry(r.id);
-    } else {
-      runner?.resume();
+    try {
+      if (retry) {
+        await runner?.retry(r.id);
+      } else {
+        // Not awaited: the flow page follows the record; errors are observed.
+        unawaited(runner?.resume().catchError((Object e) {
+              debugPrint('body scan: resume failed (${e.runtimeType})');
+            }) ??
+            Future<void>.value());
+      }
+    } catch (e) {
+      debugPrint('body scan: resume failed (${e.runtimeType})');
     }
     if (!mounted) return;
     GoRouter.of(context).push('/body-scan?scanId=${Uri.encodeQueryComponent(r.id)}');

@@ -10,6 +10,8 @@
 /// `scanDoneSignalProvider`.
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -178,6 +180,20 @@ final bodyScanRunnerProvider = Provider<BodyScanJobRunner?>((ref) {
     onError: (scrubbed) => debugPrint('body scan: $scrubbed'),
   );
   ref.onDispose(runner.dispose);
+  // The estimate needs the profile (and the weight log): a scan that waited
+  // for them (`subjectPending`) is picked up as soon as they have loaded.
+  void resumeWhenLoaded(bool wasLoaded, bool isLoaded) {
+    if (isLoaded && !wasLoaded) {
+      unawaited(runner.resume().catchError((Object e) {
+        debugPrint('body scan: resume failed (${e.runtimeType})');
+      }));
+    }
+  }
+
+  ref.listen(currentProfileProvider, (previous, next) =>
+      resumeWhenLoaded(previous?.hasValue ?? false, next.hasValue));
+  ref.listen(weightEntriesProvider, (previous, next) =>
+      resumeWhenLoaded(previous?.hasValue ?? false, next.hasValue));
   return runner;
 });
 

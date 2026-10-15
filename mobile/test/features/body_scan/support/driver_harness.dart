@@ -14,14 +14,27 @@ import 'package:fitness_app/features/progress_photos/scan/scan_repository.dart';
 class FakeRunner implements BodyScanJobRunner {
   final List<String> calls = [];
 
-  @override
-  Future<void> resume() async => calls.add('resume');
+  /// When set, every runner call throws it (an unobserved error would fail
+  /// the test as an uncaught async error).
+  Object? failWith;
 
   @override
-  Future<void> retry(String scanId) async => calls.add('retry:$scanId');
+  Future<void> resume() async {
+    calls.add('resume');
+    if (failWith != null) throw failWith!;
+  }
 
   @override
-  Future<void> cancel(String scanId) async => calls.add('cancel:$scanId');
+  Future<void> retry(String scanId) async {
+    calls.add('retry:$scanId');
+    if (failWith != null) throw failWith!;
+  }
+
+  @override
+  Future<void> cancel(String scanId) async {
+    calls.add('cancel:$scanId');
+    if (failWith != null) throw failWith!;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => null;

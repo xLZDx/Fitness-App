@@ -14,6 +14,8 @@
 ///    defaults only when the cloud path is compiled in (`BODY_SCAN_CLOUD`).
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,10 +70,18 @@ List<Override> bodyScanRootOverrides({
 /// Resumes the queued scans of the signed-in account. Never throws.
 void resumeBodyScanRunner(WidgetRef ref) {
   try {
-    ref.read(bodyScanRunnerProvider)?.resume();
+    _observe(ref.read(bodyScanRunnerProvider)?.resume());
   } catch (e) {
     debugPrint('body scan: resume skipped (${e.runtimeType})');
   }
+}
+
+/// A fire-and-forget runner call must never fail unobserved.
+void _observe(Future<void>? call) {
+  if (call == null) return;
+  unawaited(call.catchError((Object e) {
+    debugPrint('body scan: resume failed (${e.runtimeType})');
+  }));
 }
 
 /// Keep-alive wiring: watch it once from the app root widget.
@@ -86,7 +96,7 @@ final bodyScanRootWiringProvider = Provider<void>((ref) {
 
   void resume() {
     try {
-      ref.read(bodyScanRunnerProvider)?.resume();
+      _observe(ref.read(bodyScanRunnerProvider)?.resume());
     } catch (e) {
       debugPrint('body scan: resume skipped (${e.runtimeType})');
     }

@@ -164,6 +164,17 @@ void main() {
       expect(r.runner.calls, ['resume']);
     });
 
+    test('SF-F6: a runner that throws on resume never escapes the driver',
+        () async {
+      final r = await _rig();
+      r.runner.failWith = StateError('disk');
+      await r.toCapturing();
+      r.driver.captureReturned('scan-1');
+      await _settle();
+      expect(r.runner.calls, ['resume']);
+      expect(r.stage, FlowStage.verifying);
+    });
+
     test('a null id from capturing cancels the flow without touching the '
         'runner', () async {
       final r = await _rig();
