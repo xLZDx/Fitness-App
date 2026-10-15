@@ -56246,3 +56246,7 @@ Progress: manage API client tests added (C16).
 ## 2026-10-15 - Commit: C18 nutrition providers tests
 
 Decision: provider tests prove the median-steps rule, that an ineligible or unknown verdict hides the plan without deleting it, and that the live review is read-only. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - result_view_test
+
+Decision: result view tests pin that the ETA text is never rendered and that provisional mass tiles are labelled this reading. Evidence: core/changes/2026-10-15-c15-tests.md.
