@@ -112,7 +112,7 @@ class _NoopReminder extends ScanReminderNotifier {
   @override
   bool build() => false;
   @override
-  Future<ReminderOutcome?> sync() async => null;
+  Future<ReminderOutcome?> sync({int? weekday, int? minutes}) async => null;
 }
 
 class _Disk {

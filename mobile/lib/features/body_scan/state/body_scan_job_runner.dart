@@ -352,8 +352,17 @@ class BodyScanJobRunner {
         if (fresh.pendingPhotosOnly && flush != null) {
           await flush(fresh);
         } else {
+          // An unfinished scan whose delete was owed stays terminal: clearing
+          // the flag must not make it resumable (it would recreate a remote
+          // scan the user deleted).
+          final a = fresh.analysis;
           await scans.save(fresh.copyWith(
-              pendingRemoteDelete: false, pendingPhotosOnly: false));
+            pendingRemoteDelete: false,
+            pendingPhotosOnly: false,
+            analysis: (a != null && !a.status.isTerminal)
+                ? a.copyWith(status: JobStatus.cancelled, updatedAt: now())
+                : a,
+          ));
         }
         onChanged?.call();
       } catch (e) {

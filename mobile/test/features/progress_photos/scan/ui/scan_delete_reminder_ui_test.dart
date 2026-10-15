@@ -81,7 +81,7 @@ class _RecReminder extends ScanReminderNotifier {
   @override
   bool build() => false;
   @override
-  Future<ReminderOutcome?> sync() async {
+  Future<ReminderOutcome?> sync({int? weekday, int? minutes}) async {
     log.events.add('sync');
     return null;
   }

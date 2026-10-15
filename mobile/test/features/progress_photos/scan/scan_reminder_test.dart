@@ -12,6 +12,8 @@ import 'package:fitness_app/core/settings/state/settings_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/body_scan/data/scan_plan_context.dart';
+import 'package:fitness_app/features/body_scan/state/body_scan_providers.dart';
+import 'package:fitness_app/features/body_scan/state/body_scan_settings.dart';
 import 'package:fitness_app/features/body_scan/state/scan_plan_context_provider.dart';
 import 'package:fitness_app/features/progress_photos/scan/scan_models.dart';
 import 'package:fitness_app/features/progress_photos/scan/scan_reminder.dart';
@@ -252,6 +254,11 @@ void main() {
         scanPlanContextProvider.overrideWithValue(const _FullSurfaceSource()),
         scanRepositoryProvider.overrideWithValue(repo),
         authUserProvider.overrideWith((_) => auth.stream),
+        // The real store is per account; a fresh one per auth emission mirrors that.
+        bodyScanSettingsStoreProvider.overrideWith((ref) {
+          ref.watch(authUserProvider);
+          return InMemoryBodyScanSettingsStore();
+        }),
         initialSettingsProvider
             .overrideWithValue(AppSettings(notificationsEnabled: true)),
       ]);
