@@ -56667,6 +56667,22 @@ Decision: the release guard checks the deploy line (from the git branch) before 
 
 Decision: the deploy-line gate is proven by deterministic fake-deps tests in release_guard.test.ts (115 tests passing, 0 failing): branch classification, all six block reasons, both PASS paths, phase2 default-project fallback blocks, no override path. No product code changed. Not verified: real CLI execution of run_release_guard.mjs and the real git branch reader. Evidence: core/changes/2026-10-15-s00-backend-gate-tests.md.
 
+## 2026-10-15 - Commit: S01 contract and rights drafts
+
+Decision: S01 starts as documentation only. The GPS privacy contract, lifecycle matrix and rights study are drafts with PROPOSED requirements; D-16, D-17, D-6 and D-7 remain open for the operator with a recommendation each. Evidence: core/changes/2026-10-15-s01-contract-and-rights-drafts.md.
+
+## 2026-10-15 - Commit: S01 UI-0 baseline audit
+
+Decision: the UI-0 audit is saved as a verbatim agent report with FACT/INFERENCE labels; it shows that two token layers coexist (AppSemanticColors and HudTokens), that 30 feature files still use the legacy FrostedScaffold, that no location package or mode state exists, and that the direction document assumes 48 dp targets (code: 44) and about 45 routes (code: 35). Evidence: core/changes/2026-10-15-s01-ui0-baseline-audit.md.
+
+## 2026-10-15 - Commit: S01 contract security review fixes
+
+Decision: all 15 security-review findings are addressed in the GPS contract and lifecycle matrix (none rejected; three accepted with qualifications because cloud-side settings cannot be verified from the repository). D-16 and D-17 remain open for the operator. Evidence: core/changes/2026-10-15-s01-contract-security-review-fixes.md.
+
+## 2026-10-15 - Commit: S01 review round 2 and UI-0 addendum
+
+Decision: the privacy zones of the user are a data class of their own (C11) with a consent-gated exemption from the D-16 stream retention, because the server needs them to validate a publish; friends visibility follows the D-17 option with unknown age always refused; the UI-0 audit stays a verbatim agent report plus an addendum, and the audited mobile/ tree predates the PR #5 Body Scan code. Evidence: core/changes/2026-10-15-s01-review-round-2-and-ui0-addendum.md.
+
 
 ## 2026-10-15 - Commit: S00 deploy guard coverage and provenance
 
@@ -56731,3 +56747,27 @@ Decision: the first Phase 1 to Phase 2 sync is a pure merge commit of origin/pha
 ## 2026-10-16 - Commit: phase2 alias and sync log entry
 
 Decision: the phase2 Firebase alias points at fitness-app-phase2-korostelev and the first sync is logged with the exact merge commit 39dc95cd. Phase 2 stays on the emulator until the open items in docs/phase2/split/BACKEND_SEPARATION.md are closed. Evidence: core/changes/2026-10-16-s00b-phase2-alias-and-sync-log.md.
+
+## 2026-10-16 - Commit: S01 branch updated from phase2/main
+
+Decision: the S01 branch merges phase2/main (89927444) before its review gate; the UI-0 audit still describes the mobile tree before PR #5 and a delta pass over the Body Scan screens is a follow-up item. Evidence: core/changes/2026-10-16-s01-merge-phase2-main.md.
+
+## 2026-10-16 - Commit: S01 contract round 3 and SDLC state
+
+Decision: until the operator answers the minors question, adult-to-minor friend edges are refused (default E1); the debug_sessions rules criterion is bounded to list size and top-level keys because rules cannot iterate list elements. docs/sdlc/STATE.md becomes the phase truth of the Phase 2 program. Evidence: core/changes/2026-10-16-s01-contract-round-3-and-sdlc-state.md.
+
+## 2026-10-16 - Commit: S01 UI-0 delta for PR #5 screens
+
+Decision: the UI-0 baseline gets a separate delta document for the Body Scan, nutrition plan and food diary screens (a third visual pattern: plain Material plus GlassCard) instead of rewriting the original audit. Evidence: core/changes/2026-10-16-s01-ui0-bodyscan-delta.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 1
+
+Decision: the contract baseline follows the PR #5 state (deny-all storage.rules, separate Body Scan bucket); a server-side guarantee for debug telemetry (sanitising callable or per-event documents) is mandatory before any GPS code ships, because rules cannot check list elements. Evidence: core/changes/2026-10-16-s01-gptpm-round1-fixes.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 2
+
+Decision: every statement about Storage, account deletion and Body Scan code in the S01 documents follows the PR #5 tree (sweepBodyScanObjects exists, Body Scan code is present); the UI-0 audit keeps its explicit pre-PR #5 date. Evidence: core/changes/2026-10-16-s01-gptpm-round2-fixes.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 3
+
+Decision: all file and line citations and "absent" claims in the S01 contract and lifecycle matrix were re-verified against the PR #5 tree in one sweep (the documents were drafted before PR #5); the existing Storage rules test and the server read of the client-writable birth year are recorded as facts. Evidence: core/changes/2026-10-16-s01-gptpm-round3-fixes.md.
