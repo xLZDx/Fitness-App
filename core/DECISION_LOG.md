@@ -56382,3 +56382,9 @@ Decision: consent sheet dismissal is always a refusal; only an explicit Agree re
 ## 2026-10-15 - Commit: C19 review_card_test.dart
 
 Decision: undo and accept affordances are gated by ownership, window and plan version; every review shows why. Evidence: core/changes/2026-10-15-c19-tests.md (review_card_test.dart 20 passed).
+
+Progress: scan history list widget tests added (C16).
+
+## 2026-10-15 - Commit: C15 tests - intro_view_test
+
+Decision: intro tests assert the rough-estimate label shows only for the provisional estimator. Evidence: core/changes/2026-10-15-c15-tests.md.
