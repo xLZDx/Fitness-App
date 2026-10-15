@@ -56342,3 +56342,7 @@ Decision: ownership selector reports only real changes and is inert when disable
 ## 2026-10-15 - Commit: C13 tests: skeleton overlay geometry and non-colour cues
 
 Decision: Recording-canvas tests prove bone/joint geometry, dashed-vs-solid and hollow-vs-filled readiness cues, likelihood floor and decorative semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - check_items_card_test
+
+Decision: check card tests pin one announcement and focus movement after resolve. Evidence: core/changes/2026-10-15-c15-tests.md.
