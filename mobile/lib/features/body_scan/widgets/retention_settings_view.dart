@@ -265,7 +265,11 @@ class _RetentionSettingsViewState extends ConsumerState<RetentionSettingsView> {
                     child: Semantics(
                       liveRegion: true,
                       label: l10n.bodyScanPrivacyWorking,
-                      child: const LinearProgressIndicator(),
+                      // Reduced motion: a static text instead of the
+                      // indeterminate bar (design s24, D-81).
+                      child: context.reduceMotion
+                          ? Text(l10n.bodyScanPrivacyWorking)
+                          : const LinearProgressIndicator(),
                     ),
                   ),
               ],

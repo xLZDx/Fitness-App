@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../shared/widgets/glass.dart';
 
@@ -51,7 +52,7 @@ class ResumeScanCard extends StatelessWidget {
           Row(
             children: [
               Icon(failed ? Icons.error_outline : Icons.pending_actions,
-                  color: failed ? hud.danger : hud.accent),
+                  color: failed ? context.colors.danger : hud.accent),
               const SizedBox(width: 8),
               Expanded(
                 child: Semantics(

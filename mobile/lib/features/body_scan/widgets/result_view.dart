@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/body_fat_estimate.dart';
@@ -196,7 +197,7 @@ class _ProvisionalBanner extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline, color: hud.warning),
+            Icon(Icons.info_outline, color: context.colors.warning),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -260,7 +261,7 @@ class _EstimateCard extends StatelessWidget {
                     : Icons.verified_outlined,
                 size: 18,
                 color: e.confidence == EstimateConfidence.low
-                    ? hud.warning
+                    ? context.colors.warning
                     : hud.success,
               ),
               const SizedBox(width: 6),

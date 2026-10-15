@@ -56554,3 +56554,7 @@ Decision: ARB parity is asserted on the real files for the new key family and th
 ## 2026-10-15 - Commit: C23 routes tests
 
 Decision: route agreement is asserted from the add-food source against the router source plus the live router. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 l10n and accessibility audit
+
+Decision: RU plurals only for integer fields (all new plural placeholders are int, one/few/many/other defined); decimals use locale-formatted numbers with non-inflecting abbreviations. HUD light warning/danger failed WCAG on cards (1.55 / 2.78), so new widgets read the status colours from AppSemanticColors; the camera readiness panel fill went from 0.65 to 0.85 black. The missing trainingReason* family (7 codes) was added. Evidence: core/changes/2026-10-15-c26-l10n-a11y-audit.md (contrast table; contrast_tokens_test.dart written, NOT RUN).

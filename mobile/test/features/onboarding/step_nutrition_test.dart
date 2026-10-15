@@ -334,7 +334,7 @@ void main() {
               goals: const FitnessGoals(weightLoss: true)));
       expect(
           tester.widget<Text>(find.byKey(const Key('onb.nutrition.pace'))).data,
-          "That target weight is below the healthy range, so we can't plan "
+          "That target weight is below the range this plan supports, so we can't plan "
           'towards it. Try a higher target.');
       expect(find.textContaining('kg per week'), findsNothing);
     });

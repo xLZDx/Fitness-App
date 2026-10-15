@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../shared/widgets/glass.dart';
 
@@ -49,7 +50,7 @@ class IntroView extends StatelessWidget {
               if (provisional) ...[
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: hud.warning),
+                    Icon(Icons.info_outline, color: context.colors.warning),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(l10n.bodyScanRoughLabel,

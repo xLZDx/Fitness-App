@@ -917,10 +917,11 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
               key: const Key('scan.save'),
               onPressed: saving ? null : _save,
               child: saving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, semanticsLabel: l10n.scanSaving),
                     )
                   : Text(l10n.scanSave),
             ),
@@ -1023,7 +1024,9 @@ class _ReadinessPanel extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.65),
+        // Near-opaque so chip text stays >= 4.5:1 over a bright scene (C26
+        // contrast table: 0.65 failed for orangeAccent/white70 over white).
+        color: Colors.black.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

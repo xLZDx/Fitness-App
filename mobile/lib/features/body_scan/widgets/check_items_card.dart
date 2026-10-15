@@ -8,6 +8,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/check_items.dart';
@@ -183,7 +184,7 @@ class _Chip extends StatelessWidget {
                         resolved
                             ? Icons.check_circle_outline
                             : Icons.error_outline,
-                        color: resolved ? hud.success : hud.warning,
+                        color: resolved ? context.colors.success : context.colors.warning,
                       ),
                       const SizedBox(width: 10),
                       Expanded(

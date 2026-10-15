@@ -14,6 +14,7 @@ import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/scan_trend.dart';
@@ -148,7 +149,7 @@ class _TrendChartState extends State<TrendChart> {
               padding: const EdgeInsets.only(top: 4),
               child: Row(
                 children: [
-                  Icon(Icons.flag_outlined, size: 16, color: hud.warning),
+                  Icon(Icons.flag_outlined, size: 16, color: context.colors.warning),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(l10n.bodyScanChartNewEstimator,

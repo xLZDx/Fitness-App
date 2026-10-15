@@ -94,7 +94,7 @@ class _StatusRow extends StatelessWidget {
       CheckStatus.pass => (Colors.greenAccent, Icons.check_circle, l10n.scanCheckOk),
       CheckStatus.fail => (Colors.orangeAccent, Icons.error_outline, failText),
       CheckStatus.unknown =>
-        (Colors.white70, Icons.hourglass_empty, l10n.scanCheckWaiting),
+        (Colors.white, Icons.hourglass_empty, l10n.scanCheckWaiting),
     };
     final style = Theme.of(context).textTheme.bodyMedium?.copyWith(color: color);
     return Semantics(

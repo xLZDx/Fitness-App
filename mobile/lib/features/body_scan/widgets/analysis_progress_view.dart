@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../shared/widgets/glass.dart';
 
@@ -211,7 +212,7 @@ class _AnalysisProgressViewState extends State<AnalysisProgressView> {
             Text(l10n.bodyScanTimeout,
                 key: const Key('bodyScan.progress.timeout'),
                 style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: hud.danger)),
+                    ?.copyWith(color: context.colors.danger)),
             const SizedBox(height: 8),
             FilledButton(
               key: const Key('bodyScan.progress.retry'),

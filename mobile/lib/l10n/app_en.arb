@@ -1263,8 +1263,8 @@
       }
     }
   },
-  "onbNutritionPaceBelowRange": "That target weight is below the healthy range, so we can't plan towards it. Try a higher target.",
-  "onbNutritionPaceUnderweight": "At your current weight we won't plan a calorie deficit. Keeping your weight steady is the safe choice.",
+  "onbNutritionPaceBelowRange": "That target weight is below the range this plan supports, so we can't plan towards it. Try a higher target.",
+  "onbNutritionPaceUnderweight": "At your current weight we won't plan a calorie deficit. The plan keeps your weight steady instead.",
   "onbNutritionTargetBodyFat": "Target body fat (optional)",
   "onbNutritionTargetBodyFatClear": "No body-fat target",
   "onbNutritionSteps": "Typical daily steps",
@@ -1885,6 +1885,7 @@
   "scanReviewBody": "Retake any pose you are not happy with, then save.",
   "scanRetake": "Retake",
   "scanSave": "Save scan",
+  "scanSaving": "Saving",
   "scanSaveFailed": "The scan was not saved: {arg0}",
   "@scanSaveFailed": {
     "placeholders": {
@@ -3408,6 +3409,13 @@
   "reviewReasonNeedMoreDataPoints": "More weigh-ins are needed first.",
   "reviewReasonNeedMoreDataSpan": "The weigh-ins need to cover a longer period.",
   "reviewReasonAutoAdjustOff": "Automatic adjustment is off for this part of your plan.",
+  "trainingReasonDeficitVolumeTrim": "Training volume is a little lower while your calorie range is below your usual intake.",
+  "trainingReasonSurplusVolumeBoost": "Training volume is a little higher while your calorie range is above your usual intake.",
+  "trainingReasonProteinLow": "Your logged protein has been below its range, so training volume stays as it is.",
+  "trainingReasonSleepLow": "Your logged sleep has been short, so intensity is a little lower.",
+  "trainingReasonLossTooFast": "Your weight is changing faster than planned, so training volume is a little lower.",
+  "trainingReasonLowIntakeHighLoad": "Your intake is close to the lowest planned level and you train often. Consider a lighter week.",
+  "trainingReasonRecoveryDeload": "A lighter training week is suggested to give you more recovery time.",
   "nutritionReviewTitle": "Weekly review",
   "nutritionReviewNone": "No review yet. The first one appears after about 3 weigh-ins over 2 weeks.",
   "nutritionReviewDecidedOn": "Reviewed on {date}",
@@ -3754,7 +3762,7 @@
     }
   },
   "bodyScanCloudTitle": "Send photos for analysis?",
-  "bodyScanCloudBody": "To analyse your body, three photos are blurred on your phone and then uploaded. The server cannot verify the blurring, and marks such as tattoos or scars are not blurred. You can delete the scan at any time.",
+  "bodyScanCloudBody": "To analyse your body, three photos are blurred on your phone, stripped of photo details such as location and camera data, and then uploaded. The server cannot verify the blurring, and marks such as tattoos or scars are not blurred. You can delete the scan at any time.",
   "bodyScanCloudAgree": "Agree and upload",
   "bodyScanCloudDecline": "Not now",
   "bodyScanResumeTitle": "Finish your scan",
