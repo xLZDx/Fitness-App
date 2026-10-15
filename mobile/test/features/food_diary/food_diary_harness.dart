@@ -116,6 +116,7 @@ Future<PumpedPage> pumpPage(
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(ProviderScope(
+    key: UniqueKey(),
     overrides: overrides ?? diaryOverrides(),
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -162,6 +163,7 @@ Future<void> pumpWidgetOnly(
   tester.view.physicalSize = size;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(ProviderScope(
+    key: UniqueKey(),
     overrides: overrides,
     child: MaterialApp(
       theme: AppTheme.light(),

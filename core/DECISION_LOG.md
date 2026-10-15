@@ -56456,3 +56456,7 @@ Decision: the cap is asserted as 49 continuations because the first page counts 
 ## 2026-10-15 - Commit: test(food): C24 barcode port and page tests
 
 Decision: barcode page tests drive the page through FakeBarcodePort with a recording FoodApi and assert call arguments, not only UI. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 food diary page tests
+
+Decision: referProfessional is proven by the absence of any digit or kcal text on the page. Evidence: core/changes/2026-10-15-c23-tests.md.
