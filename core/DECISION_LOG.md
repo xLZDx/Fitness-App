@@ -56410,3 +56410,11 @@ Decision: weight prompt tests keep skip (explicit) distinct from dismissal (null
 ## 2026-10-15 - Commit: C25 CONDITIONAL cell rules tests
 
 Decision: cell tests use inline template-literal doc paths because the access checker cannot resolve helper calls; the DEFERRED todo block became real governance tests. Evidence: core/changes/2026-10-15-c25-tests.md (data_access_policy.test.ts 208 passed on the emulator, alternate port 18080).
+
+## 2026-10-15 - Commit: C24 image_prep tests and metadata-strip fix
+
+Decision: `prepareJpeg` clears EXIF and the ICC profile explicitly, because re-encoding alone copied them through. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 portion editor tests
+
+Decision: only positive values up to 10000 reach the callback. Evidence: core/changes/2026-10-15-c23-tests.md.
