@@ -31,7 +31,11 @@ import '../../features/body_scan/body_scan_flow_page.dart';
 import '../../features/body_scan/body_scan_history_page.dart';
 import '../../features/body_scan/body_scan_privacy_page.dart';
 import '../../features/body_scan/body_scan_result_page.dart';
+import '../../features/nutrition_plan/nutrition_plan_page.dart';
 import '../../features/nutrition_plan/nutrition_profile_flow_page.dart';
+import '../../features/nutrition_plan/plan_explainer_page.dart';
+import '../../features/nutrition_plan/plan_sources_page.dart';
+import '../../features/nutrition_plan/weight_log_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/data_export/backup_page.dart';
 import '../../features/posture/posture_page.dart';
@@ -545,6 +549,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/nutrition/profile',
         pageBuilder: (_, __) => _fadeThrough(const NutritionProfileFlowPage()),
+      ),
+      // C19. Plan screen, weight log, sources and the explainer.
+      GoRoute(
+        path: '/nutrition',
+        pageBuilder: (_, __) => _fadeThrough(const NutritionPlanPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/weight',
+        pageBuilder: (_, __) => _fadeThrough(const WeightLogPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/sources',
+        pageBuilder: (_, __) => _fadeThrough(const PlanSourcesPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/how-it-adapts',
+        pageBuilder: (_, __) => _fadeThrough(const PlanExplainerPage()),
       ),
       // C15. Body scan flow and result.
       GoRoute(
