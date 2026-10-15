@@ -56602,3 +56602,7 @@ Decision: erase paths (deleteBodyScan, manageBodyScanData, purge, account-delete
 ## 2026-10-15 - Commit: C26 tap-target sweep test (T125)
 
 Decision: `new_pages_tap_targets_test.dart` sweeps 14 new pages x EN/RU x 1.0/2.0 with the Android tap-target and labeled-tap-target guidelines. First run: 53 pass, 3 fail (result page overflow on 360 dp, product defect). Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: mobile runner review fixes
+
+Decision: an owed server delete (`pendingRemoteDelete`) makes a scan permanently non-resumable and every runner write re-reads the record first; "inputs still loading" is not-ready (stays queued), never `subject-missing`; the retry timer is always re-armed from the stored queue after a pass. Evidence: core/changes/2026-10-15-mobile-runner-fixes.md; no checks run.

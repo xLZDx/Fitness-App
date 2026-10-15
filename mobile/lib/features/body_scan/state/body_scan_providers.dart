@@ -23,6 +23,8 @@ import '../../nutrition_plan/state/weight_providers.dart';
 import '../../profile/state/profile_providers.dart';
 import '../../progress_photos/scan/scan_models.dart';
 import '../../progress_photos/scan/scan_repository.dart';
+import '../../progress_photos/scan/ui/scan_compare_screen.dart'
+    show deleteScanFiles;
 import '../../progress_photos/state/progress_photos_providers.dart';
 import '../data/body_scan_entry.dart';
 import '../data/body_scan_repository.dart';
@@ -156,6 +158,9 @@ final bodyScanRunnerProvider = Provider<BodyScanJobRunner?>((ref) {
       return null;
     },
     resolveSubject: (rec) async => _subjectFor(ref, rec),
+    subjectPending: (rec) => _subjectInputsLoading(ref, rec),
+    // An owed photos-only server delete finished: the phone copy goes too.
+    onRemoteDeleteFlushed: (rec) => deleteScanFiles(ref.read, rec),
     onChanged: () {
       try {
         ref.invalidate(scanHistoryProvider);
@@ -175,6 +180,22 @@ final bodyScanRunnerProvider = Provider<BodyScanJobRunner?>((ref) {
   ref.onDispose(runner.dispose);
   return runner;
 });
+
+/// True while the profile (or, for a scan without a recorded weight, the weight
+/// log) is still loading: the run must wait, not fail with `subject-missing`.
+bool _subjectInputsLoading(Ref ref, ScanRecord rec) {
+  try {
+    final profile = ref.read(currentProfileProvider);
+    if (profile.isLoading && !profile.hasValue) return true;
+    if (rec.weightKg == null) {
+      final weights = ref.read(weightEntriesProvider);
+      if (weights.isLoading && !weights.hasValue) return true;
+    }
+  } catch (_) {
+    // A disposed scope: the account fence handles it.
+  }
+  return false;
+}
 
 /// Height, age, sex and weight for the estimate; null when any is missing
 /// (the run then fails closed with `subject-missing`). Weight: the one recorded

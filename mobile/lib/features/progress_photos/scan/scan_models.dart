@@ -179,6 +179,7 @@ class ScanRecord {
     this.weightKg,
     this.manualOverride = const {},
     this.pendingRemoteDelete = false,
+    this.pendingPhotosOnly = false,
   });
 
   final String id;
@@ -197,6 +198,12 @@ class ScanRecord {
   /// A server delete is owed (queued while offline).
   final bool pendingRemoteDelete;
 
+  /// The owed server delete removes only the photos (the server scan document
+  /// and its estimate stay); false means a full delete. Meaningful only while
+  /// [pendingRemoteDelete] is set. When the owed delete has been flushed, a
+  /// photos-only owner also removes the phone copy.
+  final bool pendingPhotosOnly;
+
   /// True for a v1 scan: local only, never uploaded.
   bool get isLegacy => analysis == null;
 
@@ -211,6 +218,7 @@ class ScanRecord {
     double? weightKg,
     Map<ScanPose, bool>? manualOverride,
     bool? pendingRemoteDelete,
+    bool? pendingPhotosOnly,
   }) =>
       ScanRecord(
         id: id,
@@ -220,6 +228,7 @@ class ScanRecord {
         weightKg: weightKg ?? this.weightKg,
         manualOverride: manualOverride ?? this.manualOverride,
         pendingRemoteDelete: pendingRemoteDelete ?? this.pendingRemoteDelete,
+        pendingPhotosOnly: pendingPhotosOnly ?? this.pendingPhotosOnly,
       );
 
   Map<String, Object?> toJson() => {
@@ -235,6 +244,7 @@ class ScanRecord {
           },
         },
         if (pendingRemoteDelete) 'pendingRemoteDelete': true,
+        if (pendingRemoteDelete && pendingPhotosOnly) 'pendingPhotosOnly': true,
       };
 
   /// Null when the payload is not a well-formed v1 or v2 record.
@@ -266,6 +276,8 @@ class ScanRecord {
             if (overrideRaw[p.name] == true) p: true,
       },
       pendingRemoteDelete: raw['pendingRemoteDelete'] == true,
+      pendingPhotosOnly:
+          raw['pendingRemoteDelete'] == true && raw['pendingPhotosOnly'] == true,
     );
   }
 }

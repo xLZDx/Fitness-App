@@ -45,6 +45,13 @@ class _Stop implements Exception {
   const _Stop();
 }
 
+/// The inputs of the estimate (profile, weight) are still loading: the scan
+/// stays queued and untouched, it is never failed for data that has not
+/// arrived yet.
+class _NotReady implements Exception {
+  const _NotReady();
+}
+
 /// Everything the runner needs, injected so tests drive it without a device.
 class BodyScanJobRunner {
   BodyScanJobRunner({
@@ -62,6 +69,8 @@ class BodyScanJobRunner {
     this.onChanged,
     this.onScanDone,
     this.onError,
+    this.subjectPending,
+    this.onRemoteDeleteFlushed,
     this.estimator = const ProvisionalEstimator(),
   });
 
@@ -92,9 +101,21 @@ class BodyScanJobRunner {
 
   /// Receives ONLY a scrubbed slug wrapped in an exception, never the raw one.
   final void Function(Object scrubbed)? onError;
+
+  /// True while the profile or weight that [resolveSubject] needs is still
+  /// loading. A null subject is then "not ready" (the scan stays queued) and
+  /// never `subject-missing`, which is reserved for a loaded profile that lacks
+  /// data. The app root resumes the runner once the inputs have loaded.
+  final bool Function(ScanRecord record)? subjectPending;
+
+  /// Called after an owed PHOTOS-ONLY server delete succeeded: removes the
+  /// phone copy of the scan (photos and record). Without it the owed flag is
+  /// just cleared.
+  final Future<void> Function(ScanRecord record)? onRemoteDeleteFlushed;
   final BodyCompositionEstimator estimator;
 
   bool _busy = false;
+  bool _rerun = false;
   bool _disposed = false;
   Timer? _timer;
   final Set<String> _stopped = {};
@@ -108,11 +129,29 @@ class BodyScanJobRunner {
 
   // ---- public entry points ---------------------------------------------
 
-  /// Resumes the queue. Safe to call often: a second call while one runs is a
-  /// no-op (one scan at a time).
+  /// Resumes the queue. Safe to call often: a second call while one runs only
+  /// asks the running one to take another pass when it finishes (one scan at a
+  /// time), so a retry timer that fires while the runner is busy is never lost.
+  /// Never throws: a failure becomes a failed/requeued scan or a scrubbed
+  /// [onError] report.
   Future<void> resume() async {
-    if (_busy || _disposed) return;
+    if (_disposed) return;
+    if (_busy) {
+      _rerun = true;
+      return;
+    }
     _busy = true;
+    try {
+      do {
+        _rerun = false;
+        await _runOnce();
+      } while (_rerun && !_disposed);
+    } finally {
+      _busy = false;
+    }
+  }
+
+  Future<void> _runOnce() async {
     try {
       await _flushPendingDeletes();
       final all = await scans.list();
@@ -120,39 +159,48 @@ class BodyScanJobRunner {
         for (final r in all)
           if (_resumable(r)) r,
       ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      DateTime? earliest;
       for (final rec in queue) {
         if (_disposed || accountChanged()) return;
         final due = _dueAt(rec);
-        if (due != null && due.isAfter(now())) {
-          if (earliest == null || due.isBefore(earliest)) earliest = due;
-          continue;
+        if (due != null && due.isAfter(now())) continue;
+        try {
+          await _process(rec, all);
+        } on _Stop {
+          // This scan was cancelled or deleted, or the account changed (the
+          // next iteration then ends the run): carry on with the others.
         }
-        await _process(rec, all);
       }
-      if (earliest != null) _scheduleAt(earliest);
-    } on _Stop {
-      // Account changed or the scan was cancelled: stop quietly.
+    } catch (e) {
+      _report(e);
     } finally {
-      _busy = false;
+      await _rescheduleFromQueue();
     }
   }
 
   /// User pressed Retry on a failed scan: attempts reset.
   Future<void> retry(String scanId) async {
-    final rec = await _find(scanId);
-    if (rec == null || rec.analysis == null || accountChanged()) return;
-    _stopped.remove(scanId);
-    await scans.save(rec.copyWith(
-      analysis: rec.analysis!.copyWith(
-        status: JobStatus.queued,
-        attempt: 0,
-        clearLastError: true,
-        updatedAt: now(),
-      ),
-    ));
-    onChanged?.call();
-    unawaited(resume());
+    try {
+      final rec = await _find(scanId);
+      if (rec == null ||
+          rec.analysis == null ||
+          rec.pendingRemoteDelete ||
+          accountChanged()) {
+        return;
+      }
+      _stopped.remove(scanId);
+      await scans.save(rec.copyWith(
+        analysis: rec.analysis!.copyWith(
+          status: JobStatus.queued,
+          attempt: 0,
+          clearLastError: true,
+          updatedAt: now(),
+        ),
+      ));
+      onChanged?.call();
+      unawaited(resume());
+    } catch (e) {
+      _report(e);
+    }
   }
 
   /// User cancel. Aborts any PUT in flight, asks the server to delete what was
@@ -161,34 +209,43 @@ class BodyScanJobRunner {
   Future<void> cancel(String scanId) async {
     _stopped.add(scanId);
     uploader.abortInFlight();
-    final rec = await _find(scanId);
-    if (rec == null || rec.analysis == null || accountChanged()) return;
-    var owed = rec.pendingRemoteDelete;
-    final mayHaveUploaded = flags.cloudPhotos &&
-        (rec.analysis!.status == JobStatus.uploading ||
-            rec.analysis!.status == JobStatus.analysing ||
-            rec.analysis!.remoteStatus != null);
-    if (mayHaveUploaded) {
-      try {
-        await api.deleteBodyScan(rec.remoteId, photosOnly: false);
-        owed = false;
-      } catch (e) {
-        _report(e);
-        owed = true;
+    try {
+      final rec = await _find(scanId);
+      if (rec == null || rec.analysis == null || accountChanged()) return;
+      var owed = rec.pendingRemoteDelete;
+      final mayHaveUploaded = flags.cloudPhotos &&
+          (rec.analysis!.status == JobStatus.uploading ||
+              rec.analysis!.status == JobStatus.analysing ||
+              rec.analysis!.remoteStatus != null);
+      if (mayHaveUploaded) {
+        try {
+          await api.deleteBodyScan(rec.remoteId, photosOnly: false);
+          owed = false;
+        } catch (e) {
+          _report(e);
+          owed = true;
+        }
       }
+      // Re-read: the record may have changed while the delete call ran, and a
+      // locally deleted scan must not be written back.
+      final latest = await _find(scanId);
+      if (latest == null || latest.analysis == null || accountChanged()) return;
+      final job = BodyScanJob(
+        status: latest.analysis!.status,
+        attempt: latest.analysis!.attempt,
+      ).cancel();
+      await scans.save(latest.copyWith(
+        analysis: latest.analysis!.copyWith(
+          status: job.status,
+          updatedAt: now(),
+        ),
+        pendingRemoteDelete: owed,
+        pendingPhotosOnly: false,
+      ));
+      onChanged?.call();
+    } catch (e) {
+      _report(e);
     }
-    final job = BodyScanJob(
-      status: rec.analysis!.status,
-      attempt: rec.analysis!.attempt,
-    ).cancel();
-    await scans.save(rec.copyWith(
-      analysis: rec.analysis!.copyWith(
-        status: job.status,
-        updatedAt: now(),
-      ),
-      pendingRemoteDelete: owed,
-    ));
-    onChanged?.call();
   }
 
   /// The scan was deleted locally: no write may resurrect it.
@@ -203,6 +260,9 @@ class BodyScanJobRunner {
     final a = r.analysis;
     if (a == null) return false; // legacy: never auto-uploaded (D-6)
     if (a.status.isTerminal) return false;
+    // An owed server delete means the user cancelled or deleted this scan: it
+    // must never run again, whatever its stored status says.
+    if (r.pendingRemoteDelete) return false;
     return !_stopped.contains(r.id);
   }
 
@@ -217,6 +277,25 @@ class BodyScanJobRunner {
     _timer?.cancel();
     final wait = at.difference(now());
     _timer = Timer(wait.isNegative ? Duration.zero : wait, () => unawaited(resume()));
+  }
+
+  /// Arms the retry timer for the earliest backing-off scan, computed from the
+  /// stored queue AFTER a pass, so a scan that failed during the pass (or one
+  /// skipped as not yet due) always has a timer and none overwrites another.
+  Future<void> _rescheduleFromQueue() async {
+    try {
+      if (_disposed || accountChanged()) return;
+      DateTime? earliest;
+      for (final r in await scans.list()) {
+        if (!_resumable(r)) continue;
+        final due = _dueAt(r);
+        if (due == null) continue;
+        if (earliest == null || due.isBefore(earliest)) earliest = due;
+      }
+      if (earliest != null && !_disposed) _scheduleAt(earliest);
+    } catch (e) {
+      _report(e);
+    }
   }
 
   Future<ScanRecord?> _find(String id) async {
@@ -239,6 +318,16 @@ class BodyScanJobRunner {
 
   Future<ScanRecord> _save(ScanRecord rec) async {
     _guard(rec.id);
+    // Re-read before every write: a cancel or delete that landed meanwhile
+    // (pendingRemoteDelete, a terminal cancelled record, or no record at all)
+    // must never be overwritten by this run's older copy.
+    final latest = await _find(rec.id);
+    if (latest == null ||
+        latest.pendingRemoteDelete ||
+        latest.analysis?.status == JobStatus.cancelled) {
+      throw const _Stop();
+    }
+    _guard(rec.id);
     await scans.save(rec);
     onChanged?.call();
     return rec;
@@ -247,13 +336,29 @@ class BodyScanJobRunner {
   Future<void> _flushPendingDeletes() async {
     final all = await scans.list();
     for (final r in all) {
-      if (!r.pendingRemoteDelete || accountChanged()) continue;
+      if (!r.pendingRemoteDelete || _disposed || accountChanged()) continue;
       try {
-        await api.deleteBodyScan(r.remoteId, photosOnly: false);
-        await scans.save(r.copyWith(pendingRemoteDelete: false));
-        onChanged?.call();
+        await api.deleteBodyScan(r.remoteId, photosOnly: r.pendingPhotosOnly);
       } catch (e) {
         // Stays owed; retried on the next resume.
+        _report(e);
+        continue;
+      }
+      try {
+        // Re-read: only the flags are cleared, never an older copy of the rest.
+        final fresh = await _find(r.id);
+        if (fresh == null) continue;
+        final flush = onRemoteDeleteFlushed;
+        if (fresh.pendingPhotosOnly && flush != null) {
+          await flush(fresh);
+        } else {
+          await scans.save(fresh.copyWith(
+              pendingRemoteDelete: false, pendingPhotosOnly: false));
+        }
+        onChanged?.call();
+      } catch (e) {
+        // The server copy is gone but the local follow-up failed: the flag
+        // stays set, so the (idempotent) delete and the follow-up repeat.
         _report(e);
       }
     }
@@ -282,6 +387,8 @@ class BodyScanJobRunner {
       }
     } on _Stop {
       rethrow;
+    } on _NotReady {
+      return; // inputs still loading: stays queued, picked up on the next resume
     } catch (e) {
       _report(e);
       rec = await _find(rec.id) ?? rec;
@@ -303,9 +410,7 @@ class BodyScanJobRunner {
         updatedAt: now(),
       ),
     ));
-    if (next.status == JobStatus.queued) {
-      _scheduleAt(now().add(Duration(seconds: backoffSeconds(next.attempt - 1))));
-    }
+    // The retry timer is armed from the stored queue after the pass.
   }
 
   // ---- LOCAL path (D-52): no callable, no upload, works offline ----------
@@ -314,6 +419,7 @@ class BodyScanJobRunner {
     _guard(rec.id);
     final subject = await resolveSubject(rec);
     if (subject == null) {
+      if (subjectPending?.call(rec) ?? false) throw const _NotReady();
       await _save(rec.copyWith(
         analysis: (rec.analysis ?? const ScanAnalysis.queued()).copyWith(
           status: JobStatus.failed,
@@ -420,6 +526,7 @@ class BodyScanJobRunner {
     var rec = start;
     final subject = await resolveSubject(rec);
     if (subject == null) {
+      if (subjectPending?.call(rec) ?? false) throw const _NotReady();
       await _save(rec.copyWith(
         analysis: (rec.analysis ?? const ScanAnalysis.queued()).copyWith(
           status: JobStatus.failed,
