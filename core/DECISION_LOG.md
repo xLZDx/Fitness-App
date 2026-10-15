@@ -56360,3 +56360,7 @@ Decision: auto-adjust toggles are inert and off under Manual and independent oth
 ## 2026-10-15 - Commit: C23 macro bars tests
 
 Decision: macro values are asserted as text and through the semantics label, not via the bar. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C19 professional_notice_test.dart
+
+Decision: the referProfessional notice carries no numbers or reasons. Evidence: core/changes/2026-10-15-c19-tests.md (professional_notice_test.dart 6 passed).
