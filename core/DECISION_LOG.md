@@ -56610,3 +56610,7 @@ Decision: an owed server delete (`pendingRemoteDelete`) makes a scan permanently
 ## 2026-10-15 - Commit: server review fixes part 2 (tests and runbook)
 
 Decision: bucket runbook rollback is flipping BODY_SCAN_ACCEPT_UPLOADS, never unsetting BODY_SCAN_BUCKET while objects exist; storage rules are deployed separately with --only storage. Evidence: core/changes/2026-10-15-server-review-fixes-2-tests-runbook.md; no checks run.
+
+## 2026-10-15 - Commit: mobile owed deletes
+
+Decision: a photo delete with a possibly existing cloud copy is never reported `deleted` until the server delete succeeded; otherwise it is persisted as owed (photos-only kind), the scan is stopped (terminal cancelled when unfinished) and the runner removes the phone copy after the flush. Evidence: core/changes/2026-10-15-mobile-delete-owed.md; no checks run.

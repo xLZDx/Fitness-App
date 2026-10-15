@@ -4,6 +4,8 @@
 /// (the notice is the caller's job, D-79).
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,6 +20,7 @@ import '../../profile/state/profile_providers.dart';
 import '../../progress_photos/scan/scan_repository.dart';
 import '../../progress_photos/scan/ui/scan_compare_screen.dart'
     show deleteScanFiles;
+import '../data/body_scan_job.dart' show JobStatus;
 import '../data/provisional_estimator.dart';
 import '../data/scan_result_math.dart';
 import 'body_scan_providers.dart';
@@ -59,32 +62,28 @@ class ScanHistoryActions {
 
   /// Deletes the photos of [row]: the cloud copy first (so an owed delete is
   /// recorded before anything local disappears), then the phone copy through
-  /// the existing scan delete path.
+  /// the existing scan delete path. While a cloud copy may exist but cannot be
+  /// deleted now (offline, or the cloud path is off) the delete is OWED: it is
+  /// persisted (photos-only), the scan stops running, the phone copy stays and
+  /// the runner removes it after the server delete succeeded. It never reports
+  /// `deleted` while the cloud copy remains.
   Future<DeletePhotosOutcome> deletePhotos(ScanHistoryRow row) async {
     final record = row.record;
     final serverId = row.serverScanId;
     final cloudOn = _ref.read(bodyScanFlagsProvider).cloudPhotos;
-    if (serverId != null && cloudOn) {
-      try {
-        await _ref
-            .read(bodyScanApiProvider)
-            .deleteBodyScan(serverId, photosOnly: true);
-      } catch (e) {
-        debugPrint('body scan: cloud photo delete deferred (${e.runtimeType})');
-        if (record == null) return DeletePhotosOutcome.failed;
+    if (serverId != null) {
+      var owe = !cloudOn;
+      if (cloudOn) {
         try {
           await _ref
-              .read(scanRepositoryProvider)
-              .save(record.copyWith(pendingRemoteDelete: true));
-          _ref.invalidate(scanHistoryProvider);
-          // The runner flushes owed deletes when it next runs.
-          _ref.read(bodyScanRunnerProvider)?.resume();
-          return DeletePhotosOutcome.queuedOffline;
-        } catch (e2) {
-          debugPrint('body scan: owed delete not saved (${e2.runtimeType})');
-          return DeletePhotosOutcome.failed;
+              .read(bodyScanApiProvider)
+              .deleteBodyScan(serverId, photosOnly: true);
+        } catch (e) {
+          debugPrint('body scan: cloud photo delete deferred (${e.runtimeType})');
+          owe = true;
         }
       }
+      if (owe) return _oweRemoteDelete(record);
     }
     if (record != null) {
       _ref.read(bodyScanRunnerProvider)?.forget(record.id);
@@ -98,6 +97,41 @@ class ScanHistoryActions {
       _ref.invalidate(scanHistoryProvider);
     }
     return DeletePhotosOutcome.deleted;
+  }
+
+  /// Records the owed server delete and stops the scan (terminal `cancelled`
+  /// when it was unfinished) so the runner cannot upload or re-create it.
+  Future<DeletePhotosOutcome> _oweRemoteDelete(ScanRecord? record) async {
+    if (record == null) return DeletePhotosOutcome.failed;
+    // Stop first: no in-flight write of the runner may outlive the cancel.
+    _ref.read(bodyScanRunnerProvider)?.forget(record.id);
+    try {
+      final a = record.analysis;
+      await _ref.read(scanRepositoryProvider).save(record.copyWith(
+            pendingRemoteDelete: true,
+            // A full delete already owed stays full.
+            pendingPhotosOnly:
+                record.pendingRemoteDelete ? record.pendingPhotosOnly : true,
+            analysis: a != null && !a.status.isTerminal
+                ? a.copyWith(
+                    status: JobStatus.cancelled,
+                    updatedAt: _ref.read(nutritionClockProvider)(),
+                  )
+                : null,
+          ));
+      _ref.invalidate(scanHistoryProvider);
+      // The runner flushes owed deletes when it next runs.
+      final runner = _ref.read(bodyScanRunnerProvider);
+      if (runner != null) {
+        unawaited(runner.resume().catchError((Object e) {
+          debugPrint('body scan: resume failed (${e.runtimeType})');
+        }));
+      }
+      return DeletePhotosOutcome.queuedOffline;
+    } catch (e) {
+      debugPrint('body scan: owed delete not saved (${e.runtimeType})');
+      return DeletePhotosOutcome.failed;
+    }
   }
 
   /// Sets the recorded weight of [row] to [kg]:

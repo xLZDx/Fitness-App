@@ -292,8 +292,41 @@ void main() {
       expect(e.scans['a']!.pendingRemoteDelete, isTrue);
       expect(e.photos.deleted, isEmpty,
           reason: 'nothing local disappears before the owed delete is recorded');
+      expect(e.scans['a']!.pendingPhotosOnly, isTrue,
+          reason: 'the owed kind is photos-only, not a full delete');
+      expect(e.scans['a']!.analysis!.status, JobStatus.done);
       expect(e.runner.resumes, 1);
-      expect(e.runner.forgotten, isEmpty);
+      expect(e.runner.forgotten, ['a'],
+          reason: 'the runner must stop touching the scan');
+    });
+
+    test('offline delete of an UNFINISHED scan stops it: terminal cancelled, '
+        'owed, runner told to forget', () async {
+      final rec = ScanRecord(
+        id: 'u',
+        createdAt: DateTime(2026, 10, 10, 8),
+        shots: const {},
+        analysis: const ScanAnalysis(
+            status: JobStatus.uploading, remoteStatus: 'pending'),
+        weightKg: 80,
+      );
+      e = await _env(records: [rec]);
+      e.api.error = StateError('offline');
+      final out = await e.actions.deletePhotos(ScanHistoryRow(
+          id: 'u', takenAt: rec.createdAt, weightKg: 80, record: rec));
+      expect(out, DeletePhotosOutcome.queuedOffline);
+      expect(e.scans['u']!.analysis!.status, JobStatus.cancelled);
+      expect(e.scans['u']!.pendingRemoteDelete, isTrue);
+      expect(e.runner.forgotten, ['u']);
+    });
+
+    test('an owed FULL delete is not downgraded to photos-only', () async {
+      final base = _rec('a', estimate: _srvEst(20), remoteId: 'a', remoteStatus: 'done');
+      final rec = base.copyWith(pendingRemoteDelete: true);
+      e = await _env(records: [rec]);
+      e.api.error = StateError('offline');
+      await e.actions.deletePhotos(_row(record: rec, entry: _entry('a')));
+      expect(e.scans['a']!.pendingPhotosOnly, isFalse);
     });
 
     test('offline and the owed delete cannot be saved: failed, local files '
@@ -309,15 +342,24 @@ void main() {
       expect(e.photos.deleted, isEmpty);
     });
 
-    test('cloud flag off: a record that once uploaded is deleted locally only',
-        () async {
+    test('cloud flag off: a record that once uploaded does NOT report deleted '
+        'while the cloud copy remains; the delete is owed', () async {
       final rec = _rec('a', estimate: _srvEst(20), remoteId: 'a', remoteStatus: 'done');
       e = await _env(records: [rec], cloud: false);
       final out = await e.actions
           .deletePhotos(_row(record: rec, entry: _entry('a')));
-      expect(out, DeletePhotosOutcome.deleted);
+      expect(out, DeletePhotosOutcome.queuedOffline);
       expect(e.api.calls, isEmpty);
-      expect(e.scans['a'], isNull);
+      expect(e.scans['a']!.pendingRemoteDelete, isTrue);
+      expect(e.scans['a']!.pendingPhotosOnly, isTrue);
+      expect(e.photos.deleted, isEmpty);
+    });
+
+    test('cloud flag off and no local record: failed, nothing reported deleted',
+        () async {
+      e = await _env(cloud: false);
+      final out = await e.actions.deletePhotos(_row(entry: _entry('s1')));
+      expect(out, DeletePhotosOutcome.failed);
     });
 
     test('a local file failure reports failed and keeps the record for retry',

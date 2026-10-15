@@ -28,8 +28,11 @@ class _Repo implements ScanRepository {
 
   void put(ScanRecord r) => byId[r.id] = r;
 
+  bool failList = false;
+
   @override
   Future<List<ScanRecord>> list() async {
+    if (failList) throw StateError('disk');
     final l = byId.values.toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return l;
@@ -245,7 +248,13 @@ class _H {
       resolveSubject: (r) async {
         subjectCalls++;
         await subjectGate?.future;
+        if (subjectQueue.isNotEmpty) return subjectQueue.removeAt(0);
         return this.subject;
+      },
+      subjectPending: (_) => subjectLoading,
+      onRemoteDeleteFlushed: (r) async {
+        flushed.add(r.id);
+        await repo.delete(r.id);
       },
       accountChanged: () => changed(),
       now: () => clock,
@@ -270,6 +279,9 @@ class _H {
   bool photoMissing = false;
   Completer<void>? subjectGate;
   int subjectCalls = 0;
+  bool subjectLoading = false;
+  final List<EstimatorSubject?> subjectQueue = [];
+  final List<String> flushed = [];
   int changes = 0;
   final List<String> reads = [];
   final List<String> done = [];
@@ -1019,6 +1031,156 @@ void main() {
       await x.run();
       expect(x.repo.totalSaves, 0);
       expect(x.done, isEmpty);
+    });
+  });
+
+  group('review fixes: owed delete, not-ready inputs, timer, errors', () {
+    test('SF-F1: an owed delete makes a queued scan non-resumable; after the '
+        'flush nothing is created or uploaded and the record stays terminal',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      x.repo.put(_rec('s1',
+          pendingDelete: true,
+          analysis: const ScanAnalysis(status: JobStatus.queued)));
+      await x.run();
+      expect(x.api.deletes, [('s1', false)]);
+      expect(x.api.creates, 0);
+      expect(x.uploader.puts, isEmpty);
+      expect(x.done, isEmpty);
+    });
+
+    test('SF-F1: a run holding an older copy never overwrites a cancel that '
+        'landed meanwhile', () async {
+      final x = h();
+      x.repo.put(_rec('s1'));
+      x.subjectGate = Completer<void>();
+      final running = x.runner.resume();
+      await Future<void>.delayed(Duration.zero);
+      // Another writer (the actions) records the cancel + owed delete.
+      x.repo.put(x.repo['s1'].copyWith(
+          pendingRemoteDelete: true,
+          analysis: const ScanAnalysis(status: JobStatus.cancelled)));
+      x.subjectGate!.complete();
+      await running;
+      expect(x.repo['s1'].pendingRemoteDelete, isTrue);
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expect(x.done, isEmpty);
+    });
+
+    test('SF-F5: an owed PHOTOS-ONLY delete is sent as photosOnly and the '
+        'phone copy goes after the flush', () async {
+      final x = h(cloud: true, consent: 1);
+      x.repo.put(ScanRecord(
+        id: 'p1',
+        createdAt: DateTime.utc(2026, 10, 1),
+        shots: const {},
+        analysis: const ScanAnalysis(status: JobStatus.done),
+        pendingRemoteDelete: true,
+        pendingPhotosOnly: true,
+      ));
+      await x.run();
+      expect(x.api.deletes, [('p1', true)]);
+      expect(x.flushed, ['p1']);
+      expect(x.repo.byId.containsKey('p1'), isFalse);
+    });
+
+    test('SF-F5: a failing photos-only flush keeps the flag and the phone copy',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      x.api.deleteError = const BodyScanApiException('scan-delete-failed');
+      x.repo.put(ScanRecord(
+        id: 'p1',
+        createdAt: DateTime.utc(2026, 10, 1),
+        shots: const {},
+        analysis: const ScanAnalysis(status: JobStatus.done),
+        pendingRemoteDelete: true,
+        pendingPhotosOnly: true,
+      ));
+      await x.run();
+      expect(x.flushed, isEmpty);
+      expect(x.repo['p1'].pendingRemoteDelete, isTrue);
+    });
+
+    test('SF-F2: inputs still loading keep the scan queued, then it completes',
+        () async {
+      final x = h();
+      x.subjectLoading = true;
+      x.subjectQueue.add(null);
+      x.repo.put(_rec('s1'));
+      await x.run();
+      expect(x.repo['s1'].analysis!.status, JobStatus.queued);
+      expect(x.repo['s1'].analysis!.lastError, isNull);
+      expect(x.repo.totalSaves, 0);
+      x.subjectLoading = false;
+      await x.run();
+      expect(x.repo['s1'].analysis!.status, JobStatus.done);
+    });
+
+    test('SF-F2: a LOADED profile lacking data is still subject-missing',
+        () async {
+      final x = h(subject: null);
+      x.subjectLoading = false;
+      x.repo.put(_rec('s1'));
+      await x.run();
+      expect(x.repo['s1'].analysis!.lastError, 'subject-missing');
+    });
+
+    test('SF-F2: loading inputs on the cloud path make no API call', () async {
+      final x = h(cloud: true, consent: 1, subject: null);
+      x.subjectLoading = true;
+      x.repo.put(_rec('s1'));
+      await x.run();
+      expect(x.api.calls, 0);
+      expect(x.repo['s1'].analysis!.status, JobStatus.queued);
+    });
+
+    test('SF-F3: a resume that arrives while busy is not lost (rerun pass)',
+        () async {
+      final x = h();
+      x.repo.put(_rec('a', at: DateTime.utc(2026, 10, 1)));
+      x.subjectGate = Completer<void>();
+      final first = x.runner.resume();
+      await Future<void>.delayed(Duration.zero);
+      // A second scan arrives and the timer-style resume hits a busy runner.
+      x.repo.put(_rec('b', at: DateTime.utc(2026, 10, 2)));
+      await x.runner.resume();
+      x.subjectGate!.complete();
+      await first;
+      expect(x.done, ['a', 'b'],
+          reason: 'the second pass picked up what the busy runner had missed');
+    });
+
+    test('SF-F3: a scan that failed during the pass is re-run by the retry '
+        'timer even though another scan was skipped as not due', () async {
+      final x = h(cloud: true, consent: 1);
+      x.api.createQueue.add((id, n) =>
+          throw const BodyScanApiException('upload-url-failed'));
+      x.repo.put(_rec('a', at: DateTime.utc(2026, 10, 1)));
+      // b is backing off with a LATER due time than a's first retry.
+      x.repo.put(_rec('b',
+          at: DateTime.utc(2026, 10, 2),
+          analysis: ScanAnalysis(
+              status: JobStatus.queued,
+              attempt: 4,
+              updatedAt: x.clock.add(const Duration(seconds: 1)))));
+      await x.run();
+      expect(x.repo['a'].analysis!.attempt, 1);
+      // a's retry (1 s) must still be armed: let the real timer fire.
+      x.tick(2);
+      await Future<void>.delayed(const Duration(milliseconds: 1300));
+      await x.settle();
+      expect(x.api.createIds.where((i) => i == 'a').length, greaterThanOrEqualTo(2));
+    });
+
+    test('SF-F6: a failing repository never escapes resume, retry or cancel',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      x.repo.put(_rec('s1'));
+      x.repo.failList = true;
+      await x.runner.resume();
+      await x.runner.retry('s1');
+      await x.runner.cancel('s1');
+      expect(x.errors, isNotEmpty);
     });
   });
 
