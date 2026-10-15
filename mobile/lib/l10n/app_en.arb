@@ -2961,5 +2961,31 @@
   "dataNoticeAcknowledge": "Got it",
   "@dataNoticeAcknowledge": {
     "description": "Single-tap acknowledgement button of the data notice."
+  },
+  "scanManualTimerStarted": "Photo in {seconds, plural, one{# second} other{# seconds}}",
+  "@scanManualTimerStarted": {
+    "description": "Announced when the manual shutter timer starts.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "scanManualTimerCancel": "Cancel timer",
+  "@scanManualTimerCancel": {
+    "description": "Button that aborts the running manual shutter timer."
+  },
+  "scanAllChecksOk": "All four checks OK, hold still",
+  "@scanAllChecksOk": {
+    "description": "Cue announced and spoken when distance, lighting, position and pose all pass."
+  },
+  "scanRetakePose": "Retake {pose}",
+  "@scanRetakePose": {
+    "description": "Pose-specific retake button on the review screen.",
+    "placeholders": {
+      "pose": {
+        "type": "String"
+      }
+    }
   }
 }

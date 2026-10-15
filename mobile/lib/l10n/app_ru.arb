@@ -1790,5 +1790,31 @@
   "dataNoticeAcknowledge": "Понятно",
   "@dataNoticeAcknowledge": {
     "description": "Single-tap acknowledgement button of the data notice."
+  },
+  "scanManualTimerStarted": "Фото через {seconds, plural, one{# секунду} few{# секунды} many{# секунд} other{# секунды}}",
+  "@scanManualTimerStarted": {
+    "description": "Announced when the manual shutter timer starts.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "scanManualTimerCancel": "Отменить таймер",
+  "@scanManualTimerCancel": {
+    "description": "Button that aborts the running manual shutter timer."
+  },
+  "scanAllChecksOk": "Все четыре проверки в порядке, не двигайтесь",
+  "@scanAllChecksOk": {
+    "description": "Cue announced and spoken when distance, lighting, position and pose all pass."
+  },
+  "scanRetakePose": "Переснять: {pose}",
+  "@scanRetakePose": {
+    "description": "Pose-specific retake button on the review screen.",
+    "placeholders": {
+      "pose": {
+        "type": "String"
+      }
+    }
   }
 }

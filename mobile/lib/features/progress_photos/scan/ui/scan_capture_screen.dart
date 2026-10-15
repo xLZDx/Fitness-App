@@ -25,6 +25,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../account_deletion/state/account_deletion_providers.dart'
     show accountBeingDeletedUidProvider;
 import '../../../auth/state/auth_providers.dart';
+import '../../../body_scan/data/body_scan_job.dart' show JobStatus;
+import '../../../body_scan/widgets/setup_status_panel.dart';
+import '../../../body_scan/widgets/skeleton_overlay.dart';
 import '../../../form_check/data/pose_landmark.dart';
 import '../../../form_check/state/form_check_providers.dart'
     show voiceMutedProvider;
@@ -44,7 +47,13 @@ import 'scan_ports.dart';
 import 'scan_text.dart';
 
 class ScanCaptureScreen extends ConsumerWidget {
-  const ScanCaptureScreen({super.key});
+  /// [weightKg] is the weight recorded for this scan (the body-scan flow asks
+  /// for it before capture); it is stored in the v2 record. The screen pops
+  /// with the new scan id (a `String`) once the scan is saved, and with null
+  /// when it is left without saving.
+  const ScanCaptureScreen({super.key, this.weightKg});
+
+  final double? weightKg;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,7 +64,7 @@ class ScanCaptureScreen extends ConsumerWidget {
         body: ScanGateView(access: access),
       );
     }
-    return const _ScanCaptureBody();
+    return _ScanCaptureBody(weightKg: weightKg);
   }
 }
 
@@ -67,7 +76,9 @@ class _SaveAborted implements Exception {
 }
 
 class _ScanCaptureBody extends ConsumerStatefulWidget {
-  const _ScanCaptureBody();
+  const _ScanCaptureBody({this.weightKg});
+
+  final double? weightKg;
 
   @override
   ConsumerState<_ScanCaptureBody> createState() => _ScanCaptureBodyState();
@@ -104,6 +115,24 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
   ReadinessHint _lastHint = ReadinessHint.none;
   int _lastHintAtMs = 0;
   static const int _hintRepeatMs = 9000;
+
+  /// Per pose: the manual shutter fired while readiness was not green. Cleared
+  /// for a pose when it is retaken.
+  final Map<ScanPose, bool> _manualOverride = {};
+
+  // Manual-shutter timer (D-80): visible, announced, cancellable.
+  Timer? _manualTimer;
+  int _manualLeft = 0;
+
+  /// The hint text the polite live region currently carries. It changes at most
+  /// once per [_liveHintMinGapMs] so a flickering readiness never floods a
+  /// screen reader (D-80).
+  String _liveHint = '';
+  int _liveHintAtMs = 0;
+  static const int _liveHintMinGapMs = 2000;
+
+  bool _wasReady = false;
+  ScanHapticPattern? _lastFailPattern;
 
   @override
   void initState() {
@@ -158,12 +187,15 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed || !mounted) return;
     _machine.reset();
+    _cancelManualTimer();
     unawaited(_speaker.stop());
     if (_countdown != null) setState(() => _countdown = null);
   }
 
   @override
   void dispose() {
+    _manualTimer?.cancel();
+    _manualTimer = null;
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_sub?.cancel());
     unawaited(_camera.stop());
@@ -183,15 +215,26 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
     final now = _clock();
     final result = _evaluator.evaluate(
       frame: frame,
-      // Only "sustained dark" is observable from the session; over-exposure is
-      // not measured (the evaluator treats a mid value as fine).
-      luminance: _camera.lowLight.value ? 0.1 : 0.5,
+      // The real frame brightness when the camera measures it (so over-exposure
+      // is detected); otherwise only the "sustained dark" verdict is known and
+      // the evaluator treats the mid value as fine.
+      luminance: _camera.luminance ?? (_camera.lowLight.value ? 0.1 : 0.5),
       pose: pose,
       userConfirmsFacingAway: _confirmAway,
     );
     final previous = _result;
     _lastFrame = frame;
     _result = result;
+
+    // While the manual-shutter timer runs it owns the countdown: the auto
+    // machine is not fed, so two countdowns can never overlap (D-80).
+    if (_manualTimer != null) {
+      if (previous == null || _readinessChanged(previous, result)) {
+        setState(() {});
+      }
+      return;
+    }
+
     final wasCounting = _countdown != null;
     final events = _machine.update(now, ready: result.isReady);
     int? countdown = _countdown;
@@ -201,7 +244,9 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
         case ShutterEventType.tick:
           countdown = e.value;
           _haptics.tick();
-          unawaited(_speaker.say('${e.value}'));
+          // ONE channel per tick (D-80): with a screen reader the countdown
+          // live region carries it; otherwise only the speech engine does.
+          if (!_screenReaderOn) unawaited(_speaker.say('${e.value}'));
         case ShutterEventType.shutter:
           shutter = true;
           countdown = null;
@@ -209,7 +254,7 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
           countdown = null;
           if (wasCounting) {
             _haptics.warn();
-            unawaited(_speaker.say(_l10n.scanCancelledSpoken));
+            _announceCue(_l10n.scanCancelledSpoken, now);
             _lastHint = ReadinessHint.none;
           }
         case ShutterEventType.holdStart:
@@ -220,41 +265,161 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
     if (!shutter) _maybeSpeakHint(result, now);
     // Rebuild only when something the UI shows has changed.
     final changed = previous == null ||
-        previous.distance != result.distance ||
-        previous.lighting != result.lighting ||
-        previous.position != result.position ||
-        previous.orientation != result.orientation ||
-        previous.hint != result.hint ||
+        _readinessChanged(previous, result) ||
         _countdown != countdown;
     _countdown = countdown;
     if (changed) setState(() {});
     if (shutter) unawaited(_capture(pose, frame));
   }
 
-  /// Speaks the current prompt when it changes, and repeats it only after a
-  /// pause, so the person is not nagged on every analysed frame.
+  bool _readinessChanged(ReadinessResult a, ReadinessResult b) =>
+      a.distance != b.distance ||
+      a.lighting != b.lighting ||
+      a.position != b.position ||
+      a.orientation != b.orientation ||
+      a.hint != b.hint;
+
+  bool get _screenReaderOn =>
+      mounted && MediaQuery.of(context).accessibleNavigation;
+
+  ScanHapticPattern? _patternOfHint(ReadinessHint h) =>
+      switch (checkOfHint(h)) {
+        SetupCheck.distance => ScanHapticPattern.distance,
+        SetupCheck.lighting => ScanHapticPattern.lighting,
+        SetupCheck.position => ScanHapticPattern.position,
+        SetupCheck.orientation => ScanHapticPattern.pose,
+        null => null,
+      };
+
+  /// Puts [text] on the polite live region, at most once per
+  /// [_liveHintMinGapMs]. Always the channel for a screen-reader user, and the
+  /// fallback when speech failed.
+  void _announceCue(String text, int now) {
+    if (text == _liveHint) return;
+    if (now - _liveHintAtMs < _liveHintMinGapMs) return;
+    _liveHint = text;
+    _liveHintAtMs = now;
+  }
+
+  /// Non-visual cues for the current readiness: a named haptic pattern for
+  /// every transition and the hint on the throttled live region; speech only
+  /// when no screen reader is active (one channel), repeated after a pause so
+  /// the person is not nagged on every analysed frame.
   void _maybeSpeakHint(ReadinessResult r, int now) {
     if (_machine.state == ShutterState.cooldown) return;
-    if (r.isReady || r.hint == ReadinessHint.none) {
+    if (r.isReady) {
+      if (!_wasReady) {
+        _wasReady = true;
+        _lastFailPattern = null;
+        _haptics.pattern(ScanHapticPattern.ready);
+        _announceCue(_l10n.scanAllChecksOk, now);
+        if (!_screenReaderOn) {
+          unawaited(_sayOrFallBack(_l10n.scanAllChecksOk, now));
+        }
+      }
       _lastHint = ReadinessHint.none;
       return;
+    }
+    if (_wasReady) {
+      _wasReady = false;
+      _haptics.pattern(ScanHapticPattern.lost);
+    }
+    if (r.hint == ReadinessHint.none) {
+      _lastHint = ReadinessHint.none;
+      return;
+    }
+    final text = hintText(_l10n, r.hint);
+    _announceCue(text, now);
+    final pattern = _patternOfHint(r.hint);
+    if (pattern != null && pattern != _lastFailPattern) {
+      _lastFailPattern = pattern;
+      _haptics.pattern(pattern);
     }
     if (r.hint == _lastHint && now - _lastHintAtMs < _hintRepeatMs) return;
     _lastHint = r.hint;
     _lastHintAtMs = now;
-    unawaited(_speaker.say(hintText(_l10n, r.hint)));
+    if (!_screenReaderOn) unawaited(_sayOrFallBack(text, now));
   }
 
-  // ---- capture ----------------------------------------------------------
+  /// Speaks [text]; when speech failed, the live region carries it instead
+  /// (speech failure is swallowed but observable, D-80).
+  Future<void> _sayOrFallBack(String text, int now) async {
+    final ok = await _speaker.say(text);
+    if (!ok && mounted) {
+      _liveHint = '';
+      _announceCue(text, _clock());
+      setState(() {});
+    }
+  }
 
-  Future<void> _manualShutter() async {
+  // ---- manual shutter timer (D-80) -------------------------------------
+
+  int get _manualSeconds {
+    final chosen = ref.read(scanManualTimerSecondsProvider);
+    return kScanManualTimerChoices.contains(chosen)
+        ? chosen
+        : kScanManualTimerDefault;
+  }
+
+  /// Starts the visible, announced, cancellable timer; the photo is taken when
+  /// it reaches zero. A second press cancels it.
+  void _manualShutter() {
     final pose = _session.currentPose;
     if (pose == null || _capturing) return;
+    if (_manualTimer != null) {
+      _cancelManualTimer();
+      return;
+    }
     _machine.reset();
-    setState(() => _countdown = null);
+    _manualLeft = _manualSeconds;
+    _haptics.tick();
+    if (!_screenReaderOn) {
+      unawaited(_speaker.say(_l10n.scanManualTimerStarted(_manualLeft)));
+    }
+    setState(() => _countdown = _manualLeft);
+    _manualTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      _manualLeft--;
+      if (_manualLeft <= 0) {
+        t.cancel();
+        _manualTimer = null;
+        setState(() => _countdown = null);
+        unawaited(_fireManual(pose));
+        return;
+      }
+      _haptics.tick();
+      if (!_screenReaderOn) unawaited(_speaker.say('$_manualLeft'));
+      setState(() => _countdown = _manualLeft);
+    });
+  }
+
+  /// Aborts a running manual timer. Nothing is captured or recorded.
+  void _cancelManualTimer() {
+    final running = _manualTimer != null;
+    _manualTimer?.cancel();
+    _manualTimer = null;
+    _manualLeft = 0;
+    if (running && mounted) {
+      _haptics.warn();
+      unawaited(_speaker.stop());
+      setState(() => _countdown = null);
+    }
+  }
+
+  Future<void> _fireManual(ScanPose pose) async {
+    if (_capturing) return;
+    // Recorded when the shutter fires: it lowers this scan's confidence one
+    // level only when the checks were not all green at that moment.
+    final ready = _result?.isReady ?? false;
+    if (!ready) _manualOverride[pose] = true;
     _haptics.shutter();
     await _capture(pose, _lastFrame);
   }
+
+  // ---- capture ----------------------------------------------------------
 
   Future<void> _capture(ScanPose pose, PoseFrame? frame) async {
     if (_capturing) return;
@@ -318,8 +483,11 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
   Future<void> _retake(ScanPose pose) async {
     _bytes.remove(pose);
     _landmarks.remove(pose);
+    _manualOverride.remove(pose);
     _session = _session.retake(pose);
     _machine.reset();
+    _wasReady = false;
+    _lastFailPattern = null;
     setState(() {
       _phase = _Phase.capture;
       _result = null;
@@ -424,6 +592,14 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
               landmarks: _landmarks[pose] ?? const [],
             ),
         },
+        // v2: the scan joins the offline queue; the job runner (C14) decides
+        // between the local provisional estimate and the cloud path.
+        analysis: ScanAnalysis(status: JobStatus.queued, updatedAt: now),
+        weightKg: widget.weightKg,
+        manualOverride: {
+          for (final p in ScanPose.ordered)
+            if (_manualOverride[p] == true) p: true,
+        },
       );
       try {
         await scans.save(record);
@@ -454,7 +630,8 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
       }
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text(savedText)));
-      navigator.maybePop();
+      // Pops with the new scan id so the caller can open its result.
+      navigator.maybePop(record.id);
     } catch (e, st) {
       if (e is _SaveAborted || accountChanged()) {
         // Another account owns the app now: clean up quietly, report nothing.
@@ -509,15 +686,28 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
       fit: StackFit.expand,
       children: [
         if (_startError == null) _camera.buildPreview(context),
+        if (_startError == null && _phase == _Phase.capture)
+          Positioned.fill(
+            child: SkeletonOverlay(
+              frame: _lastFrame,
+              ready: _result?.isReady ?? false,
+            ),
+          ),
         if (_starting)
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 12),
+                // Reduced motion: static text instead of a spinner.
+                if (!MediaQuery.of(context).disableAnimations) ...[
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 12),
+                ],
                 Text(l10n.scanStarting,
-                    style: const TextStyle(color: Colors.white)),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: Colors.white)),
               ],
             ),
           ),
@@ -525,11 +715,17 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
           Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text(
-                l10n.scanCameraFailed(_startError!),
-                key: const Key('scan.cameraError'),
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white),
+              child: Semantics(
+                liveRegion: true,
+                child: Text(
+                  l10n.scanCameraFailed(_startError!),
+                  key: const Key('scan.cameraError'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(color: Colors.white),
+                ),
               ),
             ),
           ),
@@ -581,7 +777,10 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
                 countdown: _countdown,
                 confirmAway: _confirmAway,
                 capturing: _capturing,
+                manualTimerRunning: _manualTimer != null,
+                liveHint: _liveHint,
                 onManual: _starting || _startError != null ? null : _manualShutter,
+                onCancelManual: _cancelManualTimer,
                 onFacingAway: () => setState(() => _confirmAway = true),
               ),
             ],
@@ -596,11 +795,12 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
                 child: Text(
                   '$_countdown',
                   key: const Key('scan.countdown'),
-                  style: const TextStyle(
+                  // Theme style instead of a hard-coded 160 px literal; the
+                  // display style scales with the user's text size.
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     color: Colors.white,
-                    fontSize: 160,
                     fontWeight: FontWeight.w900,
-                    shadows: [Shadow(blurRadius: 16, color: Colors.black87)],
+                    shadows: const [Shadow(blurRadius: 16, color: Colors.black87)],
                   ),
                 ),
               ),
@@ -612,6 +812,7 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
 
   Future<void> _flip() async {
     _machine.reset();
+    _cancelManualTimer();
     setState(() => _countdown = null);
     try {
       await _camera.flip();
@@ -675,7 +876,12 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
                             TextButton(
                               key: Key('scan.retake.${pose.name}'),
                               onPressed: saving ? null : () => _retake(pose),
-                              child: Text(l10n.scanRetake),
+                              // Pose-specific label so a screen reader hears
+                              // which photo a button retakes.
+                              child: Text(
+                                l10n.scanRetakePose(poseLabel(l10n, pose)),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         ),
@@ -687,10 +893,13 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
             if (_saveError != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  l10n.scanSaveFailed(_saveError!),
-                  key: const Key('scan.saveError'),
-                  style: const TextStyle(color: Colors.redAccent),
+                child: Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    l10n.scanSaveFailed(_saveError!),
+                    key: const Key('scan.saveError'),
+                    style: const TextStyle(color: Colors.redAccent),
+                  ),
                 ),
               ),
             FilledButton(
@@ -731,12 +940,15 @@ class _PosePill extends StatelessWidget {
         children: [
           Text(
             poseLabel(l10n, pose),
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white, fontWeight: FontWeight.w800),
           ),
           Text(
             l10n.scanStepOf(index.clamp(1, 3), 3),
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
+            style: Theme.of(context)
+                .textTheme
+                .labelMedium
+                ?.copyWith(color: Colors.white70),
           ),
         ],
       ),
@@ -744,6 +956,14 @@ class _PosePill extends StatelessWidget {
   }
 }
 
+/// The bottom panel: hint, four status rows, facing-away note and the actions.
+///
+/// Bounded and scrollable (D-80): the hint, the four rows and the facing-away
+/// button live in an internally scrollable area capped at half the screen, so
+/// large text sizes never push the controls off screen. The shutter and the
+/// timer Cancel sit OUTSIDE the scroll area and are at least 48 dp high. The
+/// hint is the throttled polite live region; with a screen reader the countdown
+/// and the cues go through live regions only (one channel).
 class _ReadinessPanel extends StatelessWidget {
   const _ReadinessPanel({
     required this.result,
@@ -751,7 +971,10 @@ class _ReadinessPanel extends StatelessWidget {
     required this.countdown,
     required this.confirmAway,
     required this.capturing,
+    required this.manualTimerRunning,
+    required this.liveHint,
     required this.onManual,
+    required this.onCancelManual,
     required this.onFacingAway,
   });
 
@@ -760,12 +983,21 @@ class _ReadinessPanel extends StatelessWidget {
   final int? countdown;
   final bool confirmAway;
   final bool capturing;
+  final bool manualTimerRunning;
+
+  /// The throttled text of the live region ('' until the first cue).
+  final String liveHint;
   final VoidCallback? onManual;
+  final VoidCallback onCancelManual;
   final VoidCallback onFacingAway;
+
+  static const ButtonStyle _tall =
+      ButtonStyle(minimumSize: WidgetStatePropertyAll(Size(48, 48)));
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final r = result;
     final hint = r == null
         ? l10n.scanTripodTip
@@ -774,9 +1006,11 @@ class _ReadinessPanel extends StatelessWidget {
             : (r.hint == ReadinessHint.none
                 ? l10n.scanHintShowFullBody
                 : hintText(l10n, r.hint));
+    final maxHeight = MediaQuery.of(context).size.height * 0.5;
     return Container(
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(12),
+      constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(16),
@@ -785,109 +1019,67 @@ class _ReadinessPanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            hint,
-            key: const Key('scan.hint'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+          Flexible(
+            child: SingleChildScrollView(
+              key: const Key('scan.panelScroll'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Semantics(
+                    liveRegion: true,
+                    // The live region carries the throttled cue, not every
+                    // frame's hint.
+                    label: liveHint.isEmpty ? hint : liveHint,
+                    child: ExcludeSemantics(
+                      child: Text(
+                        hint,
+                        key: const Key('scan.hint'),
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                            color: Colors.white, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SetupStatusPanel(result: r),
+                  if (pose == ScanPose.back) ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      key: const Key('scan.facingAway'),
+                      style: _tall,
+                      onPressed: confirmAway ? null : onFacingAway,
+                      child: Text(l10n.scanFacingAway),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 8,
             runSpacing: 6,
             children: [
-              _CheckChip(
-                keyName: 'distance',
-                label: l10n.scanCheckDistance,
-                status: r?.distance,
-              ),
-              _CheckChip(
-                keyName: 'lighting',
-                label: l10n.scanCheckLighting,
-                status: r?.lighting,
-              ),
-              _CheckChip(
-                keyName: 'position',
-                label: l10n.scanCheckPosition,
-                status: r?.position,
-              ),
-              _CheckChip(
-                keyName: 'orientation',
-                label: l10n.scanCheckOrientation,
-                status: r?.orientation,
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              if (pose == ScanPose.back)
-                OutlinedButton(
-                  key: const Key('scan.facingAway'),
-                  onPressed: confirmAway ? null : onFacingAway,
-                  child: Text(l10n.scanFacingAway),
-                ),
               FilledButton.icon(
                 key: const Key('scan.shutter'),
-                onPressed: capturing ? null : onManual,
+                style: _tall,
+                onPressed: capturing || manualTimerRunning ? null : onManual,
                 icon: const Icon(Icons.photo_camera_outlined),
                 label: Text(l10n.scanShutterNow),
               ),
+              if (manualTimerRunning)
+                OutlinedButton.icon(
+                  key: const Key('scan.manualCancel'),
+                  style: _tall,
+                  onPressed: onCancelManual,
+                  icon: const Icon(Icons.timer_off_outlined),
+                  label: Text(l10n.scanManualTimerCancel),
+                ),
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CheckChip extends StatelessWidget {
-  const _CheckChip({
-    required this.keyName,
-    required this.label,
-    required this.status,
-  });
-
-  final String keyName;
-  final String label;
-  final CheckStatus? status;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final s = status ?? CheckStatus.unknown;
-    final (color, icon, text) = switch (s) {
-      CheckStatus.pass => (Colors.greenAccent, Icons.check_circle, l10n.scanCheckOk),
-      CheckStatus.fail =>
-        (Colors.orangeAccent, Icons.error_outline, l10n.scanCheckFix),
-      CheckStatus.unknown =>
-        (Colors.white54, Icons.hourglass_empty, l10n.scanCheckWaiting),
-    };
-    return Semantics(
-      label: '$label: $text',
-      child: ExcludeSemantics(
-        child: Container(
-          key: Key('scan.check.$keyName.${s.name}'),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            border: Border.all(color: color),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 16),
-              const SizedBox(width: 4),
-              Text('$label: $text',
-                  style: TextStyle(color: color, fontSize: 12)),
-            ],
-          ),
-        ),
       ),
     );
   }

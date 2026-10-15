@@ -425,6 +425,12 @@ class CameraSession {
   final ValueNotifier<bool> _lowLight = ValueNotifier<bool>(false);
   int _darkFrameRun = 0;
 
+  /// Mean brightness (0..1) of the most recent analysed frame, or null before
+  /// the first frame. The body scan reads it to detect over-exposure; it is
+  /// the same measurement the low-light verdict uses, so no extra sampling.
+  double? get lastBrightness => _lastBrightness;
+  double? _lastBrightness;
+
   /// Folds one frame's brightness into the sustained low-light verdict.
   ///
   /// A run, not a single reading: a hand passing the lens or auto-exposure
@@ -438,6 +444,7 @@ class CameraSession {
       interleavedBgra: !Platform.isAndroid,
     );
     if (brightness == null) return;
+    _lastBrightness = brightness;
     if (brightness < kLowLightBrightness) {
       if (_darkFrameRun < kLowLightFrameRun) _darkFrameRun++;
     } else {
