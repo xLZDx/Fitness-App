@@ -56448,3 +56448,7 @@ Decision: the plan page gates numbers on the verdict, acknowledges the data noti
 ## 2026-10-15 - Commit: C23 food detail sheet tests
 
 Decision: the notice gate is proven by zero repository writes until the acknowledge tap. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C25 client export paging tests
+
+Decision: the cap is asserted as 49 continuations because the first page counts toward the 50. Evidence: core/changes/2026-10-15-c25-tests.md (server_export_paging_test.dart 15 passed).
