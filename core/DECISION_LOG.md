@@ -55842,3 +55842,7 @@ Decision: the UI-0 audit is saved as a verbatim agent report with FACT/INFERENCE
 ## 2026-10-15 - Commit: S01 contract security review fixes
 
 Decision: all 15 security-review findings are addressed in the GPS contract and lifecycle matrix (none rejected; three accepted with qualifications because cloud-side settings cannot be verified from the repository). D-16 and D-17 remain open for the operator. Evidence: core/changes/2026-10-15-s01-contract-security-review-fixes.md.
+
+## 2026-10-15 - Commit: S01 review round 2 and UI-0 addendum
+
+Decision: the privacy zones of the user are a data class of their own (C11) with a consent-gated exemption from the D-16 stream retention, because the server needs them to validate a publish; friends visibility follows the D-17 option with unknown age always refused; the UI-0 audit stays a verbatim agent report plus an addendum, and the audited mobile/ tree predates the PR #5 Body Scan code. Evidence: core/changes/2026-10-15-s01-review-round-2-and-ui0-addendum.md.

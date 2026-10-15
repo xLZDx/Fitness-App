@@ -1,6 +1,6 @@
 # UI-0 baseline audit: `mobile/lib` (read-only)
 
-Sprint S01 part (c). Produced by a read-only code-explorer agent on 2026-10-15 from worktree `D:\Repo\Fitness_App_Phase2_s01` (line `phase2/s00-split-docs` at `6616d2f8`). Saved verbatim by the coordinator. Not reviewed by GPT-PM, product-ux-reviewer or a11y-architect yet.
+Sprint S01 part (c). Produced by a read-only code-explorer agent on 2026-10-15 from worktree `D:\Repo\Fitness_App_Phase2_s01`. The worktree was created from `phase2/s00-split-docs` at `6616d2f8` on branch `phase2/s01-contracts`; the audit was saved at `d58ff1d6` (documentation-only commits on top of `6616d2f8`, so the `mobile/` tree is the one at `6616d2f8`, which is based on `42d1b849` and does NOT yet contain the Body Scan and Nutrition Coach code merged into `phase2/main` by PR #5; screens and routes added by that PR are therefore not covered here). Saved verbatim by the coordinator. The agent itself did not run git. Reviewed by product-ux-reviewer (with accessibility points) on 2026-10-15: accurate where checked (17 FACT claims verified) but insufficient; the gaps are closed in `UI0_BASELINE_AUDIT_ADDENDUM.md`, which takes precedence where the two differ. GPT-PM review pending.
 
 Evidence labels: FACT(path) means the agent read it. INFERENCE means concluded from what it read.
 
