@@ -56492,3 +56492,7 @@ Progress: C16 l10n parity and plural tests added.
 ## 2026-10-15 - Commit: test(food): C24 label scan page tests
 
 Decision: the label page is proven to write a saved_food only after Confirm, using the edited values, and nothing on Cancel or dismiss. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 add food page tests
+
+Decision: tile routes are asserted by the URI the pushed stub receives, matching the routes C24 registered. Evidence: core/changes/2026-10-15-c23-tests.md.
