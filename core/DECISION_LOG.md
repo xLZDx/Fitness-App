@@ -55818,3 +55818,7 @@ Decision: settle write guarded by the ordering marker after a reliability review
 ## 2026-10-14 - Commit: Stripe tie settle revision CAS
 
 Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
+
+## 2026-10-15 - Commit: Phase 1 documentation index
+
+Decision: Phase 1 line gets a navigation index (`docs/phase1/README.md`) as part of the S00 split; no documents moved. The tag `phase1-baseline` at `42d1b849` is a historical split point, not a production-ready certificate. Evidence: core/changes/2026-10-15-s00-phase1-docs-index.md.
