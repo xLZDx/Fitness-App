@@ -55834,3 +55834,7 @@ Decision: the deploy-line gate is proven by deterministic fake-deps tests in rel
 ## 2026-10-15 - Commit: S01 contract and rights drafts
 
 Decision: S01 starts as documentation only. The GPS privacy contract, lifecycle matrix and rights study are drafts with PROPOSED requirements; D-16, D-17, D-6 and D-7 remain open for the operator with a recommendation each. Evidence: core/changes/2026-10-15-s01-contract-and-rights-drafts.md.
+
+## 2026-10-15 - Commit: S01 UI-0 baseline audit
+
+Decision: the UI-0 audit is saved as a verbatim agent report with FACT/INFERENCE labels; it shows that two token layers coexist (AppSemanticColors and HudTokens), that 30 feature files still use the legacy FrostedScaffold, that no location package or mode state exists, and that the direction document assumes 48 dp targets (code: 44) and about 45 routes (code: 35). Evidence: core/changes/2026-10-15-s01-ui0-baseline-audit.md.
