@@ -56464,3 +56464,7 @@ Decision: referProfessional is proven by the absence of any digit or kcal text o
 ## 2026-10-15 - Commit: test(food): C24 parseLabelDraft and label scaling tests
 
 Decision: label draft validation is tested at exact bounds with hand-computed scaling values. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 weight_log_page_test.dart
+
+Decision: the weight log writes only valid 30..300 kg weights, only after the data notice, and edit/delete touch exactly one entry. Evidence: core/changes/2026-10-15-c19-tests.md (weight_log_page_test.dart 20 passed).
