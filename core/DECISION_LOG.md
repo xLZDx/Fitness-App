@@ -55978,3 +55978,5 @@ Decision: the food diary data layer is pure Dart under `food_diary/data/`. Day a
 ## 2026-10-15 - Commit: C12 server tests (delete)
 
 Decision: the delete tests assert the surviving key set of the tombstone exactly, so any metric field that leaks past the scrub fails them. Evidence: `npx jest src/__tests__/body_scan/delete.test.ts` in functions/ = 23 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-delete.md.
+
+Note: the delete suite also proves isolation between users and between scan ids sharing a prefix (the object prefix ends with a slash).
