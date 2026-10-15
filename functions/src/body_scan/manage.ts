@@ -92,7 +92,12 @@ export const manageBodyScanData = onCall(BODY_SCAN, async (request) => {
     const result =
       (action as Action) === "exportLinks"
         ? await exportLinks(uid, cursor as string | undefined)
-        : await pagedAction(uid, action as Action, retentionDays, cursor as string | undefined);
+        : await pagedAction(
+            uid,
+            action as Exclude<Action, "exportLinks">,
+            retentionDays,
+            cursor as string | undefined,
+          );
     logBodyScan("info", "bodyScanManage", {
       outcome: action as string,
       latencyMs: Date.now() - started,

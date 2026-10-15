@@ -55942,3 +55942,7 @@ Decision (design s16.3 as implemented): existing users reach `/nutrition/profile
 ## 2026-10-15 - Commit: C12 leftovers (bucket release check, runbook)
 
 Decision (SD-6, SD-11, SD-15, D-60, D-63): the release guard gains ONE flag-gated check that runs only when BODY_SCAN_BUCKET is configured (bucket private, uniform access, fn-bodyscan and fn-account-delete objectAdmin, canary acknowledged in core/state/g4_release_evidence.json as bodyScanBucketCanary); AI_CALLABLES stays at 4 because the body-scan callables run as fn-bodyscan and the inventory check only counts fn-ai-runtime functions. The runbook now carries the kill-switch secretAccessor grant, the deny-all default-bucket verification and the go-live blockers. discover_callables.ts is test-side and left to the test agents. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-c12-leftovers.md.
+
+## 2026-10-15 - Commit: C12 server tests (fakes, create) and two type fixes
+
+Decision: the body-scan server tests share one stateful Firestore/Storage/Secret Manager/logger fake module (functions/src/__tests__/body_scan/fakes.ts), the same model as the stateful fake already used by account_deletion_reconcile.test.ts, instead of eight private copies. The first ts-jest run found two real type errors in C12 (create.ts Uploads cast, manage.ts action union); both fixed minimally without behaviour change. Evidence: `npx jest src/__tests__/body_scan/create.test.ts` in functions/ = 102 passed. Change record: core/changes/2026-10-15-body-scan-server-tests.md.

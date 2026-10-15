@@ -206,7 +206,7 @@ async function signUploads(uid: string, scanId: string, nowMs: number): Promise<
         ] as const;
       }),
     );
-    return Object.fromEntries(entries) as Uploads;
+    return Object.fromEntries(entries) as unknown as Uploads;
   } catch (e) {
     // Slug only: the SDK error text can embed the object path (D-67).
     logBodyScan("error", "bodyScanCreate", {
