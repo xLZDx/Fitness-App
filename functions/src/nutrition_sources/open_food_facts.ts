@@ -50,7 +50,7 @@ function headers(): Record<string, string> {
 
 /** Takes a global budget slot or throws the calm `upstream-unavailable` (no network call is made). */
 async function takeSlot(kind: "read" | "search", deps: SourceDeps): Promise<void> {
-  const ok = await (deps.takeBudget ?? ((k) => takeUpstreamBudget(k)))(kind);
+  const ok = await (deps.takeBudget ?? ((k) => takeUpstreamBudget(k, clock(deps)())))(kind);
   if (!ok) throw new UpstreamError("upstream-unavailable");
 }
 
