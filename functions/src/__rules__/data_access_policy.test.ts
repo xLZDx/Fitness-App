@@ -57,7 +57,7 @@ import {
 } from "@firebase/rules-unit-testing";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, Timestamp } from "firebase/firestore";
 
 type AccessValue = "NONE" | "OWNER" | "AUTHENTICATED" | "PUBLIC" | "CONDITIONAL";
 interface ClientAccessEntry {
@@ -387,23 +387,172 @@ describe("generic policy sweep (every declared NONE/OWNER/AUTHENTICATED/PUBLIC c
 });
 
 // ---------------------------------------------------------------------------
-// E0 / T05 (PRIV-21, RULES-14): lifecycle governance rows for the Body Scan +
-// Nutrition Coach collections.
+// E0 / T05 (PRIV-21, RULES-14): the CONDITIONAL cells and governance rows of
+// the Body Scan + Nutrition Coach collections (policy rows added by C25).
 //
-// DEFERRED to C25 (epic E6): `scripts/ci/data_lifecycle_policy.json` has no
-// rows for the eight new paths yet (body_scans, body_scan_settings,
-// weight_entries, nutrition_plan, nutrition_plan_reviews, food_entries,
-// saved_foods, and the EXEMPT nutrition_cache). The two sweeps above are
-// data-driven from that file, so today they simply have nothing to check for
-// these paths. The expectations below are recorded as todos and are NOT faked
-// with a vacuous assertion; they become real tests when C25 adds the rows.
-// The rules outcomes the future cells must equal are already proven
-// operation by operation in firestore_rules.test.ts ("E0 body scan + nutrition
-// rules").
+// Each test title below is the exact `testName` the policy row's
+// `conditionalRefs` points at, and each exercises ONE operation with a real
+// payload: an accepted value and the nearest refused value. Fuller boundary
+// coverage lives in firestore_rules.test.ts ("E0 body scan + nutrition rules").
 // ---------------------------------------------------------------------------
-describe("Body Scan + Nutrition Coach policy rows (DEFERRED to C25)", () => {
-  test.todo("a policy row exists for each of the 8 new paths and a collection missing from the policy fails the test (PRIV-21)");
-  test.todo("each new path's clientAccess matches the rules outcome per operation: body_scans read OWNER, create NONE, update CONDITIONAL, delete NONE (RULES-14)");
-  test.todo("every CONDITIONAL cell of the new rows names an emulator test in firestore_rules.test.ts that exercises that exact operation (RULES-14)");
-  test.todo("nutrition_cache is declared EXEMPT and its clientAccess is NONE for read, create, update and delete (PRIV-21)");
+describe("CONDITIONAL cells (Body Scan + Nutrition Coach)", () => {
+  const T0 = Timestamp.fromDate(new Date("2026-10-15T08:00:00Z"));
+  const OLD = Timestamp.fromDate(new Date("2020-01-01T00:00:00Z"));
+  const rng = (v: number) => ({ low: v, mid: v, high: v });
+  const foodEntry = () => ({
+    day: "2026-10-15",
+    slot: "lunch",
+    loggedAt: T0,
+    name: "Soup",
+    source: "manual",
+    items: [{ name: "Soup", grams: 300 }],
+    totals: { kcal: rng(250), proteinG: rng(10), carbsG: rng(30), fatG: rng(8) },
+  });
+  const savedFood = () => ({ name: "Oats", per100g: { kcal: 370, proteinG: 13, carbsG: 60, fatG: 7 } });
+  const plan = () => ({ status: "active", planVersion: 1, kcalRange: { low: 1800, high: 2100 } });
+
+  test("CONDITIONAL cell body_scans/update: an owner edit of only weightKg and clientNote is accepted, a server-owned key is refused", async () => {
+    await seedAsAdmin(`users/${ALICE}/body_scans/s1`, { status: "done", provider: "licensed-api", weightKg: 80, clientNote: "a", photosState: "stored", takenAt: T0 });
+    await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/body_scans/s1`), { weightKg: 81, clientNote: "b" }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/body_scans/s1`), { status: "failed" }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/body_scans/s1`), { weightKg: 82, provider: "forged" }));
+    await assertFails(updateDoc(doc(asBob(), `users/${ALICE}/body_scans/s1`), { weightKg: 82 }));
+  });
+
+  test("CONDITIONAL cell body_scan_settings/create: a valid main settings document is accepted, an unknown key or docId is refused", async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/body_scan_settings/main`), { schema: 1, retentionDays: 90 }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/body_scan_settings/other`), { schema: 1, retentionDays: 90 }));
+    await env.clearFirestore();
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/body_scan_settings/main`), { schema: 1, retentionDays: 90, extra: true }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/body_scan_settings/main`), { retentionDays: 7 }));
+  });
+
+  test("CONDITIONAL cell body_scan_settings/update: an unchanged consent write is accepted, a forged consent timestamp is refused", async () => {
+    await seedAsAdmin(`users/${ALICE}/body_scan_settings/main`, { schema: 1, retentionDays: 90, cloudConsent: { version: 1, acceptedAt: OLD } });
+    await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/body_scan_settings/main`), { retentionDays: 30 }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/body_scan_settings/main`), { cloudConsent: { version: 2, acceptedAt: OLD } }));
+    await assertFails(updateDoc(doc(asBob(), `users/${ALICE}/body_scan_settings/main`), { retentionDays: 0 }));
+  });
+
+  test("CONDITIONAL cell weight_entries/create: a valid weight entry is accepted, an out-of-range or malformed one is refused", async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/weight_entries/2026-10-15`), { kg: 80, at: T0, source: "manual" }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/weight_entries/2026-10-16`), { kg: 29.9, at: T0, source: "manual" }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/weight_entries/2026-1-17`), { kg: 80, at: T0, source: "manual" }));
+  });
+
+  test("CONDITIONAL cell weight_entries/update: an overwrite of the same day is accepted, an invalid overwrite is refused", async () => {
+    await seedAsAdmin(`users/${ALICE}/weight_entries/2026-10-15`, { kg: 80, at: T0, source: "manual" });
+    await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/weight_entries/2026-10-15`), { kg: 79.4 }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/weight_entries/2026-10-15`), { kg: 300.1 }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/weight_entries/2026-10-15`), { source: "x" }));
+  });
+
+  test("CONDITIONAL cell nutrition_plan/create: a valid plan is accepted, referProfessional and unknown keys are refused", async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan/main`), plan()));
+    await env.clearFirestore();
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan/main`), { ...plan(), status: "referProfessional" }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan/main`), { ...plan(), bonus: 1 }));
+  });
+
+  test("CONDITIONAL cell nutrition_plan/update: an update with planVersion + 1 is accepted, any other version is refused", async () => {
+    await seedAsAdmin(`users/${ALICE}/nutrition_plan/main`, plan());
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan/main`), { planVersion: 1 }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan/main`), { planVersion: 3 }));
+    await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan/main`), { planVersion: 2 }));
+  });
+
+  test("CONDITIONAL cell nutrition_plan_reviews/create: a valid review is accepted, an unknown decision is refused", async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan_reviews/2026-W42`), { decision: "keep" }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan_reviews/2026-W43`), { decision: "referProfessional" }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/nutrition_plan_reviews/2026-W44`), { decision: "bogus" }));
+  });
+
+  test("CONDITIONAL cell food_entries/create: a valid diary entry is accepted, an oversized or malformed one is refused", async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/food_entries/e1`), foodEntry()));
+    const thirtyOne = Array.from({ length: 31 }, (_, i) => ({ name: "Item " + i, grams: 1 }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/food_entries/e2`), { ...foodEntry(), items: thirtyOne }));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/food_entries/e3`), { ...foodEntry(), slot: "brunch" }));
+  });
+
+  test("CONDITIONAL cell food_entries/update: an edit of a diary entry is accepted, an invalid edit is refused", async () => {
+    await seedAsAdmin(`users/${ALICE}/food_entries/e1`, foodEntry());
+    await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/food_entries/e1`), { name: "Soup, large" }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/food_entries/e1`), { name: "n".repeat(81) }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/food_entries/e1`), { source: "voice" }));
+  });
+
+  test("CONDITIONAL cell saved_foods/create: a valid saved food is accepted, an oversized name is refused", async () => {
+    await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/saved_foods/f1`), savedFood()));
+    await assertFails(setDoc(doc(asAlice(), `users/${ALICE}/saved_foods/f2`), { ...savedFood(), name: "n".repeat(81) }));
+  });
+
+  test("CONDITIONAL cell saved_foods/update: an edit of a saved food is accepted, an invalid edit is refused", async () => {
+    await seedAsAdmin(`users/${ALICE}/saved_foods/f1`, savedFood());
+    await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/saved_foods/f1`), { servingG: 40 }));
+    await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/saved_foods/f1`), { per100g: { kcal: 1001, proteinG: 1, carbsG: 1, fatG: 1 } }));
+  });
+});
+
+describe("Body Scan + Nutrition Coach governance rows (PRIV-21, RULES-14)", () => {
+  type Cell = "NONE" | "OWNER" | "CONDITIONAL";
+  // The expected matrix is written from firestore.rules (and the rules tests),
+  // NOT read from the policy file, so a wrong policy cell fails here.
+  const EXPECTED: Array<{ coll: string; path: string; classification: string; cells: [Cell, Cell, Cell, Cell] }> = [
+    { coll: "body_scans", path: "/users/{uid}/body_scans/{scanId}", classification: "BOTH", cells: ["OWNER", "NONE", "CONDITIONAL", "NONE"] },
+    { coll: "body_scan_settings", path: "/users/{uid}/body_scan_settings/{docId}", classification: "BOTH", cells: ["OWNER", "CONDITIONAL", "CONDITIONAL", "OWNER"] },
+    { coll: "weight_entries", path: "/users/{uid}/weight_entries/{day}", classification: "BOTH", cells: ["OWNER", "CONDITIONAL", "CONDITIONAL", "OWNER"] },
+    { coll: "nutrition_plan", path: "/users/{uid}/nutrition_plan/{docId}", classification: "BOTH", cells: ["OWNER", "CONDITIONAL", "CONDITIONAL", "OWNER"] },
+    { coll: "nutrition_plan_reviews", path: "/users/{uid}/nutrition_plan_reviews/{week}", classification: "BOTH", cells: ["OWNER", "CONDITIONAL", "NONE", "OWNER"] },
+    { coll: "food_entries", path: "/users/{uid}/food_entries/{entryId}", classification: "BOTH", cells: ["OWNER", "CONDITIONAL", "CONDITIONAL", "OWNER"] },
+    { coll: "saved_foods", path: "/users/{uid}/saved_foods/{foodId}", classification: "BOTH", cells: ["OWNER", "CONDITIONAL", "CONDITIONAL", "OWNER"] },
+    { coll: "nutrition_cache", path: "/nutrition_cache/{key}", classification: "EXEMPT", cells: ["NONE", "NONE", "NONE", "NONE"] },
+    { coll: "body_scan_purge_state", path: "/body_scan_purge_state/{id}", classification: "EXEMPT", cells: ["NONE", "NONE", "NONE", "NONE"] },
+  ];
+  const full = policy as unknown as { collections: Record<string, { classification?: string; clientAccess?: ClientAccessEntry[] }> };
+  const ownSource = readFileSync(__filename, "utf8");
+
+  test.each(EXPECTED.map((e) => [e.coll] as [string]))("%s has a policy row", (coll) => {
+    expect(full.collections[coll]).toBeDefined();
+    expect(full.collections[coll]?.clientAccess?.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test.each(EXPECTED.map((e) => [e.coll, e] as [string, (typeof EXPECTED)[number]]))(
+    "%s: classification, path and every clientAccess cell equal the rules outcome",
+    (coll, expected) => {
+      const row = full.collections[coll];
+      expect(row?.classification).toBe(expected.classification);
+      const entries = row?.clientAccess ?? [];
+      expect(entries).toHaveLength(1);
+      const a = entries[0]!.access;
+      expect(entries[0]!.path).toBe(expected.path);
+      expect([a.read, a.create, a.update, a.delete]).toEqual(expected.cells);
+    },
+  );
+
+  test("every CONDITIONAL cell of the new rows names this file and a test title that exists here, for the declared operation", () => {
+    for (const e of EXPECTED) {
+      const entry = full.collections[e.coll]!.clientAccess![0]!;
+      for (const op of OPS) {
+        if (entry.access[op] !== "CONDITIONAL") {
+          expect(entry.conditionalRefs?.[op]).toBeUndefined();
+          continue;
+        }
+        const ref = entry.conditionalRefs?.[op];
+        expect(ref).toBeDefined();
+        expect(ref!.operation).toBe(op);
+        expect(ref!.testFile).toBe("functions/src/__rules__/data_access_policy.test.ts");
+        expect(ref!.testName.startsWith("CONDITIONAL cell " + e.coll + "/" + op + ": ")).toBe(true);
+        expect(ownSource).toContain('test("' + ref!.testName + '"');
+      }
+    }
+  });
+
+  test("all seven rules blocks for the new user collections have a policy row (a collection missing from the policy is caught)", () => {
+    const rules = readFileSync(resolve(__dirname, "../../../firestore.rules"), "utf8");
+    const blocks = [...rules.matchAll(/match \/users\/\{uid\}\/(\w+)\/\{/g)].map((m) => m[1]);
+    for (const coll of ["body_scans", "body_scan_settings", "weight_entries", "nutrition_plan", "nutrition_plan_reviews", "food_entries", "saved_foods"]) {
+      expect(blocks).toContain(coll);
+      expect(full.collections[coll]).toBeDefined();
+    }
+  });
 });
