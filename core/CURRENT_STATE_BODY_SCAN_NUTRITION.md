@@ -45,12 +45,36 @@ Go-live gates are in `runbooks/body_scan_bucket.md`, `runbooks/food_lookup.md` a
 
 Defects found by these runs and fixed are listed in each record (examples: `food_entries` rule expression budget, EXIF kept in blurred and prepared JPEGs, Delete on the failed scan card did nothing, cancel of a local-only scan emitted a delete effect, a file-level import cycle in `activity/data`).
 
+## Reviews and fixes (2026-10-15)
+
+Four read-only reviews ran on head aae03deb: database, flutter, silent-failure, security. All 7 confirmed MAJOR findings and most MINOR findings were fixed in commits 5488425c to 9865066e, each with a change record in `core/changes/`:
+
+- Purge trusted any `body_scans` path (P-1): every pass now requires `users/{uid}/body_scans/{id}`.
+- Rollback and the AI kill switch disabled every erase path (P-2): erase now depends on the bucket only; a separate `BODY_SCAN_ACCEPT_UPLOADS` switch gates intake; `runbooks/body_scan_bucket.md` section 7 rewritten.
+- Failed scans were never purged (DB-F1): a new purge pass covers them.
+- Offline delete of an unfinished scan did not stop it (SF-F1), a loading profile failed a scan permanently (SF-F2), a retry timer was lost while the runner was busy (SF-F3), `deletePhotos` reported deleted while the cloud copy remained (SF-F4): all fixed in the runner and history actions.
+- Also fixed: consent recheck before estimate, per-scan attempt and reissue caps, export cursor ties, export page quota 150, redacted gateway and export logs, barcode and search error handling, diary day after midnight, degraded diary entries, unreadable plan state.
+- Skipped: SF-F13 (the cache write already swallows errors, the finding was wrong), FL-F7 (optional). Open MINOR: FL-F4, FL-F5, P-6.
+
+Defects found by the re-runs and fixed: the diary day follower never fired after midnight (lazy field), the result card confidence row overflowed at 2x text scale and in Russian, a deleted unfinished scan stayed `queued` after the owed delete flushed (regression of SF-F1).
+
+## Final complete re-run (head 9865066e, agent-written test sets, one file at a time)
+
+| Group | Result |
+|---|---|
+| Server (31 jest files, 3 emulator rules files) | 34 files, 2,119 tests, 0 failures |
+| Mobile group 1 (body_scan, progress_photos scan, home, core, router) | 59 files, 1,398 tests, 0 failures (one first run of `face_region_test` hit a build-cache collision with a concurrent runner and passed alone, +23) |
+| Mobile group 2 (nutrition_plan, food_diary, onboarding, activity, accessibility, data_export, account_deletion, l10n, profile, programmes) | 85 files, 2,320 tests, 0 failures |
+| Total | 178 files, 5,837 tests, 0 failures, on code head 9865066e (later commits changed only reports and change records) |
+
+Not run in the final re-run: the full suite, analyze, lint, build, CI (operator rule), and the NOT_RUN list below.
+
 ## NOT_RUN
 
 - Device-only and emulator-only items beyond the rules and storage groups above: camera, TalkBack and real keyboard behaviour, the `mobile_scanner` barcode path on a device, notification delivery, `integration_test`.
 - Real Vertex AI, Open Food Facts and USDA calls; the real bucket IAM canary; any real photo provider.
 - Daylight saving time behaviour of the weekly reminder.
-- The contrast test written in C26 (`contrast_tokens_test.dart`, see `c26-l10n-a11y-audit`): written, NOT RUN.
+- The contrast test written in C26 (`contrast_tokens_test.dart`) now ran in the final re-run: 65 passed.
 - `CallableFoodApi` and the signed-in Firestore binding in `body_scan_wiring` (need Firebase or a callable fake).
 - No full test suite, analyze, lint, build or CI was run (operator rule).
 
