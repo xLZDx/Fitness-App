@@ -56444,3 +56444,7 @@ Decision: the wipe rule is tested as prefix plus exact-uid final segment, includ
 ## 2026-10-15 - Commit: C19 nutrition_plan_page_test.dart
 
 Decision: the plan page gates numbers on the verdict, acknowledges the data notice before any write and persists edits only through NutritionPlanActions. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_plan_page_test.dart 25 passed).
+
+## 2026-10-15 - Commit: C23 food detail sheet tests
+
+Decision: the notice gate is proven by zero repository writes until the acknowledge tap. Evidence: core/changes/2026-10-15-c23-tests.md.

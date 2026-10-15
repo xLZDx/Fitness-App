@@ -131,6 +131,10 @@ Future<PumpedPage> pumpPage(
       ),
     ),
   ));
+  // The write actions read the signed-in user synchronously; in the app some
+  // watcher always keeps the auth stream alive, so do the same here.
+  ProviderScope.containerOf(tester.element(find.byType(MaterialApp)))
+      .read(authUserProvider);
   await settle(tester);
   return PumpedPage(router, tester);
 }
