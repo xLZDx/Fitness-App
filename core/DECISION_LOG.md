@@ -56432,3 +56432,7 @@ Decision: resume card tests assert that each terminal-failure action reaches its
 ## 2026-10-15 - Commit: test(food): C24 meal thumbnail store tests
 
 Decision: thumbnail tests use the real AesPhotoCipher and a temp directory, and prove deletion through FoodDiaryActions.deleteEntry. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: body scan api client and scrubbed errors
+
+Decision: Fake-FirebaseFunctions tests prove exact payloads, tolerant parsing and closed-slug mapping; scrubbed_error tests prove no raw text or signed URL survives. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
