@@ -58,13 +58,13 @@ class AddFoodPage extends ConsumerWidget {
               }),
             if (flags.foodAi)
               tile('add.photo', Icons.photo_camera_outlined, l10n.foodAddPhoto,
-                  () => context.push('/nutrition/scan/meal$_query')),
+                  () => context.push('/nutrition/add/photo$_query')),
             if (flags.foodLookup)
               tile('add.barcode', Icons.qr_code_scanner, l10n.foodAddBarcode,
-                  () => context.push('/nutrition/scan/barcode$_query')),
+                  () => context.push('/nutrition/add/barcode$_query')),
             if (flags.foodAi)
               tile('add.label', Icons.receipt_long_outlined, l10n.foodAddLabel,
-                  () => context.push('/nutrition/scan/label$_query')),
+                  () => context.push('/nutrition/add/label$_query')),
             tile('add.quick', Icons.bolt, l10n.foodAddQuickLog, () {
               showModalBottomSheet<void>(
                 context: context,

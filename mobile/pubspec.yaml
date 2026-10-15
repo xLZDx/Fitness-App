@@ -57,6 +57,12 @@ dependencies:
   health: ^11.0.0
   google_mlkit_pose_detection: ^0.14.0
   camera: ^0.11.0+2
+  # C24 barcode scanning (BSD-3-Clause), wrapped by state/barcode_port.dart.
+  # ^6.0.11 and not the 7.x line the design named: 7.x requires Flutter 3.29,
+  # the installed toolchain is Flutter 3.27.1 / Dart 3.6.0 (6.0.x needs 3.24).
+  # The Android `dev.steenbakker.mobile_scanner.useUnbundled` flag is left at
+  # its default until the on-device VERIFY is recorded (change record C24).
+  mobile_scanner: ^6.0.11
   image: ^4.3.0
   speech_to_text: ^7.0.0
   flutter_tts: ^4.2.2

@@ -56261,3 +56261,11 @@ Progress: T110 analyze_meal_photo tests added (70 passing).
 Decision: the deferred RULES-21 six-callable guard expectation became a real test once C20 landed; the scaling registry lists the four food endpoints; the map registers the two author-added E0 files.
 
 Evidence: release_guard 80 passed, scaling 122 passed (single-file jest runs). Change record: core/changes/2026-10-15-e0-tests-food-wiring.md.
+
+## 2026-10-15 - Commit: E1 final tests, SourceKind import-cycle fix, map correction
+
+Decision: extracted SourceKind into its own file (re-exported from device_source.dart) because the PLAN-29 guard found an import cycle in activity/data; corrected the coverage map V-LOSE-M/V-LOSE-CAP rows against D-39 (implementation stands); the two nutrition_plan -> body_scan edges outside data/ are reported, not edited. Evidence: core/changes/2026-10-15-e1-tests-final-profile-safety-programmes-guards.md (27 E1 files, 1075 passed, 0 failed).
+
+## 2026-10-15 - Commit: C24 attributions, scanner dependency, tile routes
+
+Decision: mobile_scanner ^6.0.11 (not 7.x, which needs Flutter 3.29 while the toolchain is 3.27.1); Android useUnbundled stays default pending an on-device VERIFY; add-food tiles use the planned /nutrition/add/photo|barcode|label paths. Evidence: `core/changes/2026-10-15-c24-attributions-deps-routes.md`; nothing was run.
