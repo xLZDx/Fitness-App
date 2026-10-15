@@ -277,6 +277,8 @@ async function completeFence(uid: string, action: string, token: string, nowMs: 
     if (Object.keys(runs).length > 0) tx.set(ref, { runs });
     else tx.delete(ref);
     const prior = typeof lateData?.dueAtMs === "number" ? lateData.dueAtMs : 0;
+    // A whole-document (non-merge) set: it also drops the sweep's listing
+    // `cursor`, so a new operation is always swept from the beginning.
     // `rev` changes on EVERY write: the late sweep deletes a record only if the
     // rev it read before sweeping is still current (compare-and-delete).
     tx.set(late, {

@@ -495,7 +495,7 @@ const bucketObject: any = {
     }
     gcs.onDeleteFiles?.(options.prefix);
   },
-  getFiles: async (options: { prefix?: string; autoPaginate?: boolean; maxResults?: number; pageToken?: string }) => {
+  getFiles: async (options: { prefix?: string; autoPaginate?: boolean; maxResults?: number; pageToken?: string; startOffset?: string }) => {
     gcs.getFilesCalls.push(options);
     gcsCheck("getFiles", options.prefix ?? "");
     // Like GCS, the continuation token is a position in NAME order (here: the last
@@ -503,6 +503,7 @@ const bucketObject: any = {
     const names = [...gcs.objects.keys()]
       .filter((n) => n.startsWith(options.prefix ?? ""))
       .sort()
+      .filter((n) => !options.startOffset || n >= options.startOffset) // inclusive, like GCS
       .filter((n) => !options.pageToken || n > options.pageToken);
     const size = options.maxResults ?? 1000;
     const slice = names.slice(0, size);

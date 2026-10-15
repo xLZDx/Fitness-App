@@ -56650,3 +56650,7 @@ Decision: the uid carried by the transient `late_sweep_<hash>` record (at most ~
 ## 2026-10-15 - Commit: late sweep compare-and-delete and honest contract
 
 Decision: the late-sweep record carries a `rev` rewritten on every completion and the sweep deletes it only if `rev` and `dueAtMs` are unchanged (transaction), so a newer delete-all is never erased by an older run; the "17 minutes" figure is a target under normal operation, a record that cannot finish is retried every 5 minutes with no hard upper bound, and the uid-bearing record lives until deleted. Evidence: core/changes/2026-10-15-late-sweep-cas-and-contract.md.
+
+## 2026-10-15 - Commit: late sweep resumable cursor
+
+Decision: the late sweep stores the last listed object name as `cursor` on its record (compare-and-set on rev/dueAtMs, reset by every completeFence) and resumes with `startOffset`, so live objects ahead of a late orphan cannot starve it; the record is still deleted only after the listing completes. Evidence: core/changes/2026-10-15-late-sweep-resumable-cursor.md.

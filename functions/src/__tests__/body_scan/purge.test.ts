@@ -781,6 +781,54 @@ describe("late-upload sweep (GPT-PM MAJOR-02B)", () => {
     expect(store.has(lateKey(1))).toBe(false);
   });
 
+  test("resumable cursor: >10 000 LIVE objects ahead of a late orphan are never touched, the orphan is reached on a later run, and the record goes only after the complete sweep", async () => {
+    // 3 500 live scans (10 500 objects, names scan_live_.. sort BEFORE zz_orphan).
+    for (let i = 1; i <= 3500; i++) {
+      const id = `live_${String(i).padStart(5, "0")}`;
+      seedPending(A, id, DAY);
+      putPhotos(A, id);
+    }
+    putPhotos(A, "zz_orphan_1"); // sorts after every live object
+    seedRecord(A, now);
+
+    const first = await lateRun();
+    expect(first.records).toBe(0);
+    expect(first.deleted).toBe(0);
+    const cursor1 = store.get(lateKey(1))!.cursor;
+    expect(cursor1).toMatch(/^users\/uid_alice_1\/scans\/live_/);
+    expect(objectKeys(prefix(A, "zz_orphan_1"))).toHaveLength(3);
+
+    const second = await lateRun();
+    expect(second.deleted).toBe(3);
+    expect(second.records).toBe(1);
+    expect(objectKeys(prefix(A, "zz_orphan_1"))).toEqual([]);
+    expect(objectKeys()).toHaveLength(10500); // every live object untouched
+    expect(store.has(lateKey(1))).toBe(false);
+  });
+
+  test("a cursor from an older rev is not applied when a newer completion rewrote the record meanwhile (the newer record starts from the beginning)", async () => {
+    for (let i = 1; i <= 3500; i++) {
+      const id = `live_${String(i).padStart(5, "0")}`;
+      seedPending(A, id, DAY);
+      putPhotos(A, id);
+    }
+    store.set(lateKey(1), { uid: A, action: "deleteAllPhotos", dueAtMs: now, rev: "aaaaaaaaaaaaaaaa" });
+    const newer = { uid: A, action: "deleteAllScans", dueAtMs: now + 12 * MIN, rev: "bbbbbbbbbbbbbbbb" }; // no cursor
+    fx.afterTxRead = async (p) => {
+      if (p === lateKey(1) && store.get(lateKey(1))!.rev === "aaaaaaaaaaaaaaaa") store.set(lateKey(1), newer);
+    };
+    await lateRun();
+    fx.afterTxRead = null;
+    expect(store.get(lateKey(1))).toEqual(newer);
+  });
+
+  test("a stored cursor outside the user's prefix is ignored (listing starts at the beginning)", async () => {
+    putPhotos(A, "ghost_scan_1");
+    store.set(lateKey(1), { uid: A, action: "deleteAllPhotos", dueAtMs: now, rev: "a".repeat(16), cursor: `users/${B}/scans/zzz/front.jpg` });
+    const c = await lateRun();
+    expect(c).toMatchObject({ records: 1, deleted: 3 });
+  });
+
   test("no hard bound: a record that hits the 20-page cap is kept and retried; the next run completes and deletes it", async () => {
     for (let i = 1; i <= 3500; i++) putPhotos(A, `ghost_${String(i).padStart(5, "0")}`); // 10 500 orphan objects
     seedRecord(A, now);

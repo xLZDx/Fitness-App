@@ -38,7 +38,9 @@
  * bound): removed within about 17 minutes of completion (12 min due time + one
  * 5 min schedule interval) under normal operation. A record that cannot finish
  * (page cap, storage error, outage) is kept and retried every 5 minutes until it
- * succeeds. The record is deleted by compare-and-delete on `rev`/`dueAtMs`, so a
+ * succeeds, resuming its listing from a `cursor` (last object name handled)
+ * persisted on the record by compare-and-set, so more than 10 000 live objects
+ * ahead of a late orphan cannot starve it. The record is deleted by compare-and-delete on `rev`/`dueAtMs`, so a
  * newer bulk delete that rewrote it while the sweep ran is never erased.
  *
  * A bucket lifecycle rule for "pending" objects was REJECTED (design s7.4):
@@ -396,16 +398,25 @@ export interface LateSweepCounts {
  * Removes the orphan objects of one user's scans prefix. Returns false when the
  * walk was cut short (deadline / page cap) so the caller keeps the record.
  */
-async function sweepUserPrefix(uid: string, deadline: number, counts: LateSweepCounts): Promise<boolean> {
+async function sweepUserPrefix(
+  uid: string,
+  deadline: number,
+  counts: LateSweepCounts,
+  resumeFrom: string | undefined,
+): Promise<{ done: boolean; cursor?: string }> {
   const bucket = scanBucket();
   const verdicts = new Map<string, boolean>();
   let pageToken: string | undefined;
+  let lastName = resumeFrom;
   for (let page = 0; page < LATE_SWEEP_MAX_LIST_PAGES; page++) {
-    if (Date.now() >= deadline) return false;
+    if (Date.now() >= deadline) return { done: false, cursor: lastName };
     const [files, next] = await bucket.getFiles({
       prefix: userScansPrefix(uid),
       autoPaginate: false,
       maxResults: LIST_PAGE,
+      // Resume at the last object name handled (inclusive, so it is simply seen
+      // again); names, unlike page tokens, do not expire between runs.
+      ...(resumeFrom ? { startOffset: resumeFrom } : {}),
       ...(pageToken ? { pageToken } : {}),
     });
     for (const file of files) {
@@ -422,10 +433,11 @@ async function sweepUserPrefix(uid: string, deadline: number, counts: LateSweepC
       await file.delete({ ignoreNotFound: true });
       counts.deleted += 1;
     }
+    if (files.length > 0) lastName = files[files.length - 1].name;
     pageToken = next?.pageToken;
-    if (!pageToken) return true;
+    if (!pageToken) return { done: true };
   }
-  return false;
+  return { done: false, cursor: lastName };
 }
 
 /**
@@ -459,7 +471,24 @@ export async function runLateSweep(
         }
         try {
           const { rev, dueAtMs } = doc.data();
-          if (await sweepUserPrefix(uid, deadline, counts)) {
+          const stored: unknown = doc.data().cursor;
+          // A cursor is only trusted when it is inside this user's prefix.
+          const resumeFrom =
+            typeof stored === "string" && stored.startsWith(userScansPrefix(uid)) ? stored : undefined;
+          const swept = await sweepUserPrefix(uid, deadline, counts, resumeFrom);
+          if (!swept.done) {
+            // Unfinished: persist the listing position through the same
+            // compare-and-set as the delete, so a newer operation's record
+            // (new rev / dueAtMs, no cursor) is never touched and restarts at
+            // the beginning.
+            const cursor = swept.cursor;
+            if (cursor !== undefined && cursor !== resumeFrom) {
+              await db().runTransaction(async (tx) => {
+                const cur = (await tx.get(doc.ref)).data();
+                if (cur && cur.rev === rev && cur.dueAtMs === dueAtMs) tx.update(doc.ref, { cursor });
+              });
+            }
+          } else {
             // Delete only the record this run read: a newer delete-all may have
             // rewritten it (new rev / later dueAtMs) while the sweep was running.
             const deleted = await db().runTransaction(async (tx) => {
