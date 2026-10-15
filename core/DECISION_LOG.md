@@ -56289,3 +56289,7 @@ Decision: callable errors are tested through the pure `mapFoodCallableError` and
 
 Decision: Capture screen tests prove timer/override/channel/throttle/overflow contracts; three product defects (literal # in ICU plurals, top-bar overflow at 2.0x RU, stale throttled live-region cue) fixed minimally in ARB and scan_capture_screen. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
 Progress: T111 parse_nutrition_label tests added (30 passing).
+
+## 2026-10-15 - Commit: C25 policy rows and privacy text
+
+Decision (Q-10): privacy.html text is shipped as a draft; the data-lifecycle rows name CONDITIONAL-cell tests that the test agents must add. Evidence: `core/changes/2026-10-15-c25-policy-and-privacy.md`; no checks run.

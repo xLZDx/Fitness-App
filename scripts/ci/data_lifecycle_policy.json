@@ -582,6 +582,215 @@
         }
       ]
     },
+    "body_scans": {
+      "classification": "BOTH",
+      "reason": "Body scan records. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25). Client create and delete are refused (server-written, tombstoned); client update is limited to weightKg and clientNote. Photos in the private bucket are removed by the sweepAccountData prefix delete (D-60) and exported as metadata only.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/body_scans/{scanId}",
+          "access": {
+            "read": "OWNER",
+            "create": "NONE",
+            "update": "CONDITIONAL",
+            "delete": "NONE"
+          },
+          "conditionalRefs": {
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell body_scans/update: an owner edit of only weightKg and clientNote is accepted, a server-owned key is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "body_scan_settings": {
+      "classification": "BOTH",
+      "reason": "Body scan settings (consent, retention, reminder), one document `main`. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/body_scan_settings/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "OWNER"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell body_scan_settings/create: a valid main settings document is accepted, an unknown key or docId is refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell body_scan_settings/update: an unchanged consent write is accepted, a forged consent timestamp is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "weight_entries": {
+      "classification": "BOTH",
+      "reason": "Daily body weight entries keyed yyyy-MM-dd. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/weight_entries/{day}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "OWNER"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell weight_entries/create: a valid weight entry is accepted, an out-of-range or malformed one is refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell weight_entries/update: an overwrite of the same day is accepted, an invalid overwrite is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "nutrition_plan": {
+      "classification": "BOTH",
+      "reason": "Nutrition plan, one document `main`; update must carry planVersion + 1. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/nutrition_plan/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "OWNER"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell nutrition_plan/create: a valid plan is accepted, referProfessional and unknown keys are refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell nutrition_plan/update: an update with planVersion + 1 is accepted, any other version is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "nutrition_plan_reviews": {
+      "classification": "BOTH",
+      "reason": "Weekly review records, immutable once written. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/nutrition_plan_reviews/{week}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "NONE",
+            "delete": "OWNER"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell nutrition_plan_reviews/create: a valid review is accepted, an unknown decision is refused",
+              "operation": "create"
+            }
+          }
+        }
+      ]
+    },
+    "food_entries": {
+      "classification": "BOTH",
+      "reason": "Food diary entries. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/food_entries/{entryId}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "OWNER"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell food_entries/create: a valid diary entry is accepted, an oversized or malformed one is refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell food_entries/update: an edit of a diary entry is accepted, an invalid edit is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "saved_foods": {
+      "classification": "BOTH",
+      "reason": "User saved foods. Subcollection under users/{uid}. DELETE-covered by the recursiveDelete cascade (design 20.2). Exported by account_export.ts, newest first and paged by the app (D-61, C25).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/saved_foods/{foodId}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "OWNER"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell saved_foods/create: a valid saved food is accepted, an oversized name is refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell saved_foods/update: an edit of a saved food is accepted, an invalid edit is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "nutrition_cache": {
+      "classification": "EXEMPT",
+      "reason": "Central cache of PUBLIC nutrition-database responses (Open Food Facts, USDA), keyed by barcode/id/query hash. Holds no user data and no uid; written and read only by Cloud Functions (firestore.rules: allow read, write: if false), so it is neither deleted nor exported per user.",
+      "clientAccess": [
+        {
+          "path": "/nutrition_cache/{key}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
+    "body_scan_purge_state": {
+      "classification": "EXEMPT",
+      "reason": "Purge bookkeeping (persisted page token and counters) written by the daily body-scan purge. Holds no user content and no uid; server-only (firestore.rules: allow read, write: if false).",
+      "clientAccess": [
+        {
+          "path": "/body_scan_purge_state/{id}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
     "equipment_model_text_keys": {
       "classification": "EXEMPT",
       "reason": "P2-owned derived lookup-key index (functions-equipment-identity/src/p2/text_key_index.ts, firestore_paths.ts's P2CollectionPaths.textKeys). Server/admin-only, same posture as the P1 equipment-identity shared catalog collections above -- not user-specific.",
