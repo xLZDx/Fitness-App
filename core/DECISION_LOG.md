@@ -56370,3 +56370,7 @@ Decision: the referProfessional notice carries no numbers or reasons. Evidence: 
 Decision: Port tests prove luminance default, 3/5/10 s timer provider, speech success/failure observability and six distinct haptic sequences. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
 
 Progress: retention settings view tests added (C16).
+
+## 2026-10-15 - Commit: C23 day summary ring tests
+
+Decision: neutral wording is asserted over all rendered Text in every state. Evidence: core/changes/2026-10-15-c23-tests.md.
