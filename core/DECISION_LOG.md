@@ -56338,3 +56338,7 @@ Decision: the paging test seeds food ids uncorrelated with loggedAt so a documen
 ## 2026-10-15 - Commit: C19 ownership_selector_test.dart
 
 Decision: ownership selector reports only real changes and is inert when disabled. Evidence: core/changes/2026-10-15-c19-tests.md (ownership_selector_test.dart 7 passed).
+
+## 2026-10-15 - Commit: C13 tests: skeleton overlay geometry and non-colour cues
+
+Decision: Recording-canvas tests prove bone/joint geometry, dashed-vs-solid and hollow-vs-filled readiness cues, likelihood floor and decorative semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
