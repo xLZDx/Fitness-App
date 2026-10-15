@@ -56074,3 +56074,4 @@ Decision: the existing stateful reconcile fake and the delete_account mock were 
 ## 2026-10-15 - Commit: C23 part 2 (diary providers)
 
 Decision: diary visibility reuses the device-local eligibility verdict (no new health signal); server search runs only on explicit submit behind the foodLookup flag with a 600 ms debounce and a last-results cache. Evidence: `core/changes/2026-10-15-c23-state-providers.md`; no checks run.
+Progress: T105 nutrition_normalise tests added (56 passing).
