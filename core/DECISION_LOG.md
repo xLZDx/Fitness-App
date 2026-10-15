@@ -56128,3 +56128,4 @@ Decision: all body_scan <-> nutrition bridges live in core/wiring/body_scan_wiri
 ## 2026-10-15 - Commit: C15 tests - scan_flow_controller
 
 Decision: the flow controller test pins that illegal events still bump the revision and clear effects, and that updateContext never replays effects. Evidence: core/changes/2026-10-15-c15-tests.md.
+Progress: T106 label_normalise tests added (44 passing).
