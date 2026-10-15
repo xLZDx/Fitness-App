@@ -52,6 +52,8 @@ import 'features/profile/data/device_health_profile_repository.dart';
 import 'features/body_scan/state/scan_plan_context_provider.dart'
     show kScanPlanContextPlaceholder, scanPlanContextProvider;
 import 'features/nutrition_plan/data/firestore_plan_repository.dart';
+import 'features/food_diary/state/diary_providers.dart'
+    show diaryRepositoryProvider, savedFoodsRepositoryProvider, FirestoreDiaryRepository, FirestoreSavedFoodsRepository;
 import 'features/nutrition_plan/data/firestore_weight_repository.dart';
 import 'features/nutrition_plan/state/nutrition_providers.dart'
     show nutritionPlanRepositoryProvider;
@@ -392,6 +394,9 @@ Future<void> main() async {
             .overrideWith((_) => FirestorePlanRepository()),
         weightRepositoryProvider
             .overrideWith((_) => FirestoreWeightRepository()),
+        diaryRepositoryProvider.overrideWith((_) => FirestoreDiaryRepository()),
+        savedFoodsRepositoryProvider
+            .overrideWith((_) => FirestoreSavedFoodsRepository()),
         // Body scan (C15, SD-9): explicit measurement-only PLACEHOLDER for the
         // plan-context port. C18 replaces it with
         // nutritionScanPlanContextSourceProvider.

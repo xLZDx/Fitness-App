@@ -56070,3 +56070,7 @@ Decision: builder tests prove the 21-day window edges, previousClass from the ne
 ## 2026-10-15 - Commit: C12 tests for the account-deletion storage sweep
 
 Decision: the existing stateful reconcile fake and the delete_account mock were extended in place (storage mock only) rather than duplicated, per the instruction not to invent a parallel mechanism. Evidence: delete_account.test.ts 67 passed, account_deletion_reconcile.test.ts 42 passed (functions/, npx jest on both files). Change record: core/changes/2026-10-15-body-scan-server-tests-account-sweep.md.
+
+## 2026-10-15 - Commit: C23 part 2 (diary providers)
+
+Decision: diary visibility reuses the device-local eligibility verdict (no new health signal); server search runs only on explicit submit behind the foodLookup flag with a 600 ms debounce and a last-results cache. Evidence: `core/changes/2026-10-15-c23-state-providers.md`; no checks run.
