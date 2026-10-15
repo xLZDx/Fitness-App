@@ -55970,3 +55970,11 @@ Decision (defect fix): `buildUrl` in `nutrition_http.ts` refuses a bare `.` or `
 Decision (deferral): the "six callables in the release guard" expectation (RULES-21) is a `test.todo` until C20 creates the food callables; it is not faked.
 
 Evidence: focused jest runs of each new or extended file passed; complete-set results are recorded in the E0 evidence record. Change record: core/changes/2026-10-15-e0-tests-functions.md.
+
+## 2026-10-15 - Commit: C22 food diary data layer
+
+Decision: the food diary data layer is pure Dart under `food_diary/data/`. Day and entry totals combine item ranges by root-sum-square (design s17.7); per-meal shares are 30/35/35 for three meals, and for four or more meals each snack takes 10 % (at most 40 % in total) with the mains keeping 30/35/35 of the remainder (design wording was open). `FoodItem.sourceId` accepts `llm_estimate`; the Firestore rules allowlist in design s5.6 does not list it, so rules or the C23 repository must reconcile (flagged, not silently changed). Evidence: written only at this commit, not run per development rules v4. Change record: core/changes/2026-10-15-c22-food-diary-data.md.
+
+## 2026-10-15 - Commit: C12 server tests (delete)
+
+Decision: the delete tests assert the surviving key set of the tombstone exactly, so any metric field that leaks past the scrub fails them. Evidence: `npx jest src/__tests__/body_scan/delete.test.ts` in functions/ = 23 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-delete.md.
