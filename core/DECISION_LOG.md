@@ -56578,3 +56578,7 @@ Decision: text-scale overflow is asserted through takeException on a 360x640 RU 
 ## 2026-10-15 - Commit: C23 food ARB parity tests
 
 Decision: RU plural forms are proven by output of the generated localizations, not only by the ARB text. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 plural and decimal test (T123)
+
+Decision: `body_scan_plurals_test.dart` added; it renders the 11 new plural keys and the decimal-unit keys in RU and EN and pins the D-84 rule. 35 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
