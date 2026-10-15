@@ -56654,3 +56654,64 @@ Decision: the late-sweep record carries a `rev` rewritten on every completion an
 ## 2026-10-15 - Commit: late sweep resumable cursor
 
 Decision: the late sweep stores the last listed object name as `cursor` on its record (compare-and-set on rev/dueAtMs, reset by every completeFence) and resumes with `startOffset`, so live objects ahead of a late orphan cannot starve it; the record is still deleted only after the listing completes. Evidence: core/changes/2026-10-15-late-sweep-resumable-cursor.md.
+
+## 2026-10-15 - Commit: S00 split of Phase 1 and Phase 2
+
+Decision: operator answers recorded. D-1 phase rule as written (Phase 1 = planned before 2026-10-10, first production MVP, fixes and release readiness only; Phase 2 = planned after; a Phase 2 feature found in the Phase 1 line is an experiment, flag OFF, developed only in Phase 2; `training_context` stays in Phase 1). D-2 PR #5 retargeted to `phase2/main`; the base commit is identical to the previously reviewed base (`42d1b849`), the diff is identical (552 files) and GPT-PM APPROVE on head `cd9d7c3a` was therefore applied; merged as `5137ccda`. D-4 separate Firebase alias for Phase 2 (alias creation is an operator action; Phase 2 stays on the emulator until it exists). D-5 Option A: one repository, branches `phase1/main` and `phase2/main`, tag `phase1-baseline` at `42d1b849`, worktrees `D:\Repo\Fitness_App_Phase1` and `D:\Repo\Fitness_App_Phase2`. Plan package approved: GPT-PM APPROVE on revision 3 (three rounds). Evidence: docs/phase2/split/SNAPSHOT_2026-10-15.md, core/changes/2026-10-15-s00-split-docs.md. Open: backend separation gate, `phase1/main` documentation PR, retirement of old branches and worktrees (operator approval).
+
+## 2026-10-15 - Commit: S00 backend separation gate
+
+Decision: the release guard checks the deploy line (from the git branch) before the project: phase1 line deploys only to fitness-app-korostelev, phase2 line only to the project under .firebaserc alias phase2 (never production or legacy), any other branch is blocked; no env override. Phase 2 stays on the emulator until the operator creates the Phase 2 Firebase project and the alias. Evidence: core/changes/2026-10-15-s00-backend-separation-gate.md; not yet tested.
+
+## 2026-10-15 - Commit: S00 backend separation gate tests
+
+Decision: the deploy-line gate is proven by deterministic fake-deps tests in release_guard.test.ts (115 tests passing, 0 failing): branch classification, all six block reasons, both PASS paths, phase2 default-project fallback blocks, no override path. No product code changed. Not verified: real CLI execution of run_release_guard.mjs and the real git branch reader. Evidence: core/changes/2026-10-15-s00-backend-gate-tests.md.
+
+
+## 2026-10-15 - Commit: S00 deploy guard coverage and provenance
+
+Decision: after GPT-PM MODIFY, the release guard now runs in the predeploy of every deploy target in firebase.json (both functions codebases, firestore, hosting; a future storage block must carry it), the effective project comes from GCLOUD_PROJECT and/or an explicit --project and fails closed when absent or conflicting, and a phase1 deploy additionally requires HEAD to be an ancestor of origin/phase1/main or origin/master (new reason phase1-provenance-unverified). Supported path: scripts/deploy/guarded_deploy.mjs. Residual limit stated, not solved: a local guard cannot stop use of the firebase CLI with another config or credentials; separate production deploy credentials or protected CI are an open operator item. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance.md; not yet tested.
+
+## 2026-10-15 - Commit: S00 review fixes, documentation state
+
+Decision: after GPT-PM round 1 (MODIFY) the plan documents keep their original wording and gain a CURRENT STATE banner; docs/phase2/README.md carries the executed S00 state; the registry generator gets a --check stale test. The earlier "no tests run" record stays valid history; core/changes/2026-10-15-s00-backend-gate-tests.md is the current verification evidence for the first guard version (115 passed), superseded by the tests of the coverage and provenance fix. Evidence: core/changes/2026-10-15-s00-review-fixes-docs-state.md.
+
+## 2026-10-15 - Commit: guard coverage and provenance tests
+
+Decision: the deploy guard fix is accepted for review with 275 focused tests passing (232 + 43, run by the test agent). `findUnguardedDeployTargets` is a test-time check only; the docs must not claim a deploy-time check of firebase.json. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance-tests.md.
+
+## 2026-10-15 - Commit: merge phase2/main into the S00 branch
+
+Decision: the S00 branch integrates PR #5 (5137ccda) before its own PR so the guard knows the Body Scan checks and every deploy target, including the storage block PR #5 introduced, carries the deploy-line guard. Evidence: core/changes/2026-10-15-s00-merge-phase2-main-into-s00.md; tests rerun follows.
+
+## 2026-10-15 - Commit: guard tests after merge
+
+Decision: the merged guard (PR #5 checks plus deploy-line coverage and provenance) is covered by 436 passing jest tests across the three files that import release_guard; the Python deployment-isolation scripts that mention the guard were not run. Evidence: core/changes/2026-10-15-s00-guard-tests-after-merge.md.
+
+
+## 2026-10-15 - Commit: S00 deploy guard review fixes
+
+Decision: after the security and silent-failure reviews, the clean-tree check also covers rules, indexes, storage rules and the hosting public dir; short-flag clusters that could hide -c or -P are refused; the project id is validated before use (new reason project-invalid) and the deploy-target check runs before any gcloud call, with the remaining checks reported as not run; guard wiring requires the exact predeploy command; one throwing check no longer aborts the report; the wrapper refuses to deploy when firebase.json has an unguarded target. Deliberately not done: deploy-time env reading and the hardcoded production kill-switch secret path in abuse_guard.ts, recorded as open items before the first Phase 2 cloud deploy in docs/phase2/split/BACKEND_SEPARATION.md. Evidence: core/changes/2026-10-15-s00-guard-review-fixes.md; not yet tested.
+
+## 2026-10-16 - Commit: guard tests for the review fixes
+
+Decision: the guard review fixes are covered by 608 passing jest tests (397 + 86 + 125); a timed-out gcloud child on Windows may outlive the guard (shell:true plus SIGKILL), recorded as a known limit, not fixed in S00. Evidence: core/changes/2026-10-16-s00-guard-tests-review-fixes.md.
+The registry generator no longer lists core/DECISION_LOG.md: its size changed with every decision entry and made the registry stale after each commit; the log remains the canonical decision record.
+
+
+## 2026-10-16 - Commit: S00 deploy guard ignored files
+
+Decision: after GPT-PM round 2 (MAJOR-02A), the clean-tree check also inspects git-ignored files under the deploy-relevant paths, because Firebase uploads ignored files that its own ignore list does not exclude. Allowed: node_modules, functions/lib and functions-equipment-identity/lib, entries excluded by the target's own firebase.json ignore list, and functions .env files; everything else blocks with ignored-deployable-files. A git status failure fails closed. The candidate dotenv content stays unverified (open item before the first Phase 2 cloud deploy). Evidence: core/changes/2026-10-16-s00-guard-ignored-files.md; not yet tested.
+
+## 2026-10-16 - Commit: tests for the ignored deployable files check
+
+Decision: MAJOR-02A (git-ignored deployable files) is covered by 703 passing jest tests (477 + 101 + 125), including an end-to-end case with real git where an ignored public file blocks the wrapper before firebase is spawned. Evidence: core/changes/2026-10-16-s00-guard-ignored-files-tests.md.
+
+
+## 2026-10-16 - Commit: S00 deploy guard node_modules scope
+
+Decision: after GPT-PM round 3 (MAJOR-02B), an ignored node_modules path is no longer allowed unconditionally; it is allowed only when the deploy target's own ignore list in firebase.json excludes it (so hosting.ignore with no node_modules entry plus an ignored public/node_modules now blocks). The functions ignore list mirrors firebase-tools (default node_modules and .git only when no ignore key exists, basename matching for slash-free patterns). functions/lib, functions-equipment-identity/lib and functions .env files stay allowed by design (build output and env config are packaged by firebase deploy). Unreadable firebase.json now also blocks an ignored functions/node_modules (fail closed). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope.md; not yet tested.
+
+## 2026-10-16 - Commit: tests for the node_modules scope fix
+
+Decision: MAJOR-02B (unconditional node_modules allowance) is covered by 742 passing jest tests (505 + 112 + 125), including a real-git end-to-end case where an ignored public/node_modules file blocks the wrapper before firebase is spawned. Hosting implicit exclusions are intentionally not modelled (stricter than firebase-tools). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope-tests.md.
