@@ -1791,7 +1791,7 @@
   "@dataNoticeAcknowledge": {
     "description": "Single-tap acknowledgement button of the data notice."
   },
-  "scanManualTimerStarted": "Фото через {seconds, plural, one{# секунду} few{# секунды} many{# секунд} other{# секунды}}",
+  "scanManualTimerStarted": "Фото через {seconds, plural, one{{seconds} секунду} few{{seconds} секунды} many{{seconds} секунд} other{{seconds} секунды}}",
   "@scanManualTimerStarted": {
     "description": "Announced when the manual shutter timer starts.",
     "placeholders": {
@@ -1821,7 +1821,7 @@
   "bodyScanCompareTakeSecond": "Сделать второй скан",
   "bodyScanHistoryTitle": "История сканов",
   "bodyScanHistoryEmpty": "Сканов пока нет. Первый скан станет точкой отсчёта.",
-  "bodyScanHistoryCount": "{count, plural, one{# скан} few{# скана} many{# сканов} other{# скана}}",
+  "bodyScanHistoryCount": "{count, plural, one{{count} скан} few{{count} скана} many{{count} сканов} other{{count} скана}}",
   "bodyScanHistoryBaseline": "Точка отсчёта",
   "bodyScanHistoryNewEstimator": "Новый метод оценки: прежние сканы с этим не сравниваются",
   "bodyScanHistoryPhotosOnly": "Только фото, без оценки",
@@ -1854,7 +1854,7 @@
   "bodyScanPrivacyIntroLocal": "Фото сканов остаются на этом телефоне. В этой версии ничего не загружается.",
   "bodyScanPrivacyRetentionTitle": "Хранить облачные фото",
   "bodyScanRetention0": "Удалить после анализа",
-  "bodyScanRetentionDays": "{days, plural, one{# день} few{# дня} many{# дней} other{# дня}}",
+  "bodyScanRetentionDays": "{days, plural, one{{days} день} few{{days} дня} many{{days} дней} other{{days} дня}}",
   "bodyScanRetentionHonest": "Фото удаляются в течение 48 часов после выбранного срока. Фото на этом телефоне это не затрагивает.",
   "bodyScanPrivacyApply": "Применить к уже сохранённым фото",
   "bodyScanPrivacyApplyHelp": "Сокращает срок хранения уже сохранённых фото, но никогда не увеличивает его.",
@@ -1889,7 +1889,7 @@
   "bodyScanMeasurementOnlyAsk": "Показать мою оценку",
   "bodyScanWeightTitle": "Сначала запишите вес",
   "bodyScanWeightBodyMissing": "Недавних записей веса нет. Актуальный вес делает оценку надёжнее.",
-  "bodyScanWeightBodyStale": "{days, plural, one{Последней записи веса # день.} few{Последней записи веса # дня.} many{Последней записи веса # дней.} other{Последней записи веса # дня.}} Актуальный вес делает оценку надёжнее.",
+  "bodyScanWeightBodyStale": "{days, plural, one{Последней записи веса {days} день.} few{Последней записи веса {days} дня.} many{Последней записи веса {days} дней.} other{Последней записи веса {days} дня.}} Актуальный вес делает оценку надёжнее.",
   "@bodyScanWeightBodyStale": {
     "placeholders": {
       "days": {
@@ -2056,7 +2056,7 @@
     }
   },
   "bodyScanStrengthTitle": "Силовые тренировки",
-  "bodyScanStrengthCount": "{count, plural, one{# тренировка за последние 4 недели} few{# тренировки за последние 4 недели} many{# тренировок за последние 4 недели} other{# тренировки за последние 4 недели}}",
+  "bodyScanStrengthCount": "{count, plural, one{{count} тренировка за последние 4 недели} few{{count} тренировки за последние 4 недели} many{{count} тренировок за последние 4 недели} other{{count} тренировки за последние 4 недели}}",
   "@bodyScanStrengthCount": {
     "placeholders": {
       "count": {
@@ -2066,9 +2066,375 @@
   },
   "bodyScanStrengthNone": "За последние 4 недели силовых тренировок не записано.",
   "bodyScanSeePlan": "Открыть план",
+  "nutritionKcalSpoken": "{value} килокалорий",
+  "@nutritionKcalSpoken": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderLowLabel": "Нижняя граница калорий в день",
+  "nutritionSliderHighLabel": "Верхняя граница калорий в день",
+  "nutritionSliderMinReached": "Достигнут минимум, {value}",
+  "@nutritionSliderMinReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderMaxReached": "Достигнут максимум, {value}",
+  "@nutritionSliderMaxReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMin": "Диапазон не может быть уже {gap}",
+  "@nutritionSliderGapMin": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMax": "Диапазон не может быть шире {gap}",
+  "@nutritionSliderGapMax": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperDecrease": "{label}: уменьшить на {step}",
+  "@nutritionStepperDecrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperIncrease": "{label}: увеличить на {step}",
+  "@nutritionStepperIncrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosTitle": "Макронутриенты",
+  "nutritionProteinLabel": "Белки",
+  "nutritionFatLabel": "Жиры",
+  "nutritionCarbsLabel": "Углеводы",
+  "nutritionGramsRange": "{min}–{max} г",
+  "@nutritionGramsRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionProteinAim": "Ориентир: около {target} г",
+  "@nutritionProteinAim": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosNote": "Это диапазоны, а не точные цели. Любое значение внутри них подходит.",
+  "nutritionStepsTitle": "Цель по шагам в день",
+  "nutritionStepsValue": "{steps, plural, one{# шаг} few{# шага} many{# шагов} other{# шага}}",
+  "@nutritionStepsValue": {
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsDecrease": "Уменьшить цель по шагам на {n}",
+  "@nutritionStepsDecrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsIncrease": "Увеличить цель по шагам на {n}",
+  "@nutritionStepsIncrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionOwnershipTitle": "Кто корректирует ваш план",
+  "nutritionOwnershipCoached": "С помощником",
+  "nutritionOwnershipCoachedBody": "Приложение раз в неделю корректирует план в безопасных пределах и сообщает вам. Изменение можно отменить в течение 7 дней.",
+  "nutritionOwnershipShared": "Совместно",
+  "nutritionOwnershipSharedBody": "Приложение предлагает изменения, а вы решаете, принимать ли их.",
+  "nutritionOwnershipManual": "Вручную",
+  "nutritionOwnershipManualBody": "Цифры задаёте вы. Приложение лишь показывает наблюдения и не меняет план.",
+  "nutritionOwnershipNote": "Безопасные пределы действуют в любом режиме. Изменение вступает в силу со следующей недельной проверки.",
+  "nutritionAutoTitle": "Автоматическая корректировка",
+  "nutritionAutoSteps": "Корректировать цель по шагам",
+  "nutritionAutoKcal": "Корректировать диапазон калорий",
+  "nutritionAutoManualOff": "Выключено, пока план в режиме «Вручную».",
+  "nutritionAutoSharedHint": "В режиме «Совместно» это будут предложения, которые можно принять.",
+  "nutritionAutoCoachedHint": "Выключите переключатель, чтобы эта часть плана не менялась.",
+  "nutritionProfessionalTitle": "Мы не можем задать здесь цели по питанию",
+  "nutritionProfessionalBody": "В вашей ситуации цели по питанию лучше определит врач или диетолог. Мы не показываем калории и макронутриенты. Остальные возможности приложения работают как обычно.",
+  "reviewReasonOnTrack": "Динамика веса близка к ожидаемой по плану.",
+  "reviewReasonAheadOfPlan": "Вес меняется чуть быстрее, чем по плану. Менять ничего не нужно.",
+  "reviewReasonBehindWaiting": "Прогресс медленнее плана. Перед изменениями мы дождёмся ещё одной проверки.",
+  "reviewReasonCooldownActive": "План недавно меняли, поэтому пока он остаётся прежним.",
+  "reviewReasonTooFast": "Вес меняется быстрее комфортного темпа, поэтому энергию увеличили.",
+  "reviewReasonStepsRaised": "Сначала увеличили цель по шагам как самое мягкое изменение.",
+  "reviewReasonKcalLowered": "Диапазон калорий немного уменьшили.",
+  "reviewReasonKcalRaised": "Диапазон калорий немного увеличили.",
+  "reviewReasonAtSafetyLimit": "Дальнейшее изменение вышло бы за безопасные пределы, поэтому план остаётся прежним.",
+  "reviewReasonRecomposition": "Измерения жира и вес показывают разные направления, поэтому ничего не меняли.",
+  "reviewReasonDriftTooLarge": "Автоматические изменения достигли общего предела.",
+  "reviewReasonNeedMoreDataPoints": "Сначала нужно больше записей веса.",
+  "reviewReasonNeedMoreDataSpan": "Записи веса должны охватывать более длительный период.",
+  "reviewReasonAutoAdjustOff": "Автоматическая корректировка этой части плана выключена.",
+  "nutritionReviewTitle": "Недельная проверка",
+  "nutritionReviewNone": "Проверок пока нет. Первая появится примерно после 3 записей веса за 2 недели.",
+  "nutritionReviewDecidedOn": "Проверка от {date}",
+  "@nutritionReviewDecidedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewWhyTitle": "Почему",
+  "nutritionReviewKeep": "План остаётся прежним.",
+  "nutritionReviewNeedMoreData": "Для проверки плана пока мало записей веса.",
+  "nutritionReviewNeedRecalculation": "Ваши данные изменились настолько, что план стоит пересчитать.",
+  "nutritionReviewKcalApplied": "{direction, select, down{Калории уменьшены на {amount} ккал.} other{Калории увеличены на {amount} ккал.}}",
+  "@nutritionReviewKcalApplied": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalProposed": "{direction, select, down{Предложение: уменьшить калории на {amount} ккал.} other{Предложение: увеличить калории на {amount} ккал.}}",
+  "@nutritionReviewKcalProposed": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalInsight": "{direction, select, down{Наблюдение: калории можно уменьшить на {amount} ккал. План в режиме «Вручную», поэтому ничего не изменилось.} other{Наблюдение: калории можно увеличить на {amount} ккал. План в режиме «Вручную», поэтому ничего не изменилось.}}",
+  "@nutritionReviewKcalInsight": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsApplied": "Цель по шагам увеличена на {amount}.",
+  "@nutritionReviewStepsApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsProposed": "Предложение: увеличить цель по шагам на {amount}.",
+  "@nutritionReviewStepsProposed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsInsight": "Наблюдение: цель по шагам можно увеличить на {amount}. План в режиме «Вручную», поэтому ничего не изменилось.",
+  "@nutritionReviewStepsInsight": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewBasis": "{points, plural, one{На основе # записи веса} few{На основе # записей веса} many{На основе # записей веса} other{На основе # записи веса}}",
+  "@nutritionReviewBasis": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionReviewTrend": "Динамика веса: {slope} кг/нед.",
+  "@nutritionReviewTrend": {
+    "placeholders": {
+      "slope": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndoUntil": "Изменение можно отменить до {date}.",
+  "@nutritionReviewUndoUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndo": "Отменить изменение",
+  "nutritionReviewAccept": "Принять предложение",
+  "nutritionPlanTitle": "План питания",
+  "nutritionEntryRange": "{low}–{high} ккал в день",
+  "@nutritionEntryRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEntryProfessional": "Цели по питанию лучше определит врач или диетолог.",
+  "nutritionEntrySetUp": "Настройте свой план",
+  "nutritionSaved": "План сохранён.",
+  "nutritionActionConflict": "План изменился на другом устройстве. Мы его обновили, попробуйте ещё раз.",
+  "nutritionActionOffline": "Нет соединения, изменение не сохранено.",
+  "nutritionActionRefused": "Это изменение выходит за безопасные пределы и не сохранено.",
+  "nutritionActionFailed": "Не удалось сохранить изменение.",
+  "nutritionNeedsProfileTitle": "Заполните профиль питания",
+  "nutritionNeedsProfileBody": "Нужно ответить на несколько вопросов, чтобы предложить план.",
+  "nutritionNeedsProfileAction": "Продолжить",
+  "nutritionLinkWeightLog": "Журнал веса",
+  "nutritionLinkHowItAdapts": "Как адаптируется план",
+  "nutritionLinkSources": "Источники данных и ограничения",
+  "nutritionCreateTitle": "Создайте план",
+  "nutritionCreateBody": "Мы предложим диапазон калорий на день по вашему профилю. Его можно менять в любой момент.",
+  "nutritionCreateAction": "Создать план",
+  "nutritionPlanLoadError": "Не удалось загрузить план. Попробуйте чуть позже.",
+  "nutritionKcalTitle": "Калории в день",
+  "nutritionKcalRangeValue": "{low}–{high} ккал",
+  "@nutritionKcalRangeValue": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionKcalBoundsHint": "Допустимо для вас: {min}–{max} ккал",
+  "@nutritionKcalBoundsHint": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEditSharedNote": "Если вы измените диапазон сами, план станет совместным: приложение будет предлагать изменения, а не применять их.",
+  "nutritionWeightHint": "Для первой проверки нужно примерно 3 записи веса за 2 недели. Записывайте вес в журнале веса.",
+  "weightLogCurrent": "Текущий вес: {kg} кг",
+  "@weightLogCurrent": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogCurrentStale": "Последний известный вес: {kg} кг (из профиля)",
+  "@weightLogCurrentStale": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "planToneNoDeficit": "При вашем текущем весе дефицит калорий не рекомендуется, поэтому план поддерживает вес.",
+  "planToneTargetRange": "Ваша цель ниже диапазона, к которому мы строим план, поэтому темп не показывается.",
+  "planToneFloorBinding": "Ваш диапазон находится на самом низком уровне, который мы предлагаем.",
+  "planToneNoEta": "Мы не называем дату. Прогресс редко идёт по прямой, и более медленная неделя — это нормально.",
+  "planToneScansMonthly": "Сканирование тела лучше всего делать примерно раз в месяц; раз в неделю — по желанию.",
+  "nutritionPauseTitle": "Приостановить отслеживание",
+  "nutritionPauseBody": "Скрывает недельные напоминания и напоминание о сканировании, пока вы не включите их снова. Данные сохраняются.",
+  "weightLogTitle": "Журнал веса",
+  "weightLogIntro": "Записывайте вес, когда удобно. Для первой проверки плана нужно примерно 3 записи за 2 недели.",
+  "weightLogEmpty": "Записей веса пока нет.",
+  "weightLogAdd": "Добавить вес",
+  "weightLogEdit": "Изменить вес",
+  "weightLogDelete": "Удалить",
+  "weightLogSave": "Сохранить",
+  "weightLogCancel": "Отмена",
+  "weightLogFieldLabel": "Вес (кг)",
+  "weightLogInvalid": "Введите вес от 30 до 300 кг.",
+  "weightLogDeleteTitle": "Удалить эту запись веса?",
+  "weightLogDeleteBody": "Она перестанет учитываться в плане.",
+  "weightLogSaved": "Вес сохранён.",
+  "weightLogDeleted": "Запись удалена.",
+  "weightLogUnavailable": "Не удалось сохранить. Проверьте, что вы вошли в аккаунт.",
+  "weightLogLoadError": "Не удалось загрузить записи веса.",
+  "weightLogValue": "{kg} кг",
+  "@weightLogValue": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogSourceScan": "Из сканирования",
+  "weightLogSourceManual": "Добавлено вами",
+  "nutritionSourcesTitle": "Источники данных и ограничения",
+  "nutritionSourcesIntro": "Откуда берутся ваши цифры и чего они не могут сказать.",
+  "nutritionSourcesFormulasTitle": "Формулы",
+  "nutritionSourcesMifflin": "Энергия покоя считается по уравнению Миффлина-Сан Жеора (Mifflin и соавт., 1990) с поправкой на активность.",
+  "nutritionSourcesProtein": "Диапазоны белка основаны на опубликованных обзорах по спортивному питанию (Jäger 2017, Morton 2018).",
+  "nutritionSourcesEnergyPerKg": "Около 7700 ккал принимается за один килограмм массы тела (правило Вишновски); это грубое среднее.",
+  "nutritionSourcesFoodTitle": "Данные о продуктах",
+  "nutritionSourcesUsda": "Базовые продукты: USDA FoodData Central, Foundation Foods и SR Legacy (общественное достояние, CC0 1.0).",
+  "nutritionSourcesOff": "Упакованные продукты: Open Food Facts, данные доступны по лицензии Open Database License. Записи добавляют волонтёры, они могут быть неполными.",
+  "nutritionSourcesLimitsTitle": "Ограничения",
+  "nutritionSourcesLimitEstimates": "Все цифры являются оценками. Реальные потребности различаются у разных людей и по неделям.",
+  "nutritionSourcesLimitScan": "Сканирование тела даёт вероятный диапазон, а не точное измерение. Фото нужны для вашего собственного сравнения.",
+  "nutritionSourcesLimitNotMedical": "Приложение не даёт медицинских рекомендаций. При наличии проблем со здоровьем обратитесь к врачу или диетологу.",
+  "nutritionExplainerTitle": "Как адаптируется план",
+  "nutritionExplainerWeeklyTitle": "Каждую неделю",
+  "nutritionExplainerWeekly1": "Раз в неделю приложение сравнивает динамику веса с ожидаемой по плану.",
+  "nutritionExplainerWeekly2": "Для изменения нужно достаточно записей веса, две проверки подряд в одну сторону и не менее 2 недель после прошлого изменения.",
+  "nutritionExplainerWeekly3": "Каждая проверка объясняет, почему план изменили или не изменили.",
+  "nutritionExplainerModesTitle": "Кто решает",
+  "nutritionExplainerLimitsTitle": "Безопасные пределы",
+  "nutritionExplainerLimits1": "Диапазон калорий всегда остаётся в пределах, рассчитанных по вашим данным, в любом режиме.",
+  "nutritionExplainerLimits2": "Автоматические изменения небольшие и имеют общий предел.",
+  "nutritionExplainerLimits3": "Цель по шагам увеличивается раньше калорий, потому что это более мягкое изменение.",
   "bodyScanPlanDecisionTitle": "План на эту неделю",
   "bodyScanChecksTitle": "Проверьте",
-  "bodyScanChecksCount": "{count, plural, one{# пункт для проверки} few{# пункта для проверки} many{# пунктов для проверки} other{# пункта для проверки}}",
+  "bodyScanChecksCount": "{count, plural, one{{count} пункт для проверки} few{{count} пункта для проверки} many{{count} пунктов для проверки} other{{count} пункта для проверки}}",
   "@bodyScanChecksCount": {
     "placeholders": {
       "count": {
@@ -2305,7 +2671,7 @@
   "foodDetailEstimateNote": "Эти значения — оценка, а не запись из базы данных.",
   "foodDetailPer100": "На 100 г: {kcal} ккал, белки {protein} г, углеводы {carbs} г, жиры {fat} г",
   "foodCheckHeading": "Проверьте",
-  "foodCheckCount": "{count, plural, one{# пункт для проверки} few{# пункта для проверки} many{# пунктов для проверки} other{# пункта для проверки}}",
+  "foodCheckCount": "{count, plural, one{{count} пункт для проверки} few{{count} пункта для проверки} many{{count} пунктов для проверки} other{{count} пункта для проверки}}",
   "foodCheckNeeds": "Нужно проверить",
   "foodCheckDone": "Проверено",
   "foodCheckChipLabel": "{title}, {state}",
@@ -2340,7 +2706,7 @@
   "bodyCheckInTitle": "Проверка тела",
   "bodyCheckInStart": "Начать проверку",
   "bodyCheckInNever": "Проверок пока не было.",
-  "bodyCheckInLast": "{days, plural, =0{Последняя проверка: сегодня} one{Последняя проверка: # день назад} few{Последняя проверка: # дня назад} many{Последняя проверка: # дней назад} other{Последняя проверка: # дня назад}}",
+  "bodyCheckInLast": "{days, plural, =0{Последняя проверка: сегодня} one{Последняя проверка: {days} день назад} few{Последняя проверка: {days} дня назад} many{Последняя проверка: {days} дней назад} other{Последняя проверка: {days} дня назад}}",
   "@bodyCheckInLast": {
     "placeholders": {
       "days": {

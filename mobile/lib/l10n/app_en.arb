@@ -2962,7 +2962,7 @@
   "@dataNoticeAcknowledge": {
     "description": "Single-tap acknowledgement button of the data notice."
   },
-  "scanManualTimerStarted": "Photo in {seconds, plural, one{# second} other{# seconds}}",
+  "scanManualTimerStarted": "Photo in {seconds, plural, one{{seconds} second} other{{seconds} seconds}}",
   "@scanManualTimerStarted": {
     "description": "Announced when the manual shutter timer starts.",
     "placeholders": {
@@ -2992,7 +2992,7 @@
   "bodyScanCompareTakeSecond": "Take second scan",
   "bodyScanHistoryTitle": "Scan history",
   "bodyScanHistoryEmpty": "No scans yet. Your first scan becomes your baseline.",
-  "bodyScanHistoryCount": "{count, plural, one{# scan} other{# scans}}",
+  "bodyScanHistoryCount": "{count, plural, one{{count} scan} other{{count} scans}}",
   "@bodyScanHistoryCount": {
     "placeholders": {
       "count": {
@@ -3046,7 +3046,7 @@
   "bodyScanPrivacyIntroLocal": "Your scan photos stay on this phone. Nothing is uploaded in this version.",
   "bodyScanPrivacyRetentionTitle": "Keep cloud photos for",
   "bodyScanRetention0": "Delete after analysis",
-  "bodyScanRetentionDays": "{days, plural, one{# day} other{# days}}",
+  "bodyScanRetentionDays": "{days, plural, one{{days} day} other{{days} days}}",
   "@bodyScanRetentionDays": {
     "placeholders": {
       "days": {
@@ -3088,7 +3088,7 @@
   "bodyScanMeasurementOnlyAsk": "Show my estimate",
   "bodyScanWeightTitle": "Log your weight first",
   "bodyScanWeightBodyMissing": "There is no recent weight on file. A current weight makes the estimate more reliable.",
-  "bodyScanWeightBodyStale": "{days, plural, one{Your last weight is # day old.} other{Your last weight is # days old.}} A current weight makes the estimate more reliable.",
+  "bodyScanWeightBodyStale": "{days, plural, one{Your last weight is {days} day old.} other{Your last weight is {days} days old.}} A current weight makes the estimate more reliable.",
   "@bodyScanWeightBodyStale": {
     "placeholders": {
       "days": {
@@ -3255,7 +3255,7 @@
     }
   },
   "bodyScanStrengthTitle": "Strength sessions",
-  "bodyScanStrengthCount": "{count, plural, one{# session in the last 4 weeks} other{# sessions in the last 4 weeks}}",
+  "bodyScanStrengthCount": "{count, plural, one{{count} session in the last 4 weeks} other{{count} sessions in the last 4 weeks}}",
   "@bodyScanStrengthCount": {
     "placeholders": {
       "count": {
@@ -3265,9 +3265,375 @@
   },
   "bodyScanStrengthNone": "No strength sessions logged in the last 4 weeks.",
   "bodyScanSeePlan": "See your plan",
+  "nutritionKcalSpoken": "{value} kilocalories",
+  "@nutritionKcalSpoken": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderLowLabel": "Lowest daily calories",
+  "nutritionSliderHighLabel": "Highest daily calories",
+  "nutritionSliderMinReached": "Minimum reached, {value}",
+  "@nutritionSliderMinReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderMaxReached": "Maximum reached, {value}",
+  "@nutritionSliderMaxReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMin": "Range cannot be narrower than {gap}",
+  "@nutritionSliderGapMin": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMax": "Range cannot be wider than {gap}",
+  "@nutritionSliderGapMax": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperDecrease": "{label}: decrease by {step}",
+  "@nutritionStepperDecrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperIncrease": "{label}: increase by {step}",
+  "@nutritionStepperIncrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosTitle": "Macros",
+  "nutritionProteinLabel": "Protein",
+  "nutritionFatLabel": "Fat",
+  "nutritionCarbsLabel": "Carbs",
+  "nutritionGramsRange": "{min}–{max} g",
+  "@nutritionGramsRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionProteinAim": "Aim for about {target} g",
+  "@nutritionProteinAim": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosNote": "These are ranges, not exact targets. Anywhere inside them is fine.",
+  "nutritionStepsTitle": "Daily steps goal",
+  "nutritionStepsValue": "{steps, plural, one{# step} other{# steps}}",
+  "@nutritionStepsValue": {
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsDecrease": "Lower the steps goal by {n}",
+  "@nutritionStepsDecrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsIncrease": "Raise the steps goal by {n}",
+  "@nutritionStepsIncrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionOwnershipTitle": "Who adjusts your plan",
+  "nutritionOwnershipCoached": "Coached",
+  "nutritionOwnershipCoachedBody": "The app adjusts your plan weekly within safe limits and tells you. You can undo a change for 7 days.",
+  "nutritionOwnershipShared": "Shared",
+  "nutritionOwnershipSharedBody": "The app suggests changes and you choose whether to accept them.",
+  "nutritionOwnershipManual": "Manual",
+  "nutritionOwnershipManualBody": "You set the numbers. The app only shows insights and never changes your plan.",
+  "nutritionOwnershipNote": "Safety limits apply in every mode. A change takes effect from your next weekly review.",
+  "nutritionAutoTitle": "Automatic adjustments",
+  "nutritionAutoSteps": "Adjust my steps goal",
+  "nutritionAutoKcal": "Adjust my calorie range",
+  "nutritionAutoManualOff": "Off while your plan is Manual.",
+  "nutritionAutoSharedHint": "In Shared mode these become suggestions you can accept.",
+  "nutritionAutoCoachedHint": "Turn one off to keep that part of your plan fixed.",
+  "nutritionProfessionalTitle": "We cannot set nutrition targets for you here",
+  "nutritionProfessionalBody": "For your situation, a doctor or registered dietitian is the right person to set food targets. We will not show calorie or macro numbers. Everything else in the app works as usual.",
+  "reviewReasonOnTrack": "Your weight trend is close to what the plan expects.",
+  "reviewReasonAheadOfPlan": "Your weight is changing a little faster than planned. No change is needed.",
+  "reviewReasonBehindWaiting": "Progress is slower than planned. We wait for one more review before changing anything.",
+  "reviewReasonCooldownActive": "The plan was changed recently, so it stays as it is for now.",
+  "reviewReasonTooFast": "Your weight is changing faster than is comfortable, so energy was raised.",
+  "reviewReasonStepsRaised": "The steps goal was raised first, as it is the gentlest change.",
+  "reviewReasonKcalLowered": "The calorie range was lowered a little.",
+  "reviewReasonKcalRaised": "The calorie range was raised a little.",
+  "reviewReasonAtSafetyLimit": "A further change would leave your safe range, so the plan stays as it is.",
+  "reviewReasonRecomposition": "Body-fat measurements and weight point in different directions, so nothing was changed.",
+  "reviewReasonDriftTooLarge": "Automatic changes have reached their total limit.",
+  "reviewReasonNeedMoreDataPoints": "More weigh-ins are needed first.",
+  "reviewReasonNeedMoreDataSpan": "The weigh-ins need to cover a longer period.",
+  "reviewReasonAutoAdjustOff": "Automatic adjustment is off for this part of your plan.",
+  "nutritionReviewTitle": "Weekly review",
+  "nutritionReviewNone": "No review yet. The first one appears after about 3 weigh-ins over 2 weeks.",
+  "nutritionReviewDecidedOn": "Reviewed on {date}",
+  "@nutritionReviewDecidedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewWhyTitle": "Why",
+  "nutritionReviewKeep": "Your plan stays as it is.",
+  "nutritionReviewNeedMoreData": "Not enough weigh-ins yet to review your plan.",
+  "nutritionReviewNeedRecalculation": "Your measurements changed enough that the plan should be recalculated.",
+  "nutritionReviewKcalApplied": "{direction, select, down{Calories lowered by {amount} kcal.} other{Calories raised by {amount} kcal.}}",
+  "@nutritionReviewKcalApplied": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalProposed": "{direction, select, down{Suggestion: lower calories by {amount} kcal.} other{Suggestion: raise calories by {amount} kcal.}}",
+  "@nutritionReviewKcalProposed": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalInsight": "{direction, select, down{Insight: calories could go down by {amount} kcal. Your plan is Manual, so nothing changed.} other{Insight: calories could go up by {amount} kcal. Your plan is Manual, so nothing changed.}}",
+  "@nutritionReviewKcalInsight": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsApplied": "Steps goal raised by {amount}.",
+  "@nutritionReviewStepsApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsProposed": "Suggestion: raise the steps goal by {amount}.",
+  "@nutritionReviewStepsProposed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsInsight": "Insight: the steps goal could go up by {amount}. Your plan is Manual, so nothing changed.",
+  "@nutritionReviewStepsInsight": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewBasis": "{points, plural, one{Based on # weigh-in} other{Based on # weigh-ins}}",
+  "@nutritionReviewBasis": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionReviewTrend": "Weight trend: {slope} kg/week",
+  "@nutritionReviewTrend": {
+    "placeholders": {
+      "slope": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndoUntil": "You can undo this change until {date}.",
+  "@nutritionReviewUndoUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndo": "Undo this change",
+  "nutritionReviewAccept": "Accept suggestion",
+  "nutritionPlanTitle": "Nutrition plan",
+  "nutritionEntryRange": "{low}–{high} kcal a day",
+  "@nutritionEntryRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEntryProfessional": "A doctor or dietitian is the right person to set food targets.",
+  "nutritionEntrySetUp": "Set up your plan",
+  "nutritionSaved": "Plan saved.",
+  "nutritionActionConflict": "Your plan changed on another device. We reloaded it, please try again.",
+  "nutritionActionOffline": "You are offline, so the change was not saved.",
+  "nutritionActionRefused": "That change is outside your safe range, so it was not saved.",
+  "nutritionActionFailed": "We could not save that change.",
+  "nutritionNeedsProfileTitle": "Finish your nutrition profile",
+  "nutritionNeedsProfileBody": "A few answers are needed before we can suggest a plan.",
+  "nutritionNeedsProfileAction": "Continue",
+  "nutritionLinkWeightLog": "Weight log",
+  "nutritionLinkHowItAdapts": "How your plan adapts",
+  "nutritionLinkSources": "Data sources and limits",
+  "nutritionCreateTitle": "Create your plan",
+  "nutritionCreateBody": "We use your profile to suggest a daily calorie range. You can change it at any time.",
+  "nutritionCreateAction": "Create my plan",
+  "nutritionPlanLoadError": "We could not load your plan. Try again in a moment.",
+  "nutritionKcalTitle": "Daily calories",
+  "nutritionKcalRangeValue": "{low}–{high} kcal",
+  "@nutritionKcalRangeValue": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionKcalBoundsHint": "Allowed for you: {min}–{max} kcal",
+  "@nutritionKcalBoundsHint": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEditSharedNote": "If you change the range yourself, your plan becomes Shared: the app suggests changes instead of applying them.",
+  "nutritionWeightHint": "Your first review needs about 3 weigh-ins over 2 weeks. Log your weight in the weight log.",
+  "weightLogCurrent": "Current weight: {kg} kg",
+  "@weightLogCurrent": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogCurrentStale": "Last known weight: {kg} kg (from your profile)",
+  "@weightLogCurrentStale": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "planToneNoDeficit": "At your current weight a calorie deficit is not suggested, so the plan keeps your weight steady.",
+  "planToneTargetRange": "Your target is below the range we plan towards, so no pace is shown.",
+  "planToneFloorBinding": "Your range sits at the lowest level we suggest.",
+  "planToneNoEta": "We do not predict a date. Progress is rarely a straight line, and a slower week is normal.",
+  "planToneScansMonthly": "Body scans work best about once a month; weekly is optional.",
+  "nutritionPauseTitle": "Pause tracking",
+  "nutritionPauseBody": "Hides weekly nudges and the scan reminder until you turn it back on. Your data stays.",
+  "weightLogTitle": "Weight log",
+  "weightLogIntro": "Log your weight whenever you like. The first plan review needs about 3 weigh-ins over 2 weeks.",
+  "weightLogEmpty": "No weigh-ins yet.",
+  "weightLogAdd": "Add weight",
+  "weightLogEdit": "Edit weight",
+  "weightLogDelete": "Delete",
+  "weightLogSave": "Save",
+  "weightLogCancel": "Cancel",
+  "weightLogFieldLabel": "Weight (kg)",
+  "weightLogInvalid": "Enter a weight between 30 and 300 kg.",
+  "weightLogDeleteTitle": "Delete this weigh-in?",
+  "weightLogDeleteBody": "It will no longer count towards your plan.",
+  "weightLogSaved": "Weight saved.",
+  "weightLogDeleted": "Weigh-in deleted.",
+  "weightLogUnavailable": "We could not save that. Check that you are signed in.",
+  "weightLogLoadError": "We could not load your weigh-ins.",
+  "weightLogValue": "{kg} kg",
+  "@weightLogValue": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogSourceScan": "From a scan",
+  "weightLogSourceManual": "Added by you",
+  "nutritionSourcesTitle": "Data sources and limits",
+  "nutritionSourcesIntro": "Where your numbers come from, and what they cannot tell you.",
+  "nutritionSourcesFormulasTitle": "Formulas",
+  "nutritionSourcesMifflin": "Resting energy uses the Mifflin-St Jeor equation (Mifflin et al., 1990), scaled by an activity factor.",
+  "nutritionSourcesProtein": "Protein ranges follow published sports-nutrition reviews (Jäger 2017, Morton 2018).",
+  "nutritionSourcesEnergyPerKg": "About 7,700 kcal is treated as one kilogram of body mass (Wishnofsky rule), which is a rough average.",
+  "nutritionSourcesFoodTitle": "Food data",
+  "nutritionSourcesUsda": "Generic foods: USDA FoodData Central, Foundation Foods and SR Legacy (public domain, CC0 1.0).",
+  "nutritionSourcesOff": "Packaged foods: Open Food Facts, made available under the Open Database License. Entries are contributed by volunteers and may be incomplete.",
+  "nutritionSourcesLimitsTitle": "Limits",
+  "nutritionSourcesLimitEstimates": "All figures are estimates. Real needs vary from person to person and from week to week.",
+  "nutritionSourcesLimitScan": "A body scan gives a likely range, not an exact measurement. Photos are for your own comparison.",
+  "nutritionSourcesLimitNotMedical": "This app does not give medical advice. If you have a health condition, ask a doctor or dietitian.",
+  "nutritionExplainerTitle": "How your plan adapts",
+  "nutritionExplainerWeeklyTitle": "Each week",
+  "nutritionExplainerWeekly1": "Once a week the app compares your weight trend with what the plan expects.",
+  "nutritionExplainerWeekly2": "A change needs enough weigh-ins, two reviews in a row pointing the same way, and at least 2 weeks since the last change.",
+  "nutritionExplainerWeekly3": "Every review explains why it did or did not change anything.",
+  "nutritionExplainerModesTitle": "Who decides",
+  "nutritionExplainerLimitsTitle": "Safety limits",
+  "nutritionExplainerLimits1": "Your calorie range always stays inside limits worked out from your own data, in every mode.",
+  "nutritionExplainerLimits2": "Automatic changes are small and have a total limit.",
+  "nutritionExplainerLimits3": "The steps goal is raised before calories, because it is the gentler change.",
   "bodyScanPlanDecisionTitle": "This week's plan",
   "bodyScanChecksTitle": "Check these",
-  "bodyScanChecksCount": "{count, plural, one{# item to check} other{# items to check}}",
+  "bodyScanChecksCount": "{count, plural, one{{count} item to check} other{{count} items to check}}",
   "@bodyScanChecksCount": {
     "placeholders": {
       "count": {
@@ -3515,7 +3881,7 @@
   "foodDetailPer100": "Per 100 g: {kcal} kcal, protein {protein} g, carbs {carbs} g, fat {fat} g",
   "@foodDetailPer100": {"placeholders": {"kcal": {"type": "String"}, "protein": {"type": "String"}, "carbs": {"type": "String"}, "fat": {"type": "String"}}},
   "foodCheckHeading": "Check these",
-  "foodCheckCount": "{count, plural, one{# item to check} other{# items to check}}",
+  "foodCheckCount": "{count, plural, one{{count} item to check} other{{count} items to check}}",
   "@foodCheckCount": {"placeholders": {"count": {"type": "int"}}},
   "foodCheckNeeds": "Needs checking",
   "foodCheckDone": "Checked",
@@ -3552,7 +3918,7 @@
   "bodyCheckInTitle": "Body check-in",
   "bodyCheckInStart": "Start check-in",
   "bodyCheckInNever": "No check-ins yet.",
-  "bodyCheckInLast": "{days, plural, =0{Last check-in: today} one{Last check-in: # day ago} other{Last check-in: # days ago}}",
+  "bodyCheckInLast": "{days, plural, =0{Last check-in: today} one{Last check-in: {days} day ago} other{Last check-in: {days} days ago}}",
   "@bodyCheckInLast": {
     "placeholders": {
       "days": {
