@@ -79,7 +79,7 @@ Future<Map<String, dynamic>> mergeServerPages(
   return merged;
 }
 
-class CloudFunctionsServerExport implements ServerExport {
+class CloudFunctionsServerExport extends ServerExport {
   CloudFunctionsServerExport({FirebaseFunctions? functions})
       : _functions = functions ?? functionsForRegion;
 
@@ -126,7 +126,7 @@ class CloudFunctionsServerExport implements ServerExport {
 }
 
 /// Test double. Returns whatever it was constructed with.
-class FakeServerExport implements ServerExport {
+class FakeServerExport extends ServerExport {
   FakeServerExport([this.payload]);
 
   final Map<String, dynamic>? payload;

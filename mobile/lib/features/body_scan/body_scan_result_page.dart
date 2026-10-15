@@ -34,6 +34,7 @@ class BodyScanResultPage extends ConsumerWidget {
         break;
       }
     }
+    final openRow = row;
     final body = result.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, __) => Center(
@@ -53,12 +54,12 @@ class BodyScanResultPage extends ConsumerWidget {
               model: buildScanResultViewModel(data, plan),
               onSeePlan: () => GoRouter.of(context).push('/nutrition'),
               onHistory: () => GoRouter.of(context).push('/body-scan/history'),
-              onEditWeight: row == null
+              onEditWeight: openRow == null
                   ? null
-                  : () => editScanWeightFlow(context, ref, row),
-              onDeletePhotos: row == null
+                  : () => editScanWeightFlow(context, ref, openRow),
+              onDeletePhotos: openRow == null
                   ? null
-                  : () => deleteScanPhotosFlow(context, ref, row),
+                  : () => deleteScanPhotosFlow(context, ref, openRow),
             ),
     );
     return Scaffold(

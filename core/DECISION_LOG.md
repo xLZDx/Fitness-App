@@ -56250,3 +56250,7 @@ Decision: provider tests prove the median-steps rule, that an ineligible or unkn
 ## 2026-10-15 - Commit: C15 tests - result_view_test
 
 Decision: result view tests pin that the ETA text is never rendered and that provisional mass tiles are labelled this reading. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: router closure compile fixes
+
+Decision: ServerExport implementers extend (not implement) the abstract class so C25 concrete defaults are inherited; missing imports added; nullable row copied to a final local; intl TextDirection hidden. Evidence: core/changes/2026-10-15-compile-fixes-router-closure.md; single router test green.
