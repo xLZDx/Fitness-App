@@ -7,3 +7,4 @@ Entry fields: Phase 1 base SHA, Phase 2 target SHA before and after, conflicted 
 | Date | Phase 1 base | Phase 2 before | Phase 2 after | Conflicts | Evidence |
 |---|---|---|---|---|---|
 | 2026-10-15 | `42d1b849` (`phase1-baseline`) | `42d1b849` | `5137ccda` (PR #5 merge; no Phase 1 change pending) | none | Phase 2 line created from Phase 1 baseline; first sync gate has nothing to merge |
+| 2026-10-16 | `0eee9ca2` (`phase1/main`, PR #6 Phase 1 documentation index) | `db01888f` (S00 PR #7 merge) | `39dc95cd` (merge commit, parents `db01888f` and `0eee9ca2`; branch `phase2/s00b-sync-alias`, PR linked from the PR description) | `core/DECISION_LOG.md` (documentation, both sides append-only): kept both entries | Phase 1 change is documentation only (`docs/phase1/README.md`, two change records, two decision entries); no rules, indexes, storage rules or code in the diff between the lines; no regression test needed |
