@@ -56087,3 +56087,8 @@ Evidence: the complete set of C12 server test files (8 new, 2 extended) ran in o
 ## 2026-10-15 - Commit: E1 tests for body-scan guards, activity and nutrition state
 
 Decision: fixed the SCAN-52 product defect in body_scan_flow_machine.dart (a local-only cancel must not emit a server delete); the coverage map V-LOSE-M/V-LOSE-CAP values are wrong against D-39 and are corrected, the implementation stands. Evidence: core/changes/2026-10-15-e1-tests-body-scan-activity-nutrition-state.md.
+Progress: T104 coerce_meal_analysis tests added (54 passing; one test fixture corrected for 0.1 rounding).
+
+## 2026-10-15 - Commit: C21 generic foods and suggestions tests
+
+Decision: fixed three product defects found by the tests: Eggplant no longer carries the egg allergen (builder regex and asset), malt liquor is tagged alcohol, and halal/kosher now hide all uncertain rows as the documented contract says. Evidence: generic_foods_test 68 passed, food_suggestions_test 77 passed (single-file runs); core/changes/2026-10-15-c21-tests.md.

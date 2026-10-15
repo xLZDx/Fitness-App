@@ -113,13 +113,13 @@ bool fitsFilter(GenericFood food, SuggestionFilter filter) {
           return false;
         }
       case DietaryPreference.halal:
-        if (t.pork || t.alcohol || t.animalProduct == null || isMeat) {
+        if (t.pork || t.alcohol || t.isUncertain || isMeat) {
           return false;
         }
       case DietaryPreference.kosher:
         if (t.pork ||
             t.alcohol ||
-            t.animalProduct == null ||
+            t.isUncertain ||
             isMeat ||
             t.allergens.contains(FoodAllergen.crustaceans) ||
             t.allergens.contains(FoodAllergen.molluscs)) {
