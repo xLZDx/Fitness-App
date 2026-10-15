@@ -3,6 +3,7 @@
 // token values: no widget is pumped. Text pairs must reach 4.5:1, graphics
 // (icons, chart marks) 3:1. The recorded table lives in
 // core/changes/2026-10-15-c26-l10n-a11y-audit.md.
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' show Color;
 
@@ -138,13 +139,51 @@ void main() {
         ('white', const Color(0xFFFFFFFF)),
         ('redAccent', const Color(0xFFFF5252)),
       ]) {
-        test('$name on panel over #${backdrop.toARGB32().toRadixString(16)}',
+        test('$name on panel over #${backdrop.value.toRadixString(16)}',
             () {
           expect(ratio(fg, panel), greaterThanOrEqualTo(kText),
               reason: ratio(fg, panel).toStringAsFixed(2));
         });
       }
     }
+  });
+
+  group('camera panel constants are read from the source', () {
+    // The camera-panel pairs above would stay green if the source went back to
+    // a translucent fill or to a dimmer text colour, so pin the real values.
+    test('readiness panel fill alpha in the capture screen is >= 0.85', () {
+      final src = File(
+              'lib/features/progress_photos/scan/ui/scan_capture_screen.dart')
+          .readAsStringSync();
+      final m = RegExp(
+          r'color: Colors\.black\.withValues\(alpha: ([0-9.]+)\),\s*borderRadius: BorderRadius\.circular\(16\)')
+          .firstMatch(src);
+      expect(m, isNotNull, reason: 'readiness panel fill not found');
+      final alpha = double.parse(m!.group(1)!);
+      expect(alpha, greaterThanOrEqualTo(0.85));
+      // The worst case (a white scene) must still pass at the source alpha.
+      final panel = over(
+          const Color(0xFF000000).withValues(alpha: alpha), const Color(0xFFFFFFFF));
+      for (final fg in const [
+        Color(0xFF69F0AE),
+        Color(0xFFFFAB40),
+        Color(0xFFFFFFFF),
+        Color(0xFFFF5252),
+      ]) {
+        expect(ratio(fg, panel), greaterThanOrEqualTo(kText));
+      }
+    });
+
+    test('status rows use only the colours the table covers', () {
+      final src =
+          File('lib/features/body_scan/widgets/setup_status_panel.dart')
+              .readAsStringSync();
+      final used = RegExp(r'Colors\.(\w+)')
+          .allMatches(src)
+          .map((m) => m.group(1)!)
+          .toSet();
+      expect(used, {'greenAccent', 'orangeAccent', 'white'});
+    });
   });
 
   test('ratio() reproduces the documented token ratios', () {

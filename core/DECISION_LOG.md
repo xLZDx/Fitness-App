@@ -56562,3 +56562,7 @@ Decision: RU plurals only for integer fields (all new plural placeholders are in
 ## 2026-10-15 - Commit: sprint status report (checkpoint)
 
 Decision: interim status report pair added (reports/2026-10-15-body-scan-nutrition-sprint-status.*). Checkpoint only: sprint not closed, test agents and C27 continue. Evidence: `core/changes/2026-10-15-sprint-status-report.md`.
+
+## 2026-10-15 - Commit: C26 contrast token test run and fixed
+
+Decision: `contrast_tokens_test.dart` compiled only after replacing `toARGB32()` with `value` for the pinned SDK; source-pinned checks added for the camera panel alpha and status colours so the hard-coded camera pairs cannot drift from the source. 65 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
