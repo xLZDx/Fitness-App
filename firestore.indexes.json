@@ -15,11 +15,36 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "nextAttemptAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "body_scans",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "photosState", "order": "ASCENDING" },
+        { "fieldPath": "photosExpireAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "body_scans",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "pendingExpiresAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
     {
       "collectionGroup": "accountDeletionRetries",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
+      "collectionGroup": "nutrition_cache",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": [

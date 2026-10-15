@@ -27,6 +27,22 @@ import '../../features/workouts/workout_summary_page.dart';
 import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
+import '../../features/body_scan/body_scan_flow_page.dart';
+import '../../features/body_scan/body_scan_history_page.dart';
+import '../../features/body_scan/body_scan_privacy_page.dart';
+import '../../features/body_scan/body_scan_result_page.dart';
+import '../../features/food_diary/add_food_page.dart';
+import '../../features/food_diary/barcode_scan_page.dart';
+import '../../features/food_diary/label_scan_page.dart';
+import '../../features/food_diary/meal_scan_page.dart';
+import '../../features/food_diary/data/food_entry.dart' show MealSlot;
+import '../../features/food_diary/food_diary_page.dart';
+import '../../features/food_diary/food_search_page.dart';
+import '../../features/nutrition_plan/nutrition_plan_page.dart';
+import '../../features/nutrition_plan/nutrition_profile_flow_page.dart';
+import '../../features/nutrition_plan/plan_explainer_page.dart';
+import '../../features/nutrition_plan/plan_sources_page.dart';
+import '../../features/nutrition_plan/weight_log_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/data_export/backup_page.dart';
 import '../../features/posture/posture_page.dart';
@@ -133,6 +149,14 @@ String? resolveRedirect({
   }
   if (isSignedIn && isOnboarded && location == '/onboarding') {
     return '/home';
+  }
+  return null;
+}
+
+/// `slot` query value of the food routes; unknown values mean "no slot".
+MealSlot? _slotParam(String? raw) {
+  for (final s in MealSlot.values) {
+    if (s.name == raw) return s;
   }
   return null;
 }
@@ -520,7 +544,96 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/photos/compare',
-        pageBuilder: (_, __) => _fadeThrough(const ScanCompareScreen()),
+        pageBuilder: (_, state) => _fadeThrough(ScanCompareScreen(
+          start: ScanCompareStart.parse(state.uri.queryParameters['mode']),
+        )),
+      ),
+      // C16. Scan history and photo privacy.
+      GoRoute(
+        path: '/body-scan/history',
+        pageBuilder: (_, __) => _fadeThrough(const BodyScanHistoryPage()),
+      ),
+      GoRoute(
+        path: '/body-scan/privacy',
+        pageBuilder: (_, __) => _fadeThrough(const BodyScanPrivacyPage()),
+      ),
+      // C11. The "complete your nutrition profile" flow for users who already
+      // finished onboarding. Only this path is registered here; the other
+      // /nutrition* and /body-scan* paths are added by the commit that creates
+      // each page.
+      GoRoute(
+        path: '/nutrition/profile',
+        pageBuilder: (_, __) => _fadeThrough(const NutritionProfileFlowPage()),
+      ),
+      // C19. Plan screen, weight log, sources and the explainer.
+      GoRoute(
+        path: '/nutrition',
+        pageBuilder: (_, __) => _fadeThrough(const NutritionPlanPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/weight',
+        pageBuilder: (_, __) => _fadeThrough(const WeightLogPage()),
+      ),
+      // C23. Food diary, add-food and search.
+      GoRoute(
+        path: '/nutrition/diary',
+        pageBuilder: (_, __) => _fadeThrough(const FoodDiaryPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/add',
+        pageBuilder: (_, state) => _fadeThrough(AddFoodPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/add/search',
+        pageBuilder: (_, state) => _fadeThrough(FoodSearchPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+          savedOnly: state.uri.queryParameters['saved'] == '1',
+        )),
+      ),
+      // C24. Meal photo, barcode and label capture.
+      GoRoute(
+        path: '/nutrition/add/photo',
+        pageBuilder: (_, state) => _fadeThrough(MealScanPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/add/barcode',
+        pageBuilder: (_, state) => _fadeThrough(BarcodeScanPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/add/label',
+        pageBuilder: (_, state) => _fadeThrough(LabelScanPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/sources',
+        pageBuilder: (_, __) => _fadeThrough(const PlanSourcesPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/how-it-adapts',
+        pageBuilder: (_, __) => _fadeThrough(const PlanExplainerPage()),
+      ),
+      // C15. Body scan flow and result.
+      GoRoute(
+        path: '/body-scan',
+        pageBuilder: (_, __) => _fadeThrough(const BodyScanFlowPage()),
+      ),
+      GoRoute(
+        path: '/body-scan/result/:scanId',
+        pageBuilder: (_, state) => _fadeThrough(
+          BodyScanResultPage(scanId: state.pathParameters['scanId']!),
+        ),
       ),
       GoRoute(
         path: '/backup',

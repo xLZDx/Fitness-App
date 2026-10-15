@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Scan + Nutrition Coach: review fixes status</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:16px;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #8884;padding:6px 8px;text-align:left;vertical-align:top}
+h2{margin-top:28px}
+</style>
+</head>
+<body>
+<header>
+<h1>Body Scan + Nutrition Coach: review fixes status</h1>
+<p>Branch feature/body-scan-nutrition-coach, 15 October 2026. Fixes for the four reviews are committed; regression tests are written but not yet run. Checkpoint, not a gate closure.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ a0a088ed</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>1. Fixed (commits)</h2>
+<table>
+<tr><th>Finding</th><th>Fix</th><th>Commit</th></tr>
+<tr><td>P-1 purge trusts any body_scans path</td><td>Every purge pass requires users/{uid}/body_scans/{id}</td><td>5488425c</td></tr>
+<tr><td>P-2 / DB-F2 rollback disables erase</td><td>Erase paths need only the bucket; separate BODY_SCAN_ACCEPT_UPLOADS switch; runbook rewritten</td><td>5488425c, 6b72079e</td></tr>
+<tr><td>DB-F1 / P-3 failed scans never purged</td><td>New purge pass for failed scans</td><td>5488425c</td></tr>
+<tr><td>P-4, P-5, P-8, DB-F3..F8, SF-F7</td><td>Consent recheck, reissue cap, estimate attempt cap, cursor and ordering fixes</td><td>5488425c</td></tr>
+<tr><td>P-7, P-9, D-67</td><td>Export page quota 150, redacted gateway and export logs</td><td>6095eae0</td></tr>
+<tr><td>SF-F9</td><td>Unusable model output refunds quota and returns unavailable</td><td>73e2cb01</td></tr>
+<tr><td>SF-F1, SF-F2, SF-F3</td><td>Owed deletes stop the scan; loading inputs keep it queued; retry timer rescheduled</td><td>dbc6ae7d, a70bcb0b</td></tr>
+<tr><td>SF-F4, SF-F5, SF-F6</td><td>Owed delete kind persisted; fire-and-forget calls observed</td><td>a70bcb0b, 61af1c03</td></tr>
+<tr><td>SF-F8, SF-F10, SF-F12</td><td>Unreadable plan error state, scanDone rerun, degraded food entries</td><td>a0a088ed</td></tr>
+<tr><td>FL-F1, F2, F3, F6</td><td>Search state kept, errors caught, torch future handled, diary day follows midnight</td><td>next commit</td></tr>
+</table>
+
+<h2>2. Skipped</h2>
+<p>SF-F13 (cache write already swallows errors, finding was wrong); FL-F7 (optional, changes the table loading contract); FL-F4 and FL-F5 are open MINOR items.</p>
+
+<h2>3. Next</h2>
+<ol>
+<li>Test agents run the changed server and mobile test sets, then the complete agent-written sets once more.</li>
+<li>GPT-PM final review on the exact head, then push and one PR.</li>
+</ol>
+
+<h2>4. Not verified</h2>
+<p>No test has been run on these fixes yet.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

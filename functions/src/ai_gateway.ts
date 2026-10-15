@@ -47,6 +47,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
   type GenerateContentResponseUsageMetadata,
+  type Schema,
 } from "@google/genai";
 import * as logger from "firebase-functions/logger";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -173,6 +174,14 @@ export const AI_GATEWAY_OPERATIONS = [
   "aiEquipmentRecognition",
   "aiMachineDescription",
   "aiExerciseGeneration",
+  // Body Scan + Nutrition Coach (D-63): the two food callables run on the same
+  // gateway and the same `fn-ai-runtime` identity, so the tuple grows to six
+  // and every monitoring definition derived from it follows automatically.
+  // Added in C02 ahead of the callables (C20) so the type and the metric
+  // filters are ready when they land; the callables' own quota names are the
+  // same strings (`QUOTAS.analyzeMealPhoto`, `QUOTAS.parseNutritionLabel`).
+  "analyzeMealPhoto",
+  "parseNutritionLabel",
 ] as const;
 export type AiGatewayOperation = (typeof AI_GATEWAY_OPERATIONS)[number];
 
@@ -228,6 +237,14 @@ export interface GenerateOptions {
   /** `application/json` for the three surfaces whose caller parses JSON;
    * omitted for coach advice, which returns prose. */
   jsonResponse?: boolean;
+  /**
+   * Optional structured-output schema (the SDK's own `Schema` type), passed through to the model call untouched.
+   * Only meaningful together with `jsonResponse` (the gateway sets
+   * `responseMimeType: "application/json"` itself); omitted by the four
+   * original callables, so their request is byte-for-byte unchanged. Used by
+   * the food callables (C20) to constrain the model to a closed output shape.
+   */
+  responseSchema?: Schema;
   /** 0 for the three deterministic/structured surfaces; 0.4 for the exercise
    * generator; omitted (model default) for coach advice — see the interface
    * doc above. */
@@ -292,6 +309,7 @@ export async function generate(opts: GenerateOptions): Promise<string> {
         ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
         ...(opts.disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         ...(opts.jsonResponse ? { responseMimeType: "application/json" } : {}),
+        ...(opts.responseSchema ? { responseSchema: opts.responseSchema } : {}),
         // AbortSignal on the request itself, not a bare setTimeout race: a
         // fire-and-forget timer that outlives the request would leak the
         // outbound call (and its billed tokens) even after this function has
@@ -319,7 +337,11 @@ export async function generate(opts: GenerateOptions): Promise<string> {
       logger.warn("ai_gateway: call timed out", { timeoutMs: opts.timeoutMs });
       throw new HttpsError("deadline-exceeded", "The AI assistant took too long to answer.");
     }
-    logger.error("ai_gateway: generate failed", { error: String(e) });
+    // The error code only: SDK messages can echo prompt text or identifiers (P-9).
+    const code = (e as { code?: unknown } | null | undefined)?.code;
+    logger.error("ai_gateway: generate failed", {
+      errorCode: typeof code === "string" || typeof code === "number" ? String(code) : "unknown",
+    });
     throw new HttpsError("internal", "Could not reach the AI assistant.");
   } finally {
     clearTimeout(timer);

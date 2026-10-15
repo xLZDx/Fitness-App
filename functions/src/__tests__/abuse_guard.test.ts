@@ -266,3 +266,217 @@ describe("refundQuota", () => {
     jest.dontMock("firebase-admin");
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* E0 / C02: eight new quotas and uid-free log events (T08)            */
+/* ------------------------------------------------------------------ */
+
+describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
+  const NEW_QUOTAS = {
+    bodyScanCreate: 30,
+    bodyScanEstimate: 14,
+    bodyScanDelete: 60,
+    bodyScanManage: 30,
+    analyzeMealPhoto: 60,
+    parseNutritionLabel: 60,
+    barcodeLookup: 120,
+    foodSearch: 150,
+  } as const;
+  const FIXTURE_UID = "uid-SECRET-123";
+
+  // The logger mock is shared across isolated registries; start every case clean.
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  /** In-memory Firestore: path -> document data, with merge-set transactions. */
+  function makeStore(opts: { failWith?: unknown } = {}) {
+    const docs = new Map<string, Record<string, unknown>>();
+    const firestore = () => ({
+      doc: (path: string) => ({ path }),
+      runTransaction: async (fn: (tx: unknown) => Promise<void>) => {
+        if (opts.failWith !== undefined) throw opts.failWith;
+        const tx = {
+          get: async (ref: { path: string }) => ({ data: () => docs.get(ref.path) }),
+          set: (ref: { path: string }, data: Record<string, unknown>) => {
+            docs.set(ref.path, { ...(docs.get(ref.path) ?? {}), ...data });
+          },
+        };
+        await fn(tx);
+      },
+    });
+    return { docs, firestore };
+  }
+
+  /** Loads abuse_guard and its logger mock from ONE isolated registry. */
+  function load(store: ReturnType<typeof makeStore>) {
+    jest.doMock("firebase-admin", () => ({ firestore: store.firestore }));
+    let mod!: typeof import("../abuse_guard");
+    let log!: { warn: jest.Mock; error: jest.Mock; info: jest.Mock };
+    jest.isolateModules(() => {
+      mod = require("../abuse_guard");
+      log = require("firebase-functions/logger");
+    });
+    jest.dontMock("firebase-admin");
+    return { mod, log };
+  }
+
+  const today = () => new Date().toISOString().slice(0, 10);
+  const usagePath = (uid: string) => "users/" + uid + "/usage/" + today();
+
+  test("the eight new QUOTAS have exactly the designed daily values", () => {
+    const { QUOTAS } = require("../abuse_guard") as typeof import("../abuse_guard");
+    for (const [name, value] of Object.entries(NEW_QUOTAS)) {
+      expect((QUOTAS as Record<string, number>)[name]).toBe(value);
+    }
+  });
+
+  test("the pre-existing quotas are unchanged", () => {
+    const { QUOTAS } = require("../abuse_guard") as typeof import("../abuse_guard");
+    expect(QUOTAS.aiCoachAdvice).toBe(40);
+    expect(QUOTAS.aiEquipmentRecognition).toBe(60);
+    expect(QUOTAS.aiMachineDescription).toBe(60);
+    expect(QUOTAS.aiExerciseGeneration).toBe(40);
+    expect(QUOTAS.accountExport).toBe(3);
+    expect(QUOTAS.equipmentReport).toBe(30);
+  });
+
+  test("REDACTED_QUOTA_ACTIONS is the eight new action names plus the two account export counters (D-67)", () => {
+    const { REDACTED_QUOTA_ACTIONS } = require("../abuse_guard") as typeof import("../abuse_guard");
+    expect([...REDACTED_QUOTA_ACTIONS].sort()).toEqual(
+      [...Object.keys(NEW_QUOTAS), "accountExport", "accountExportPage"].sort(),
+    );
+    for (const old of ["aiCoachAdvice", "clipUrl", "equipmentReport", "startFreeTrial"]) {
+      expect(REDACTED_QUOTA_ACTIONS.has(old)).toBe(false);
+    }
+  });
+
+  test("anonymous callers get the integer-floor eighth of each new quota, minimum 1", () => {
+    const { quotaFor } = require("../abuse_guard") as typeof import("../abuse_guard");
+    expect(quotaFor(30, "anonymous")).toBe(3);
+    expect(quotaFor(14, "anonymous")).toBe(1);
+    expect(quotaFor(60, "anonymous")).toBe(7);
+    expect(quotaFor(120, "anonymous")).toBe(15);
+    expect(quotaFor(150, "anonymous")).toBe(18);
+    expect(quotaFor(150, "google.com")).toBe(150);
+  });
+
+  test("a charge on a new action is stored under users/{uid}/usage/{day} and accumulates", async () => {
+    const store = makeStore();
+    const { mod } = load(store);
+    await mod.enforceDailyQuota(FIXTURE_UID, "bodyScanCreate", 30);
+    await mod.enforceDailyQuota(FIXTURE_UID, "bodyScanCreate", 30);
+    expect(store.docs.get(usagePath(FIXTURE_UID))?.bodyScanCreate).toBe(2);
+  });
+
+  test("the 15th bodyScanEstimate charge is refused (limit 14), the 14th is not", async () => {
+    const store = makeStore();
+    const { mod } = load(store);
+    for (let i = 0; i < 14; i++) await mod.enforceDailyQuota("u1", "bodyScanEstimate", 14);
+    await expect(mod.enforceDailyQuota("u1", "bodyScanEstimate", 14)).rejects.toMatchObject({
+      code: "resource-exhausted",
+    });
+    expect(store.docs.get(usagePath("u1"))?.bodyScanEstimate).toBe(14);
+  });
+
+  test.each(Object.keys(NEW_QUOTAS))(
+    "%s refusal log carries NO uid anywhere in the payload",
+    async (action) => {
+      const store = makeStore();
+      store.docs.set(usagePath(FIXTURE_UID), { [action]: 5 });
+      const { mod, log } = load(store);
+      await expect(mod.enforceDailyQuota(FIXTURE_UID, action, 5)).rejects.toMatchObject({
+        code: "resource-exhausted",
+      });
+      expect(log.warn).toHaveBeenCalledTimes(1);
+      const [message, payload] = log.warn.mock.calls[0];
+      expect(message).toBe("quota exceeded");
+      expect(payload).toEqual({ action, used: 5, cost: 1, limit: 5 });
+      expect(payload).not.toHaveProperty("uid");
+      expect(JSON.stringify(log.warn.mock.calls)).not.toContain(FIXTURE_UID);
+    },
+  );
+
+  test("a pre-existing action's refusal log KEEPS its uid (monitoring queries still join)", async () => {
+    const store = makeStore();
+    store.docs.set(usagePath("u-old"), { clipUrl: 3 });
+    const { mod, log } = load(store);
+    await expect(mod.enforceDailyQuota("u-old", "clipUrl", 3)).rejects.toMatchObject({
+      code: "resource-exhausted",
+    });
+    expect(log.warn.mock.calls[0][1]).toEqual({ uid: "u-old", action: "clipUrl", used: 3, cost: 1, limit: 3 });
+  });
+
+  test("a failed quota transaction on a new action logs only the error CODE, no uid, no path text", async () => {
+    const firestoreError = Object.assign(
+      new Error("10 ABORTED: transaction on users/" + FIXTURE_UID + "/usage/2026-10-15 aborted"),
+      { code: 10 },
+    );
+    const store = makeStore({ failWith: firestoreError });
+    const { mod, log } = load(store);
+    await expect(mod.enforceDailyQuota(FIXTURE_UID, "foodSearch", 150)).rejects.toMatchObject({
+      code: "internal",
+    });
+    expect(log.error).toHaveBeenCalledTimes(1);
+    const [message, payload] = log.error.mock.calls[0];
+    expect(message).toBe("quota check failed");
+    expect(payload).toEqual({ action: "foodSearch", cost: 1, limit: 150, err: "10" });
+    expect(JSON.stringify(log.error.mock.calls)).not.toContain(FIXTURE_UID);
+  });
+
+  test("a failure without a usable code is logged as 'unknown', never as String(e)", async () => {
+    const store = makeStore({ failWith: new Error("boom users/" + FIXTURE_UID) });
+    const { mod, log } = load(store);
+    await expect(mod.enforceDailyQuota(FIXTURE_UID, "barcodeLookup", 120)).rejects.toMatchObject({
+      code: "internal",
+    });
+    expect(log.error.mock.calls[0][1].err).toBe("unknown");
+    expect(JSON.stringify(log.error.mock.calls)).not.toContain(FIXTURE_UID);
+  });
+
+  test("a failed quota transaction on an OLD action keeps uid and String(e) (unchanged shape)", async () => {
+    const store = makeStore({ failWith: new Error("txn aborted") });
+    const { mod, log } = load(store);
+    await expect(mod.enforceDailyQuota("u-old", "clipUrl", 3)).rejects.toMatchObject({ code: "internal" });
+    expect(log.error.mock.calls[0][1]).toEqual({
+      uid: "u-old",
+      action: "clipUrl",
+      cost: 1,
+      limit: 3,
+      err: "Error: txn aborted",
+    });
+  });
+
+  test("a failed refund on a new action logs no uid and only the code", async () => {
+    const store = makeStore({ failWith: Object.assign(new Error("x " + FIXTURE_UID), { code: "unavailable" }) });
+    const { mod, log } = load(store);
+    await expect(mod.refundQuota(FIXTURE_UID, "analyzeMealPhoto", 1)).resolves.toBeUndefined();
+    expect(log.error).toHaveBeenCalledWith("quota refund failed", {
+      event: "quota refund failed",
+      action: "analyzeMealPhoto",
+      amount: 1,
+      err: "unavailable",
+    });
+    expect(JSON.stringify(log.error.mock.calls)).not.toContain(FIXTURE_UID);
+  });
+
+  test("refunding a new action never drops the counter below zero and removes the charge", async () => {
+    const store = makeStore();
+    const { mod } = load(store);
+    await mod.enforceDailyQuota("u1", "bodyScanDelete", 60);
+    await mod.refundQuota("u1", "bodyScanDelete", 1);
+    expect(store.docs.get(usagePath("u1"))?.bodyScanDelete).toBe(0);
+    await mod.refundQuota("u1", "bodyScanDelete", 5);
+    expect(store.docs.get(usagePath("u1"))?.bodyScanDelete).toBe(0);
+  });
+
+  test("bodyScanManage has its own counter: exhausting bodyScanDelete does not block it", async () => {
+    const store = makeStore();
+    store.docs.set(usagePath("u1"), { bodyScanDelete: 60 });
+    const { mod } = load(store);
+    await expect(mod.enforceDailyQuota("u1", "bodyScanDelete", 60)).rejects.toMatchObject({
+      code: "resource-exhausted",
+    });
+    await expect(mod.enforceDailyQuota("u1", "bodyScanManage", 30)).resolves.toBeUndefined();
+  });
+});

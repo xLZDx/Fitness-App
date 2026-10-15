@@ -25,6 +25,13 @@ void main() {
       expect(kOnboardingOrder, hasLength(OnboardingStep.values.length));
     });
 
+    test('the nutrition step follows healthFlags and precedes screening (D-75)',
+        () {
+      final h = kOnboardingOrder.indexOf(OnboardingStep.healthFlags);
+      expect(kOnboardingOrder[h + 1], OnboardingStep.nutrition);
+      expect(kOnboardingOrder[h + 2], OnboardingStep.screening);
+    });
+
     test('opens on the goal, per the design', () {
       // `App.tsx` step 1/9 is "Цель и уровень". The pre-O2 flow opened on
       // height and weight, which asks a person to measure themselves before
@@ -203,6 +210,9 @@ void main() {
         motivation: const MotivationPrefs(motivation: 'x'),
         personal: const PersonalInfo(age: 31),
         lifestyle: const Lifestyle(sleepHoursPerNight: 7),
+        // E2: the nutrition step joined the flow, and "fully answered" has to
+        // mean all of them.
+        nutrition: const NutritionPrefs(mealsPerDay: 3),
       );
       expect(onboardingResumeIndex(full), kOnboardingOrder.length - 1,
           reason: 'so they land on Done rather than being bounced out');
@@ -231,6 +241,9 @@ void main() {
         motivation: const MotivationPrefs(motivation: 'x'),
         personal: const PersonalInfo(age: 31),
         lifestyle: const Lifestyle(sleepHoursPerNight: 7),
+        // E2: the nutrition step joined the flow, and "fully answered" has to
+        // mean all of them.
+        nutrition: const NutritionPrefs(mealsPerDay: 3),
       );
 
       expect(kOnboardingOrder[onboardingResumeIndex(full)],

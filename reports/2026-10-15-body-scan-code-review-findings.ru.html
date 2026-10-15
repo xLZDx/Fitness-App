@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Scan + Nutrition Coach: результаты код-ревью</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:16px;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #8884;padding:6px 8px;text-align:left;vertical-align:top}
+h2{margin-top:28px}
+</style>
+</head>
+<body>
+<header>
+<h1>Body Scan + Nutrition Coach: результаты код-ревью</h1>
+<p>Ветка feature/body-scan-nutrition-coach, 15 октября 2026. Завершены четыре ревью только для чтения (база данных, flutter, silent-failure, безопасность) на голове aae03deb. Агенты-исправители работают; это контрольная точка, а не закрытие гейта.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ 9738b5a3</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>1. Подтверждённые MAJOR</h2>
+<table>
+<tr><th>Id</th><th>Суть</th><th>Планируемое исправление</th><th>Статус</th></tr>
+<tr><td>P-1</td><td>Очистка берёт uid из пути любого документа body_scans, поддельные вложенные документы могут задушить retention.</td><td>Требовать путь users/{uid}/body_scans/{id} в каждом проходе.</td><td>Агент работает (сервер)</td></tr>
+<tr><td>P-2 / DB-F2</td><td>Откат через снятие bucket и kill-switch отключают все пути удаления.</td><td>Отдельный переключатель загрузок; удаление зависит только от bucket; переписать runbook.</td><td>Агент работает (сервер)</td></tr>
+<tr><td>DB-F1 / P-3</td><td>Неудавшиеся сканы никогда не очищаются.</td><td>Очищать или удалять объекты для failed.</td><td>Агент работает (сервер)</td></tr>
+<tr><td>SF-F1</td><td>Офлайн-отмена или удаление не останавливает незавершённый скан; после flush он загружается заново.</td><td>Отменять runner, сохранять терминальное состояние и флаг долга удаления.</td><td>Агент работает (мобильный)</td></tr>
+<tr><td>SF-F2</td><td>Загружающийся профиль приводит к постоянному subject-missing.</td><td>Загрузка = не готово, остаёмся в очереди.</td><td>Агент работает (мобильный)</td></tr>
+<tr><td>SF-F3</td><td>Таймер повтора, сработавший при занятом runner, теряется.</td><td>Пересчитывать ближайший срок после цикла.</td><td>Агент работает (мобильный)</td></tr>
+<tr><td>SF-F4</td><td>deletePhotos сообщает об удалении, пока облачная копия остаётся (облако выключено).</td><td>Сохранять долг удаления до удаления локальной копии.</td><td>Агент работает (мобильный)</td></tr>
+</table>
+
+<h2>2. MINOR</h2>
+<p>Записано около 30 MINOR (повторная проверка согласия перед оценкой, лимит попыток на скан, квота продолжения экспорта, логирование ошибок шлюза, uid в логах экспорта, совпадения курсора, ошибки штрихкода, устаревший день дневника после полуночи и др.). Значимые переданы тем же двум агентам; остальное в бэклог.</p>
+
+<h2>3. Дальше</h2>
+<ol>
+<li>Агенты-исправители коммитят изменения с регрессионными тестами.</li>
+<li>Тестовые агенты прогоняют затронутые наборы, затем ещё раз полные наборы после последнего исправления.</li>
+<li>Финальное ревью GPT-PM на точной голове, затем push и один PR.</li>
+</ol>
+
+<h2>4. Не проверено</h2>
+<p>Все находки получены чтением кода, ни одна не воспроизведена. Оба серверных MAJOR неактивны, пока не включён BODY_SCAN_CLOUD.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
