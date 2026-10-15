@@ -56124,3 +56124,7 @@ Decision: cloud privacy controls render only when BODY_SCAN_CLOUD is on (no call
 ## 2026-10-15 - Commit: Body scan root wiring
 
 Decision: all body_scan <-> nutrition bridges live in core/wiring/body_scan_wiring.dart so body_scan never imports review state; Firestore repository/settings are bound only when BODY_SCAN_CLOUD is on; the flow effects run through a body_scan-only driver over the existing job runner. Evidence: core/changes/2026-10-15-body-scan-root-wiring.md.
+
+## 2026-10-15 - Commit: C15 tests - scan_flow_controller
+
+Decision: the flow controller test pins that illegal events still bump the revision and clear effects, and that updateContext never replays effects. Evidence: core/changes/2026-10-15-c15-tests.md.
