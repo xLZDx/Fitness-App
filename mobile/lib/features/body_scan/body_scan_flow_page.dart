@@ -165,8 +165,10 @@ class _BodyScanFlowPageState extends ConsumerState<BodyScanFlowPage> {
                 onKeep: () {
                   if (GoRouter.of(context).canPop()) GoRouter.of(context).pop();
                 },
-                onDelete: () =>
-                    ctl.dispatch(const FlowEvent(FlowEventKind.cancel)),
+                onDelete: () {
+                  driver.deleteFailedScan();
+                  if (GoRouter.of(context).canPop()) GoRouter.of(context).pop();
+                },
               ),
             ],
           ),

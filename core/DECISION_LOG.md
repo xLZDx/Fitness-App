@@ -56508,3 +56508,7 @@ Decision: Tolerant-read and in-memory store tests plus LocalScanRepository signe
 ## 2026-10-15 - Commit: test(food): C24 meal scan page tests
 
 Decision: the meal page is proven to call the food AI only after the data notice and to log nothing without Save. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C15 fix - Delete scan on the failed card
+
+Decision: Delete on the terminal failure card calls driver.deleteFailedScan (runner cancel plus flow reset) because the machine has no cancel from failed. Evidence: core/changes/2026-10-15-c15-tests.md.

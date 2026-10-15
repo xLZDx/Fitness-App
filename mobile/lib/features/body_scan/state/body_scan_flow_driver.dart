@@ -126,6 +126,15 @@ class BodyScanFlowDriver {
     }
   }
 
+  /// "Delete scan" on the terminal failure card (D-78). The flow machine has no
+  /// cancel from `failed`, so the driver asks the runner to cancel (delete) the
+  /// scan and returns the flow to idle.
+  void deleteFailedScan() {
+    if (_disposed) return;
+    _cancelRunner();
+    _ctl.reset();
+  }
+
   // ---- effects ----------------------------------------------------------
 
   void _onSnapshot(ScanFlowSnapshot snap) {
