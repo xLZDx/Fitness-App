@@ -56254,3 +56254,4 @@ Decision: result view tests pin that the ETA text is never rendered and that pro
 ## 2026-10-15 - Commit: router closure compile fixes
 
 Decision: ServerExport implementers extend (not implement) the abstract class so C25 concrete defaults are inherited; missing imports added; nullable row copied to a final local; intl TextDirection hidden. Evidence: core/changes/2026-10-15-compile-fixes-router-closure.md; single router test green.
+Progress: T110 analyze_meal_photo tests added (70 passing).
