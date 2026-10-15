@@ -32,6 +32,12 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as ts from "typescript";
+import {
+  aiGatewayCallsMetricJson,
+  aiGatewayLatencyMetricJson,
+  aiGatewayQuotaExhaustionsMetricJson,
+  aiGatewayTokensMetricJson,
+} from "../monitoring/ai_gateway_definitions";
 
 jest.setTimeout(120_000);
 
@@ -106,18 +112,64 @@ fs.appendFileSync(path.join(root, "firebase_calls.jsonl"), JSON.stringify(proces
 process.exit(Number(process.env.FAKE_FIREBASE_EXIT || 0));
 `;
 
+/** Fake gcloud: logs argv as one JSON line, then answers from gcloud_responses.json (first rule whose `match` is a
+ * substring of the space-joined argv); with no matching rule it exits 1, so it can never succeed by accident. */
+const FAKE_GCLOUD = `
+const fs = require("fs");
+const path = require("path");
+const root = path.resolve(__dirname, "..");
+const argv = process.argv.slice(2);
+fs.appendFileSync(path.join(root, "gcloud_calls.log"), JSON.stringify(argv) + "\\n");
+let rules = [];
+try { rules = JSON.parse(fs.readFileSync(path.join(root, "gcloud_responses.json"), "utf8")); } catch (e) { rules = []; }
+const line = argv.join(" ");
+const rule = rules.find((r) => line.includes(r.match));
+if (!rule) {
+  process.stderr.write("fake gcloud: no canned response for: " + line + "\\n");
+  process.exitCode = 1;
+} else {
+  const finish = () => {
+    if (rule.stdout) process.stdout.write(rule.stdout);
+    if (rule.stderr) process.stderr.write(rule.stderr);
+    process.exitCode = rule.exit || 0;
+  };
+  if (rule.sleepMs) setTimeout(finish, rule.sleepMs); else finish();
+}
+`;
+
 const DRIVER = `
 import * as d from "./functions/scripts/guard_deps.mjs";
 const [cmd, arg] = process.argv.slice(2);
 let r;
-if (cmd === "provenance") r = await d.makeIsCommitOnProtectedLine(JSON.parse(arg))();
+if (cmd === "run") { const [c, a, t] = JSON.parse(arg); const t0 = Date.now(); const res = await d.runCommand(c, a, t); r = { ...res, elapsedMs: Date.now() - t0 }; }
+else if (cmd === "provenance") r = await d.makeIsCommitOnProtectedLine(JSON.parse(arg))();
 else if (cmd === "branch") r = await d.currentBranch();
 else if (cmd === "readFile") r = await d.readFile(arg);
 else if (cmd === "root") r = d.REPO_ROOT;
 console.log("RESULT=" + JSON.stringify(r === undefined ? null : r));
 `;
 
-function makeFixture(opts: { stubGuard?: boolean; firebase?: boolean; lib?: boolean; buildExit?: number } = {}): Fixture {
+const GUARD_CMD = "node functions/scripts/run_release_guard.mjs";
+const GUARDED_FIREBASE_JSON = {
+  firestore: { rules: "firestore.rules", indexes: "firestore.indexes.json", predeploy: ["npm --prefix functions run build", GUARD_CMD] },
+  storage: { rules: "storage.rules", predeploy: ["npm --prefix functions run build", GUARD_CMD] },
+  hosting: { public: "public", predeploy: ["npm --prefix functions run build", GUARD_CMD] },
+  functions: [
+    { source: "functions", codebase: "default", predeploy: [GUARD_CMD] },
+    { source: "functions-equipment-identity", codebase: "equipment-identity", predeploy: [GUARD_CMD] },
+  ],
+};
+
+function makeFixture(
+  opts: {
+    stubGuard?: boolean;
+    firebase?: boolean;
+    lib?: boolean;
+    buildExit?: number;
+    /** string = raw file content; object = JSON-stringified; null = no firebase.json at all; undefined = guarded default. */
+    firebaseJson?: string | object | null;
+  } = {},
+): Fixture {
   const root = mkTmp("guard-fx-");
   const w = (rel: string, content: string): void => {
     const p = path.join(root, rel);
@@ -137,9 +189,16 @@ function makeFixture(opts: { stubGuard?: boolean; firebase?: boolean; lib?: bool
   if (opts.firebase !== false) w("functions/node_modules/firebase-tools/lib/bin/firebase.js", FAKE_FIREBASE);
   w("driver.mjs", DRIVER);
 
+  // firebase.json: guarded by default (the wrapper refuses to run when a target lacks the guard or the file is unreadable).
+  if (opts.firebaseJson !== null) {
+    const fj = opts.firebaseJson === undefined ? GUARDED_FIREBASE_JSON : opts.firebaseJson;
+    w("firebase.json", typeof fj === "string" ? fj : JSON.stringify(fj));
+  }
+
   const bin = path.join(root, "bin");
-  w("bin/gcloud.cmd", '@echo off\r\necho %~1 %~2 >> "%~dp0..\\gcloud_calls.log"\r\nexit /b 1\r\n');
-  w("bin/gcloud", '#!/bin/sh\necho "$1 $2" >> "$(dirname "$0")/../gcloud_calls.log"\nexit 1\n');
+  w("bin/fake_gcloud.js", FAKE_GCLOUD);
+  w("bin/gcloud.cmd", `@echo off\r\n"${process.execPath}" "%~dp0fake_gcloud.js" %*\r\nexit /b %ERRORLEVEL%\r\n`);
+  w("bin/gcloud", `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake_gcloud.js" "$@"\n`);
   fs.chmodSync(path.join(bin, "gcloud"), 0o755);
 
   return {
@@ -151,11 +210,23 @@ function makeFixture(opts: { stubGuard?: boolean; firebase?: boolean; lib?: bool
   };
 }
 
+/** Environment for every git child: all GIT_* variables dropped (an ambient GIT_DIR / GIT_WORK_TREE / GIT_INDEX_FILE
+ * would redirect the fixture's git at another repository) and discovery capped at the fixture's parent directory. */
+function cleanGitEnv(root: string): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {};
+  for (const [k, v] of Object.entries(process.env)) {
+    if (k.toUpperCase().startsWith("GIT_")) continue;
+    env[k] = v;
+  }
+  env.GIT_CEILING_DIRECTORIES = path.dirname(root);
+  return env;
+}
+
 function git(root: string, ...args: string[]): string {
   return execFileSync(
     "git",
     ["-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", ...args],
-    { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: cleanGitEnv(root) },
   ).trim();
 }
 
@@ -179,12 +250,14 @@ function childEnv(fx: Fixture, extra: Record<string, string> = {}): NodeJS.Proce
   for (const [k, v] of Object.entries(process.env)) {
     const upper = k.toUpperCase();
     if (upper === "PATH" || upper === "GCLOUD_PROJECT" || upper === "FIREBASE_PROJECT" || upper === "NODE_PATH" || upper === "BODY_SCAN_BUCKET") continue;
-    if (upper.startsWith("FAKE_")) continue;
+    if (upper.startsWith("FAKE_") || upper.startsWith("GIT_")) continue;
     env[k] = v;
   }
   const pathKey = Object.keys(process.env).find((k) => k.toUpperCase() === "PATH") ?? "PATH";
   env[pathKey] = `${fx.bin}${path.delimiter}${process.env[pathKey] ?? ""}`;
   env.NODE_PATH = path.join(FUNCTIONS_DIR, "node_modules");
+  // F7: git inside the scripts must never discover a repository above the fixture.
+  env.GIT_CEILING_DIRECTORIES = path.dirname(fx.root);
   return { ...env, ...extra };
 }
 
@@ -629,5 +702,438 @@ describe("repository wiring of the real files", () => {
     expect(pkg.scripts.deploy).toContain("scripts/deploy/guarded_deploy.mjs");
     expect(pkg.scripts.deploy).not.toMatch(/\bfirebase\s+deploy\b/);
     expect(fs.existsSync(path.join(REPO_DIR, "scripts", "deploy", "guarded_deploy.mjs"))).toBe(true);
+  });
+});
+
+// =====================================================================
+// Review-fix tests (round 2): process-runner semantics, full PASS run,
+// working-tree scope, flag clusters, project-id validation, firebase.json
+// coverage in the wrapper, throwing checks.
+// =====================================================================
+
+type GcloudRule = { match: string; stdout?: string; stderr?: string; exit?: number; sleepMs?: number };
+
+function setGcloud(fx: Fixture, rules: GcloudRule[]): void {
+  fs.writeFileSync(path.join(fx.root, "gcloud_responses.json"), JSON.stringify(rules));
+}
+
+const gcloudCalls = (fx: Fixture): string[][] => readLines(fx.gcloudLog).map((l) => JSON.parse(l) as string[]);
+
+const AI_NAMES = [
+  "aiCoachAdvice",
+  "aiEquipmentRecognition",
+  "aiMachineDescription",
+  "aiExerciseGeneration",
+  "analyzeMealPhoto",
+  "parseNutritionLabel",
+];
+const REAL_SOURCE_FILES = [
+  "functions/src/scaling.ts",
+  "functions/src/ai_coach_advice.ts",
+  "functions/src/ai_equipment_recognition.ts",
+  "functions/src/ai_machine_description.ts",
+  "functions/src/ai_exercise_generation.ts",
+  "functions/src/analyze_meal_photo.ts",
+  "functions/src/parse_nutrition_label.ts",
+];
+
+/** Canned gcloud answers for a fully healthy release of `project` (one rule per command the guard issues). */
+function healthyGcloudRules(project: string): GcloudRule[] {
+  const sa = `fn-ai-runtime@${project}.iam.gserviceaccount.com`;
+  const j = (v: unknown): string => JSON.stringify(v);
+  const metric = (name: string, build: () => object): GcloudRule => {
+    const canonical = build() as Record<string, unknown>;
+    const descriptor = canonical.metricDescriptor as Record<string, unknown>;
+    return {
+      match: `logging metrics describe ${name} `,
+      stdout: j({
+        ...canonical,
+        createTime: "2026-08-27T12:52:35Z",
+        updateTime: "2026-08-27T12:52:35Z",
+        resourceName: `projects/${project}/metrics/${name}`,
+        metricDescriptor: {
+          ...descriptor,
+          name: `projects/${project}/metricDescriptors/logging.googleapis.com/user/${name}`,
+          type: `logging.googleapis.com/user/${name}`,
+          unit: "1",
+        },
+      }),
+    };
+  };
+  return [
+    {
+      match: "functions list",
+      stdout: j(
+        AI_NAMES.map((n) => ({
+          name: `projects/${project}/locations/europe-west1/functions/${n}`,
+          serviceConfig: { serviceAccountEmail: sa },
+        })),
+      ),
+    },
+    {
+      match: "functions describe",
+      stdout: j({ serviceConfig: { serviceAccountEmail: sa, environmentVariables: { APP_CHECK_ENFORCED_AI: "true" } } }),
+    },
+    { match: "secrets describe", stdout: j({ name: "x" }) },
+    {
+      match: "secrets get-iam-policy",
+      stdout: j({ bindings: [{ role: "roles/secretmanager.secretAccessor", members: [`serviceAccount:${sa}`] }] }),
+    },
+    { match: "projects get-iam-policy", stdout: j({ bindings: [] }) },
+    { match: "secrets versions access", stdout: j({ enabled: false, reason: null }) },
+    metric("ai_gateway_calls", aiGatewayCallsMetricJson),
+    metric("ai_gateway_latency_ms", aiGatewayLatencyMetricJson),
+    metric("ai_gateway_quota_exhaustions", aiGatewayQuotaExhaustionsMetricJson),
+    metric("ai_gateway_total_tokens_per_call", aiGatewayTokensMetricJson),
+    { match: "logging read", stdout: j([{ x: 1 }]) },
+  ];
+}
+
+/**
+ * A fixture on which the REAL run_release_guard.mjs + REAL guard library can reach verdict PASS: real candidate
+ * sources copied from the repository, healthy evidence, a committed clean tree with every deploy-input file, a
+ * correct protected ref (phase1) or phase2 alias, and canned gcloud answers. gcloud is still the fake.
+ */
+function makePassFixture(
+  project: string,
+  branch: string,
+  opts: { firebaseJson?: object | string; extraFiles?: Record<string, string>; evidence?: string } = {},
+): Fixture {
+  const fx = makeFixture({ firebaseJson: opts.firebaseJson });
+  const w = (rel: string, content: string): void => {
+    const p = path.join(fx.root, rel);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, content);
+  };
+  for (const rel of REAL_SOURCE_FILES) w(rel, fs.readFileSync(path.join(REPO_DIR, rel), "utf8"));
+  w(
+    "core/state/g4_release_evidence.json",
+    opts.evidence ??
+      JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" } }),
+  );
+  w("firestore.rules", "rules_version = '2';\n");
+  w("firestore.indexes.json", "{}\n");
+  w("storage.rules", "rules_version = '2';\n");
+  w("public/index.html", "<html></html>\n");
+  w(".firebaserc", JSON.stringify({ projects: { default: PROD, "legacy-shared": "traidingbot-b4061", phase2: PHASE2_PROJECT } }));
+  for (const [rel, content] of Object.entries(opts.extraFiles ?? {})) w(rel, content);
+  initRepo(fx, branch);
+  git(fx.root, "add", "-A");
+  git(fx.root, "commit", "-q", "-m", "fixture files");
+  if (branch.startsWith("phase1/") || branch === "master") setRef(fx, PHASE1_REF, head(fx));
+  setGcloud(fx, healthyGcloudRules(project));
+  return fx;
+}
+
+const okLines = (stdout: string): number => (stdout.match(/^\[OK {2}\]/gm) ?? []).length;
+
+const carriesProject = (argv: string[], project: string): boolean =>
+  argv.includes(`--project=${project}`) ||
+  (argv[0] === "projects" && argv[1] === "get-iam-policy" && argv[2] === project);
+
+// -------------------------------------------------- F1: process runner semantics
+
+describe("guard_deps.mjs runCommand semantics (F1)", () => {
+  const run = (fx: Fixture, cmd: string, args: string[], timeoutMs: number) =>
+    driver(fx, "run", JSON.stringify([cmd, args, timeoutMs])).result as {
+      ok: boolean;
+      stdout: string;
+      stderr: string;
+      elapsedMs: number;
+    };
+
+  test("exit 0 with canned JSON -> ok true and the stdout is returned verbatim", () => {
+    const fx = makeFixture();
+    setGcloud(fx, [{ match: "functions list", stdout: '[{"name":"a"}]', exit: 0 }]);
+    const r = run(fx, "gcloud", ["functions", "list", "--format=json"], 20_000);
+    expect(r.ok).toBe(true);
+    expect(JSON.parse(r.stdout)).toEqual([{ name: "a" }]);
+  });
+
+  test("non-zero exit with VALID JSON on stdout -> ok false (stdout and stderr preserved, never mistaken for success)", () => {
+    const fx = makeFixture();
+    setGcloud(fx, [{ match: "functions list", stdout: '[{"name":"a"}]', stderr: "PERMISSION_DENIED", exit: 3 }]);
+    const r = run(fx, "gcloud", ["functions", "list", "--format=json"], 20_000);
+    expect(r.ok).toBe(false);
+    expect(JSON.parse(r.stdout)).toEqual([{ name: "a" }]);
+    expect(r.stderr).toContain("PERMISSION_DENIED");
+  });
+
+  test("a command that sleeps past the timeout resolves ok false with a timeout message, without waiting for it", () => {
+    const fx = makeFixture();
+    setGcloud(fx, [{ match: "slow", stdout: "[]", exit: 0, sleepMs: 4000 }]);
+    const r = run(fx, "gcloud", ["slow", "--format=json"], 600);
+    expect(r.ok).toBe(false);
+    expect(r.stderr).toContain("timed out after 600ms");
+    expect(r.elapsedMs).toBeLessThan(3500);
+  });
+
+  test("a command that does not exist -> ok false", () => {
+    const fx = makeFixture();
+    const r = run(fx, "definitely-not-a-real-command-xyz", ["a"], 20_000);
+    expect(r.ok).toBe(false);
+  });
+
+  test("a logging filter with spaces and embedded quotes arrives at the process as ONE exact argument", () => {
+    const fx = makeFixture();
+    setGcloud(fx, [{ match: "logging read", stdout: "[]", exit: 0 }]);
+    const args = [
+      "logging",
+      "read",
+      'jsonPayload.message="ai_gateway: call"',
+      "--project=some-project",
+      "--freshness=30d",
+      "--label",
+      "two words",
+      "--format=json",
+    ];
+    const r = run(fx, "gcloud", args, 20_000);
+    expect(r.ok).toBe(true);
+    expect(gcloudCalls(fx)).toEqual([args]);
+  });
+});
+
+// ------------------------------------- full PASS run of the real script (F1 e2e)
+
+describe("run_release_guard.mjs end to end: PASS and what blocks it (real script + real guard, fake gcloud)", () => {
+  test("phase1 line, everything healthy: every check OK, VERDICT PASS, exit 0, prints PASSED", () => {
+    const fx = makePassFixture(PROD, "phase1/main");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.stdout).toContain("VERDICT: PASS");
+    expect(r.stdout).toContain("Release guard PASSED. Proceeding.");
+    expect(r.stdout).not.toMatch(/^\[(FAIL|N\/A )\]/m);
+    expect(okLines(r.stdout)).toBe(10);
+    expect(r.status).toBe(0);
+    expect(gcloudCalls(fx).length).toBeGreaterThan(5);
+  });
+
+  test("F6: on a NON-default project every gcloud call carries that project and none mentions production", () => {
+    const fx = makePassFixture(PHASE2_PROJECT, "phase2/s00-split-docs");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PHASE2_PROJECT });
+    expect(r.stdout).toContain("VERDICT: PASS");
+    expect(r.status).toBe(0);
+    const calls = gcloudCalls(fx);
+    expect(calls.length).toBeGreaterThan(5);
+    for (const argv of calls) {
+      expect({ argv, carriesProject: carriesProject(argv, PHASE2_PROJECT) }).toEqual({ argv, carriesProject: true });
+      expect(argv.join(" ")).not.toContain(PROD);
+    }
+  });
+
+  test("the same healthy fixture from a phase2 branch with the PRODUCTION project is blocked with zero gcloud calls", () => {
+    const fx = makePassFixture(PROD, "phase2/s00-split-docs");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("phase2-project-mismatch");
+    expect(r.stdout).toContain("VERDICT: BLOCK");
+    expect(r.stdout).toContain("not run: the deploy-target check did not pass");
+    expect(gcloudCalls(fx)).toEqual([]);
+  });
+
+  test("a blocked deploy target (unverified provenance) makes ZERO gcloud calls and reports the nine other checks as not run", () => {
+    const fx = makePassFixture(PROD, "phase1/x");
+    commit(fx, "work outside the protected line");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("phase1-provenance-unverified");
+    expect((r.stdout.match(/not run: the deploy-target check did not pass/g) ?? []).length).toBe(9);
+    expect(gcloudCalls(fx)).toEqual([]);
+  });
+
+  test.each([["x&calc"], ["Fitness-App-Korostelev"], ["abc"], ["abcde-"], ["a".repeat(31)]])(
+    "malformed project %j from GCLOUD_PROJECT -> project-invalid, exit 1, zero gcloud calls",
+    (bad) => {
+      const fx = makePassFixture(PROD, "phase1/main");
+      const r = runGuard(fx, [], { GCLOUD_PROJECT: bad });
+      expect(r.status).toBe(1);
+      expect(r.stdout).toContain("project-invalid");
+      expect(gcloudCalls(fx)).toEqual([]);
+    },
+  );
+
+  test("malformed project from the --project flag -> project-invalid, zero gcloud calls", () => {
+    const fx = makePassFixture(PROD, "phase1/main");
+    const r = runGuard(fx, ["--project=X&calc"]);
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("project-invalid");
+    expect(gcloudCalls(fx)).toEqual([]);
+  });
+
+  test("a throwing check (evidence file is the JSON literal null) becomes UNAVAILABLE with its message; the report is complete and has a VERDICT line", () => {
+    const fx = makePassFixture(PROD, "phase1/main", { evidence: "null" });
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("check threw an unexpected error");
+    expect(r.stdout).toContain("VERDICT: BLOCK");
+    // Other checks still ran and were reported.
+    expect(r.stdout).toMatch(/\[OK {2}\] AI callables match the intended fn-ai-runtime deployed set/);
+    expect(r.stdout).toMatch(/\[OK {2}\] Release comes from a clean, committed working tree/);
+  });
+
+  describe("working-tree scope against real git (review fix A)", () => {
+    test.each([
+      ["firestore.rules"],
+      ["firestore.indexes.json"],
+      ["storage.rules"],
+      ["public/index.html"],
+    ])("a modified %s blocks on the clean-tree check", (rel) => {
+      const fx = makePassFixture(PROD, "phase1/main");
+      fs.appendFileSync(path.join(fx.root, rel), "\n// dirty\n");
+      const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+      expect(r.status).toBe(1);
+      expect(r.stdout).toMatch(/\[FAIL\] Release comes from a clean, committed working tree/);
+      expect(r.stdout).toContain("uncommitted changes under");
+    });
+
+    test("an untracked file under public/ also blocks", () => {
+      const fx = makePassFixture(PROD, "phase1/main");
+      fs.writeFileSync(path.join(fx.root, "public", "new.html"), "x");
+      const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+      expect(r.status).toBe(1);
+      expect(r.stdout).toMatch(/\[FAIL\] Release comes from a clean, committed working tree/);
+    });
+
+    test("debris OUTSIDE every deploy input (an untracked file in docs/) does not block a clean release", () => {
+      const fx = makePassFixture(PROD, "phase1/main");
+      fs.mkdirSync(path.join(fx.root, "docs"), { recursive: true });
+      fs.writeFileSync(path.join(fx.root, "docs", "note.md"), "x");
+      const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+      expect(r.stdout).toContain("VERDICT: PASS");
+      expect(r.status).toBe(0);
+    });
+
+    test("a rules file renamed in firebase.json is covered under its NEW name", () => {
+      const fx = makePassFixture(PROD, "phase1/main", {
+        firebaseJson: {
+          ...GUARDED_FIREBASE_JSON,
+          firestore: { ...GUARDED_FIREBASE_JSON.firestore, rules: "rules/custom.rules" },
+        },
+        extraFiles: { "rules/custom.rules": "rules_version = '2';\n" },
+      });
+      // control: clean tree passes
+      expect(runGuard(fx, [], { GCLOUD_PROJECT: PROD }).status).toBe(0);
+      fs.appendFileSync(path.join(fx.root, "rules", "custom.rules"), "// dirty\n");
+      const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+      expect(r.status).toBe(1);
+      expect(r.stdout).toMatch(/\[FAIL\] Release comes from a clean, committed working tree/);
+      expect(r.stdout).toContain("rules/custom.rules");
+    });
+
+    test("unsafe paths in firebase.json (absolute, .., backslash, pathspec magic) are ignored: no git error, the clean release still passes", () => {
+      const fx = makePassFixture(PROD, "phase1/main", {
+        firebaseJson: {
+          ...GUARDED_FIREBASE_JSON,
+          firestore: { ...GUARDED_FIREBASE_JSON.firestore, rules: "../outside.rules", indexes: "/abs/indexes.json" },
+          storage: { ...GUARDED_FIREBASE_JSON.storage, rules: ":(top)storage.rules" },
+          hosting: { ...GUARDED_FIREBASE_JSON.hosting, public: "a\\b" },
+        },
+      });
+      const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+      expect(r.stdout).toContain("VERDICT: PASS");
+      expect(r.status).toBe(0);
+    });
+  });
+});
+
+// ------------------------------------------------ guarded_deploy.mjs round 2
+
+describe("guarded_deploy.mjs review fixes (real wrapper, fake firebase CLI)", () => {
+  const stubbed = (branch = "phase1/main", firebaseJson?: string | object | null): Fixture => {
+    const fx = makeFixture({ stubGuard: true, firebaseJson });
+    initRepo(fx, branch);
+    if (branch.startsWith("phase1/")) setRef(fx, PHASE1_REF, head(fx));
+    writeRc(fx, { default: PROD, phase2: PHASE2_PROJECT });
+    return fx;
+  };
+
+  describe("(D) firebase.json coverage", () => {
+    const expectBlocked = (fx: Fixture, r: Run, text: string): void => {
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain("guarded_deploy: BLOCKED");
+      expect(r.stderr).toContain(text);
+      expect(firebaseCalls(fx)).toEqual([]);
+      expect(fs.existsSync(fx.guardSeen)).toBe(false);
+    };
+
+    test("a deploy target without the guard blocks and names it", () => {
+      const fx = stubbed("phase1/main", {
+        ...GUARDED_FIREBASE_JSON,
+        hosting: { public: "public", predeploy: ["npm --prefix functions run build"] },
+      });
+      expectBlocked(fx, runDeploy(fx, ["--only", "hosting"]), "without the release guard in predeploy: hosting");
+    });
+
+    test("(E) a predeploy that only MENTIONS the guard file name is not a guard", () => {
+      const fx = stubbed("phase1/main", {
+        ...GUARDED_FIREBASE_JSON,
+        storage: { rules: "storage.rules", predeploy: ["node x || true # run_release_guard.mjs"] },
+      });
+      expectBlocked(fx, runDeploy(fx, ["--only", "storage"]), "storage");
+    });
+
+    test("an unreadable firebase.json (invalid JSON) blocks", () => {
+      const fx = stubbed("phase1/main", "{not json");
+      expectBlocked(fx, runDeploy(fx, ["--only", "hosting"]), "firebase.json:unreadable");
+    });
+
+    test("a missing firebase.json blocks", () => {
+      const fx = stubbed("phase1/main", null);
+      expectBlocked(fx, runDeploy(fx, ["--only", "hosting"]), "firebase.json:unreadable");
+    });
+
+    test("control: the fully guarded firebase.json deploys", () => {
+      const fx = stubbed();
+      expect(runDeploy(fx, ["--only", "hosting"]).status).toBe(0);
+      expect(firebaseCalls(fx)).toHaveLength(1);
+    });
+  });
+
+  describe("(B) short-flag clusters", () => {
+    test.each([
+      ["-ic x.json", ["-ic", "x.json"]],
+      ["-jc x.json", ["-jc", "x.json"]],
+      ["-iPprod", ["-iPprod"]],
+    ] as const)("%s is refused and firebase is not spawned", (_label, args) => {
+      const fx = stubbed();
+      const r = runDeploy(fx, [...args, "--only", "hosting"]);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain("combined short-flag token");
+      expect(firebaseCalls(fx)).toEqual([]);
+      expect(fs.existsSync(fx.guardSeen)).toBe(false);
+    });
+
+    test("legitimate forms still work and are forwarded: -m 'msg', --only, --force, --dry-run", () => {
+      const fx = stubbed();
+      const r = runDeploy(fx, ["-m", "release note with spaces", "--only", "hosting", "--force", "--dry-run"]);
+      expect(r.status).toBe(0);
+      expect(firebaseCalls(fx)).toEqual([
+        ["deploy", "--project", PROD, "-m", "release note with spaces", "--only", "hosting", "--force", "--dry-run"],
+      ]);
+    });
+
+    test.each([
+      ["--project <alias>", ["--project", "phase2"]],
+      ["-P <alias>", ["-P", "phase2"]],
+      ["-P<alias>", ["-Pphase2"]],
+      ["--project=<id>", [`--project=${PHASE2_PROJECT}`]],
+      ["-P <id>", ["-P", PHASE2_PROJECT]],
+      ["-P<id>", [`-P${PHASE2_PROJECT}`]],
+    ] as const)("project selector form %s still works", (_label, args) => {
+      const fx = stubbed("phase2/x");
+      const r = runDeploy(fx, [...args, "--only", "hosting"]);
+      expect(r.status).toBe(0);
+      expect(firebaseCalls(fx)).toEqual([["deploy", "--project", PHASE2_PROJECT, "--only", "hosting"]]);
+    });
+  });
+
+  describe("(C) malformed project ids", () => {
+    test.each([["X&calc"], ["UPPER-case-project"], ["abc"], ["abcde-"]])("--project %j is refused as project-invalid", (bad) => {
+      const fx = stubbed();
+      const r = runDeploy(fx, ["--project", bad, "--only", "hosting"]);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain("project-invalid");
+      expect(firebaseCalls(fx)).toEqual([]);
+      expect(fs.existsSync(fx.guardSeen)).toBe(false);
+    });
   });
 });

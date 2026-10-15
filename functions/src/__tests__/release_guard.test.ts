@@ -29,6 +29,9 @@ import {
   PROTECTED_PHASE1_REFS,
   PROJECT_RESOLUTION_REASONS,
   GUARD_COMMAND_MARKER,
+  GUARD_COMMAND,
+  PROJECT_ID_PATTERN,
+  CHECK_NAME,
   parseDeployArgs,
   resolveEffectiveProject,
   findUnguardedDeployTargets,
@@ -242,6 +245,20 @@ const KILL_SWITCH_CHECK = "Step 8 kill switch secret exists with genuinely read-
 const OBSERVABILITY_CHECK = "AI Gateway observability metrics exist, match source, and are producing";
 const S23_CHECK = "S23 production Play Integrity proof gates an AI-enabled release";
 const PROVENANCE_CHECK = "Release comes from a clean, committed working tree";
+
+/** Review fix C: when the deploy-target check does not pass it is reported FIRST, and the other nine checks are
+ * UNAVAILABLE "not run" (no gcloud / git-state command was issued). Asserts that exact shape. */
+function expectBlockedByTargetOnly(result: Awaited<ReturnType<typeof runReleaseGuard>>, slug: string): void {
+  expect(result.verdict).toBe("BLOCK");
+  expect(result.checks).toHaveLength(10);
+  expect(result.checks[0].name).toBe(DEPLOY_TARGET_CHECK);
+  expect(result.checks[0].status).toBe("FAILED");
+  expect(result.checks[0].detail.split(":")[0]).toBe(slug);
+  for (const c of result.checks.slice(1)) {
+    expect(c.status).toBe("UNAVAILABLE");
+    expect(c.detail).toBe("not run: the deploy-target check did not pass, so no command was run against this project");
+  }
+}
 
 describe("runReleaseGuard", () => {
   test("PASS when every invariant genuinely holds", async () => {
@@ -883,6 +900,8 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
+    // Review fix A: with an unreadable/absent firebase.json the FIXED list is used; it now also names the
+    // other files `firebase deploy` reads (rules, indexes, storage rules, hosting public dir). Still scoped, never the whole repo.
     expect(capturedArgs).toEqual([
       "status",
       "--porcelain",
@@ -893,6 +912,10 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
       ".firebaserc",
       ".gitignore",
       RELEASE_EVIDENCE_PATH,
+      "firestore.rules",
+      "firestore.indexes.json",
+      "storage.rules",
+      "public",
     ]);
     expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
   });
@@ -986,8 +1009,8 @@ describe("deploy line classification (S00 backend separation gate)", () => {
     ]);
   });
 
-  test("PROJECT_RESOLUTION_REASONS is exactly the closed set of two slugs", () => {
-    expect([...PROJECT_RESOLUTION_REASONS]).toEqual(["project-undeterminable", "project-conflict"]);
+  test("PROJECT_RESOLUTION_REASONS is exactly the closed set of three slugs", () => {
+    expect([...PROJECT_RESOLUTION_REASONS]).toEqual(["project-undeterminable", "project-conflict", "project-invalid"]);
   });
 
   test("PROTECTED_PHASE1_REFS names exactly the two protected remote-tracking refs", () => {
@@ -1330,10 +1353,8 @@ describe("Phase 1 commit provenance (isCommitOnProtectedLine)", () => {
     expect(result.verdict).toBe("BLOCK");
     expect(result.line).toBe("phase1");
     expect(result.branch).toBe("phase1/x");
-    const notOk = result.checks.filter((c) => c.status !== "OK");
-    // Everything else is healthy in this fixture, so the provenance block is the ONLY reason.
-    expect(notOk.map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
-    expect(slugOf(notOk[0].detail)).toBe("phase1-provenance-unverified");
+    // Everything else is healthy in this fixture; the provenance block is the ONLY reason and now short-circuits the rest.
+    expectBlockedByTargetOnly(result, "phase1-provenance-unverified");
   });
 
   test("same healthy fixture with provenance true PASSes (control for the test above)", async () => {
@@ -1416,13 +1437,14 @@ describe("explicit production project from a phase2/* branch is blocked (effecti
 
 describe("parseDeployArgs", () => {
   test("no arguments", () => {
-    expect(parseDeployArgs([])).toEqual({ projects: [], hasConfigFlag: false, rest: [] });
+    expect(parseDeployArgs([])).toEqual({ projects: [], hasConfigFlag: false, hasShortFlagCluster: false, rest: [] });
   });
 
   test("unrelated arguments are passed through untouched, in order", () => {
     expect(parseDeployArgs(["--only", "functions:default", "--force"])).toEqual({
       projects: [],
       hasConfigFlag: false,
+      hasShortFlagCluster: false,
       rest: ["--only", "functions:default", "--force"],
     });
   });
@@ -1436,6 +1458,7 @@ describe("parseDeployArgs", () => {
     expect(parseDeployArgs([...argv, "--only", "hosting"])).toEqual({
       projects: [...projects],
       hasConfigFlag: false,
+      hasShortFlagCluster: false,
       rest: ["--only", "hosting"],
     });
   });
@@ -1452,6 +1475,7 @@ describe("parseDeployArgs", () => {
     expect(parseDeployArgs(["--only", "firestore", "--project", "a", "--force"])).toEqual({
       projects: ["a"],
       hasConfigFlag: false,
+      hasShortFlagCluster: false,
       rest: ["--only", "firestore", "--force"],
     });
   });
@@ -1476,7 +1500,7 @@ describe("parseDeployArgs", () => {
     "%s is not mistaken for a project or config flag",
     (flag) => {
       const parsed = parseDeployArgs([flag]);
-      expect(parsed).toEqual({ projects: [], hasConfigFlag: false, rest: [flag] });
+      expect(parsed).toEqual({ projects: [], hasConfigFlag: false, hasShortFlagCluster: false, rest: [flag] });
     },
   );
 
@@ -1531,8 +1555,8 @@ describe("resolveEffectiveProject", () => {
   });
 
   test("a blank alias mapping is ignored (value used verbatim)", () => {
-    const rc = firebasercWith({ weird: "   " });
-    expect(resolve({}, ["--project", "weird"], rc)).toMatchObject({ ok: true, project: "weird" });
+    const rc = firebasercWith({ "weird-project": "   " });
+    expect(resolve({}, ["--project", "weird-project"], rc)).toMatchObject({ ok: true, project: "weird-project" });
   });
 
   test("unrelated arguments around the flag are ignored", () => {
@@ -2171,21 +2195,18 @@ describe("merge interactions: deploy-line gate x PR #5 six callables x body-scan
     expect(result.checks.every((c) => c.status === "OK")).toBe(true);
   });
 
-  test("phase1 provenance failure still BLOCKs through the Deploy target check even though the bucket check is OK and all six callables are present", async () => {
+  test("phase1 provenance failure still BLOCKs through the Deploy target check even though the bucket is healthy and all six callables are present (target check short-circuits the rest)", async () => {
     const result = await runReleaseGuard(
       healthyWithBucket({ branch: "phase1/main", isCommitOnProtectedLine: async () => false }),
     );
-    expect(result.verdict).toBe("BLOCK");
-    expect(result.checks).toHaveLength(11);
-    expect(byName(result, BUCKET_CHECK).status).toBe("OK");
-    expect(byName(result, INVENTORY_CHECK).status).toBe("OK");
-    expect(byName(result, INVENTORY_CHECK).detail).toContain("all 6 callables");
-    const notOk = result.checks.filter((c) => c.status !== "OK");
-    expect(notOk.map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
-    expect(notOk[0].detail.split(":")[0]).toBe("phase1-provenance-unverified");
+    // Review fix C: the target check runs first and short-circuits. The bucket check is not even attempted (10 checks,
+    // not 11), and the callable inventory is reported as not run -- a healthy bucket cannot mask the provenance block.
+    expectBlockedByTargetOnly(result, "phase1-provenance-unverified");
+    expect(result.checks.find((c) => c.name === BUCKET_CHECK)).toBeUndefined();
+    expect(byName(result, INVENTORY_CHECK).status).toBe("UNAVAILABLE");
   });
 
-  test("phase1 provenance reader rejecting is the same BLOCK with the bucket and callable checks OK", async () => {
+  test("phase1 provenance reader rejecting is the same BLOCK (target check only; the rest not run)", async () => {
     const result = await runReleaseGuard(
       healthyWithBucket({
         branch: "phase1/x",
@@ -2194,21 +2215,16 @@ describe("merge interactions: deploy-line gate x PR #5 six callables x body-scan
         },
       }),
     );
-    expect(result.verdict).toBe("BLOCK");
-    expect(result.checks.filter((c) => c.status !== "OK").map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
+    expectBlockedByTargetOnly(result, "phase1-provenance-unverified");
   });
 
-  test("phase2 branch + production project is BLOCKed (phase2-project-mismatch) while the bucket and callable checks pass", async () => {
+  test("phase2 branch + production project is BLOCKed (phase2-project-mismatch) even though the bucket and callables are healthy", async () => {
     const result = await runReleaseGuard(
       healthyWithBucket({ branch: "phase2/s00-split-docs", project: EXPECTED_PROJECT_ID, firebaserc: phase2Rc }),
     );
-    expect(result.verdict).toBe("BLOCK");
     expect(result.line).toBe("phase2");
-    expect(byName(result, BUCKET_CHECK).status).toBe("OK");
-    expect(byName(result, INVENTORY_CHECK).status).toBe("OK");
-    const notOk = result.checks.filter((c) => c.status !== "OK");
-    expect(notOk.map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
-    expect(notOk[0].detail.split(":")[0]).toBe("phase2-project-mismatch");
+    expectBlockedByTargetOnly(result, "phase2-project-mismatch");
+    expect(result.checks.find((c) => c.name === BUCKET_CHECK)).toBeUndefined();
   });
 
   test("a missing body-scan canary evidence blocks on the bucket check only, and the deploy-line gate stays OK (the two gates are independent)", async () => {
@@ -2250,5 +2266,542 @@ describe("merge interactions: deploy-line gate x PR #5 six callables x body-scan
     };
     config.storage.predeploy = config.storage.predeploy!.filter((c) => !c.includes(GUARD_COMMAND_MARKER));
     expect(findUnguardedDeployTargets(config)).toEqual(["storage"]);
+  });
+});
+
+// =====================================================================
+// Review-fix tests (round 2): working-tree scope (A), short-flag clusters (B),
+// project-id validation and check order (C), exact guard command (E),
+// throwing checks (F).
+// =====================================================================
+
+describe("review fix A: clean-tree check covers every deploy input", () => {
+  const FIXED_LIST = [
+    "functions",
+    "functions-equipment-identity",
+    "firebase.json",
+    ".firebaserc",
+    ".gitignore",
+    RELEASE_EVIDENCE_PATH,
+    "firestore.rules",
+    "firestore.indexes.json",
+    "storage.rules",
+    "public",
+  ];
+
+  /** git fake that reports `dirtyPath` as modified ONLY when the pathspec covers it (as real git status would). */
+  function gitReporting(dirtyPath: string | null, seen: string[][] = []): Partial<Record<string, CommandHandler>> {
+    return {
+      status: (args) => {
+        seen.push(args);
+        const specs = args.slice(3);
+        const covered =
+          dirtyPath !== null && specs.some((p) => dirtyPath === p || dirtyPath.startsWith(`${p}/`));
+        return { ok: true, stdout: covered ? ` M ${dirtyPath}\n` : "", stderr: "" };
+      },
+    };
+  }
+
+  const FIREBASE_JSON = (extra: Record<string, unknown> = {}): string =>
+    JSON.stringify({
+      firestore: { rules: "firestore.rules", indexes: "firestore.indexes.json" },
+      storage: { rules: "storage.rules" },
+      hosting: { public: "public" },
+      functions: [{ source: "functions" }, { source: "functions-equipment-identity" }],
+      ...extra,
+    });
+
+  test.each([
+    ["firestore.rules"],
+    ["firestore.indexes.json"],
+    ["storage.rules"],
+    ["public/index.html"],
+    ["public/deep/dir/app.js"],
+    ["functions-equipment-identity/src/index.ts"],
+  ])("a dirty %s makes the clean-tree check FAIL (firebase.json unreadable: fixed list)", async (dirty) => {
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting(dirty) }));
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("uncommitted changes under");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test.each([["firestore.rules"], ["firestore.indexes.json"], ["storage.rules"], ["public/index.html"]])(
+    "a dirty %s makes the check FAIL when firebase.json is readable and names the same files",
+    async (dirty) => {
+      const result = await runReleaseGuard(
+        makeDeps({ git: gitReporting(dirty), sourceOverrides: { "firebase.json": FIREBASE_JSON() } }),
+      );
+      expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+    },
+  );
+
+  test("control: a dirty file OUTSIDE every deploy input (docs/x.md) does not fail the check", async () => {
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting("docs/x.md") }));
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("paths named in firebase.json are added: renamed rules, indexes, storage rules, hosting dir and every functions source", async () => {
+    const seen: string[][] = [];
+    const json = JSON.stringify({
+      firestore: { rules: "rules/fs.rules", indexes: "rules/idx.json" },
+      storage: { rules: "rules/st.rules" },
+      hosting: { public: "dist/web" },
+      functions: [{ source: "functions" }, { source: "services/api" }],
+    });
+    await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
+    expect(seen).toHaveLength(1);
+    const specs = seen[0].slice(3);
+    for (const expected of [...FIXED_LIST, "rules/fs.rules", "rules/idx.json", "rules/st.rules", "dist/web", "services/api"]) {
+      expect(specs).toContain(expected);
+    }
+    expect(new Set(specs).size).toBe(specs.length); // no duplicates
+  });
+
+  test.each([
+    ["rules/fs.rules"],
+    ["rules/idx.json"],
+    ["rules/st.rules"],
+    ["dist/web/app.js"],
+    ["services/api/src/index.ts"],
+  ])("a dirty %s (a path only firebase.json names) makes the check FAIL", async (dirty) => {
+    const json = JSON.stringify({
+      firestore: { rules: "rules/fs.rules", indexes: "rules/idx.json" },
+      storage: { rules: "rules/st.rules" },
+      hosting: { public: "dist/web" },
+      functions: [{ source: "functions" }, { source: "services/api" }],
+    });
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting(dirty), sourceOverrides: { "firebase.json": json } }));
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
+  test("the same dirty path is NOT covered when firebase.json is unreadable (only the fixed list applies) -- the extras really come from firebase.json", async () => {
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting("rules/fs.rules") }));
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("normalisation: leading ./ and trailing slashes are stripped; single objects (not arrays) are accepted", async () => {
+    const seen: string[][] = [];
+    const json = JSON.stringify({ hosting: { public: "./site/" }, functions: { source: "./fn//" } });
+    await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
+    const specs = seen[0].slice(3);
+    expect(specs).toContain("site");
+    expect(specs).toContain("fn");
+    expect(specs).not.toContain("./site/");
+  });
+
+  test.each([
+    ["absolute path", "/etc/passwd"],
+    ["parent traversal", "../outside"],
+    ["embedded parent traversal", "a/../../b"],
+    ["backslash path", "a\\b"],
+    ["drive letter", "C:\\x"],
+    ["drive-relative", "C:x"],
+    ["pathspec magic", ":(top)x"],
+    ["option-looking", "--exclude=x"],
+    ["single dash", "-x"],
+    ["empty string", ""],
+    ["non-string", 42],
+  ])("unsafe firebase.json path is ignored (%s): the pathspec stays the fixed list", async (_label, bad) => {
+    const seen: string[][] = [];
+    const json = JSON.stringify({
+      firestore: { rules: bad, indexes: bad },
+      storage: { rules: bad },
+      hosting: { public: bad },
+      functions: [{ source: bad }],
+    });
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
+    expect(seen[0].slice(3)).toEqual(FIXED_LIST);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test.each([
+    ["missing file", null],
+    ["invalid JSON", "{not json"],
+    ["JSON null", "null"],
+    ["JSON string", '"x"'],
+    ["JSON number", "7"],
+    ["empty file", ""],
+  ])("unreadable firebase.json (%s) still uses exactly the fixed list", async (_label, content) => {
+    const seen: string[][] = [];
+    const result = await runReleaseGuard(
+      makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": content } }),
+    );
+    expect(seen[0]).toEqual(["status", "--porcelain", "--", ...FIXED_LIST]);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("a readFile that THROWS for firebase.json also falls back to the fixed list (never aborts the check)", async () => {
+    const seen: string[][] = [];
+    const base = makeDeps({ git: gitReporting(null, seen) });
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async (p: string) => {
+        if (p === "firebase.json") throw new Error("EACCES");
+        return base.readFile(p);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    expect(seen[0].slice(3)).toEqual(FIXED_LIST);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+});
+
+describe("review fix B: short-flag clusters", () => {
+  test.each([
+    ["-ic", ["-ic", "x.json"]],
+    ["-jc", ["-jc", "x.json"]],
+    ["-iPprod", ["-iPprod"]],
+    ["-fc", ["-fc"]],
+    ["-xP", ["-xP", "prod"]],
+  ])("parseDeployArgs flags the cluster %s", (_label, argv) => {
+    expect(parseDeployArgs(argv).hasShortFlagCluster).toBe(true);
+  });
+
+  test.each([
+    ["single -m with a value", ["-m", "release note"]],
+    ["--only", ["--only", "hosting"]],
+    ["--force", ["--force"]],
+    ["--dry-run", ["--dry-run"]],
+    ["--project X", ["--project", "prod-project"]],
+    ["-P X", ["-P", "prod-project"]],
+    ["-PX", ["-Pprod-project"]],
+    ["cluster without c or P (-ab)", ["-ab"]],
+    ["-cfoo is a config flag, not a cluster", ["-cfoo"]],
+  ])("parseDeployArgs does not flag %s", (_label, argv) => {
+    expect(parseDeployArgs(argv).hasShortFlagCluster).toBe(false);
+  });
+
+  test("-cfoo is reported as a config flag (hasConfigFlag) rather than a cluster", () => {
+    const parsed = parseDeployArgs(["-cfoo"]);
+    expect(parsed.hasConfigFlag).toBe(true);
+    expect(parsed.hasShortFlagCluster).toBe(false);
+  });
+
+  test.each([["-ic", "x.json"], ["-jc", "x.json"], ["-iPprod"]])(
+    "resolveEffectiveProject BLOCKS the cluster %s as project-undeterminable even with a valid GCLOUD_PROJECT",
+    (...argv) => {
+      const r = resolveEffectiveProject({
+        env: { GCLOUD_PROJECT: "valid-project-id" },
+        argv,
+        firebaserc: DEFAULT_FIREBASERC,
+      });
+      expect(r).toMatchObject({ ok: false, reason: "project-undeterminable" });
+      expect(r.ok === false && r.detail).toContain("combined short-flag token");
+    },
+  );
+
+  test.each([
+    [["-m", "note", "--only", "hosting", "--force", "--dry-run", "--project", "valid-project-id"]],
+    [["-P", "valid-project-id", "--only", "hosting"]],
+    [["-Pvalid-project-id"]],
+  ])("resolveEffectiveProject still accepts the legitimate form %j", (argv) => {
+    expect(resolveEffectiveProject({ env: {}, argv, firebaserc: null })).toEqual({
+      ok: true,
+      project: "valid-project-id",
+      source: "--project",
+    });
+  });
+});
+
+describe("review fix C: project id validation and check order", () => {
+  const rcWith = (phase2: string): string => firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: phase2 });
+
+  test("PROJECT_ID_PATTERN accepts 6..30 char ids and rejects the boundary cases around them", () => {
+    expect(PROJECT_ID_PATTERN.test("abcde1")).toBe(true); // 6 chars
+    expect(PROJECT_ID_PATTERN.test("a" + "b".repeat(28) + "c")).toBe(true); // 30 chars
+    expect(PROJECT_ID_PATTERN.test("abcd1")).toBe(false); // 5 chars
+    expect(PROJECT_ID_PATTERN.test("a" + "b".repeat(29) + "c")).toBe(false); // 31 chars
+    expect(PROJECT_ID_PATTERN.test(EXPECTED_PROJECT_ID)).toBe(true);
+    expect(PROJECT_ID_PATTERN.test(PHASE2_PROJECT)).toBe(true);
+  });
+
+  const BAD_IDS = [
+    ["uppercase", "Fitness-App-Korostelev"],
+    ["too short", "abc"],
+    ["5 chars", "abcde"],
+    ["31 chars", "a".repeat(31)],
+    ["metacharacter &", "x&calc"],
+    ["metacharacter ;", "proj;rm-rf"],
+    ["space", "my project"],
+    ["leading digit", "1project-a"],
+    ["trailing hyphen", "project-a-"],
+    ["underscore", "my_project"],
+    ["dot", "my.project"],
+    ["newline", "valid-project\nx"],
+  ] as const;
+
+  test.each(BAD_IDS)("resolveEffectiveProject rejects %s from GCLOUD_PROJECT as project-invalid", (_label, bad) => {
+    const r = resolveEffectiveProject({ env: { GCLOUD_PROJECT: bad }, argv: [], firebaserc: null });
+    expect(r).toMatchObject({ ok: false, reason: "project-invalid" });
+    expect(r.ok === false && r.detail.startsWith("project-invalid:")).toBe(true);
+  });
+
+  test.each(BAD_IDS)("resolveEffectiveProject rejects %s from the --project flag as project-invalid", (_label, bad) => {
+    if (bad.trim().length !== bad.length || bad.length === 0) return; // trimmed values are covered by the env test
+    const r = resolveEffectiveProject({ env: {}, argv: ["--project", bad], firebaserc: null });
+    expect(r).toMatchObject({ ok: false, reason: "project-invalid" });
+  });
+
+  test("an alias that maps to a malformed id is project-invalid (the id, not the alias, is validated)", () => {
+    const r = resolveEffectiveProject({
+      env: {},
+      argv: ["--project", PHASE2_ALIAS],
+      firebaserc: rcWith("X&calc"),
+    });
+    expect(r).toMatchObject({ ok: false, reason: "project-invalid" });
+  });
+
+  // ---- runReleaseGuard: deps.project
+  function recording(opts: Parameters<typeof makeDeps>[0]) {
+    const base = makeDeps(opts);
+    const commands: Array<{ cmd: string; args: string[] }> = [];
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        commands.push({ cmd, args });
+        return base.runCommand(cmd, args, timeoutMs);
+      },
+    };
+    return { deps, commands };
+  }
+
+  test.each(BAD_IDS)("deps.project = %s: target check FAILED with project-invalid, ZERO commands of any kind, nine checks not run", async (_label, bad) => {
+    const { deps, commands } = recording({ project: bad });
+    const result = await runReleaseGuard(deps);
+    expectBlockedByTargetOnly(result, "project-invalid");
+    expect(commands).toEqual([]);
+  });
+
+  test.each([
+    ["deploy-line-unknown", { branch: "feature/x" }],
+    ["phase1-wrong-project", { branch: "phase1/main", project: LEGACY_PROJECT_ID }],
+    ["phase1-provenance-unverified", { branch: "phase1/main", isCommitOnProtectedLine: async () => false }],
+    ["phase2-project-mismatch", { branch: "phase2/x", firebaserc: firebasercWith({ [PHASE2_ALIAS]: PHASE2_PROJECT }) }],
+    ["firebaserc-unreadable", { branch: "phase2/x", firebaserc: null }],
+  ] as const)("a blocked deploy target (%s) issues ZERO gcloud/git commands", async (slug, opts) => {
+    const { deps, commands } = recording({ ...opts });
+    const result = await runReleaseGuard(deps);
+    expectBlockedByTargetOnly(result, slug);
+    expect(commands).toEqual([]);
+  });
+
+  test("the not-run report is the fixed set of nine downstream checks, in a fixed order, after the target check", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: "feature/x" }));
+    expect(result.checks.map((c) => c.name)).toEqual([
+      CHECK_NAME.target,
+      CHECK_NAME.candidate,
+      CHECK_NAME.inventory,
+      CHECK_NAME.appCheck,
+      CHECK_NAME.anonymous,
+      CHECK_NAME.killSwitch,
+      CHECK_NAME.drill,
+      CHECK_NAME.observability,
+      CHECK_NAME.s23,
+      CHECK_NAME.provenance,
+    ]);
+  });
+
+  test("a deploy-line resolution that throws is reported as deploy-line-unknown, not an escaped exception", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async () => {
+        throw new Error("disk gone");
+      },
+      currentBranch: async () => "phase2/x",
+    };
+    const result = await runReleaseGuard(deps);
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.checks[0].status).toBe("FAILED");
+    expect(result.checks[0].detail).toContain("disk gone");
+  });
+
+  test("F6: with a NON-default project every gcloud call carries that project; none carries production", async () => {
+    const OTHER = "fitness-app-other-env";
+    const gcloudArgs: string[][] = [];
+    const base = makeDeps({
+      branch: "phase2/x",
+      project: OTHER,
+      firebaserc: firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: OTHER }),
+    });
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud") gcloudArgs.push(args);
+        // Answer even unexpected shapes so the guard goes as far as it can; the assertion is about the arguments.
+        try {
+          return await base.runCommand(cmd, args, timeoutMs);
+        } catch {
+          return { ok: false, stdout: "", stderr: "unexpected in fake" };
+        }
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    expect(result.checks[0].status).toBe("OK"); // target accepted, so gcloud really ran
+    expect(gcloudArgs.length).toBeGreaterThan(5);
+    for (const args of gcloudArgs) {
+      const carries =
+        args.includes(`--project=${OTHER}`) ||
+        (args[0] === "projects" && args[1] === "get-iam-policy" && args[2] === OTHER);
+      expect({ args, carries }).toEqual({ args, carries: true });
+      expect(args.join(" ")).not.toContain(EXPECTED_PROJECT_ID);
+    }
+  });
+});
+
+describe("review fix E: the guard command must match exactly", () => {
+  test("GUARD_COMMAND is the exact command and contains the marker", () => {
+    expect(GUARD_COMMAND).toBe("node functions/scripts/run_release_guard.mjs");
+    expect(GUARD_COMMAND).toContain(GUARD_COMMAND_MARKER);
+  });
+
+  test.each([
+    ["shell-or-true neutering", "node x || true # run_release_guard.mjs"],
+    ["echo of the file name", "echo run_release_guard.mjs"],
+    ["extra argument that could change behaviour", "node functions/scripts/run_release_guard.mjs --skip"],
+    ["a different directory", "node other/scripts/run_release_guard.mjs"],
+    ["chained after another command", "npm run build && node functions/scripts/run_release_guard.mjs"],
+    ["negated", "! node functions/scripts/run_release_guard.mjs"],
+    ["only the file name", "run_release_guard.mjs"],
+    ["different case", "NODE functions/scripts/run_release_guard.mjs"],
+  ])("a predeploy of %s counts as UNGUARDED", (_label, cmd) => {
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: [cmd] } })).toEqual(["hosting"]);
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: cmd } })).toEqual(["hosting"]);
+  });
+
+  test("surrounding whitespace is tolerated; the exact command alongside others is guarded", () => {
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: [`  ${GUARD_COMMAND}  `] } })).toEqual([]);
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: ["npm run build", GUARD_COMMAND] } })).toEqual([]);
+  });
+
+  test("a neutered command in ONE target is reported while the others stay clean", () => {
+    const ok = { predeploy: [GUARD_COMMAND] };
+    expect(
+      findUnguardedDeployTargets({
+        firestore: ok,
+        hosting: ok,
+        storage: { rules: "storage.rules", predeploy: ["node x || true # run_release_guard.mjs"] },
+        functions: [ok, ok],
+      }),
+    ).toEqual(["storage"]);
+  });
+
+  test("REAL firebase.json: every guarded target uses the EXACT command (not merely the marker)", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.json"), "utf8")) as Record<string, unknown>;
+    for (const section of ["firestore", "storage", "hosting", "functions"]) {
+      const entries = Array.isArray(config[section]) ? (config[section] as unknown[]) : [config[section]];
+      for (const entry of entries) {
+        const predeploy = (entry as { predeploy: string[] }).predeploy;
+        expect(predeploy.filter((c) => c.trim() === GUARD_COMMAND)).toHaveLength(1);
+      }
+    }
+  });
+});
+
+describe("review fix F: a throwing check becomes UNAVAILABLE and the report stays complete", () => {
+  const THREW = "check threw an unexpected error";
+
+  test.each([["null"], ["[]"], ['"x"'], ["7"], ["true"]])(
+    "release evidence file content %s never aborts the report (10 checks, a verdict, no escaped exception)",
+    async (content) => {
+      const result = await runReleaseGuard(makeDeps({ evidence: content }));
+      expect(result.checks).toHaveLength(10);
+      expect(result.verdict).toBe("BLOCK");
+      // Evidence that is not a proper object can never produce an OK drill check.
+      expect(byName(result, CHECK_NAME.drill).status).not.toBe("OK");
+    },
+  );
+
+  test("evidence JSON null: the drill check THROWS internally and is reported UNAVAILABLE with the message; the other checks still ran", async () => {
+    const result = await runReleaseGuard(makeDeps({ evidence: "null" }));
+    const drill = byName(result, CHECK_NAME.drill);
+    expect(drill.status).toBe("UNAVAILABLE");
+    expect(drill.detail).toContain(THREW);
+    expect(byName(result, CHECK_NAME.inventory).status).toBe("OK");
+    expect(byName(result, CHECK_NAME.provenance).status).toBe("OK");
+  });
+
+  test.each([["null"], ["[]"], ['"x"']])(
+    "kill-switch payload %s never aborts the report; it is not treated as 'AI disabled' success",
+    async (payload) => {
+      const result = await runReleaseGuard(makeDeps({ gcloud: { secretAccess: () => ({ ok: true, stdout: payload, stderr: "" }) } }));
+      expect(result.checks).toHaveLength(10);
+      const s23 = byName(result, CHECK_NAME.s23);
+      if (payload === "null") {
+        expect(s23.status).toBe("UNAVAILABLE");
+        expect(s23.detail).toContain(THREW);
+      }
+      expect(result.checks.every((c) => ["OK", "FAILED", "UNAVAILABLE"].includes(c.status))).toBe(true);
+    },
+  );
+
+  test("a runCommand that throws on one gcloud call makes only the affected checks UNAVAILABLE, with the message", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "secrets" && args[1] === "describe") throw new Error("spawn EPERM");
+        return base.runCommand(cmd, args, timeoutMs);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    expect(result.checks).toHaveLength(10);
+    const ks = byName(result, CHECK_NAME.killSwitch);
+    expect(ks.status).toBe("UNAVAILABLE");
+    expect(ks.detail).toContain("spawn EPERM");
+    expect(byName(result, CHECK_NAME.inventory).status).toBe("OK");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("readFile throwing for a candidate source file makes the candidate check UNAVAILABLE with the message", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async (p: string) => {
+        if (p === "functions/src/scaling.ts") throw new Error("EIO scaling");
+        return base.readFile(p);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    const c = byName(result, CHECK_NAME.candidate);
+    expect(c.status).toBe("UNAVAILABLE");
+    expect(c.detail).toContain("EIO scaling");
+    expect(result.checks).toHaveLength(10);
+  });
+
+  test("the functions-list step throwing marks BOTH dependent checks UNAVAILABLE with the message and the report continues", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "functions" && args[1] === "list") throw new Error("list exploded");
+        return base.runCommand(cmd, args, timeoutMs);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    for (const name of [CHECK_NAME.appCheck, CHECK_NAME.anonymous]) {
+      expect(byName(result, name).status).toBe("UNAVAILABLE");
+      expect(byName(result, name).detail).toContain("list exploded");
+    }
+    expect(byName(result, CHECK_NAME.inventory).status).toBe("UNAVAILABLE");
+    expect(result.checks).toHaveLength(10);
+  });
+
+  test("an env/readFile failure while looking for the body-scan bucket is reported as an UNAVAILABLE bucket check", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async (p: string) => {
+        if (p.startsWith("functions/.env.")) throw new Error("dotenv unreadable");
+        return base.readFile(p);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    const bucket = result.checks.find((c) => c.name === CHECK_NAME.bodyScanBucket);
+    expect(bucket?.status).toBe("UNAVAILABLE");
+    expect(bucket?.detail).toContain("dotenv unreadable");
+    expect(result.verdict).toBe("BLOCK");
   });
 });

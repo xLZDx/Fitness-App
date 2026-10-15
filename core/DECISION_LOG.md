@@ -56692,3 +56692,8 @@ Decision: the merged guard (PR #5 checks plus deploy-line coverage and provenanc
 ## 2026-10-15 - Commit: S00 deploy guard review fixes
 
 Decision: after the security and silent-failure reviews, the clean-tree check also covers rules, indexes, storage rules and the hosting public dir; short-flag clusters that could hide -c or -P are refused; the project id is validated before use (new reason project-invalid) and the deploy-target check runs before any gcloud call, with the remaining checks reported as not run; guard wiring requires the exact predeploy command; one throwing check no longer aborts the report; the wrapper refuses to deploy when firebase.json has an unguarded target. Deliberately not done: deploy-time env reading and the hardcoded production kill-switch secret path in abuse_guard.ts, recorded as open items before the first Phase 2 cloud deploy in docs/phase2/split/BACKEND_SEPARATION.md. Evidence: core/changes/2026-10-15-s00-guard-review-fixes.md; not yet tested.
+
+## 2026-10-16 - Commit: guard tests for the review fixes
+
+Decision: the guard review fixes are covered by 608 passing jest tests (397 + 86 + 125); a timed-out gcloud child on Windows may outlive the guard (shell:true plus SIGKILL), recorded as a known limit, not fixed in S00. Evidence: core/changes/2026-10-16-s00-guard-tests-review-fixes.md.
+The registry generator no longer lists core/DECISION_LOG.md: its size changed with every decision entry and made the registry stale after each commit; the log remains the canonical decision record.

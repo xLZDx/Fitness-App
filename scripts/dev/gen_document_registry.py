@@ -16,6 +16,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SCAN_DIRS = ["docs", "core", "runbooks", "reports"]
 TOP_FILES = ["README.md", "CLAUDE.md", "AGENTS.md", "FITNESS_APP_TASK_LIST.md"]
 SKIP_PARTS = {"node_modules", ".git", "changes"}
+# The registry itself, and the append-only decision log whose size changes with every commit.
+SKIP_FILES = {"docs/DOCUMENT_REGISTRY.md", "core/DECISION_LOG.md"}
 OUT = os.path.join(ROOT, "docs", "DOCUMENT_REGISTRY.md")
 
 
@@ -46,7 +48,7 @@ def collect() -> list[tuple[str, str, int]]:
                     continue
                 full = os.path.join(dirpath, fname)
                 rel = os.path.relpath(full, ROOT).replace(os.sep, "/")
-                if rel == "docs/DOCUMENT_REGISTRY.md":
+                if rel in SKIP_FILES:
                     continue
                 rows.append((rel, first_heading(full), os.path.getsize(full)))
     return sorted(rows)
