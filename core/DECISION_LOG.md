@@ -56129,3 +56129,19 @@ Decision: all body_scan <-> nutrition bridges live in core/wiring/body_scan_wiri
 
 Decision: the flow controller test pins that illegal events still bump the revision and clear effects, and that updateContext never replays effects. Evidence: core/changes/2026-10-15-c15-tests.md.
 Progress: T106 label_normalise tests added (44 passing).
+
+## 2026-10-15 - Commit: C23 part 4 (shared diary widgets)
+
+Decision: widgets use the Material theme and semantic colours, never colour alone for state, and route every number through NumberFormat. Evidence: `core/changes/2026-10-15-c23-widgets-a.md`; no checks run.
+
+## 2026-10-15 - Commit: C17 weekly reminder rule and editor
+
+Decision: the 14-day reminder becomes weekly (Sunday 08:00 default, strictly after newest scan + 5 days); default OFF in measurementOnly; notification tap only opens the app because LocalNotificationService has no tap handler (documented limit). Evidence: core/changes/2026-10-15-c17-weekly-reminder-editor.md (no checks run yet).
+
+## 2026-10-15 - Commit: C16 part 2 commit
+
+Evidence record: the C16 part 2 decision entry above was swept into a concurrent session commit; this commit carries the C16 part 2 files and change record core/changes/2026-10-15-c16-history-privacy-ui-routes-l10n.md; no checks run.
+
+## 2026-10-15 - Commit: C19 plan page, review card, entry card
+
+Decision: the plan screen is gated by the device-local verdict (referProfessional shows one notice, no numbers); every plan or weight write passes ensureDataNoticeAcknowledged first; the entry card is exported but mounted by the Progress/Home owners (C17). Evidence: core/changes/2026-10-15-c19-plan-page.md; no checks run.
