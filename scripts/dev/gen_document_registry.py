@@ -52,8 +52,7 @@ def collect() -> list[tuple[str, str, int]]:
     return sorted(rows)
 
 
-def main() -> int:
-    rows = collect()
+def render(rows: list[tuple[str, str, int]]) -> str:
     lines = [
         "# Document registry (derived)",
         "",
@@ -67,8 +66,30 @@ def main() -> int:
     for rel, title, size in rows:
         lines.append("| `%s` | %s | %d |" % (rel, title, size))
     lines.append("")
+    return "\n".join(lines)
+
+
+def check() -> int:
+    """Exit 1 when the committed registry differs from a fresh render."""
+    expected = render(collect())
+    try:
+        with io.open(OUT, encoding="utf-8", newline="") as fh:
+            current = fh.read().replace("\r\n", "\n")
+    except OSError:
+        current = ""
+    if current != expected:
+        sys.stderr.write("docs/DOCUMENT_REGISTRY.md is stale: run scripts/dev/gen_document_registry.py\n")
+        return 1
+    sys.stdout.write("registry is up to date\n")
+    return 0
+
+
+def main() -> int:
+    if "--check" in sys.argv[1:]:
+        return check()
+    rows = collect()
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("\n".join(lines))
+        fh.write(render(rows))
     sys.stdout.write("wrote %s (%d documents)\n" % (os.path.relpath(OUT, ROOT), len(rows)))
     return 0
 

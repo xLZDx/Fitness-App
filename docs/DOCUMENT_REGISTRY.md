@@ -19,7 +19,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/CURRENT_STATE.md` | Current state | 14555 |
 | `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 12447 |
 | `core/DEBUGGING.md` | Dev observability — debug daemon | 8855 |
-| `core/DECISION_LOG.md` | Decision log — Fitness App | 4167815 |
+| `core/DECISION_LOG.md` | Decision log — Fitness App | 4170911 |
 | `core/DECISION_SELF_BOOKING.md` | Operator decision — should a coach be able to book themselves? | 11742 |
 | `core/DEPENDENCIES.md` | DEPENDENCIES | 1108 |
 | `core/EQUIPMENT_REGISTRY_EXPANSION_2026-08-03.md` | Equipment registry expansion, 52 -> 69 -- 2026-08-03 / 2026-08-04 | 10219 |
@@ -261,11 +261,12 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1002 |
-| `docs/phase2/README.md` | Phase 2 documents (development line) | 1638 |
-| `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 19919 |
-| `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12139 |
-| `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 32259 |
-| `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 18611 |
+| `docs/phase2/README.md` | Phase 2 documents (development line) | 2666 |
+| `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20616 |
+| `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12836 |
+| `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 32956 |
+| `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19310 |
+| `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 7192 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 6991 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |
 | `runbooks/video_hosting.md` | Video hosting | 8833 |

@@ -1,5 +1,7 @@
 # Fitness App: project reassessment (planning document, not approved)
 
+> **CURRENT STATE (2026-10-15, after S00 execution).** This document is the approved planning baseline (GPT-PM APPROVE on revision 3; operator approval on 2026-10-15). Wording below such as "draft", "nothing has been executed" or "PR #5 is open" is historical. Executed so far: the snapshot, tag `phase1-baseline`, branches `phase1/main` and `phase2/main`, PR #5 retargeted to `phase2/main` and merged as `5137ccda`, the worktrees, and the S00 documentation and deploy-line guard work (still under review). Recorded operator decisions: D-1, D-2, D-4, D-5 (see `core/DECISION_LOG.md` and `docs/phase2/README.md`). Where this text and those two files disagree, the decision log and the README win.
+
 Date: 2026-10-15. Status: DRAFT FOR GPT-PM REVIEW, then operator approval. Nothing in this document has been executed: no branch, folder, tag, commit or code change follows from it until the operator approves the plan.
 
 Evidence labels: FACT (read in a file or a command output this session), INFERENCE, HYPOTHESIS, UNKNOWN. Statuses are taken from project documents with their own dates; they were not re-run against devices or CI (operator rules: no full suites, no CI).
