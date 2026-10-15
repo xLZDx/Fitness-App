@@ -56528,3 +56528,5 @@ Decision: C19 routes are registered in the real router and reachable without red
 ## 2026-10-15 - Commit: C23 food search page tests and generic foodRef fix
 
 Decision: generic foodRef is the table id as is (gen:<fdcId>); the doubled prefix was a product defect. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+Progress: scan_gate_delete_test fake aligned with the C17 sync signature.
