@@ -56179,3 +56179,9 @@ Decision: E2 coverage is asserted through the real pages and the generated l10n 
 ## 2026-10-15 - Commit: C17 Body check-in entry card and mounting
 
 Decision: one BodyScanEntryCard (full on Progress with resume card and history/privacy links, compact on Home); result-page hooks deferred. Evidence: core/changes/2026-10-15-c17-entry-cards.md (no checks run yet).
+
+Evidence addendum (C19): pages and routes in core/changes/2026-10-15-c19-pages-routes.md.
+
+## 2026-10-15 - Commit: C23 part 7 (diary and add-food pages)
+
+Decision: the diary page is hidden for referProfessional and never worded as a budget game; the data notice precedes the first food-AI call. Evidence: `core/changes/2026-10-15-c23-pages-a.md`; no checks run.
