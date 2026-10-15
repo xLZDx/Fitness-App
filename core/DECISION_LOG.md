@@ -56273,3 +56273,9 @@ Decision: mobile_scanner ^6.0.11 (not 7.x, which needs Flutter 3.29 while the to
 ## 2026-10-15 - Commit: C18 scan plan context source tests
 
 Decision: context source tests prove the decision and target body fat reach the scan surfaces only for an eligible user and an unknown or refused verdict is measurement only. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+Evidence addendum (C18 scan plan context source tests): scan_plan_context_source_test.dart ran green, 14 tests.
+
+## 2026-10-15 - Commit: C19 kcal range slider tests
+
+Decision: the slider persists the last drag value on release (stale parent range could be written when the last move and the release share a frame). Evidence: core/changes/2026-10-15-c19-tests.md (kcal_range_slider_test 22 passed).

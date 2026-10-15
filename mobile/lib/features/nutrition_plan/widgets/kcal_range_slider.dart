@@ -119,6 +119,7 @@ class _KcalRangeSliderState extends State<KcalRangeSlider> {
   double _dragStartValue = 0;
   double _dragDx = 0;
   late KcalRange _dragStartRange;
+  KcalRange? _dragLast;
 
   String _spoken(AppLocalizations l10n, int v) =>
       l10n.nutritionKcalSpoken(NumberFormat.decimalPattern(
@@ -242,6 +243,7 @@ class _KcalRangeSliderState extends State<KcalRangeSlider> {
                 ? (_) {
                     _dragStartValue = value.toDouble();
                     _dragStartRange = widget.range;
+                    _dragLast = null;
                     _dragDx = 0;
                   }
                 : null,
@@ -260,11 +262,20 @@ class _KcalRangeSliderState extends State<KcalRangeSlider> {
                       target: target.round(),
                     );
                     _announceLimit(l10n, move, low);
+                    _dragLast = move.range;
                     if (move.range != widget.range) widget.onChanged(move.range);
                   }
                 : null,
             onHorizontalDragEnd:
-                widget.enabled ? (_) => widget.onChangeEnd(widget.range) : null,
+                widget.enabled
+                    ? (_) {
+                        // The last drag value, not the parent's rebuilt one: the
+                        // final move and the release can land in one frame.
+                        final end = _dragLast ?? widget.range;
+                        _dragLast = null;
+                        widget.onChangeEnd(end);
+                      }
+                    : null,
             child: ExcludeSemantics(
               child: Center(
                 child: Container(
