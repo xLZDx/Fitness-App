@@ -56152,3 +56152,4 @@ Decision: the day ring never colours or words a low day as failure (D-78); check
 
 Evidence addendum (C19): plan widgets are in core/changes/2026-10-15-c19-plan-widgets.md; plan page and cards in core/changes/2026-10-15-c19-plan-page.md.
 Progress: nutrition_cache tests added.
+Progress: nutrition_breaker tests added.
