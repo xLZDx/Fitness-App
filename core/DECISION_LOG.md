@@ -56460,3 +56460,7 @@ Decision: barcode page tests drive the page through FakeBarcodePort with a recor
 ## 2026-10-15 - Commit: C23 food diary page tests
 
 Decision: referProfessional is proven by the absence of any digit or kcal text on the page. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 parseLabelDraft and label scaling tests
+
+Decision: label draft validation is tested at exact bounds with hand-computed scaling values. Evidence: core/changes/2026-10-15-c24-tests.md.
