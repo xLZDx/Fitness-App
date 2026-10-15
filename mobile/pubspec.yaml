@@ -148,6 +148,10 @@ flutter:
     # Anatomical muscle chart, front and back. CC BY 4.0 — credited on the
     # /licences screen, which is a condition of shipping it.
     - assets/anatomy/
+    # Bundled generic food table (C21): generic_foods_v1.json is built by
+    # scripts/nutrition/build_generic_foods.py from USDA FDC (CC0 1.0);
+    # generic_foods_ru.json holds own-authored Russian display names.
+    - assets/nutrition/
     # One still per clip, per body: the frame half a second in. Bundled rather
     # than hosted so the demo has something to show INSTANTLY and with no
     # network at all — the operator's report was that a clip loads in seconds

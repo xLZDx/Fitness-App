@@ -56000,3 +56000,11 @@ Decision (D-57, D-55): C18 is verified by pure-function tests that assert nothin
 ## 2026-10-15 - Commit: C12 server tests (manage)
 
 Decision: manageBodyScanData tests prove the paging contract (200 per call, whole-user prefix sweep only on the final delete-all page, applyRetention never sweeping) and that delete-all is not gated by the per-scan delete quota. Evidence: `npx jest src/__tests__/body_scan/manage.test.ts` in functions/ = 41 passed. Residual risk noted, not tested: exportLinks pages by takenAt millis, so two scans with an identical takenAt straddling a page boundary would skip one. Change record: core/changes/2026-10-15-body-scan-server-tests-manage.md.
+
+## 2026-10-15 - Commit: C21 generic foods table
+
+Decision (D-71, design 17.5/17.8): the generic food table is generated offline from USDA FDC Foundation and SR Legacy (CC0) by scripts/nutrition/build_generic_foods.py (2,590 rows committed); tags default restrictive (null animal/pescatarian, allergenCertain=false for mixed foods) and suggestions live in food_diary/data. Halal and kosher also hide land-animal meat because slaughter certification is not modelled. Russian names: 321 own-authored entries (below the ~400 target). Evidence: core/changes/2026-10-15-c21-generic-foods-table.md; verification not run (v4).
+
+## 2026-10-15 - Commit: C18 functional tests (review transaction and undo)
+
+Decision (D-57, D-55): C18 is verified by pure-function tests that assert nothing is written on every refusal path (already reviewed, no plan, stale planVersion, cooldown, drift cap, bounds) and that review plus plan change come from one result. Evidence: core/changes/2026-10-15-c18-tests.md.
