@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitness App: программа Body Scan + Nutrition Coach и Phase 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1d2327;--muted:#5b666d;--rule:#c9cfd3;--ok:#1a7f37;--warn:#9a5b00;--bad:#b3261e;--todo:#4a5b8c;--soft:#f0f2f3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14181b;--fg:#e4e8ea;--muted:#9aa5ab;--rule:#323b40;--ok:#4cc26b;--warn:#e0a13a;--bad:#ff8a80;--todo:#8fa5e6;--soft:#1d2327;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14181b;--fg:#e4e8ea;--muted:#9aa5ab;--rule:#323b40;--ok:#4cc26b;--warn:#e0a13a;--bad:#ff8a80;--todo:#8fa5e6;--soft:#1d2327;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,"Segoe UI",sans-serif;max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:16px;line-height:1.5}
+h1{font-size:1.6rem;margin:.2em 0 .3em;text-wrap:balance}
+h2{font-size:1.25rem;margin-top:2em;padding-top:.6em;border-top:2px solid var(--rule)}
+h3{font-size:1.02rem;margin-top:1.5em}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.9rem}
+th,td{border:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top;min-width:0}
+th{background:var(--soft)}
+.ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}.bad{color:var(--bad);font-weight:600}.todo{color:var(--todo);font-weight:600}
+.kpi{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.kpi div{flex:1 1 180px;border:1px solid var(--rule);padding:8px 10px;background:var(--soft)}
+.kpi b{display:block;font-size:1.3rem}
+.note{color:var(--muted);font-size:.88rem}
+ul{padding-left:1.2em}
+</style>
+</head>
+<body>
+<header><h1>Fitness App: программа Body Scan + Nutrition Coach и Phase 2</h1>
+<p>Ветка feature/body-scan-nutrition-coach, 15 октября 2026. Полный статус программы: Phase 1 (спринт Body Scan + Nutrition Coach) и Phase 2 (приоритетный бэклог мультиспорта, устройств и расширений). Источники: план спринта, техдизайн, бэклог Phase 2, записи изменений в core/changes, журнал решений.</p></header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ 9865066e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+<h2>0. Сводка</h2>
+<div class="kpi"><div><b>218</b>коммитов от базы 42d1b84</div><div><b>27 / 27</b>коммитов плана C01-C27 в ветке</div><div><b>539 / +96 160</b>файлов / добавленных строк</div><div><b>7</b>подтверждённых MAJOR из ревью, все исправлены</div><div><b>0 / 40</b>историй Phase 2 доведено до конца (21 частично в основе Phase 1)</div></div>
+<ul><li>Phase 1: весь код спринта закоммичен, ревью четырьмя специалистами проведено, найденные MAJOR и большинство MINOR исправлены. Остаются финальный полный повторный прогон тестов (идёт), ревью GPT-PM на точной голове, push и один PR.</li><li>Phase 1 не закрыта: PR не открыт, GPT-PM APPROVE не получен.</li><li>Phase 2: ничего не начато, кроме основы без интерфейса (модель активности, слияние дублей) внутри Phase 1. Работа требует ваших решений и внешнего доступа.</li><li>Включение облачных функций (скан по фото, ИИ-распознавание еды, штрихкод и поиск) заблокировано действиями оператора: IAM и закрытый бакет, секрет USDA, позиция Vertex по хранению данных, проверка текста privacy.html, реальный детектор лиц.</li></ul>
+<h2>PHASE 1. Спринт Body Scan + Nutrition Coach</h2>
+<p>Цель: еженедельный скан тела по трём позам, план питания с еженедельным пересмотром, сканирование еды (фото блюда, штрихкод, этикетка, поиск, дневник), онбординг, защитные ограничения и приватность, основа активности и мультиспорта, хук питания в программы тренировок. Вне спринта: сгенерированные изображения тела и публикация фото.</p>
+<h3>1.1 Гейты Phase 1</h3>
+<div class="tw"><table><tr><th>Гейт</th><th>Критерий</th><th>Статус</th><th>Доказательство / блокер</th></tr><tr><td>G-A Документация</td><td>Техдизайн, план спринта, карта покрытия тестами, однократное ревью документов</td><td><span class="ok">Готово</span></td><td>core/plans/BODY_SCAN_NUTRITION_*_2026-10-15.md; правки по ревью внесены</td></tr><tr><td>G-B Реализация</td><td>Коммиты C01-C27 с записью изменений в каждом</td><td><span class="ok">Готово</span></td><td>27 из 27 в ветке, запись в core/changes на каждый</td></tr><tr><td>G-C Функциональные тесты по эпикам</td><td>Тестовые агенты пишут и прогоняют полный набор после каждого эпика</td><td><span class="ok">Готово</span></td><td>Результаты по эпикам в разделе 1.3; все зелёные после исправлений продукта</td></tr><tr><td>G-D Ревью специалистов</td><td>Реальные агенты-ревьюеры, консенсус, исправление валидных находок</td><td><span class="ok">Готово</span></td><td>Проведены: база данных, flutter, silent-failure, безопасность. Не запускались отдельно: code-reviewer, product-ux, a11y по коду</td></tr><tr><td>G-E Исправления по ревью</td><td>Все валидные BLOCKER/MAJOR закрыты с регрессионными тестами</td><td><span class="ok">Готово</span></td><td>Коммиты 5488425c ... 9865066e; тестовые правки зелёные по файлам</td></tr><tr><td>G-F Финальный полный повторный прогон</td><td>После последнего исправления агенты прогоняют всё написанное ещё раз</td><td><span class="warn">Код готов, финальный прогон идёт</span></td><td>Три агента (сервер, мобильные группы 1 и 2) прогоняют файлы по одному на голове 9865066e</td></tr><tr><td>G-G Ревью GPT-PM</td><td>Один широкий состязательный проход на точной голове; тесты и консенсус ревью как доказательства</td><td><span class="todo">Ожидает</span></td><td>Зависит от G-F</td></tr><tr><td>G-H Push и один PR</td><td>Только после APPROVE на точной голове</td><td><span class="todo">Ожидает</span></td><td>Зависит от G-G</td></tr><tr><td>G-I Включение флагов (go-live)</td><td>IAM и бакет, секрет USDA, Vertex, privacy.html, детектор лиц</td><td><span class="bad">Заблокировано оператором</span></td><td>Действия оператора Q-4, Q-5, Q-6, Q-10 (раздел 1.6)</td></tr></table></div>
+<h3>1.2 Эпики и коммиты</h3>
+<div class="tw"><table><tr><th>Эпик</th><th>Содержание</th><th>Коммиты</th><th>Статус кода</th><th>Статус тестов</th></tr><tr><td>E0</td><td>Правила Firestore и Storage, индексы, флаги, release guard, квоты</td><td>C01-C04</td><td><span class="ok">Готово</span></td><td>13 файлов зелёные (jest 409, правила 547, storage 82, Dart 49)</td></tr><tr><td>E1</td><td>Чистая логика: энергетика, защитные ограничения, расчёт плана, недельный пересмотр, тренд скана, модель активности и слияние дублей, хук питания для тренировок</td><td>C05-C09</td><td><span class="ok">Готово</span></td><td>27 файлов, 1075 тестов зелёные</td></tr><tr><td>E2</td><td>Онбординг питания и поток «заполните профиль питания»</td><td>C10-C11</td><td><span class="ok">Готово</span></td><td>158 тестов зелёные; тест маршрута перепроверяется в финальном прогоне</td></tr><tr><td>E3</td><td>Скан тела: серверные функции, запись и очередь загрузки, поток и результат, история и приватность, напоминание и карточки входа</td><td>C12-C17</td><td><span class="ok">Готово</span></td><td>C12: 10 наборов 477 тестов; C13-C17 по файлам зелёные (в т.ч. 138, 110 тестов)</td></tr><tr><td>E4</td><td>Состояние плана и недельный пересмотр, экраны плана питания, журнал веса</td><td>C18-C19</td><td><span class="ok">Готово</span></td><td>C18: 10 файлов 333 теста; C19 зелёные</td></tr><tr><td>E5</td><td>Сканирование еды: функции (фото блюда, этикетка, штрихкод, поиск), таблица 2590 продуктов, слой дневника, экраны дневника, три экрана захвата</td><td>C20-C24</td><td><span class="ok">Готово</span></td><td>C20: 13 наборов 581 тест; C21: 68 и 77; C22: 246; C23 и C24 зелёные</td></tr><tr><td>E6</td><td>Приватность, удаление, экспорт, инвентарь данных, privacy.html</td><td>C25</td><td><span class="ok">Готово</span></td><td>Тесты зелёные (35, 208, 21); текст privacy.html черновик до Q-10</td></tr><tr><td>E7</td><td>Локализация EN и RU (605 ключей), контраст и доступность</td><td>C26</td><td><span class="ok">Готово</span></td><td>Тесты зелёные (в т.ч. sweep целей касания, plurals); контрастный тест перепроверяется</td></tr><tr><td>E8</td><td>Документы: CODEMAP, INDEX, CURRENT_STATE, журнал решений</td><td>C27</td><td><span class="ok">Готово</span></td><td>Документы не тестируются; финальные счётчики добавятся после прогона G-F</td></tr><tr><td>Фикс-коммиты</td><td>Исправления по четырём ревью и тестовые правки</td><td>5488425c ... 9865066e (около 14)</td><td><span class="ok">Готово</span></td><td>Серверные 17 файлов зелёные, food/l10n/a11y около 45 файлов зелёные, body_scan 136 файлов зелёные после правок</td></tr></table></div>
+<h3>1.3 Что делает продукт сегодня</h3>
+<ul><li>Скан тела: оценка процента жира предварительная (формула Деуренберга: рост, вес, возраст, пол), диапазон ±5 пунктов, работает на устройстве, фото в расчёт не входят. Облачный путь выключен флагом.</li><li>План питания: диапазон калорий, диапазоны макро, минимум белка, цель по шагам 6 000-12 000, еженедельный пересмотр с объяснением и откатом на 7 дней. Исключённые группы получают нейтральное «обратитесь к специалисту» без чисел.</li><li>Дневник питания по приёмам пищи: поиск, быстрый ввод, сохранённые продукты; фото блюда, штрихкод, этикетка и описание текстом через серверные функции, выключенные флагами.</li><li>Приватность: размытие лиц с отказом при сбое, удаление EXIF и GPS из загрузок, удаление по запросу, постраничный экспорт, очистка по сроку хранения, очистка при удалении аккаунта.</li><li>Основа мультиспорта (без экранов): модель активности, типы спорта, источники и слияние дублей. Хук питания для программ тренировок: подключён в programme_builder с нейтральным значением по умолчанию.</li></ul>
+<h3>1.4 Ревью и находки</h3>
+<div class="tw"><table><tr><th>Находка</th><th>Серьёзность</th><th>Суть</th><th>Статус</th></tr><tr><td>P-1</td><td>MAJOR</td><td>Очистка доверяла любому пути body_scans; поддельные вложенные документы могли остановить удаление по сроку</td><td><span class="ok">Готово (5488425c)</span></td></tr><tr><td>P-2 / DB-F2</td><td>MAJOR</td><td>Откат через снятие бакета и kill switch отключали все пути удаления</td><td><span class="ok">Готово (отдельный переключатель, runbook переписан)</span></td></tr><tr><td>DB-F1 / P-3</td><td>MAJOR</td><td>Неудавшиеся сканы никогда не очищались</td><td><span class="ok">Готово</span></td></tr><tr><td>SF-F1</td><td>MAJOR</td><td>Офлайн-удаление незавершённого скана не останавливало его, он загружался заново</td><td><span class="ok">Готово (плюс регрессия найдена тестом и исправлена)</span></td></tr><tr><td>SF-F2</td><td>MAJOR</td><td>Загружающийся профиль приводил к вечному subject-missing</td><td><span class="ok">Готово</span></td></tr><tr><td>SF-F3</td><td>MAJOR</td><td>Таймер повтора терялся при занятом runner</td><td><span class="ok">Готово</span></td></tr><tr><td>SF-F4</td><td>MAJOR</td><td>deletePhotos сообщал об удалении, пока облачная копия оставалась</td><td><span class="ok">Готово</span></td></tr><tr><td>~30 MINOR</td><td>MINOR</td><td>Повторная проверка согласия, лимиты попыток и переиздания, курсор экспорта, логи без uid, ошибки штрихкода, день дневника после полуночи, degraded-записи и др.</td><td><span class="ok">Готово (большинство исправлено)</span></td></tr><tr><td>SF-F13</td><td>MINOR</td><td>Ошибка записи кэша якобы проваливала поиск</td><td><span class="ok">Готово (находка неверна, код уже глушит ошибки)</span></td></tr><tr><td>FL-F4, FL-F5, FL-F7, P-6</td><td>MINOR</td><td>Поле штрихкода вне экрана при клавиатуре; триггер возобновления на Progress; разбор таблицы продуктов в UI-изоляте; граница позднего PUT</td><td><span class="todo">Ожидает (в бэклоге)</span></td></tr></table></div>
+<h3>1.5 Дефекты, найденные тестами и исправленные</h3>
+<ul><li>Правила Firestore: запись food_entries была невозможна из-за лимита выражений.</li><li>Правила: отзыв cloudConsent отклонялся, хотя дизайн его допускает.</li><li>EXIF сохранялся в размытых и подготовленных JPEG (два места).</li><li>Отмена локального скана порождала удаление на сервере без документа; кнопка Delete на карточке неудавшегося скана ничего не делала.</li><li>Кириллические единицы порций не разбирались; баклажан помечался аллергеном яйца; солодовый напиток не помечался алкоголем.</li><li>Слежение за днём дневника после полуночи не срабатывало (ленивое поле); строка уверенности в карточке результата переполнялась при масштабе 2× и по-русски.</li><li>Прочее: ошибки компиляции вслепую написанного кода (исправлены), ICU-символ # в ARB, дублирование gen:gen: в ссылках на еду, ошибки в векторах карты покрытия.</li></ul>
+<h3>1.6 Блокеры и решения оператора</h3>
+<div class="tw"><table><tr><th>ID</th><th>Что нужно</th><th>Что заблокировано</th><th>Статус</th></tr><tr><td>Q-4</td><td>Контакт для User-Agent Open Food Facts и бесплатный ключ USDA FDC как секрет с доступом для fn-data и fn-ai-runtime</td><td>Штрихкод и серверный поиск (FOOD_LOOKUP)</td><td><span class="bad">Заблокировано оператором</span></td></tr><tr><td>Q-5</td><td>Закрытый бакет, IAM, роль objectAdmin для fn-bodyscan и fn-account-delete, secretAccessor на kill switch</td><td>Облачный путь фото (BODY_SCAN_CLOUD)</td><td><span class="bad">Заблокировано оператором</span></td></tr><tr><td>Q-6</td><td>Позиция Vertex AI по хранению данных для текста приватности</td><td>ИИ-распознавание еды (FOOD_AI)</td><td><span class="bad">Заблокировано оператором</span></td></tr><tr><td>Q-10</td><td>Проверка формулировок public/privacy.html</td><td>Включение любого флага</td><td><span class="bad">Заблокировано оператором</span></td></tr><tr><td>Детектор лиц</td><td>Реальный адаптер проверки лица после размытия (сейчас всегда отказ)</td><td>BODY_SCAN_CLOUD</td><td><span class="bad">Заблокировано оператором</span></td></tr><tr><td>Решения по продукту</td><td>Гейт Supporter при предварительной оценке; пороги целевого процента жира; реальные фото из зала и названия тренажёров</td><td>Не блокируют сборку по умолчанию</td><td><span class="todo">Ожидает</span></td></tr><tr><td>Проверки на устройстве</td><td>Камера, TalkBack, mobile_scanner 6.x, доставка уведомлений, iOS</td><td>Не запускались (NOT_RUN), нужен телефон</td><td><span class="todo">Ожидает</span></td></tr></table></div>
+<h3>1.7 Известные ограничения</h3>
+<ul><li>Оценка процента жира не использует фото; реального провайдера нет (Q-1 по умолчанию).</li><li>Параметр /body-scan?scanId игнорируется страницей потока; миниатюра блюда хранится, но не показывается; нажатие на уведомление только открывает приложение.</li><li>Репозитории Firestore не покрыты тестами эмулятора, только правила. Живые Vertex, Open Food Facts и USDA не вызывались.</li><li>Не запускались полный набор, analyze, lint, build и CI (правило оператора).</li><li>Лишний каталог mobile/test/_probe/ в рабочем дереве оставлен вам для удаления.</li></ul>
+<h2>PHASE 2. Мультиспорт, устройства, расширения</h2>
+<p>Статус: приоритетный бэклог, не начат и не запланирован по срокам (core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md). Оценки в человеко-неделях (чн) ориентировочные, без ожидания одобрений партнёров и времени на устройствах. Всё, кроме основы без интерфейса внутри Phase 1, не реализовано.</p>
+<h3>2.1 Эпики Phase 2</h3>
+<div class="tw"><table><tr><th>Эпик</th><th>Содержание</th><th>Статус</th><th>Зависит от / блокер</th></tr><tr><td>E1</td><td>Укрепление основы активности: сохранение сессий, правила, срок хранения, удаление и экспорт, экспорт FIT/GPX</td><td><span class="warn">Частично (чистая модель и слияние есть)</span></td><td>Основа Phase 1</td></tr><tr><td>E2</td><td>Сессии из Health Connect и HealthKit через слой HealthService</td><td><span class="todo">Не начато</span></td><td>E1; для iOS нужен iOS-устройство</td></tr><tr><td>E3</td><td>Запись бега, ходьбы, велосипеда на телефоне: GPS, пауза, карта, устойчивость к закрытию</td><td><span class="todo">Не начато</span></td><td>E1; решение по тайлам карты; замеры на вашем телефоне</td></tr><tr><td>E4</td><td>Плавание: бассейн (длины, SWOLF) и открытая вода</td><td><span class="todo">Не начато</span></td><td>E1</td></tr><tr><td>E5</td><td>BLE-датчики: пульс, мощность, каденс, беговые датчики, FTMS</td><td><span class="todo">Не начато</span></td><td>E1; BLE на реальных датчиках</td></tr><tr><td>E6</td><td>Приложения для часов: Wear OS, затем Apple Watch</td><td><span class="todo">Не начато</span></td><td>E2/E5; не решена подпись релиза; Apple Watch требует iOS и программу разработчика</td></tr><tr><td>E7</td><td>Облачные адаптеры: Strava, Polar, Withings, Garmin, Wahoo, Google Health, Suunto, Oura, WHOOP, TrainingPeaks</td><td><span class="todo">Не начато</span></td><td>Серверный OAuth-сейф; одобрение партнёров (Garmin, Suunto, TrainingPeaks); решение O-4</td></tr><tr><td>E8</td><td>Слияние дублей в продакшене: экран конфликтов, приоритеты источников, отмена</td><td><span class="todo">Не начато</span></td><td>E2, корпус реальных тренировок оператора</td></tr><tr><td>E9</td><td>Питание-осведомлённые программы (полная версия): периодизация, автоматические разгрузки, углеводы в тренировочные дни</td><td><span class="warn">Частично (хук и правила в Phase 1)</span></td><td>Клиническое принятие остаётся решением оператора</td></tr><tr><td>E10</td><td>Конкурентное и экосистемное исследование (только легальные методы)</td><td><span class="todo">Не начато</span></td><td>Список приложений нужно подтвердить с оператором</td></tr><tr><td>E11</td><td>Приватность, разрешения, хранение данных активности</td><td><span class="todo">Не начато</span></td><td>Идёт вместе с каждым источником</td></tr><tr><td>E12</td><td>Экраны спорта и планы бега и велосипеда</td><td><span class="todo">Не начато</span></td><td>E3, проверка на эмуляторе и на вашем телефоне</td></tr></table></div>
+<h3>2.2 Интеграции устройств по приоритету</h3>
+<div class="tw"><table><tr><th>№</th><th>Интеграция</th><th>чн</th><th>Статус</th><th>Риск / блокер</th></tr><tr><td>1</td><td>Health Connect + HealthKit sessions</td><td>4-6</td><td><span class="todo">Не начато</span></td><td>Богатство данных зависит от записавшего приложения; iOS без устройства не проверить</td></tr><tr><td>2</td><td>FIT / GPX / TCX import</td><td>2-3</td><td><span class="todo">Не начато</span></td><td>Лицензия FIT SDK проверить</td></tr><tr><td>3</td><td>BLE Heart Rate (0x180D)</td><td>2</td><td><span class="todo">Не начато</span></td><td>Особенности BLE в ОС</td></tr><tr><td>4</td><td>BLE Cycling Power / CSC</td><td>3</td><td><span class="todo">Не начато</span></td><td>Калибровка, переполнение счётчиков</td></tr><tr><td>5</td><td>BLE Running Speed &amp; Cadence</td><td>1</td><td><span class="todo">Не начато</span></td><td>-</td></tr><tr><td>6</td><td>BLE FTMS</td><td>3</td><td><span class="todo">Не начато</span></td><td>Сначала только чтение</td></tr><tr><td>7</td><td>Wear OS companion</td><td>6-8</td><td><span class="todo">Не начато</span></td><td>Подпись релиза не решена</td></tr><tr><td>8</td><td>Strava API</td><td>3</td><td><span class="todo">Не начато</span></td><td>Условия API, проверка приложения</td></tr><tr><td>9</td><td>Polar AccessLink</td><td>2-3</td><td><span class="todo">Не начато</span></td><td>Серверный OAuth</td></tr><tr><td>10</td><td>Withings</td><td>2</td><td><span class="todo">Не начато</span></td><td>Доступ партнёра</td></tr><tr><td>11</td><td>Garmin Health / Activity API</td><td>4+</td><td><span class="bad">Заблокировано оператором (одобрение партнёра)</span></td><td>Сроки одобрения</td></tr><tr><td>12</td><td>Wahoo Cloud</td><td>2-3</td><td><span class="todo">Не начато</span></td><td>Доступ партнёра</td></tr><tr><td>13</td><td>Google Health API (вместо Fitbit)</td><td>3</td><td><span class="bad">Заблокировано оператором (решение O-4)</span></td><td>Fitbit Web API отключается 2026-10-30; повторное согласие пользователей</td></tr><tr><td>14</td><td>Suunto API</td><td>3</td><td><span class="bad">Заблокировано оператором (одобрение партнёра)</span></td><td>Одобрение</td></tr><tr><td>15</td><td>Apple Watch companion</td><td>8+</td><td><span class="bad">Заблокировано оператором (нужен iOS)</span></td><td>iOS-устройство и программа разработчика</td></tr><tr><td>16-18</td><td>Oura, WHOOP, TrainingPeaks</td><td>2 / 2 / 3</td><td><span class="todo">Не начато</span></td><td>Членство и ограничения не проверены; TrainingPeaks только для одобренных</td></tr></table></div>
+<h3>2.3 Истории исследовательского пакета (40)</h3>
+<div class="tw"><table><tr><th>Группа</th><th>Истории</th><th>Статус</th><th>Комментарий</th></tr><tr><td>Частично или полностью закрыты спринтом (21)</td><td>P2-000, 001, 002, 006-019, 034-037</td><td><span class="warn">Код готов, финальный прогон идёт (тесты в финальном прогоне)</span></td><td>Хартия, инвентаризация, онтология, архитектура коннекторов, согласия, метрики, навигация, права на данные питания, дневник, штрихкод, фото еды, порции, режимы владения целью, недельный пересмотр, три позы, тренд, слияние дублей, гейты безопасности, доступность, флаги</td></tr><tr><td>Движки спорта (5)</td><td>P2-022 ... 026</td><td><span class="todo">Не начато</span></td><td>Бег, велосипед, ходьба и шаги, плавание, единая нагрузка по видам спорта</td></tr><tr><td>Устройства и импорт (6)</td><td>P2-027 ... 033</td><td><span class="todo">Не начато</span></td><td>Health Connect по типам данных, Wear OS, FIT/GPX/TCX, BLE, облачные адаптеры, Google Health</td></tr><tr><td>Исследования и оценки (6)</td><td>P2-003, 004, 005, 020, 021, 038</td><td><span class="todo">Не начато</span></td><td>Каталог конкурентов, статический аудит открытых приложений, API вендоров, ML для процента жира, Future You (отложено, по умолчанию выключено, без несовершеннолетних), реестр видов спорта</td></tr><tr><td>Вне программы (1)</td><td>P2-039</td><td><span class="todo">Ожидает</span></td><td>Распознавание тренажёров 90%+ идёт отдельным треком с запечатанным тестовым набором</td></tr><tr><td>Новые истории</td><td>X-04, X-15, X-20, X-21, X-26, X-37, X-38</td><td><span class="todo">Не начато</span></td><td>Аудит открытых приложений, оценка порций на весах, build-vs-buy процента жира, Future You, единая нагрузка, поэтапный запуск, реестр видов спорта</td></tr></table></div>
+<h3>2.4 Блокеры и решения Phase 2</h3>
+<ul><li>Нужно ваше подтверждение списка приложений для исследования и сроков (E10); решения O-2...O-11 из бэклога (в том числе O-4 по Google Health).</li><li>Внешние одобрения: Garmin, Suunto, TrainingPeaks и другие партнёрские программы; условия API Strava и других вендоров.</li><li>Нужен iOS-устройство и программа разработчика Apple для HealthKit и Apple Watch; для Wear OS нужно решить подпись релиза.</li><li>Замеры GPS, батареи и слияния дублей требуют вашего телефона и корпуса реальных тренировок.</li><li>Клиническое принятие правил питания и тренировок остаётся за оператором; обратная разработка чужих приложений отклонена (D-35).</li></ul>
+<h2>3. Прочие потоки (из прежних сессий, не перепроверялись сейчас)</h2>
+<ul><li>Ветка sprint/coach-form-fixes-2026-10: гейт GPT-PM и PR ожидают решения.</li><li>Ожидают оператора: проверка на телефоне, демонстрационный ролик приседаний, разрешение на очистку reports/, канал оповещений, камера видима по умолчанию.</li><li>Распознавание тренажёров: корпус и ключи вне git; данные из fails.jpg и реальные фото из зала требуются от вас.</li></ul>
+<h2>4. Дальше</h2>
+<ul><li>Дождаться отчётов трёх тестовых агентов финального прогона, исправить найденное, обновить счётчики в CURRENT_STATE_BODY_SCAN_NUTRITION.md.</li><li>Запросить ревью GPT-PM на точной голове с результатами тестов и консенсусом ревью; после APPROVE сделать push и открыть один PR.</li><li>Для запуска Phase 2: подтвердить приоритеты и список исследования (E10), решить O-4, выбрать первую интеграцию (по бэклогу это сессии Health Connect и импорт FIT/GPX/TCX).</li></ul>
+<p class="note">Не проверено в этом отчёте: числа тестов взяты из записей агентов и core/changes; финальный прогон на голове 9865066e ещё не завершён. Готовность Phase 2 оценена по документам бэклога, а не по коду.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
