@@ -56310,3 +56310,5 @@ Decision: Panel tests prove four rows with icon+text per state, per-row hint pro
 
 Decision: write actions are proven through the real providers over the in-memory repositories; the data-notice gate stays a UI contract and is proven in the sheet/page tests. Evidence: core/changes/2026-10-15-c23-tests.md (diary_providers_test 34 passed).
 Progress: nutrition_sources tests added; product fix: Cyrillic serving units in OFF serving text.
+
+Evidence addendum (C17 tests): entry card tests added; scan_reminder_weekly 33, editor 22, settings 14, entry card 35 passed.
