@@ -118,6 +118,7 @@ async function main() {
     runCommand,
     readFile,
     now: () => Date.now(),
+    env: process.env,
   });
 
   console.log(`\nMVP1.G4 Step 9 -- AI Gateway release guard (${args.project})`);

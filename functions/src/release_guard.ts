@@ -249,6 +249,10 @@ export interface ReleaseGuardDeps {
   runCommand: CommandRunner;
   readFile: FileReader;
   now: () => number;
+  /** Process environment; only consulted to see whether `BODY_SCAN_BUCKET` is
+   * configured (C12 flag-gated check). Optional so older callers/tests that
+   * do not pass it behave exactly as before (bucket check skipped). */
+  env?: Record<string, string | undefined>;
 }
 
 /** The exact 4 AI Gateway callables this gate covers -- see `abuse_guard.ts`'s own QUOTAS map. */
@@ -317,6 +321,11 @@ const SCALING_SOURCE_FILE = "functions/src/scaling.ts";
 interface ReleaseEvidence {
   step8KillSwitch?: { status?: unknown };
   s23PlayIntegrityProof?: { status?: unknown };
+  /** Operator acknowledgement that the runbook canary (write + deleteFiles as
+   * fn-bodyscan and as fn-account-delete) passed; see
+   * `runbooks/body_scan_bucket.md` section 4. Only read when BODY_SCAN_BUCKET
+   * is configured. */
+  bodyScanBucketCanary?: { status?: unknown };
 }
 
 function tryParseJson<T>(text: string): T | undefined {
@@ -1106,6 +1115,89 @@ async function checkSourceProvenance(deps: ReleaseGuardDeps): Promise<CheckResul
   return { name, status: "OK", detail: `clean tree (scoped to ${PROVENANCE_RELEVANT_PATHS.join(", ")}) at ${head.stdout.trim()}` };
 }
 
+const BODY_SCAN_BUCKET_NAME = /^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$/;
+const BODY_SCAN_RUNTIME_SA_LOCAL = "fn-bodyscan";
+const ACCOUNT_DELETE_SA_LOCAL = "fn-account-delete";
+
+/** The configured private body-scan bucket (same validity rule as
+ * `body_scan/flags.ts`), from the process env first, then from the
+ * codebase-wide `functions/.env.<project>` the deploy actually reads. */
+async function configuredBodyScanBucket(deps: ReleaseGuardDeps): Promise<string | undefined> {
+  const fromEnv = deps.env?.["BODY_SCAN_BUCKET"]?.trim();
+  if (fromEnv) return BODY_SCAN_BUCKET_NAME.test(fromEnv) ? fromEnv : undefined;
+  const dotenv = await deps.readFile(`functions/.env.${deps.project}`);
+  if (dotenv === null) return undefined;
+  for (const line of dotenv.split(/\r?\n/)) {
+    const m = /^\s*BODY_SCAN_BUCKET\s*=\s*(.*?)\s*$/.exec(line);
+    if (!m) continue;
+    const value = m[1].replace(/^(["'])(.*)\1$/, "$2").trim();
+    if (BODY_SCAN_BUCKET_NAME.test(value)) return value;
+  }
+  return undefined;
+}
+
+/**
+ * C12 / D-60 / SD-6 / SD-11: flag-gated. Runs only when `BODY_SCAN_BUCKET` is
+ * configured -- the body-scan callables run as `fn-bodyscan`, outside the AI
+ * guard set (D-63), so with no bucket there is nothing to prove and the guard
+ * emits no extra check. With a bucket, the release needs: the bucket exists,
+ * public access prevention enforced, uniform access on, `fn-bodyscan` and
+ * `fn-account-delete` both hold objectAdmin on it, and the committed evidence
+ * records the runbook canary as closed ("configured but IAM-denied" would make
+ * account deletion fail for every user).
+ */
+async function checkBodyScanBucket(
+  deps: ReleaseGuardDeps,
+  bucket: string,
+  evidence: ReleaseEvidence | undefined,
+): Promise<CheckResult> {
+  const name = "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged";
+  const described = await runGcloudJson<Record<string, unknown>>(deps, [
+    "storage",
+    "buckets",
+    "describe",
+    `gs://${bucket}`,
+    `--project=${deps.project}`,
+  ]);
+  if ("error" in described) return { name, status: "UNAVAILABLE", detail: `bucket describe: ${described.error}` };
+  const info = described.value;
+  const iamConfig = (info["iamConfiguration"] ?? {}) as {
+    publicAccessPrevention?: unknown;
+    uniformBucketLevelAccess?: { enabled?: unknown };
+  };
+  const pap = info["public_access_prevention"] ?? iamConfig.publicAccessPrevention;
+  const ubla = info["uniform_bucket_level_access"] ?? iamConfig.uniformBucketLevelAccess?.enabled;
+  const problems: string[] = [];
+  if (pap !== "enforced") problems.push(`public access prevention is ${JSON.stringify(pap)}, expected "enforced"`);
+  if (ubla !== true) problems.push("uniform bucket-level access is not enabled");
+
+  const policy = await runGcloudJson<IamPolicy>(deps, [
+    "storage",
+    "buckets",
+    "get-iam-policy",
+    `gs://${bucket}`,
+    `--project=${deps.project}`,
+  ]);
+  if ("error" in policy) return { name, status: "UNAVAILABLE", detail: `bucket IAM policy: ${policy.error}` };
+  const bindings = policy.value.bindings ?? [];
+  for (const m of bindings.flatMap((b) => b.members)) {
+    if (m === "allUsers" || m === "allAuthenticatedUsers") problems.push(`public principal ${m} is bound on the bucket`);
+  }
+  for (const local of [BODY_SCAN_RUNTIME_SA_LOCAL, ACCOUNT_DELETE_SA_LOCAL]) {
+    const member = `serviceAccount:${local}@${deps.project}.iam.gserviceaccount.com`;
+    const hasAdmin = bindings.some((b) => b.role === "roles/storage.objectAdmin" && b.members.includes(member));
+    if (!hasAdmin) problems.push(`${local} lacks roles/storage.objectAdmin on the bucket`);
+  }
+
+  if (evidence === undefined) {
+    problems.push(`${RELEASE_EVIDENCE_PATH} missing or unparseable (canary acknowledgement unreadable)`);
+  } else if (evidence.bodyScanBucketCanary?.status !== "closed") {
+    problems.push(`bodyScanBucketCanary.status = ${JSON.stringify(evidence.bodyScanBucketCanary?.status)}, expected "closed" (runbooks/body_scan_bucket.md section 4)`);
+  }
+  if (problems.length > 0) return { name, status: "FAILED", detail: problems.join("; ") };
+  return { name, status: "OK", detail: `bucket ${bucket}: private, uniform access, fn-bodyscan and fn-account-delete objectAdmin, canary closed` };
+}
+
 export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGuardResult> {
   const evidence = await loadEvidence(deps);
   const describedFunctions = await describeAiFunctions(deps);
@@ -1129,6 +1221,8 @@ export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGu
   checks.push(await checkAiObservability(deps));
   checks.push(await checkS23Gate(deps, evidence));
   checks.push(await checkSourceProvenance(deps));
+  const bodyScanBucket = await configuredBodyScanBucket(deps);
+  if (bodyScanBucket !== undefined) checks.push(await checkBodyScanBucket(deps, bodyScanBucket, evidence));
 
   const verdict: Verdict = checks.every((c) => c.status === "OK") ? "PASS" : "BLOCK";
   return { verdict, generatedAt: new Date(deps.now()).toISOString(), checks };
