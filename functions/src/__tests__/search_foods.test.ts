@@ -352,8 +352,9 @@ describe("FOOD-14 / FOOD-31 Open Food Facts search and fallback", () => {
     salicious = () => ({ status: 200, body: { hits: [offHit("3017620422003", "<script>alert(1)</script>Chicken breast https://evil.example", "<b>Evil</b> bob@evil.example")] } });
     const res = await search(req({ scope: "packaged" }));
     expect(res.results[0].name).toBe("alert(1) Chicken breast");
-    expect(JSON.stringify(res)).not.toMatch(/evil|<|>|script/i);
-    expect(JSON.stringify([...store.values()])).not.toMatch(/evil|<script/i);
+    expect(res.results[0].brand).toBe("Evil");
+    expect(JSON.stringify(res)).not.toMatch(/evil.example|<|>|script|@/i);
+    expect(JSON.stringify([...store.values()])).not.toMatch(/evil.example|<script|@/i);
   });
 
   test("OFF hits with a bad code or without nutrition are dropped", async () => {

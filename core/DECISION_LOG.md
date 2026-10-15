@@ -56227,3 +56227,4 @@ Progress: T109 search_foods tests added.
 ## 2026-10-15 - Commit: C17 functional tests (test-engineer pass)
 
 Decision: C17 weekly reminder, editor, settings field and entry cards are covered by focused Dart tests using provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c17-tests.md`.
+Progress: T109 hostile-name fixture corrected.
