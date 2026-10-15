@@ -342,6 +342,105 @@ describe("paging (200 scans per call, document-id order, cursor)", () => {
   });
 });
 
+const FENCE_PREFIX = "body_scan_purge_state/delete_fence_";
+const fenceKeys = (): string[] => [...store.keys()].filter((k) => k.startsWith(FENCE_PREFIX));
+
+describe("bulk-delete fence and straggler pass (a scan created behind the cursor)", () => {
+  test("page 1 raises a 15 min fence (uid-free id), a continuation refreshes it, the final page clears it", async () => {
+    for (let i = 1; i <= 250; i++) seedStored(sid(i), now - i * HOUR, {}, false);
+
+    const first = await run({ action: "deleteAllScans" });
+    expect(first.nextCursor).toBe(sid(200));
+    expect(fenceKeys()).toHaveLength(1);
+    expect(fenceKeys()[0]).not.toContain(UID);
+    expect(store.get(fenceKeys()[0])).toEqual({ startedAtMs: now, activeUntilMs: now + 15 * 60 * 1000, action: "deleteAllScans" });
+
+    now += 5 * 60 * 1000;
+    await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    expect(fenceKeys()).toEqual([]);
+  });
+
+  test("a continuation page keeps the original startedAtMs and extends activeUntilMs (expiry bound is always now + 15 min)", async () => {
+    for (let i = 1; i <= 450; i++) seedStored(sid(i), now - i * HOUR, { photosState: "deleted" }, false);
+    const first = await run({ action: "deleteAllPhotos" });
+    const startedAt = now;
+    now += 10 * 60 * 1000;
+    const second = await run({ action: "deleteAllPhotos", cursor: first.nextCursor });
+    expect(second.nextCursor).toBe(sid(400));
+    expect(store.get(fenceKeys()[0])).toEqual({ startedAtMs: startedAt, activeUntilMs: now + 15 * 60 * 1000, action: "deleteAllPhotos" });
+  });
+
+  test("applyRetention and exportLinks never touch the fence", async () => {
+    seedStored("scan_one_1", now - DAY);
+    await run({ action: "applyRetention", retentionDays: 30 });
+    await run({ action: "exportLinks" });
+    expect(fenceKeys()).toEqual([]);
+  });
+
+  test("(a) deleteAllScans: a scan created with an id BEFORE the cursor between page 1 and the final page is still tombstoned", async () => {
+    for (let i = 1; i <= 250; i++) seedStored(sid(i), now - i * HOUR, {}, false);
+    const first = await run({ action: "deleteAllScans" });
+    expect(first.nextCursor).toBe(sid(200));
+
+    // Created after page 1 started, id sorts before the cursor: the id-ordered walk never visits it.
+    now += 60 * 1000;
+    seedScan(UID, "scan_0000", { schema: 1, createdAt: ts(now), takenAt: ts(now), status: "pending", photosState: "awaiting_upload", weightKg: 70, purgeAttempts: 0 });
+    putPhotos(UID, "scan_0000");
+
+    const second = await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    expect(second.processed).toBe(51); // 50 on the walk + 1 straggler
+    expect(second.nextCursor).toBeUndefined();
+    const straggler = scanDoc(UID, "scan_0000")!;
+    expect(straggler.status).toBe("cancelled");
+    expect(straggler.photosState).toBe("deleted");
+    expect("weightKg" in straggler).toBe(false);
+    expect(objectKeys()).toEqual([]);
+    expect(fenceKeys()).toEqual([]);
+  });
+
+  test("(a) deleteAllPhotos: the same straggler gets its photos deleted", async () => {
+    for (let i = 1; i <= 250; i++) seedStored(sid(i), now - i * HOUR, { photosState: "deleted" }, false);
+    const first = await run({ action: "deleteAllPhotos" });
+    now += 60 * 1000;
+    seedStored("scan_0000", now, { createdAt: ts(now) });
+    expect(objectKeys(scanPrefix("scan_0000"))).toHaveLength(3);
+
+    const second = await run({ action: "deleteAllPhotos", cursor: first.nextCursor });
+    expect(second.processed).toBe(51);
+    expect(scanDoc(UID, "scan_0000")!.photosState).toBe("deleted");
+    expect(scanDoc(UID, "scan_0000")!.status).toBe("done"); // photos only: the scan stays
+    expect(objectKeys()).toEqual([]);
+  });
+
+  test("a delete-all with nothing created after the walk adds no straggler work", async () => {
+    seedStored("scan_one_1", now - 2 * DAY);
+    const res = await run({ action: "deleteAllScans" });
+    expect(res.processed).toBe(1);
+  });
+
+  test("a resumed walk whose fence lapsed re-checks every scan (window start 0), so an old straggler is still found", async () => {
+    for (let i = 1; i <= 250; i++) seedStored(sid(i), now - i * HOUR, {}, false);
+    const first = await run({ action: "deleteAllScans" });
+    now += 40 * 60 * 1000; // past the 15 min fence
+    seedScan(UID, "scan_0000", { schema: 1, createdAt: ts(now - 30 * 60 * 1000), status: "pending", photosState: "awaiting_upload", purgeAttempts: 0 });
+    const second = await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    expect(second.processed).toBe(51);
+    expect(scanDoc(UID, "scan_0000")!.status).toBe("cancelled");
+  });
+
+  test("stragglers still pending after the last pass -> aborted delete-incomplete and the fence is kept (never a silent done)", async () => {
+    seedStored("scan_one_1", now - DAY, { createdAt: ts(now) });
+    // A document that keeps coming back: every update re-opens it.
+    fx.afterCommit = (paths) => {
+      if (paths.some((p) => p.endsWith("scan_one_1"))) {
+        store.set(`users/${UID}/body_scans/scan_one_1`, { ...store.get(`users/${UID}/body_scans/scan_one_1`)!, status: "pending" });
+      }
+    };
+    await expectHttpsError(run({ action: "deleteAllScans" }), "aborted", "delete-incomplete");
+    expect(fenceKeys()).toHaveLength(1);
+  });
+});
+
 describe("exportLinks", () => {
   test("1-hour V4 READ URLs for stored photos only, newest scan first, poses front/side/back, exact link shape", async () => {
     seedStored("scan_old_1", now - 3 * DAY);

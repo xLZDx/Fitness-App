@@ -32,6 +32,8 @@ import {
   authorizeBodyScanCall,
   consentVersionOf,
   db,
+  deleteFenceActive,
+  deleteFenceRef,
   errorSlug,
   logBodyScan,
   millisOf,
@@ -217,7 +219,7 @@ async function signUploads(uid: string, scanId: string, nowMs: number): Promise<
   }
 }
 
-type Decision = "created" | "reset" | "reissue" | "done" | "cancelled" | "capped";
+type Decision = "created" | "reset" | "reissue" | "done" | "cancelled" | "capped" | "deleting";
 
 /** Signed-URL reissues one scan may get (P-5); a fresh create/reset starts at 0. */
 export const MAX_UPLOAD_REISSUES = 5;
@@ -287,6 +289,14 @@ export const createBodyScan = onCall(BODY_SCAN, async (request) => {
     decision = await db().runTransaction(async (tx): Promise<Decision> => {
       const snap = await tx.get(ref);
       const status: unknown = snap.exists ? snap.data()?.status : undefined;
+      // A bulk delete-all is walking this user's scans: no new scan work may
+      // start (a scan created behind its cursor would survive it). Terminal
+      // replays (`done`, `cancelled`) are unaffected. The fence is read in the
+      // transaction, so a fence written after this read forces a retry.
+      if (status !== "done" && status !== "cancelled") {
+        const fence = await tx.get(deleteFenceRef(uid));
+        if (deleteFenceActive(fence.data(), Date.now())) return "deleting";
+      }
       const fresh = {
         status: "pending",
         pendingExpiresAt: tsFromMillis(started + PENDING_TTL_MS),
@@ -343,6 +353,10 @@ export const createBodyScan = onCall(BODY_SCAN, async (request) => {
   if (decision === "cancelled") {
     if (needsCharge) await refundQuota(uid, "bodyScanCreate", 1);
     throw new HttpsError("failed-precondition", "scan-cancelled");
+  }
+  if (decision === "deleting") {
+    if (needsCharge) await refundQuota(uid, "bodyScanCreate", 1);
+    throw new HttpsError("failed-precondition", "delete-in-progress");
   }
   if (decision === "capped") {
     if (needsCharge) await refundQuota(uid, "bodyScanCreate", 1);

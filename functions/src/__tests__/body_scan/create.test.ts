@@ -16,6 +16,7 @@ jest.mock("@google-cloud/secret-manager", () => require("./fakes").secretManager
 import * as logger from "firebase-functions/logger";
 import { createBodyScan } from "../../body_scan/create";
 import { __setTestEstimatorForTests } from "../../body_scan/estimator";
+import { deleteFenceRef } from "../../body_scan/shared";
 import { __resetAiGatewayControlCacheForTests } from "../../abuse_guard";
 import {
   BUCKET, DAY, FakePhotoEstimator, MIN, T0, UID, SCAN,
@@ -613,5 +614,69 @@ describe("ordering", () => {
     const firstSign = timeline.findIndex((t) => t.startsWith("gcs:sign:"));
     expect(created).toBeGreaterThanOrEqual(0);
     expect(firstSign).toBeGreaterThan(created);
+  });
+});
+
+describe("bulk-delete fence (delete-all in progress)", () => {
+  // The real id is a uid hash and the fake store keys on the exact path, so seed through the real helper.
+  const fencePath = (uid: string): string => deleteFenceRef(uid).path;
+  const raise = (activeUntilMs: number): void => {
+    store.set(fencePath(UID), { startedAtMs: now - MIN, activeUntilMs, action: "deleteAllScans" });
+  };
+
+  test("(b) an active fence refuses a new scan server-side: delete-in-progress, nothing created, quota refunded, no URLs", async () => {
+    raise(now + 10 * MIN);
+    await expectHttpsError(run(valid()), "failed-precondition", "delete-in-progress");
+    nothingCreated();
+  });
+
+  test("(b) an active fence also refuses a re-issue and a failed-scan reset for an existing scan", async () => {
+    seedScan(UID, SCAN, { schema: 1, status: "pending", photosState: "awaiting_upload", pendingExpiresAt: ts(now + DAY), purgeAttempts: 0 });
+    raise(now + 10 * MIN);
+    const before = JSON.stringify(scanDoc(UID, SCAN));
+    await expectHttpsError(run(valid()), "failed-precondition", "delete-in-progress");
+    expect(JSON.stringify(scanDoc(UID, SCAN))).toBe(before);
+    expect(gcs.signed).toEqual([]);
+    expect(usageOf(UID, "bodyScanCreate")).toBe(0);
+
+    seedScan(UID, SCAN, { schema: 1, status: "failed", photosState: "stored", purgeAttempts: 0 });
+    await expectHttpsError(run(valid()), "failed-precondition", "delete-in-progress");
+    expect(scanDoc(UID, SCAN)!.status).toBe("failed");
+    expect(usageOf(UID, "bodyScanCreate")).toBe(0);
+  });
+
+  test("an idempotent replay of a done scan keeps working during the fence", async () => {
+    seedScan(UID, SCAN, {
+      status: "done",
+      provider: { id: "test-fake", version: "1.2.3", provisional: false, requiresPhotos: true },
+      estimate: { bodyFatPct: 20, rangeLowPct: 17, rangeHighPct: 23, confidence: "medium", checkCodes: [], modelId: "test-fake", modelVersion: "1.2.3", estimatedAt: ts(T0) },
+    });
+    raise(now + 10 * MIN);
+    const res = await run(valid());
+    expect(res.status).toBe("done");
+  });
+
+  test("(c) once the fence is cleared the same create succeeds", async () => {
+    raise(now + 10 * MIN);
+    await expectHttpsError(run(valid()), "failed-precondition", "delete-in-progress");
+    store.delete(fencePath(UID));
+    const res = await run(valid());
+    expect(res.status).toBe("pending");
+    expect(usageOf(UID, "bodyScanCreate")).toBe(1);
+  });
+
+  test("(d) the fence expires: refused at activeUntilMs - 1, allowed at activeUntilMs", async () => {
+    raise(now + 15 * MIN);
+    now += 15 * MIN - 1;
+    await expectHttpsError(run(valid({ takenAtMs: now - 1000 })), "failed-precondition", "delete-in-progress");
+    now += 1;
+    const res = await run(valid({ takenAtMs: now - 1000 }));
+    expect(res.status).toBe("pending");
+  });
+
+  test("another user's fence does not affect this user", async () => {
+    store.set(fencePath("someone_else_1"), { startedAtMs: now, activeUntilMs: now + 10 * MIN, action: "deleteAllScans" });
+    const res = await run(valid());
+    expect(res.status).toBe("pending");
   });
 });

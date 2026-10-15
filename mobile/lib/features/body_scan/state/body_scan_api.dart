@@ -113,6 +113,7 @@ const Set<String> _retriableSlugs = {
   'scan-estimate-failed',
   'scan-delete-failed',
   'upload-url-failed',
+  'delete-in-progress',
   'scan-failed',
 };
 

@@ -56634,3 +56634,7 @@ Decision: "document exists but unreadable" is an error state distinct from "no d
 ## 2026-10-15 - Commit: cancel vs unresolved createBodyScan race tests
 
 Decision: the cloud-scan cancel-while-create-unresolved race is covered by deterministic tests; no production change was needed. cancel() sends deleteBodyScan (the scan is persisted as `uploading` before create) or persists pendingRemoteDelete, and the server tombstone makes a late create harmless. Evidence: core/changes/2026-10-15-cancel-create-race-tests.md; focused run of body_scan_job_runner_test.dart only.
+
+## 2026-10-15 - Commit: bulk-delete fence and straggler pass (MAJOR-02)
+
+Decision: delete-all pages raise a 15 min per-user fence in `body_scan_purge_state` (hashed id, server-only) and `createBodyScan` refuses new/reset/re-issue work with `delete-in-progress` while it is active; the final page runs a bounded (3 passes) `createdAt`-window straggler sweep and fails with `delete-incomplete` rather than reporting done with live scans left. Evidence: core/changes/2026-10-15-bulk-delete-fence.md; jest manage 53, create 111, delete 23, guard 44 green.

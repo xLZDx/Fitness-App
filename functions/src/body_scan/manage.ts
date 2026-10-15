@@ -28,7 +28,10 @@ import {
   RETENTION_DAYS,
   TOMBSTONE_TTL_MS,
   authorizeBodyScanCall,
+  DELETE_FENCE_MS,
   db,
+  deleteFenceActive,
+  deleteFenceRef,
   deleteScanObjects,
   errorSlug,
   logBodyScan,
@@ -46,6 +49,8 @@ type Action = (typeof ACTIONS)[number];
 
 /** Scans handled per call by the paged actions (design s7.8). */
 const PAGE = 200;
+/** Straggler re-query passes after the final page of a delete-all. */
+const STRAGGLER_PASSES = 3;
 /** Concurrent object deletes inside one page. */
 const CHUNK = 10;
 /** Scans per `exportLinks` page: 20 scans x 3 poses = at most 60 links. */
@@ -121,6 +126,102 @@ interface PageResult {
   nextCursor?: string;
 }
 
+/** The per-scan work of one paged action (shared by the walk and the straggler pass). */
+async function processScan(
+  uid: string,
+  action: Exclude<Action, "exportLinks">,
+  retentionDays: number,
+  doc: FirebaseFirestore.QueryDocumentSnapshot,
+  nowMs: number,
+): Promise<void> {
+  const d = doc.data();
+  if (action === "applyRetention") {
+    if (d.photosState !== "stored") return;
+    const takenAt = millisOf(d.takenAt);
+    if (takenAt === undefined) return;
+    const current = millisOf(d.photosExpireAt) ?? Number.POSITIVE_INFINITY;
+    const expireAt = Math.min(current, takenAt + retentionDays * DAY_MS);
+    if (expireAt <= nowMs) {
+      await deleteScanObjects(uid, doc.id);
+      await doc.ref.update({
+        photosState: "deleted",
+        photosDeletedAt: tsFromMillis(nowMs),
+        photosExpireAt: admin.firestore.FieldValue.delete(),
+      });
+    } else if (expireAt < current) {
+      await doc.ref.update({ photosExpireAt: tsFromMillis(expireAt) });
+    }
+    return;
+  }
+  if (action === "deleteAllPhotos") {
+    if (d.photosState === "deleted" || d.photosState === "none") return;
+    // Objects first: a "deleted" marker over surviving objects would hide them
+    // from every pass that keys on photosState (DB-F7).
+    await deleteScanObjects(uid, doc.id);
+    await doc.ref.update({
+      photosState: "deleted",
+      photosDeletedAt: tsFromMillis(nowMs),
+      photosExpireAt: admin.firestore.FieldValue.delete(),
+    });
+    return;
+  }
+  // deleteAllScans: an existing tombstone only needs its objects re-swept.
+  if (d.status === "cancelled") {
+    await deleteScanObjects(uid, doc.id);
+    return;
+  }
+  await doc.ref.update({
+    status: "cancelled",
+    photosState: "deleted",
+    photosDeletedAt: tsFromMillis(nowMs),
+    pendingExpiresAt: tsFromMillis(nowMs + TOMBSTONE_TTL_MS),
+    ...tombstoneScrub(),
+  });
+  await deleteScanObjects(uid, doc.id);
+}
+
+/** True when a delete-all still has work to do on this scan. */
+function needsDeleteWork(action: Exclude<Action, "exportLinks">, d: FirebaseFirestore.DocumentData): boolean {
+  if (action === "deleteAllPhotos") return d.photosState !== "deleted" && d.photosState !== "none";
+  return d.status !== "cancelled";
+}
+
+/**
+ * Final page of a delete-all: the id-ordered walk cannot see a scan created
+ * behind its cursor, so re-query by `createdAt` (single-field index) over the
+ * fence window and process whatever still needs work. Bounded: at most
+ * `STRAGGLER_PASSES` passes; work remaining after the last one is an error
+ * (the fence stays and expires), never a silent "done".
+ */
+async function sweepStragglers(
+  uid: string,
+  action: Exclude<Action, "exportLinks">,
+  windowStartMs: number,
+): Promise<number> {
+  let total = 0;
+  for (let pass = 1; pass <= STRAGGLER_PASSES; pass++) {
+    let found = 0;
+    let after: FirebaseFirestore.QueryDocumentSnapshot | undefined;
+    for (;;) {
+      let q = db()
+        .collection(`users/${uid}/body_scans`)
+        .where("createdAt", ">=", tsFromMillis(windowStartMs))
+        .orderBy("createdAt")
+        .limit(PAGE);
+      if (after) q = q.startAfter(after);
+      const page = await q.get();
+      const todo = page.docs.filter((doc) => needsDeleteWork(action, doc.data()));
+      found += todo.length;
+      await inChunks(todo, (doc) => processScan(uid, action, 0, doc, Date.now()));
+      if (page.docs.length < PAGE) break;
+      after = page.docs[page.docs.length - 1];
+    }
+    total += found;
+    if (found === 0) return total;
+  }
+  throw new HttpsError("aborted", "delete-incomplete");
+}
+
 async function pagedAction(
   uid: string,
   action: Exclude<Action, "exportLinks">,
@@ -128,6 +229,24 @@ async function pagedAction(
   cursor: string | undefined,
 ): Promise<PageResult> {
   if (cursor !== undefined && !CURSOR_ID.test(cursor)) bad("invalid-cursor");
+  const isDelete = action !== "applyRetention";
+  const fence = deleteFenceRef(uid);
+  let windowStartMs = 0;
+  if (isDelete) {
+    // Raise the fence BEFORE the first read so no create can slip in behind the
+    // walk; every page refreshes it, the first page (re)starts the window.
+    const nowFence = Date.now();
+    const prior = cursor === undefined ? undefined : (await fence.get()).data();
+    const priorStart = prior?.startedAtMs;
+    const resumes = typeof priorStart === "number" && deleteFenceActive(prior, nowFence);
+    // A resumed walk whose fence lapsed lost its guarantee: re-check everything.
+    windowStartMs = cursor === undefined ? nowFence - DELETE_FENCE_MS : resumes ? priorStart - DELETE_FENCE_MS : 0;
+    await fence.set({
+      startedAtMs: cursor === undefined ? nowFence : resumes ? priorStart : nowFence,
+      activeUntilMs: nowFence + DELETE_FENCE_MS,
+      action,
+    });
+  }
   let query = db()
     .collection(`users/${uid}/body_scans`)
     .orderBy(admin.firestore.FieldPath.documentId())
@@ -136,61 +255,19 @@ async function pagedAction(
   const page = await query.get();
   const nowMs = Date.now();
 
-  await inChunks(page.docs, async (doc) => {
-    const d = doc.data();
-    if (action === "applyRetention") {
-      if (d.photosState !== "stored") return;
-      const takenAt = millisOf(d.takenAt);
-      if (takenAt === undefined) return;
-      const current = millisOf(d.photosExpireAt) ?? Number.POSITIVE_INFINITY;
-      const expireAt = Math.min(current, takenAt + retentionDays * DAY_MS);
-      if (expireAt <= nowMs) {
-        await deleteScanObjects(uid, doc.id);
-        await doc.ref.update({
-          photosState: "deleted",
-          photosDeletedAt: tsFromMillis(nowMs),
-          photosExpireAt: admin.firestore.FieldValue.delete(),
-        });
-      } else if (expireAt < current) {
-        await doc.ref.update({ photosExpireAt: tsFromMillis(expireAt) });
-      }
-      return;
-    }
-    if (action === "deleteAllPhotos") {
-      if (d.photosState === "deleted" || d.photosState === "none") return;
-      // Objects first: a "deleted" marker over surviving objects would hide them
-      // from every pass that keys on photosState (DB-F7).
-      await deleteScanObjects(uid, doc.id);
-      await doc.ref.update({
-        photosState: "deleted",
-        photosDeletedAt: tsFromMillis(nowMs),
-        photosExpireAt: admin.firestore.FieldValue.delete(),
-      });
-      return;
-    }
-    // deleteAllScans: an existing tombstone only needs its objects re-swept.
-    if (d.status === "cancelled") {
-      await deleteScanObjects(uid, doc.id);
-      return;
-    }
-    await doc.ref.update({
-      status: "cancelled",
-      photosState: "deleted",
-      photosDeletedAt: tsFromMillis(nowMs),
-      pendingExpiresAt: tsFromMillis(nowMs + TOMBSTONE_TTL_MS),
-      ...tombstoneScrub(),
-    });
-    await deleteScanObjects(uid, doc.id);
-  });
+  await inChunks(page.docs, (doc) => processScan(uid, action, retentionDays, doc, nowMs));
 
   const last = page.docs[page.docs.length - 1];
   const hasMore = page.docs.length === PAGE;
-  if (!hasMore && action !== "applyRetention") {
+  let processed = page.docs.length;
+  if (!hasMore && isDelete) {
+    processed += await sweepStragglers(uid, action as Exclude<Action, "exportLinks">, windowStartMs);
     // Final page of a delete-all: also clear anything under the user's prefix
     // that no document accounts for (a late PUT, a document-less object).
     await scanBucket().deleteFiles({ prefix: userScansPrefix(uid) });
+    await fence.delete();
   }
-  return { processed: page.docs.length, ...(hasMore && last ? { nextCursor: last.id } : {}) };
+  return { processed, ...(hasMore && last ? { nextCursor: last.id } : {}) };
 }
 
 interface LinksResult extends PageResult {

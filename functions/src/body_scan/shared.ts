@@ -13,6 +13,7 @@
  * the user would outlive the account. Events carry a closed operation name, a
  * closed outcome slug and numbers about the call itself (latency, counts).
  */
+import { createHash } from "crypto";
 import * as admin from "firebase-admin";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
@@ -119,6 +120,31 @@ const ERASE_CALLABLES: ReadonlySet<BodyScanCallable> = new Set<BodyScanCallable>
   "deleteBodyScan",
   "manageBodyScanData",
 ]);
+
+/** How long a bulk-delete fence refuses new scan work; refreshed on every page. */
+export const DELETE_FENCE_MS = 15 * 60 * 1000;
+
+/**
+ * The per-user bulk-delete fence: `body_scan_purge_state/delete_fence_<hash>`.
+ * That collection is deny-all for clients (Admin SDK only) and, like the rest of
+ * it, must not carry a uid, so the id is a hash of the uid. `manageBodyScanData`
+ * `deleteAll*` writes it on the first page and clears it on the last;
+ * `createBodyScan` reads it inside its transaction (a scan created behind the
+ * delete walk's cursor would otherwise survive the "done" page).
+ */
+export function deleteFenceRef(uid: string): FirebaseFirestore.DocumentReference {
+  const key = createHash("sha256").update(uid).digest("hex").slice(0, 32);
+  return db().doc(`body_scan_purge_state/delete_fence_${key}`);
+}
+
+/** True while a fence document says a bulk delete is walking this user's scans. */
+export function deleteFenceActive(
+  data: FirebaseFirestore.DocumentData | undefined,
+  nowMs: number,
+): boolean {
+  const until = data?.activeUntilMs;
+  return typeof until === "number" && until > nowMs;
+}
 
 /** The purge path guard (P-1): only `users/{uid}/body_scans/{scanId}` is a scan. */
 export const SCAN_DOC_PATH = /^users\/[^/]+\/body_scans\/[^/]+$/;
