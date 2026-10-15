@@ -56486,3 +56486,9 @@ Decision: the sources page attributes formulas and food data and states estimate
 ## 2026-10-15 - Commit: C19 plan_explainer_page_test.dart
 
 Decision: the explainer page describes the weekly review and ownership modes without promising dates or results. Evidence: core/changes/2026-10-15-c19-tests.md (plan_explainer_page_test.dart 6 passed).
+
+Progress: C16 l10n parity and plural tests added.
+
+## 2026-10-15 - Commit: test(food): C24 label scan page tests
+
+Decision: the label page is proven to write a saved_food only after Confirm, using the edited values, and nothing on Cancel or dismiss. Evidence: core/changes/2026-10-15-c24-tests.md.
