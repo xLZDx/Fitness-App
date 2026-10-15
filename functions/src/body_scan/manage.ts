@@ -18,6 +18,7 @@
  * so no composite index is needed; the caller loops while `nextCursor` is set.
  * `exportLinks` pages newest-first by `takenAt` (single-field index).
  */
+import { randomBytes } from "crypto";
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { BODY_SCAN } from "../scaling";
@@ -29,8 +30,10 @@ import {
   TOMBSTONE_TTL_MS,
   authorizeBodyScanCall,
   DELETE_FENCE_MS,
+  FENCE_TOKEN,
+  LATE_SWEEP_DELAY_MS,
+  activeFenceRuns,
   db,
-  deleteFenceActive,
   deleteFenceRef,
   deleteScanObjects,
   errorSlug,
@@ -38,6 +41,7 @@ import {
   millisOf,
   poseObjectPath,
   scanBucket,
+  lateSweepRef,
   tombstoneScrub,
   tsFromMillis,
   userScansPrefix,
@@ -74,7 +78,7 @@ export const manageBodyScanData = onCall(BODY_SCAN, async (request) => {
   const started = Date.now();
   const uid = await authorizeBodyScanCall(request, "manageBodyScanData");
   const data = request.data as
-    | { action?: unknown; retentionDays?: unknown; cursor?: unknown }
+    | { action?: unknown; retentionDays?: unknown; cursor?: unknown; fenceToken?: unknown }
     | null
     | undefined;
   const action = data?.action;
@@ -83,6 +87,10 @@ export const manageBodyScanData = onCall(BODY_SCAN, async (request) => {
   }
   const cursor = data?.cursor;
   if (cursor !== undefined && typeof cursor !== "string") bad("invalid-cursor");
+  const fenceToken = data?.fenceToken;
+  if (fenceToken !== undefined && (typeof fenceToken !== "string" || !FENCE_TOKEN.test(fenceToken))) {
+    bad("invalid-cursor");
+  }
   let retentionDays = 0;
   if (action === "applyRetention") {
     const raw = data?.retentionDays;
@@ -103,6 +111,7 @@ export const manageBodyScanData = onCall(BODY_SCAN, async (request) => {
             action as Exclude<Action, "exportLinks">,
             retentionDays,
             cursor as string | undefined,
+            fenceToken as string | undefined,
           );
     logBodyScan("info", "bodyScanManage", {
       outcome: action as string,
@@ -124,6 +133,8 @@ export const manageBodyScanData = onCall(BODY_SCAN, async (request) => {
 interface PageResult {
   processed: number;
   nextCursor?: string;
+  /** Delete-all only, with `nextCursor`: the operation's opaque fence token; send it back with the cursor. */
+  fenceToken?: string;
 }
 
 /** The per-scan work of one paged action (shared by the walk and the straggler pass). */
@@ -222,30 +233,76 @@ async function sweepStragglers(
   throw new HttpsError("aborted", "delete-incomplete");
 }
 
+/**
+ * Registers (first page) or refreshes (continuation) THIS operation's run in the
+ * fence document, in a transaction so concurrent operations of the same user
+ * cannot clobber each other's entries. A continuation whose run is unknown or
+ * lapsed re-registers under its own token and reports `resumed: false` (the
+ * walk then re-checks every scan).
+ */
+async function raiseFence(
+  uid: string,
+  action: string,
+  cursor: string | undefined,
+  requested: string | undefined,
+  nowMs: number,
+): Promise<{ token: string; resumed: boolean; startedAtMs: number }> {
+  const ref = deleteFenceRef(uid);
+  return db().runTransaction(async (tx) => {
+    const runs = activeFenceRuns((await tx.get(ref)).data(), nowMs);
+    const own = cursor !== undefined && requested !== undefined ? runs[requested] : undefined;
+    const resumedRun = own !== undefined && own.action === action ? own : undefined;
+    const resumed = resumedRun !== undefined;
+    const token = cursor !== undefined && requested !== undefined ? requested : randomBytes(16).toString("hex");
+    const startedAtMs = resumedRun ? resumedRun.startedAtMs : nowMs;
+    runs[token] = { action, startedAtMs, activeUntilMs: nowMs + DELETE_FENCE_MS };
+    tx.set(ref, { runs });
+    return { token, resumed, startedAtMs };
+  });
+}
+
+/**
+ * Final page: removes ONLY this operation's run (other operations of the user
+ * keep their protection) and, in the same transaction, records the late-sweep
+ * due time for uploads that were authorized before the delete (their signed PUT
+ * URLs stay valid until they expire and cannot be revoked).
+ */
+async function completeFence(uid: string, action: string, token: string, nowMs: number): Promise<void> {
+  const ref = deleteFenceRef(uid);
+  const late = lateSweepRef(uid);
+  await db().runTransaction(async (tx) => {
+    const runs = activeFenceRuns((await tx.get(ref)).data(), nowMs);
+    const lateData = (await tx.get(late)).data();
+    delete runs[token];
+    if (Object.keys(runs).length > 0) tx.set(ref, { runs });
+    else tx.delete(ref);
+    const prior = typeof lateData?.dueAtMs === "number" ? lateData.dueAtMs : 0;
+    tx.set(late, { uid, action, dueAtMs: Math.max(prior, nowMs + LATE_SWEEP_DELAY_MS) });
+  });
+}
+
 async function pagedAction(
   uid: string,
   action: Exclude<Action, "exportLinks">,
   retentionDays: number,
   cursor: string | undefined,
+  requestedToken: string | undefined,
 ): Promise<PageResult> {
   if (cursor !== undefined && !CURSOR_ID.test(cursor)) bad("invalid-cursor");
   const isDelete = action !== "applyRetention";
-  const fence = deleteFenceRef(uid);
   let windowStartMs = 0;
+  let token = "";
   if (isDelete) {
-    // Raise the fence BEFORE the first read so no create can slip in behind the
-    // walk; every page refreshes it, the first page (re)starts the window.
+    // Raise this operation's fence entry BEFORE the first read so no create can
+    // slip in behind the walk; every page refreshes it, the first page starts
+    // the window.
     const nowFence = Date.now();
-    const prior = cursor === undefined ? undefined : (await fence.get()).data();
-    const priorStart = prior?.startedAtMs;
-    const resumes = typeof priorStart === "number" && deleteFenceActive(prior, nowFence);
-    // A resumed walk whose fence lapsed lost its guarantee: re-check everything.
-    windowStartMs = cursor === undefined ? nowFence - DELETE_FENCE_MS : resumes ? priorStart - DELETE_FENCE_MS : 0;
-    await fence.set({
-      startedAtMs: cursor === undefined ? nowFence : resumes ? priorStart : nowFence,
-      activeUntilMs: nowFence + DELETE_FENCE_MS,
-      action,
-    });
+    const run = await raiseFence(uid, action, cursor, requestedToken, nowFence);
+    token = run.token;
+    // A resumed walk whose run lapsed (or arrived without its token) lost its
+    // guarantee: re-check everything.
+    windowStartMs =
+      cursor === undefined ? nowFence - DELETE_FENCE_MS : run.resumed ? run.startedAtMs - DELETE_FENCE_MS : 0;
   }
   let query = db()
     .collection(`users/${uid}/body_scans`)
@@ -263,11 +320,19 @@ async function pagedAction(
   if (!hasMore && isDelete) {
     processed += await sweepStragglers(uid, action as Exclude<Action, "exportLinks">, windowStartMs);
     // Final page of a delete-all: also clear anything under the user's prefix
-    // that no document accounts for (a late PUT, a document-less object).
+    // that no document accounts for (a document-less object).
     await scanBucket().deleteFiles({ prefix: userScansPrefix(uid) });
-    await fence.delete();
+    // Privacy contract: completion guarantees removal of everything uploaded
+    // BEFORE this call. A signed PUT URL issued earlier stays valid until its
+    // TTL, so an object may still arrive afterwards; the scheduled late sweep
+    // (purge.ts, due = completion + URL TTL + margin) removes it.
+    await completeFence(uid, action, token, Date.now());
   }
-  return { processed, ...(hasMore && last ? { nextCursor: last.id } : {}) };
+  return {
+    processed,
+    ...(hasMore && last ? { nextCursor: last.id } : {}),
+    ...(hasMore && isDelete ? { fenceToken: token } : {}),
+  };
 }
 
 interface LinksResult extends PageResult {

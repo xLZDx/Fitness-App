@@ -12,6 +12,7 @@ jest.mock("@google-cloud/secret-manager", () => require("./fakes").secretManager
 import * as logger from "firebase-functions/logger";
 import {
   MAX_PURGE_ATTEMPTS, PURGE_RUN_BUDGET_MS, purgeExpiredBodyScanPhotos, runBodyScanPurge,
+  runLateSweep, sweepLateBodyScanUploads,
 } from "../../body_scan/purge";
 import {
   BUCKET, DAY, HOUR, MIN, T0,
@@ -605,5 +606,135 @@ describe("abandoned documents are surfaced (DB-F4)", () => {
   test("no abandoned documents -> no purge-abandoned event", async () => {
     await run();
     expect(bodyScanEvents(logger, "error")).toEqual([]);
+  });
+});
+
+describe("late-upload sweep (GPT-PM MAJOR-02B)", () => {
+  const LATE = "body_scan_purge_state/late_sweep_";
+  const lateKey = (n: number): string => `${LATE}${String(n).padStart(4, "0")}`;
+  const seedRecord = (uid: string, dueAtMs: number, n = 1): void => {
+    store.set(lateKey(n), { uid, action: "deleteAllPhotos", dueAtMs });
+  };
+  const lateRun = (budget?: number): ReturnType<typeof runLateSweep> => runLateSweep(now, budget);
+
+  test("scheduled every 5 minutes, single instance, runs as fn-bodyscan, and the handler runs the sweep", async () => {
+    const ep = (sweepLateBodyScanUploads as any).__endpoint;
+    expect(ep.scheduleTrigger.schedule).toBe("every 5 minutes");
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@/);
+    seedTombstone(A, "scan_dead_01", DAY);
+    seedRecord(A, now - MIN);
+    putPhotos(A, "scan_dead_01");
+    await (sweepLateBodyScanUploads as any).run({});
+    expect(objectKeys()).toEqual([]);
+  });
+
+  test("a held authorized PUT (object arriving after completion) is removed when due, NOT before", async () => {
+    seedStored(A, "scan_one_001", 30 * DAY, { photosState: "deleted", photosExpireAt: undefined });
+    seedRecord(A, now + 12 * MIN);
+    putPhotos(A, "scan_one_001"); // the late PUT
+    let c = await lateRun();
+    expect(c).toEqual({ records: 0, deleted: 0, failures: 0 });
+    expect(objectKeys(prefix(A, "scan_one_001"))).toHaveLength(3);
+    expect(store.has(lateKey(1))).toBe(true);
+
+    now += 12 * MIN - 1;
+    c = await lateRun();
+    expect(c.deleted).toBe(0);
+    expect(objectKeys(prefix(A, "scan_one_001"))).toHaveLength(3);
+
+    now += 1;
+    c = await lateRun();
+    expect(c).toEqual({ records: 1, deleted: 3, failures: 0 });
+    expect(objectKeys()).toEqual([]);
+    expect(store.has(lateKey(1))).toBe(false);
+  });
+
+  test("deleteAllScans variant: objects of a tombstone and of a document-less scan are removed; the scan documents are untouched", async () => {
+    seedTombstone(A, "scan_dead_01", DAY);
+    putPhotos(A, "scan_dead_01");
+    putPhotos(A, "ghost_scan_1");
+    seedRecord(A, now);
+    const before = JSON.stringify(get(A, "scan_dead_01"));
+    await lateRun();
+    expect(objectKeys()).toEqual([]);
+    expect(JSON.stringify(get(A, "scan_dead_01"))).toBe(before);
+  });
+
+  test("a LIVE scan created after the delete is never touched (only orphan objects go), other users neither", async () => {
+    seedPending(A, "scan_live_01", DAY);
+    putPhotos(A, "scan_live_01");
+    seedStored(A, "scan_kept_01", 30 * DAY);
+    putPhotos(A, "scan_kept_01");
+    putPhotos(B, "scan_other_1");
+    seedRecord(A, now);
+    await lateRun();
+    expect(objectKeys(prefix(A, "scan_live_01"))).toHaveLength(3);
+    expect(objectKeys(prefix(A, "scan_kept_01"))).toHaveLength(3);
+    expect(objectKeys(prefix(B, "scan_other_1"))).toHaveLength(3);
+  });
+
+  test("a file whose name belongs to another uid is ignored, and a malformed record is dropped without any storage call", async () => {
+    store.set(lateKey(2), { uid: "a/b", dueAtMs: now - MIN });
+    store.set(lateKey(3), { dueAtMs: now - MIN });
+    await lateRun();
+    expect(store.has(lateKey(2))).toBe(false);
+    expect(store.has(lateKey(3))).toBe(false);
+    expect(gcs.getFilesCalls).toEqual([]);
+  });
+
+  test("idempotent: a second run finds nothing and does no storage work", async () => {
+    putPhotos(A, "ghost_scan_1");
+    seedRecord(A, now);
+    await lateRun();
+    gcs.getFilesCalls.length = 0;
+    const c = await lateRun();
+    expect(c).toEqual({ records: 0, deleted: 0, failures: 0 });
+    expect(gcs.getFilesCalls).toEqual([]);
+  });
+
+  test("a storage failure keeps the record for the next run and is isolated per record; logs carry no uid", async () => {
+    putPhotos(A, "ghost_scan_1");
+    putPhotos(B, "ghost_scan_2");
+    seedRecord(A, now, 1);
+    seedRecord(B, now, 2);
+    gcs.failOn = (op, name) => (op === "getFiles" && name.includes(A) ? firestoreError("x", 503) : undefined);
+    const c = await lateRun();
+    expect(c.failures).toBe(1);
+    expect(c.records).toBe(1);
+    expect(store.has(lateKey(1))).toBe(true);
+    expect(store.has(lateKey(2))).toBe(false);
+    expect(loggedText(logger)).not.toContain(A);
+    gcs.failOn = null;
+    await lateRun();
+    expect(store.has(lateKey(1))).toBe(false);
+    expect(objectKeys()).toEqual([]);
+  });
+
+  test("bounded: the page walk is capped, and an expired budget starts no work and keeps the records", async () => {
+    for (let i = 1; i <= 250; i++) seedRecord(A, now - MIN, i);
+    const c = await lateRun(0);
+    expect(c).toEqual({ records: 0, deleted: 0, failures: 0 });
+    expect([...store.keys()].filter((k) => k.startsWith(LATE))).toHaveLength(250);
+    const full = await lateRun();
+    expect(full.records).toBe(250);
+    expect([...store.keys()].filter((k) => k.startsWith(LATE))).toHaveLength(0);
+  });
+
+  test("bucket unset -> complete no-op", async () => {
+    delete process.env.BODY_SCAN_BUCKET;
+    seedRecord(A, now - MIN);
+    expect(await lateRun()).toEqual({ records: 0, deleted: 0, failures: 0 });
+    expect(queries).toEqual([]);
+    expect(store.has(lateKey(1))).toBe(true);
+  });
+
+  test("the fence document and purge main state are never swept as records", async () => {
+    store.set("body_scan_purge_state/main", { pageToken: "" });
+    store.set("body_scan_purge_state/delete_fence_abc", { runs: {} });
+    await lateRun();
+    expect(store.has("body_scan_purge_state/main")).toBe(true);
+    expect(store.has("body_scan_purge_state/delete_fence_abc")).toBe(true);
   });
 });

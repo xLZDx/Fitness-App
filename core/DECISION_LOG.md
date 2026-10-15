@@ -56638,3 +56638,7 @@ Decision: the cloud-scan cancel-while-create-unresolved race is covered by deter
 ## 2026-10-15 - Commit: bulk-delete fence and straggler pass (MAJOR-02)
 
 Decision: delete-all pages raise a 15 min per-user fence in `body_scan_purge_state` (hashed id, server-only) and `createBodyScan` refuses new/reset/re-issue work with `delete-in-progress` while it is active; the final page runs a bounded (3 passes) `createdAt`-window straggler sweep and fails with `delete-incomplete` rather than reporting done with live scans left. Evidence: core/changes/2026-10-15-bulk-delete-fence.md; jest manage 53, create 111, delete 23, guard 44 green.
+
+## 2026-10-15 - Commit: fence ownership and late-upload sweep (MAJOR-02A/02B)
+
+Decision: the bulk-delete fence holds one transactional entry per operation (random `fenceToken` returned with the cursor and echoed back); each operation refreshes and clears only its own entry and `createBodyScan` refuses while any entry is active. Because already-issued signed PUT URLs cannot be revoked, a completed delete-all records a `late_sweep` record (due = completion + 10 min URL TTL + 2 min) and the new `sweepLateBodyScanUploads` schedule (every 5 min) removes orphan objects of the user's scans prefix, so the stated bound is 17 minutes. Trade-off: the transient late-sweep record carries the uid. Evidence: core/changes/2026-10-15-fence-ownership-late-sweep.md.

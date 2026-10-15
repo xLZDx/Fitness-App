@@ -93,6 +93,7 @@ const ENTRYPOINTS: Record<string, unknown> = {
   deleteBodyScan: index.deleteBodyScan,
   manageBodyScanData: index.manageBodyScanData,
   purgeExpiredBodyScanPhotos: index.purgeExpiredBodyScanPhotos,
+  sweepLateBodyScanUploads: index.sweepLateBodyScanUploads,
   reconcileAccountDeletions: index.reconcileAccountDeletions,
   // Food (C20): two metered AI callables on AI_METERED, two lookup callables on
   // FOOD_LOOKUP.
@@ -198,6 +199,7 @@ describe("scaling ceilings", () => {
       "runEnforcementStateCheck",
       // Scheduled and pinned single-flight (see the Body Scan block below).
       "purgeExpiredBodyScanPhotos",
+      "sweepLateBodyScanUploads",
       "reconcileAccountDeletions",
     ];
     // The food AI callables ride AI_METERED, which sets an explicit concurrency.
@@ -522,6 +524,14 @@ describe("Body Scan deployed endpoints (C12 wired onto the C02 profiles)", () =>
     expect(ep.concurrency).toBe(1);
     expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@/);
     expect(ep.scheduleTrigger?.schedule).toBe("30 3 * * *");
+  });
+
+  test("the late-upload sweep is single-flight, every 5 minutes, and runs as fn-bodyscan", () => {
+    const ep = endpointOf(index.sweepLateBodyScanUploads);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@/);
+    expect(ep.scheduleTrigger?.schedule).toBe("every 5 minutes");
   });
 
   test("the deletion reconciler is single-flight and runs as the account-delete identity, not fn-bodyscan", () => {

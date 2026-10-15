@@ -16,7 +16,7 @@ jest.mock("@google-cloud/secret-manager", () => require("./fakes").secretManager
 import * as logger from "firebase-functions/logger";
 import { createBodyScan } from "../../body_scan/create";
 import { __setTestEstimatorForTests } from "../../body_scan/estimator";
-import { deleteFenceRef } from "../../body_scan/shared";
+import { deleteFenceRef, lateSweepRef } from "../../body_scan/shared";
 import { __resetAiGatewayControlCacheForTests } from "../../abuse_guard";
 import {
   BUCKET, DAY, FakePhotoEstimator, MIN, T0, UID, SCAN,
@@ -620,8 +620,10 @@ describe("ordering", () => {
 describe("bulk-delete fence (delete-all in progress)", () => {
   // The real id is a uid hash and the fake store keys on the exact path, so seed through the real helper.
   const fencePath = (uid: string): string => deleteFenceRef(uid).path;
+  const TOKEN_A = "a".repeat(32);
+  const TOKEN_B = "b".repeat(32);
   const raise = (activeUntilMs: number): void => {
-    store.set(fencePath(UID), { startedAtMs: now - MIN, activeUntilMs, action: "deleteAllScans" });
+    store.set(fencePath(UID), { runs: { [TOKEN_A]: { action: "deleteAllScans", startedAtMs: now - MIN, activeUntilMs } } });
   };
 
   test("(b) an active fence refuses a new scan server-side: delete-in-progress, nothing created, quota refunded, no URLs", async () => {
@@ -675,7 +677,32 @@ describe("bulk-delete fence (delete-all in progress)", () => {
   });
 
   test("another user's fence does not affect this user", async () => {
-    store.set(fencePath("someone_else_1"), { startedAtMs: now, activeUntilMs: now + 10 * MIN, action: "deleteAllScans" });
+    store.set(fencePath("someone_else_1"), { runs: { [TOKEN_A]: { action: "deleteAllScans", startedAtMs: now, activeUntilMs: now + 10 * MIN } } });
+    const res = await run(valid());
+    expect(res.status).toBe("pending");
+  });
+
+  test("refused while ANY operation is active: an expired entry next to an active one still refuses, and only when all are expired does it admit", async () => {
+    store.set(fencePath(UID), {
+      runs: {
+        [TOKEN_A]: { action: "deleteAllScans", startedAtMs: now - 20 * MIN, activeUntilMs: now - 5 * MIN },
+        [TOKEN_B]: { action: "deleteAllPhotos", startedAtMs: now - MIN, activeUntilMs: now + 5 * MIN },
+      },
+    });
+    await expectHttpsError(run(valid()), "failed-precondition", "delete-in-progress");
+    now += 5 * MIN;
+    const res = await run(valid({ takenAtMs: now - 1000 }));
+    expect(res.status).toBe("pending");
+  });
+
+  test("a late-sweep record (a completed delete waiting for old upload URLs to expire) does not block create", async () => {
+    store.set(lateSweepRef(UID).path, { uid: UID, action: "deleteAllPhotos", dueAtMs: now + 12 * MIN });
+    const res = await run(valid());
+    expect(res.status).toBe("pending");
+  });
+
+  test("a fence document without a valid runs map (legacy shape, junk) never blocks", async () => {
+    store.set(fencePath(UID), { startedAtMs: now, activeUntilMs: now + 10 * MIN, action: "deleteAllScans" });
     const res = await run(valid());
     expect(res.status).toBe("pending");
   });

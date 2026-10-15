@@ -11,6 +11,7 @@ jest.mock("@google-cloud/secret-manager", () => require("./fakes").secretManager
 
 import * as logger from "firebase-functions/logger";
 import { manageBodyScanData } from "../../body_scan/manage";
+import { deleteFenceActive } from "../../body_scan/shared";
 import { __resetAiGatewayControlCacheForTests } from "../../abuse_guard";
 import {
   BUCKET, DAY, HOUR, T0, UID,
@@ -343,7 +344,17 @@ describe("paging (200 scans per call, document-id order, cursor)", () => {
 });
 
 const FENCE_PREFIX = "body_scan_purge_state/delete_fence_";
+const LATE_PREFIX = "body_scan_purge_state/late_sweep_";
 const fenceKeys = (): string[] => [...store.keys()].filter((k) => k.startsWith(FENCE_PREFIX));
+const lateKeys = (): string[] => [...store.keys()].filter((k) => k.startsWith(LATE_PREFIX));
+const FENCE_MS = 15 * 60 * 1000;
+/** Upload URL TTL (10 min) + 2 min margin. */
+const LATE_DELAY_MS = 12 * 60 * 1000;
+/** The registered runs of this user's fence document (empty when the document is gone). */
+const runsOf = (): Record<string, any> => (fenceKeys().length ? store.get(fenceKeys()[0])!.runs : {});
+/** True when a create would be refused right now. */
+const fenceOn = (): boolean => deleteFenceActive(fenceKeys().length ? store.get(fenceKeys()[0]) : undefined, now);
+const TOKEN = /^[0-9a-f]{32}$/;
 
 describe("bulk-delete fence and straggler pass (a scan created behind the cursor)", () => {
   test("page 1 raises a 15 min fence (uid-free id), a continuation refreshes it, the final page clears it", async () => {
@@ -351,12 +362,16 @@ describe("bulk-delete fence and straggler pass (a scan created behind the cursor
 
     const first = await run({ action: "deleteAllScans" });
     expect(first.nextCursor).toBe(sid(200));
+    expect(first.fenceToken).toMatch(TOKEN);
     expect(fenceKeys()).toHaveLength(1);
     expect(fenceKeys()[0]).not.toContain(UID);
-    expect(store.get(fenceKeys()[0])).toEqual({ startedAtMs: now, activeUntilMs: now + 15 * 60 * 1000, action: "deleteAllScans" });
+    expect(store.get(fenceKeys()[0])).toEqual({
+      runs: { [first.fenceToken]: { action: "deleteAllScans", startedAtMs: now, activeUntilMs: now + FENCE_MS } },
+    });
 
     now += 5 * 60 * 1000;
-    await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    const last = await run({ action: "deleteAllScans", cursor: first.nextCursor, fenceToken: first.fenceToken });
+    expect(last.fenceToken).toBeUndefined(); // no token once the operation is complete
     expect(fenceKeys()).toEqual([]);
   });
 
@@ -365,9 +380,12 @@ describe("bulk-delete fence and straggler pass (a scan created behind the cursor
     const first = await run({ action: "deleteAllPhotos" });
     const startedAt = now;
     now += 10 * 60 * 1000;
-    const second = await run({ action: "deleteAllPhotos", cursor: first.nextCursor });
+    const second = await run({ action: "deleteAllPhotos", cursor: first.nextCursor, fenceToken: first.fenceToken });
     expect(second.nextCursor).toBe(sid(400));
-    expect(store.get(fenceKeys()[0])).toEqual({ startedAtMs: startedAt, activeUntilMs: now + 15 * 60 * 1000, action: "deleteAllPhotos" });
+    expect(second.fenceToken).toBe(first.fenceToken);
+    expect(store.get(fenceKeys()[0])).toEqual({
+      runs: { [first.fenceToken]: { action: "deleteAllPhotos", startedAtMs: startedAt, activeUntilMs: now + FENCE_MS } },
+    });
   });
 
   test("applyRetention and exportLinks never touch the fence", async () => {
@@ -387,7 +405,7 @@ describe("bulk-delete fence and straggler pass (a scan created behind the cursor
     seedScan(UID, "scan_0000", { schema: 1, createdAt: ts(now), takenAt: ts(now), status: "pending", photosState: "awaiting_upload", weightKg: 70, purgeAttempts: 0 });
     putPhotos(UID, "scan_0000");
 
-    const second = await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    const second = await run({ action: "deleteAllScans", cursor: first.nextCursor, fenceToken: first.fenceToken });
     expect(second.processed).toBe(51); // 50 on the walk + 1 straggler
     expect(second.nextCursor).toBeUndefined();
     const straggler = scanDoc(UID, "scan_0000")!;
@@ -405,7 +423,7 @@ describe("bulk-delete fence and straggler pass (a scan created behind the cursor
     seedStored("scan_0000", now, { createdAt: ts(now) });
     expect(objectKeys(scanPrefix("scan_0000"))).toHaveLength(3);
 
-    const second = await run({ action: "deleteAllPhotos", cursor: first.nextCursor });
+    const second = await run({ action: "deleteAllPhotos", cursor: first.nextCursor, fenceToken: first.fenceToken });
     expect(second.processed).toBe(51);
     expect(scanDoc(UID, "scan_0000")!.photosState).toBe("deleted");
     expect(scanDoc(UID, "scan_0000")!.status).toBe("done"); // photos only: the scan stays
@@ -423,7 +441,7 @@ describe("bulk-delete fence and straggler pass (a scan created behind the cursor
     const first = await run({ action: "deleteAllScans" });
     now += 40 * 60 * 1000; // past the 15 min fence
     seedScan(UID, "scan_0000", { schema: 1, createdAt: ts(now - 30 * 60 * 1000), status: "pending", photosState: "awaiting_upload", purgeAttempts: 0 });
-    const second = await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    const second = await run({ action: "deleteAllScans", cursor: first.nextCursor, fenceToken: first.fenceToken });
     expect(second.processed).toBe(51);
     expect(scanDoc(UID, "scan_0000")!.status).toBe("cancelled");
   });
@@ -438,6 +456,176 @@ describe("bulk-delete fence and straggler pass (a scan created behind the cursor
     };
     await expectHttpsError(run({ action: "deleteAllScans" }), "aborted", "delete-incomplete");
     expect(fenceKeys()).toHaveLength(1);
+    expect(lateKeys()).toEqual([]); // not complete: nothing is promised, nothing scheduled
+  });
+});
+
+/** Seeds `n` already-deleted scans so a delete-all takes `ceil(n/200)` pages without object work. */
+function seedMany(n: number): void {
+  for (let i = 1; i <= n; i++) seedStored(sid(i), now - i * HOUR, { photosState: "deleted" }, false);
+}
+
+describe("fence ownership (overlapping bulk operations; GPT-PM MAJOR-02A)", () => {
+  test("different actions: the first to finish clears only its own entry; protection holds until the LAST operation completes", async () => {
+    seedMany(250);
+    const a = await run({ action: "deleteAllScans" }); // page 1 of 2, walking
+    expect(fenceOn()).toBe(true);
+
+    now += 60 * 1000;
+    const b1 = await run({ action: "deleteAllPhotos" });
+    expect(Object.keys(runsOf())).toHaveLength(2);
+    const b = await run({ action: "deleteAllPhotos", cursor: b1.nextCursor, fenceToken: b1.fenceToken });
+    expect(b.nextCursor).toBeUndefined();
+    expect(Object.keys(runsOf())).toEqual([a.fenceToken]);
+    expect(runsOf()[a.fenceToken].action).toBe("deleteAllScans");
+    expect(fenceOn()).toBe(true);
+
+    now += 60 * 1000;
+    await run({ action: "deleteAllScans", cursor: a.nextCursor, fenceToken: a.fenceToken });
+    expect(fenceKeys()).toEqual([]);
+    expect(fenceOn()).toBe(false);
+  });
+
+  test("a later-started operation neither replaces nor shortens the earlier one; either order of completion is safe", async () => {
+    seedMany(250);
+    const a = await run({ action: "deleteAllPhotos" });
+    const aEntry = { ...runsOf()[a.fenceToken] };
+    now += 2 * 60 * 1000;
+    const b = await run({ action: "deleteAllScans" });
+    expect(b.fenceToken).not.toBe(a.fenceToken);
+    expect(runsOf()[a.fenceToken]).toEqual(aEntry);
+    expect(runsOf()[b.fenceToken]).toEqual({ action: "deleteAllScans", startedAtMs: now, activeUntilMs: now + FENCE_MS });
+    await run({ action: "deleteAllScans", cursor: b.nextCursor, fenceToken: b.fenceToken });
+    expect(Object.keys(runsOf())).toEqual([a.fenceToken]);
+    await run({ action: "deleteAllPhotos", cursor: a.nextCursor, fenceToken: a.fenceToken });
+    expect(fenceOn()).toBe(false);
+  });
+
+  test("same action started twice: each run owns its entry; the first run completing does not clear the second", async () => {
+    seedMany(250);
+    const r1 = await run({ action: "deleteAllScans" });
+    now += 60 * 1000;
+    const r2 = await run({ action: "deleteAllScans" });
+    expect(r2.fenceToken).not.toBe(r1.fenceToken);
+    expect(Object.keys(runsOf()).sort()).toEqual([r1.fenceToken, r2.fenceToken].sort());
+
+    now += 60 * 1000;
+    await run({ action: "deleteAllScans", cursor: r1.nextCursor, fenceToken: r1.fenceToken });
+    expect(Object.keys(runsOf())).toEqual([r2.fenceToken]);
+    expect(fenceOn()).toBe(true);
+
+    now += 60 * 1000;
+    await run({ action: "deleteAllScans", cursor: r2.nextCursor, fenceToken: r2.fenceToken });
+    expect(fenceKeys()).toEqual([]);
+  });
+
+  test("a run that keeps refreshing extends only its own expiry", async () => {
+    seedMany(450);
+    const r1 = await run({ action: "deleteAllScans" });
+    const t1 = runsOf()[r1.fenceToken];
+    now += 60 * 1000;
+    const r2 = await run({ action: "deleteAllPhotos" });
+    const r2Entry = { ...runsOf()[r2.fenceToken] };
+    now += 60 * 1000;
+    await run({ action: "deleteAllScans", cursor: r1.nextCursor, fenceToken: r1.fenceToken });
+    expect(runsOf()[r1.fenceToken]).toEqual({ ...t1, activeUntilMs: now + FENCE_MS });
+    expect(runsOf()[r2.fenceToken]).toEqual(r2Entry);
+  });
+
+  test("a continuation without its token registers a NEW run (full re-check) and never clears the original entry; expiry bound holds", async () => {
+    seedMany(250);
+    const first = await run({ action: "deleteAllScans" });
+    now += 60 * 1000;
+    seedScan(UID, "scan_0000", { schema: 1, createdAt: ts(now - 30 * 60 * 1000), status: "pending", photosState: "awaiting_upload", purgeAttempts: 0 });
+    const res = await run({ action: "deleteAllScans", cursor: first.nextCursor });
+    expect(res.processed).toBe(51);
+    expect(Object.keys(runsOf())).toEqual([first.fenceToken]);
+    expect(fenceOn()).toBe(true);
+    now += FENCE_MS - 60 * 1000 - 1;
+    expect(fenceOn()).toBe(true);
+    now += 1;
+    expect(fenceOn()).toBe(false);
+  });
+
+  test("racing registration: B registers while A's transaction is in flight, A retries and BOTH entries survive", async () => {
+    seedMany(250);
+    const bToken = "c".repeat(32);
+    let injected = false;
+    fx.afterTxRead = async (path, attempt) => {
+      if (path.startsWith(FENCE_PREFIX) && attempt === 1 && !injected) {
+        injected = true;
+        store.set(path, { runs: { [bToken]: { action: "deleteAllPhotos", startedAtMs: now, activeUntilMs: now + FENCE_MS } } });
+      }
+    };
+    const a = await run({ action: "deleteAllScans" });
+    fx.afterTxRead = null;
+    expect(fx.txRetries).toBeGreaterThanOrEqual(1);
+    expect(Object.keys(runsOf()).sort()).toEqual([a.fenceToken, bToken].sort());
+  });
+
+  test("racing final page: another operation registers while this one is clearing, and its entry survives the clear", async () => {
+    seedMany(10);
+    const cToken = "d".repeat(32);
+    let injected = false;
+    fx.afterTxRead = async (path) => {
+      // The second fence read is the completion transaction (the first was the registration).
+      if (path.startsWith(FENCE_PREFIX) && !injected && fenceKeys().length === 1 && timeline.some((t) => t.startsWith("fs:set:" + FENCE_PREFIX))) {
+        injected = true;
+        const doc = store.get(path)!;
+        store.set(path, { runs: { ...doc.runs, [cToken]: { action: "deleteAllPhotos", startedAtMs: now, activeUntilMs: now + FENCE_MS } } });
+      }
+    };
+    await run({ action: "deleteAllScans" });
+    fx.afterTxRead = null;
+    expect(Object.keys(runsOf())).toEqual([cToken]);
+    expect(fenceOn()).toBe(true);
+  });
+
+  test.each([
+    ["not hex", "z".repeat(32)],
+    ["too short", "a".repeat(31)],
+    ["too long", "a".repeat(33)],
+    ["a number", 5],
+  ])("a malformed fenceToken (%s) -> invalid-cursor", async (_n, token) => {
+    await expectHttpsError(run({ action: "deleteAllScans", cursor: "scan_0001", fenceToken: token }), "invalid-argument", "invalid-cursor");
+  });
+
+  test("applyRetention never returns a fenceToken", async () => {
+    seedMany(250);
+    const res = await run({ action: "applyRetention", retentionDays: 30 });
+    expect(res.nextCursor).toBeDefined();
+    expect(res.fenceToken).toBeUndefined();
+  });
+});
+
+describe("late-upload sweep record (GPT-PM MAJOR-02B)", () => {
+  test.each(["deleteAllPhotos", "deleteAllScans"])("%s: the final page records dueAtMs = completion + 10 min URL TTL + 2 min margin; the fence is gone", async (action) => {
+    seedStored("scan_one_1", now - DAY);
+    await run({ action });
+    expect(fenceKeys()).toEqual([]);
+    expect(lateKeys()).toHaveLength(1);
+    expect(lateKeys()[0]).not.toContain(UID);
+    expect(store.get(lateKeys()[0])).toEqual({ uid: UID, action, dueAtMs: now + LATE_DELAY_MS });
+  });
+
+  test("no record before the final page, none from applyRetention or exportLinks; a later completion pushes dueAtMs forward, never back", async () => {
+    seedMany(250);
+    const first = await run({ action: "deleteAllScans" });
+    await run({ action: "applyRetention", retentionDays: 30 });
+    await run({ action: "exportLinks" });
+    expect(lateKeys()).toEqual([]);
+
+    now += 60 * 1000;
+    await run({ action: "deleteAllScans", cursor: first.nextCursor, fenceToken: first.fenceToken });
+    const due1 = store.get(lateKeys()[0])!.dueAtMs;
+    expect(due1).toBe(now + LATE_DELAY_MS);
+
+    now += 5 * 60 * 1000;
+    const again = await run({ action: "deleteAllPhotos" });
+    await run({ action: "deleteAllPhotos", cursor: again.nextCursor, fenceToken: again.fenceToken });
+    expect(lateKeys()).toHaveLength(1);
+    expect(store.get(lateKeys()[0])!.dueAtMs).toBe(now + LATE_DELAY_MS);
+    expect(store.get(lateKeys()[0])!.dueAtMs).toBeGreaterThan(due1);
   });
 });
 

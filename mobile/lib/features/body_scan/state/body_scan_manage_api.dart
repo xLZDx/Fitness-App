@@ -38,6 +38,7 @@ class CallableBodyScanManageApi implements BodyScanManageApi {
   Future<int> _run(String action, {int? retentionDays}) async {
     var processed = 0;
     String? cursor;
+    String? fenceToken;
     for (var page = 0; page < kManageMaxPages; page++) {
       final Map<String, dynamic> body;
       try {
@@ -45,6 +46,7 @@ class CallableBodyScanManageApi implements BodyScanManageApi {
           'action': action,
           if (retentionDays != null) 'retentionDays': retentionDays,
           if (cursor != null) 'cursor': cursor,
+          if (cursor != null && fenceToken != null) 'fenceToken': fenceToken,
         });
         final raw = res.data;
         if (raw is! Map) {
@@ -59,6 +61,8 @@ class CallableBodyScanManageApi implements BodyScanManageApi {
       final next = body['nextCursor'];
       if (next is! String || next.isEmpty) return processed;
       cursor = next;
+      final token = body['fenceToken'];
+      fenceToken = token is String ? token : null;
     }
     throw const BodyScanApiException('scan-manage-failed', retriable: true);
   }

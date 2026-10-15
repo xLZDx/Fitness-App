@@ -2981,7 +2981,7 @@ export { createBodyScan } from "./body_scan/create";
 export { estimateBodyScan } from "./body_scan/estimate";
 export { deleteBodyScan } from "./body_scan/delete";
 export { manageBodyScanData } from "./body_scan/manage";
-export { purgeExpiredBodyScanPhotos } from "./body_scan/purge";
+export { purgeExpiredBodyScanPhotos, sweepLateBodyScanUploads } from "./body_scan/purge";
 
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and

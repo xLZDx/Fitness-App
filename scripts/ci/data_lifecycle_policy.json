@@ -778,7 +778,7 @@
     },
     "body_scan_purge_state": {
       "classification": "EXEMPT",
-      "reason": "Purge bookkeeping (persisted page token and counters) written by the daily body-scan purge. Holds no user content and no uid; server-only (firestore.rules: allow read, write: if false).",
+      "reason": "Purge bookkeeping (persisted page token and counters) written by the daily body-scan purge. Holds no user content. Only the transient `late_sweep_<hash>` records carry a uid, for minutes, until the 5-minute late-upload sweep has run and deleted them; server-only (firestore.rules: allow read, write: if false).",
       "clientAccess": [
         {
           "path": "/body_scan_purge_state/{id}",

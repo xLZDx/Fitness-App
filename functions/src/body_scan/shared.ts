@@ -126,24 +126,83 @@ export const DELETE_FENCE_MS = 15 * 60 * 1000;
 
 /**
  * The per-user bulk-delete fence: `body_scan_purge_state/delete_fence_<hash>`.
- * That collection is deny-all for clients (Admin SDK only) and, like the rest of
- * it, must not carry a uid, so the id is a hash of the uid. `manageBodyScanData`
- * `deleteAll*` writes it on the first page and clears it on the last;
- * `createBodyScan` reads it inside its transaction (a scan created behind the
- * delete walk's cursor would otherwise survive the "done" page).
+ * That collection is deny-all for clients (Admin SDK only) and the fence id is a
+ * hash of the uid. The document holds one entry PER OPERATION (run):
+ * `{ runs: { <opToken>: { action, startedAtMs, activeUntilMs } } }`.
+ * `manageBodyScanData` `deleteAll*` registers its own run on the first page
+ * (random `opToken`, returned to the client as `fenceToken` and echoed back on
+ * continuation pages), refreshes only that run on every page and removes only
+ * that run on the final page, all in a transaction (read-modify-write), so two
+ * overlapping operations can neither replace nor clear each other's protection.
+ * `createBodyScan` reads the document inside its transaction and refuses while
+ * ANY run is active (a scan created behind a delete walk's cursor would
+ * otherwise survive its "done" page).
  */
 export function deleteFenceRef(uid: string): FirebaseFirestore.DocumentReference {
-  const key = createHash("sha256").update(uid).digest("hex").slice(0, 32);
-  return db().doc(`body_scan_purge_state/delete_fence_${key}`);
+  return db().doc(`body_scan_purge_state/delete_fence_${uidKey(uid)}`);
 }
 
-/** True while a fence document says a bulk delete is walking this user's scans. */
+function uidKey(uid: string): string {
+  return createHash("sha256").update(uid).digest("hex").slice(0, 32);
+}
+
+/** One registered bulk-delete operation inside the fence document. */
+export interface FenceRun {
+  action: string;
+  startedAtMs: number;
+  activeUntilMs: number;
+}
+
+/** The opaque per-operation token (`fenceToken`): 128 random bits, hex. */
+export const FENCE_TOKEN = /^[0-9a-f]{32}$/;
+
+/** The registered runs of a fence document that are still active at `nowMs` (expired and malformed entries dropped). */
+export function activeFenceRuns(
+  data: FirebaseFirestore.DocumentData | undefined,
+  nowMs: number,
+): Record<string, FenceRun> {
+  const out: Record<string, FenceRun> = {};
+  const runs: unknown = data?.runs;
+  if (!runs || typeof runs !== "object") return out;
+  for (const [token, raw] of Object.entries(runs as Record<string, unknown>)) {
+    const r = raw as Partial<FenceRun> | null;
+    if (
+      FENCE_TOKEN.test(token) &&
+      r &&
+      typeof r.action === "string" &&
+      typeof r.startedAtMs === "number" &&
+      typeof r.activeUntilMs === "number" &&
+      r.activeUntilMs > nowMs
+    ) {
+      out[token] = { action: r.action, startedAtMs: r.startedAtMs, activeUntilMs: r.activeUntilMs };
+    }
+  }
+  return out;
+}
+
+/** True while ANY registered bulk delete is still walking this user's scans. */
 export function deleteFenceActive(
   data: FirebaseFirestore.DocumentData | undefined,
   nowMs: number,
 ): boolean {
-  const until = data?.activeUntilMs;
-  return typeof until === "number" && until > nowMs;
+  return Object.keys(activeFenceRuns(data, nowMs)).length > 0;
+}
+
+/** Slack added to the upload-URL lifetime before the late sweep may run. */
+export const LATE_SWEEP_MARGIN_MS = 2 * 60 * 1000;
+/** Signed PUT URLs issued before a bulk delete stay valid up to this long after it completes. */
+export const LATE_SWEEP_DELAY_MS = UPLOAD_URL_TTL_MS + LATE_SWEEP_MARGIN_MS;
+
+/**
+ * `body_scan_purge_state/late_sweep_<hash>`: written when a bulk delete
+ * completes, `{ uid, action, dueAtMs }` with `dueAtMs = completion +
+ * UPLOAD_URL_TTL_MS + margin`. It is NOT the fence and never blocks a create.
+ * The scheduled late sweep needs the uid to list the user's prefix, so this
+ * server-only record is the one purge-state document that carries it; it lives
+ * until the sweep has run (minutes), then is deleted.
+ */
+export function lateSweepRef(uid: string): FirebaseFirestore.DocumentReference {
+  return db().doc(`body_scan_purge_state/late_sweep_${uidKey(uid)}`);
 }
 
 /** The purge path guard (P-1): only `users/{uid}/body_scans/{scanId}` is a scan. */

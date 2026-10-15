@@ -23,6 +23,21 @@
  * idempotent and retried by the next run. Logs carry scan ids and counts only:
  * never a uid or an object path (D-67).
  *
+ * LATE SWEEP (`runLateSweep`, scheduled every 5 minutes): a bulk delete
+ * (`manageBodyScanData` deleteAllPhotos/deleteAllScans) guarantees removal of
+ * everything uploaded BEFORE it completed. A V4 PUT URL issued earlier cannot be
+ * revoked and stays valid for `UPLOAD_URL_TTL_MS`, so on completion the delete
+ * records `body_scan_purge_state/late_sweep_<hash>` with `dueAtMs = completion
+ * + UPLOAD_URL_TTL_MS + 2 min`. Once due, the sweep lists the user's scans
+ * prefix and deletes every object whose scan is missing, `cancelled` or
+ * `photosState` in `{none, deleted}` (the same verdict as pass 4, without its
+ * one-hour age floor), then deletes the record. Objects of scans that are live
+ * (for example a scan created after the delete) are never touched. An estimate
+ * cannot turn such an object into a stored photo: it requires
+ * `photosState == awaiting_upload` and refuses `cancelled`. Bound: an object that
+ * arrives through an old URL is removed at most due time + one schedule
+ * interval (5 min) after completion, i.e. within 17 minutes.
+ *
  * A bucket lifecycle rule for "pending" objects was REJECTED (design s7.4):
  * lifecycle conditions are age and prefix, not Firestore state, and every scan
  * object shares one prefix, so a short rule would delete retained photos.
@@ -43,6 +58,7 @@ import {
   scanBucket,
   tombstoneScrub,
   tsFromMillis,
+  userScansPrefix,
 } from "./shared";
 
 /** Documents per page of every pass. */
@@ -358,6 +374,128 @@ export async function runBodyScanPurge(
   });
   return counts;
 }
+
+/** The late sweep is scheduled every 5 minutes; stop starting new work after 90 s of its 120 s timeout. */
+export const LATE_SWEEP_RUN_BUDGET_MS = 90 * 1000;
+/** Listing pages per user per run; a user with more is continued by the next run. */
+const LATE_SWEEP_MAX_LIST_PAGES = 20;
+const LATE_UID = /^[^/]{1,128}$/;
+
+export interface LateSweepCounts {
+  /** Records fully processed (objects swept, record deleted). */
+  records: number;
+  /** Objects removed. */
+  deleted: number;
+  failures: number;
+}
+
+/**
+ * Removes the orphan objects of one user's scans prefix. Returns false when the
+ * walk was cut short (deadline / page cap) so the caller keeps the record.
+ */
+async function sweepUserPrefix(uid: string, deadline: number, counts: LateSweepCounts): Promise<boolean> {
+  const bucket = scanBucket();
+  const verdicts = new Map<string, boolean>();
+  let pageToken: string | undefined;
+  for (let page = 0; page < LATE_SWEEP_MAX_LIST_PAGES; page++) {
+    if (Date.now() >= deadline) return false;
+    const [files, next] = await bucket.getFiles({
+      prefix: userScansPrefix(uid),
+      autoPaginate: false,
+      maxResults: LIST_PAGE,
+      ...(pageToken ? { pageToken } : {}),
+    });
+    for (const file of files) {
+      const match = OBJECT_NAME.exec(file.name);
+      if (!match || match[1] !== uid) continue;
+      const scanId = match[2];
+      let orphan = verdicts.get(scanId);
+      if (orphan === undefined) {
+        const snap = await db().doc(`users/${uid}/body_scans/${scanId}`).get();
+        orphan = objectsAreOrphans(snap.data());
+        verdicts.set(scanId, orphan);
+      }
+      if (!orphan) continue;
+      await file.delete({ ignoreNotFound: true });
+      counts.deleted += 1;
+    }
+    pageToken = next?.pageToken;
+    if (!pageToken) return true;
+  }
+  return false;
+}
+
+/**
+ * The late sweep for uploads authorized before a bulk delete (see the header).
+ * Idempotent and bounded: pages of 200 records, a per-user listing cap and a
+ * start-of-work deadline; a record that could not be completed stays for the
+ * next run. Logs carry counts only (D-67).
+ */
+export async function runLateSweep(
+  nowMs: number = Date.now(),
+  budgetMs: number = LATE_SWEEP_RUN_BUDGET_MS,
+): Promise<LateSweepCounts> {
+  const counts: LateSweepCounts = { records: 0, deleted: 0, failures: 0 };
+  if (!bodyScanCloudEnabled()) return counts;
+  const deadline = nowMs + budgetMs;
+  try {
+    await walk(
+      () =>
+        db()
+          .collection("body_scan_purge_state")
+          .where("dueAtMs", "<=", nowMs)
+          .orderBy("dueAtMs"),
+      deadline,
+      async (doc) => {
+        const uid: unknown = doc.data().uid;
+        if (typeof uid !== "string" || !LATE_UID.test(uid)) {
+          // A malformed record can never be processed: drop it, do not retry forever.
+          await doc.ref.delete();
+          logBodyScan("warn", "bodyScanLateSweep", { outcome: "record-invalid" });
+          return;
+        }
+        try {
+          if (await sweepUserPrefix(uid, deadline, counts)) {
+            await doc.ref.delete();
+            counts.records += 1;
+          }
+        } catch (e) {
+          counts.failures += 1;
+          logBodyScan("warn", "bodyScanLateSweep", {
+            outcome: "sweep-failed",
+            errorCode: errorSlug(e),
+          });
+        }
+      },
+    );
+  } catch (e) {
+    counts.failures += 1;
+    logBodyScan("error", "bodyScanLateSweep", { outcome: "pass-failed", errorCode: errorSlug(e) });
+  }
+  logBodyScan("info", "bodyScanLateSweep", {
+    outcome: "run-complete",
+    latencyMs: Date.now() - nowMs,
+    records: counts.records,
+    deleted: counts.deleted,
+    failures: counts.failures,
+  });
+  return counts;
+}
+
+export const sweepLateBodyScanUploads = onSchedule(
+  {
+    schedule: "every 5 minutes",
+    region: "europe-west1",
+    timeoutSeconds: 120,
+    memory: "256MiB",
+    maxInstances: 1,
+    concurrency: 1,
+    serviceAccount: RUNTIME_SA.bodyScan,
+  },
+  async () => {
+    await runLateSweep();
+  },
+);
 
 export const purgeExpiredBodyScanPhotos = onSchedule(
   {
