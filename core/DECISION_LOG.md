@@ -56755,3 +56755,7 @@ Decision: the S01 branch merges phase2/main (89927444) before its review gate; t
 ## 2026-10-16 - Commit: S01 contract round 3 and SDLC state
 
 Decision: until the operator answers the minors question, adult-to-minor friend edges are refused (default E1); the debug_sessions rules criterion is bounded to list size and top-level keys because rules cannot iterate list elements. docs/sdlc/STATE.md becomes the phase truth of the Phase 2 program. Evidence: core/changes/2026-10-16-s01-contract-round-3-and-sdlc-state.md.
+
+## 2026-10-16 - Commit: S01 UI-0 delta for PR #5 screens
+
+Decision: the UI-0 baseline gets a separate delta document for the Body Scan, nutrition plan and food diary screens (a third visual pattern: plain Material plus GlassCard) instead of rewriting the original audit. Evidence: core/changes/2026-10-16-s01-ui0-bodyscan-delta.md.

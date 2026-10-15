@@ -30,8 +30,8 @@ Current phase: 5 Doc review. Entry criteria of the next phase (8 Gate): internal
 | 1 Discovery | done | requirements drawn from the roadmap and the Phase 2 plan |
 | 2 Backlog | done | S01 row of the roadmap |
 | 3 Design | done | `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` (98 requirements, all PROPOSED), `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` |
-| 4 Docs + test plan | done | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md`, `docs/phase2/s01/UI0_BASELINE_AUDIT.md` and `UI0_BASELINE_AUDIT_ADDENDUM.md`; acceptance criteria are inside the contract (rules and sweep tests for later sprints) |
-| 5 Doc review | in progress | security review rounds 1 to 3 (round 3 found one MAJOR, fix in progress); product-ux and accessibility review of UI-0 done; GPT-PM review not started |
+| 4 Docs + test plan | done | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md`, `docs/phase2/s01/UI0_BASELINE_AUDIT.md`, `UI0_BASELINE_AUDIT_ADDENDUM.md` and `UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` (PR #5 screens); acceptance criteria are inside the contract (rules and sweep tests for later sprints) |
+| 5 Doc review | in progress | security review rounds 1 to 4 closed (last verdict ALL CLOSED); product-ux and accessibility review of UI-0 done; GPT-PM review not started |
 | 6 Build | n/a | no code in this sprint |
 | 7 Verify | n/a | no tests in this sprint |
 | 8 Gate | not started | GPT-PM APPROVE on the exact head, then one push and one PR |
@@ -40,7 +40,7 @@ Current phase: 5 Doc review. Entry criteria of the next phase (8 Gate): internal
 
 Operator decisions required at acceptance (each stays open until answered): retention of GPS and heart-rate streams (D-16); minors, sharing and public routes (D-17); map tiles source (D-6); route data source and launch region (D-7).
 
-Agents and models actually run in S01 (all Sonnet 5.5): technical-writer (contract and matrix), general-purpose (rights study), code-explorer (UI-0 audit, addendum, Body Scan delta), security-reviewer (rounds 1 to 3), product-ux-reviewer (UI-0 review).
+Agents and models actually run in S01 (all Sonnet 5.5): technical-writer (contract and matrix), general-purpose (rights study), code-explorer (UI-0 audit, addendum, Body Scan delta), security-reviewer (rounds 1 to 4), product-ux-reviewer (UI-0 review).
 Agents and models actually run in S00: implementation-engineer, tdd-guide (Sonnet 5.5); security-reviewer, silent-failure-hunter (Sonnet 5.5, medium); reviews through GPT-PM (PM Bridge).
 
-Next role to launch: technical-writer (finish round 3 fixes), then security-reviewer for a closing check, then GPT-PM.
+Next role to launch: GPT-PM review of the S01 document set on the exact head (base `origin/phase2/main`).
