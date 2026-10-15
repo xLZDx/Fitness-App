@@ -19,6 +19,13 @@ import {
   AI_CALLABLES,
   RELEASE_EVIDENCE_PATH,
   EXPECTED_PROJECT_ID,
+  LEGACY_PROJECT_ID,
+  PHASE2_ALIAS,
+  FIREBASERC_PATH,
+  DEPLOY_LINE_REASONS,
+  classifyDeployLine,
+  resolveDeployTarget,
+  checkDeployTarget,
 } from "../release_guard";
 import {
   aiGatewayCallsMetricJson,
@@ -29,6 +36,14 @@ import {
 
 const PROJECT = EXPECTED_PROJECT_ID;
 const RUNTIME_SA = `fn-ai-runtime@${PROJECT}.iam.gserviceaccount.com`;
+const PHASE2_PROJECT = "fitness-app-phase2-test";
+
+const DEFAULT_FIREBASERC = JSON.stringify({
+  projects: { default: EXPECTED_PROJECT_ID, "legacy-shared": LEGACY_PROJECT_ID },
+});
+function firebasercWith(projects: Record<string, unknown>): string {
+  return JSON.stringify({ projects });
+}
 
 const HEALTHY_EVIDENCE = JSON.stringify({
   step8KillSwitch: { status: "closed" },
@@ -131,11 +146,22 @@ function makeDeps(opts: {
   git?: Partial<Record<string, CommandHandler>>;
   evidence?: string | null;
   sourceOverrides?: Partial<Record<string, string | null>>;
+  /** Branch returned by `currentBranch`; default is a phase1 branch. */
+  branch?: string | null;
+  /** When set, `currentBranch` rejects with this error. */
+  branchThrows?: Error;
+  /** Content of `.firebaserc`; `null` = file missing. Default: production + legacy aliases only. */
+  firebaserc?: string | null;
 }): ReleaseGuardDeps {
   return {
     project: opts.project ?? PROJECT,
     now: () => Date.parse("2026-08-29T12:00:00.000Z"),
+    currentBranch: async () => {
+      if (opts.branchThrows) throw opts.branchThrows;
+      return opts.branch === undefined ? "phase1/main" : opts.branch;
+    },
     readFile: async (path: string) => {
+      if (path === FIREBASERC_PATH) return opts.firebaserc === undefined ? DEFAULT_FIREBASERC : opts.firebaserc;
       if (path === RELEASE_EVIDENCE_PATH) return opts.evidence === undefined ? HEALTHY_EVIDENCE : opts.evidence;
       if (opts.sourceOverrides && path in opts.sourceOverrides) return opts.sourceOverrides[path] ?? null;
       if (path === SCALING_PATH) return HEALTHY_SCALING_SOURCE;
@@ -909,5 +935,293 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     );
     expect(result.checks.filter((c) => c.status === "OK")).toHaveLength(9);
     expect(result.verdict).toBe("BLOCK");
+  });
+});
+
+describe("deploy line classification (S00 backend separation gate)", () => {
+  test.each([
+    ["phase2/s00-split-docs", "phase2"],
+    ["phase2/x", "phase2"],
+    ["  phase2/padded  ", "phase2"],
+    ["phase1/main", "phase1"],
+    ["master", "phase1"],
+    ["phase1/x", "phase1"],
+    ["phase1/hotfix/deep", "phase1"],
+    ["feature/x", "other"],
+    ["main", "other"],
+    ["HEAD", "other"],
+    ["", "other"],
+    ["   ", "other"],
+    ["phase2", "other"],
+    ["phase1", "other"],
+    ["Phase2/x", "other"],
+    ["release/phase2/x", "other"],
+    [null, "other"],
+  ] as const)("classifyDeployLine(%j) = %s", (branch, expected) => {
+    expect(classifyDeployLine(branch)).toBe(expected);
+  });
+
+  test("DEPLOY_LINE_REASONS is exactly the closed set of six slugs", () => {
+    expect([...DEPLOY_LINE_REASONS]).toEqual([
+      "deploy-line-unknown",
+      "phase1-wrong-project",
+      "firebaserc-unreadable",
+      "phase2-alias-missing",
+      "phase2-targets-production",
+      "phase2-project-mismatch",
+    ]);
+  });
+});
+
+describe("checkDeployTarget / resolveDeployTarget by deploy line", () => {
+  const phase2Rc = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+
+  function slugOf(detail: string): string {
+    return detail.split(":")[0];
+  }
+
+  // ---- PASS paths
+  test("PASS: phase1 line + production project", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/main", project: EXPECTED_PROJECT_ID }));
+    expect(check.status).toBe("OK");
+    expect(check.detail).toBe(`line = phase1, project = ${EXPECTED_PROJECT_ID}`);
+  });
+
+  test("PASS: master is phase1 and may deploy to production", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "master" }));
+    expect(check.status).toBe("OK");
+  });
+
+  test("PASS: phase2 line + the project behind alias phase2", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase2/s00-split-docs", project: PHASE2_PROJECT, firebaserc: phase2Rc }),
+    );
+    expect(check.status).toBe("OK");
+    expect(check.detail).toBe(`line = phase2, project = ${PHASE2_PROJECT}`);
+  });
+
+  test("resolveDeployTarget returns the allowed project per line", async () => {
+    const p1 = await resolveDeployTarget(makeDeps({ branch: "phase1/x" }));
+    expect(p1).toEqual({ ok: true, line: "phase1", branch: "phase1/x", allowedProject: EXPECTED_PROJECT_ID });
+    const p2 = await resolveDeployTarget(makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }));
+    expect(p2).toEqual({ ok: true, line: "phase2", branch: "phase2/x", allowedProject: PHASE2_PROJECT });
+  });
+
+  // ---- deploy-line-unknown
+  test.each(["feature/x", "HEAD", "", "main"])("deploy-line-unknown for branch %j", async (branch) => {
+    const check = await checkDeployTarget(makeDeps({ branch }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("deploy-line-unknown");
+    expect(check.detail).toContain(JSON.stringify(branch));
+  });
+
+  test("deploy-line-unknown when the branch cannot be read (null)", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: null }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("deploy-line-unknown");
+    expect(check.detail).toContain("could not be read");
+  });
+
+  test("deploy-line-unknown when currentBranch throws (fails closed, does not propagate)", async () => {
+    const deps = makeDeps({ branchThrows: new Error("git exploded") });
+    const resolved = await resolveDeployTarget(deps);
+    expect(resolved).toMatchObject({ ok: false, line: "other", branch: null, reason: "deploy-line-unknown" });
+    const check = await checkDeployTarget(deps);
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("deploy-line-unknown");
+  });
+
+  // ---- phase1-wrong-project
+  test.each([LEGACY_PROJECT_ID, PHASE2_PROJECT, "anything-else"])(
+    "phase1-wrong-project when the phase1 line targets %s",
+    async (project) => {
+      const check = await checkDeployTarget(makeDeps({ branch: "phase1/main", project }));
+      expect(check.status).toBe("FAILED");
+      expect(slugOf(check.detail)).toBe("phase1-wrong-project");
+      expect(check.detail).toContain(`"${project}"`);
+      expect(check.detail).toContain(`"${EXPECTED_PROJECT_ID}"`);
+    },
+  );
+
+  test("phase1 line cannot deploy to the phase2 project even when .firebaserc defines it", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase1/main", project: PHASE2_PROJECT, firebaserc: phase2Rc }),
+    );
+    expect(slugOf(check.detail)).toBe("phase1-wrong-project");
+  });
+
+  // ---- firebaserc-unreadable
+  test.each([
+    ["missing file", null],
+    ["bad JSON", "{not json"],
+    ["empty file", ""],
+    ["JSON null", "null"],
+    ["JSON array root", "[]"],
+    ["no projects object", JSON.stringify({ other: 1 })],
+    ["projects is a string", JSON.stringify({ projects: "x" })],
+    ["projects is null", JSON.stringify({ projects: null })],
+  ] as const)("firebaserc-unreadable on phase2 line: %s", async (_label, firebaserc) => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project: PHASE2_PROJECT, firebaserc }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("firebaserc-unreadable");
+  });
+
+  test("a missing .firebaserc does NOT matter on the phase1 line (it is not consulted)", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/main", firebaserc: null }));
+    expect(check.status).toBe("OK");
+  });
+
+  // ---- phase2-alias-missing
+  test.each([
+    ["absent", firebasercWith({ default: EXPECTED_PROJECT_ID })],
+    ["non-string (number)", firebasercWith({ [PHASE2_ALIAS]: 42 })],
+    ["non-string (object)", firebasercWith({ [PHASE2_ALIAS]: { id: PHASE2_PROJECT } })],
+    ["null", firebasercWith({ [PHASE2_ALIAS]: null })],
+    ["empty string", firebasercWith({ [PHASE2_ALIAS]: "" })],
+    ["blank string", firebasercWith({ [PHASE2_ALIAS]: "   " })],
+    ["empty projects map", firebasercWith({})],
+  ] as const)("phase2-alias-missing when alias phase2 is %s", async (_label, firebaserc) => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project: PHASE2_PROJECT, firebaserc }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-alias-missing");
+  });
+
+  // ---- phase2-targets-production
+  test.each([
+    ["the production id", firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: EXPECTED_PROJECT_ID })],
+    ["the production id with no other aliases", firebasercWith({ [PHASE2_ALIAS]: EXPECTED_PROJECT_ID })],
+    ["the legacy id", firebasercWith({ "legacy-shared": LEGACY_PROJECT_ID, [PHASE2_ALIAS]: LEGACY_PROJECT_ID })],
+    ["the legacy id with no legacy alias", firebasercWith({ [PHASE2_ALIAS]: LEGACY_PROJECT_ID })],
+    ["another alias's id", firebasercWith({ staging: "shared-staging", [PHASE2_ALIAS]: "shared-staging" })],
+  ] as const)("phase2-targets-production when alias phase2 equals %s", async (_label, firebaserc) => {
+    const resolved = await resolveDeployTarget(makeDeps({ branch: "phase2/x", firebaserc }));
+    expect(resolved).toMatchObject({ ok: false, line: "phase2", reason: "phase2-targets-production" });
+    const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project: PHASE2_PROJECT, firebaserc }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-targets-production");
+  });
+
+  test("phase2-targets-production even when deps.project equals the production id (cannot be satisfied by matching)", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({
+        branch: "phase2/x",
+        project: EXPECTED_PROJECT_ID,
+        firebaserc: firebasercWith({ [PHASE2_ALIAS]: EXPECTED_PROJECT_ID }),
+      }),
+    );
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-targets-production");
+  });
+
+  // ---- phase2-project-mismatch
+  test.each([EXPECTED_PROJECT_ID, LEGACY_PROJECT_ID, "some-other-project"])(
+    "phase2-project-mismatch when phase2 line targets %s instead of the alias project",
+    async (project) => {
+      const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project, firebaserc: phase2Rc }));
+      expect(check.status).toBe("FAILED");
+      expect(slugOf(check.detail)).toBe("phase2-project-mismatch");
+      expect(check.detail).toContain(`"${project}"`);
+      expect(check.detail).toContain(`"${PHASE2_PROJECT}"`);
+    },
+  );
+
+  test("phase2 run with the default project fallback (production id) blocks", async () => {
+    // run_release_guard.mjs falls back to EXPECTED_PROJECT_ID when neither
+    // GCLOUD_PROJECT nor --project= is given; on a phase2 branch that must block.
+    const result = await runReleaseGuard(makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }));
+    expect(result.project).toBe(EXPECTED_PROJECT_ID);
+    expect(result.verdict).toBe("BLOCK");
+    const check = byName(result, DEPLOY_TARGET_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-project-mismatch");
+  });
+
+  // ---- runReleaseGuard result fields
+  test("runReleaseGuard reports line, branch and project on a phase1 PASS", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: "phase1/main" }));
+    expect(result.verdict).toBe("PASS");
+    expect(result.line).toBe("phase1");
+    expect(result.branch).toBe("phase1/main");
+    expect(result.project).toBe(EXPECTED_PROJECT_ID);
+  });
+
+  test("runReleaseGuard reports line other / branch null when the branch is unreadable, and BLOCKs", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: null }));
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.line).toBe("other");
+    expect(result.branch).toBeNull();
+    expect(slugOf(byName(result, DEPLOY_TARGET_CHECK).detail)).toBe("deploy-line-unknown");
+  });
+
+  test("runReleaseGuard reports line phase2 on a phase2 branch", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ branch: "phase2/s00", project: PHASE2_PROJECT, firebaserc: phase2Rc }),
+    );
+    expect(result.line).toBe("phase2");
+    expect(result.branch).toBe("phase2/s00");
+    expect(result.project).toBe(PHASE2_PROJECT);
+    expect(byName(result, DEPLOY_TARGET_CHECK).status).toBe("OK");
+  });
+
+  test("every failing deploy-target detail leads with a slug from the closed DEPLOY_LINE_REASONS set", async () => {
+    const cases = [
+      makeDeps({ branch: "feature/x" }),
+      makeDeps({ branch: "phase1/main", project: LEGACY_PROJECT_ID }),
+      makeDeps({ branch: "phase2/x", firebaserc: null }),
+      makeDeps({ branch: "phase2/x", firebaserc: firebasercWith({}) }),
+      makeDeps({ branch: "phase2/x", firebaserc: firebasercWith({ [PHASE2_ALIAS]: EXPECTED_PROJECT_ID }) }),
+      makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }),
+    ];
+    const slugs: string[] = [];
+    for (const deps of cases) {
+      const check = await checkDeployTarget(deps);
+      expect(check.status).toBe("FAILED");
+      const slug = slugOf(check.detail);
+      expect(DEPLOY_LINE_REASONS as readonly string[]).toContain(slug);
+      slugs.push(slug);
+    }
+    expect(new Set(slugs).size).toBe(6);
+  });
+
+  // ---- no override
+  test("no override path: env vars and extra deps fields cannot turn a block into a pass", async () => {
+    const names = [
+      "GCLOUD_PROJECT",
+      "FORCE_DEPLOY",
+      "RELEASE_GUARD_OVERRIDE",
+      "RELEASE_GUARD_SKIP",
+      "DEPLOY_LINE",
+      "ALLOW_CROSS_LINE_DEPLOY",
+      "FIREBASE_PROJECT",
+    ];
+    const saved: Record<string, string | undefined> = {};
+    for (const n of names) saved[n] = process.env[n];
+    try {
+      for (const n of names) process.env[n] = "1";
+      process.env.GCLOUD_PROJECT = PHASE2_PROJECT;
+      process.env.DEPLOY_LINE = "phase2";
+
+      const blocked = makeDeps({ branch: "feature/x" }) as ReleaseGuardDeps & Record<string, unknown>;
+      blocked.override = true;
+      blocked.force = true;
+      blocked.allowCrossLine = true;
+      expect((await checkDeployTarget(blocked)).status).toBe("FAILED");
+      expect((await runReleaseGuard(blocked)).verdict).toBe("BLOCK");
+
+      const crossLine = makeDeps({ branch: "phase1/main", project: PHASE2_PROJECT });
+      expect(slugOf((await checkDeployTarget(crossLine)).detail)).toBe("phase1-wrong-project");
+
+      const prodFromPhase2 = makeDeps({ branch: "phase2/x", firebaserc: phase2Rc });
+      expect(slugOf((await checkDeployTarget(prodFromPhase2)).detail)).toBe("phase2-project-mismatch");
+    } finally {
+      for (const n of names) {
+        if (saved[n] === undefined) delete process.env[n];
+        else process.env[n] = saved[n];
+      }
+    }
   });
 });

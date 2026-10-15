@@ -55826,3 +55826,7 @@ Decision: operator answers recorded. D-1 phase rule as written (Phase 1 = planne
 ## 2026-10-15 - Commit: S00 backend separation gate
 
 Decision: the release guard checks the deploy line (from the git branch) before the project: phase1 line deploys only to fitness-app-korostelev, phase2 line only to the project under .firebaserc alias phase2 (never production or legacy), any other branch is blocked; no env override. Phase 2 stays on the emulator until the operator creates the Phase 2 Firebase project and the alias. Evidence: core/changes/2026-10-15-s00-backend-separation-gate.md; not yet tested.
+
+## 2026-10-15 - Commit: S00 backend separation gate tests
+
+Decision: the deploy-line gate is proven by deterministic fake-deps tests in release_guard.test.ts (115 tests passing, 0 failing): branch classification, all six block reasons, both PASS paths, phase2 default-project fallback blocks, no override path. No product code changed. Not verified: real CLI execution of run_release_guard.mjs and the real git branch reader. Evidence: core/changes/2026-10-15-s00-backend-gate-tests.md.
