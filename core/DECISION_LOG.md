@@ -55878,3 +55878,15 @@ Evidence: reading only; nothing executed. Unverified: emulator behaviour of ever
 ## 2026-10-15 - Commit: C04 evidence note (E1 sequencing)
 
 Decision: the C04 decision entry above landed in the C01 commit because of a concurrent path-limited commit; the C04 code commit follows it. E1 commits keep device-only `excludedFoods` inside `SensitiveProfile` so the rules allowlist (which refuses it) never sees it. Evidence: reading only; nothing executed.
+
+## 2026-10-15 - Commit C02: functions infrastructure and server flags (Body Scan + Nutrition Coach, E0)
+
+Decision (D-60, D-64 implemented): new runtime identity fn-bodyscan (RUNTIME_SA.bodyScan) and capped profiles BODY_SCAN (fn-bodyscan) and FOOD_LOOKUP (fn-data), both on the fail-closed APP_CHECK_ENFORCED_AI flag. The identity must exist before any function using it deploys (runbooks/body_scan_bucket.md).
+
+Decision (D-67): quota log events for the eight new quota actions carry no uid and log an error code instead of String(e); pre-existing actions keep their log shape. Chosen "omit" over "salted hash" because a hash needs a secret salt and gives no operational value the action name does not already give.
+
+Decision (flags): server flags are read per call through three modules only (body_scan/flags.ts, food_flags.ts, feature_flags.ts assertFeatureEnabled); only the exact string true enables FOOD_AI_ENABLED / FOOD_LOOKUP_ENABLED; a malformed BODY_SCAN_BUCKET counts as unset (fail closed, never points the purge at another bucket). Flag checks run before quota charges.
+
+Decision (SD-11 kept): release_guard.ts, discover_callables.ts and index.ts sweepAccountData are untouched in C02; they change in C12/C20 with their callables. AI_GATEWAY_OPERATIONS grows to six in C02 so the type and monitoring filters are ready (monitoring series bound 6 x 3 = 18).
+
+Evidence: reading only; not compiled or run. Unverified: Schema import and DOM fetch types under the existing tsconfig, all behaviour. Change record: core/changes/2026-10-15-functions-infra-and-flags.md.
