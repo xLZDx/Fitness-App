@@ -75,6 +75,13 @@ Map<String, dynamic> buildExport({
       'sessions) could not be retrieved. Re-run the export to try again.',
     );
   }
+  if (server != null && server['pagingIncomplete'] == true) {
+    notes.add(
+      'Some diary, weight or scan rows could not be fetched (a page failed or '
+      'the 50-page limit was reached), so those sections may be incomplete. '
+      'Re-run the export to try again.',
+    );
+  }
   if (progressPhotosIncomplete) {
     notes.add(
       'The list of progress photos below may be incomplete: reading it '

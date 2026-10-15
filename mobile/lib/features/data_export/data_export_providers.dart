@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/state/auth_providers.dart';
 import '../profile/data/profile_models.dart';
+import '../profile/data/sensitive_profile.dart' show mergeSensitive;
 import '../profile/state/profile_providers.dart';
 import '../programmes/state/programme_providers.dart';
 import '../progress_photos/data/progress_photo.dart';
@@ -45,9 +46,25 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
       }
 
       final profileRepo = ref.read(profileRepositoryProvider);
-      final profile = await ref.read(currentProfileProvider.future) ??
+      final loaded = await ref.read(currentProfileProvider.future) ??
           await profileRepo.load(user.uid) ??
           UserProfile.empty(user.uid);
+
+      // C25 (D-55). `NutritionPrefs.excludedFoods` is device-only: the server
+      // copy of the profile never carries it. Merge the device store in
+      // explicitly so the export never depends on which repository produced
+      // [loaded]; `mergeSensitive` is idempotent and a no-op on an empty
+      // store. A failed local read keeps the profile as loaded.
+      var profile = loaded;
+      try {
+        final local = await ref
+            .read(localSensitiveStoreProvider)
+            .read(user.uid)
+            .timeout(const Duration(seconds: 5));
+        profile = mergeSensitive(loaded, local);
+      } catch (_) {
+        profile = loaded;
+      }
 
       // Bounded, unlike a bare `await`. Without a timeout here a stalled
       // network call (not an error -- a call that simply never resolves)
@@ -112,7 +129,7 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
       // is the last thing needed. Null on failure rather than an exception:
       // losing the local export too would punish the user twice for one
       // callable being down.
-      final server = await ref.read(serverExportProvider).fetch();
+      final server = await ref.read(serverExportProvider).fetchAll();
 
       final json = buildExportJson(
         profile: profile,
