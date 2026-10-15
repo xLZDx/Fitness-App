@@ -124,6 +124,20 @@ neither is present; it never falls back to a hardcoded or `.firebaserc`-default 
 - The clean-tree check covers `functions`, `functions-equipment-identity`, `firebase.json`, `.firebaserc`,
   `.gitignore`, the release-evidence file, `firestore.rules`, `firestore.indexes.json`, `storage.rules` and
   `public`, plus any rules, indexes, hosting public dir and functions source named in `firebase.json`.
+- Git-IGNORED files are checked too (`git status --porcelain --ignored=matching`, entries starting with `!!`):
+  Firebase uploads everything in the hosting public dir and the functions source except the target's own
+  `ignore` list, so an ignored file such as `public/app.js` would reach production without being in the
+  verified commit. An ignored entry under a deploy-relevant path blocks (detail leads with
+  `ignored-deployable-files:` and lists the paths) unless it is: (a) under a `node_modules` directory;
+  (b) inside the compiled output dirs `functions/lib` or `functions-equipment-identity/lib` (built by
+  `predeploy` from tracked source); (c) excluded by the target's own `ignore` list in `firebase.json`
+  (supported forms: exact names, `*`/`?` globs, `**/` and `/**`; an ignored directory excludes its contents;
+  unsupported pattern syntax never matches, so it can only make the check stricter); or (d) a functions env
+  file, `.env` or `.env.*` directly in a functions source dir (deploy input by design). The candidate dotenv
+  content is NOT verified by the guard: this is the known open item (2) below. A `git status` failure or a
+  quoted (special-character) path fails closed. Expect to remove stray ignored files before a deploy, for
+  example `functions/.runtimeconfig.json`, `functions/jest_result.json`, `functions/coverage/`, other `*.log`
+  files or `Thumbs.db` in `public/`: Firebase would upload them.
 
 ## Operator step (required before any Phase 2 deploy)
 

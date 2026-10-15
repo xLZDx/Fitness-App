@@ -1459,10 +1459,25 @@ function isSafeRepoRelativePath(p: string): boolean {
   );
 }
 
+/** A directory `firebase deploy` uploads, with the target's own ignore patterns from `firebase.json`. */
+interface DeployDir {
+  /** Repo-relative directory (hosting `public`, functions `source`). */
+  dir: string;
+  ignore: string[];
+  kind: "hosting" | "functions";
+}
+
+interface ProvenanceScope {
+  paths: string[];
+  dirs: DeployDir[];
+}
+
 /** The fixed list plus every rules/indexes file, hosting public dir and functions source named in `firebase.json`
- * (when readable and well-formed); the fixed list is always included, so an unreadable file only loses the extras. */
-async function provenancePaths(deps: ReleaseGuardDeps): Promise<string[]> {
+ * (when readable and well-formed); the fixed list is always included, so an unreadable file only loses the extras.
+ * Also returns each uploaded directory with its own `ignore` list (used to classify git-ignored files). */
+async function provenanceScope(deps: ReleaseGuardDeps): Promise<ProvenanceScope> {
   const out = new Set<string>(PROVENANCE_RELEVANT_PATHS);
+  const dirs: DeployDir[] = [];
   let config: unknown;
   try {
     const raw = await deps.readFile("firebase.json");
@@ -1470,26 +1485,124 @@ async function provenancePaths(deps: ReleaseGuardDeps): Promise<string[]> {
   } catch {
     config = undefined;
   }
-  if (config === null || typeof config !== "object") return [...out];
+  if (config === null || typeof config !== "object") {
+    // Unreadable firebase.json: the fixed directories with no ignore list (strictest classification).
+    return {
+      paths: [...out],
+      dirs: [
+        { dir: "functions", ignore: [], kind: "functions" },
+        { dir: "functions-equipment-identity", ignore: [], kind: "functions" },
+        { dir: "public", ignore: [], kind: "hosting" },
+      ],
+    };
+  }
   const c = config as Record<string, unknown>;
   const asList = (v: unknown): Record<string, unknown>[] =>
     (Array.isArray(v) ? v : v === undefined ? [] : [v]).filter(
       (e): e is Record<string, unknown> => e !== null && typeof e === "object",
     );
-  const add = (v: unknown): void => {
-    if (typeof v === "string") {
-      const norm = v.trim().replace(/^\.\//, "").replace(/\/+$/, "");
-      if (isSafeRepoRelativePath(norm)) out.add(norm);
-    }
+  const norm = (v: unknown): string | undefined => {
+    if (typeof v !== "string") return undefined;
+    const n = v.trim().replace(/^\.\//, "").replace(/\/+$/, "");
+    return isSafeRepoRelativePath(n) ? n : undefined;
   };
+  const add = (v: unknown): void => {
+    const n = norm(v);
+    if (n !== undefined) out.add(n);
+  };
+  const ignoreList = (e: Record<string, unknown>): string[] =>
+    Array.isArray(e["ignore"]) ? (e["ignore"] as unknown[]).filter((x): x is string => typeof x === "string") : [];
   for (const e of asList(c["firestore"])) {
     add(e["rules"]);
     add(e["indexes"]);
   }
   for (const e of asList(c["storage"])) add(e["rules"]);
-  for (const e of asList(c["hosting"])) add(e["public"]);
-  for (const e of asList(c["functions"])) add(e["source"]);
-  return [...out];
+  for (const e of asList(c["hosting"])) {
+    add(e["public"]);
+    const dir = norm(e["public"]);
+    if (dir !== undefined) dirs.push({ dir, ignore: ignoreList(e), kind: "hosting" });
+  }
+  for (const e of asList(c["functions"])) {
+    add(e["source"]);
+    const dir = norm(e["source"]);
+    if (dir !== undefined) dirs.push({ dir, ignore: ignoreList(e), kind: "functions" });
+  }
+  return { paths: [...out], dirs };
+}
+
+/** Compiled output built by `predeploy` from tracked source (the guard itself loads `functions/lib`). */
+const ALLOWED_IGNORED_BUILD_DIRS = ["functions/lib", "functions-equipment-identity/lib"] as const;
+
+/** Converts the simple glob forms used in `firebase.json` ignore lists to a RegExp over a `/`-separated relative
+ * path: `*` (no `/`, never a leading dot at a segment start), `?`, `**` and the `**` + `/` / `/` + `**` forms.
+ * Anything else (character classes, braces, negation, escapes) is unsupported and returns `null` = never matches,
+ * so an unrecognised pattern can only make the check stricter. */
+function globToRegExp(pattern: string): RegExp | null {
+  const pat = pattern.trim().replace(/^\.\//, "");
+  if (pat.length === 0) return null;
+  let re = "";
+  let i = 0;
+  while (i < pat.length) {
+    const ch = pat[i];
+    if (pat.startsWith("**/", i)) {
+      re += "(?:.*/)?";
+      i += 3;
+    } else if (pat.startsWith("/**", i) && i + 3 === pat.length) {
+      re += "(?:/.*)?";
+      i += 3;
+    } else if (pat.startsWith("**", i)) {
+      re += ".*";
+      i += 2;
+    } else if (ch === "*") {
+      re += i === 0 || pat[i - 1] === "/" ? "(?!\\.)[^/]*" : "[^/]*";
+      i += 1;
+    } else if (ch === "?") {
+      re += "[^/]";
+      i += 1;
+    } else if ("[]{}()!+@|\\".includes(ch)) {
+      return null;
+    } else {
+      re += ch.replace(/[.^$*+?()[\]{}|\\]/g, "\\$&");
+      i += 1;
+    }
+  }
+  return new RegExp(`^${re}$`);
+}
+
+/** True when `rel` (path relative to the uploaded dir) or any of its ancestor directories matches an ignore
+ * pattern -- an ignored directory excludes everything inside it. */
+function excludedByTargetIgnore(rel: string, patterns: string[]): boolean {
+  const segments = rel.split("/");
+  const regexps = patterns.map(globToRegExp).filter((r): r is RegExp => r !== null);
+  for (let n = 1; n <= segments.length; n++) {
+    const prefix = segments.slice(0, n).join("/");
+    if (regexps.some((r) => r.test(prefix))) return true;
+  }
+  return false;
+}
+
+/** Classifies one git-ignored entry (`!!` line, repo-relative, trailing `/` for a directory). Returns true when it
+ * is legitimately not a deploy input or is a known harmless/build artefact. Everything else is an ignored file
+ * that Firebase would still upload from a path the verified commit does not contain. */
+function isAllowedIgnoredEntry(entry: string, scope: ProvenanceScope): boolean {
+  if (entry.startsWith('"')) return false; // quoted (special characters): cannot be classified, fail closed
+  const p = entry.replace(/\/+$/, "");
+  if (p.length === 0 || !isSafeRepoRelativePath(p)) return false;
+  const segments = p.split("/");
+  // (a) anything under a node_modules directory
+  if (segments.includes("node_modules")) return true;
+  // (b) compiled output built by predeploy
+  if (ALLOWED_IGNORED_BUILD_DIRS.some((d) => p === d || p.startsWith(`${d}/`))) return true;
+  for (const t of scope.dirs) {
+    if (p !== t.dir && !p.startsWith(`${t.dir}/`)) continue;
+    const rel = p === t.dir ? "" : p.slice(t.dir.length + 1);
+    if (rel.length === 0) continue;
+    // (d) Firebase env files are deploy inputs by design (their candidate content is not verified here)
+    if (t.kind === "functions" && !rel.includes("/") && (rel === ".env" || rel.startsWith(".env."))) return true;
+    // (c) excluded by the target's own ignore list
+    if (excludedByTargetIgnore(rel, t.ignore)) return true;
+  }
+  return false;
 }
 
 /**
@@ -1544,11 +1657,25 @@ async function provenancePaths(deps: ReleaseGuardDeps): Promise<string[]> {
  */
 async function checkSourceProvenance(deps: ReleaseGuardDeps): Promise<CheckResult> {
   const name = CHECK_NAME.provenance;
-  const paths = await provenancePaths(deps);
-  const status = await deps.runCommand("git", ["status", "--porcelain", "--", ...paths], 15_000);
+  const scope = await provenanceScope(deps);
+  const paths = scope.paths;
+  // `--ignored=matching` adds `!!` entries for git-IGNORED files: Firebase uploads them anyway (it only honours
+  // the target's own `ignore` list), so an ignored file is not part of the verified commit but would be deployed.
+  const status = await deps.runCommand("git", ["status", "--porcelain", "--ignored=matching", "--", ...paths], 15_000);
   if (!status.ok) return { name, status: "UNAVAILABLE", detail: status.stderr || "git status failed" };
-  if (status.stdout.trim().length > 0) {
+  const lines = status.stdout.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.some((l) => !l.startsWith("!! "))) {
     return { name, status: "FAILED", detail: `uncommitted changes under ${paths.join(", ")}` };
+  }
+  const offending = [...new Set(lines.map((l) => l.slice(3)).filter((entry) => !isAllowedIgnoredEntry(entry, scope)))].sort();
+  if (offending.length > 0) {
+    const shown = offending.slice(0, 20).join(", ");
+    const more = offending.length > 20 ? ` (+${offending.length - 20} more)` : "";
+    return {
+      name,
+      status: "FAILED",
+      detail: `ignored-deployable-files: git-ignored but deployable entries under ${paths.join(", ")} that are not in the verified commit: ${shown}${more}`,
+    };
   }
   const head = await deps.runCommand("git", ["rev-parse", "HEAD"], 15_000);
   if (!head.ok) return { name, status: "UNAVAILABLE", detail: head.stderr || "git rev-parse HEAD failed" };

@@ -273,7 +273,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12836 |
 | `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 32956 |
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19310 |
-| `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 10297 |
+| `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 11729 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 6991 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
