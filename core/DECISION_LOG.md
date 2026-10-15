@@ -56346,3 +56346,7 @@ Decision: Recording-canvas tests prove bone/joint geometry, dashed-vs-solid and 
 ## 2026-10-15 - Commit: C15 tests - check_items_card_test
 
 Decision: check card tests pin one announcement and focus movement after resolve. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 check these chips tests
+
+Decision: the announcement is captured from the accessibility channel and focus is read from FocusManager debug labels. Evidence: core/changes/2026-10-15-c23-tests.md.
