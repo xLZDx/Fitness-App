@@ -194,7 +194,7 @@ CSV rows carry gate `C25`. Deleted = `recursiveDelete(users/{uid})` or the
 | `users/{uid}/food_entries/*` | diary entries | yes | yes, paged |
 | `users/{uid}/saved_foods/*` | saved foods | yes | yes, paged |
 | `nutrition_cache/{key}` | public nutrition-database responses | n/a (no user data) | n/a, EXEMPT |
-| `body_scan_purge_state/{id}` | purge cursor bookkeeping; transient `late_sweep_<hash>` records carry a uid for at most ~17 minutes (server-only, deny-all to clients) | n/a (no user content; the uid-bearing record is deleted by the 5-minute late sweep) | n/a, EXEMPT |
+| `body_scan_purge_state/{id}` | purge cursor bookkeeping; transient `late_sweep_<hash>` records carry a uid for about 17 minutes under normal operation, retried every 5 minutes until deleted, no hard bound (server-only, deny-all to clients) | n/a (no user content; the uid-bearing record is deleted by the 5-minute late sweep) | n/a, EXEMPT |
 | Storage `<project>-bodyscan-private` `users/{uid}/scans/*` | face-blurred scan JPEGs, default retention 0 (deleted after analysis, within 48 hours worst case) | yes, prefix delete | metadata only; 1-hour links via `manageBodyScanData.exportLinks` |
 | Prefs `data_notice.v{N}.{uid}` | data notice acknowledgement | yes (device wipe) | no |
 | Prefs `progress_photos.scan_reminder.v1.{uid}` | reminder toggle | yes (device wipe) | no |

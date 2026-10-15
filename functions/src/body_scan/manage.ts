@@ -277,7 +277,14 @@ async function completeFence(uid: string, action: string, token: string, nowMs: 
     if (Object.keys(runs).length > 0) tx.set(ref, { runs });
     else tx.delete(ref);
     const prior = typeof lateData?.dueAtMs === "number" ? lateData.dueAtMs : 0;
-    tx.set(late, { uid, action, dueAtMs: Math.max(prior, nowMs + LATE_SWEEP_DELAY_MS) });
+    // `rev` changes on EVERY write: the late sweep deletes a record only if the
+    // rev it read before sweeping is still current (compare-and-delete).
+    tx.set(late, {
+      uid,
+      action,
+      dueAtMs: Math.max(prior, nowMs + LATE_SWEEP_DELAY_MS),
+      rev: randomBytes(8).toString("hex"),
+    });
   });
 }
 

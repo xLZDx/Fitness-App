@@ -864,8 +864,9 @@ service cloud.firestore {
     // only purge bookkeeping: the unmatched-object sweep's listing page token
     // (D-59), the per-operation delete fences and transient late_sweep_<hash>
     // records. `nutrition_cache` carries no uid. In `body_scan_purge_state`
-    // only a late_sweep record carries a uid, for at most about 17 minutes
-    // until the 5-minute late-upload sweep deletes it; server-only.
+    // only a late_sweep record carries a uid, for about 17 minutes under
+    // normal operation (retried every 5 minutes, no hard bound) until the
+    // late-upload sweep deletes it; server-only.
     match /nutrition_cache/{key} {
       allow read, write: if false;
     }

@@ -34,9 +34,12 @@
  * one-hour age floor), then deletes the record. Objects of scans that are live
  * (for example a scan created after the delete) are never touched. An estimate
  * cannot turn such an object into a stored photo: it requires
- * `photosState == awaiting_upload` and refuses `cancelled`. Bound: an object that
- * arrives through an old URL is removed at most due time + one schedule
- * interval (5 min) after completion, i.e. within 17 minutes.
+ * `photosState == awaiting_upload` and refuses `cancelled`. Target (not a hard
+ * bound): removed within about 17 minutes of completion (12 min due time + one
+ * 5 min schedule interval) under normal operation. A record that cannot finish
+ * (page cap, storage error, outage) is kept and retried every 5 minutes until it
+ * succeeds. The record is deleted by compare-and-delete on `rev`/`dueAtMs`, so a
+ * newer bulk delete that rewrote it while the sweep ran is never erased.
  *
  * A bucket lifecycle rule for "pending" objects was REJECTED (design s7.4):
  * lifecycle conditions are age and prefix, not Firestore state, and every scan
@@ -455,9 +458,17 @@ export async function runLateSweep(
           return;
         }
         try {
+          const { rev, dueAtMs } = doc.data();
           if (await sweepUserPrefix(uid, deadline, counts)) {
-            await doc.ref.delete();
-            counts.records += 1;
+            // Delete only the record this run read: a newer delete-all may have
+            // rewritten it (new rev / later dueAtMs) while the sweep was running.
+            const deleted = await db().runTransaction(async (tx) => {
+              const cur = (await tx.get(doc.ref)).data();
+              if (!cur || cur.rev !== rev || cur.dueAtMs !== dueAtMs) return false;
+              tx.delete(doc.ref);
+              return true;
+            });
+            if (deleted) counts.records += 1;
           }
         } catch (e) {
           counts.failures += 1;

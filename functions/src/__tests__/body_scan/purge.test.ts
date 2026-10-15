@@ -737,4 +737,62 @@ describe("late-upload sweep (GPT-PM MAJOR-02B)", () => {
     expect(store.has("body_scan_purge_state/main")).toBe(true);
     expect(store.has("body_scan_purge_state/delete_fence_abc")).toBe(true);
   });
+  test("compare-and-delete: a newer delete-all rewrites the record while the sweep runs -> the record is KEPT with the newer dueAtMs, and the newer late object is swept by the next run after its due time", async () => {
+    putPhotos(A, "ghost_scan_1");
+    store.set(lateKey(1), { uid: A, action: "deleteAllPhotos", dueAtMs: now, rev: "aaaaaaaaaaaaaaaa" });
+    const dueB = now + 12 * MIN;
+    // Between the scheduler's read and its delete, operation B completes (what completeFence writes).
+    fx.afterTxRead = async (p) => {
+      if (p === lateKey(1) && store.get(lateKey(1))!.rev === "aaaaaaaaaaaaaaaa") {
+        store.set(lateKey(1), { uid: A, action: "deleteAllScans", dueAtMs: dueB, rev: "bbbbbbbbbbbbbbbb" });
+      }
+    };
+    const c = await lateRun();
+    fx.afterTxRead = null;
+    expect(c.records).toBe(0);
+    expect(store.get(lateKey(1))).toEqual({ uid: A, action: "deleteAllScans", dueAtMs: dueB, rev: "bbbbbbbbbbbbbbbb" });
+
+    putPhotos(A, "ghost_scan_2"); // B's late PUT arrives
+    await lateRun(); // not due yet
+    expect(objectKeys(prefix(A, "ghost_scan_2"))).toHaveLength(3);
+    now = dueB;
+    const next = await lateRun();
+    expect(next.records).toBe(1);
+    expect(objectKeys()).toEqual([]);
+    expect(store.has(lateKey(1))).toBe(false);
+  });
+
+  test("compare-and-delete: the record rewritten between the query read and the sweep (during the listing) is kept as well; the happy path still deletes", async () => {
+    putPhotos(A, "ghost_scan_1");
+    seedRecord(A, now);
+    let hit = false;
+    gcs.failOn = (op) => {
+      if (op === "getFiles" && !hit) {
+        hit = true;
+        store.set(lateKey(1), { uid: A, action: "deleteAllPhotos", dueAtMs: now + 12 * MIN, rev: "cccccccccccccccc" });
+      }
+      return undefined;
+    };
+    expect((await lateRun()).records).toBe(0);
+    gcs.failOn = null;
+    expect(store.get(lateKey(1))!.rev).toBe("cccccccccccccccc");
+    now += 12 * MIN;
+    expect((await lateRun()).records).toBe(1);
+    expect(store.has(lateKey(1))).toBe(false);
+  });
+
+  test("no hard bound: a record that hits the 20-page cap is kept and retried; the next run completes and deletes it", async () => {
+    for (let i = 1; i <= 3500; i++) putPhotos(A, `ghost_${String(i).padStart(5, "0")}`); // 10 500 orphan objects
+    seedRecord(A, now);
+    const first = await lateRun();
+    expect(first.records).toBe(0);
+    expect(first.deleted).toBe(10000);
+    expect(store.has(lateKey(1))).toBe(true);
+    expect(objectKeys()).toHaveLength(500);
+    const second = await lateRun();
+    expect(second.records).toBe(1);
+    expect(objectKeys()).toEqual([]);
+    expect(store.has(lateKey(1))).toBe(false);
+  });
+
 });

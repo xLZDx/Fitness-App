@@ -605,7 +605,7 @@ describe("late-upload sweep record (GPT-PM MAJOR-02B)", () => {
     expect(fenceKeys()).toEqual([]);
     expect(lateKeys()).toHaveLength(1);
     expect(lateKeys()[0]).not.toContain(UID);
-    expect(store.get(lateKeys()[0])).toEqual({ uid: UID, action, dueAtMs: now + LATE_DELAY_MS });
+    expect(store.get(lateKeys()[0])).toEqual({ uid: UID, action, dueAtMs: now + LATE_DELAY_MS, rev: expect.stringMatching(/^[0-9a-f]{16}$/) });
   });
 
   test("no record before the final page, none from applyRetention or exportLinks; a later completion pushes dueAtMs forward, never back", async () => {
@@ -618,6 +618,7 @@ describe("late-upload sweep record (GPT-PM MAJOR-02B)", () => {
     now += 60 * 1000;
     await run({ action: "deleteAllScans", cursor: first.nextCursor, fenceToken: first.fenceToken });
     const due1 = store.get(lateKeys()[0])!.dueAtMs;
+    const rev1 = store.get(lateKeys()[0])!.rev;
     expect(due1).toBe(now + LATE_DELAY_MS);
 
     now += 5 * 60 * 1000;
@@ -626,6 +627,7 @@ describe("late-upload sweep record (GPT-PM MAJOR-02B)", () => {
     expect(lateKeys()).toHaveLength(1);
     expect(store.get(lateKeys()[0])!.dueAtMs).toBe(now + LATE_DELAY_MS);
     expect(store.get(lateKeys()[0])!.dueAtMs).toBeGreaterThan(due1);
+    expect(store.get(lateKeys()[0])!.rev).not.toBe(rev1); // every completion rewrites the revision
   });
 });
 

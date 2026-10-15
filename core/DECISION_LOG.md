@@ -56646,3 +56646,7 @@ Decision: the bulk-delete fence holds one transactional entry per operation (ran
 ## 2026-10-15 - Commit: fence ownership test sweep and uid statement alignment
 
 Decision: the uid carried by the transient `late_sweep_<hash>` record (at most ~17 minutes, server-only, deny-all to clients) is stated exactly in the firestore.rules comment and the data inventory (md and csv) instead of the earlier "no uid" wording; classification and access cells stay EXEMPT/NONE. Added a Dart test for the `fenceToken` echo. Evidence: core/changes/2026-10-15-fence-ownership-tests.md.
+
+## 2026-10-15 - Commit: late sweep compare-and-delete and honest contract
+
+Decision: the late-sweep record carries a `rev` rewritten on every completion and the sweep deletes it only if `rev` and `dueAtMs` are unchanged (transaction), so a newer delete-all is never erased by an older run; the "17 minutes" figure is a target under normal operation, a record that cannot finish is retried every 5 minutes with no hard upper bound, and the uid-bearing record lives until deleted. Evidence: core/changes/2026-10-15-late-sweep-cas-and-contract.md.
