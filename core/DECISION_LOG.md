@@ -56223,3 +56223,7 @@ Decision: device-only excludedFoods is merged into the export from the local sto
 
 Evidence addendum (C18 plan actions tests): nutrition_plan_actions_test.dart ran green, 40 tests.
 Progress: T109 search_foods tests added.
+
+## 2026-10-15 - Commit: C17 functional tests (test-engineer pass)
+
+Decision: C17 weekly reminder, editor, settings field and entry cards are covered by focused Dart tests using provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c17-tests.md`.
