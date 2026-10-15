@@ -49,6 +49,8 @@ import 'features/marketplace/state/marketplace_providers.dart';
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
 import 'features/profile/data/device_health_profile_repository.dart';
+import 'features/body_scan/state/scan_plan_context_provider.dart'
+    show kScanPlanContextPlaceholder, scanPlanContextProvider;
 import 'features/nutrition_plan/data/firestore_plan_repository.dart';
 import 'features/nutrition_plan/data/firestore_weight_repository.dart';
 import 'features/nutrition_plan/state/nutrition_providers.dart'
@@ -390,6 +392,11 @@ Future<void> main() async {
             .overrideWith((_) => FirestorePlanRepository()),
         weightRepositoryProvider
             .overrideWith((_) => FirestoreWeightRepository()),
+        // Body scan (C15, SD-9): explicit measurement-only PLACEHOLDER for the
+        // plan-context port. C18 replaces it with
+        // nutritionScanPlanContextSourceProvider.
+        scanPlanContextProvider
+            .overrideWithValue(kScanPlanContextPlaceholder),
         subscriptionRepositoryProvider
             .overrideWith((_) => FirestoreSubscriptionRepository()),
         stripeCheckoutServiceProvider
