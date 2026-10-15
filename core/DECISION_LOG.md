@@ -56516,3 +56516,7 @@ Decision: Delete on the terminal failure card calls driver.deleteFailedScan (run
 ## 2026-10-15 - Commit: C15 tests - flow page and driver delete
 
 Decision: the flow page test drives the real page with a fake runner and a stub capture route. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 capture routes and add-food tiles tests
+
+Decision: route agreement is checked by tile taps against the harness plus a source-level check of app_router.dart. Evidence: core/changes/2026-10-15-c24-tests.md.
