@@ -4,7 +4,7 @@ Source of phase truth for the Phase 2 line. Updated 2026-10-16. Head confirmed w
 
 ## S00: split and migration (merged)
 
-Current phase: 10 Report + retro (partial). PR #7 (`db01888f`) and PR #8 (`89927444`) are merged into `phase2/main`; Phase 1 PR #6 (`0eee9ca2`) is merged into `phase1/main`.
+Current phase: closed (all ten phases done or not applicable). PR #7 (`db01888f`) and PR #8 (`89927444`) are merged into `phase2/main`; Phase 1 PR #6 (`0eee9ca2`) is merged into `phase1/main`.
 
 | # | Phase | Status | Artifacts |
 |---|---|---|---|
@@ -17,7 +17,7 @@ Current phase: 10 Report + retro (partial). PR #7 (`db01888f`) and PR #8 (`89927
 | 7 Verify | done | 742 focused jest tests passed (`release_guard.test.ts` 505, `guard_scripts.test.ts` 112, `scaling.test.ts` 125) |
 | 8 Gate | done | GPT-PM APPROVE for PR #7 head `48ad73a7`, for PR #8 head `b5a6f752`, for Phase 1 PR #6 head `e309e5ba` |
 | 9 Accept + release | n/a | documentation and tooling sprint; no release |
-| 10 Report + retro | partial | sprint report and retrospective missing |
+| 10 Report + retro | done | `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` |
 
 Open items recorded in `docs/phase2/split/BACKEND_SEPARATION.md` (before the first Phase 2 cloud deploy): production project number hardcoded in the kill-switch secret path of `functions/src/abuse_guard.ts`; candidate dotenv content not verified by the guard; separate production deploy credentials or protected CI (operator-owned); Blaze billing for the Phase 2 project (operator-owned; billing account project quota exceeded).
 
@@ -31,7 +31,7 @@ Current phase: 5 Doc review. Entry criteria of the next phase (8 Gate): internal
 | 2 Backlog | done | S01 row of the roadmap |
 | 3 Design | done | `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` (98 requirements, all PROPOSED), `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` |
 | 4 Docs + test plan | done | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md`, `docs/phase2/s01/UI0_BASELINE_AUDIT.md`, `UI0_BASELINE_AUDIT_ADDENDUM.md` and `UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` (PR #5 screens); acceptance criteria are inside the contract (rules and sweep tests for later sprints) |
-| 5 Doc review | in progress | security review rounds 1 to 4 closed (last verdict ALL CLOSED); product-ux and accessibility review of UI-0 done; GPT-PM review not started |
+| 5 Doc review | in progress | security review rounds 1 to 4 closed (last verdict ALL CLOSED); product-ux and accessibility review of UI-0 done; GPT-PM round 1 on head `36f15d63` returned MODIFY with two MAJOR (stale Storage baseline after PR #5; debug telemetry guarantee not enforceable by rules), fixed in the next commit, verification round pending |
 | 6 Build | n/a | no code in this sprint |
 | 7 Verify | n/a | no tests in this sprint |
 | 8 Gate | not started | GPT-PM APPROVE on the exact head, then one push and one PR |

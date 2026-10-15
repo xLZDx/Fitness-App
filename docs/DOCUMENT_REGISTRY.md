@@ -274,15 +274,16 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12952 |
 | `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33265 |
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
-| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 17702 |
-| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 75296 |
+| `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2456 |
+| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 17986 |
+| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 78422 |
 | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 24724 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01) | 4262 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01) | 4469 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |

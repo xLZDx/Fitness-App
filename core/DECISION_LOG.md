@@ -56759,3 +56759,7 @@ Decision: until the operator answers the minors question, adult-to-minor friend 
 ## 2026-10-16 - Commit: S01 UI-0 delta for PR #5 screens
 
 Decision: the UI-0 baseline gets a separate delta document for the Body Scan, nutrition plan and food diary screens (a third visual pattern: plain Material plus GlassCard) instead of rewriting the original audit. Evidence: core/changes/2026-10-16-s01-ui0-bodyscan-delta.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 1
+
+Decision: the contract baseline follows the PR #5 state (deny-all storage.rules, separate Body Scan bucket); a server-side guarantee for debug telemetry (sanitising callable or per-event documents) is mandatory before any GPS code ships, because rules cannot check list elements. Evidence: core/changes/2026-10-16-s01-gptpm-round1-fixes.md.
