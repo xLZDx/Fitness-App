@@ -2987,5 +2987,329 @@
         "type": "String"
       }
     }
-  }
+  },
+  "bodyScanTitle": "Body scan",
+  "bodyScanIntroTitle": "Estimate your body composition",
+  "bodyScanIntroBodyRough": "This version gives a rough estimate from your height, weight and age. It does not measure your body from the photos. The photos stay on this phone.",
+  "bodyScanIntroBodyPhotos": "Three photos are blurred on your phone, then sent to be analysed once you agree. You can delete them at any time.",
+  "bodyScanIntroTime": "The guided capture takes about 20 seconds.",
+  "bodyScanIntroStart": "Start scan",
+  "bodyScanIntroClose": "Close",
+  "bodyScanRoughLabel": "Rough estimate from height, weight and age",
+  "bodyScanMeasurementOnlyNote": "Photos and history only. Goal figures are not shown here.",
+  "bodyScanMeasurementOnlyAsk": "Show my estimate",
+  "bodyScanWeightTitle": "Log your weight first",
+  "bodyScanWeightBodyMissing": "There is no recent weight on file. A current weight makes the estimate more reliable.",
+  "bodyScanWeightBodyStale": "{days, plural, one{Your last weight is # day old.} other{Your last weight is # days old.}} A current weight makes the estimate more reliable.",
+  "@bodyScanWeightBodyStale": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanWeightLabel": "Weight (kg)",
+  "bodyScanWeightInvalid": "Enter a weight between 20 and 400 kg.",
+  "bodyScanWeightSave": "Save and continue",
+  "bodyScanWeightSkip": "Skip for now",
+  "bodyScanStagePhotos": "Photos secured",
+  "bodyScanStagePhotosLocal": "Photos kept on this device",
+  "bodyScanStageComposition": "Body composition",
+  "bodyScanStagePlausibility": "Plausibility check",
+  "bodyScanStageTrend": "Trend verification",
+  "bodyScanStageSaved": "Result saved",
+  "bodyScanStageDone": "done",
+  "bodyScanStageActive": "in progress",
+  "bodyScanStagePending": "waiting",
+  "bodyScanStageAnnounce": "Step {n} of {total}: {stage}",
+  "@bodyScanStageAnnounce": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanAnalysingTitle": "Analysing your scan",
+  "bodyScanElapsed": "Elapsed: {time}",
+  "@bodyScanElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanSlowNotice": "This is taking longer than usual. You can keep waiting or cancel.",
+  "bodyScanKeepWaiting": "Keep waiting",
+  "bodyScanTimeout": "The analysis timed out. Your photos are safe. Try again.",
+  "bodyScanRetry": "Try again",
+  "bodyScanCancel": "Cancel",
+  "bodyScanResultTitle": "Your scan result",
+  "bodyScanResultNotFound": "This scan could not be found.",
+  "bodyScanResultLoadError": "The result could not be loaded.",
+  "bodyScanLikelyRange": "Likely range: {low}% to {high}%",
+  "@bodyScanLikelyRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanBestGuess": "Best single guess: {value}%",
+  "@bodyScanBestGuess": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanThisReading": "This reading",
+  "bodyScanFromTrend": "From your trend",
+  "bodyScanLimitNote": "Single readings can vary by about 1-2 points even with a good model; the trend matters more than one scan.",
+  "bodyScanConfidence": "Confidence: {level}",
+  "@bodyScanConfidence": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanConfidenceLow": "low",
+  "bodyScanConfidenceMedium": "medium",
+  "bodyScanConfidenceHigh": "high",
+  "bodyScanProvisionalBannerTitle": "Rough estimate",
+  "bodyScanProvisionalBannerBody": "This number comes from your height, weight and age, not from your photos. Treat it as a rough guide and follow your weight trend instead.",
+  "bodyScanChangeNone": "No meaningful change since your last scan.",
+  "bodyScanChangeDown": "Down {pts} points since your last scan.",
+  "bodyScanChangeUp": "Up {pts} points since your last scan.",
+  "@bodyScanChangeDown": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChangeUp": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanNoiseNote": "Changes smaller than {pts} points are within measurement noise.",
+  "@bodyScanNoiseNote": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanPointsToGoal": "{pts} points to your target",
+  "@bodyScanPointsToGoal": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanEtaRange": "About {low} to {high} weeks if the pace holds",
+  "@bodyScanEtaRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanFatMass": "Fat mass",
+  "bodyScanLeanMass": "Lean mass",
+  "bodyScanMassValue": "{value} kg (range {low} to {high})",
+  "@bodyScanMassValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanWeightTrendTitle": "Weight trend",
+  "bodyScanWeightTrendDown": "Down {kg} kg per week",
+  "bodyScanWeightTrendUp": "Up {kg} kg per week",
+  "bodyScanWeightTrendFlat": "Steady, no clear change",
+  "bodyScanWeightTrendNone": "Not enough weigh-ins yet for a trend. Log your weight a few times a week.",
+  "@bodyScanWeightTrendDown": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanWeightTrendUp": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanStrengthTitle": "Strength sessions",
+  "bodyScanStrengthCount": "{count, plural, one{# session in the last 4 weeks} other{# sessions in the last 4 weeks}}",
+  "@bodyScanStrengthCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanStrengthNone": "No strength sessions logged in the last 4 weeks.",
+  "bodyScanSeePlan": "See your plan",
+  "bodyScanPlanDecisionTitle": "This week's plan",
+  "bodyScanChecksTitle": "Check these",
+  "bodyScanChecksCount": "{count, plural, one{# item to check} other{# items to check}}",
+  "@bodyScanChecksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanChipNeeds": "needs checking",
+  "bodyScanChipResolved": "resolved",
+  "bodyScanChipMarkResolved": "Mark as checked",
+  "bodyScanChipItem": "{item}, {state}",
+  "@bodyScanChipItem": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChecksAllResolved": "All items checked",
+  "bodyScanActionRetake": "Retake photos",
+  "bodyScanActionLogWeight": "Log weight",
+  "bodyScanActionConfirmWeight": "Check weight",
+  "checkCodeProvisionalEstimator": "This is a rough estimate from height, weight and age, not a photo measurement.",
+  "checkCodeManualCapture": "A photo was taken with the manual shutter, so the readiness checks were not all green.",
+  "checkCodePoorLighting": "The lighting was poor. Retake in even light.",
+  "checkCodePartialBody": "Part of your body was out of frame.",
+  "checkCodeLooseClothing": "Loose clothing can hide your shape. Retake in fitted clothing.",
+  "checkCodePoseMismatch": "A pose did not match what was asked.",
+  "checkCodeWeightMissing": "There is no recorded weight for this scan.",
+  "checkCodeWeightStale": "Your recorded weight is more than 7 days old.",
+  "checkCodeWeightJump": "Your weight differs a lot from your last scan. Check it.",
+  "checkCodeWideRange": "The likely range is wide, so this reading is less certain.",
+  "checkCodeEstimateFarFromProfile": "This estimate is far from what your profile suggests. Check your weight and height.",
+  "checkCodeLargeJumpVsTrend": "This reading is far from your trend. One odd reading does not change the trend much.",
+  "checkCodeBlurUnavailable": "Photos could not be anonymised, so nothing was uploaded.",
+  "bodyScanChartTitle": "Body fat trend",
+  "bodyScanChartSummaryDown": "Smoothed trend {value} percent, down {pts} points over {weeks} weeks.",
+  "bodyScanChartSummaryUp": "Smoothed trend {value} percent, up {pts} points over {weeks} weeks.",
+  "bodyScanChartSummaryFlat": "Smoothed trend {value} percent, no meaningful change over {weeks} weeks.",
+  "bodyScanChartSummaryFew": "Smoothed trend {value} percent. More scans are needed to describe a change.",
+  "@bodyScanChartSummaryDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryUp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFlat": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFew": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChartExpand": "Show data table",
+  "bodyScanChartCollapse": "Hide data table",
+  "bodyScanChartLegend": "Dots are single noisy readings. The line is the smoothed trend.",
+  "bodyScanChartNewEstimator": "New estimator starts here",
+  "bodyScanChartColDate": "Date",
+  "bodyScanChartColReading": "Reading",
+  "bodyScanChartColSmoothed": "Smoothed",
+  "bodyScanChartColOutlier": "Outlier",
+  "bodyScanChartYes": "yes",
+  "bodyScanChartNo": "no",
+  "bodyScanChartRowLabel": "{date}: reading {value} percent, range {low} to {high}, smoothed {smoothed} percent, outlier {outlier}",
+  "@bodyScanChartRowLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      },
+      "smoothed": {
+        "type": "String"
+      },
+      "outlier": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanCloudTitle": "Send photos for analysis?",
+  "bodyScanCloudBody": "To analyse your body, three photos are blurred on your phone and then uploaded. The server cannot verify the blurring, and marks such as tattoos or scars are not blurred. You can delete the scan at any time.",
+  "bodyScanCloudAgree": "Agree and upload",
+  "bodyScanCloudDecline": "Not now",
+  "bodyScanResumeTitle": "Finish your scan",
+  "bodyScanResumeBody": "A scan is waiting to be completed.",
+  "bodyScanResumeAction": "Resume",
+  "bodyScanFailedTitle": "The scan could not be completed",
+  "bodyScanFailedBody": "Your photos are still on this phone. You can try again, keep them here, or delete the scan.",
+  "bodyScanFailedRetry": "Try again",
+  "bodyScanFailedKeep": "Keep on this device",
+  "bodyScanFailedDelete": "Delete scan",
+  "bodyScanSheetClose": "Close"
 }

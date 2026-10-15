@@ -1816,5 +1816,329 @@
         "type": "String"
       }
     }
-  }
+  },
+  "bodyScanTitle": "Скан тела",
+  "bodyScanIntroTitle": "Оценка состава тела",
+  "bodyScanIntroBodyRough": "Эта версия даёт примерную оценку по росту, весу и возрасту. По фотографиям тело она не измеряет. Фото остаются на этом телефоне.",
+  "bodyScanIntroBodyPhotos": "Три фото размываются на телефоне и после вашего согласия отправляются на анализ. Удалить их можно в любой момент.",
+  "bodyScanIntroTime": "Съёмка по подсказкам занимает около 20 секунд.",
+  "bodyScanIntroStart": "Начать скан",
+  "bodyScanIntroClose": "Закрыть",
+  "bodyScanRoughLabel": "Примерная оценка по росту, весу и возрасту",
+  "bodyScanMeasurementOnlyNote": "Только фото и история. Цели и связанные с ними показатели здесь не отображаются.",
+  "bodyScanMeasurementOnlyAsk": "Показать мою оценку",
+  "bodyScanWeightTitle": "Сначала запишите вес",
+  "bodyScanWeightBodyMissing": "Недавних записей веса нет. Актуальный вес делает оценку надёжнее.",
+  "bodyScanWeightBodyStale": "{days, plural, one{Последней записи веса # день.} few{Последней записи веса # дня.} many{Последней записи веса # дней.} other{Последней записи веса # дня.}} Актуальный вес делает оценку надёжнее.",
+  "@bodyScanWeightBodyStale": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanWeightLabel": "Вес (кг)",
+  "bodyScanWeightInvalid": "Введите вес от 20 до 400 кг.",
+  "bodyScanWeightSave": "Сохранить и продолжить",
+  "bodyScanWeightSkip": "Пропустить",
+  "bodyScanStagePhotos": "Фото сохранены",
+  "bodyScanStagePhotosLocal": "Фото остаются на устройстве",
+  "bodyScanStageComposition": "Состав тела",
+  "bodyScanStagePlausibility": "Проверка правдоподобия",
+  "bodyScanStageTrend": "Проверка тренда",
+  "bodyScanStageSaved": "Результат сохранён",
+  "bodyScanStageDone": "готово",
+  "bodyScanStageActive": "выполняется",
+  "bodyScanStagePending": "ожидает",
+  "bodyScanStageAnnounce": "Шаг {n} из {total}: {stage}",
+  "@bodyScanStageAnnounce": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanAnalysingTitle": "Анализ скана",
+  "bodyScanElapsed": "Прошло: {time}",
+  "@bodyScanElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanSlowNotice": "Это занимает дольше обычного. Можно подождать или отменить.",
+  "bodyScanKeepWaiting": "Подождать",
+  "bodyScanTimeout": "Время анализа вышло. Фото в безопасности. Попробуйте ещё раз.",
+  "bodyScanRetry": "Повторить",
+  "bodyScanCancel": "Отмена",
+  "bodyScanResultTitle": "Результат скана",
+  "bodyScanResultNotFound": "Этот скан не найден.",
+  "bodyScanResultLoadError": "Не удалось загрузить результат.",
+  "bodyScanLikelyRange": "Вероятный диапазон: от {low}% до {high}%",
+  "@bodyScanLikelyRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanBestGuess": "Лучшая единичная оценка: {value}%",
+  "@bodyScanBestGuess": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanThisReading": "Это измерение",
+  "bodyScanFromTrend": "По вашему тренду",
+  "bodyScanLimitNote": "Единичные измерения могут расходиться на 1-2 пункта даже у хорошей модели; тренд важнее одного скана.",
+  "bodyScanConfidence": "Уверенность: {level}",
+  "@bodyScanConfidence": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanConfidenceLow": "низкая",
+  "bodyScanConfidenceMedium": "средняя",
+  "bodyScanConfidenceHigh": "высокая",
+  "bodyScanProvisionalBannerTitle": "Примерная оценка",
+  "bodyScanProvisionalBannerBody": "Это число рассчитано по росту, весу и возрасту, а не по фото. Считайте его грубым ориентиром и следите за трендом веса.",
+  "bodyScanChangeNone": "Значимых изменений с прошлого скана нет.",
+  "bodyScanChangeDown": "Ниже на {pts} п.п. с прошлого скана.",
+  "bodyScanChangeUp": "Выше на {pts} п.п. с прошлого скана.",
+  "@bodyScanChangeDown": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChangeUp": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanNoiseNote": "Изменения меньше {pts} п.п. укладываются в погрешность измерения.",
+  "@bodyScanNoiseNote": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanPointsToGoal": "До цели: {pts} п.п.",
+  "@bodyScanPointsToGoal": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanEtaRange": "Примерно {low}-{high} нед., если темп сохранится",
+  "@bodyScanEtaRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanFatMass": "Жировая масса",
+  "bodyScanLeanMass": "Безжировая масса",
+  "bodyScanMassValue": "{value} кг (диапазон {low}-{high})",
+  "@bodyScanMassValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanWeightTrendTitle": "Тренд веса",
+  "bodyScanWeightTrendDown": "Снижение: {kg} кг в неделю",
+  "bodyScanWeightTrendUp": "Рост: {kg} кг в неделю",
+  "bodyScanWeightTrendFlat": "Вес стабилен, явных изменений нет",
+  "bodyScanWeightTrendNone": "Пока мало взвешиваний для тренда. Записывайте вес несколько раз в неделю.",
+  "@bodyScanWeightTrendDown": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanWeightTrendUp": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanStrengthTitle": "Силовые тренировки",
+  "bodyScanStrengthCount": "{count, plural, one{# тренировка за последние 4 недели} few{# тренировки за последние 4 недели} many{# тренировок за последние 4 недели} other{# тренировки за последние 4 недели}}",
+  "@bodyScanStrengthCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanStrengthNone": "За последние 4 недели силовых тренировок не записано.",
+  "bodyScanSeePlan": "Открыть план",
+  "bodyScanPlanDecisionTitle": "План на эту неделю",
+  "bodyScanChecksTitle": "Проверьте",
+  "bodyScanChecksCount": "{count, plural, one{# пункт для проверки} few{# пункта для проверки} many{# пунктов для проверки} other{# пункта для проверки}}",
+  "@bodyScanChecksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanChipNeeds": "нужно проверить",
+  "bodyScanChipResolved": "проверено",
+  "bodyScanChipMarkResolved": "Отметить как проверенное",
+  "bodyScanChipItem": "{item}, {state}",
+  "@bodyScanChipItem": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChecksAllResolved": "Все пункты проверены",
+  "bodyScanActionRetake": "Переснять фото",
+  "bodyScanActionLogWeight": "Записать вес",
+  "bodyScanActionConfirmWeight": "Проверить вес",
+  "checkCodeProvisionalEstimator": "Это примерная оценка по росту, весу и возрасту, а не измерение по фото.",
+  "checkCodeManualCapture": "Фото сделано ручным затвором, не все проверки готовности были зелёными.",
+  "checkCodePoorLighting": "Освещение было плохим. Переснимите при ровном свете.",
+  "checkCodePartialBody": "Часть тела не попала в кадр.",
+  "checkCodeLooseClothing": "Свободная одежда скрывает форму тела. Переснимите в облегающей одежде.",
+  "checkCodePoseMismatch": "Поза не совпала с запрошенной.",
+  "checkCodeWeightMissing": "Для этого скана нет записанного веса.",
+  "checkCodeWeightStale": "Записанному весу больше 7 дней.",
+  "checkCodeWeightJump": "Вес сильно отличается от прошлого скана. Проверьте его.",
+  "checkCodeWideRange": "Вероятный диапазон широкий, поэтому это измерение менее надёжно.",
+  "checkCodeEstimateFarFromProfile": "Оценка сильно отличается от ожидаемой по профилю. Проверьте вес и рост.",
+  "checkCodeLargeJumpVsTrend": "Это измерение далеко от вашего тренда. Одно необычное измерение почти не меняет тренд.",
+  "checkCodeBlurUnavailable": "Фото не удалось обезличить, поэтому ничего не отправлено.",
+  "bodyScanChartTitle": "Тренд жировой массы",
+  "bodyScanChartSummaryDown": "Сглаженный тренд {value} процента, снижение на {pts} п.п. за {weeks} нед.",
+  "bodyScanChartSummaryUp": "Сглаженный тренд {value} процента, рост на {pts} п.п. за {weeks} нед.",
+  "bodyScanChartSummaryFlat": "Сглаженный тренд {value} процента, значимых изменений за {weeks} нед. нет.",
+  "bodyScanChartSummaryFew": "Сглаженный тренд {value} процента. Чтобы описать изменение, нужно больше сканов.",
+  "@bodyScanChartSummaryDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryUp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFlat": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFew": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChartExpand": "Показать таблицу данных",
+  "bodyScanChartCollapse": "Скрыть таблицу данных",
+  "bodyScanChartLegend": "Точки это единичные шумные измерения. Линия это сглаженный тренд.",
+  "bodyScanChartNewEstimator": "Здесь начинается новый метод оценки",
+  "bodyScanChartColDate": "Дата",
+  "bodyScanChartColReading": "Измерение",
+  "bodyScanChartColSmoothed": "Сглаженное",
+  "bodyScanChartColOutlier": "Выброс",
+  "bodyScanChartYes": "да",
+  "bodyScanChartNo": "нет",
+  "bodyScanChartRowLabel": "{date}: измерение {value} процента, диапазон {low}-{high}, сглаженное {smoothed} процента, выброс: {outlier}",
+  "@bodyScanChartRowLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      },
+      "smoothed": {
+        "type": "String"
+      },
+      "outlier": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanCloudTitle": "Отправить фото на анализ?",
+  "bodyScanCloudBody": "Для анализа тела три фото размываются на телефоне и затем загружаются. Сервер не может проверить размытие, а особые приметы, например татуировки или шрамы, не размываются. Скан можно удалить в любой момент.",
+  "bodyScanCloudAgree": "Согласен, загрузить",
+  "bodyScanCloudDecline": "Не сейчас",
+  "bodyScanResumeTitle": "Завершите скан",
+  "bodyScanResumeBody": "Скан ждёт завершения.",
+  "bodyScanResumeAction": "Продолжить",
+  "bodyScanFailedTitle": "Не удалось завершить скан",
+  "bodyScanFailedBody": "Фото по-прежнему на этом телефоне. Можно повторить попытку, оставить их здесь или удалить скан.",
+  "bodyScanFailedRetry": "Повторить",
+  "bodyScanFailedKeep": "Оставить на устройстве",
+  "bodyScanFailedDelete": "Удалить скан",
+  "bodyScanSheetClose": "Закрыть"
 }

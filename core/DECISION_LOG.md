@@ -55984,3 +55984,7 @@ Note: the delete suite also proves isolation between users and between scan ids 
 ## 2026-10-15 - Commit: C14 part 1 (callable client, blur service, scrubbed errors)
 
 Decision (D-4, D-67): every callable failure is reduced to a closed slug before it is stored or logged; the blur service is fail closed (no landmarks, unsizable head box, undecodable or oversize output all refuse, never an unblurred image) and re-encodes from raw pixels so no EXIF/GPS/ICC survives. `connectivity_plus` is not in pubspec, so the job runner uses foreground, Progress-open and timer resume (the design fallback); no package was added. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-api-blur.md.
+
+## 2026-10-15 - Commit: C15 part 1 (ARB keys for the body scan flow and result)
+
+Decision (D-73, D-74, D-78, D-81, D-85): all C15 user-visible strings are added to both ARB files up front under `bodyScan*` and `checkCode*` keys; decimals are passed as pre-formatted strings (locale-aware formatting in the widgets) with non-inflecting RU units, plurals only for integer counts. Evidence: change record `core/changes/2026-10-15-c15-arb-keys.md`; no checks run by operator rule.
