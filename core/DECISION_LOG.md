@@ -56356,3 +56356,7 @@ Evidence addendum (C17 Home card test): home_body_check_in_card_test.dart ran gr
 ## 2026-10-15 - Commit: C19 auto_adjust_toggles_test.dart
 
 Decision: auto-adjust toggles are inert and off under Manual and independent otherwise. Evidence: core/changes/2026-10-15-c19-tests.md (auto_adjust_toggles_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C23 macro bars tests
+
+Decision: macro values are asserted as text and through the semantics label, not via the bar. Evidence: core/changes/2026-10-15-c23-tests.md.
