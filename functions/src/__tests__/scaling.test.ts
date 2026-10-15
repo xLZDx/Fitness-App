@@ -94,6 +94,12 @@ const ENTRYPOINTS: Record<string, unknown> = {
   manageBodyScanData: index.manageBodyScanData,
   purgeExpiredBodyScanPhotos: index.purgeExpiredBodyScanPhotos,
   reconcileAccountDeletions: index.reconcileAccountDeletions,
+  // Food (C20): two metered AI callables on AI_METERED, two lookup callables on
+  // FOOD_LOOKUP.
+  analyzeMealPhoto: index.analyzeMealPhoto,
+  parseNutritionLabel: index.parseNutritionLabel,
+  lookupBarcode: index.lookupBarcode,
+  searchFoods: index.searchFoods,
 };
 
 describe("scaling ceilings", () => {
@@ -103,7 +109,7 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these twenty-six", () => {
+  test("the deployed surface is exactly these thirty", () => {
     // A function added without a ceiling is the regression this whole file
     // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
@@ -194,6 +200,8 @@ describe("scaling ceilings", () => {
       "purgeExpiredBodyScanPhotos",
       "reconcileAccountDeletions",
     ];
+    // The food AI callables ride AI_METERED, which sets an explicit concurrency.
+    explicitConcurrency.push("analyzeMealPhoto", "parseNutritionLabel");
     for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
       if (explicitConcurrency.includes(name)) continue;
       expect(endpointOf(fn).concurrency).not.toEqual(expect.any(Number));
@@ -521,5 +529,37 @@ describe("Body Scan deployed endpoints (C12 wired onto the C02 profiles)", () =>
     expect(ep.maxInstances).toBe(1);
     expect(ep.concurrency).toBe(1);
     expect(ep.serviceAccountEmail).toMatch(/^fn-account-delete@/);
+  });
+});
+
+describe("Food deployed endpoints (C20 wired onto AI_METERED / FOOD_LOOKUP)", () => {
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "%s runs on the AI_METERED profile: fn-ai-runtime, the AI concurrency, App Check follows the AI flag",
+    (name) => {
+      const ep = endpointOf(ENTRYPOINTS[name]);
+      expect(ep.region).toEqual(["europe-west1"]);
+      expect(ep.maxInstances).toBe(AI_METERED.maxInstances);
+      expect(ep.concurrency).toBe(10);
+      expect(ep.serviceAccountEmail).toBe(AI_METERED.serviceAccount);
+      expect(ep.serviceAccountEmail).toMatch(/^fn-ai-runtime@/);
+    },
+  );
+
+  test.each(["lookupBarcode", "searchFoods"])(
+    "%s runs on FOOD_LOOKUP: maxInstances 10, fn-data (no photo access, no Vertex), platform-default concurrency",
+    (name) => {
+      const ep = endpointOf(ENTRYPOINTS[name]);
+      expect(ep.region).toEqual(["europe-west1"]);
+      expect(ep.maxInstances).toBe(10);
+      expect(ep.serviceAccountEmail).toBe(FOOD_LOOKUP.serviceAccount);
+      expect(ep.serviceAccountEmail).toMatch(/^fn-data@/);
+      expect(ep.concurrency).not.toEqual(expect.any(Number));
+    },
+  );
+
+  test("no food callable runs as the body-scan identity (fn-bodyscan is photo-bucket only)", () => {
+    for (const name of ["analyzeMealPhoto", "parseNutritionLabel", "lookupBarcode", "searchFoods"]) {
+      expect(endpointOf(ENTRYPOINTS[name]).serviceAccountEmail).not.toMatch(/^fn-bodyscan@/);
+    }
   });
 });

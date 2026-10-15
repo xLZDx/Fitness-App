@@ -56255,3 +56255,9 @@ Decision: result view tests pin that the ETA text is never rendered and that pro
 
 Decision: ServerExport implementers extend (not implement) the abstract class so C25 concrete defaults are inherited; missing imports added; nullable row copied to a final local; intl TextDirection hidden. Evidence: core/changes/2026-10-15-compile-fixes-router-closure.md; single router test green.
 Progress: T110 analyze_meal_photo tests added (70 passing).
+
+## 2026-10-15 - Commit: E0 tests follow-up for the C20 food callables and map rows T136/T137
+
+Decision: the deferred RULES-21 six-callable guard expectation became a real test once C20 landed; the scaling registry lists the four food endpoints; the map registers the two author-added E0 files.
+
+Evidence: release_guard 80 passed, scaling 122 passed (single-file jest runs). Change record: core/changes/2026-10-15-e0-tests-food-wiring.md.

@@ -934,11 +934,57 @@ describe("release guard set vs. the Body Scan + Nutrition Coach surface", () => 
     }
   });
 
-  // RULES-21: "guard set is 6 callables (AI_CALLABLES, AI_SOURCE_FILES, messages)
-  // and passes". The two food callables (analyzeMealPhoto, parseNutritionLabel)
-  // do not exist until C20 (epic E5), so AI_CALLABLES is still the four original
-  // surfaces in the E0 code. DEFERRED to the E5 test phase; it is not faked here.
-  test.todo("DEFERRED to C20/E5: AI_CALLABLES and AI_SOURCE_FILES list six callables and the healthy guard passes with them");
+  // RULES-21: the guard set is six callables (the four originals plus the two
+  // food AI callables, D-63) and the healthy guard passes with them.
+  test("AI_CALLABLES is exactly the six guarded surfaces, the four originals first", () => {
+    expect([...AI_CALLABLES]).toEqual([
+      "aiCoachAdvice",
+      "aiEquipmentRecognition",
+      "aiMachineDescription",
+      "aiExerciseGeneration",
+      "analyzeMealPhoto",
+      "parseNutritionLabel",
+    ]);
+    expect(AI_CALLABLES).toHaveLength(6);
+  });
+
+  test("the lookup callables (lookupBarcode, searchFoods) are NOT in the AI guard set: they make no Vertex call", () => {
+    expect(AI_CALLABLES as readonly string[]).not.toContain("lookupBarcode");
+    expect(AI_CALLABLES as readonly string[]).not.toContain("searchFoods");
+  });
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "the guard FAILS the candidate-source check when the %s source file is missing (it is really read)",
+    async (callable) => {
+      const result = await runReleaseGuard(makeDeps({ sourceOverrides: { [AI_SOURCE_PATHS[callable]]: null } }));
+      const check = byName(result, CANDIDATE_INVARIANTS_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toContain(AI_SOURCE_PATHS[callable]);
+      expect(check.detail).toContain("file missing");
+    },
+  );
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "the guard FAILS when %s drops enforceAiGatewayEnabled, exactly like the original four",
+    async (callable) => {
+      const result = await runReleaseGuard(
+        makeDeps({
+          sourceOverrides: {
+            [AI_SOURCE_PATHS[callable]]: healthyCallableSource(callable).replace(`await enforceAiGatewayEnabled("${callable}");`, ""),
+          },
+        }),
+      );
+      const check = byName(result, CANDIDATE_INVARIANTS_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toContain("no real enforceAiGatewayEnabled(...) call in the handler body");
+    },
+  );
+
+  test("the healthy guard with all six callables passes (10 checks, PASS)", async () => {
+    const result = await runReleaseGuard(makeDeps({}));
+    expect(result.verdict).toBe("PASS");
+    expect(result.checks).toHaveLength(10);
+  });
 });
 
 describe("runReleaseGuard: flag-gated body-scan bucket check (C12 leftovers, D-60)", () => {

@@ -59,8 +59,8 @@ Calendar facts: 2026-10-15 is a Thursday; 2026-01-01 is a Thursday, so ISO year 
 | V-DEU-M / F / U | 80/180/30 male; 60/165/30 female; 80/180/30 unspecified | 20.33 / 27.95 / 25.73 percent body fat (Deurenberg), half-width 5.0, range 15.33-25.33 for male |
 | V-FLOOR-F | female, 50 kg, 155 cm, 40 y, sedentary | BMR 1107.75, TDEE 1329.3, floor 1200 (absolute floor wins), deficit capped by TDEE-floor = 129.3, range low >= 1200, high <= 1329.3 |
 | V-FLOOR-M | male, 100 kg, 190 cm, 25 y | BMR 2067.5, floor 2068 (relative floor beats absolute 1500) |
-| V-LOSE-M | V-BMR-M inputs, moderately active (1.375), lose, BMI 24.69 (row < 25: 0.50 %/wk) | TDEE 2447.5, kgPerWeek 0.40, dailyDelta 440, cap 0.25*TDEE = 611.9 not binding, target 2007.5, range 1860-2160 |
-| V-LOSE-CAP | same person but BMI row 25-30 (0.75 %/wk, 0.60 kg/wk, 660 kcal/day) | the 25 % TDEE cap (611.9) binds, deficit 611.9, target 1835.6, range 1690-1990 |
+| V-LOSE-M | V-BMR-M inputs, moderately active (1.375), lose, BMI 24.69 (row < 25: 0.50 %/wk) | TDEE 2447.5, kgPerWeek 0.40, dailyDelta 440, cap 0.25*TDEE = 611.9 not binding, target 2007.5, raw range 1807.5-2107.5, slider bounds 1900-2440, range pulled to 1900-2110 (D-39: -200/+100 around the target, low end raised to the bound) |
+| V-LOSE-CAP | same person but BMI row 25-30 (0.75 %/wk, 0.60 kg/wk, 660 kcal/day) | the 25 % TDEE cap (611.9) binds, deficit 611.9, target 1835.6, raw range 1640-1940, slider bounds 1840-2440, range pulled to 1840-1940 (D-39) |
 | V-PROT-80 | 80 kg, BMI <= 30, lose | protein min 128 g, target 160 g, max 176 g |
 | V-PROT-OB | 110 kg, 170 cm (BMI 38.06), lose, kcalMid 1800 | Wref 86.7 kg, min 139, target 173, raw max 191 but 40 % of kcalMid cap = 180 so max 180 |
 | V-PROT-220 | 110 kg, 195 cm (BMI 28.9), kcalMid >= 2200 | 2.2 g/kg = 242 but absolute cap 220 |
@@ -160,7 +160,7 @@ Reading the tables: `Lvl` is the primary level (U/W/J/R/S/Y, section 1). The com
 | PLAN-02 | Activity factors and steps cross-check use the LOWER factor | U | T12 energy_math_test | 1.2 / 1.375 / 1.55 / 1.725 (1.9 never produced); steps 4999 -> 1.2, 5000 -> 1.375, 7499 -> 1.375, 7500 -> 1.55, 9999 -> 1.55, 10000 -> 1.725; questionnaire `active` + steps 4000 -> 1.2; questionnaire sedentary + steps 12000 -> 1.2 |
 | PLAN-03 | TDEE and no exercise credit | U | T12 energy_math_test, T14 plan_calculator_test | TDEE = BMR*f exactly; adding logged workout calories to input does not change the range (D-29) |
 | PLAN-04 | Weekly pace rows and absolute caps | U | T14 plan_calculator_test | BMI 24.99 -> 0.50 %/wk; 25.00 -> 0.75; 29.99 -> 0.75; 30.00 -> 1.00; gain 0.25 default; maintain 0; absolute kg caps 0.5 / 1.0 / 1.0 / 0.5 applied (e.g. 120 kg, BMI >= 30: 1.0 %/wk = 1.2 kg is clamped to 1.0 kg); 7700 kcal/kg |
-| PLAN-05 | Goal energy and range construction | U | T14 plan_calculator_test | V-LOSE-M target 2007.5, range 1860-2160; V-LOSE-CAP range 1690-1990; gain: surplus clamp [100, min(500, 0.15*TDEE)] and `low >= TDEE`; maintain target = TDEE; lose `high <= TDEE`; values rounded to 10; |
+| PLAN-05 | Goal energy and range construction | U | T14 plan_calculator_test | V-LOSE-M target 2007.5, range 1900-2110 (bounds 1900-2440); V-LOSE-CAP target 1835.6, range 1840-1940 (bounds 1840-2440); gain: surplus clamp [100, min(500, 0.15*TDEE)] and `low >= TDEE`; maintain target = TDEE; lose `high <= TDEE`; values rounded to 10; |
 | PLAN-06 | Slider bounds and re-validation | U | T14 plan_calculator_test | lose `[max(floor, TDEE - maxDeficit), TDEE]`, maintain +-300, gain `[TDEE, TDEE + min(500, 0.15 TDEE)]`; interval never empty for sampled grid (weights 40-200 kg, heights 140-210, ages 18-80, all 3 sex bases, 4 activity levels); width clamped to [100, 400]; stored range outside bounds is pulled inside on load and before write |
 | PLAN-07 | Protein targets | U | T14 plan_calculator_test | V-PROT-80 128/160/176; maintain 1.4/1.6, gain 1.6/1.8; V-PROT-OB shows Wref 86.7 and max 180; V-PROT-220 caps at 220; the "protein minimum" shown is the minimum |
 | PLAN-08 | Fat and carbohydrate ranges | U | T14 plan_calculator_test | V-FAT 48/70; fat never below 20 % or above 35 % of kcalMid; carbMin never below 100 g; if remainder < 100 g fat moves toward `fatMin`, then protein toward min, plan flagged `lowCarbBySafety`; carbMin <= carbMax always |
@@ -818,3 +818,13 @@ Set-Location D:/Repo/Fitness_App_bodyscan/functions; npx --no-install jest src/_
 | Not-testable-here items | 20 |
 | Planned quarantines | 0 |
 
+### 12.7 E0 additions made by the test author (2026-10-15)
+
+Two E0 files were not in the map. They are registered here, join the E0 cumulative set and the final set (section 10), and are run with the same single-file commands.
+
+| Id | Lvl | Epic | N/X | Path | Cmd | Requirements covered |
+|---|---|---|---|---|---|---|
+| T136 | U | E0 | X | `mobile/test/features/subscription/feature_gates_test.dart` | FT | SCAN-40 (tier gates: `bodyScan` gated to non-free tiers, five other new `AppFeature` entries ungated, exact enum order, full feature x tier table) |
+| T137 | W | E0 | N | `mobile/test/core/privacy/data_notice_test.dart` | FT | PRIV-23 client half (versioned device-local key, refused durable write keeps the session open, sheet gate returns false on dismiss, food-AI paragraph only with `foodAi`, RU and text scale 2.0) |
+
+E0 files run per gate (updated): `flutter test test/core/config/body_scan_flags_test.dart test/features/subscription/feature_gates_test.dart test/core/privacy/data_notice_test.dart`. T05 rows PRIV-21 and RULES-14 are `test.todo` until C25; the six-callable half of RULES-21 (T06) is a `test.todo` until C20.
