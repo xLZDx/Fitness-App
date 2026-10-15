@@ -26,7 +26,15 @@ import {
   classifyDeployLine,
   resolveDeployTarget,
   checkDeployTarget,
+  PROTECTED_PHASE1_REFS,
+  PROJECT_RESOLUTION_REASONS,
+  GUARD_COMMAND_MARKER,
+  parseDeployArgs,
+  resolveEffectiveProject,
+  findUnguardedDeployTargets,
 } from "../release_guard";
+import * as fs from "fs";
+import * as path from "path";
 import {
   aiGatewayCallsMetricJson,
   aiGatewayLatencyMetricJson,
@@ -150,6 +158,8 @@ function makeDeps(opts: {
   branch?: string | null;
   /** When set, `currentBranch` rejects with this error. */
   branchThrows?: Error;
+  /** Override for `isCommitOnProtectedLine`; default resolves `true` (HEAD is on the protected line). */
+  isCommitOnProtectedLine?: () => Promise<boolean>;
   /** Content of `.firebaserc`; `null` = file missing. Default: production + legacy aliases only. */
   firebaserc?: string | null;
 }): ReleaseGuardDeps {
@@ -160,6 +170,7 @@ function makeDeps(opts: {
       if (opts.branchThrows) throw opts.branchThrows;
       return opts.branch === undefined ? "phase1/main" : opts.branch;
     },
+    isCommitOnProtectedLine: opts.isCommitOnProtectedLine ?? (async () => true),
     readFile: async (path: string) => {
       if (path === FIREBASERC_PATH) return opts.firebaserc === undefined ? DEFAULT_FIREBASERC : opts.firebaserc;
       if (path === RELEASE_EVIDENCE_PATH) return opts.evidence === undefined ? HEALTHY_EVIDENCE : opts.evidence;
@@ -961,7 +972,7 @@ describe("deploy line classification (S00 backend separation gate)", () => {
     expect(classifyDeployLine(branch)).toBe(expected);
   });
 
-  test("DEPLOY_LINE_REASONS is exactly the closed set of six slugs", () => {
+  test("DEPLOY_LINE_REASONS is exactly the closed set of seven slugs", () => {
     expect([...DEPLOY_LINE_REASONS]).toEqual([
       "deploy-line-unknown",
       "phase1-wrong-project",
@@ -969,6 +980,18 @@ describe("deploy line classification (S00 backend separation gate)", () => {
       "phase2-alias-missing",
       "phase2-targets-production",
       "phase2-project-mismatch",
+      "phase1-provenance-unverified",
+    ]);
+  });
+
+  test("PROJECT_RESOLUTION_REASONS is exactly the closed set of two slugs", () => {
+    expect([...PROJECT_RESOLUTION_REASONS]).toEqual(["project-undeterminable", "project-conflict"]);
+  });
+
+  test("PROTECTED_PHASE1_REFS names exactly the two protected remote-tracking refs", () => {
+    expect([...PROTECTED_PHASE1_REFS]).toEqual([
+      "refs/remotes/origin/phase1/main",
+      "refs/remotes/origin/master",
     ]);
   });
 });
@@ -1130,8 +1153,10 @@ describe("checkDeployTarget / resolveDeployTarget by deploy line", () => {
   );
 
   test("phase2 run with the default project fallback (production id) blocks", async () => {
-    // run_release_guard.mjs falls back to EXPECTED_PROJECT_ID when neither
-    // GCLOUD_PROJECT nor --project= is given; on a phase2 branch that must block.
+    // The production project id (what a production-resolving deploy would carry)
+    // on a phase2 branch must block. run_release_guard.mjs no longer falls back
+    // to a default project (see resolveEffectiveProject), but a CLI that really
+    // resolves to production still reaches this check.
     const result = await runReleaseGuard(makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }));
     expect(result.project).toBe(EXPECTED_PROJECT_ID);
     expect(result.verdict).toBe("BLOCK");
@@ -1187,6 +1212,13 @@ describe("checkDeployTarget / resolveDeployTarget by deploy line", () => {
     expect(new Set(slugs).size).toBe(6);
   });
 
+  test("the seventh slug (phase1-provenance-unverified) is also a member of the closed set when it fails", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: async () => false }));
+    expect(check.status).toBe("FAILED");
+    expect(DEPLOY_LINE_REASONS as readonly string[]).toContain(slugOf(check.detail));
+    expect(slugOf(check.detail)).toBe("phase1-provenance-unverified");
+  });
+
   // ---- no override
   test("no override path: env vars and extra deps fields cannot turn a block into a pass", async () => {
     const names = [
@@ -1223,5 +1255,552 @@ describe("checkDeployTarget / resolveDeployTarget by deploy line", () => {
         else process.env[n] = saved[n];
       }
     }
+  });
+});
+
+describe("Phase 1 commit provenance (isCommitOnProtectedLine)", () => {
+  const slugOf = (detail: string): string => detail.split(":")[0];
+
+  test("PASS: phase1 branch + provenance true -> allowed project is production", async () => {
+    const calls = jest.fn(async () => true);
+    const resolved = await resolveDeployTarget(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: calls }));
+    expect(resolved).toEqual({ ok: true, line: "phase1", branch: "phase1/x", allowedProject: EXPECTED_PROJECT_ID });
+    expect(calls).toHaveBeenCalledTimes(1);
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: calls }));
+    expect(check.status).toBe("OK");
+    expect(check.detail).toBe(`line = phase1, project = ${EXPECTED_PROJECT_ID}`);
+  });
+
+  test.each(["phase1/main", "master", "phase1/x", "phase1/hotfix/deep"])(
+    "BLOCK: provenance false on branch %s -> phase1-provenance-unverified",
+    async (branch) => {
+      const deps = makeDeps({ branch, isCommitOnProtectedLine: async () => false });
+      const resolved = await resolveDeployTarget(deps);
+      expect(resolved).toMatchObject({ ok: false, line: "phase1", branch, reason: "phase1-provenance-unverified" });
+      const check = await checkDeployTarget(deps);
+      expect(check.status).toBe("FAILED");
+      expect(slugOf(check.detail)).toBe("phase1-provenance-unverified");
+      // The operator must be told which refs HEAD has to be contained in.
+      for (const ref of PROTECTED_PHASE1_REFS) expect(check.detail).toContain(ref);
+      expect(check.detail).toContain(JSON.stringify(branch));
+    },
+  );
+
+  test("BLOCK: a rejecting provenance reader fails closed (does not propagate)", async () => {
+    const deps = makeDeps({
+      branch: "phase1/main",
+      isCommitOnProtectedLine: async () => {
+        throw new Error("git exploded");
+      },
+    });
+    const resolved = await resolveDeployTarget(deps);
+    expect(resolved).toMatchObject({ ok: false, line: "phase1", reason: "phase1-provenance-unverified" });
+    expect(slugOf((await checkDeployTarget(deps)).detail)).toBe("phase1-provenance-unverified");
+    expect((await runReleaseGuard(deps)).verdict).toBe("BLOCK");
+  });
+
+  test("BLOCK: a provenance reader that throws synchronously also fails closed", async () => {
+    const deps = makeDeps({
+      branch: "phase1/main",
+      isCommitOnProtectedLine: (() => {
+        throw new Error("sync boom");
+      }) as unknown as () => Promise<boolean>,
+    });
+    const resolved = await resolveDeployTarget(deps);
+    expect(resolved).toMatchObject({ ok: false, reason: "phase1-provenance-unverified" });
+  });
+
+  test.each([["yes"], [1], [{}], [undefined], [null]])(
+    "BLOCK: only the boolean true counts as verified (resolved value %j)",
+    async (value) => {
+      const deps = makeDeps({
+        branch: "phase1/main",
+        isCommitOnProtectedLine: (async () => value) as unknown as () => Promise<boolean>,
+      });
+      expect(await resolveDeployTarget(deps)).toMatchObject({ ok: false, reason: "phase1-provenance-unverified" });
+    },
+  );
+
+  test("Phase 2 content presented under a branch named phase1/x (provenance false) is blocked end to end", async () => {
+    // Local branch name says phase1, commit graph says Phase 2: the injected
+    // provenance reader reports HEAD is not contained in the protected refs.
+    const result = await runReleaseGuard(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: async () => false }));
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.line).toBe("phase1");
+    expect(result.branch).toBe("phase1/x");
+    const notOk = result.checks.filter((c) => c.status !== "OK");
+    // Everything else is healthy in this fixture, so the provenance block is the ONLY reason.
+    expect(notOk.map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
+    expect(slugOf(notOk[0].detail)).toBe("phase1-provenance-unverified");
+  });
+
+  test("same healthy fixture with provenance true PASSes (control for the test above)", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: async () => true }));
+    expect(result.verdict).toBe("PASS");
+  });
+
+  test("provenance true does not bypass the project check (phase1-wrong-project still wins)", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase1/main", project: LEGACY_PROJECT_ID, isCommitOnProtectedLine: async () => true }),
+    );
+    expect(slugOf(check.detail)).toBe("phase1-wrong-project");
+  });
+
+  test("provenance is NOT consulted on the phase2 line and cannot affect it", async () => {
+    const phase2Rc = firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: PHASE2_PROJECT });
+    const calls = jest.fn(async () => false);
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase2/s00", project: PHASE2_PROJECT, firebaserc: phase2Rc, isCommitOnProtectedLine: calls }),
+    );
+    expect(check.status).toBe("OK");
+    expect(calls).not.toHaveBeenCalled();
+  });
+
+  test.each(["feature/x", "HEAD", "main", null])(
+    "provenance is NOT consulted when the branch is not on a deploy line (%j) -- deploy-line-unknown",
+    async (branch) => {
+      const calls = jest.fn(async () => true);
+      const resolved = await resolveDeployTarget(makeDeps({ branch, isCommitOnProtectedLine: calls }));
+      expect(resolved).toMatchObject({ ok: false, reason: "deploy-line-unknown" });
+      expect(calls).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe("explicit production project from a phase2/* branch is blocked (effective project -> deploy target)", () => {
+  const rc = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+
+  async function checkFor(argv: string[], env: Record<string, string | undefined>, branch: string) {
+    const eff = resolveEffectiveProject({ env, argv, firebaserc: rc });
+    if (!eff.ok) throw new Error(`unexpected resolution failure: ${eff.detail}`);
+    return checkDeployTarget(makeDeps({ branch, project: eff.project, firebaserc: rc }));
+  }
+
+  test.each([
+    ["--project with the production id", ["--project", EXPECTED_PROJECT_ID], {}],
+    ["--project=<production id>", [`--project=${EXPECTED_PROJECT_ID}`], {}],
+    ["-P <production id>", ["-P", EXPECTED_PROJECT_ID], {}],
+    ["-P<production id>", [`-P${EXPECTED_PROJECT_ID}`], {}],
+    ["the 'default' alias (maps to production)", ["--project", "default"], {}],
+    ["GCLOUD_PROJECT = production id", [], { GCLOUD_PROJECT: EXPECTED_PROJECT_ID }],
+    ["the legacy alias", ["--project", "legacy-shared"], {}],
+  ] as const)("phase2 branch + %s -> phase2-project-mismatch", async (_label, argv, env) => {
+    const check = await checkFor([...argv], { ...env }, "phase2/s00-split-docs");
+    expect(check.status).toBe("FAILED");
+    expect(check.detail.split(":")[0]).toBe("phase2-project-mismatch");
+    expect(check.detail).toContain(`"${PHASE2_PROJECT}"`);
+  });
+
+  test("control: phase2 branch + the phase2 alias / id is allowed", async () => {
+    for (const [argv, env] of [
+      [["--project", PHASE2_ALIAS], {}],
+      [["--project", PHASE2_PROJECT], {}],
+      [[], { GCLOUD_PROJECT: PHASE2_PROJECT }],
+    ] as const) {
+      const check = await checkFor([...argv], { ...env }, "phase2/s00-split-docs");
+      expect(check.status).toBe("OK");
+    }
+  });
+
+  test("control: the same production project from a verified phase1 branch is allowed", async () => {
+    const check = await checkFor(["--project", "default"], {}, "phase1/main");
+    expect(check.status).toBe("OK");
+  });
+});
+
+describe("parseDeployArgs", () => {
+  test("no arguments", () => {
+    expect(parseDeployArgs([])).toEqual({ projects: [], hasConfigFlag: false, rest: [] });
+  });
+
+  test("unrelated arguments are passed through untouched, in order", () => {
+    expect(parseDeployArgs(["--only", "functions:default", "--force"])).toEqual({
+      projects: [],
+      hasConfigFlag: false,
+      rest: ["--only", "functions:default", "--force"],
+    });
+  });
+
+  test.each([
+    ["--project X", ["--project", "X"], ["X"]],
+    ["--project=X", ["--project=X"], ["X"]],
+    ["-P X", ["-P", "X"], ["X"]],
+    ["-PX", ["-PX"], ["X"]],
+  ] as const)("project flag form %s is parsed and removed from rest", (_label, argv, projects) => {
+    expect(parseDeployArgs([...argv, "--only", "hosting"])).toEqual({
+      projects: [...projects],
+      hasConfigFlag: false,
+      rest: ["--only", "hosting"],
+    });
+  });
+
+  test.each([
+    ["--project with no value", ["--project"]],
+    ["-P with no value", ["-P"]],
+    ["--project= with empty value", ["--project="]],
+  ] as const)("%s yields an empty-string value (so the resolver can fail closed)", (_label, argv) => {
+    expect(parseDeployArgs([...argv]).projects).toEqual([""]);
+  });
+
+  test("project flag consumes its value even when the flag is in the middle", () => {
+    expect(parseDeployArgs(["--only", "firestore", "--project", "a", "--force"])).toEqual({
+      projects: ["a"],
+      hasConfigFlag: false,
+      rest: ["--only", "firestore", "--force"],
+    });
+  });
+
+  test("several project flags are all collected in order", () => {
+    expect(parseDeployArgs(["--project", "a", "-Pb", "--project=c"]).projects).toEqual(["a", "b", "c"]);
+  });
+
+  test.each([
+    ["--config", ["--config", "other.json"]],
+    ["--config=other.json", ["--config=other.json"]],
+    ["-c", ["-c", "other.json"]],
+    ["-cother.json", ["-cother.json"]],
+  ] as const)("%s sets hasConfigFlag", (_label, argv) => {
+    const parsed = parseDeployArgs([...argv]);
+    expect(parsed.hasConfigFlag).toBe(true);
+    // config flags are NOT stripped: the wrapper refuses them rather than rewriting them.
+    expect(parsed.rest).toEqual([...argv]);
+  });
+
+  test.each([["--only"], ["--force"], ["--cors"], ["--projects"], ["--projectx"]])(
+    "%s is not mistaken for a project or config flag",
+    (flag) => {
+      const parsed = parseDeployArgs([flag]);
+      expect(parsed).toEqual({ projects: [], hasConfigFlag: false, rest: [flag] });
+    },
+  );
+
+  test("does not mutate its input", () => {
+    const argv = ["--project", "a", "--only", "x"];
+    const copy = [...argv];
+    parseDeployArgs(argv);
+    expect(argv).toEqual(copy);
+  });
+});
+
+describe("resolveEffectiveProject", () => {
+  const RC = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+  const resolve = (env: Record<string, string | undefined>, argv: string[], firebaserc: string | null = RC) =>
+    resolveEffectiveProject({ env, argv, firebaserc });
+
+  // ---- accepted inputs
+  test("GCLOUD_PROJECT only", () => {
+    expect(resolve({ GCLOUD_PROJECT: "proj-a" }, [])).toEqual({ ok: true, project: "proj-a", source: "GCLOUD_PROJECT" });
+  });
+
+  test("GCLOUD_PROJECT is trimmed", () => {
+    expect(resolve({ GCLOUD_PROJECT: "  proj-a \n" }, [])).toEqual({ ok: true, project: "proj-a", source: "GCLOUD_PROJECT" });
+  });
+
+  test.each([
+    ["--project X", ["--project", "proj-x"]],
+    ["--project=X", ["--project=proj-x"]],
+    ["-P X", ["-P", "proj-x"]],
+    ["-PX", ["-Pproj-x"]],
+  ] as const)("explicit flag form %s", (_label, argv) => {
+    expect(resolve({}, [...argv])).toEqual({ ok: true, project: "proj-x", source: "--project" });
+  });
+
+  test("an explicit alias is mapped through .firebaserc", () => {
+    expect(resolve({}, ["--project", "default"])).toEqual({ ok: true, project: EXPECTED_PROJECT_ID, source: "--project" });
+    expect(resolve({}, ["-P", PHASE2_ALIAS])).toEqual({ ok: true, project: PHASE2_PROJECT, source: "--project" });
+  });
+
+  test("a value that is not an alias is used as the project id", () => {
+    expect(resolve({}, ["--project", "not-an-alias"])).toMatchObject({ ok: true, project: "not-an-alias" });
+  });
+
+  test("an unreadable/missing .firebaserc means no alias mapping (flag value used verbatim)", () => {
+    for (const rc of [null, "{not json", "[]", JSON.stringify({ projects: "x" }), JSON.stringify({ projects: null })]) {
+      expect(resolve({}, ["--project", "default"], rc)).toEqual({ ok: true, project: "default", source: "--project" });
+    }
+  });
+
+  test("a blank alias mapping is ignored (value used verbatim)", () => {
+    const rc = firebasercWith({ weird: "   " });
+    expect(resolve({}, ["--project", "weird"], rc)).toMatchObject({ ok: true, project: "weird" });
+  });
+
+  test("unrelated arguments around the flag are ignored", () => {
+    expect(resolve({}, ["--only", "functions", "--project", "proj-x", "--force"])).toMatchObject({
+      ok: true,
+      project: "proj-x",
+    });
+  });
+
+  test("GCLOUD_PROJECT and a flag that agree (alias resolved) -> GCLOUD_PROJECT wins as source", () => {
+    expect(resolve({ GCLOUD_PROJECT: PHASE2_PROJECT }, ["--project", PHASE2_ALIAS])).toEqual({
+      ok: true,
+      project: PHASE2_PROJECT,
+      source: "GCLOUD_PROJECT",
+    });
+  });
+
+  test("repeating the same project through alias and id is not a conflict", () => {
+    expect(resolve({}, ["--project", PHASE2_ALIAS, "--project", PHASE2_PROJECT])).toEqual({
+      ok: true,
+      project: PHASE2_PROJECT,
+      source: "--project",
+    });
+  });
+
+  test("GCLOUD_PROJECT is taken as an already-resolved id, never alias-mapped", () => {
+    expect(resolve({ GCLOUD_PROJECT: "default" }, [])).toMatchObject({ ok: true, project: "default" });
+  });
+
+  // ---- project-undeterminable
+  test.each([
+    ["--project with no value", ["--project"]],
+    ["-P with no value", ["-P"]],
+    ["--project= with an empty value", ["--project="]],
+    ["--project with a blank value", ["--project", "   "]],
+    ["an empty flag followed by a valid one", ["--project=", "--project", "x"]],
+  ] as const)("flag without a value fails closed: %s", (_label, argv) => {
+    const r = resolve({}, [...argv]);
+    expect(r).toMatchObject({ ok: false, reason: "project-undeterminable" });
+  });
+
+  test("a valueless flag blocks even when GCLOUD_PROJECT is set (never silently falls back to the env)", () => {
+    expect(resolve({ GCLOUD_PROJECT: "proj-a" }, ["--project"])).toMatchObject({
+      ok: false,
+      reason: "project-undeterminable",
+    });
+  });
+
+  test.each([
+    ["empty env, no flag", {}],
+    ["GCLOUD_PROJECT empty string", { GCLOUD_PROJECT: "" }],
+    ["GCLOUD_PROJECT whitespace", { GCLOUD_PROJECT: "   " }],
+    ["GCLOUD_PROJECT undefined", { GCLOUD_PROJECT: undefined }],
+    ["FIREBASE_PROJECT only (ignored by firebase deploy, ignored here)", { FIREBASE_PROJECT: PHASE2_PROJECT }],
+    ["GOOGLE_CLOUD_PROJECT only", { GOOGLE_CLOUD_PROJECT: PHASE2_PROJECT }],
+  ] as const)("neither source present fails closed: %s", (_label, env) => {
+    const r = resolve({ ...env }, ["--only", "functions"]);
+    expect(r).toMatchObject({ ok: false, reason: "project-undeterminable" });
+    // It must NOT guess from the .firebaserc default alias (which maps to production).
+    expect(JSON.stringify(r)).not.toContain(`"project":"${EXPECTED_PROJECT_ID}"`);
+  });
+
+  test("neither source present, no .firebaserc at all", () => {
+    expect(resolve({}, [], null)).toMatchObject({ ok: false, reason: "project-undeterminable" });
+  });
+
+  // ---- project-conflict
+  test("two different flag values conflict", () => {
+    const r = resolve({}, ["--project", "a", "--project", "b"]);
+    expect(r).toMatchObject({ ok: false, reason: "project-conflict" });
+    expect(r.ok === false && r.detail).toContain("a, b");
+  });
+
+  test("two flags that resolve to different ids via aliases conflict", () => {
+    expect(resolve({}, ["--project", "default", "-P", PHASE2_ALIAS])).toMatchObject({
+      ok: false,
+      reason: "project-conflict",
+    });
+  });
+
+  test("GCLOUD_PROJECT disagreeing with a flag conflicts (flag = production, env = phase2)", () => {
+    const r = resolve({ GCLOUD_PROJECT: PHASE2_PROJECT }, ["--project", "default"]);
+    expect(r).toMatchObject({ ok: false, reason: "project-conflict" });
+    expect(r.ok === false && r.detail).toContain(PHASE2_PROJECT);
+    expect(r.ok === false && r.detail).toContain(EXPECTED_PROJECT_ID);
+  });
+
+  test("GCLOUD_PROJECT disagreeing with a flag conflicts (flag = phase2, env = production)", () => {
+    expect(resolve({ GCLOUD_PROJECT: EXPECTED_PROJECT_ID }, ["--project", PHASE2_ALIAS])).toMatchObject({
+      ok: false,
+      reason: "project-conflict",
+    });
+  });
+
+  test("every failure reason is a member of PROJECT_RESOLUTION_REASONS and leads its detail", () => {
+    const failures = [
+      resolve({}, []),
+      resolve({}, ["--project"]),
+      resolve({}, ["--project", "a", "--project", "b"]),
+      resolve({ GCLOUD_PROJECT: "a" }, ["--project", "b"]),
+    ];
+    for (const f of failures) {
+      expect(f.ok).toBe(false);
+      if (!f.ok) {
+        expect(PROJECT_RESOLUTION_REASONS as readonly string[]).toContain(f.reason);
+        expect(f.detail.startsWith(`${f.reason}:`)).toBe(true);
+      }
+    }
+  });
+});
+
+describe("findUnguardedDeployTargets", () => {
+  const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
+  const GUARD_CMD = "node functions/scripts/run_release_guard.mjs";
+  const guarded = (): { predeploy: string[] } => ({ predeploy: ["npm --prefix functions run build", GUARD_CMD] });
+  const unguarded = (): { predeploy: string[] } => ({ predeploy: ["npm --prefix functions run build"] });
+  const base = (): Record<string, unknown> => ({
+    firestore: guarded(),
+    hosting: guarded(),
+    functions: [guarded(), guarded()],
+    emulators: { firestore: { port: 8080 } },
+  });
+  const realConfig = (): Record<string, unknown> =>
+    JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "firebase.json"), "utf8")) as Record<string, unknown>;
+
+  test("GUARD_COMMAND_MARKER is the guard script's file name", () => {
+    expect(GUARD_COMMAND_MARKER).toBe("run_release_guard.mjs");
+  });
+
+  // ---- the real repository file
+  test("REAL firebase.json: no deploy target is left unguarded", () => {
+    expect(findUnguardedDeployTargets(realConfig())).toEqual([]);
+  });
+
+  test("REAL firebase.json: the four known deploy targets exist (the empty list above is not vacuous) and each runs the guard", () => {
+    const c = realConfig() as {
+      firestore?: { predeploy?: string[] };
+      hosting?: { predeploy?: string[] };
+      functions?: Array<{ codebase?: string; predeploy?: string[] }>;
+    };
+    expect(c.functions).toHaveLength(2);
+    expect(c.functions!.map((f) => f.codebase)).toEqual(["default", "equipment-identity"]);
+    for (const [label, entry] of [
+      ["firestore", c.firestore],
+      ["hosting", c.hosting],
+      ["functions[0]", c.functions![0]],
+      ["functions[1]", c.functions![1]],
+    ] as const) {
+      expect(entry).toBeDefined();
+      const hit = (entry!.predeploy ?? []).filter((cmd) => cmd.includes(GUARD_COMMAND_MARKER));
+      expect({ label, guardCommands: hit.length }).toEqual({ label, guardCommands: 1 });
+    }
+  });
+
+  test("REAL firebase.json: every deploy-capable section present carries the guard, and no unknown top-level section appears", () => {
+    const deploySections = [
+      "functions", "firestore", "hosting", "storage", "database", "dataconnect", "remoteconfig",
+      "apphosting", "auth", "extensions",
+    ];
+    const ignored = new Set(["emulators", "$schema"]);
+    const c = realConfig();
+    for (const key of Object.keys(c)) {
+      if (ignored.has(key)) continue;
+      // A new top-level key must be consciously classified here, not silently left unguarded.
+      expect(deploySections).toContain(key);
+      const entries = Array.isArray(c[key]) ? (c[key] as unknown[]) : [c[key]];
+      for (const [i, entry] of entries.entries()) {
+        const predeploy = (entry as { predeploy?: unknown } | null)?.predeploy;
+        const cmds = typeof predeploy === "string" ? [predeploy] : Array.isArray(predeploy) ? predeploy : [];
+        const carriesGuard = cmds.some((cmd) => typeof cmd === "string" && cmd.includes(GUARD_COMMAND_MARKER));
+        expect({ section: key, index: i, carriesGuard }).toEqual({ section: key, index: i, carriesGuard: true });
+      }
+    }
+  });
+
+  test("REAL firebase.json: the guard command points at a script that exists", () => {
+    const c = realConfig() as { firestore: { predeploy: string[] } };
+    const cmd = c.firestore.predeploy.find((x) => x.includes(GUARD_COMMAND_MARKER))!;
+    const rel = cmd.replace(/^node\s+/, "").trim();
+    expect(fs.existsSync(path.join(REPO_ROOT, rel))).toBe(true);
+  });
+
+  // ---- synthetic configs
+  test("fully guarded synthetic config -> empty", () => {
+    expect(findUnguardedDeployTargets(base())).toEqual([]);
+  });
+
+  test("firestore only unguarded", () => {
+    const c = base();
+    c.firestore = unguarded();
+    expect(findUnguardedDeployTargets(c)).toEqual(["firestore"]);
+  });
+
+  test("hosting only unguarded", () => {
+    const c = base();
+    c.hosting = unguarded();
+    expect(findUnguardedDeployTargets(c)).toEqual(["hosting"]);
+  });
+
+  test("functions[1] only unguarded", () => {
+    const c = base();
+    c.functions = [guarded(), unguarded()];
+    expect(findUnguardedDeployTargets(c)).toEqual(["functions[1]"]);
+  });
+
+  test("functions[0] only unguarded", () => {
+    const c = base();
+    c.functions = [unguarded(), guarded()];
+    expect(findUnguardedDeployTargets(c)).toEqual(["functions[0]"]);
+  });
+
+  test("a future storage block without the guard is reported; with the guard it is not", () => {
+    const c = base();
+    c.storage = { rules: "storage.rules" };
+    expect(findUnguardedDeployTargets(c)).toEqual(["storage"]);
+    c.storage = { rules: "storage.rules", ...guarded() };
+    expect(findUnguardedDeployTargets(c)).toEqual([]);
+  });
+
+  test.each(["database", "dataconnect", "remoteconfig"])("a future %s block without the guard is reported", (section) => {
+    const c = base();
+    c[section] = {};
+    expect(findUnguardedDeployTargets(c)).toEqual([section]);
+  });
+
+  test.each(["apphosting", "auth", "extensions"])(
+    "%s cannot carry a predeploy hook at all, so its mere presence is reported",
+    (section) => {
+      const c = base();
+      c[section] = {};
+      expect(findUnguardedDeployTargets(c)).toEqual([`${section}:no-predeploy-hook`]);
+    },
+  );
+
+  test("everything unguarded -> every target listed", () => {
+    const c: Record<string, unknown> = {
+      firestore: unguarded(),
+      hosting: unguarded(),
+      functions: [unguarded(), unguarded()],
+    };
+    expect([...findUnguardedDeployTargets(c)].sort()).toEqual(["firestore", "functions[0]", "functions[1]", "hosting"]);
+  });
+
+  test("a non-array functions block is labelled without an index", () => {
+    expect(findUnguardedDeployTargets({ functions: unguarded() })).toEqual(["functions"]);
+    expect(findUnguardedDeployTargets({ functions: guarded() })).toEqual([]);
+  });
+
+  test("predeploy as a plain string is accepted only when it runs the guard", () => {
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: GUARD_CMD } })).toEqual([]);
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: "npm run build" } })).toEqual(["hosting"]);
+  });
+
+  test.each([
+    ["missing predeploy", { public: "public" }],
+    ["empty predeploy array", { predeploy: [] }],
+    ["predeploy runs a different script", { predeploy: ["node scripts/other_guard.mjs"] }],
+    ["predeploy has only non-string entries", { predeploy: [1, null, {}] }],
+    ["predeploy is a number", { predeploy: 7 }],
+    ["entry is null", null],
+    ["entry is a string", "hosting"],
+  ] as const)("a hosting block with %s is reported", (_label, hosting) => {
+    expect(findUnguardedDeployTargets({ hosting })).toEqual(["hosting"]);
+  });
+
+  test("the emulators block is not a deploy target", () => {
+    expect(findUnguardedDeployTargets({ emulators: { firestore: {} } })).toEqual([]);
+  });
+
+  test.each([[null], [undefined], ["x"], [42]])("an unreadable config (%j) fails closed", (config) => {
+    expect(findUnguardedDeployTargets(config)).toEqual(["firebase.json:unreadable"]);
   });
 });

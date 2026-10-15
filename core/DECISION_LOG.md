@@ -55839,3 +55839,7 @@ Decision: after GPT-PM MODIFY, the release guard now runs in the predeploy of ev
 ## 2026-10-15 - Commit: S00 review fixes, documentation state
 
 Decision: after GPT-PM round 1 (MODIFY) the plan documents keep their original wording and gain a CURRENT STATE banner; docs/phase2/README.md carries the executed S00 state; the registry generator gets a --check stale test. The earlier "no tests run" record stays valid history; core/changes/2026-10-15-s00-backend-gate-tests.md is the current verification evidence for the first guard version (115 passed), superseded by the tests of the coverage and provenance fix. Evidence: core/changes/2026-10-15-s00-review-fixes-docs-state.md.
+
+## 2026-10-15 - Commit: guard coverage and provenance tests
+
+Decision: the deploy guard fix is accepted for review with 275 focused tests passing (232 + 43, run by the test agent). `findUnguardedDeployTargets` is a test-time check only; the docs must not claim a deploy-time check of firebase.json. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance-tests.md.
