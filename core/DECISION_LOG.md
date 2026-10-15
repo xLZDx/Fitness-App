@@ -56028,3 +56028,7 @@ Decision (D-5, D-85): chart is semantics-excluded with a single summary node plu
 ## 2026-10-15 - Commit: C12 server tests (guard preamble)
 
 Decision: one parameterised table proves the guard order and the zero-charge refusals identically for all four callables, so a callable that bypasses the shared preamble fails its own row. Evidence: `npx jest` on guard.test.ts and purge.test.ts in functions/ = 71 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-guard.md.
+
+## 2026-10-15 - Commit: C15 part 5 (result view, resume and failure card)
+
+Decision (D-73, D-74, D-78): the result is rendered from a pure view model; provisional and measurement-only presentation hide goal figures; the ETA stays hidden until C18 supplies pace inputs. Evidence: `core/changes/2026-10-15-c15-result-resume.md`; no checks run.
