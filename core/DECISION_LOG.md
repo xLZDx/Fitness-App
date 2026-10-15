@@ -56305,3 +56305,7 @@ Decision: progress tests fix that the live text carries only stage changes and n
 ## 2026-10-15 - Commit: C13 tests: setup status panel rows, hint mapping, semantics, RU
 
 Decision: Panel tests prove four rows with icon+text per state, per-row hint prompts, generic Adjust fallback and semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C23 diary providers tests
+
+Decision: write actions are proven through the real providers over the in-memory repositories; the data-notice gate stays a UI contract and is proven in the sheet/page tests. Evidence: core/changes/2026-10-15-c23-tests.md (diary_providers_test 34 passed).
