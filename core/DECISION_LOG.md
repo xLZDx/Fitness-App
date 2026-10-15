@@ -56472,3 +56472,7 @@ Decision: the weight log writes only valid 30..300 kg weights, only after the da
 ## 2026-10-15 - Commit: C15 tests - body_scan_flow_driver_test
 
 Decision: driver tests use a recording fake runner and a stateful record list instead of Firestore. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: photo upload port and scan trend source
+
+Decision: Scripted Dio adapter proves retry/backoff/expiry/cancel; trend source tests prove provisional or changed estimators never count as a decrease. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
