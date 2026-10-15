@@ -16,7 +16,10 @@ import '../data/nutrition_eligibility.dart';
 import '../state/nutrition_providers.dart';
 
 class NutritionEntryCard extends ConsumerWidget {
-  const NutritionEntryCard({super.key});
+  const NutritionEntryCard({super.key, this.compact = false});
+
+  /// Home form: one line of body text, smaller title.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,9 +55,13 @@ class NutritionEntryCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(l10n.nutritionPlanTitle,
-                        style: theme.textTheme.titleMedium),
+                        style: compact
+                            ? theme.textTheme.titleSmall
+                            : theme.textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text(body,
+                        maxLines: compact ? 2 : null,
+                        overflow: compact ? TextOverflow.ellipsis : null,
                         style: theme.textTheme.bodyMedium
                             ?.copyWith(color: hud.textSecondary)),
                   ],

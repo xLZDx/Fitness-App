@@ -17,6 +17,9 @@ import '../../progress_photos/scan/scan_repository.dart';
 import '../../progress_photos/scan/ui/scan_gate_view.dart';
 import '../data/body_scan_job.dart';
 import '../data/scan_plan_context.dart';
+import '../state/body_scan_providers.dart';
+import '../state/scan_history_actions.dart';
+import '../state/scan_history_rows.dart';
 import '../state/scan_plan_context_provider.dart';
 import 'resume_scan_card.dart';
 
@@ -146,9 +149,38 @@ class _UnfinishedScan extends ConsumerStatefulWidget {
 class _UnfinishedScanState extends ConsumerState<_UnfinishedScan> {
   bool _hidden = false;
 
+  /// Cancel / Delete: the remote-delete-aware path. The cloud copy goes first;
+  /// offline, the delete is owed (`pendingRemoteDelete`) and the runner
+  /// finishes it, so a cancelled scan never leaves an orphan on the server.
   Future<void> _delete(ScanRecord r) async {
-    await ref.read(scanRepositoryProvider).delete(r.id);
-    ref.invalidate(scanHistoryProvider);
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final outcome = await ref.read(scanHistoryActionsProvider).deletePhotos(
+          ScanHistoryRow(
+            id: r.id,
+            takenAt: r.createdAt,
+            weightKg: r.weightKg,
+            record: r,
+          ),
+        );
+    final text = switch (outcome) {
+      DeletePhotosOutcome.deleted => l10n.bodyScanDeletePhotosDone,
+      DeletePhotosOutcome.queuedOffline => l10n.bodyScanDeletePhotosQueued,
+      DeletePhotosOutcome.failed => l10n.bodyScanDeletePhotosFailed,
+    };
+    messenger.showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  /// Resume / Retry: wake the runner, then open the flow with the scan id.
+  Future<void> _open(ScanRecord r, {required bool retry}) async {
+    final runner = ref.read(bodyScanRunnerProvider);
+    if (retry) {
+      await runner?.retry(r.id);
+    } else {
+      runner?.resume();
+    }
+    if (!mounted) return;
+    GoRouter.of(context).push('/body-scan?scanId=${Uri.encodeQueryComponent(r.id)}');
   }
 
   @override
@@ -164,14 +196,16 @@ class _UnfinishedScanState extends ConsumerState<_UnfinishedScan> {
     }
     if (target == null) return const SizedBox.shrink();
     final rec = target;
-    void open() => GoRouter.of(context).push('/body-scan');
     final card = rec.analysis!.status == JobStatus.failed
         ? ResumeScanCard.failed(
-            onRetry: open,
+            onRetry: () => _open(rec, retry: true),
             onKeep: () => setState(() => _hidden = true),
             onDelete: () => _delete(rec),
           )
-        : ResumeScanCard.pending(onResume: open, onCancel: () => _delete(rec));
+        : ResumeScanCard.pending(
+            onResume: () => _open(rec, retry: false),
+            onCancel: () => _delete(rec),
+          );
     return Padding(padding: const EdgeInsets.only(bottom: 12), child: card);
   }
 }

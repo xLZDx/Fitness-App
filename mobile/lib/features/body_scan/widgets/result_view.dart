@@ -34,9 +34,17 @@ class ResultView extends StatefulWidget {
     required this.model,
     this.onSeePlan,
     this.onCheckAction,
+    this.onHistory,
+    this.onEditWeight,
+    this.onDeletePhotos,
   });
 
   final ScanResultViewModel model;
+
+  /// Result actions (C16 follow-up); each button is shown only when wired.
+  final VoidCallback? onHistory;
+  final VoidCallback? onEditWeight;
+  final VoidCallback? onDeletePhotos;
   final VoidCallback? onSeePlan;
   final void Function(CheckAction action)? onCheckAction;
 
@@ -137,6 +145,38 @@ class _ResultViewState extends State<ResultView> {
             const SizedBox(height: 12),
             CheckItemsCard(items: m.checks, onAction: widget.onCheckAction),
           ],
+        ],
+        if (widget.onEditWeight != null ||
+            widget.onDeletePhotos != null ||
+            widget.onHistory != null) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              if (widget.onEditWeight != null)
+                TextButton(
+                  key: const Key('bodyScan.result.editWeight'),
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  onPressed: widget.onEditWeight,
+                  child: Text(l10n.bodyScanHistoryActionEditWeight),
+                ),
+              if (widget.onDeletePhotos != null)
+                TextButton(
+                  key: const Key('bodyScan.result.deletePhotos'),
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  onPressed: widget.onDeletePhotos,
+                  child: Text(l10n.bodyScanHistoryActionDeletePhotos),
+                ),
+              if (widget.onHistory != null)
+                TextButton(
+                  key: const Key('bodyScan.result.history'),
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  onPressed: widget.onHistory,
+                  child: Text(l10n.bodyScanHistoryTitle),
+                ),
+            ],
+          ),
         ],
       ],
     );

@@ -11,6 +11,7 @@ import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../body_scan/widgets/body_scan_entry_card.dart';
+import '../nutrition_plan/widgets/nutrition_entry_card.dart';
 import '../progress_photos/data/photo_timeline.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
@@ -51,6 +52,8 @@ class ProgressPage extends ConsumerWidget {
           const _HeadlineStats(),
           const SizedBox(height: 16),
           const BodyScanEntryCard(),
+          const SizedBox(height: 12),
+          const NutritionEntryCard(),
           const SizedBox(height: 24),
           Text(
             AppLocalizations.of(context).progressLast8Weeks,

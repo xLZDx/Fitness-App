@@ -14,6 +14,7 @@ import '../../shared/widgets/hud/hud_scaffold.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import '../body_scan/widgets/body_scan_entry_card.dart';
+import '../nutrition_plan/widgets/nutrition_entry_card.dart';
 import '../moments/data/moment.dart';
 import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
@@ -130,6 +131,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         const _HudQuickScanRow(),
         const SizedBox(height: 14),
         _gutter(const BodyScanEntryCard(compact: true)),
+        const SizedBox(height: 12),
+        _gutter(const NutritionEntryCard(compact: true)),
         const SizedBox(height: 20),
         _gutter(const DeloadBanner()),
         // R5's way in. Shown only once the day has something to summarise: a
