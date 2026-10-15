@@ -327,7 +327,10 @@ FlowTransition nextFlow(FlowState s, FlowEvent e, FlowContext c) {
               s.stage == FlowStage.analysing ||
               s.stage == FlowStage.verifying)
             const FlowEffect(FlowEffectKind.abortInFlight),
-          if (s.mayHaveUploaded)
+          // A local-only (provisional, cloud flag off) scan never created a
+          // server document or an object, so cancelling it must not call or
+          // queue anything on the server (D-52, SCAN-52).
+          if (s.mayHaveUploaded && !c.localOnly)
             FlowEffect(c.online
                 ? FlowEffectKind.deleteBodyScan
                 : FlowEffectKind.markPendingRemoteDelete),
