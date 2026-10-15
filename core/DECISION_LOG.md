@@ -56220,3 +56220,6 @@ Decision: plan action tests prove every write is eligibility-gated, version-chec
 ## 2026-10-15 - Commit: C25 client export merge and device wipe
 
 Decision: device-only excludedFoods is merged into the export from the local store; per-uid feature keys are wiped by exact-uid suffix match so shared-phone accounts stay isolated. Evidence: `core/changes/2026-10-15-c25-client-export-and-wipe.md`; no checks run.
+
+Evidence addendum (C18 plan actions tests): nutrition_plan_actions_test.dart ran green, 40 tests.
+Progress: T109 search_foods tests added.
