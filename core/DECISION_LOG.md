@@ -56500,3 +56500,7 @@ Decision: tile routes are asserted by the URI the pushed stub receives, matching
 ## 2026-10-15 - Commit: C14 tests: blur service, fix EXIF leak in blurred upload
 
 Decision: Real-pixel blur tests found that the uploaded JPEG kept source EXIF; blur_service now clears exif and ICC before encoding. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: settings consent/retention and scan repository
+
+Decision: Tolerant-read and in-memory store tests plus LocalScanRepository signed-in/signed-out behaviour. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
