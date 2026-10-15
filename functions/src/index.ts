@@ -41,6 +41,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 import { createHash } from "crypto";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
@@ -49,6 +50,7 @@ import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
+import { bodyScanBucketName } from "./body_scan/flags";
 import { INTERACTIVE, RARE, WEBHOOK, RUNTIME_SA } from "./scaling";
 import {
   noteAppCheck,
@@ -2366,8 +2368,10 @@ async function sweepBookings(uid: string): Promise<void> {
  * drift apart. Idempotent: every step is a no-op on data that is already gone.
  *
  * Covers `users/{uid}` (recursive), the two other uid-keyed top-level
- * collections (`donor_wall`, `coach_listings`), and the three collections that
- * only MENTION the uid (see `sweepSharedRecords`).
+ * collections (`donor_wall`, `coach_listings`), the three collections that
+ * only MENTION the uid (see `sweepSharedRecords`), and the user's objects in the
+ * private body-scan bucket (see `sweepBodyScanObjects`), which runs LAST so a
+ * storage failure never leaves Firestore data behind.
  */
 async function sweepAccountData(uid: string): Promise<void> {
   await Promise.all([
@@ -2376,6 +2380,46 @@ async function sweepAccountData(uid: string): Promise<void> {
     db.recursiveDelete(db.collection("coach_listings").doc(uid)),
   ]);
   await sweepSharedRecords(uid);
+  await sweepBodyScanObjects(uid);
+}
+
+const BODY_SCAN_SWEEP_SKIPPED = "body_scan_storage_sweep_skipped_unconfigured";
+
+/**
+ * Deletes every object under `users/{uid}/` in the private body-scan bucket
+ * (design s7.6, D-60, SD-6). The bucket name comes from the ONE module that
+ * reads `BODY_SCAN_BUCKET`, shared with the body-scan callables.
+ *
+ *  - Bucket not configured: a logged no-op. Nothing could ever have been stored.
+ *  - Bucket not found (404): "nothing to delete", not an error.
+ *  - Anything else (403 IAM, network): THROWS, so `deleteAccount` reports the
+ *    sweep as failed and the durable reconciler retries it
+ *    (`accountDeletionRetries`). The Firestore part already ran before this.
+ *
+ * `force: true` keeps deleting after a single object fails and then reports
+ * every failure as an array, so the 404 test looks at all of them. The thrown
+ * error carries only the first error CODE: the SDK message can name the bucket
+ * and object path, and the reconciler stores a bare code anyway
+ * (`errorCodeOf`).
+ */
+async function sweepBodyScanObjects(uid: string): Promise<void> {
+  const bucketName = bodyScanBucketName();
+  if (!bucketName) {
+    logger.info(BODY_SCAN_SWEEP_SKIPPED, { event: BODY_SCAN_SWEEP_SKIPPED });
+    return;
+  }
+  try {
+    await getStorage()
+      .bucket(bucketName)
+      .deleteFiles({ prefix: `users/${uid}/`, force: true });
+  } catch (err) {
+    const errors: unknown[] = Array.isArray(err) ? err : [err];
+    const codeOf = (e: unknown): unknown => (e as { code?: unknown } | null)?.code;
+    if (errors.length > 0 && errors.every((e) => codeOf(e) === 404)) return;
+    throw Object.assign(new Error("body scan storage sweep failed"), {
+      code: codeOf(errors[0]),
+    });
+  }
 }
 
 /**
@@ -2930,3 +2974,11 @@ export { runProductionCanary } from "./canary_schedule";
 // own header for why a blanket functions deploy is forbidden here (the four
 // AI Gateway callables above must stay undeployed).
 export { runEnforcementStateCheck } from "./enforcement_state_schedule";
+
+// Body Scan cloud path (C12, design s7). All run as `fn-bodyscan` and answer
+// `feature-disabled` until BODY_SCAN_BUCKET is configured; deploy by name.
+export { createBodyScan } from "./body_scan/create";
+export { estimateBodyScan } from "./body_scan/estimate";
+export { deleteBodyScan } from "./body_scan/delete";
+export { manageBodyScanData } from "./body_scan/manage";
+export { purgeExpiredBodyScanPhotos } from "./body_scan/purge";
