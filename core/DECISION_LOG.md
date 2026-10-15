@@ -56590,3 +56590,7 @@ Decision (SD not yet recorded): (SD-16) `core/CURRENT_STATE.md` stays generated 
 ## 2026-10-15 - Commit: C23 diary repository fake tests
 
 Decision: the fake repositories are held to the same refusals as the rules. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 capture screen large-text test (T126)
+
+Decision: `body_scan_a11y_test.dart` added (7 tests pass); the capture panel is bounded and scrolls at 2.0 in RU on 360x640, the shutter stays >= 48 dp and tappable. Evidence: `core/changes/2026-10-15-c26-tests.md`.
