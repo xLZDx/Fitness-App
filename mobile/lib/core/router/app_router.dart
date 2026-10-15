@@ -28,6 +28,8 @@ import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
 import '../../features/body_scan/body_scan_flow_page.dart';
+import '../../features/body_scan/body_scan_history_page.dart';
+import '../../features/body_scan/body_scan_privacy_page.dart';
 import '../../features/body_scan/body_scan_result_page.dart';
 import '../../features/nutrition_plan/nutrition_profile_flow_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
@@ -523,7 +525,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/photos/compare',
-        pageBuilder: (_, __) => _fadeThrough(const ScanCompareScreen()),
+        pageBuilder: (_, state) => _fadeThrough(ScanCompareScreen(
+          start: ScanCompareStart.parse(state.uri.queryParameters['mode']),
+        )),
+      ),
+      // C16. Scan history and photo privacy.
+      GoRoute(
+        path: '/body-scan/history',
+        pageBuilder: (_, __) => _fadeThrough(const BodyScanHistoryPage()),
+      ),
+      GoRoute(
+        path: '/body-scan/privacy',
+        pageBuilder: (_, __) => _fadeThrough(const BodyScanPrivacyPage()),
       ),
       // C11. The "complete your nutrition profile" flow for users who already
       // finished onboarding. Only this path is registered here; the other

@@ -2988,6 +2988,94 @@
       }
     }
   },
+  "bodyScanCompareBaselineOnly": "Your first scan is your baseline. Take a second scan to see a comparison.",
+  "bodyScanCompareTakeSecond": "Take second scan",
+  "bodyScanHistoryTitle": "Scan history",
+  "bodyScanHistoryEmpty": "No scans yet. Your first scan becomes your baseline.",
+  "bodyScanHistoryCount": "{count, plural, one{# scan} other{# scans}}",
+  "@bodyScanHistoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanHistoryBaseline": "Baseline",
+  "bodyScanHistoryNewEstimator": "New estimator: earlier scans are not compared with this one",
+  "bodyScanHistoryPhotosOnly": "Photos only, no estimate",
+  "bodyScanHistoryBodyFat": "Body fat {value}%",
+  "@bodyScanHistoryBodyFat": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanHistoryWeight": "{value} kg",
+  "@bodyScanHistoryWeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanHistoryChangeNone": "No meaningful change since the previous scan",
+  "bodyScanHistoryChangeDown": "Lower than the previous scan",
+  "bodyScanHistoryChangeUp": "Higher than the previous scan",
+  "bodyScanHistoryDeletePending": "Cloud copy will be deleted when you are online",
+  "bodyScanHistoryMenu": "Scan actions",
+  "bodyScanHistoryActionOpen": "Open result",
+  "bodyScanHistoryActionEditWeight": "Edit weight",
+  "bodyScanHistoryActionDeletePhotos": "Delete photos",
+  "bodyScanHistoryCompareBaseline": "Compare with baseline",
+  "bodyScanHistoryComparePrevious": "Compare with previous scan",
+  "bodyScanEditWeightTitle": "Edit recorded weight",
+  "bodyScanEditWeightHint": "This also updates your weight log for that day.",
+  "bodyScanEditWeightInvalid": "Enter a weight between 30 and 300 kg.",
+  "bodyScanEditWeightSave": "Save",
+  "bodyScanEditWeightSaved": "Weight updated.",
+  "bodyScanEditWeightFailed": "Some changes could not be saved. Please try again.",
+  "bodyScanDeletePhotosTitle": "Delete this scan's photos?",
+  "bodyScanDeletePhotosBody": "The photos are removed from this phone and any cloud copy is deleted too. If you are offline, the cloud copy is deleted when you are back online, and the scan stays here until then.",
+  "bodyScanDeletePhotosConfirm": "Delete photos",
+  "bodyScanDeletePhotosDone": "Photos deleted.",
+  "bodyScanDeletePhotosQueued": "You are offline. The cloud copy will be deleted when you are back online.",
+  "bodyScanDeletePhotosFailed": "The photos could not be deleted. Please try again.",
+  "bodyScanPrivacyTitle": "Photo privacy",
+  "bodyScanPrivacyIntroCloud": "Photos are private by default. Cloud copies are blurred on your phone first, kept only as long as you choose, and deleted within 48 hours of that time.",
+  "bodyScanPrivacyIntroLocal": "Your scan photos stay on this phone. Nothing is uploaded in this version.",
+  "bodyScanPrivacyRetentionTitle": "Keep cloud photos for",
+  "bodyScanRetention0": "Delete after analysis",
+  "bodyScanRetentionDays": "{days, plural, one{# day} other{# days}}",
+  "@bodyScanRetentionDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanRetentionHonest": "Photos are deleted within 48 hours of the chosen time. Photos kept on this phone are not affected.",
+  "bodyScanPrivacyApply": "Apply to existing photos",
+  "bodyScanPrivacyApplyHelp": "Shortens the keep time of photos already stored. It never makes it longer.",
+  "bodyScanPrivacyApplyDone": "Done. Matching photos will be deleted within 48 hours.",
+  "bodyScanPrivacyConsentOn": "You agreed to cloud photo analysis.",
+  "bodyScanPrivacyConsentOff": "Cloud photo analysis is off. Your photos stay on this phone.",
+  "bodyScanPrivacyWithdraw": "Withdraw agreement",
+  "bodyScanPrivacyDeleteTitle": "Delete cloud data",
+  "bodyScanPrivacyDeleteHelp": "These actions affect cloud copies only. Photos kept on this phone are not removed.",
+  "bodyScanPrivacyDeletePhotos": "Delete all cloud photos",
+  "bodyScanPrivacyDeleteScans": "Delete all cloud scans",
+  "bodyScanPrivacyDeletePhotosTitle": "Delete all cloud photos?",
+  "bodyScanPrivacyDeletePhotosBody": "Every photo stored in the cloud is deleted within 48 hours. Your results stay.",
+  "bodyScanPrivacyDeletePhotosConfirm": "Delete photos",
+  "bodyScanPrivacyDeleteScansTitle": "Delete all cloud scans?",
+  "bodyScanPrivacyDeleteScansBody": "Every cloud scan and its photos are deleted within 48 hours. This cannot be undone.",
+  "bodyScanPrivacyDeleteScansConfirm": "Delete scans",
+  "bodyScanPrivacyDeleteDone": "Deletion started. Photos are deleted within 48 hours.",
+  "bodyScanPrivacyFailed": "That did not work. Please try again.",
+  "bodyScanPrivacyWorking": "Working",
+  "bodyScanPrivacyPause": "Pause tracking",
+  "bodyScanPrivacyPauseHelp": "Hides scan reminders and nudges. Your data stays.",
   "bodyScanTitle": "Body scan",
   "bodyScanIntroTitle": "Estimate your body composition",
   "bodyScanIntroBodyRough": "This version gives a rough estimate from your height, weight and age. It does not measure your body from the photos. The photos stay on this phone.",
