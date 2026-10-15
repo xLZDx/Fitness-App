@@ -73,10 +73,13 @@ final selectedDiaryDayProvider = StateProvider<String>(
 /// saved to yesterday by accident. Watch it from the diary page; it re-checks
 /// whenever the app resumes.
 class DiaryDayFollower with WidgetsBindingObserver {
-  DiaryDayFollower(this._ref);
+  DiaryDayFollower(this._ref)
+      : _lastToday = dayKeyOf(_ref.read(nutritionClockProvider)());
 
   final Ref _ref;
-  late String _lastToday = dayKeyOf(_ref.read(nutritionClockProvider)());
+  // Taken at construction: a lazy initializer would first run inside sync()
+  // and could never see the day change.
+  String _lastToday;
 
   /// Moves the selection to today when it was on the previous today.
   void sync() {

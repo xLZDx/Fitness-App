@@ -265,10 +265,12 @@ class _EstimateCard extends StatelessWidget {
                     : hud.success,
               ),
               const SizedBox(width: 6),
-              Text(
-                  l10n.bodyScanConfidence(confidenceText(l10n, e.confidence)),
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: hud.textPrimary)),
+              Flexible(
+                child: Text(
+                    l10n.bodyScanConfidence(confidenceText(l10n, e.confidence)),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: hud.textPrimary)),
+              ),
             ],
           ),
           const SizedBox(height: 8),
