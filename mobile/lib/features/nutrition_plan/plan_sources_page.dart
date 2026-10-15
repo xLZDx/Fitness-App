@@ -55,6 +55,13 @@ class PlanSourcesPage extends StatelessWidget {
               l10n.nutritionSourcesOff,
             ]),
             const SizedBox(height: 12),
+            section(l10n.nutritionSourcesSoftwareTitle, [
+              l10n.nutritionSourcesScanner,
+              l10n.nutritionSourcesCalorieTracker,
+              l10n.nutritionSourcesReferenceOnly,
+              l10n.nutritionSourcesFullList,
+            ]),
+            const SizedBox(height: 12),
             section(l10n.nutritionSourcesLimitsTitle, [
               l10n.nutritionSourcesLimitEstimates,
               l10n.nutritionSourcesLimitScan,

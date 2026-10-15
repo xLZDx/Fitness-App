@@ -24,6 +24,7 @@ import '../data/food_entry.dart';
 import '../data/generic_foods.dart';
 import 'diary_repository.dart';
 import 'food_api.dart';
+import 'meal_thumbnail_store.dart';
 
 export 'firestore_diary_repository.dart'
     show FirestoreDiaryRepository, FirestoreSavedFoodsRepository;
@@ -152,6 +153,8 @@ class FoodDiaryActions {
     if (uid == null) return DiaryWriteStatus.unavailable;
     try {
       await _ref.read(diaryRepositoryProvider).delete(uid, entryId);
+      // C24: a private meal thumbnail lives and dies with its entry.
+      await _ref.read(mealThumbnailDeleterProvider)(entryId);
       return DiaryWriteStatus.saved;
     } catch (_) {
       return DiaryWriteStatus.failed;
