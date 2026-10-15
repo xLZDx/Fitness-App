@@ -56058,3 +56058,7 @@ Evidence addendum (C18 review record tests): plan_review_record_test.dart ran gr
 ## 2026-10-15 - Commit: C23 part 1 (food API client and diary repositories)
 
 Decision: the diary talks to food callables only through the FoodApi interface (feature-disabled is a calm not-available state) and stores through ports with Firestore and in-memory implementations; firestore.rules already cover food_entries and saved_foods and accept item sourceId llm_estimate (rules check only item name), so no rules change. Evidence: `core/changes/2026-10-15-c23-state-ports.md`; no checks run.
+
+## 2026-10-15 - Commit: design fix (sourceId allowlist)
+
+Decision: design s5.6 FoodItem sourceId allowlist now includes llm_estimate (stale line fixed; the C22 data layer was already correct). Evidence: `core/changes/2026-10-15-design-sourceid-allowlist.md`.

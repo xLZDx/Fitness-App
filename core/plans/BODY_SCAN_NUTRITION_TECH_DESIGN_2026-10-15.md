@@ -282,7 +282,7 @@ totals: { kcal: Range, proteinG: Range, carbsG: Range, fatG: Range }   Range = {
 checkThese: [ { code: string, resolved: bool } ] (<= 8)
 model: { id, version } | absent      (when AI-assisted)
 ```
-`FoodItem = {foodRef: "gen:<id>" | "off:<barcode>" | "user:<id>" | "label", name (<= 80), grams: Range, per100g: {kcal, proteinG, carbsG, fatG}, matchQuality: "exact"|"close"|"weak"|"none", sourceId: "usda_fdc"|"open_food_facts"|"user"|"label_ocr"}`. `entryId` is a client UUID (idempotent retries). Day totals query: `where('day', '==', d)` (equality only, no composite index; sorted client-side).
+`FoodItem = {foodRef: "gen:<id>" | "off:<barcode>" | "user:<id>" | "label", name (<= 80), grams: Range, per100g: {kcal, proteinG, carbsG, fatG}, matchQuality: "exact"|"close"|"weak"|"none", sourceId: "usda_fdc"|"open_food_facts"|"user"|"label_ocr"|"llm_estimate"}` (`llm_estimate` marks a model-estimated item, see 17.3 and FOOD-09). `entryId` is a client UUID (idempotent retries). Day totals query: `where('day', '==', d)` (equality only, no composite index; sorted client-side).
 
 ### 5.7 `users/{uid}/saved_foods/{foodId}` (client rw)
 
