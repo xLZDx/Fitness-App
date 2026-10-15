@@ -56036,3 +56036,7 @@ Decision (D-73, D-74, D-78): the result is rendered from a pure view model; prov
 ## 2026-10-15 - Commit: C18 stored plan tests
 
 Decision (D-55, D-57): stored plan tests prove validated() recomputes bounds from the digest and that only an active readable plan is read; no referProfessional key exists in the document. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C15 part 6 (flow page, result page, routes)
+
+Decision: the flow page only renders the pure flow state and delegates capture to the existing guided capture route; the result route reads through a narrow port so C14/C16 binding is a wiring step. Evidence: `core/changes/2026-10-15-c15-pages-routes.md`; no checks run.

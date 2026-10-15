@@ -27,6 +27,8 @@ import '../../features/workouts/workout_summary_page.dart';
 import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
+import '../../features/body_scan/body_scan_flow_page.dart';
+import '../../features/body_scan/body_scan_result_page.dart';
 import '../../features/nutrition_plan/nutrition_profile_flow_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/data_export/backup_page.dart';
@@ -530,6 +532,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/nutrition/profile',
         pageBuilder: (_, __) => _fadeThrough(const NutritionProfileFlowPage()),
+      ),
+      // C15. Body scan flow and result.
+      GoRoute(
+        path: '/body-scan',
+        pageBuilder: (_, __) => _fadeThrough(const BodyScanFlowPage()),
+      ),
+      GoRoute(
+        path: '/body-scan/result/:scanId',
+        pageBuilder: (_, state) => _fadeThrough(
+          BodyScanResultPage(scanId: state.pathParameters['scanId']!),
+        ),
       ),
       GoRoute(
         path: '/backup',
