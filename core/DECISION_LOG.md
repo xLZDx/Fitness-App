@@ -55830,3 +55830,8 @@ Decision: the release guard checks the deploy line (from the git branch) before 
 ## 2026-10-15 - Commit: S00 backend separation gate tests
 
 Decision: the deploy-line gate is proven by deterministic fake-deps tests in release_guard.test.ts (115 tests passing, 0 failing): branch classification, all six block reasons, both PASS paths, phase2 default-project fallback blocks, no override path. No product code changed. Not verified: real CLI execution of run_release_guard.mjs and the real git branch reader. Evidence: core/changes/2026-10-15-s00-backend-gate-tests.md.
+
+
+## 2026-10-15 - Commit: S00 deploy guard coverage and provenance
+
+Decision: after GPT-PM MODIFY, the release guard now runs in the predeploy of every deploy target in firebase.json (both functions codebases, firestore, hosting; a future storage block must carry it), the effective project comes from GCLOUD_PROJECT and/or an explicit --project and fails closed when absent or conflicting, and a phase1 deploy additionally requires HEAD to be an ancestor of origin/phase1/main or origin/master (new reason phase1-provenance-unverified). Supported path: scripts/deploy/guarded_deploy.mjs. Residual limit stated, not solved: a local guard cannot stop use of the firebase CLI with another config or credentials; separate production deploy credentials or protected CI are an open operator item. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance.md; not yet tested.

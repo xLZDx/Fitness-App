@@ -262,6 +262,13 @@ export interface ReleaseGuardDeps {
    * `null` when it cannot be read; a detached HEAD is reported as the literal
    * `"HEAD"` by git and is treated as an unknown line. Never throws. */
   currentBranch: () => Promise<string | null>;
+  /** Commit provenance for the Phase 1 line: resolves `true` only when HEAD is
+   * verified to be an ancestor of (or equal to) a protected Phase 1 remote-
+   * tracking ref (`PROTECTED_PHASE1_REFS`, via `git merge-base --is-ancestor`).
+   * Must resolve `false` when a ref is missing, git fails, or HEAD is not
+   * contained -- the guard also treats a rejection as `false`. Never trusted
+   * from the branch name alone. */
+  isCommitOnProtectedLine: () => Promise<boolean>;
 }
 
 /** The exact 4 AI Gateway callables this gate covers -- see `abuse_guard.ts`'s own QUOTAS map. */
@@ -297,8 +304,22 @@ export const DEPLOY_LINE_REASONS = [
   "phase2-alias-missing",
   "phase2-targets-production",
   "phase2-project-mismatch",
+  "phase1-provenance-unverified",
 ] as const;
 export type DeployLineReason = (typeof DEPLOY_LINE_REASONS)[number];
+
+/** Closed set of reasons `resolveEffectiveProject` can fail with. */
+export const PROJECT_RESOLUTION_REASONS = ["project-undeterminable", "project-conflict"] as const;
+export type ProjectResolutionReason = (typeof PROJECT_RESOLUTION_REASONS)[number];
+
+/** Remote-tracking refs of the protected Phase 1 line. A Phase 1 production
+ * deploy requires HEAD to be an ancestor of (or equal to) at least one of
+ * them. `origin/master` stays valid only while `master` is still a Phase 1
+ * branch name (see `classifyDeployLine`). */
+export const PROTECTED_PHASE1_REFS = [
+  "refs/remotes/origin/phase1/main",
+  "refs/remotes/origin/master",
+] as const;
 
 /** Maps a git branch name to a deploy line. `phase2/*` -> phase2;
  * `phase1/main`, `master`, `phase1/*` -> phase1; anything else (feature
@@ -340,6 +361,24 @@ export async function resolveDeployTarget(deps: ReleaseGuardDeps): Promise<Deplo
     };
   }
   if (line === "phase1") {
+    // The branch NAME is not proof of what is checked out: a local branch
+    // called phase1/x can hold Phase 2 commits. Require verified commit
+    // provenance against the protected remote-tracking refs; fail closed.
+    let onProtectedLine = false;
+    try {
+      onProtectedLine = (await deps.isCommitOnProtectedLine()) === true;
+    } catch {
+      onProtectedLine = false;
+    }
+    if (!onProtectedLine) {
+      return {
+        ok: false,
+        line,
+        branch,
+        reason: "phase1-provenance-unverified",
+        detail: `phase1-provenance-unverified: HEAD is not verified to be contained in ${PROTECTED_PHASE1_REFS.join(" or ")} (ref missing, git failed, or HEAD has commits outside the protected Phase 1 line) -- the branch name ${JSON.stringify(branch)} alone is not trusted; fetch and deploy only commits that are on the protected line`,
+      };
+    }
     return { ok: true, line, branch, allowedProject: EXPECTED_PROJECT_ID };
   }
 
@@ -387,6 +426,168 @@ export async function resolveDeployTarget(deps: ReleaseGuardDeps): Promise<Deplo
     };
   }
   return { ok: true, line, branch, allowedProject: alias };
+}
+
+/** `firebase deploy` arguments the guard cares about. */
+export interface DeployArgs {
+  /** Value of every `--project` / `--project=` / `-P` flag, in order (`""` when a value is missing). */
+  projects: string[];
+  /** True when `--config`/`-c` is present: a different firebase config carries different (possibly no) guard hooks. */
+  hasConfigFlag: boolean;
+  /** The arguments with every project flag (and its value) removed. */
+  rest: string[];
+}
+
+/** Parses `firebase deploy` arguments the way the CLI's own option parser
+ * reads the project selector: `--project X`, `--project=X`, `-P X`, `-PX`. */
+export function parseDeployArgs(argv: string[]): DeployArgs {
+  const projects: string[] = [];
+  const rest: string[] = [];
+  let hasConfigFlag = false;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--project" || a === "-P") {
+      projects.push(argv[i + 1] ?? "");
+      i++;
+      continue;
+    }
+    if (a.startsWith("--project=")) {
+      projects.push(a.slice("--project=".length));
+      continue;
+    }
+    if (a.startsWith("-P") && a.length > 2) {
+      projects.push(a.slice(2));
+      continue;
+    }
+    if (a === "-c" || a === "--config" || a.startsWith("--config=") || (a.startsWith("-c") && !a.startsWith("--"))) {
+      hasConfigFlag = true;
+    }
+    rest.push(a);
+  }
+  return { projects, hasConfigFlag, rest };
+}
+
+export type EffectiveProjectResolution =
+  | { ok: true; project: string; source: "GCLOUD_PROJECT" | "--project" }
+  | { ok: false; reason: ProjectResolutionReason; detail: string };
+
+function readRcAliases(firebaserc: string | null): Record<string, unknown> {
+  if (firebaserc === null) return {};
+  try {
+    const rc = JSON.parse(firebaserc) as FirebaseRc;
+    return rc !== null && typeof rc === "object" && typeof rc.projects === "object" && rc.projects !== null
+      ? rc.projects
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Determines the project a deploy will actually hit, from the real CLI inputs,
+ * and fails CLOSED when it cannot.
+ *
+ * Verified against firebase-tools 15.x source (`lib/deploy/lifecycleHooks.js`,
+ * `lib/command.js`): inside a `predeploy` hook the CLI exports the RESOLVED
+ * project id as `GCLOUD_PROJECT` (alias already mapped through `.firebaserc`),
+ * so that variable is authoritative there. The CLI itself picks the project
+ * from `--project`/`-P` (alias or id), else the per-user `firebase use` active
+ * project (configstore, outside the repo and not readable here), else the
+ * `.firebaserc` single/`default` alias -- `FIREBASE_PROJECT` is only read by
+ * `firebase init`, never by `deploy`. The guard therefore never guesses from
+ * `.firebaserc` defaults or the environment: it accepts only `GCLOUD_PROJECT`
+ * and/or an explicit project flag (alias resolved via `.firebaserc`), blocks
+ * when the two disagree, and blocks when neither is present.
+ */
+export function resolveEffectiveProject(input: {
+  env: Record<string, string | undefined>;
+  argv: string[];
+  firebaserc: string | null;
+}): EffectiveProjectResolution {
+  const aliases = readRcAliases(input.firebaserc);
+  const toId = (value: string): string => {
+    const mapped = aliases[value];
+    return typeof mapped === "string" && mapped.trim().length > 0 ? mapped.trim() : value;
+  };
+
+  const flagValues = parseDeployArgs(input.argv).projects.map((v) => v.trim());
+  if (flagValues.some((v) => v.length === 0)) {
+    return {
+      ok: false,
+      reason: "project-undeterminable",
+      detail: "project-undeterminable: a --project/-P flag has no value -- cannot determine the deploy project",
+    };
+  }
+  const flagProjects = [...new Set(flagValues.map(toId))];
+  if (flagProjects.length > 1) {
+    return {
+      ok: false,
+      reason: "project-conflict",
+      detail: `project-conflict: several different --project values (${flagProjects.join(", ")}) -- refusing to guess which one the CLI uses`,
+    };
+  }
+  const envProject = (input.env["GCLOUD_PROJECT"] ?? "").trim();
+
+  if (envProject.length > 0 && flagProjects.length === 1 && envProject !== flagProjects[0]) {
+    return {
+      ok: false,
+      reason: "project-conflict",
+      detail: `project-conflict: GCLOUD_PROJECT = "${envProject}" but --project resolves to "${flagProjects[0]}" -- refusing to guess which one the deploy hits`,
+    };
+  }
+  if (envProject.length > 0) return { ok: true, project: envProject, source: "GCLOUD_PROJECT" };
+  if (flagProjects.length === 1) return { ok: true, project: flagProjects[0], source: "--project" };
+  return {
+    ok: false,
+    reason: "project-undeterminable",
+    detail:
+      "project-undeterminable: neither GCLOUD_PROJECT (set by the firebase CLI for predeploy hooks) nor an explicit --project/-P is present -- the guard does not guess from .firebaserc defaults or the active-project store; deploy through scripts/deploy/guarded_deploy.mjs or pass --project",
+  };
+}
+
+/** Marker proving a `predeploy` entry runs this guard. */
+export const GUARD_COMMAND_MARKER = "run_release_guard.mjs";
+
+/** `firebase.json` sections whose schema accepts `predeploy` (verified in
+ * firebase-tools' `schema/firebase-config.json`): each must run the guard. */
+const GUARDABLE_DEPLOY_SECTIONS = [
+  "functions",
+  "firestore",
+  "hosting",
+  "storage",
+  "database",
+  "dataconnect",
+  "remoteconfig",
+] as const;
+
+/** Deploy sections whose schema has no `predeploy` at all: if one is present
+ * in `firebase.json` it cannot carry the guard and must be reported. */
+const UNGUARDABLE_DEPLOY_SECTIONS = ["apphosting", "auth", "extensions"] as const;
+
+/** Returns a label for every deploy target in a parsed `firebase.json` that
+ * does NOT run the release guard in its `predeploy` hook (empty = every
+ * present deploy target is guarded). Sections absent from the file (for
+ * example `storage` while no `storage.rules` exists) are not reported;
+ * sections that cannot carry a hook at all are reported when present. */
+export function findUnguardedDeployTargets(config: unknown): string[] {
+  if (config === null || typeof config !== "object") return ["firebase.json:unreadable"];
+  const c = config as Record<string, unknown>;
+  const out: string[] = [];
+  for (const section of GUARDABLE_DEPLOY_SECTIONS) {
+    const value = c[section];
+    if (value === undefined) continue;
+    const entries = Array.isArray(value) ? value : [value];
+    entries.forEach((entry, index) => {
+      const label = Array.isArray(value) ? `${section}[${index}]` : section;
+      const predeploy = entry !== null && typeof entry === "object" ? (entry as { predeploy?: unknown }).predeploy : undefined;
+      const commands = typeof predeploy === "string" ? [predeploy] : Array.isArray(predeploy) ? predeploy : [];
+      if (!commands.some((cmd) => typeof cmd === "string" && cmd.includes(GUARD_COMMAND_MARKER))) out.push(label);
+    });
+  }
+  for (const section of UNGUARDABLE_DEPLOY_SECTIONS) {
+    if (c[section] !== undefined) out.push(`${section}:no-predeploy-hook`);
+  }
+  return out;
 }
 
 /** Known-safe roles for the kill-switch secret -- skipped without further resolution. */

@@ -1,12 +1,20 @@
 {
   "firestore": {
     "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "indexes": "firestore.indexes.json",
+    "predeploy": [
+      "npm --prefix functions run build",
+      "node functions/scripts/run_release_guard.mjs"
+    ]
   },
   "hosting": {
     "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "cleanUrls": true
+    "cleanUrls": true,
+    "predeploy": [
+      "npm --prefix functions run build",
+      "node functions/scripts/run_release_guard.mjs"
+    ]
   },
   "functions": [
     {
@@ -39,7 +47,9 @@
       ],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run build",
-        "npm --prefix \"$RESOURCE_DIR\" test"
+        "npm --prefix \"$RESOURCE_DIR\" test",
+        "npm --prefix functions run build",
+        "node functions/scripts/run_release_guard.mjs"
       ]
     }
   ],
