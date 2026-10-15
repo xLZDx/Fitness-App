@@ -56075,3 +56075,11 @@ Decision: the existing stateful reconcile fake and the delete_account mock were 
 
 Decision: diary visibility reuses the device-local eligibility verdict (no new health signal); server search runs only on explicit submit behind the foodLookup flag with a 600 ms debounce and a last-results cache. Evidence: `core/changes/2026-10-15-c23-state-providers.md`; no checks run.
 Progress: T105 nutrition_normalise tests added (56 passing).
+
+## 2026-10-15 - Commit: C13/C14 tests
+
+Decision: shared scan fakes extended in place (luminance, Future<bool> speech, haptic patterns) and the two legacy manual-shutter tests now advance the 5 s timer; new C13/C14 test files follow one per commit. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C12 server tests, final complete run
+
+Evidence: the complete set of C12 server test files (8 new, 2 extended) ran in one jest invocation at head 269e72d: 10 suites, 477 tests passed, 0 failed. Change record: core/changes/2026-10-15-body-scan-server-tests-final-run.md.
