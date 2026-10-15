@@ -55838,3 +55838,7 @@ Decision: S01 starts as documentation only. The GPS privacy contract, lifecycle 
 ## 2026-10-15 - Commit: S01 UI-0 baseline audit
 
 Decision: the UI-0 audit is saved as a verbatim agent report with FACT/INFERENCE labels; it shows that two token layers coexist (AppSemanticColors and HudTokens), that 30 feature files still use the legacy FrostedScaffold, that no location package or mode state exists, and that the direction document assumes 48 dp targets (code: 44) and about 45 routes (code: 35). Evidence: core/changes/2026-10-15-s01-ui0-baseline-audit.md.
+
+## 2026-10-15 - Commit: S01 contract security review fixes
+
+Decision: all 15 security-review findings are addressed in the GPS contract and lifecycle matrix (none rejected; three accepted with qualifications because cloud-side settings cannot be verified from the repository). D-16 and D-17 remain open for the operator. Evidence: core/changes/2026-10-15-s01-contract-security-review-fixes.md.
