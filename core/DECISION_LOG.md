@@ -56092,3 +56092,7 @@ Progress: T104 coerce_meal_analysis tests added (54 passing; one test fixture co
 ## 2026-10-15 - Commit: C21 generic foods and suggestions tests
 
 Decision: fixed three product defects found by the tests: Eggplant no longer carries the egg allergen (builder regex and asset), malt liquor is tagged alcohol, and halal/kosher now hide all uncertain rows as the documented contract says. Evidence: generic_foods_test 68 passed, food_suggestions_test 77 passed (single-file runs); core/changes/2026-10-15-c21-tests.md.
+
+## 2026-10-15 - Commit: fix(body-scan): import CustomSemanticsAction in trend_chart
+
+Decision: one-line import fix; the widget did not compile under the pinned Flutter 3.27.1, blocking every test that imports it. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
