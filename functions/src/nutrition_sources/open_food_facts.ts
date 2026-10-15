@@ -69,7 +69,7 @@ function asRecord(v: unknown): Record<string, unknown> | undefined {
 /** "30 g", "250,5 ml" -> grams (1 ml = 1 g), else `undefined`. */
 export function servingGramsFromText(text: unknown): number | undefined {
   if (typeof text !== "string") return undefined;
-  const m = /(\d+(?:[.,]\d+)?)\s*(g|gr|ml|г|мл)\b/iu.exec(text);
+  const m = /(\d+(?:[.,]\d+)?)\s*(g|gr|ml|г|мл)(?![\p{L}\p{N}])/iu.exec(text);
   if (!m) return undefined;
   const n = Number(m[1].replace(",", "."));
   return Number.isFinite(n) && n > 0 && n <= 3000 ? n : undefined;
