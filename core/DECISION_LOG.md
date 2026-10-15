@@ -56706,3 +56706,8 @@ Decision: after GPT-PM round 2 (MAJOR-02A), the clean-tree check also inspects g
 ## 2026-10-16 - Commit: tests for the ignored deployable files check
 
 Decision: MAJOR-02A (git-ignored deployable files) is covered by 703 passing jest tests (477 + 101 + 125), including an end-to-end case with real git where an ignored public file blocks the wrapper before firebase is spawned. Evidence: core/changes/2026-10-16-s00-guard-ignored-files-tests.md.
+
+
+## 2026-10-16 - Commit: S00 deploy guard node_modules scope
+
+Decision: after GPT-PM round 3 (MAJOR-02B), an ignored node_modules path is no longer allowed unconditionally; it is allowed only when the deploy target's own ignore list in firebase.json excludes it (so hosting.ignore with no node_modules entry plus an ignored public/node_modules now blocks). The functions ignore list mirrors firebase-tools (default node_modules and .git only when no ignore key exists, basename matching for slash-free patterns). functions/lib, functions-equipment-identity/lib and functions .env files stay allowed by design (build output and env config are packaged by firebase deploy). Unreadable firebase.json now also blocks an ignored functions/node_modules (fail closed). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope.md; not yet tested.

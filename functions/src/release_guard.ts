@@ -1512,6 +1512,13 @@ async function provenanceScope(deps: ReleaseGuardDeps): Promise<ProvenanceScope>
   };
   const ignoreList = (e: Record<string, unknown>): string[] =>
     Array.isArray(e["ignore"]) ? (e["ignore"] as unknown[]).filter((x): x is string => typeof x === "string") : [];
+  // firebase-tools `prepareFunctionsUpload.js`: `config.ignore || ["node_modules", ".git"]`, then always adds
+  // `firebase-debug.log` and `firebase-debug.*.log`. An explicit `ignore: []` therefore uploads node_modules.
+  const functionsIgnoreList = (e: Record<string, unknown>): string[] => [
+    ...(Array.isArray(e["ignore"]) ? ignoreList(e) : ["node_modules", ".git"]),
+    "firebase-debug.log",
+    "firebase-debug.*.log",
+  ];
   for (const e of asList(c["firestore"])) {
     add(e["rules"]);
     add(e["indexes"]);
@@ -1525,7 +1532,7 @@ async function provenanceScope(deps: ReleaseGuardDeps): Promise<ProvenanceScope>
   for (const e of asList(c["functions"])) {
     add(e["source"]);
     const dir = norm(e["source"]);
-    if (dir !== undefined) dirs.push({ dir, ignore: ignoreList(e), kind: "functions" });
+    if (dir !== undefined) dirs.push({ dir, ignore: functionsIgnoreList(e), kind: "functions" });
   }
   return { paths: [...out], dirs };
 }
@@ -1571,12 +1578,16 @@ function globToRegExp(pattern: string): RegExp | null {
 
 /** True when `rel` (path relative to the uploaded dir) or any of its ancestor directories matches an ignore
  * pattern -- an ignored directory excludes everything inside it. */
-function excludedByTargetIgnore(rel: string, patterns: string[]): boolean {
+function excludedByTargetIgnore(rel: string, patterns: string[], matchBase: boolean): boolean {
   const segments = rel.split("/");
-  const regexps = patterns.map(globToRegExp).filter((r): r is RegExp => r !== null);
+  const regexps = patterns.map((pt) => ({ re: globToRegExp(pt), slashFree: !pt.includes("/") }));
   for (let n = 1; n <= segments.length; n++) {
     const prefix = segments.slice(0, n).join("/");
-    if (regexps.some((r) => r.test(prefix))) return true;
+    const base = segments[n - 1];
+    // Functions upload uses minimatch with `matchBase: true`: a slash-free pattern matches the basename at any depth.
+    if (regexps.some(({ re, slashFree }) => re !== null && (re.test(prefix) || (matchBase && slashFree && re.test(base))))) {
+      return true;
+    }
   }
   return false;
 }
@@ -1588,10 +1599,10 @@ function isAllowedIgnoredEntry(entry: string, scope: ProvenanceScope): boolean {
   if (entry.startsWith('"')) return false; // quoted (special characters): cannot be classified, fail closed
   const p = entry.replace(/\/+$/, "");
   if (p.length === 0 || !isSafeRepoRelativePath(p)) return false;
-  const segments = p.split("/");
-  // (a) anything under a node_modules directory
-  if (segments.includes("node_modules")) return true;
-  // (b) compiled output built by predeploy
+  // node_modules is NOT allowed unconditionally: it is only allowed when the deploy target's own ignore list
+  // excludes it (rule (c) below). `hosting.ignore: []` uploads public/node_modules, `functions[].ignore: []`
+  // uploads functions/node_modules.
+  // (b) compiled output built by predeploy (packaged by design: `main` is lib/index.js)
   if (ALLOWED_IGNORED_BUILD_DIRS.some((d) => p === d || p.startsWith(`${d}/`))) return true;
   for (const t of scope.dirs) {
     if (p !== t.dir && !p.startsWith(`${t.dir}/`)) continue;
@@ -1600,7 +1611,7 @@ function isAllowedIgnoredEntry(entry: string, scope: ProvenanceScope): boolean {
     // (d) Firebase env files are deploy inputs by design (their candidate content is not verified here)
     if (t.kind === "functions" && !rel.includes("/") && (rel === ".env" || rel.startsWith(".env."))) return true;
     // (c) excluded by the target's own ignore list
-    if (excludedByTargetIgnore(rel, t.ignore)) return true;
+    if (excludedByTargetIgnore(rel, t.ignore, t.kind === "functions")) return true;
   }
   return false;
 }

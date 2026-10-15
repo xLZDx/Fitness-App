@@ -128,12 +128,17 @@ neither is present; it never falls back to a hardcoded or `.firebaserc`-default 
   Firebase uploads everything in the hosting public dir and the functions source except the target's own
   `ignore` list, so an ignored file such as `public/app.js` would reach production without being in the
   verified commit. An ignored entry under a deploy-relevant path blocks (detail leads with
-  `ignored-deployable-files:` and lists the paths) unless it is: (a) under a `node_modules` directory;
-  (b) inside the compiled output dirs `functions/lib` or `functions-equipment-identity/lib` (built by
-  `predeploy` from tracked source); (c) excluded by the target's own `ignore` list in `firebase.json`
-  (supported forms: exact names, `*`/`?` globs, `**/` and `/**`; an ignored directory excludes its contents;
-  unsupported pattern syntax never matches, so it can only make the check stricter); or (d) a functions env
-  file, `.env` or `.env.*` directly in a functions source dir (deploy input by design). The candidate dotenv
+  `ignored-deployable-files:` and lists the paths) unless it is: (a) inside the compiled output dirs
+  `functions/lib` or `functions-equipment-identity/lib` (built by `predeploy` from tracked source and packaged
+  by design, `main` is `lib/index.js`); (b) excluded by the target's own `ignore` list in `firebase.json`
+  (functions: `functions[].ignore`, with the firebase-tools default `["node_modules", ".git"]` only when no
+  `ignore` key exists, plus `firebase-debug*.log`, and slash-free patterns also match at any depth as in
+  firebase-tools; hosting: `hosting.ignore`; supported pattern forms: exact names, `*`/`?` globs, `**/` and
+  `/**`; an ignored directory excludes its contents; unsupported pattern syntax never matches, so it can only
+  make the check stricter); or (c) a functions env file, `.env` or `.env.*` directly in a functions source dir
+  (deploy input by design). `node_modules` is NOT allowed unconditionally: it is allowed only through rule (b),
+  so `hosting.ignore: []` with an ignored `public/node_modules/...` blocks. With an unreadable `firebase.json`
+  the strict mode has no ignore lists, so an ignored `functions/node_modules` also blocks (fail closed). The candidate dotenv
   content is NOT verified by the guard: this is the known open item (2) below. A `git status` failure or a
   quoted (special-character) path fails closed. Expect to remove stray ignored files before a deploy, for
   example `functions/.runtimeconfig.json`, `functions/jest_result.json`, `functions/coverage/`, other `*.log`
