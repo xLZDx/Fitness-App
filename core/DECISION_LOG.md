@@ -56546,3 +56546,7 @@ Decision: the C19 EN/RU keys stay in parity and RU plural forms resolve correctl
 ## 2026-10-15 - Commit: C15 tests - c15_body_scan_arb_test
 
 Decision: ARB parity test reads the ARB files directly so it needs no generated l10n. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 EN/RU ARB parity tests
+
+Decision: ARB parity is asserted on the real files for the new key family and the food* family. Evidence: core/changes/2026-10-15-c24-tests.md.
