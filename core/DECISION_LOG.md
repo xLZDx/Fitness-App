@@ -56185,3 +56185,9 @@ Evidence addendum (C19): pages and routes in core/changes/2026-10-15-c19-pages-r
 ## 2026-10-15 - Commit: C23 part 7 (diary and add-food pages)
 
 Decision: the diary page is hidden for referProfessional and never worded as a budget game; the data notice precedes the first food-AI call. Evidence: `core/changes/2026-10-15-c23-pages-a.md`; no checks run.
+
+## 2026-10-15 - Commit: C25 privacy, deletion, export, inventory
+
+Decision (D-61): the export of the new collections is ordered newest first and paged by the app; the paging state is returned under `paging` (the legacy `truncated` string array is unchanged because the old sections and tests depend on it); continuation pages are charged to their own `accountExportPage` counter. No signed URLs are ever embedded in the export; scans only carry `photoLinksAvailable`.
+
+Decision (Q-10, privacy wording status): `public/privacy.html` was rewritten by an agent to match the actual behaviour with the feature flags off and on. The wording is a DRAFT pending operator and professional (legal) review; it ships as text, but no feature flag (`BODY_SCAN`, `FOOD_AI`) may be enabled in production until the operator signs the wording off. Evidence: `core/changes/2026-10-15-c25-export-paging.md` and the following C25 change records; no checks run.

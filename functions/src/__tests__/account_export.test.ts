@@ -24,7 +24,31 @@ const snapOf = (rows: Array<{ id: string; data: any }>) => ({
   docs: rows.map((r) => ({ id: r.id, data: () => r.data })),
 });
 
+// C25: `orderBy(field, "desc")` + `startAfter(snapshot)` + `limit` over the same
+// in-memory rows. "__name__" orders by document id.
+const orderedRef = (
+  name: string,
+  field: string,
+  after?: { id: string },
+): any => {
+  const sorted = () => {
+    const rows = [...(collections.get(name) ?? [])].sort((a, b) => {
+      const av = field === "__name__" ? a.id : a.data[field];
+      const bv = field === "__name__" ? b.id : b.data[field];
+      return av < bv ? 1 : av > bv ? -1 : 0;
+    });
+    if (!after) return rows;
+    const i = rows.findIndex((r) => r.id === after.id);
+    return rows.slice(i + 1);
+  };
+  return {
+    startAfter: (snap: { id: string }) => orderedRef(name, field, snap),
+    limit: (n: number) => ({ get: async () => snapOf(sorted().slice(0, n)) }),
+  };
+};
+
 const collectionRef = (name: string): any => ({
+  orderBy: (field: string, _dir: string) => orderedRef(name, field),
   get: async () => snapOf(collections.get(name) ?? []),
   limit: (n: number) => ({
     get: async () => snapOf((collections.get(name) ?? []).slice(0, n)),
