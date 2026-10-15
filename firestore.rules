@@ -571,7 +571,8 @@ service cloud.firestore {
       return r == null ? 0 : r.data.get('cloudConsent', {}).get('version', 0);
     }
     function consentOk(n, r) {
-      return n.get('cloudConsent', null) == (r == null ? null : r.data.get('cloudConsent', null))
+      return !('cloudConsent' in n)
+          || n.get('cloudConsent', null) == (r == null ? null : r.data.get('cloudConsent', null))
           || (n.cloudConsent is map
               && n.cloudConsent.keys().hasOnly(['version', 'acceptedAt'])
               && n.cloudConsent.keys().hasAll(['version', 'acceptedAt'])
@@ -740,26 +741,54 @@ service cloud.firestore {
     // `per100g` for saved foods); the server recomputes macros from
     // `per100g x grams` for AI-assisted entries. Bounds the SHAPE, not the
     // bytes (rules cannot measure document size).
-    function foodItemAt(l, i) {
-      return l.size() <= i
-          || (l[i] is map
-              && 'name' in l[i]
-              && l[i].name is string
-              && l[i].name.size() <= 80);
+    // Per-element check, INLINED for all 30 slots. Firestore Rules allow 1000
+    // expression evaluations per request, and the function-call form
+    // (`foodItemAt(l, s + k)`) exceeded that budget for EVERY entry, even a
+    // one-item one, which made `food_entries` unwritable (found by the E0 rules
+    // test). Inlined, a 30-item entry with every optional field fits (measured
+    // on the emulator). A non-map element, or one without a string-like
+    // `name`, makes `.name.size()` ERROR, and an erroring rule refuses the
+    // write, the same outcome as an explicit type check at a fraction of the cost.
+    function foodItemsAll(l) {
+      return (l.size() <= 0 || l[0].name.size() <= 80)
+          && (l.size() <= 1 || l[1].name.size() <= 80)
+          && (l.size() <= 2 || l[2].name.size() <= 80)
+          && (l.size() <= 3 || l[3].name.size() <= 80)
+          && (l.size() <= 4 || l[4].name.size() <= 80)
+          && (l.size() <= 5 || l[5].name.size() <= 80)
+          && (l.size() <= 6 || l[6].name.size() <= 80)
+          && (l.size() <= 7 || l[7].name.size() <= 80)
+          && (l.size() <= 8 || l[8].name.size() <= 80)
+          && (l.size() <= 9 || l[9].name.size() <= 80)
+          && (l.size() <= 10 || l[10].name.size() <= 80)
+          && (l.size() <= 11 || l[11].name.size() <= 80)
+          && (l.size() <= 12 || l[12].name.size() <= 80)
+          && (l.size() <= 13 || l[13].name.size() <= 80)
+          && (l.size() <= 14 || l[14].name.size() <= 80)
+          && (l.size() <= 15 || l[15].name.size() <= 80)
+          && (l.size() <= 16 || l[16].name.size() <= 80)
+          && (l.size() <= 17 || l[17].name.size() <= 80)
+          && (l.size() <= 18 || l[18].name.size() <= 80)
+          && (l.size() <= 19 || l[19].name.size() <= 80)
+          && (l.size() <= 20 || l[20].name.size() <= 80)
+          && (l.size() <= 21 || l[21].name.size() <= 80)
+          && (l.size() <= 22 || l[22].name.size() <= 80)
+          && (l.size() <= 23 || l[23].name.size() <= 80)
+          && (l.size() <= 24 || l[24].name.size() <= 80)
+          && (l.size() <= 25 || l[25].name.size() <= 80)
+          && (l.size() <= 26 || l[26].name.size() <= 80)
+          && (l.size() <= 27 || l[27].name.size() <= 80)
+          && (l.size() <= 28 || l[28].name.size() <= 80)
+          && (l.size() <= 29 || l[29].name.size() <= 80);
     }
-    function foodItemsFrom(l, s) {
-      return foodItemAt(l, s) && foodItemAt(l, s + 1) && foodItemAt(l, s + 2)
-          && foodItemAt(l, s + 3) && foodItemAt(l, s + 4)
-          && foodItemAt(l, s + 5) && foodItemAt(l, s + 6)
-          && foodItemAt(l, s + 7) && foodItemAt(l, s + 8)
-          && foodItemAt(l, s + 9);
-    }
+    // `low <= mid <= high` plus `0 <= low` and `high <= 100000` bounds every
+    // value in one comparison chain (a missing or non-numeric key errors, which
+    // refuses the write). The earlier per-value `numberIn(r.get(...))` form cost
+    // about four times as many expressions.
     function rangeOk(r) {
       return r is map
           && r.keys().hasOnly(['low', 'mid', 'high'])
-          && numberIn(r.get('low', -1), 0, 100000)
-          && numberIn(r.get('mid', -1), 0, 100000)
-          && numberIn(r.get('high', -1), 0, 100000);
+          && r.low >= 0 && r.low <= r.mid && r.mid <= r.high && r.high <= 100000;
     }
     function totalsOk(t) {
       return t is map
@@ -787,9 +816,7 @@ service cloud.firestore {
           && d.items is list
           && d.items.size() >= 1
           && d.items.size() <= 30
-          && foodItemsFrom(d.items, 0)
-          && foodItemsFrom(d.items, 10)
-          && foodItemsFrom(d.items, 20)
+          && foodItemsAll(d.items)
           && (!('checkThese' in d)
               || (d.checkThese is list && d.checkThese.size() <= 8))
           && (!('model' in d) || d.model is map)

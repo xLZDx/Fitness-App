@@ -385,3 +385,25 @@ describe("generic policy sweep (every declared NONE/OWNER/AUTHENTICATED/PUBLIC c
     }
   }
 });
+
+// ---------------------------------------------------------------------------
+// E0 / T05 (PRIV-21, RULES-14): lifecycle governance rows for the Body Scan +
+// Nutrition Coach collections.
+//
+// DEFERRED to C25 (epic E6): `scripts/ci/data_lifecycle_policy.json` has no
+// rows for the eight new paths yet (body_scans, body_scan_settings,
+// weight_entries, nutrition_plan, nutrition_plan_reviews, food_entries,
+// saved_foods, and the EXEMPT nutrition_cache). The two sweeps above are
+// data-driven from that file, so today they simply have nothing to check for
+// these paths. The expectations below are recorded as todos and are NOT faked
+// with a vacuous assertion; they become real tests when C25 adds the rows.
+// The rules outcomes the future cells must equal are already proven
+// operation by operation in firestore_rules.test.ts ("E0 body scan + nutrition
+// rules").
+// ---------------------------------------------------------------------------
+describe("Body Scan + Nutrition Coach policy rows (DEFERRED to C25)", () => {
+  test.todo("a policy row exists for each of the 8 new paths and a collection missing from the policy fails the test (PRIV-21)");
+  test.todo("each new path's clientAccess matches the rules outcome per operation: body_scans read OWNER, create NONE, update CONDITIONAL, delete NONE (RULES-14)");
+  test.todo("every CONDITIONAL cell of the new rows names an emulator test in firestore_rules.test.ts that exercises that exact operation (RULES-14)");
+  test.todo("nutrition_cache is declared EXEMPT and its clientAccess is NONE for read, create, update and delete (PRIV-21)");
+});

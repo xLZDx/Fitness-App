@@ -56194,3 +56194,13 @@ Decision (Q-10, privacy wording status): `public/privacy.html` was rewritten by 
 Progress: T108 lookup_barcode tests added; product fix: OFF budget slot honours injected clock.
 
 Evidence addendum (C19): ARB keys in core/changes/2026-10-15-c19-arb.md.
+
+## 2026-10-15 - Commit: E0 rules tests and two firestore.rules fixes
+
+Decision (defect fix, C01 rules): `food_entries` exceeded the 1000-expression rules budget for every entry and so could never be written. The element check is inlined for all 30 slots and `rangeOk` is one ordered comparison chain (low <= mid <= high, 0..100000); a 30-item entry with all optional fields is accepted on the emulator.
+
+Decision (defect fix, C01 rules): `cloudConsent` withdrawal was refused by an evaluation error on the missing key. `consentOk` now accepts an absent key first, matching D-56.
+
+Decision (deferral): lifecycle-policy rows for the new collections (PRIV-21, RULES-14) are `test.todo` until C25 adds them to `scripts/ci/data_lifecycle_policy.json`.
+
+Evidence: firestore_rules + data_access_policy 491 passed / 4 todo; storage_rules 82 passed (emulator, alternate port config). Change record: core/changes/2026-10-15-e0-tests-rules.md.
