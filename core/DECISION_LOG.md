@@ -56212,3 +56212,11 @@ Decision: server food search is explicit-submit only and the weight link reuses 
 ## 2026-10-15 - Commit: C16 functional tests (test-engineer pass)
 
 Decision: C16 history/privacy/compare behaviour is covered by focused Dart tests using fakes and provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c16-tests.md`.
+
+## 2026-10-15 - Commit: C18 plan actions tests
+
+Decision: plan action tests prove every write is eligibility-gated, version-checked and clamped, and acceptProposal and undo refuse stale or out-of-bounds changes. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C25 client export merge and device wipe
+
+Decision: device-only excludedFoods is merged into the export from the local store; per-uid feature keys are wiped by exact-uid suffix match so shared-phone accounts stay isolated. Evidence: `core/changes/2026-10-15-c25-client-export-and-wipe.md`; no checks run.
