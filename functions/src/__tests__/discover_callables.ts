@@ -9,6 +9,10 @@ const SOURCES = [
   "ai_equipment_recognition.ts",
   "ai_machine_description.ts",
   "ai_exercise_generation.ts",
+  // Food scanning callables (C20, D-63).
+  "analyze_meal_photo.ts",
+  "parse_nutrition_label.ts",
+  "nutrition_lookup.ts",
 ];
 
 export interface DiscoveredCallable {

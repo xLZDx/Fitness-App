@@ -108,7 +108,13 @@ export async function enforceDailyQuota(
       const snap = await tx.get(ref);
       const used = (snap.data()?.[action] as number | undefined) ?? 0;
       if (used + cost > limit) {
-        logger.warn(QUOTA_EXCEEDED_EVENT, { uid, action, used, cost, limit });
+        logger.warn(QUOTA_EXCEEDED_EVENT, {
+          ...quotaLogIdentity(uid, action),
+          action,
+          used,
+          cost,
+          limit,
+        });
         throw new HttpsError(
           "resource-exhausted",
           "You have reached today's limit for this action. It resets tomorrow.",
@@ -129,7 +135,13 @@ export async function enforceDailyQuota(
     // transaction is atomic, so nothing was charged, and the caller does not
     // get its metered resource.
     if (e instanceof HttpsError) throw e;
-    logger.error(QUOTA_CHECK_FAILED_EVENT, { uid, action, cost, limit, err: String(e) });
+    logger.error(QUOTA_CHECK_FAILED_EVENT, {
+      ...quotaLogIdentity(uid, action),
+      action,
+      cost,
+      limit,
+      err: quotaLogError(e, action),
+    });
     throw new HttpsError("internal", "Could not check your usage limit.");
   }
 }
@@ -355,10 +367,10 @@ export async function refundQuota(
   } catch (e) {
     logger.error(QUOTA_REFUND_FAILED_EVENT, {
       event: QUOTA_REFUND_FAILED_EVENT,
-      uid,
+      ...quotaLogIdentity(uid, action),
       action,
       amount,
-      err: String(e),
+      err: quotaLogError(e, action),
     });
   }
 }
@@ -417,7 +429,68 @@ export const QUOTAS = {
   aiMachineDescription: 60,
   /** AI exercise-generation requests per user per day. */
   aiExerciseGeneration: 40,
+  /**
+   * Body Scan + Nutrition Coach (design s7, s7.5, s7.8, D-53, D-62). The
+   * names are the `action` strings stored under `users/{uid}/usage/{day}`
+   * (design s5.8) and are listed in `REDACTED_QUOTA_ACTIONS` below.
+   *
+   * `bodyScanCreate` is charged only when a NEW scan document is created (an
+   * idempotent replay charges nothing); `bodyScanEstimate` once, at first
+   * processing; `bodyScanDelete` only for single-scan deletes, so "delete
+   * all" (`bodyScanManage`, its own counter) can never be blocked by it.
+   */
+  bodyScanCreate: 30,
+  bodyScanEstimate: 14,
+  bodyScanDelete: 60,
+  bodyScanManage: 30,
+  /** Meal-photo / describe-in-text recognition (a paid Vertex call). */
+  analyzeMealPhoto: 60,
+  /** Nutrition-label OCR (a paid Vertex call). */
+  parseNutritionLabel: 60,
+  /** Barcode lookups that may spend the shared upstream budget (D-64). */
+  barcodeLookup: 120,
+  /** Food searches that may spend the shared upstream budget (D-64). */
+  foodSearch: 150,
 } as const;
+
+/**
+ * Quota actions whose log lines must carry NO uid (D-67).
+ *
+ * `enforceDailyQuota` logs `{uid, action, used, cost, limit}` on a refusal and
+ * on a failed check. For the body-scan and food actions that is a record of
+ * "this uid scanned its body / logged food" in Cloud Logging, which sits
+ * outside `users/{uid}` and is therefore never erased by `deleteAccount` (the
+ * same reasoning as `noteAppCheck` above). The quota COUNTER itself stays
+ * under the user document; only the log identity is dropped, and the raw
+ * `String(e)` of a failed transaction (which can embed the document path and
+ * so the uid) is replaced by its error code. The pre-existing actions keep
+ * their original log shape so the existing monitoring queries still join.
+ */
+export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
+  "bodyScanCreate",
+  "bodyScanEstimate",
+  "bodyScanDelete",
+  "bodyScanManage",
+  "analyzeMealPhoto",
+  "parseNutritionLabel",
+  "barcodeLookup",
+  "foodSearch",
+  // The account export logs its own failures; neither action may name the uid (D-67).
+  "accountExport",
+  "accountExportPage",
+]);
+
+/** The uid field of a quota log event: `{uid}` normally, `{}` when redacted. */
+function quotaLogIdentity(uid: string, action: string): { uid?: string } {
+  return REDACTED_QUOTA_ACTIONS.has(action) ? {} : { uid };
+}
+
+/** The error field of a quota log event: `String(e)` normally, a code when redacted. */
+function quotaLogError(e: unknown, action: string): string {
+  if (!REDACTED_QUOTA_ACTIONS.has(action)) return String(e);
+  const code = (e as { code?: unknown } | null | undefined)?.code;
+  return typeof code === "string" || typeof code === "number" ? String(code) : "unknown";
+}
 
 /**
  * The share of a quota an anonymous caller gets.

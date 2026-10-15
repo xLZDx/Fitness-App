@@ -18,7 +18,12 @@ void main() {
       as Map).cast<String, dynamic>();
 
   /// The app's own brand name is deliberately identical in both languages.
-  const kBrandKeys = {'appTitle'};
+  const kBrandKeys = {
+    'appTitle',
+    // Data-source proper nouns (C26): Open Food Facts, USDA FoodData Central.
+    'foodSourceOff',
+    'foodSourceUsda',
+  };
 
   test('every English key has a Russian entry', () {
     final missing = en.keys

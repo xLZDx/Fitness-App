@@ -32,6 +32,7 @@ class StepLifestyle extends ConsumerWidget {
             DietaryPreference.dairyFree,
             DietaryPreference.halal,
             DietaryPreference.kosher,
+            DietaryPreference.pescatarian,
             DietaryPreference.none,
           ],
           labelOf: (d) => switch (d) {
@@ -41,6 +42,7 @@ class StepLifestyle extends ConsumerWidget {
             DietaryPreference.dairyFree => l10n.onbDietDairyFree,
             DietaryPreference.halal => l10n.onbDietHalal,
             DietaryPreference.kosher => l10n.onbDietKosher,
+            DietaryPreference.pescatarian => l10n.onbDietPescatarian,
             DietaryPreference.none => l10n.onbDietNone,
           },
           values: l.diet.toSet(),

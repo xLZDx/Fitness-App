@@ -84,6 +84,17 @@ export const RUNTIME_SA = {
    * no Firestore at all, so it gets no `datastore.user` either.
    */
   enforcement: `fn-enforcement@${projectId()}.iam.gserviceaccount.com`,
+  /**
+   * An 8th tier for Body Scan (design s6.3/s7, D-60, which supersedes D-14):
+   * the body-scan callables and the purge job run as a DEDICATED identity so
+   * the shared `fn-data` identity never gets access to scan photos. It is
+   * granted `roles/storage.objectAdmin` on the private body-scan bucket only
+   * and `roles/iam.serviceAccountTokenCreator` on itself (V4 signing) by the
+   * operator steps in `runbooks/body_scan_bucket.md`. Nothing consumes it until
+   * the body-scan callables land (C12); like the others it only takes effect on
+   * a function's next deploy, and the account must exist before that deploy.
+   */
+  bodyScan: `fn-bodyscan@${projectId()}.iam.gserviceaccount.com`,
 } as const;
 
 /**
@@ -340,4 +351,39 @@ export const AI_METERED: Capped<CallableOptions> = {
   concurrency: 10,
   enforceAppCheck: APP_CHECK_ENFORCED_AI,
   serviceAccount: RUNTIME_SA.aiRuntime,
+};
+
+/**
+ * The Body Scan callables (`createBodyScan`, `estimateBodyScan`,
+ * `deleteBodyScan`, `manageBodyScanData`) and the scheduled purge, from C12.
+ *
+ * Capped at 10 instances: photo features follow the AI posture, so
+ * `enforceAppCheck` uses the fail-CLOSED `APP_CHECK_ENFORCED_AI` flag, and the
+ * runtime is the dedicated `fn-bodyscan` identity (D-60) rather than the shared
+ * `fn-data`. No `concurrency` override: these calls do Firestore and signed-URL
+ * work, not paid model calls (the provisional estimator runs on the device,
+ * D-52), so the platform default applies for the same reason as `INTERACTIVE`.
+ */
+export const BODY_SCAN: Capped<CallableOptions> = {
+  region: REGION,
+  maxInstances: 10,
+  enforceAppCheck: APP_CHECK_ENFORCED_AI,
+  serviceAccount: RUNTIME_SA.bodyScan,
+};
+
+/**
+ * `lookupBarcode` and `searchFoods` (from C20).
+ *
+ * Fail-CLOSED App Check like the AI callables (`APP_CHECK_ENFORCED_AI`), not
+ * because a call is paid, but because every cache MISS spends a SHARED upstream
+ * budget: Functions instances share egress IPs, and Open Food Facts rate-limits
+ * per IP, so distinct barcodes from many accounts can exhaust it (D-64). Runs
+ * as `fn-data` (D-64): no photo access and no Vertex call, only Firestore cache
+ * reads and fixed-host outbound HTTP through `safeFetch`.
+ */
+export const FOOD_LOOKUP: Capped<CallableOptions> = {
+  region: REGION,
+  maxInstances: 10,
+  enforceAppCheck: APP_CHECK_ENFORCED_AI,
+  serviceAccount: RUNTIME_SA.data,
 };

@@ -20,6 +20,7 @@ import 'core/notifications/local_notification_service.dart';
 import 'core/notifications/notification_providers.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/router/app_router.dart';
+import 'core/wiring/body_scan_wiring.dart';
 // Imported for the AppThemeModeX / AppLanguageX extensions used below —
 // extension methods are only visible where their library is imported.
 import 'core/settings/app_settings.dart';
@@ -49,6 +50,14 @@ import 'features/marketplace/state/marketplace_providers.dart';
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
 import 'features/profile/data/device_health_profile_repository.dart';
+import 'features/nutrition_plan/data/firestore_plan_repository.dart';
+import 'features/food_diary/state/diary_providers.dart'
+    show diaryRepositoryProvider, savedFoodsRepositoryProvider, FirestoreDiaryRepository, FirestoreSavedFoodsRepository;
+import 'features/nutrition_plan/data/firestore_weight_repository.dart';
+import 'features/nutrition_plan/state/nutrition_providers.dart'
+    show nutritionPlanRepositoryProvider;
+import 'features/nutrition_plan/state/weight_providers.dart'
+    show weightRepositoryProvider;
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/profile/data/local_sensitive_store.dart';
 import 'features/profile/state/profile_providers.dart';
@@ -379,6 +388,18 @@ Future<void> main() async {
             sensitiveStore,
           ),
         ),
+        // Nutrition plan + weigh-ins (C18): Firestore, same rules-shaped docs.
+        nutritionPlanRepositoryProvider
+            .overrideWith((_) => FirestorePlanRepository()),
+        weightRepositoryProvider
+            .overrideWith((_) => FirestoreWeightRepository()),
+        diaryRepositoryProvider.overrideWith((_) => FirestoreDiaryRepository()),
+        savedFoodsRepositoryProvider
+            .overrideWith((_) => FirestoreSavedFoodsRepository()),
+        // Body scan <-> nutrition ports, trend, result source and the cloud
+        // repository/settings (only with BODY_SCAN_CLOUD); see
+        // core/wiring/body_scan_wiring.dart.
+        ...bodyScanRootOverrides(),
         subscriptionRepositoryProvider
             .overrideWith((_) => FirestoreSubscriptionRepository()),
         stripeCheckoutServiceProvider
@@ -627,6 +648,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     // drain must never block or fail the resume it is riding on.
     if (state == AppLifecycleState.resumed) {
       unawaited(drainEquipmentIdentityTelemetryOutbox(ref));
+      // Queued body scans continue after the app comes back.
+      resumeBodyScanRunner(ref);
     }
   }
 
@@ -635,6 +658,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     final router = ref.watch(appRouterProvider);
     // Finishes a device wipe an interrupted account deletion left behind.
     ref.watch(interruptedWipeSweepProvider);
+    // Body scan <-> nutrition bridges and runner resume triggers.
+    ref.watch(bodyScanRootWiringProvider);
     final settings = ref.watch(settingsControllerProvider);
     // Resolved, never nullable: one source of truth shared with the exercise
     // catalog. Passing `null` here would hand resolution to Flutter alone and

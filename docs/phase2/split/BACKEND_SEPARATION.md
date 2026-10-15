@@ -59,12 +59,12 @@ stricter for newer commits).
 
 `firebase.json` runs the same guard (`node functions/scripts/run_release_guard.mjs`) in the `predeploy` hook
 of every deploy target present: `functions[0]` (`default`), `functions[1]` (`equipment-identity`),
-`firestore` and `hosting`. The schema of the pinned firebase-tools (`schema/firebase-config.json`) accepts
+`firestore`, `storage` (added by the Body Scan + Nutrition Coach merge, `storage.rules`) and `hosting`. The schema of the pinned firebase-tools (`schema/firebase-config.json`) accepts
 `predeploy` for `firestore`, `hosting`, `storage`, `database`, `dataconnect` and `remoteconfig`; the
 non-functions targets rebuild `functions/lib` first so the guard is never stale.
 
-There is no `storage` block because `storage.rules` does not exist. A future `storage` (or `database`,
-`dataconnect`, `remoteconfig`) block MUST carry the same `predeploy` guard entries; the exported
+The `storage` block arrived with the Body Scan + Nutrition Coach merge and carries the guard. Any future
+`database`, `dataconnect` or `remoteconfig` block, or a second `storage` entry, MUST carry the same `predeploy` guard entries; the exported
 `findUnguardedDeployTargets(firebaseJson)` lists any present deploy target that lacks the guard and is the
 basis for a mechanical test. `apphosting`, `auth` and `extensions` have no `predeploy` hook in the schema
 and must not be added to `firebase.json` without a separate guard decision.

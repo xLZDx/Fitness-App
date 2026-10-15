@@ -60,7 +60,7 @@ class _Reminder extends ScanReminderNotifier {
   @override
   bool build() => false;
   @override
-  Future<ReminderOutcome?> sync() async => null;
+  Future<ReminderOutcome?> sync({int? weekday, int? minutes}) async => null;
 }
 
 Future<void> _pump(WidgetTester t, ScanAccess access, _Scans scans,

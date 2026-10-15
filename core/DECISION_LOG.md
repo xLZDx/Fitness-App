@@ -55819,6 +55819,842 @@ Decision: settle write guarded by the ordering marker after a reliability review
 
 Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
 
+## 2026-10-15 - Commit: Body Scan + Nutrition Coach technical design (decisions D-1..D-36)
+
+Decision: the Body Scan + Nutrition Coach pillar is designed in core/plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md; the durable decisions are D-1..D-36 there (section 27). Highlights: (D-1) extend the existing local scan stack under progress_photos/scan, add features body_scan, nutrition_plan, food_diary; (D-2) clean-room rule, every adopted number tagged observed / published / own choice (design section 29), attribution file core/ATTRIBUTIONS_NUTRITION.md for anything copied or bundled; (D-4) face blur on device before any upload, fail closed; (D-5) a separate cloud-upload consent shown only when the provider needs photos; (D-7) body_scans is server-authored, client may edit only weightKg and clientNote; (D-8) the weekly review is client-side pure logic because the exclusion flags are device-only; (D-9) exclusions (under 18 or unknown age, pregnancy/breastfeeding flag, new nutrition-guidance flag, clinician advice against exercise, surgery under restrictions) show a neutral professional notice and no numbers; (D-11) HealthFlags gains nutritionGuidance and foodAllergens, device-only, firestore.rules flagsAreStripped must be deployed before the client; (D-13) Mifflin-St Jeor x conservative activity factors, calorie range plus slider bounds, floors, deficit and surplus caps; (D-25) every new users/{uid} collection is carved out of the rules wildcard with a shape-validating block; (D-27) meal and label photos are never stored server-side; (D-28) Cyrillic label OCR uses Gemini vision on the server because ML Kit text recognition has no Cyrillic; (D-29) no exercise-calorie credit; (D-30) food macros come from USDA/Open Food Facts with a per-item source tag, the model supplies names and gram ranges, the server recomputes totals; (D-31) Open Food Facts only through a cached server function, USDA with a registered key in Secret Manager, GPL-3 code (OpenNutriTracker) re-implemented not pasted. Evidence: documentation only, no code, no tests, no analyzer or CI run; see core/changes/2026-10-15-body-scan-nutrition-design.md. Unverified: every VERIFY item in the document, reference frames (design section 3), device behaviour.
+
+## 2026-10-15 - Commit: Body-fat estimator ships PROVISIONAL (limitation recorded)
+
+Decision (D-3): no validated photo-based body-fat model exists in the repository or in this sprint. The shipped estimator is named provisional-anthropometric (version deurenberg-1991-v0): Deurenberg 1991 equation from height, weight, age and sex, confidence low, range half-width 5.0 points as a labelled placeholder that is NOT a measured accuracy. It ignores photos, so no photo is uploaded while it is active. Consequences accepted: a permanent "rough estimate" banner, and with a half-width of 5 points the noise threshold is about 7 points, so week-to-week change reads "no meaningful change" until a real provider reports tighter ranges. The provider interface (BodyCompositionEstimator) makes a licensed or in-house model a configuration plus one adapter. Evidence: design sections 8 and 12. Unverified: any accuracy of any estimator; choosing the real provider is an open operator question (Q-1).
+
+## 2026-10-15 - Commit: Clean-room rule and refusal to reverse engineer proprietary apps
+
+Decision (D-2, D-35): only behaviour and UX structure of the third-party reference app (com.body.fat) are re-implemented; no code, decompiled output, assets, icons, fonts, copy text, promo codes, API hosts, keys or trademarks are taken, and its server API is not mimicked. Reverse engineering, decompiling or traffic interception of proprietary apps is refused for this and every later competitive study. Legal alternatives are used instead: official documentation, API/SDK references and terms, store listings, published research, open-source projects under their licences, the operator's own accounts and ordinary observation, user-initiated data exports, public datasets. Evidence: core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md section 6 and 7. Open-source licences are not a blocker for a private app but are recorded: GPL-3 code is re-implemented, never pasted.
+
+## 2026-10-15 - Commit: Phase 2 priority backlog and foundations (programme level, activity model)
+
+Decision (D-33, D-34, D-36): the current sprint delivers only foundations for (a) a nutrition-aware programme level (data contract, pure decision function adviseTrainingFromNutrition, neutral-default hook; it can only lower load and never bypasses age, screening or injury-filter caps) and (b) a sport-agnostic activity model (ActivitySession, DeviceSource and capability interfaces, pure merge/dedup) with no sport UI. The priority Phase 2 backlog (multi-sport tracking, device ecosystem integration order with effort estimates, full nutrition-aware programmes, competitive study plan, epics with Definition of Done) is core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md. Evidence: design sections 30 and 31. Unverified: all vendor capability statements (hypotheses for the Phase 2 study).
+
+## 2026-10-15 - Commit: Sprint plan, test coverage map and reference behaviour notes; test execution policy
+
+Decision (D-37..D-45 in the design, SD-1..SD-10 in the sprint plan): the sprint is 27 commits across nine epics behind three default-off flags (BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP). Reference values are inputs, never constants; our safety clamps always win (weekly loss cap, target body-fat floors, protein range, no exercise credit). Operator test policy (2026-10-15): test-writing agents (functional-test-reviewer, e2e-runner and equivalents) write detailed functional scripts for every epic and run the COMPLETE set of tests they wrote after each epic and again after the last epic; the coordinator never runs tests; legacy full suites, lint, analyze and CI stay prohibited. Evidence: documentation only, nothing executed. Change record: core/changes/2026-10-15-body-scan-nutrition-plan-and-test-map.md.
+
+## 2026-10-15 - Commit: Body Scan + Nutrition Coach decisions D-37..D-45 itemised
+
+Decision: the v1 log carried only a summary line for D-37..D-45, while the plan and map cite them as load-bearing; they are recorded here one by one. (D-37) body-fat smoothing alpha = max(1 - exp(-dDays/tau), 1/n) with a running-mean warm-up, trend interval hwMean * max(0.85, n_eff^-0.5) from the third reading, per-reading ranges never narrowed by us. (D-38) goal weight = lean / (1 - target bf), ETA = to-lose / clamped pace shown as a range and hidden for the provisional estimator, target body-fat clamp 10-40 % male and 16-40 % female/unspecified, BMI >= 30 default loss rate 0.75 %/week. (D-39) loss range is target -200/+100 kcal (maintain/gain +-150), below-range wording neutral and not mid-day, Atwater tolerance max(25 %, 10 kcal). (D-40) scan cadence: recommended on day 7, extra scans allowed, first weekly review on day 7. (D-41) honest timing UI: elapsed time and real stages, indeterminate indicator, no promised analysis duration, "taking longer" at 20 s, retry at the 25 s timeout. (D-42) protein lean-mass variant (2.2 g/kg lean, clamped) only with a non-provisional confident body-fat trend; point targets rounded to 5 g. (D-43) confidence levels not percentages; meal slot defaults by local time. (D-44) health source read-only and only for scopes a shipped feature uses; weekly scan reminder Sunday 08:00 on, daily scan off, weight reminder opt-in. (D-45) reference values are inputs, never constants; clamps win. D-46..D-51 are reserved by the Phase 2 reconciliation entries. Evidence: design section 27. Change record: core/changes/2026-10-15-body-scan-nutrition-doc-review-fixes.md.
+
+## 2026-10-15 - Commit: Body Scan + Nutrition Coach one-time documentation review fixes (D-52..D-85)
+
+Decision (design v1.1, sprint plan v1.1, coverage map review-fix additions; five reviewers: architect, security, database, product-ux, accessibility): (D-52) the PROVISIONAL estimator runs on the device in pure Dart and is stored in the encrypted local scan record; there is no server provisional estimator, no callable, no quota for it; the server pipeline exists only for a real or test provider. (D-53) cloud scan callables are idempotent: create() with ALREADY_EXISTS re-read, done returns the stored entry with no provider call and no quota, estimate uses a 60 s lease plus a final re-read transaction, quota is charged only on first creation or first processing, resource-exhausted is non-retriable until the next day. (D-54) no stored isBaseline; baseline and trend are derived on the client per modelId+modelVersion and never compared across estimators. (D-55) an ineligible or unanswered verdict is never persisted: plan status is only active or needsProfile, review decision has no referProfessional value, rules enums refuse it, excludedFoods is device-only, sexAtBirth is ordinary personal data like gender. (D-56) body_scan_settings cloudConsent rule: valid when unchanged, or new/bumped with acceptedAt == request.time and version >= existing; withdrawal allowed. (D-57) the weekly review is one transaction (review read first, planVersion/basePlanVersion and cooldown checked inside, review and plan written together, undo record on the plan doc, offline defers). (D-58) createBodyScan derives age server-side from profile.personal.birthYear (refuse under 18 or unknown), ignores the client age, enforces the tier when Q-2 keeps the scan gate; limit: birthYear is client-writable; nutrition exclusions stay client-advisory. (D-59) orphan and late-PUT handling: create refused while accountDeletionRetries/{uid} exists, 48 h cancelled tombstone on delete, four-pass purge with an unmatched-object sweep, cursor paging and a failure counter; a bucket lifecycle rule for pending objects is rejected. (D-60) dedicated identity fn-bodyscan for body-scan callables and purge, fn-account-delete also gets objectAdmin on the bucket, bucket 404 means nothing to delete, configured-but-IAM-denied is a go-live blocker verified by a runbook canary, flag-gated release-guard bucket check; supersedes D-14. (D-61) export of new collections is ordered newest first with per-collection truncated/cursor paging; photo links are minted for 1 hour by manageBodyScanData.exportLinks, not carried in the export; amends D-15. (D-62) new callable manageBodyScanData (applyRetention, deleteAllPhotos, deleteAllScans, exportLinks) with its own quota; retention lowering is retroactive on request; copy says "within 48 hours". (D-63) analyzeMealPhoto and parseNutritionLabel join the release-guard set (4 to 6, updated in the commit that adds them); enrichment stays in fn-ai-runtime with one extra secret-accessor role; kill switch and flag run before quota. (D-64) FOOD_LOOKUP global upstream token budget below Open Food Facts limits, per-uid burst limit, fail-closed App Check, negative results charged. (D-65) every upstream call goes through safeFetch (URL encoding, host allowlist, same-host redirects only, timeout, body cap, key in header, closed error slugs). (D-66) model-authored names are sanitised. (D-67) log and Crashlytics redaction rules. (D-68) rules shape checks. (D-69) a post-blur on-device face check is a go-live gate for BODY_SCAN_CLOUD; a fail-closed port ships now. (D-70) HealthFlags.toJson omits the new keys when empty so old rules accept the new client and deploy order is not load-bearing. (D-71) feature dependency graph is acyclic (food_suggestions moves to food_diary, series_math to core/math, ports with safe defaults wired at the app root). (D-72) one currentWeightProvider, a weight-log screen, scan weight edits write weight_entries. (D-73) provisional presentation: plain label everywhere, weight-trend headline, hidden ring/points-to-go/fat-lean change/ETA/plan-decision card; Supporter gate kept and flagged. (D-74) scan surfaces follow nutrition eligibility (measurement-only mode). (D-75) onboarding order puts the nutrition step after the safety questions, exact EN/RU copy fixed. (D-76) user-facing names Body check-in, Nutrition targets, Food diary, Weight log. (D-77) neutral target copy, ETA hidden below goal BMI 20, pause tracking; body-fat floors 10/16 % unchanged (deferred). (D-78) diary states, resume card, terminal-failure actions. (D-79) first-use data notice for server-stored body data and food AI. (D-80) capture accessibility: cancellable manual-shutter timer, one announcement channel per tick, throttled cues plus haptic patterns, bounded readiness panel. (D-81) progress announcements limited to stage changes plus 20 s and 25 s notices; reduced motion. (D-82) custom range slider with per-thumb semantics and steppers. (D-83) contrast verified by a token-pair test. (D-84) RU plurals for integers only, decimals use abbreviations. (D-85) review-screen labels, chart summary plus table, chip state, modal focus, tap-target sweep, locale formatting. Rejected or deferred review items are listed in the change record. Evidence: documentation only, nothing executed. Unverified: every VERIFY item, all behaviour. Change record: core/changes/2026-10-15-body-scan-nutrition-doc-review-fixes.md.
+
+## 2026-10-15 - Commit: PRODUCT_PHASE2_EXPANSION research package reconciled
+
+Decision (D-46): the downloaded Phase 2 research package (40 stories: 13 P0 / 20 P1 / 7 P2) is imported into core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md (section 8) with the package ids kept as cross-references; duplicates of existing design sections, sprint commits and epics are merged, not copied. The package is research input only: where it disagrees with the approved design (D-1..D-45) or the safety clamps (design s13.6), the design and the clamps win. Evidence: core/plans/PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md sections 1-3. Unverified: nothing was run.
+
+Decision (D-47): conflicts resolved in favour of our design: no exercise-calorie credit (D-29, package credit policy not implemented), health sources read-only (D-44, no write-back), weekly review stays client-side (D-8), no server REST surface (callables, D-27 no meal photo storage), EWMA trend (D-18, D-37), body-fat target and pace clamps unchanged. Evidence: reconciliation file section 2.
+
+Decision (D-48): the package's APK playbook is narrowed to what D-35 allows. Static review (OWASP MASVS/MASTG) applies to open-source apps only (OpenTracks, openScale, Waistline; source and official releases). Commercial apps are studied from public material only (store listings including the Play Data safety section, official docs/SDK docs, published privacy policies, ordinary use of apps the operator owns). Decompiling, extracting APKs, traffic interception or any reverse engineering of proprietary apps stays refused; package items P2-004, the playbook tooling, the acquisition manifest wording and gate G8 are rewritten accordingly. App purchases remain operator actions and are not required. Evidence: reconciliation file section 6.
+
+Decision (D-49): the Fitbit Web API is not a target. Google's developer pages (opened 2026-10-15) state support ends 2026-09-30 and the API is turned off on 2026-10-30; backlog item 13 is "Google Health API" and is built only on an operator decision (O-4) after its access model for a private project is verified. Vendor-cloud adapters other than Withings/Strava stay behind terms review and partner approval; platform stores (Health Connect, HealthKit) and FIT/GPX/TCX import come first. Evidence: reconciliation file section 5. Unverified: access models of Garmin, Polar, Suunto, TrainingPeaks, Oura, WHOOP.
+
+Decision (D-50): the operator's two reference recordings, any extracted frames, thumbnails or screenshots of the reference app, and the package ZIP stay outside git (.gitignore already ignores *.mp4 and docs/rec_frames/); committed documents refer to them only as "the operator's recordings" and carry no file paths, account details or faces. Evidence: reconciliation file section 7.
+
+Decision (D-51): package milestone wording "no unvalidated body-fat percent" is not adopted literally; the PROVISIONAL estimator of D-3 stays with its banner pending operator answer O-2. Fat/lean tiles must label whether they use the raw reading or the smoothed trend (clarification of design s12.1 pending, O-6).
+
+## 2026-10-15 - Commit: C04 profile model, nutrition preferences and health flags
+
+Decision (D-9, D-11, D-55, D-70 as implemented): `NutritionPrefs` lives on `UserProfile.nutrition` with omit-empty JSON and tolerant reads; `HealthFlags` gains `nutritionGuidance` (null = unanswered, which locks the coach) and `foodAllergens`, and their JSON keys are omitted when null/empty so the deployed rules key allowlist accepts the stripped block. `excludedFoods` is device-only (added to `SensitiveProfile`, blanked by `stripSensitive`). Deviation: `DietaryPreference.pescatarian` moves to C10 because `step_lifestyle.dart` switches exhaustively over the enum and needs its l10n label in the same commit. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-profile-model-nutrition-prefs.md.
+
+## 2026-10-15 - Commit C01: rules, storage deny-all, indexes (Body Scan + Nutrition Coach, E0)
+
+Decision (SD-2): operator-blocked infrastructure is feature-flagged OFF in code. Client flags are compile-time (`--dart-define` BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP) and server flags are environment variables (BODY_SCAN_BUCKET + BODY_SCAN_PROVIDER, FOOD_AI_ENABLED, FOOD_LOOKUP_ENABLED); all default off or unset, and every flagged path has a documented working fallback (sprint plan section 4). Enabling a flag is an operator action and needs no code change. The flag readers themselves land in C02 (server) and C03 (client).
+
+Decision (rollout order): deploy firestore.rules before any client build that emits the new keys ("rules before client"). The order is hygiene, not load-bearing: the new `HealthFlags.toJson` omits the two new flag keys while empty (D-70), so old rules accept the new client and new rules accept the old one. Deploying `storage.rules` overwrites whatever is deployed for the default bucket (none is tracked in git), so verify first that nothing public depends on it.
+
+Decision (C01 rules shape, deviations from design s6.1 recorded here): (1) `food_entries.items` is checked per element at fixed indexes 0..29 for "is a map with a string `name` <= 80" only; the per-element numeric ranges of `grams` and `per100g` are NOT enforced by rules because 30 items times a full numeric check would exceed Firestore's per-request expression budget and refuse legitimate large entries; the ranges are enforced on `totals` (and `per100g` of `saved_foods`) and the server recomputes macros for AI entries. (2) `nutrition_plan` list-free shape checks are conditional on presence except `status` and `planVersion`, which are required, so a `needsProfile` document may be minimal. (3) The data-lifecycle policy rows and the data-access policy JSON for the new paths stay in C25 as the sprint plan assigns; until then the CI coverage scripts (not run) and the data-access-policy parity expectation of coverage-map file T05 (RULES-14) cannot pass, so the T05 rows requirement belongs to the C25 gate, not G0. (4) `run_emulator_tests.js` forwards extra arguments only when they contain no spaces or double quotes (they sit inside one quoted shell argument).
+
+Evidence: reading only; nothing executed. Unverified: emulator behaviour of every rule, expression-budget headroom of `food_entries`, the Storage emulator port 9199. Change record: core/changes/2026-10-15-rules-and-indexes.md.
+
+## 2026-10-15 - Commit: C04 evidence note (E1 sequencing)
+
+Decision: the C04 decision entry above landed in the C01 commit because of a concurrent path-limited commit; the C04 code commit follows it. E1 commits keep device-only `excludedFoods` inside `SensitiveProfile` so the rules allowlist (which refuses it) never sees it. Evidence: reading only; nothing executed.
+
+## 2026-10-15 - Commit C02: functions infrastructure and server flags (Body Scan + Nutrition Coach, E0)
+
+Decision (D-60, D-64 implemented): new runtime identity fn-bodyscan (RUNTIME_SA.bodyScan) and capped profiles BODY_SCAN (fn-bodyscan) and FOOD_LOOKUP (fn-data), both on the fail-closed APP_CHECK_ENFORCED_AI flag. The identity must exist before any function using it deploys (runbooks/body_scan_bucket.md).
+
+Decision (D-67): quota log events for the eight new quota actions carry no uid and log an error code instead of String(e); pre-existing actions keep their log shape. Chosen "omit" over "salted hash" because a hash needs a secret salt and gives no operational value the action name does not already give.
+
+Decision (flags): server flags are read per call through three modules only (body_scan/flags.ts, food_flags.ts, feature_flags.ts assertFeatureEnabled); only the exact string true enables FOOD_AI_ENABLED / FOOD_LOOKUP_ENABLED; a malformed BODY_SCAN_BUCKET counts as unset (fail closed, never points the purge at another bucket). Flag checks run before quota charges.
+
+Decision (SD-11 kept): release_guard.ts, discover_callables.ts and index.ts sweepAccountData are untouched in C02; they change in C12/C20 with their callables. AI_GATEWAY_OPERATIONS grows to six in C02 so the type and monitoring filters are ready (monitoring series bound 6 x 3 = 18).
+
+Evidence: reading only; not compiled or run. Unverified: Schema import and DOM fetch types under the existing tsconfig, all behaviour. Change record: core/changes/2026-10-15-functions-infra-and-flags.md.
+
+## 2026-10-15 - Commit C03: client flags, feature gates, data notice (Body Scan + Nutrition Coach, E0)
+
+Decision (SD-2 client side): BodyScanFlags (BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP) are compile-time dart-defines, default false, read through bodyScanFlagsProvider; they decide what the UI offers while the server enforces its own flag and answers feature-disabled.
+
+Decision (Q-2 / D-26 default): AppFeature gets one entry per feature; only bodyScan is tier-gated, mirroring ScanAccess.needsSupporter (any non-free tier); nutritionPlan, weeklyReview, foodDiary, foodAiRecognition and foodBarcodeLabel are ungated. Changing a tier is a one-line edit in canAccess.
+
+Decision (D-79): first-use data notice is a single-tap, versioned, device-local acknowledgement (key data_notice.v<version>.<uid>); a dismissed sheet defers the write and never loses it; the Vertex AI paragraph is shown only when FOOD_AI is compiled in. The ARB keys ship in C03 (SD-3) although the coordinator expected l10n later.
+
+Evidence: reading only; not analyzed or run. Change record: core/changes/2026-10-15-client-flags-and-gates.md.
+
+## 2026-10-15 - Commit: C05 nutrition maths, safety clamps and eligibility
+
+Decision (D-13, D-39, D-55 as implemented): all safety numbers are named constants in `SafetyClamps`; the lose-goal calorie range is target -200/+100 (D-39) and is clamped inside the recomputed slider bounds, whose low end applies the 25 % TDEE / absolute-rate deficit cap, so the hand vectors V-LOSE-M and V-LOSE-CAP of the coverage map (written with +-150 and without the bounds clamp) are superseded for the range values only; TDEE, rate, deficit and target agree. When TDEE is at or under the calorie floor the floor wins and the upper bound is lifted to min + 100. The eligibility verdict is computed on the device and never persisted. Shared EWMA and Theil-Sen primitives live in `mobile/lib/core/math/series_math.dart` (D-71). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-maths-and-eligibility.md.
+
+## 2026-10-15 - Commit: C06 weekly review pure logic
+
+Decision (D-8, D-55, D-57, D-71 as implemented): `decide()` returns null for any non-eligible user and has no `referProfessional` value; a change needs two consecutive same classifications plus a 14-day cooldown except the `tooFast` correction; a shift that would leave the recomputed bounds becomes `keep(atSafetyLimit)`, never a truncated change; the steps-first path applies to loss goals only (more steps would work against a gain goal); the ISO week key takes an explicit UTC offset. The body-fat trend enters only through the `BodyFatTrendSource` port and is ignored when provisional or when the estimator changed. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-weekly-review-logic.md.
+
+## 2026-10-15 - Commit: E0 client tests (flags, feature gates, data notice)
+
+Decision (operator test policy 2026-10-15): E0 client tests are written by e2e-runner as detailed functional tests: `body_scan_flags_test.dart` (T01), the extended `feature_gates_test.dart` and the new `data_notice_test.dart` (both added to coverage map section 12). Flag-to-define mapping is proven by extra runs with `--dart-define`.
+
+Evidence: written; run results are recorded in the follow-up change record. Change record: core/changes/2026-10-15-e0-tests-client.md.
+
+## 2026-10-15 - Commit: C07 body scan data layer (pure parts)
+
+Decision (D-3, D-37, D-52, D-54, D-69, D-71, D-74 as implemented): the provisional estimator is on-device pure Dart behind a `BodyCompositionEstimator` interface and its range edges stay inside the 3-60 plausibility window; trend series are segmented by `modelId`+`modelVersion` and never compared across estimators; the scan flow machine is pure (state + effects) and fails closed on the face region and on the post-blur face check (default port answers "cannot verify"); the plan decision enters the scan result only through the `ScanPlanContextSource` port whose safe default is measurement only. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-data-layer.md.
+
+## 2026-10-15 - Commit: C12 body-scan Cloud Functions
+
+Decision (D-52, D-53, D-58, D-59, D-60, D-62, D-67 as implemented): the server registry has only `licensed-api` (reserved) and `test-fake` (jest/emulator only), with NO server provisional provider; every body-scan callable runs one guard preamble (auth, App Check note, non-anonymous, kill switch, bucket flag) before any quota; quota is charged once per document created/reset and once per first estimate processing (`estimateCharged` marker), and refunded when the work was not delivered; deletes write a scrubbed 48 h tombstone BEFORE removing objects; `sweepAccountData` deletes `users/{uid}/` in the body-scan bucket last (unset = no-op, all-404 = nothing to delete, other failures throw so the reconciler retries). Not in this commit: release-guard bucket check, discover_callables update, bucket runbook. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-functions.md.
+
+## 2026-10-15 - Commit: C08 activity model foundation and pure merge/dedup
+
+Decision (D-34 as implemented): `mobile/lib/features/activity/data/` holds the sport-agnostic model, the `DeviceSource` and capability interfaces and a deterministic, order-independent `merge` (sorted by priority, start, id) with no UI, persistence or adapters; complementary-stream alignment uses the start-time skew (not cross-correlation) and a stream kind is taken only from a source covering at least 80 % of the session; user edits always win. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-activity-foundation.md.
+
+## 2026-10-15 - Commit: C10 onboarding nutrition step
+
+Decision (D-75 as implemented): `OnboardingStep.nutrition` sits after `healthFlags` and before `screening`; the two safety questions (pregnancy/breastfeeding, nutrition guidance) are asked on `healthFlags`, and the nutrition step renders any goal, pace, body-fat target, sex, steps or ownership element only when BOTH answers are `none` (`nutritionSafetyClear`); otherwise one neutral lock-out line with no reason and no number, and only allergens, excluded foods and meals remain. The target weight is never asked twice (read-only line with a link back to the personal step). Existing users are not routed back to onboarding; they use the C11 profile flow. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-onboarding-nutrition-step.md.
+
+## 2026-10-15 - Commit: C09 nutrition-aware programme hook
+
+Decision (D-33, SD-7 outcome): `adviseTrainingFromNutrition` is pure, neutral by default and can only lower load; the programme builder seam is small and is WIRED as `ProgrammeBuildRequest.volumeFactor` (default 1.0, capped at 1.0 and floored at 0.70, sets rounded with a minimum of 1, validator minimum trimmed proportionally); the intensity delta has no consumer in the programme builder and its wiring into the AI planner is deferred (a `combinedIntensityCeiling` helper takes the most conservative of age, screening and hint caps before applying the nutrition delta). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-aware-programme-hook.md.
+
+## 2026-10-15 - Commit: C11 nutrition profile flow for existing users
+
+Decision (design s16.3 as implemented): existing users reach `/nutrition/profile`, a separate flow that is never forced and does not touch `/onboarding` or the profile's own `completedAt`. The sheet list (safety, body and goal, food and activity) is derived once on entry from `missingNutritionInputs`; the safety sheet appears only while a safety question is unanswered, an already-answered safety question is never re-asked here, and answering `reported` locks the next sheets live (no goal, pace or targets). Saving goes through the existing draft and profile repository; `NutritionPrefs.completedAt` is stamped on the final Save only. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-profile-flow.md.
+
+## 2026-10-15 - Commit: C12 leftovers (bucket release check, runbook)
+
+Decision (SD-6, SD-11, SD-15, D-60, D-63): the release guard gains ONE flag-gated check that runs only when BODY_SCAN_BUCKET is configured (bucket private, uniform access, fn-bodyscan and fn-account-delete objectAdmin, canary acknowledged in core/state/g4_release_evidence.json as bodyScanBucketCanary); AI_CALLABLES stays at 4 because the body-scan callables run as fn-bodyscan and the inventory check only counts fn-ai-runtime functions. The runbook now carries the kill-switch secretAccessor grant, the deny-all default-bucket verification and the go-live blockers. discover_callables.ts is test-side and left to the test agents. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-c12-leftovers.md.
+
+## 2026-10-15 - Commit: C12 server tests (fakes, create) and two type fixes
+
+Decision: the body-scan server tests share one stateful Firestore/Storage/Secret Manager/logger fake module (functions/src/__tests__/body_scan/fakes.ts), the same model as the stateful fake already used by account_deletion_reconcile.test.ts, instead of eight private copies. The first ts-jest run found two real type errors in C12 (create.ts Uploads cast, manage.ts action union); both fixed minimally without behaviour change. Evidence: `npx jest src/__tests__/body_scan/create.test.ts` in functions/ = 102 passed. Change record: core/changes/2026-10-15-body-scan-server-tests.md.
+
+## 2026-10-15 - Commit: C13 ScanRecord v2 and capture-screen changes
+
+Decision (D-6, D-52, D-80, D-81): ScanRecord v2 stores the job state, local provisional estimate, recorded weight, per-pose manual override and the owed remote delete inside the existing encrypted sidecar; a record without `analysis` is a legacy local-only scan and is never uploaded. Capture changes: real frame luminance (over-exposure becomes a live check), a cancellable manual-shutter timer (default 5 s, choices 3/5/10) that records `manualOverride` only when it fires while not ready, one announcement channel per tick, a 2 s throttled hint live region, named haptic patterns, a bounded scrollable panel. The new interface members (`ScanCamera.luminance` default getter, `ScanSpeaker.say` returning bool, `ScanHaptics.pattern`) require the test fakes to be updated by the test agents. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-scan-record-v2-and-capture.md.
+
+## 2026-10-15 - Commit: C18 nutrition plan state, repositories and weekly review scheduler
+
+Decision (D-55, D-57, D-72, D-74): the review transaction rules are one pure function (`planReviewTransaction`) run by both the Firestore transaction and the in-memory fake: week key checked first (existing -> no-op), then plan version against `basePlanVersion`, then cooldown (tooFast exempt), drift cap and bounds re-checked on the stored plan, then review and plan written together (coached with the 7-day `reviewUndo`; shared and manual write the review only, a shared proposal is applied by a version-checked accept). `lastKcalAdjustAt` is set by any plan-changing review so the 14-day cooldown guards steps as well as kcal. The plan is re-validated (bounds recomputed from `inputsDigest`) on every read and write; only an `active` plan is written and nothing is written for an ineligible, unanswered or unknown verdict, nor before the data notice is acknowledged. The review classification is stored inside `inputs` because the rules close the top-level key set. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-plan-state.md.
+
+## 2026-10-15 - Commit: C12 server tests (estimate, validate_estimate, registry)
+
+Decision: estimate tests drive the provider through the __setTestEstimatorForTests seam and assert persisted state and quota counters (not mock calls); the 25 s timeout is proved by capturing the setTimeout delay and firing it at once. Evidence: `npx jest` on the three files in functions/ = 131 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-estimate.md.
+
+## 2026-10-15 - Commit: E1 tests, nutrition maths (written, run pending)
+
+Decision: the E1 nutrition-maths tests (energy_math, safety_clamps, plan_calculator, nutrition_eligibility, weekly_review) take every expected number from an independent scratch oracle written from design s13, not from the code. Deviation resolved by arithmetic: the lose range follows D-39 (-200/+100) and is pulled inside the slider bounds, so V-LOSE-M is range 1900-2110 / bounds 1900-2440 and V-LOSE-CAP is 1840-1940; the coverage map is corrected accordingly. Evidence: written only at this commit; run results follow in a later record. Change record: core/changes/2026-10-15-e1-tests-nutrition-maths.md.
+
+## 2026-10-15 - Commit: E0 functions tests and nutrition_http dot-segment fix
+
+Decision (defect fix): `buildUrl` in `nutrition_http.ts` refuses a bare `.` or `..` path segment with the new closed slug `upstream-invalid-request`, because percent-encoding does not stop the URL parser from collapsing it into path navigation. Found by the E0 functional test, fixed minimally in the E0 file.
+
+Decision (deferral): the "six callables in the release guard" expectation (RULES-21) is a `test.todo` until C20 creates the food callables; it is not faked.
+
+Evidence: focused jest runs of each new or extended file passed; complete-set results are recorded in the E0 evidence record. Change record: core/changes/2026-10-15-e0-tests-functions.md.
+
+## 2026-10-15 - Commit: C22 food diary data layer
+
+Decision: the food diary data layer is pure Dart under `food_diary/data/`. Day and entry totals combine item ranges by root-sum-square (design s17.7); per-meal shares are 30/35/35 for three meals, and for four or more meals each snack takes 10 % (at most 40 % in total) with the mains keeping 30/35/35 of the remainder (design wording was open). `FoodItem.sourceId` accepts `llm_estimate`; the Firestore rules allowlist in design s5.6 does not list it, so rules or the C23 repository must reconcile (flagged, not silently changed). Evidence: written only at this commit, not run per development rules v4. Change record: core/changes/2026-10-15-c22-food-diary-data.md.
+
+## 2026-10-15 - Commit: C12 server tests (delete)
+
+Decision: the delete tests assert the surviving key set of the tombstone exactly, so any metric field that leaks past the scrub fails them. Evidence: `npx jest src/__tests__/body_scan/delete.test.ts` in functions/ = 23 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-delete.md.
+
+Note: the delete suite also proves isolation between users and between scan ids sharing a prefix (the object prefix ends with a slash).
+
+## 2026-10-15 - Commit: C14 part 1 (callable client, blur service, scrubbed errors)
+
+Decision (D-4, D-67): every callable failure is reduced to a closed slug before it is stored or logged; the blur service is fail closed (no landmarks, unsizable head box, undecodable or oversize output all refuse, never an unblurred image) and re-encodes from raw pixels so no EXIF/GPS/ICC survives. `connectivity_plus` is not in pubspec, so the job runner uses foreground, Progress-open and timer resume (the design fallback); no package was added. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-api-blur.md.
+
+## 2026-10-15 - Commit: C15 part 1 (ARB keys for the body scan flow and result)
+
+Decision (D-73, D-74, D-78, D-81, D-85): all C15 user-visible strings are added to both ARB files up front under `bodyScan*` and `checkCode*` keys; decimals are passed as pre-formatted strings (locale-aware formatting in the widgets) with non-inflecting RU units, plurals only for integer counts. Evidence: change record `core/changes/2026-10-15-c15-arb-keys.md`; no checks run by operator rule.
+
+## 2026-10-15 - Commit: C20 food scanning Cloud Functions
+
+Decision (D-63, D-64, D-65, D-66, D-67 as implemented): analyzeMealPhoto and parseNutritionLabel join the release-guard set (AI_CALLABLES 4 to 6) and run flag-gated (FOOD_AI_ENABLED) before any quota charge; lookupBarcode and searchFoods run on FOOD_LOOKUP (FOOD_LOOKUP_ENABLED), do not call the AI kill switch (fn-data has no grant on it), charge only cache misses (negative results included) and take a per-uid burst slot and the global OFF budget before any upstream call. All model output is clamped, sanitised and recomputed server-side; USDA key is read from Secret Manager at runtime and an absent key degrades to llm_estimate. Recorded deviations: flat functions/src layout per design 2.3; secretAccessor on USDA_FDC_API_KEY needed for fn-data as well as fn-ai-runtime; response schema gains a packaged flag. Evidence: reading only; nothing executed (rules v4). Change record: core/changes/2026-10-15-c20-food-functions.md.
+
+## 2026-10-15 - Commit: C18 functional tests (review transaction and undo)
+
+Decision (D-57, D-55): C18 is verified by pure-function tests that assert nothing is written on every refusal path (already reviewed, no plan, stale planVersion, cooldown, drift cap, bounds) and that review plus plan change come from one result. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C12 server tests (manage)
+
+Decision: manageBodyScanData tests prove the paging contract (200 per call, whole-user prefix sweep only on the final delete-all page, applyRetention never sweeping) and that delete-all is not gated by the per-scan delete quota. Evidence: `npx jest src/__tests__/body_scan/manage.test.ts` in functions/ = 41 passed. Residual risk noted, not tested: exportLinks pages by takenAt millis, so two scans with an identical takenAt straddling a page boundary would skip one. Change record: core/changes/2026-10-15-body-scan-server-tests-manage.md.
+
+## 2026-10-15 - Commit: C21 generic foods table
+
+Decision (D-71, design 17.5/17.8): the generic food table is generated offline from USDA FDC Foundation and SR Legacy (CC0) by scripts/nutrition/build_generic_foods.py (2,590 rows committed); tags default restrictive (null animal/pescatarian, allergenCertain=false for mixed foods) and suggestions live in food_diary/data. Halal and kosher also hide land-animal meat because slaughter certification is not modelled. Russian names: 321 own-authored entries (below the ~400 target). Evidence: core/changes/2026-10-15-c21-generic-foods-table.md; verification not run (v4).
+
+## 2026-10-15 - Commit: E1 tests, scan trend / slope / result maths / provisional estimator
+
+Decision: trend vectors are derived with a scratch script from design s12.5; V-EWMA 25.5669 is tested without the D-37 warm-up and the warm-up behaviour (second reading weight 0.5) is tested separately, resolving map deviation 2. Evidence: flutter test of energy_math_test + scan_trend_test + weight_slope_test + scan_result_math_test + provisional_estimator_test = 173 passed, 0 failed. Change record: core/changes/2026-10-15-e1-tests-scan-trend-result.md.
+
+## 2026-10-15 - Commit: C12 server tests (purge)
+
+Decision: purge tests prove non-starvation (stuck documents stay in the query yet later documents are purged through startAfter paging), the persisted listing token and the 240 s start-of-work budget. The shared Storage fake now pages by object name like GCS. Evidence: `npx jest src/__tests__/body_scan/purge.test.ts` in functions/ = 31 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-purge.md.
+
+## 2026-10-15 - Commit: C14 part 2 (job runner, upload port, repositories, providers)
+
+Decision (D-52, D-69, D-71, D-72): the job runner has a LOCAL path (default; zero callable and zero PUT calls, offline) and a CLOUD path reachable only with the flag on, a current consent and a server-reported photo provider; the fail-closed default face check means flipping the flag without a detector uploads nothing. A server `scan-cancelled` rotates `remoteId` and re-queues. The weight repository and `currentWeightProvider` already exist from the C18 commit and are reused, not duplicated. The app root must still bind the plan-context, trend-source, result-source and Firestore repository overrides and bridge `scanCompletedProvider` to the nutrition `scanDoneSignalProvider` (listed in the change record). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-runner-providers.md.
+
+## 2026-10-15 - Commit: C15 parts 2-3 (state seams, intro, weight prompt, analysis progress)
+
+Decision (SD-9, D-73, D-74, D-81, D-85): plan-context port has a measurement-only default plus a named app-root placeholder until C18; stage announcements are limited to stage changes, the 20 s notice and one assertive 25 s timeout with focus to Retry. Evidence: change records c15-state and c15-intro-weight-progress; no checks run.
+
+## 2026-10-15 - Commit: C15 part 4 (check items card, trend chart, cloud consent sheet)
+
+Decision (D-5, D-85): chart is semantics-excluded with a single summary node plus data table; check chips carry text state labels and move focus after resolve; the cloud sheet is a separate explicit consent. Evidence: `core/changes/2026-10-15-c15-checks-chart-consent.md`; no checks run.
+
+## 2026-10-15 - Commit: C12 server tests (guard preamble)
+
+Decision: one parameterised table proves the guard order and the zero-charge refusals identically for all four callables, so a callable that bypasses the shared preamble fails its own row. Evidence: `npx jest` on guard.test.ts and purge.test.ts in functions/ = 71 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-guard.md.
+
+## 2026-10-15 - Commit: C15 part 5 (result view, resume and failure card)
+
+Decision (D-73, D-74, D-78): the result is rendered from a pure view model; provisional and measurement-only presentation hide goal figures; the ETA stays hidden until C18 supplies pace inputs. Evidence: `core/changes/2026-10-15-c15-result-resume.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 stored plan tests
+
+Decision (D-55, D-57): stored plan tests prove validated() recomputes bounds from the digest and that only an active readable plan is read; no referProfessional key exists in the document. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C15 part 6 (flow page, result page, routes)
+
+Decision: the flow page only renders the pure flow state and delegates capture to the existing guided capture route; the result route reads through a narrow port so C14/C16 binding is a wiring step. Evidence: `core/changes/2026-10-15-c15-pages-routes.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 review record tests
+
+Decision: review record tests prove the classification round-trips through inputs and referProfessional never reads as a review (D-55). Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C20 food function tests
+
+Decision: C20 food callables are proven by one jest file per module (T104-T111 plus cache, breaker, food_text, sources) using the shared Firestore fake and injected fetch/clock/budget/key deps; product defects found are fixed minimally and noted in the record. Evidence: `core/changes/2026-10-15-c20-tests.md`.
+
+## 2026-10-15 - Commit: C22 tests (food diary data layer)
+
+Decision: C22 data layer is covered by seven single-file functional test files (246 tests, all green). The item `sourceId` value `llm_estimate` is pinned by `food_source_test.dart` as a known mismatch with the stale design s5.6 allowlist; `firestore.rules` does not check `sourceId`, so the design line should be reconciled, not the layer. Evidence: `core/changes/2026-10-15-c22-tests.md`.
+
+Evidence addendum (C18 review record tests): plan_review_record_test.dart ran green, 22 tests.
+
+## 2026-10-15 - Commit: C23 part 1 (food API client and diary repositories)
+
+Decision: the diary talks to food callables only through the FoodApi interface (feature-disabled is a calm not-available state) and stores through ports with Firestore and in-memory implementations; firestore.rules already cover food_entries and saved_foods and accept item sourceId llm_estimate (rules check only item name), so no rules change. Evidence: `core/changes/2026-10-15-c23-state-ports.md`; no checks run.
+
+## 2026-10-15 - Commit: design fix (sourceId allowlist)
+
+Decision: design s5.6 FoodItem sourceId allowlist now includes llm_estimate (stale line fixed; the C22 data layer was already correct). Evidence: `core/changes/2026-10-15-design-sourceid-allowlist.md`.
+
+## 2026-10-15 - Commit: C18 review input builder tests
+
+Decision: builder tests prove the 21-day window edges, previousClass from the newest review and cooldown days feed decide() correctly. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C12 tests for the account-deletion storage sweep
+
+Decision: the existing stateful reconcile fake and the delete_account mock were extended in place (storage mock only) rather than duplicated, per the instruction not to invent a parallel mechanism. Evidence: delete_account.test.ts 67 passed, account_deletion_reconcile.test.ts 42 passed (functions/, npx jest on both files). Change record: core/changes/2026-10-15-body-scan-server-tests-account-sweep.md.
+
+## 2026-10-15 - Commit: C23 part 2 (diary providers)
+
+Decision: diary visibility reuses the device-local eligibility verdict (no new health signal); server search runs only on explicit submit behind the foodLookup flag with a 600 ms debounce and a last-results cache. Evidence: `core/changes/2026-10-15-c23-state-providers.md`; no checks run.
+Progress: T105 nutrition_normalise tests added (56 passing).
+
+## 2026-10-15 - Commit: C13/C14 tests
+
+Decision: shared scan fakes extended in place (luminance, Future<bool> speech, haptic patterns) and the two legacy manual-shutter tests now advance the 5 s timer; new C13/C14 test files follow one per commit. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C12 server tests, final complete run
+
+Evidence: the complete set of C12 server test files (8 new, 2 extended) ran in one jest invocation at head 269e72d: 10 suites, 477 tests passed, 0 failed. Change record: core/changes/2026-10-15-body-scan-server-tests-final-run.md.
+
+## 2026-10-15 - Commit: E1 tests for body-scan guards, activity and nutrition state
+
+Decision: fixed the SCAN-52 product defect in body_scan_flow_machine.dart (a local-only cancel must not emit a server delete); the coverage map V-LOSE-M/V-LOSE-CAP values are wrong against D-39 and are corrected, the implementation stands. Evidence: core/changes/2026-10-15-e1-tests-body-scan-activity-nutrition-state.md.
+Progress: T104 coerce_meal_analysis tests added (54 passing; one test fixture corrected for 0.1 rounding).
+
+## 2026-10-15 - Commit: C21 generic foods and suggestions tests
+
+Decision: fixed three product defects found by the tests: Eggplant no longer carries the egg allergen (builder regex and asset), malt liquor is tagged alcohol, and halal/kosher now hide all uncertain rows as the documented contract says. Evidence: generic_foods_test 68 passed, food_suggestions_test 77 passed (single-file runs); core/changes/2026-10-15-c21-tests.md.
+
+## 2026-10-15 - Commit: fix(body-scan): import CustomSemanticsAction in trend_chart
+
+Decision: one-line import fix; the widget did not compile under the pinned Flutter 3.27.1, blocking every test that imports it. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C18 in-memory repository tests
+
+Decision: repository tests prove version-checked saves, one atomic review+plan write, concurrent same-week idempotency and the offline no-write rule. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C17 reminder settings field and check-in ARB keys
+
+Decision: the weekly reminder choice is stored as `body_scan_settings/main.reminder` (ScanReminderPrefs, null = never chosen) with the v1 SharedPreferences bool kept as a read fallback. Evidence: core/changes/2026-10-15-c17-settings-and-arb.md (no checks run yet).
+
+## 2026-10-15 - Commit: C23 part 3 (diary ARB keys)
+
+Decision: diary copy uses non-inflecting units for decimals and neutral, non-budget wording; one integer-only plural carries all four RU forms. Evidence: `core/changes/2026-10-15-c23-arb.md`; no checks run.
+
+Evidence addendum (C21): change record completed with both test files, the halal/kosher fix and commit ids.
+
+## 2026-10-15 - Commit: C13 tests: ScanRecord v2 round trip and v1 tolerance
+
+Decision: scan_models_v2_test covers legacy v1 reading, v2 round trip through JSON text, unknown status as failed, manualOverride strictness. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Note 2026-10-15: C23 ARB keys were swept into earlier path-limited commits of other sessions (same files); the C23 record core/changes/2026-10-15-c23-arb.md documents them.
+
+## 2026-10-15 - Commit: C16 part 2 (history list, privacy view, routes, l10n)
+
+Decision: cloud privacy controls render only when BODY_SCAN_CLOUD is on (no callable otherwise); copy states deletion within 48 hours and that phone-local photos are untouched; weight edit asks the data notice before the weight-log write. Evidence: core/changes/2026-10-15-c16-history-privacy-ui-routes-l10n.md; no checks run.
+
+## 2026-10-15 - Commit: Body scan root wiring
+
+Decision: all body_scan <-> nutrition bridges live in core/wiring/body_scan_wiring.dart so body_scan never imports review state; Firestore repository/settings are bound only when BODY_SCAN_CLOUD is on; the flow effects run through a body_scan-only driver over the existing job runner. Evidence: core/changes/2026-10-15-body-scan-root-wiring.md.
+
+## 2026-10-15 - Commit: C15 tests - scan_flow_controller
+
+Decision: the flow controller test pins that illegal events still bump the revision and clear effects, and that updateContext never replays effects. Evidence: core/changes/2026-10-15-c15-tests.md.
+Progress: T106 label_normalise tests added (44 passing).
+
+## 2026-10-15 - Commit: C23 part 4 (shared diary widgets)
+
+Decision: widgets use the Material theme and semantic colours, never colour alone for state, and route every number through NumberFormat. Evidence: `core/changes/2026-10-15-c23-widgets-a.md`; no checks run.
+
+## 2026-10-15 - Commit: C17 weekly reminder rule and editor
+
+Decision: the 14-day reminder becomes weekly (Sunday 08:00 default, strictly after newest scan + 5 days); default OFF in measurementOnly; notification tap only opens the app because LocalNotificationService has no tap handler (documented limit). Evidence: core/changes/2026-10-15-c17-weekly-reminder-editor.md (no checks run yet).
+
+## 2026-10-15 - Commit: C16 part 2 commit
+
+Evidence record: the C16 part 2 decision entry above was swept into a concurrent session commit; this commit carries the C16 part 2 files and change record core/changes/2026-10-15-c16-history-privacy-ui-routes-l10n.md; no checks run.
+
+## 2026-10-15 - Commit: C19 plan page, review card, entry card
+
+Decision: the plan screen is gated by the device-local verdict (referProfessional shows one notice, no numbers); every plan or weight write passes ensureDataNoticeAcknowledged first; the entry card is exported but mounted by the Progress/Home owners (C17). Evidence: core/changes/2026-10-15-c19-plan-page.md; no checks run.
+
+## 2026-10-15 - Commit: C23 part 5 (chips, macro bars, ring)
+
+Decision: the day ring never colours or words a low day as failure (D-78); check chips expose state as text and manage focus after resolution. Evidence: `core/changes/2026-10-15-c23-widgets-b.md`; no checks run.
+
+Evidence addendum (C19): plan widgets are in core/changes/2026-10-15-c19-plan-widgets.md; plan page and cards in core/changes/2026-10-15-c19-plan-page.md.
+Progress: nutrition_cache tests added.
+Progress: nutrition_breaker tests added.
+
+## 2026-10-15 - Commit: C18 review scheduler tests
+
+Decision: scheduler tests prove it writes nothing for signed-out, deleting, notice-pending, ineligible, no-plan, reviewed or offline cases and reviews once per ISO week. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C23 part 6 (slot section, detail sheet)
+
+Decision: the data-notice gate runs inside the detail sheet right before the first diary write, so no write or food-AI call precedes disclosure (D-79). Evidence: `core/changes/2026-10-15-c23-detail-sheet.md`; no checks run.
+
+## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
+
+Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md (l10n 18, flow 16, journey 8, step_answered 19 passed; router test not run: other epics do not compile).
+
+Evidence addendum (C18 scheduler tests): review_scheduler_test.dart ran green, 24 tests.
+
+## 2026-10-15 - Commit: C15 tests - scan_result_view_model_test
+
+Decision: view-model tests assert provisional and measurement-only hide every goal figure even when a target and decision are supplied. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
+
+Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md.
+
+## 2026-10-15 - Commit: C17 Body check-in entry card and mounting
+
+Decision: one BodyScanEntryCard (full on Progress with resume card and history/privacy links, compact on Home); result-page hooks deferred. Evidence: core/changes/2026-10-15-c17-entry-cards.md (no checks run yet).
+
+Evidence addendum (C19): pages and routes in core/changes/2026-10-15-c19-pages-routes.md.
+
+## 2026-10-15 - Commit: C23 part 7 (diary and add-food pages)
+
+Decision: the diary page is hidden for referProfessional and never worded as a budget game; the data notice precedes the first food-AI call. Evidence: `core/changes/2026-10-15-c23-pages-a.md`; no checks run.
+
+## 2026-10-15 - Commit: C25 privacy, deletion, export, inventory
+
+Decision (D-61): the export of the new collections is ordered newest first and paged by the app; the paging state is returned under `paging` (the legacy `truncated` string array is unchanged because the old sections and tests depend on it); continuation pages are charged to their own `accountExportPage` counter. No signed URLs are ever embedded in the export; scans only carry `photoLinksAvailable`.
+
+Decision (Q-10, privacy wording status): `public/privacy.html` was rewritten by an agent to match the actual behaviour with the feature flags off and on. The wording is a DRAFT pending operator and professional (legal) review; it ships as text, but no feature flag (`BODY_SCAN`, `FOOD_AI`) may be enabled in production until the operator signs the wording off. Evidence: `core/changes/2026-10-15-c25-export-paging.md` and the following C25 change records; no checks run.
+Progress: T108 lookup_barcode tests added; product fix: OFF budget slot honours injected clock.
+
+Evidence addendum (C19): ARB keys in core/changes/2026-10-15-c19-arb.md.
+
+## 2026-10-15 - Commit: E0 rules tests and two firestore.rules fixes
+
+Decision (defect fix, C01 rules): `food_entries` exceeded the 1000-expression rules budget for every entry and so could never be written. The element check is inlined for all 30 slots and `rangeOk` is one ordered comparison chain (low <= mid <= high, 0..100000); a 30-item entry with all optional fields is accepted on the emulator.
+
+Decision (defect fix, C01 rules): `cloudConsent` withdrawal was refused by an evaluation error on the missing key. `consentOk` now accepts an absent key first, matching D-56.
+
+Decision (deferral): lifecycle-policy rows for the new collections (PRIV-21, RULES-14) are `test.todo` until C25 adds them to `scripts/ci/data_lifecycle_policy.json`.
+
+Evidence: firestore_rules + data_access_policy 491 passed / 4 todo; storage_rules 82 passed (emulator, alternate port config). Change record: core/changes/2026-10-15-e0-tests-rules.md.
+
+## 2026-10-15 - Commit: C23 part 8 (search page, routes)
+
+Decision: server food search is explicit-submit only and the weight link reuses the C19 weight log page. Evidence: `core/changes/2026-10-15-c23-search-routes.md`; no checks run.
+
+## 2026-10-15 - Commit: C16 functional tests (test-engineer pass)
+
+Decision: C16 history/privacy/compare behaviour is covered by focused Dart tests using fakes and provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c16-tests.md`.
+
+## 2026-10-15 - Commit: C18 plan actions tests
+
+Decision: plan action tests prove every write is eligibility-gated, version-checked and clamped, and acceptProposal and undo refuse stale or out-of-bounds changes. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C25 client export merge and device wipe
+
+Decision: device-only excludedFoods is merged into the export from the local store; per-uid feature keys are wiped by exact-uid suffix match so shared-phone accounts stay isolated. Evidence: `core/changes/2026-10-15-c25-client-export-and-wipe.md`; no checks run.
+
+Evidence addendum (C18 plan actions tests): nutrition_plan_actions_test.dart ran green, 40 tests.
+Progress: T109 search_foods tests added.
+
+## 2026-10-15 - Commit: C17 functional tests (test-engineer pass)
+
+Decision: C17 weekly reminder, editor, settings field and entry cards are covered by focused Dart tests using provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c17-tests.md`.
+Progress: T109 hostile-name fixture corrected.
+
+## 2026-10-15 - Commit: C15 follow-up result actions
+
+Decision: the result page gets History, Edit weight and Delete photos wired to the C16 flows; resume-card Cancel/Delete use the remote-delete-aware deletePhotos path; the nutrition entry card is mounted on Progress and (compact) Home. Evidence: `core/changes/2026-10-15-c15-followup-result-actions.md`; no checks run.
+
+## 2026-10-15 - Commit: C25 data inventory rows
+
+Decision: new stores are listed with deletion and export behaviour; nutrition_cache and body_scan_purge_state are EXEMPT (no user data). Evidence: `core/changes/2026-10-15-c25-data-inventory.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 weight providers tests
+
+Decision: weight provider tests prove one current-weight definition (14 days, stale fallback), validation, the deletion fence and that a scan weight never replaces an equal same-day manual entry. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+Progress: manage API client tests added (C16).
+
+## 2026-10-15 - Commit: C18 nutrition providers tests
+
+Decision: provider tests prove the median-steps rule, that an ineligible or unknown verdict hides the plan without deleting it, and that the live review is read-only. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - result_view_test
+
+Decision: result view tests pin that the ETA text is never rendered and that provisional mass tiles are labelled this reading. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: router closure compile fixes
+
+Decision: ServerExport implementers extend (not implement) the abstract class so C25 concrete defaults are inherited; missing imports added; nullable row copied to a final local; intl TextDirection hidden. Evidence: core/changes/2026-10-15-compile-fixes-router-closure.md; single router test green.
+Progress: T110 analyze_meal_photo tests added (70 passing).
+
+## 2026-10-15 - Commit: E0 tests follow-up for the C20 food callables and map rows T136/T137
+
+Decision: the deferred RULES-21 six-callable guard expectation became a real test once C20 landed; the scaling registry lists the four food endpoints; the map registers the two author-added E0 files.
+
+Evidence: release_guard 80 passed, scaling 122 passed (single-file jest runs). Change record: core/changes/2026-10-15-e0-tests-food-wiring.md.
+
+## 2026-10-15 - Commit: E1 final tests, SourceKind import-cycle fix, map correction
+
+Decision: extracted SourceKind into its own file (re-exported from device_source.dart) because the PLAN-29 guard found an import cycle in activity/data; corrected the coverage map V-LOSE-M/V-LOSE-CAP rows against D-39 (implementation stands); the two nutrition_plan -> body_scan edges outside data/ are reported, not edited. Evidence: core/changes/2026-10-15-e1-tests-final-profile-safety-programmes-guards.md (27 E1 files, 1075 passed, 0 failed).
+
+## 2026-10-15 - Commit: C24 attributions, scanner dependency, tile routes
+
+Decision: mobile_scanner ^6.0.11 (not 7.x, which needs Flutter 3.29 while the toolchain is 3.27.1); Android useUnbundled stays default pending an on-device VERIFY; add-food tiles use the planned /nutrition/add/photo|barcode|label paths. Evidence: `core/changes/2026-10-15-c24-attributions-deps-routes.md`; nothing was run.
+
+## 2026-10-15 - Commit: C18 scan plan context source tests
+
+Decision: context source tests prove the decision and target body fat reach the scan surfaces only for an eligible user and an unknown or refused verdict is measurement only. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+Evidence addendum (C18 scan plan context source tests): scan_plan_context_source_test.dart ran green, 14 tests.
+
+## 2026-10-15 - Commit: C19 kcal range slider tests
+
+Decision: the slider persists the last drag value on release (stale parent range could be written when the last move and the release share a frame). Evidence: core/changes/2026-10-15-c19-tests.md (kcal_range_slider_test 22 passed).
+Evidence: scan_plan_context_source_test.dart green (14), part of the C18 set of ten files.
+
+## 2026-10-15 - Commit: C23 food_api tests
+
+Decision: callable errors are tested through the pure `mapFoodCallableError` and the parsers; the real `HttpsCallable` wiring is not faked. Evidence: core/changes/2026-10-15-c23-tests.md (food_api_test 33 passed).
+
+## 2026-10-15 - Commit: C13 tests: manual timer, announcement channels, text scale 2.0; fix l10n plurals, top-bar overflow, stale live cue
+
+Decision: Capture screen tests prove timer/override/channel/throttle/overflow contracts; three product defects (literal # in ICU plurals, top-bar overflow at 2.0x RU, stale throttled live-region cue) fixed minimally in ARB and scan_capture_screen. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+Progress: T111 parse_nutrition_label tests added (30 passing).
+
+## 2026-10-15 - Commit: C25 policy rows and privacy text
+
+Decision (Q-10): privacy.html text is shipped as a draft; the data-lifecycle rows name CONDITIONAL-cell tests that the test agents must add. Evidence: `core/changes/2026-10-15-c25-policy-and-privacy.md`; no checks run.
+
+## 2026-10-15 - Commit: C24 capture state, thumbnail store, ARB keys
+
+Decision: the optional meal thumbnail reuses the progress-photo cipher and per-uid directory (meals/ subfolder) and is deleted by FoodDiaryActions.deleteEntry; barcode decoding keeps only GTIN-valid values with no format filter. Evidence: `core/changes/2026-10-15-c24-capture-state-l10n.md`; nothing was run.
+
+## 2026-10-15 - Commit: C15 tests - analysis_progress_view_test
+
+Decision: progress tests fix that the live text carries only stage changes and notices, never the elapsed counter. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C13 tests: setup status panel rows, hint mapping, semantics, RU
+
+Decision: Panel tests prove four rows with icon+text per state, per-row hint prompts, generic Adjust fallback and semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C23 diary providers tests
+
+Decision: write actions are proven through the real providers over the in-memory repositories; the data-notice gate stays a UI contract and is proven in the sheet/page tests. Evidence: core/changes/2026-10-15-c23-tests.md (diary_providers_test 34 passed).
+Progress: nutrition_sources tests added; product fix: Cyrillic serving units in OFF serving text.
+
+Evidence addendum (C17 tests): entry card tests added; scan_reminder_weekly 33, editor 22, settings 14, entry card 35 passed.
+
+## 2026-10-15 - Commit: C24 scan pages and routes
+
+Decision: label scan always shows an editable confirmation sheet and writes a saved_food only after Confirm; barcode lookups are sent only for GTIN-valid values; describe mode stays in the C23 add-food sheet. Evidence: `core/changes/2026-10-15-c24-scan-pages-routes.md`; nothing was run.
+
+## 2026-10-15 - Commit: C15 tests - trend_chart_test
+
+Decision: chart tests assert one summary node plus an expand action instead of per-point semantics. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 food search controller tests
+
+Decision: debounce and cache are proven with the widget-test fake clock (599 ms no call, 600 ms call). Evidence: core/changes/2026-10-15-c23-tests.md (food_search_controller_test 26 passed).
+
+## 2026-10-15 - Commit: C19 macro_ranges_card_test.dart
+
+Decision: the ICU '#' in nutritionStepsValue and nutritionReviewBasis rendered literally, so the placeholder names are used in EN and RU. Evidence: core/changes/2026-10-15-c19-tests.md (macro_ranges_card_test.dart 7 passed).
+
+Progress: history actions tests added (C16).
+
+## 2026-10-15 - Commit: C25 export paging tests
+
+Decision: the paging test seeds food ids uncorrelated with loggedAt so a document-id-order read would fail it; the legacy export test gets a typed runExport helper because the handler return type became a union. Evidence: core/changes/2026-10-15-c25-tests.md (account_export 19 passed, account_export_paging 16 passed).
+
+## 2026-10-15 - Commit: C19 ownership_selector_test.dart
+
+Decision: ownership selector reports only real changes and is inert when disabled. Evidence: core/changes/2026-10-15-c19-tests.md (ownership_selector_test.dart 7 passed).
+
+## 2026-10-15 - Commit: C13 tests: skeleton overlay geometry and non-colour cues
+
+Decision: Recording-canvas tests prove bone/joint geometry, dashed-vs-solid and hollow-vs-filled readiness cues, likelihood floor and decorative semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - check_items_card_test
+
+Decision: check card tests pin one announcement and focus movement after resolve. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 check these chips tests
+
+Decision: the announcement is captured from the accessibility channel and focus is read from FocusManager debug labels. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+Evidence addendum (C17 Home card test): home_body_check_in_card_test.dart ran green, 6 tests.
+
+## 2026-10-15 - Commit: C19 auto_adjust_toggles_test.dart
+
+Decision: auto-adjust toggles are inert and off under Manual and independent otherwise. Evidence: core/changes/2026-10-15-c19-tests.md (auto_adjust_toggles_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C23 macro bars tests
+
+Decision: macro values are asserted as text and through the semantics label, not via the bar. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C19 professional_notice_test.dart
+
+Decision: the referProfessional notice carries no numbers or reasons. Evidence: core/changes/2026-10-15-c19-tests.md (professional_notice_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C13 tests: scan ports defaults, speaker bridge and haptic patterns
+
+Decision: Port tests prove luminance default, 3/5/10 s timer provider, speech success/failure observability and six distinct haptic sequences. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Progress: retention settings view tests added (C16).
+
+## 2026-10-15 - Commit: C23 day summary ring tests
+
+Decision: neutral wording is asserted over all rendered Text in every state. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - cloud_consent_sheet_test
+
+Decision: consent sheet dismissal is always a refusal; only an explicit Agree returns true. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C19 review_card_test.dart
+
+Decision: undo and accept affordances are gated by ownership, window and plan version; every review shows why. Evidence: core/changes/2026-10-15-c19-tests.md (review_card_test.dart 20 passed).
+
+Progress: scan history list widget tests added (C16).
+
+## 2026-10-15 - Commit: C15 tests - intro_view_test
+
+Decision: intro tests assert the rough-estimate label shows only for the provisional estimator. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 meal slot section tests
+
+Decision: slot total and row values use hand-computed kcal (150 g x 130 / 100 = 195). Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: E0 policy-row tests and the E0 test evidence record
+
+Decision: with the C25 lifecycle rows present, the T05 deferrals became real tests: the twelve CONDITIONAL-cell tests carry the exact titles the policy rows reference, and a governance test compares each new row to an expected matrix written from the rules, not from the policy file.
+
+Evidence: complete E0 set green on the recorded heads (jest 409, firestore rules + policy 547, storage 82, Dart 49 plus three flag-define runs); details in core/changes/2026-10-15-e0-test-evidence.md.
+
+## 2026-10-15 - Commit: C14 tests: body scan job runner (local path, cloud gates, fence, rotation, backoff, cancel)
+
+Decision: Runner tests drive the real runner with fakes for api/uploader/blur/face check and assert call counts, persisted states and slugs. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - weight_prompt_sheet_test
+
+Decision: weight prompt tests keep skip (explicit) distinct from dismissal (null) and bound the weight to 20-400 kg. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C25 CONDITIONAL cell rules tests
+
+Decision: cell tests use inline template-literal doc paths because the access checker cannot resolve helper calls; the DEFERRED todo block became real governance tests. Evidence: core/changes/2026-10-15-c25-tests.md (data_access_policy.test.ts 208 passed on the emulator, alternate port 18080).
+
+## 2026-10-15 - Commit: C24 image_prep tests and metadata-strip fix
+
+Decision: `prepareJpeg` clears EXIF and the ICC profile explicitly, because re-encoding alone copied them through. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 portion editor tests
+
+Decision: only positive values up to 10000 reach the callback. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C19 nutrition_entry_card_test.dart
+
+Decision: the entry card hides every number for non-eligible verdicts even when a plan doc exists. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_entry_card_test.dart 9 passed).
+
+Progress: compare start/prompt/deleteScanFiles tests added (C16).
+
+## 2026-10-15 - Commit: C15 tests - resume_scan_card_test
+
+Decision: resume card tests assert that each terminal-failure action reaches its own callback. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 meal thumbnail store tests
+
+Decision: thumbnail tests use the real AesPhotoCipher and a temp directory, and prove deletion through FoodDiaryActions.deleteEntry. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: body scan api client and scrubbed errors
+
+Decision: Fake-FirebaseFunctions tests prove exact payloads, tolerant parsing and closed-slug mapping; scrubbed_error tests prove no raw text or signed URL survives. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C25 local wipe key tests
+
+Decision: the wipe rule is tested as prefix plus exact-uid final segment, including look-alike uids. Evidence: core/changes/2026-10-15-c25-tests.md (local_data_wipe_c25_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C19 nutrition_plan_page_test.dart
+
+Decision: the plan page gates numbers on the verdict, acknowledges the data notice before any write and persists edits only through NutritionPlanActions. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_plan_page_test.dart 25 passed).
+
+## 2026-10-15 - Commit: C23 food detail sheet tests
+
+Decision: the notice gate is proven by zero repository writes until the acknowledge tap. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C25 client export paging tests
+
+Decision: the cap is asserted as 49 continuations because the first page counts toward the 50. Evidence: core/changes/2026-10-15-c25-tests.md (server_export_paging_test.dart 15 passed).
+
+## 2026-10-15 - Commit: test(food): C24 barcode port and page tests
+
+Decision: barcode page tests drive the page through FakeBarcodePort with a recording FoodApi and assert call arguments, not only UI. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 food diary page tests
+
+Decision: referProfessional is proven by the absence of any digit or kcal text on the page. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 parseLabelDraft and label scaling tests
+
+Decision: label draft validation is tested at exact bounds with hand-computed scaling values. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 weight_log_page_test.dart
+
+Decision: the weight log writes only valid 30..300 kg weights, only after the data notice, and edit/delete touch exactly one entry. Evidence: core/changes/2026-10-15-c19-tests.md (weight_log_page_test.dart 20 passed).
+
+## 2026-10-15 - Commit: C15 tests - body_scan_flow_driver_test
+
+Decision: driver tests use a recording fake runner and a stateful record list instead of Firestore. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: photo upload port and scan trend source
+
+Decision: Scripted Dio adapter proves retry/backoff/expiry/cancel; trend source tests prove provisional or changed estimators never count as a decrease. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Progress: history/privacy route tests added (C16).
+
+## 2026-10-15 - Commit: C19 plan_sources_page_test.dart
+
+Decision: the sources page attributes formulas and food data and states estimate and no-medical-advice limits. Evidence: core/changes/2026-10-15-c19-tests.md (plan_sources_page_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C19 plan_explainer_page_test.dart
+
+Decision: the explainer page describes the weekly review and ownership modes without promising dates or results. Evidence: core/changes/2026-10-15-c19-tests.md (plan_explainer_page_test.dart 6 passed).
+
+Progress: C16 l10n parity and plural tests added.
+
+## 2026-10-15 - Commit: test(food): C24 label scan page tests
+
+Decision: the label page is proven to write a saved_food only after Confirm, using the edited values, and nothing on Cancel or dismiss. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 add food page tests
+
+Decision: tile routes are asserted by the URI the pushed stub receives, matching the routes C24 registered. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: blur service, fix EXIF leak in blurred upload
+
+Decision: Real-pixel blur tests found that the uploaded JPEG kept source EXIF; blur_service now clears exif and ICC before encoding. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: settings consent/retention and scan repository
+
+Decision: Tolerant-read and in-memory store tests plus LocalScanRepository signed-in/signed-out behaviour. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 meal scan page tests
+
+Decision: the meal page is proven to call the food AI only after the data notice and to log nothing without Save. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C15 fix - Delete scan on the failed card
+
+Decision: Delete on the terminal failure card calls driver.deleteFailedScan (runner cancel plus flow reset) because the machine has no cancel from failed. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - flow page and driver delete
+
+Decision: the flow page test drives the real page with a fake runner and a stub capture route. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 capture routes and add-food tiles tests
+
+Decision: route agreement is checked by tile taps against the harness plus a source-level check of app_router.dart. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 nutrition_routes_test.dart
+
+Decision: C19 routes are registered in the real router and reachable without redirect. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_routes_test.dart 5 passed).
+
+## 2026-10-15 - Commit: C23 food search page tests and generic foodRef fix
+
+Decision: generic foodRef is the table id as is (gen:<fdcId>); the doubled prefix was a product defect. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+Progress: scan_gate_delete_test fake aligned with the C17 sync signature.
+
+## 2026-10-15 - Commit: C15 tests - body_scan_wiring_test
+
+Decision: wiring tests drive the bridge with overrides only; no Firebase. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 attribution file vs in-app sources tests
+
+Decision: attribution consistency is tested by parsing the real file and rendering the real sources page. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 plan_arb_parity_test.dart
+
+Decision: the C19 EN/RU keys stay in parity and RU plural forms resolve correctly. Evidence: core/changes/2026-10-15-c19-tests.md (plan_arb_parity_test.dart 14 passed).
+
+## 2026-10-15 - Commit: C15 tests - c15_body_scan_arb_test
+
+Decision: ARB parity test reads the ARB files directly so it needs no generated l10n. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 EN/RU ARB parity tests
+
+Decision: ARB parity is asserted on the real files for the new key family and the food* family. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 routes tests
+
+Decision: route agreement is asserted from the add-food source against the router source plus the live router. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 l10n and accessibility audit
+
+Decision: RU plurals only for integer fields (all new plural placeholders are int, one/few/many/other defined); decimals use locale-formatted numbers with non-inflecting abbreviations. HUD light warning/danger failed WCAG on cards (1.55 / 2.78), so new widgets read the status colours from AppSemanticColors; the camera readiness panel fill went from 0.65 to 0.85 black. The missing trainingReason* family (7 codes) was added. Evidence: core/changes/2026-10-15-c26-l10n-a11y-audit.md (contrast table; contrast_tokens_test.dart written, NOT RUN).
+
+## 2026-10-15 - Commit: sprint status report (checkpoint)
+
+Decision: interim status report pair added (reports/2026-10-15-body-scan-nutrition-sprint-status.*). Checkpoint only: sprint not closed, test agents and C27 continue. Evidence: `core/changes/2026-10-15-sprint-status-report.md`.
+
+## 2026-10-15 - Commit: C26 contrast token test run and fixed
+
+Decision: `contrast_tokens_test.dart` compiled only after replacing `toARGB32()` with `value` for the pinned SDK; source-pinned checks added for the camera panel alpha and status colours so the hard-coded camera pairs cannot drift from the source. 65 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: C13 tests: capture screen no-rebuild window accounts for throttled first cue
+
+Decision: The rebuild-stability test now starts after the 2 s live-region throttle. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C23 text scale 2.0 RU tests and overflow fixes
+
+Decision: text-scale overflow is asserted through takeException on a 360x640 RU 2.0 render of every diary surface. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C23 food ARB parity tests
+
+Decision: RU plural forms are proven by output of the generated localizations, not only by the ARB text. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 plural and decimal test (T123)
+
+Decision: `body_scan_plurals_test.dart` added; it renders the 11 new plural keys and the decimal-unit keys in RU and EN and pins the D-84 rule. 35 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: C27 docs (CODEMAP, INDEX, state, decisions)
+
+Decision (SD not yet recorded): (SD-16) `core/CURRENT_STATE.md` stays generated by `scripts/review/state_ledger.py`; sprint status lives in `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md`. (SD-17) `core/INDEX.md` stays the hand-maintained document registry (no generator exists). (SD-18) Final flag defaults: `BODY_SCAN_CLOUD`, `FOOD_AI`, `FOOD_LOOKUP` all off in the client; server `BODY_SCAN_BUCKET` unset and food flags off; each needs its runbook go-live gates. (SD-19) The body-scan estimator shipped is the on-device provisional Deurenberg estimate (range 5.0 points) that ignores photos; no real provider. VERIFY outcomes as recorded: `mobile_scanner` added with a licence row in `core/ATTRIBUTIONS_NUTRITION.md` and unverified on device; the import-graph check found two nutrition_plan to body_scan edges, pinned by test; coverage map V-LOSE-M and V-LOSE-CAP corrected to the D-39 values. Open items are listed in `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md`. Evidence: `core/changes/2026-10-15-c27-docs.md`.
+
+## 2026-10-15 - Commit: C23 diary repository fake tests
+
+Decision: the fake repositories are held to the same refusals as the rules. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 capture screen large-text test (T126)
+
+Decision: `body_scan_a11y_test.dart` added (7 tests pass); the capture panel is bounded and scrolls at 2.0 in RU on 360x640, the shutter stays >= 48 dp and tappable. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: server review fixes part 1
+
+Decision: erase paths (deleteBodyScan, manageBodyScanData, purge, account-delete sweep) depend on the bucket name only; a separate BODY_SCAN_ACCEPT_UPLOADS switch (default on) gates new scans and estimates, and rollback means flipping it, never unsetting the bucket while objects exist. The purge trusts only documents at users/{uid}/body_scans/{id}. Failed scans are purged after pendingExpiresAt. Estimate attempts per scan are capped at 3 and not reset by refunds. Evidence: core/changes/2026-10-15-server-review-fixes-1.md; no checks run.
+
+## 2026-10-15 - Commit: C26 tap-target sweep test (T125)
+
+Decision: `new_pages_tap_targets_test.dart` sweeps 14 new pages x EN/RU x 1.0/2.0 with the Android tap-target and labeled-tap-target guidelines. First run: 53 pass, 3 fail (result page overflow on 360 dp, product defect). Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: mobile runner review fixes
+
+Decision: an owed server delete (`pendingRemoteDelete`) makes a scan permanently non-resumable and every runner write re-reads the record first; "inputs still loading" is not-ready (stays queued), never `subject-missing`; the retry timer is always re-armed from the stored queue after a pass. Evidence: core/changes/2026-10-15-mobile-runner-fixes.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 2 (tests and runbook)
+
+Decision: bucket runbook rollback is flipping BODY_SCAN_ACCEPT_UPLOADS, never unsetting BODY_SCAN_BUCKET while objects exist; storage rules are deployed separately with --only storage. Evidence: core/changes/2026-10-15-server-review-fixes-2-tests-runbook.md; no checks run.
+
+## 2026-10-15 - Commit: mobile owed deletes
+
+Decision: a photo delete with a possibly existing cloud copy is never reported `deleted` until the server delete succeeded; otherwise it is persisted as owed (photos-only kind), the scan is stopped (terminal cancelled when unfinished) and the runner removes the phone copy after the flush. Evidence: core/changes/2026-10-15-mobile-delete-owed.md; no checks run.
+
+## 2026-10-15 - Commit: mobile fire-and-forget observation
+
+Decision: no runner call is fire-and-forget without an error observer; the runner provider (not the app-root wiring) resumes on profile/weight load so existing wiring tests keep their provider graph. Evidence: core/changes/2026-10-15-mobile-fire-and-forget.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 3 (export quota, log redaction)
+
+Decision: account export continuation quota is 150/day; accountExport and accountExportPage quota logs and export failure logs are uid-free (error code only); ai_gateway logs an error code, not the exception text. SF-F13 closed as already satisfied (writeCache never throws). Evidence: core/changes/2026-10-15-server-review-fixes-3-logs-quota.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 4 (unusable model output)
+
+Decision: analyzeMealPhoto and parseNutritionLabel treat unparseable model output as a failed call (refund, unavailable); only a well-formed empty items list is a successful empty meal. Evidence: core/changes/2026-10-15-server-review-fixes-4-unusable-model-output.md; no checks run.
+
+## 2026-10-15 - Commit: mobile plan and diary read fixes
+
+Decision: "document exists but unreadable" is an error state distinct from "no document" (plan), and a diary entry with missing totals or time is `degraded` (never written back). Evidence: core/changes/2026-10-15-mobile-plan-and-diary-reads.md; no checks run.
+
+## 2026-10-15 - Commit: cancel vs unresolved createBodyScan race tests
+
+Decision: the cloud-scan cancel-while-create-unresolved race is covered by deterministic tests; no production change was needed. cancel() sends deleteBodyScan (the scan is persisted as `uploading` before create) or persists pendingRemoteDelete, and the server tombstone makes a late create harmless. Evidence: core/changes/2026-10-15-cancel-create-race-tests.md; focused run of body_scan_job_runner_test.dart only.
+
+## 2026-10-15 - Commit: bulk-delete fence and straggler pass (MAJOR-02)
+
+Decision: delete-all pages raise a 15 min per-user fence in `body_scan_purge_state` (hashed id, server-only) and `createBodyScan` refuses new/reset/re-issue work with `delete-in-progress` while it is active; the final page runs a bounded (3 passes) `createdAt`-window straggler sweep and fails with `delete-incomplete` rather than reporting done with live scans left. Evidence: core/changes/2026-10-15-bulk-delete-fence.md; jest manage 53, create 111, delete 23, guard 44 green.
+
+## 2026-10-15 - Commit: fence ownership and late-upload sweep (MAJOR-02A/02B)
+
+Decision: the bulk-delete fence holds one transactional entry per operation (random `fenceToken` returned with the cursor and echoed back); each operation refreshes and clears only its own entry and `createBodyScan` refuses while any entry is active. Because already-issued signed PUT URLs cannot be revoked, a completed delete-all records a `late_sweep` record (due = completion + 10 min URL TTL + 2 min) and the new `sweepLateBodyScanUploads` schedule (every 5 min) removes orphan objects of the user's scans prefix, so the stated bound is 17 minutes. Trade-off: the transient late-sweep record carries the uid. Evidence: core/changes/2026-10-15-fence-ownership-late-sweep.md.
+
+## 2026-10-15 - Commit: fence ownership test sweep and uid statement alignment
+
+Decision: the uid carried by the transient `late_sweep_<hash>` record (at most ~17 minutes, server-only, deny-all to clients) is stated exactly in the firestore.rules comment and the data inventory (md and csv) instead of the earlier "no uid" wording; classification and access cells stay EXEMPT/NONE. Added a Dart test for the `fenceToken` echo. Evidence: core/changes/2026-10-15-fence-ownership-tests.md.
+
+## 2026-10-15 - Commit: late sweep compare-and-delete and honest contract
+
+Decision: the late-sweep record carries a `rev` rewritten on every completion and the sweep deletes it only if `rev` and `dueAtMs` are unchanged (transaction), so a newer delete-all is never erased by an older run; the "17 minutes" figure is a target under normal operation, a record that cannot finish is retried every 5 minutes with no hard upper bound, and the uid-bearing record lives until deleted. Evidence: core/changes/2026-10-15-late-sweep-cas-and-contract.md.
+
+## 2026-10-15 - Commit: late sweep resumable cursor
+
+Decision: the late sweep stores the last listed object name as `cursor` on its record (compare-and-set on rev/dueAtMs, reset by every completeFence) and resumes with `startOffset`, so live objects ahead of a late orphan cannot starve it; the record is still deleted only after the listing completes. Evidence: core/changes/2026-10-15-late-sweep-resumable-cursor.md.
+
 ## 2026-10-15 - Commit: S00 split of Phase 1 and Phase 2
 
 Decision: operator answers recorded. D-1 phase rule as written (Phase 1 = planned before 2026-10-10, first production MVP, fixes and release readiness only; Phase 2 = planned after; a Phase 2 feature found in the Phase 1 line is an experiment, flag OFF, developed only in Phase 2; `training_context` stays in Phase 1). D-2 PR #5 retargeted to `phase2/main`; the base commit is identical to the previously reviewed base (`42d1b849`), the diff is identical (552 files) and GPT-PM APPROVE on head `cd9d7c3a` was therefore applied; merged as `5137ccda`. D-4 separate Firebase alias for Phase 2 (alias creation is an operator action; Phase 2 stays on the emulator until it exists). D-5 Option A: one repository, branches `phase1/main` and `phase2/main`, tag `phase1-baseline` at `42d1b849`, worktrees `D:\Repo\Fitness_App_Phase1` and `D:\Repo\Fitness_App_Phase2`. Plan package approved: GPT-PM APPROVE on revision 3 (three rounds). Evidence: docs/phase2/split/SNAPSHOT_2026-10-15.md, core/changes/2026-10-15-s00-split-docs.md. Open: backend separation gate, `phase1/main` documentation PR, retirement of old branches and worktrees (operator approval).
@@ -55843,3 +56679,7 @@ Decision: after GPT-PM round 1 (MODIFY) the plan documents keep their original w
 ## 2026-10-15 - Commit: guard coverage and provenance tests
 
 Decision: the deploy guard fix is accepted for review with 275 focused tests passing (232 + 43, run by the test agent). `findUnguardedDeployTargets` is a test-time check only; the docs must not claim a deploy-time check of firebase.json. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance-tests.md.
+
+## 2026-10-15 - Commit: merge phase2/main into the S00 branch
+
+Decision: the S00 branch integrates PR #5 (5137ccda) before its own PR so the guard knows the Body Scan checks and every deploy target, including the storage block PR #5 introduced, carries the deploy-line guard. Evidence: core/changes/2026-10-15-s00-merge-phase2-main-into-s00.md; tests rerun follows.

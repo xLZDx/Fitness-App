@@ -177,3 +177,30 @@ machine cards, recognition history, generated exercises, stats, donor entry,
 coach listing, coach bookings, equipment reports, debug telemetry — plus a
 recorded decision on photo bytes, which today are excluded by a comment in
 `data_export.dart:13-22` that the privacy policy does not repeat.
+
+## Body scan and nutrition coach additions (C25, 2026-10-15)
+
+CSV rows carry gate `C25`. Deleted = `recursiveDelete(users/{uid})` or the
+`sweepAccountData` Storage prefix delete (D-60). Exported = `exportAccountData`
+(`functions/src/account_export.ts`), newest first, paged by the app (D-61).
+
+| Store | Holds | Deleted | Exported |
+|---|---|---|---|
+| `users/{uid}/body_scans/*` | scan metadata, estimate, provider, `photosState`, weight, note | yes | yes, paged; no links, `photoLinksAvailable` only |
+| `users/{uid}/body_scan_settings/main` | cloud consent, retention days, reminder | yes | yes |
+| `users/{uid}/weight_entries/*` | daily body weight | yes | yes, paged |
+| `users/{uid}/nutrition_plan/main` | plan targets | yes | yes |
+| `users/{uid}/nutrition_plan_reviews/*` | weekly review decisions | yes | yes, paged |
+| `users/{uid}/food_entries/*` | diary entries | yes | yes, paged |
+| `users/{uid}/saved_foods/*` | saved foods | yes | yes, paged |
+| `nutrition_cache/{key}` | public nutrition-database responses | n/a (no user data) | n/a, EXEMPT |
+| `body_scan_purge_state/{id}` | purge cursor bookkeeping; transient `late_sweep_<hash>` records carry a uid for about 17 minutes under normal operation, retried every 5 minutes until deleted, no hard bound (server-only, deny-all to clients) | n/a (no user content; the uid-bearing record is deleted by the 5-minute late sweep) | n/a, EXEMPT |
+| Storage `<project>-bodyscan-private` `users/{uid}/scans/*` | face-blurred scan JPEGs, default retention 0 (deleted after analysis, within 48 hours worst case) | yes, prefix delete | metadata only; 1-hour links via `manageBodyScanData.exportLinks` |
+| Prefs `data_notice.v{N}.{uid}` | data notice acknowledgement | yes (device wipe) | no |
+| Prefs `progress_photos.scan_reminder.v1.{uid}` | reminder toggle | yes (device wipe) | no |
+| Prefs `profile.sensitive.{uid}` (`excludedFoods`) | device-only excluded foods | yes (device wipe) | yes, merged from the device by the client export |
+| `<docs>/progress_photos/{uid}/scans/`, `.../meals/` | encrypted scan sidecars, meal thumbnails | yes (directory wipe) | no (stay on the device) |
+
+Logging (D-67): the new quota actions are in `REDACTED_QUOTA_ACTIONS`, so
+their quota log lines carry no uid; continuation export pages use the
+`accountExportPage` counter. No analytics SDK receives photos or body metrics.

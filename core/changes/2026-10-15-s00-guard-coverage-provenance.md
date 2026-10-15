@@ -17,7 +17,8 @@
   default project fallback is removed; unexpected crashes exit 1.
 - `firebase.json`: `predeploy` guard (`npm --prefix functions run build` then
   `node functions/scripts/run_release_guard.mjs`) added to `firestore`, `hosting` and `functions[1]`
-  (`equipment-identity`); `functions[0]` unchanged. No `storage` block exists (no `storage.rules`).
+  (`equipment-identity`); `functions[0]` unchanged. After the merge of `origin/phase2/main` (which added a
+  `storage` block with `storage.rules`) the same guard is also on `storage`.
 - `scripts/deploy/guarded_deploy.mjs` (new): supported wrapper (build, refuse `--config`, resolve project,
   run guard with `GCLOUD_PROJECT`, then `firebase deploy --project <id> ...` with the repo-pinned CLI).
 - `functions/package.json`: `deploy` script now goes through the wrapper.

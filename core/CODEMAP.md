@@ -177,3 +177,53 @@ every scroll tick, which cost the frame budget for decoration.)
 Hand-maintained; nothing regenerates it. When you add or remove a feature, update the tables above
 in the same commit. `scripts/dev/audit_doc_links.ps1` fails the moment a path here stops resolving,
 which catches deletions and renames — but **not** a feature you forgot to add.
+
+---
+
+## Body Scan + Nutrition Coach (added 2026-10-15, branch `feature/body-scan-nutrition-coach`)
+
+Navigation only. Design: [plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md). Status and limits: [CURRENT_STATE_BODY_SCAN_NUTRITION.md](CURRENT_STATE_BODY_SCAN_NUTRITION.md). Client flags (`lib/core/config/body_scan_flags.dart`, `--dart-define`): `BODY_SCAN_CLOUD`, `FOOD_AI`, `FOOD_LOOKUP`, all default off. Paths relative to `mobile/` unless stated.
+
+### Features
+
+| Feature | Entry files | What lives there |
+|---|---|---|
+| `body_scan` | `lib/features/body_scan/body_scan_flow_page.dart`, `body_scan_result_page.dart`, `body_scan_history_page.dart`, `body_scan_privacy_page.dart` | `data/` pure logic: `provisional_estimator.dart` (on-device Deurenberg), `body_scan_flow_machine.dart` (pure state machine), `body_scan_job.dart`, `plausibility.dart`, `check_items.dart`, `face_region.dart`, `face_check_port.dart`, `scan_trend.dart`, `scan_result_math.dart`, `scan_plan_context.dart` (port). `state/`: `body_scan_job_runner.dart` (upload/estimate queue), `body_scan_flow_driver.dart`, `scan_flow_controller.dart`, `body_scan_api.dart` + `body_scan_manage_api.dart` (callables), `photo_upload_port.dart`, `blur_service.dart`, `firestore_body_scan_repository.dart`, `body_scan_settings.dart`, `scrubbed_error.dart`. `widgets/`: intro, result, trend chart, skeleton overlay, consent sheet, entry/resume cards, history list |
+| `nutrition_plan` | `lib/features/nutrition_plan/nutrition_plan_page.dart`, `nutrition_profile_flow_page.dart`, `weight_log_page.dart`, `plan_sources_page.dart`, `plan_explainer_page.dart` | `data/`: `energy_math.dart`, `safety_clamps.dart`, `plan_calculator.dart`, `nutrition_eligibility.dart`, `weekly_review.dart`, `review_transaction.dart`, `nutrition_training_state.dart` (programme hook input), `missing_inputs.dart`, plan/weight repositories (Firestore + in-memory). `state/`: `nutrition_providers.dart`, `nutrition_plan_actions.dart`, `review_scheduler.dart`, `weight_providers.dart`, `scan_plan_context_source.dart` |
+| `food_diary` | `lib/features/food_diary/food_diary_page.dart`, `add_food_page.dart`, `food_search_page.dart`, `meal_scan_page.dart`, `label_scan_page.dart`, `barcode_scan_page.dart`, `food_detail_sheet.dart` | `data/`: `food_entry.dart`, `day_totals.dart`, `portion_math.dart`, `generic_foods.dart` (bundled table), `food_suggestions.dart`, `check_these.dart`, `label_scale.dart`, `gtin_validator.dart`. `state/`: `diary_providers.dart`, `diary_repository.dart` + `firestore_diary_repository.dart`, `food_api.dart` (callables), `image_prep.dart`, `meal_thumbnail_store.dart`, `barcode_port.dart`, `capture_image_port.dart` |
+| `activity` (foundation, no screen) | `lib/features/activity/data/` | `activity_session.dart`, `activity_merger.dart`, `merge_policy.dart`, `source_record.dart`, `source_kind.dart`, `device_source.dart`, `fake_device_source.dart`, `sample_stream.dart`, `lap.dart`, `sport_type.dart`, `activity_summary.dart`. Data layer only; no provider is bound yet |
+
+Also touched: `lib/features/progress_photos/scan/` (v2 scan record, weekly reminder, capture), `lib/features/onboarding/steps/step_nutrition.dart` (+ `data/step_answered.dart` order), `lib/features/profile/data/` (nutrition prefs, health flags), `lib/features/programmes/data/programme_builder.dart` (volume factor), `lib/features/data_export/`, `lib/features/account_deletion/data/local_data_wipe.dart`, `lib/features/home/home_page.dart` and `lib/features/progress/progress_page.dart` (entry cards).
+
+### Cross-cutting additions
+
+| Path | Role |
+|---|---|
+| `lib/core/config/body_scan_flags.dart` | The three compile-time flags |
+| `lib/core/wiring/body_scan_wiring.dart` | Root provider overrides by flag; scan-done bridge to the nutrition signal |
+| `lib/core/privacy/data_notice.dart` | Data notice gate used before first write/AI call |
+| `lib/core/math/series_math.dart` | EWMA and Theil-Sen helpers |
+
+### Routes (in `lib/core/router/app_router.dart`)
+
+`/body-scan`, `/body-scan/result/:scanId`, `/body-scan/history`, `/body-scan/privacy`, `/photos/scan`, `/photos/compare`, `/nutrition`, `/nutrition/profile`, `/nutrition/weight`, `/nutrition/diary`, `/nutrition/add`, `/nutrition/add/search`, `/nutrition/add/photo`, `/nutrition/add/barcode`, `/nutrition/add/label`, `/nutrition/sources`, `/nutrition/how-it-adapts`.
+
+### Cloud Functions (`functions/src/`, exported from `index.ts`)
+
+| Callable / job | File |
+|---|---|
+| `createBodyScan`, `estimateBodyScan`, `deleteBodyScan`, `manageBodyScanData`, `purgeExpiredBodyScanPhotos` (scheduled) | `body_scan/create.ts`, `estimate.ts`, `delete.ts`, `manage.ts`, `purge.ts`; shared `access.ts`, `flags.ts`, `shared.ts`, `types.ts`, `estimator.ts`, `validate_estimate.ts` |
+| `analyzeMealPhoto`, `parseNutritionLabel` | `analyze_meal_photo.ts`, `parse_nutrition_label.ts`, `coerce_meal_analysis.ts`, `label_normalise.ts` |
+| `searchFoods`, `lookupBarcode` | `nutrition_lookup.ts`; sources in `nutrition_sources/` (Open Food Facts, USDA FDC); `nutrition_http.ts`, `nutrition_cache.ts`, `nutrition_breaker.ts`, `nutrition_budget.ts`, `nutrition_config.ts` |
+| `exportAccountData` (paged) | `account_export.ts` |
+
+Flags: `feature_flags.ts`, `food_flags.ts`, `body_scan/flags.ts`. Rules: `firestore.rules`, `storage.rules`, `firestore.indexes.json`.
+
+### Assets and scripts
+
+| Path | Role |
+|---|---|
+| `mobile/assets/nutrition/generic_foods_v1.json`, `generic_foods_ru.json` | Bundled generic food table (EN, RU) |
+| `scripts/nutrition/build_generic_foods.py` | Builds the table |
+| `runbooks/body_scan_bucket.md`, `runbooks/food_lookup.md` | Operator runbooks |
+| `core/ATTRIBUTIONS_NUTRITION.md` | Data source licences |

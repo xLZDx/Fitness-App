@@ -143,6 +143,8 @@ const AI_SOURCE_PATHS: Record<string, string> = {
   aiEquipmentRecognition: "functions/src/ai_equipment_recognition.ts",
   aiMachineDescription: "functions/src/ai_machine_description.ts",
   aiExerciseGeneration: "functions/src/ai_exercise_generation.ts",
+  analyzeMealPhoto: "functions/src/analyze_meal_photo.ts",
+  parseNutritionLabel: "functions/src/parse_nutrition_label.ts",
 };
 const SCALING_PATH = "functions/src/scaling.ts";
 
@@ -469,7 +471,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    const check = byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables");
+    const check = byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables");
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("aiEquipmentRecognition");
   });
@@ -488,7 +490,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("OK");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("OK");
   });
 
   test("App Check OK when APP_CHECK_ENFORCED_AI is off but APP_CHECK_ENFORCED covers it", async () => {
@@ -508,7 +510,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("OK");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("OK");
   });
 
   test("anonymous-refusal FAILED when AI_ALLOW_ANONYMOUS=true on any callable", async () => {
@@ -523,7 +525,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    const check = byName(result, "Anonymous callers are refused on all 4 AI callables");
+    const check = byName(result, "Anonymous callers are refused on all 6 AI callables");
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("aiMachineDescription");
   });
@@ -532,8 +534,8 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     const result = await runReleaseGuard(
       makeDeps({ gcloud: { "describe:aiExerciseGeneration": () => ({ ok: false, stdout: "", stderr: "not found" }) } }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("UNAVAILABLE");
-    expect(byName(result, "Anonymous callers are refused on all 4 AI callables").status).toBe("UNAVAILABLE");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("UNAVAILABLE");
+    expect(byName(result, "Anonymous callers are refused on all 6 AI callables").status).toBe("UNAVAILABLE");
   });
 
   test("kill switch FAILED when fn-ai-runtime lacks secretAccessor entirely", async () => {
@@ -1802,5 +1804,325 @@ describe("findUnguardedDeployTargets", () => {
 
   test.each([[null], [undefined], ["x"], [42]])("an unreadable config (%j) fails closed", (config) => {
     expect(findUnguardedDeployTargets(config)).toEqual(["firebase.json:unreadable"]);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* E0 / C02 + C12 leftovers: guard set parity and the flag-gated       */
+/* body-scan bucket check (T06, RULES-16, RULES-21)                    */
+/* ------------------------------------------------------------------ */
+
+import { AI_GATEWAY_OPERATIONS } from "../ai_gateway";
+
+describe("release guard set vs. the Body Scan + Nutrition Coach surface", () => {
+  test("every guarded AI callable is a registered AI Gateway operation (guard set cannot drift from the gateway)", () => {
+    for (const name of AI_CALLABLES) {
+      expect(AI_GATEWAY_OPERATIONS as readonly string[]).toContain(name);
+    }
+  });
+
+  test("the body-scan callables run as fn-bodyscan outside the AI guard set (D-63): none is in AI_CALLABLES", () => {
+    for (const name of ["createBodyScan", "estimateBodyScan", "deleteBodyScan", "manageBodyScanData"]) {
+      expect(AI_CALLABLES as readonly string[]).not.toContain(name);
+    }
+  });
+
+  // RULES-21: the guard set is six callables (the four originals plus the two
+  // food AI callables, D-63) and the healthy guard passes with them.
+  test("AI_CALLABLES is exactly the six guarded surfaces, the four originals first", () => {
+    expect([...AI_CALLABLES]).toEqual([
+      "aiCoachAdvice",
+      "aiEquipmentRecognition",
+      "aiMachineDescription",
+      "aiExerciseGeneration",
+      "analyzeMealPhoto",
+      "parseNutritionLabel",
+    ]);
+    expect(AI_CALLABLES).toHaveLength(6);
+  });
+
+  test("the lookup callables (lookupBarcode, searchFoods) are NOT in the AI guard set: they make no Vertex call", () => {
+    expect(AI_CALLABLES as readonly string[]).not.toContain("lookupBarcode");
+    expect(AI_CALLABLES as readonly string[]).not.toContain("searchFoods");
+  });
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "the guard FAILS the candidate-source check when the %s source file is missing (it is really read)",
+    async (callable) => {
+      const result = await runReleaseGuard(makeDeps({ sourceOverrides: { [AI_SOURCE_PATHS[callable]]: null } }));
+      const check = byName(result, CANDIDATE_INVARIANTS_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toContain(AI_SOURCE_PATHS[callable]);
+      expect(check.detail).toContain("file missing");
+    },
+  );
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "the guard FAILS when %s drops enforceAiGatewayEnabled, exactly like the original four",
+    async (callable) => {
+      const result = await runReleaseGuard(
+        makeDeps({
+          sourceOverrides: {
+            [AI_SOURCE_PATHS[callable]]: healthyCallableSource(callable).replace(`await enforceAiGatewayEnabled("${callable}");`, ""),
+          },
+        }),
+      );
+      const check = byName(result, CANDIDATE_INVARIANTS_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toContain("no real enforceAiGatewayEnabled(...) call in the handler body");
+    },
+  );
+
+  test("the healthy guard with all six callables passes (10 checks, PASS)", async () => {
+    const result = await runReleaseGuard(makeDeps({}));
+    expect(result.verdict).toBe("PASS");
+    expect(result.checks).toHaveLength(10);
+  });
+});
+
+describe("runReleaseGuard: flag-gated body-scan bucket check (C12 leftovers, D-60)", () => {
+  const BUCKET = "fitness-app-korostelev-body-scans";
+  const BUCKET_CHECK = "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged";
+  const SCAN_SA = `serviceAccount:fn-bodyscan@${PROJECT}.iam.gserviceaccount.com`;
+  const DELETE_SA = `serviceAccount:fn-account-delete@${PROJECT}.iam.gserviceaccount.com`;
+
+  const healthyBucketInfo = { iamConfiguration: { publicAccessPrevention: "enforced", uniformBucketLevelAccess: { enabled: true } } };
+  const healthyBucketPolicy = {
+    bindings: [{ role: "roles/storage.objectAdmin", members: [SCAN_SA, DELETE_SA] }],
+  };
+  const CANARY_CLOSED = JSON.stringify({
+    step8KillSwitch: { status: "closed" },
+    s23PlayIntegrityProof: { status: "closed" },
+    bodyScanBucketCanary: { status: "closed" },
+  });
+
+  type Storage = { describe?: () => CommandResult; policy?: () => CommandResult };
+  const ok = (v: unknown): CommandResult => ({ ok: true, stdout: JSON.stringify(v), stderr: "" });
+
+  function depsWithBucket(opts: {
+    env?: Record<string, string | undefined>;
+    dotenv?: string | null;
+    evidence?: string | null;
+    storage?: Storage;
+    calls?: string[][];
+  }): ReleaseGuardDeps {
+    const base = makeDeps({ evidence: opts.evidence === undefined ? CANARY_CLOSED : opts.evidence });
+    const baseRead = base.readFile;
+    const baseRun = base.runCommand;
+    return {
+      ...base,
+      ...(opts.env ? { env: opts.env } : {}),
+      readFile: async (path: string) => {
+        if (path === `functions/.env.${PROJECT}`) return opts.dotenv === undefined ? null : opts.dotenv;
+        return baseRead(path);
+      },
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "storage" && args[1] === "buckets") {
+          opts.calls?.push(args);
+          if (args[2] === "describe") return (opts.storage?.describe ?? (() => ok(healthyBucketInfo)))();
+          if (args[2] === "get-iam-policy") return (opts.storage?.policy ?? (() => ok(healthyBucketPolicy)))();
+        }
+        return baseRun(cmd, args, timeoutMs);
+      },
+    };
+  }
+
+  const bucketCheck = (r: Awaited<ReturnType<typeof runReleaseGuard>>) => r.checks.find((c) => c.name === BUCKET_CHECK);
+
+  test("unset bucket: the check is absent, the guard keeps its 10 checks and PASSes (flag-gated skip)", async () => {
+    const calls: string[][] = [];
+    const result = await runReleaseGuard(depsWithBucket({ env: {}, calls }));
+    expect(bucketCheck(result)).toBeUndefined();
+    expect(result.checks).toHaveLength(10);
+    expect(result.verdict).toBe("PASS");
+    expect(calls).toHaveLength(0);
+  });
+
+  test("no env at all (older callers) behaves exactly like unset", async () => {
+    const result = await runReleaseGuard(depsWithBucket({}));
+    expect(bucketCheck(result)).toBeUndefined();
+    expect(result.checks).toHaveLength(10);
+  });
+
+  test("an invalid bucket name is treated as not configured, never probed", async () => {
+    for (const bad of ["Bad_Bucket", "x", "-lead", "trail-", "has space", ""]) {
+      const calls: string[][] = [];
+      const result = await runReleaseGuard(depsWithBucket({ env: { BODY_SCAN_BUCKET: bad }, calls }));
+      expect(bucketCheck(result)).toBeUndefined();
+      expect(calls).toHaveLength(0);
+    }
+  });
+
+  test("set via env and fully healthy: 11 checks, the bucket check is OK, PASS, and gcloud was asked about gs://<bucket>", async () => {
+    const calls: string[][] = [];
+    const result = await runReleaseGuard(depsWithBucket({ env: { BODY_SCAN_BUCKET: `  ${BUCKET}  ` }, calls }));
+    expect(result.checks).toHaveLength(11);
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("OK");
+    expect(check.detail).toContain(BUCKET);
+    expect(result.verdict).toBe("PASS");
+    expect(calls.map((c) => c.slice(0, 4))).toEqual([
+      ["storage", "buckets", "describe", `gs://${BUCKET}`],
+      ["storage", "buckets", "get-iam-policy", `gs://${BUCKET}`],
+    ]);
+  });
+
+  test("set only in functions/.env.<project> (quoted value): the check runs", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({ env: {}, dotenv: `OTHER=1\nBODY_SCAN_BUCKET="${BUCKET}"\n` }),
+    );
+    expect(bucketCheck(result)?.status).toBe("OK");
+  });
+
+  test("a commented-out BODY_SCAN_BUCKET line in the .env file does not count", async () => {
+    const result = await runReleaseGuard(depsWithBucket({ env: {}, dotenv: `# BODY_SCAN_BUCKET=${BUCKET}\n` }));
+    expect(bucketCheck(result)).toBeUndefined();
+  });
+
+  test("process env wins over the .env file", async () => {
+    const calls: string[][] = [];
+    await runReleaseGuard(
+      depsWithBucket({ env: { BODY_SCAN_BUCKET: BUCKET }, dotenv: "BODY_SCAN_BUCKET=some-other-bucket-name\n", calls }),
+    );
+    expect(calls[0][3]).toBe(`gs://${BUCKET}`);
+  });
+
+  test("snake_case gcloud storage output (public_access_prevention / uniform_bucket_level_access) is accepted too", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ok({ public_access_prevention: "enforced", uniform_bucket_level_access: true }) },
+      }),
+    );
+    expect(bucketCheck(result)?.status).toBe("OK");
+  });
+
+  test("FAILED when public access prevention is not enforced (and BLOCK verdict)", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ok({ iamConfiguration: { publicAccessPrevention: "inherited", uniformBucketLevelAccess: { enabled: true } } }) },
+      }),
+    );
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public access prevention");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("FAILED when uniform bucket-level access is off", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ok({ iamConfiguration: { publicAccessPrevention: "enforced", uniformBucketLevelAccess: { enabled: false } } }) },
+      }),
+    );
+    expect(bucketCheck(result)!.detail).toContain("uniform bucket-level access is not enabled");
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+  });
+
+  test.each(["allUsers", "allAuthenticatedUsers"])("FAILED when the public principal %s is bound", async (principal) => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: {
+          policy: () =>
+            ok({
+              bindings: [
+                { role: "roles/storage.objectAdmin", members: [SCAN_SA, DELETE_SA] },
+                { role: "roles/storage.objectViewer", members: [principal] },
+              ],
+            }),
+        },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+    expect(bucketCheck(result)!.detail).toContain(principal);
+  });
+
+  test("FAILED when fn-bodyscan lacks objectAdmin (named in the detail), and only that account is named", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ok({ bindings: [{ role: "roles/storage.objectAdmin", members: [DELETE_SA] }] }) },
+      }),
+    );
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("fn-bodyscan lacks roles/storage.objectAdmin");
+    expect(check.detail).not.toContain("fn-account-delete lacks");
+  });
+
+  test("FAILED when fn-account-delete lacks objectAdmin (a configured-but-IAM-denied bucket would break account deletion)", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ok({ bindings: [{ role: "roles/storage.objectAdmin", members: [SCAN_SA] }] }) },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+    expect(bucketCheck(result)!.detail).toContain("fn-account-delete lacks roles/storage.objectAdmin");
+  });
+
+  test("FAILED when the role is a weaker one than objectAdmin", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ok({ bindings: [{ role: "roles/storage.objectViewer", members: [SCAN_SA, DELETE_SA] }] }) },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+  });
+
+  test("FAILED when the canary evidence is open, absent from the evidence file, or the evidence is unreadable", async () => {
+    const open = JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" }, bodyScanBucketCanary: { status: "open" } });
+    const absent = JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" } });
+    for (const evidence of [open, absent, "not json {"]) {
+      const result = await runReleaseGuard(depsWithBucket({ env: { BODY_SCAN_BUCKET: BUCKET }, evidence }));
+      const check = bucketCheck(result)!;
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toMatch(/bodyScanBucketCanary|canary acknowledgement unreadable/);
+    }
+  });
+
+  test("UNAVAILABLE (not OK, not silently skipped) when the bucket cannot be described", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ({ ok: false, stdout: "", stderr: "404 bucket not found" }) },
+      }),
+    );
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("UNAVAILABLE");
+    expect(check.detail).toContain("404 bucket not found");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("UNAVAILABLE when the bucket IAM policy cannot be read", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ({ ok: true, stdout: "garbage {", stderr: "" }) },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("UNAVAILABLE");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("several problems are all reported in one detail, not just the first", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        evidence: JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" } }),
+        storage: {
+          describe: () => ok({ iamConfiguration: { publicAccessPrevention: "inherited", uniformBucketLevelAccess: { enabled: false } } }),
+          policy: () => ok({ bindings: [] }),
+        },
+      }),
+    );
+    const detail = bucketCheck(result)!.detail;
+    for (const part of ["public access prevention", "uniform bucket-level access", "fn-bodyscan lacks", "fn-account-delete lacks", "bodyScanBucketCanary"]) {
+      expect(detail).toContain(part);
+    }
   });
 });

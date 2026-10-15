@@ -7,6 +7,13 @@
       "node functions/scripts/run_release_guard.mjs"
     ]
   },
+  "storage": {
+    "rules": "storage.rules",
+    "predeploy": [
+      "npm --prefix functions run build",
+      "node functions/scripts/run_release_guard.mjs"
+    ]
+  },
   "hosting": {
     "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -59,6 +66,9 @@
     },
     "auth": {
       "port": 9099
+    },
+    "storage": {
+      "port": 9199
     },
     "ui": {
       "enabled": false

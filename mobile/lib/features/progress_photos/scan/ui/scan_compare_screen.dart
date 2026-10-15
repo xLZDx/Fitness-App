@@ -14,6 +14,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../state/progress_photos_providers.dart';
@@ -65,6 +66,27 @@ class ScanAlignmentView {
   }
 }
 
+/// Reads a provider from either a `Ref` (`ref.read`) or a container
+/// (`container.read`).
+typedef ScanProviderReader = T Function<T>(ProviderListenable<T> provider);
+
+/// Deletes one scan's photos (through the existing progress-photo delete path)
+/// and then its landmark sidecar. Throws at the first failure without touching
+/// what is left, so a retry can finish the job (deleting an already-removed
+/// photo is a no-op). Shared by [confirmAndDeleteScan] and the body-scan
+/// "delete this scan's photos" flow (C16).
+Future<void> deleteScanFiles(ScanProviderReader read, ScanRecord scan) async {
+  final photos = read(progressPhotosControllerProvider.notifier);
+  final scans = read(scanRepositoryProvider);
+  for (final shot in scan.shots.values) {
+    await photos.delete(shot.photoId);
+    // The controller reports failure through its state instead of throwing.
+    final st = read(progressPhotosControllerProvider);
+    if (st.hasError) throw st.error!;
+  }
+  await scans.delete(scan.id);
+}
+
 /// Asks for confirmation, then deletes one scan: its photos first (through the
 /// existing progress-photo delete path), then the landmark sidecar, then the
 /// history and the reminder are brought up to date. Stops at the first failure
@@ -99,17 +121,9 @@ Future<void> confirmAndDeleteScan(
   // the deletes run, so everything is resolved up front from the container.
   if (!context.mounted) return;
   final container = ProviderScope.containerOf(context, listen: false);
-  final photos = container.read(progressPhotosControllerProvider.notifier);
-  final scans = container.read(scanRepositoryProvider);
   final reminder = container.read(scanReminderEnabledProvider.notifier);
   try {
-    for (final shot in scan.shots.values) {
-      await photos.delete(shot.photoId);
-      // The controller reports failure through its state instead of throwing.
-      final st = container.read(progressPhotosControllerProvider);
-      if (st.hasError) throw st.error!;
-    }
-    await scans.delete(scan.id);
+    await deleteScanFiles(container.read, scan);
     container.invalidate(scanHistoryProvider);
     unawaited(reminder.sync().catchError((Object e) {
       debugPrint('scan: reminder sync after delete failed: $e');
@@ -141,8 +155,23 @@ class _DeleteScanButton extends ConsumerWidget {
   }
 }
 
+/// Which pair the compare screen opens with (`/photos/compare?mode=...`).
+enum ScanCompareStart {
+  /// The newest scan against the first one (the baseline).
+  baseline,
+
+  /// The newest scan against the one before it.
+  previous;
+
+  /// Unknown or missing names open on the baseline pair.
+  static ScanCompareStart parse(String? name) =>
+      name == 'previous' ? ScanCompareStart.previous : ScanCompareStart.baseline;
+}
+
 class ScanCompareScreen extends ConsumerWidget {
-  const ScanCompareScreen({super.key});
+  const ScanCompareScreen({super.key, this.start = ScanCompareStart.baseline});
+
+  final ScanCompareStart start;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -175,22 +204,40 @@ class ScanCompareScreen extends ConsumerWidget {
                         key: const Key('scan.compare.needTwo'),
                         textAlign: TextAlign.center,
                       ),
-                      if (scans.length == 1)
+                      if (scans.length == 1) ...[
+                        // Only the baseline exists: say so and offer the
+                        // second scan (C16).
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.bodyScanCompareBaselineOnly,
+                          key: const Key('scan.compare.baselineOnly'),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        FilledButton(
+                          key: const Key('scan.compare.takeSecond'),
+                          style: FilledButton.styleFrom(
+                              minimumSize: const Size(48, 48)),
+                          onPressed: () => context.push('/body-scan'),
+                          child: Text(l10n.bodyScanCompareTakeSecond),
+                        ),
                         _DeleteScanButton(
                             keyName: 'single', scan: scans.first),
+                      ],
                     ],
                   ),
                 ),
               )
-            : _CompareBody(scans: scans),
+            : _CompareBody(scans: scans, start: start),
       ),
     );
   }
 }
 
 class _CompareBody extends ConsumerStatefulWidget {
-  const _CompareBody({required this.scans});
+  const _CompareBody({required this.scans, required this.start});
   final List<ScanRecord> scans; // newest first
+  final ScanCompareStart start;
 
   @override
   ConsumerState<_CompareBody> createState() => _CompareBodyState();
@@ -207,9 +254,12 @@ class _CompareBodyState extends ConsumerState<_CompareBody> {
   @override
   void initState() {
     super.initState();
-    // Default: the newest scan against the oldest one.
+    // Default: the newest scan against the oldest one (the baseline); the
+    // `previous` start picks the scan just before the newest instead.
     _laterId = widget.scans.first.id;
-    _earlierId = widget.scans.last.id;
+    _earlierId = widget.start == ScanCompareStart.previous
+        ? widget.scans[1].id
+        : widget.scans.last.id;
   }
 
   ScanRecord? _byId(String id) {

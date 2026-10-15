@@ -58,6 +58,7 @@ async function main() {
     now: () => Date.now(),
     currentBranch,
     isCommitOnProtectedLine: makeIsCommitOnProtectedLine(PROTECTED_PHASE1_REFS),
+    env: process.env,
   });
 
   console.log(`\nMVP1.G4 Step 9 -- AI Gateway release guard (${project}, from ${resolved.source})`);

@@ -55,6 +55,9 @@ void main() {
     const allowedIdentical = <String>{
       // Brand name — the same in every language by design.
       'appTitle',
+      // Data-source proper nouns (C26): named exactly so in every language.
+      'foodSourceOff',
+      'foodSourceUsda',
     };
 
     final untranslated = <String>[];

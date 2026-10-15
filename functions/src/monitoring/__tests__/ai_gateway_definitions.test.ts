@@ -23,6 +23,7 @@ import {
 } from "../types";
 import * as signals from "../log_signals";
 import * as aiGateway from "../../ai_gateway";
+import { QUOTAS } from "../../abuse_guard";
 
 type CounterMetricJson = {
   name: string;
@@ -53,13 +54,39 @@ describe("AI_GATEWAY_OPERATIONS / AI_GATEWAY_OUTCOMES source of truth", () => {
     expect(AI_GATEWAY_OUTCOMES).toBe(aiGateway.AI_GATEWAY_OUTCOMES);
   });
 
-  it("has exactly the four known AI Gateway operations", () => {
-    expect(AI_GATEWAY_OPERATIONS).toEqual([
+  it("has exactly the six known AI Gateway operations, the four originals first", () => {
+    // D-63: the two food callables join the same gateway. Order is asserted
+    // because the monitoring filters and the release guard read it positionally
+    // nowhere, but a reorder would still be an unreviewed contract change.
+    expect([...AI_GATEWAY_OPERATIONS]).toEqual([
       "aiCoachAdvice",
       "aiEquipmentRecognition",
       "aiMachineDescription",
       "aiExerciseGeneration",
+      "analyzeMealPhoto",
+      "parseNutritionLabel",
     ]);
+    expect(AI_GATEWAY_OPERATIONS).toHaveLength(6);
+    expect(new Set(AI_GATEWAY_OPERATIONS).size).toBe(6);
+  });
+
+  it("does NOT include the non-AI body-scan or lookup quota actions", () => {
+    for (const notAi of [
+      "bodyScanCreate",
+      "bodyScanEstimate",
+      "bodyScanDelete",
+      "bodyScanManage",
+      "barcodeLookup",
+      "foodSearch",
+    ]) {
+      expect(AI_GATEWAY_OPERATIONS as readonly string[]).not.toContain(notAi);
+    }
+  });
+
+  it("every AI operation has a daily quota of the same name (the quota-exhaustion metric joins on it)", () => {
+    for (const op of AI_GATEWAY_OPERATIONS) {
+      expect(Object.keys(QUOTAS)).toContain(op);
+    }
   });
 });
 
@@ -93,14 +120,16 @@ describe("ai_gateway_calls counter metric", () => {
     expect(json.labelExtractors.outcome).toBe("EXTRACT(jsonPayload.outcome)");
   });
 
-  it("caps at 4 operations x 3 outcomes = 12 max time series", () => {
+  it("caps at 6 operations x 3 outcomes = 18 max time series", () => {
     const opCount = AI_GATEWAY_CALLS_METRIC.boundedLabels.find(
       (bl) => bl.label.key === "operation",
     )?.allowedValues.length;
     const outcomeCount = AI_GATEWAY_CALLS_METRIC.boundedLabels.find(
       (bl) => bl.label.key === "outcome",
     )?.allowedValues.length;
-    expect((opCount ?? 0) * (outcomeCount ?? 0)).toBe(12);
+    expect(opCount).toBe(6);
+    expect(outcomeCount).toBe(3);
+    expect((opCount ?? 0) * (outcomeCount ?? 0)).toBe(18);
   });
 });
 
@@ -151,18 +180,25 @@ describe("ai_gateway_total_tokens_per_call distribution metric", () => {
 });
 
 describe("ai_gateway_quota_exhaustions counter metric", () => {
-  it("filters on the quota-exceeded event, bounded to exactly the 4 AI actions", () => {
+  it("filters on the quota-exceeded event, bounded to exactly the 6 AI actions", () => {
     const json = aiGatewayQuotaExhaustionsMetricJson() as CounterMetricJson;
     expect(json.filter).toContain(`jsonPayload.message="${signals.QUOTA_EXCEEDED_EVENT}"`);
     for (const op of AI_GATEWAY_OPERATIONS) {
       expect(json.filter).toContain(`jsonPayload.action="${op}"`);
     }
+    // The two food operations specifically (the ones D-63 added).
+    expect(json.filter).toContain('jsonPayload.action="analyzeMealPhoto"');
+    expect(json.filter).toContain('jsonPayload.action="parseNutritionLabel"');
   });
 
   it("does not include a non-AI quota action (accountExport, clipUrl, etc.)", () => {
     const json = aiGatewayQuotaExhaustionsMetricJson() as CounterMetricJson;
     expect(json.filter).not.toContain('jsonPayload.action="accountExport"');
     expect(json.filter).not.toContain('jsonPayload.action="clipUrl"');
+    // The body-scan and lookup quotas are metered but are not AI Gateway calls.
+    for (const notAi of ["bodyScanCreate", "bodyScanEstimate", "bodyScanDelete", "bodyScanManage", "barcodeLookup", "foodSearch"]) {
+      expect(json.filter).not.toContain(`jsonPayload.action="${notAi}"`);
+    }
   });
 
   it("labels the extracted field as 'operation', reading from jsonPayload.action", () => {
@@ -170,9 +206,16 @@ describe("ai_gateway_quota_exhaustions counter metric", () => {
     expect(json.labelExtractors.operation).toBe("EXTRACT(jsonPayload.action)");
   });
 
-  it("has bounded cardinality of at most 4 (one per AI action)", () => {
+  it("has bounded cardinality of exactly 6 (one per AI action)", () => {
     const allowed = AI_GATEWAY_QUOTA_EXHAUSTIONS_METRIC.boundedLabels[0].allowedValues;
-    expect(allowed).toHaveLength(4);
+    expect(allowed).toHaveLength(6);
+    expect([...allowed].sort()).toEqual([...AI_GATEWAY_OPERATIONS].sort());
+  });
+
+  it("describes the operation label as one of the six surfaces", () => {
+    const json = aiGatewayCallsMetricJson() as CounterMetricJson;
+    const label = (json.metricDescriptor.labels as Array<{ key: string; description?: string }>).find((l) => l.key === "operation");
+    expect(label?.description).toBe("Which of the six AI Gateway surfaces made the call.");
   });
 });
 
@@ -197,6 +240,11 @@ describe("investigation queries", () => {
     const errors = queryErrorsFor("aiMachineDescription");
     expect(errors).toContain('jsonPayload.operation="aiMachineDescription"');
     expect(errors).toContain('jsonPayload.outcome="error"');
+  });
+
+  it("per-operation queries accept the two food operations", () => {
+    expect(queryTimeoutsFor("analyzeMealPhoto")).toContain('jsonPayload.operation="analyzeMealPhoto"');
+    expect(queryErrorsFor("parseNutritionLabel")).toContain('jsonPayload.operation="parseNutritionLabel"');
   });
 
   it("queryUsagePresent requires totalTokenCount to exist", () => {
