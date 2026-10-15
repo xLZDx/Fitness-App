@@ -56167,3 +56167,11 @@ Decision: the data-notice gate runs inside the detail sheet right before the fir
 Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md (l10n 18, flow 16, journey 8, step_answered 19 passed; router test not run: other epics do not compile).
 
 Evidence addendum (C18 scheduler tests): review_scheduler_test.dart ran green, 24 tests.
+
+## 2026-10-15 - Commit: C15 tests - scan_result_view_model_test
+
+Decision: view-model tests assert provisional and measurement-only hide every goal figure even when a target and decision are supplied. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
+
+Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md.
