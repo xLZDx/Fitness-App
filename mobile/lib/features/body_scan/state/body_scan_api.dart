@@ -138,10 +138,13 @@ BodyScanApiException mapCallableError(FirebaseFunctionsException e) {
 
 /// The real client, region `europe-west1` like every other callable.
 class CallableBodyScanApi implements BodyScanApi {
-  CallableBodyScanApi([FirebaseFunctions? functions])
-      : _functions = functions ?? functionsForRegion;
+  CallableBodyScanApi([this._injected]);
 
-  final FirebaseFunctions _functions;
+  final FirebaseFunctions? _injected;
+
+  /// Resolved lazily so merely constructing the client (the default provider
+  /// does) never touches Firebase; with the cloud flag off nothing calls it.
+  FirebaseFunctions get _functions => _injected ?? functionsForRegion;
 
   Future<Map<String, dynamic>> _call(
       String name, Map<String, Object?> data) async {
