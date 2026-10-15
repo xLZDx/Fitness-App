@@ -56566,3 +56566,7 @@ Decision: interim status report pair added (reports/2026-10-15-body-scan-nutriti
 ## 2026-10-15 - Commit: C26 contrast token test run and fixed
 
 Decision: `contrast_tokens_test.dart` compiled only after replacing `toARGB32()` with `value` for the pinned SDK; source-pinned checks added for the camera panel alpha and status colours so the hard-coded camera pairs cannot drift from the source. 65 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: C13 tests: capture screen no-rebuild window accounts for throttled first cue
+
+Decision: The rebuild-stability test now starts after the 2 s live-region throttle. Evidence: core/changes/2026-10-15-c13-c14-tests.md.

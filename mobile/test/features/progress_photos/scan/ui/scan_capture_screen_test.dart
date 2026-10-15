@@ -323,9 +323,11 @@ void main() {
       (tester) async {
     final r = _Rig();
     await r.pump(tester);
-    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 500);
+    // The first cue is throttled until the 2 s live-region gap has passed and
+    // then rebuilds ONCE (the stale-cue fix); after that nothing may rebuild.
+    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 2500);
     final before = r.camera.previews;
-    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 3000);
+    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 6000);
     expect(r.camera.previews, before,
         reason: 'identical evaluations must not call setState');
   });
