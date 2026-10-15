@@ -56316,3 +56316,11 @@ Evidence addendum (C17 tests): entry card tests added; scan_reminder_weekly 33, 
 ## 2026-10-15 - Commit: C24 scan pages and routes
 
 Decision: label scan always shows an editable confirmation sheet and writes a saved_food only after Confirm; barcode lookups are sent only for GTIN-valid values; describe mode stays in the C23 add-food sheet. Evidence: `core/changes/2026-10-15-c24-scan-pages-routes.md`; nothing was run.
+
+## 2026-10-15 - Commit: C15 tests - trend_chart_test
+
+Decision: chart tests assert one summary node plus an expand action instead of per-point semantics. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 food search controller tests
+
+Decision: debounce and cache are proven with the widget-test fake clock (599 ms no call, 600 ms call). Evidence: core/changes/2026-10-15-c23-tests.md (food_search_controller_test 26 passed).
