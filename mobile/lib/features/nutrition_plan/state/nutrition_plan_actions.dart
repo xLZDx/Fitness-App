@@ -35,6 +35,9 @@ enum PlanActionStatus {
   noInputs,
   noPlan,
 
+  /// The stored plan could not be read (or the read failed); nothing written.
+  unreadable,
+
   /// The change would leave the safety bounds / drift cap, or is not a pending
   /// proposal; nothing written.
   refused,

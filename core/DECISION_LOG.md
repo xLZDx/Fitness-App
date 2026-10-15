@@ -56626,3 +56626,7 @@ Decision: account export continuation quota is 150/day; accountExport and accoun
 ## 2026-10-15 - Commit: server review fixes part 4 (unusable model output)
 
 Decision: analyzeMealPhoto and parseNutritionLabel treat unparseable model output as a failed call (refund, unavailable); only a well-formed empty items list is a successful empty meal. Evidence: core/changes/2026-10-15-server-review-fixes-4-unusable-model-output.md; no checks run.
+
+## 2026-10-15 - Commit: mobile plan and diary read fixes
+
+Decision: "document exists but unreadable" is an error state distinct from "no document" (plan), and a diary entry with missing totals or time is `degraded` (never written back). Evidence: core/changes/2026-10-15-mobile-plan-and-diary-reads.md; no checks run.

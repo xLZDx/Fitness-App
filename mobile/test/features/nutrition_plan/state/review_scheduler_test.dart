@@ -24,6 +24,16 @@ class _ThrowingPlans extends InMemoryPlanRepository {
       throw StateError('boom');
 }
 
+class _CountingPlans extends InMemoryPlanRepository {
+  int loadReviews = 0;
+
+  @override
+  Future<PlanReviewRecord?> loadReview(String uid, String week) {
+    loadReviews++;
+    return super.loadReview(uid, week);
+  }
+}
+
 Future<void> _behindWeights(PlanHarness h) async {
   // Slope -0.1 kg/week on a plan that intends -0.4: classified `behind`.
   for (final e in {14: 80.0, 7: 79.9, 0: 79.8}.entries) {
@@ -291,6 +301,24 @@ void main() {
       expect(results[0].status, ReviewRunStatus.written);
       expect(results[1].reason, ReviewSkipReason.inFlight);
       expect(h.plans.reviewWrites, 1);
+    });
+
+    test('SF-F10: a scanDone trigger during an in-flight run is not dropped: '
+        'one more pass follows', () async {
+      final plans = _CountingPlans()..offline = true; // deferred, never done
+      h = await makeHarness(planRepository: plans);
+      plans.seedPlan(kUid, storedPlan());
+      final s = scheduler();
+      final results = await Future.wait([
+        s.run(ReviewTrigger.planSurfaceShown),
+        s.run(ReviewTrigger.scanDone),
+      ]);
+      expect(results[1].reason, ReviewSkipReason.inFlight);
+      for (var i = 0; i < 20; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(plans.loadReviews, 2,
+          reason: 'the dropped trigger re-ran the review once');
     });
 
     test('a new day in the same week with a stored review stays a no-op',

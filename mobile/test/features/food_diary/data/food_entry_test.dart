@@ -423,6 +423,15 @@ void main() {
         (j) => (j['items'][0] as Map)['sourceId'] = 'wikipedia',
         (e) => expect(e.items.single.source, FoodSource.user));
 
+    test('SF-F12: missing totals or loggedAt set the degraded flag', () {
+      final noTotals = _validJson()..remove('totals');
+      expect(FoodEntry.fromJson('x', noTotals).degraded, isTrue);
+      final noTime = _validJson()..remove('loggedAt');
+      expect(FoodEntry.fromJson('x', noTime).degraded, isTrue);
+      final badTime = _validJson()..['loggedAt'] = 'yesterday-ish';
+      expect(FoodEntry.fromJson('x', badTime).degraded, isTrue);
+    });
+
     test('non-map item rows are dropped; the rest are kept', () {
       final j = _validJson();
       j['items'] = ['junk', null, 5, (j['items'] as List).first];

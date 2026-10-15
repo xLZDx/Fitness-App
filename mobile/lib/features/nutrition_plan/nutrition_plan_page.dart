@@ -83,6 +83,11 @@ class _NutritionPlanPageState extends ConsumerState<NutritionPlanPage> {
     PlanActionResult result;
     try {
       result = await f(ref.read(nutritionPlanActionsProvider));
+    } catch (e) {
+      // An unreadable stored plan (or a failed read) is a visible failure, not
+      // an unhandled error from a button handler.
+      debugPrint('nutrition plan: write failed (${e.runtimeType})');
+      result = const PlanActionResult(PlanActionStatus.unreadable);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -184,7 +189,19 @@ class _NutritionPlanPageState extends ConsumerState<NutritionPlanPage> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(l10n.nutritionPlanLoadError),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.nutritionPlanLoadError),
+              const SizedBox(height: 12),
+              FilledButton(
+                key: const Key('nutrition.loadRetry'),
+                style: FilledButton.styleFrom(minimumSize: const Size(48, 48)),
+                onPressed: () => ref.invalidate(storedNutritionPlanProvider),
+                child: Text(l10n.commonRetry),
+              ),
+            ],
+          ),
         ),
       );
     }

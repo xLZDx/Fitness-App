@@ -10,6 +10,8 @@
 /// plan change go through ONE repository transaction (`applyReview`).
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -72,6 +74,10 @@ class WeeklyReviewScheduler {
   final Ref _ref;
   bool _running = false;
 
+  /// A scan-done trigger arrived while a run was in flight: that run may have
+  /// read the data before the scan landed, so one more pass follows it.
+  bool _scanDonePending = false;
+
   /// `uid:isoWeek` pairs that are known to be done in this process.
   final Set<String> _doneWeeks = {};
 
@@ -79,7 +85,10 @@ class WeeklyReviewScheduler {
       ReviewRunResult(ReviewRunStatus.skipped, reason: r);
 
   Future<ReviewRunResult> run(ReviewTrigger trigger) async {
-    if (_running) return _skip(ReviewSkipReason.inFlight);
+    if (_running) {
+      if (trigger == ReviewTrigger.scanDone) _scanDonePending = true;
+      return _skip(ReviewSkipReason.inFlight);
+    }
     _running = true;
     try {
       return await _run();
@@ -88,6 +97,10 @@ class WeeklyReviewScheduler {
       return const ReviewRunResult(ReviewRunStatus.failed);
     } finally {
       _running = false;
+      if (_scanDonePending) {
+        _scanDonePending = false;
+        unawaited(run(ReviewTrigger.scanDone));
+      }
     }
   }
 

@@ -44,7 +44,9 @@ class FirestorePlanRepository implements NutritionPlanRepository {
 
   StoredNutritionPlan? _readPlan(DocumentSnapshot<Map<String, dynamic>> s) {
     if (!s.exists) return null;
-    return StoredNutritionPlan.tryFromMap(_decode(s.data()))?.validated();
+    final plan = StoredNutritionPlan.tryFromMap(_decode(s.data()))?.validated();
+    if (plan == null) throw const PlanUnreadableException();
+    return plan;
   }
 
   @override

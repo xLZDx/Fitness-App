@@ -51,9 +51,20 @@ class UndoResult {
   final StoredNutritionPlan? plan;
 }
 
+/// The plan document exists but cannot be read (unknown shape or invalid
+/// values). Distinct from "no plan": the plan screen shows a retryable error
+/// and nothing is created over it.
+class PlanUnreadableException implements Exception {
+  const PlanUnreadableException();
+
+  @override
+  String toString() => 'PlanUnreadableException';
+}
+
 abstract class NutritionPlanRepository {
-  /// The stored plan, validated; null when there is none or it is unreadable.
-  /// Replays the latest value to new subscribers.
+  /// The stored plan, validated; null when there is none. An existing but
+  /// unreadable document throws [PlanUnreadableException] (also as a stream
+  /// error). Replays the latest value to new subscribers.
   Stream<StoredNutritionPlan?> watchPlan(String uid);
 
   Future<StoredNutritionPlan?> loadPlan(String uid);

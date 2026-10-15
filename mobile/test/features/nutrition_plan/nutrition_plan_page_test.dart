@@ -6,7 +6,9 @@
 import 'package:fitness_app/core/privacy/data_notice.dart';
 import 'package:fitness_app/features/body_scan/state/body_scan_providers.dart';
 import 'package:fitness_app/features/body_scan/state/body_scan_settings.dart';
+import 'package:fitness_app/features/nutrition_plan/data/in_memory_nutrition_repositories.dart';
 import 'package:fitness_app/features/nutrition_plan/data/plan_calculator.dart';
+import 'package:fitness_app/features/nutrition_plan/data/plan_repository.dart';
 import 'package:fitness_app/features/nutrition_plan/data/stored_nutrition_plan.dart';
 import 'package:fitness_app/features/nutrition_plan/data/weight_entry.dart';
 import 'package:fitness_app/features/nutrition_plan/nutrition_plan_page.dart';
@@ -36,6 +38,16 @@ class _SpyScheduler extends WeeklyReviewScheduler {
   }
 }
 
+class _UnreadablePlans extends InMemoryPlanRepository {
+  @override
+  Stream<StoredNutritionPlan?> watchPlan(String uid) =>
+      Stream.error(const PlanUnreadableException());
+
+  @override
+  Future<StoredNutritionPlan?> loadPlan(String uid) async =>
+      throw const PlanUnreadableException();
+}
+
 class _Page {
   _Page(this.h, this.notice, this.settings, this.spy, this.visited);
   final PlanHarness h;
@@ -58,6 +70,7 @@ void main() {
     StoredNutritionPlan? plan,
     bool passThrough = false,
     Locale locale = const Locale('en'),
+    InMemoryPlanRepository? planRepository,
   }) async {
     final notice = InMemoryDataNoticeStore(acknowledged: noticeAcknowledged);
     final settings = InMemoryBodyScanSettingsStore();
@@ -66,6 +79,7 @@ void main() {
     final h = (await tester.runAsync(() => makeHarness(
           profile: eligibleProfile(flags: flags, birthYear: birthYear),
           noticeAcknowledged: noticeAcknowledged,
+          planRepository: planRepository,
           extra: [
             dataNoticeStoreProvider.overrideWith((ref) async => notice),
             bodyScanSettingsStoreProvider.overrideWithValue(settings),
@@ -106,6 +120,15 @@ void main() {
 
   final sheetButton = find.descendant(
       of: find.byType(BottomSheet), matching: find.byType(FilledButton));
+
+  group('unreadable stored plan (SF-F8)', () {
+    testWidgets('shows a retryable error, not the create-plan dead end',
+        (tester) async {
+      await open(tester, planRepository: _UnreadablePlans());
+      expect(find.text('Create your plan'), findsNothing);
+      expect(find.byKey(const Key('nutrition.loadRetry')), findsOneWidget);
+    });
+  });
 
   group('verdict gating', () {
     testWidgets('referProfessional sees ONLY the notice and two links, no number '

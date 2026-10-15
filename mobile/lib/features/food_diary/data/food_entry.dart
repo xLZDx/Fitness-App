@@ -397,8 +397,9 @@ class FoodEntry {
     };
   }
 
-  /// Tolerant read. Unknown slot/source/confidence/matchQuality/sourceId
-  /// degrade to a safe default and set [degraded]; rows that are not maps are
+  /// Tolerant read. Unknown slot/source/confidence/matchQuality/sourceId and a
+  /// missing or unreadable `loggedAt` / `totals` degrade to a safe default and
+  /// set [degraded]; rows that are not maps are
   /// dropped; unknown check codes are dropped.
   factory FoodEntry.fromJson(String id, Map<String, dynamic> json) {
     var degraded = false;
@@ -419,11 +420,16 @@ class FoodEntry {
     }
 
     final at = json['loggedAt'];
-    final loggedAt = at is String
-        ? (DateTime.tryParse(at) ?? DateTime.fromMillisecondsSinceEpoch(0))
+    final parsedAt = at is String
+        ? DateTime.tryParse(at)
         : at is DateTime
             ? at
-            : DateTime.fromMillisecondsSinceEpoch(0);
+            : null;
+    // A missing or unreadable time must not silently become 1970 on a row
+    // that could be written back.
+    if (parsedAt == null) mark();
+    final loggedAt = parsedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+    if (json['totals'] is! Map) mark();
 
     final name = json['name'];
     final day = json['day'];
