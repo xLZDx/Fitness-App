@@ -56151,3 +56151,4 @@ Decision: the plan screen is gated by the device-local verdict (referProfessiona
 Decision: the day ring never colours or words a low day as failure (D-78); check chips expose state as text and manage focus after resolution. Evidence: `core/changes/2026-10-15-c23-widgets-b.md`; no checks run.
 
 Evidence addendum (C19): plan widgets are in core/changes/2026-10-15-c19-plan-widgets.md; plan page and cards in core/changes/2026-10-15-c19-plan-page.md.
+Progress: nutrition_cache tests added.
