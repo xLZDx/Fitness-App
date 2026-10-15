@@ -56436,3 +56436,7 @@ Decision: thumbnail tests use the real AesPhotoCipher and a temp directory, and 
 ## 2026-10-15 - Commit: C14 tests: body scan api client and scrubbed errors
 
 Decision: Fake-FirebaseFunctions tests prove exact payloads, tolerant parsing and closed-slug mapping; scrubbed_error tests prove no raw text or signed URL survives. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C25 local wipe key tests
+
+Decision: the wipe rule is tested as prefix plus exact-uid final segment, including look-alike uids. Evidence: core/changes/2026-10-15-c25-tests.md (local_data_wipe_c25_test.dart 6 passed).
