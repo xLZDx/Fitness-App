@@ -55980,3 +55980,7 @@ Decision: the food diary data layer is pure Dart under `food_diary/data/`. Day a
 Decision: the delete tests assert the surviving key set of the tombstone exactly, so any metric field that leaks past the scrub fails them. Evidence: `npx jest src/__tests__/body_scan/delete.test.ts` in functions/ = 23 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-delete.md.
 
 Note: the delete suite also proves isolation between users and between scan ids sharing a prefix (the object prefix ends with a slash).
+
+## 2026-10-15 - Commit: C14 part 1 (callable client, blur service, scrubbed errors)
+
+Decision (D-4, D-67): every callable failure is reduced to a closed slug before it is stored or logged; the blur service is fail closed (no landmarks, unsizable head box, undecodable or oversize output all refuse, never an unblurred image) and re-encodes from raw pixels so no EXIF/GPS/ICC survives. `connectivity_plus` is not in pubspec, so the job runner uses foreground, Progress-open and timer resume (the design fallback); no package was added. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-api-blur.md.
