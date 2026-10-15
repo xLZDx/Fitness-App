@@ -341,10 +341,12 @@ describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
     expect(QUOTAS.equipmentReport).toBe(30);
   });
 
-  test("REDACTED_QUOTA_ACTIONS is exactly the eight new action names", () => {
+  test("REDACTED_QUOTA_ACTIONS is the eight new action names plus the two account export counters (D-67)", () => {
     const { REDACTED_QUOTA_ACTIONS } = require("../abuse_guard") as typeof import("../abuse_guard");
-    expect([...REDACTED_QUOTA_ACTIONS].sort()).toEqual(Object.keys(NEW_QUOTAS).sort());
-    for (const old of ["aiCoachAdvice", "clipUrl", "accountExport", "equipmentReport", "startFreeTrial"]) {
+    expect([...REDACTED_QUOTA_ACTIONS].sort()).toEqual(
+      [...Object.keys(NEW_QUOTAS), "accountExport", "accountExportPage"].sort(),
+    );
+    for (const old of ["aiCoachAdvice", "clipUrl", "equipmentReport", "startFreeTrial"]) {
       expect(REDACTED_QUOTA_ACTIONS.has(old)).toBe(false);
     }
   });

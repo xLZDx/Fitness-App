@@ -475,6 +475,9 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "parseNutritionLabel",
   "barcodeLookup",
   "foodSearch",
+  // The account export logs its own failures; neither action may name the uid (D-67).
+  "accountExport",
+  "accountExportPage",
 ]);
 
 /** The uid field of a quota log event: `{uid}` normally, `{}` when redacted. */

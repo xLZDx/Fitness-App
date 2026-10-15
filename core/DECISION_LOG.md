@@ -56618,3 +56618,7 @@ Decision: a photo delete with a possibly existing cloud copy is never reported `
 ## 2026-10-15 - Commit: mobile fire-and-forget observation
 
 Decision: no runner call is fire-and-forget without an error observer; the runner provider (not the app-root wiring) resumes on profile/weight load so existing wiring tests keep their provider graph. Evidence: core/changes/2026-10-15-mobile-fire-and-forget.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 3 (export quota, log redaction)
+
+Decision: account export continuation quota is 150/day; accountExport and accountExportPage quota logs and export failure logs are uid-free (error code only); ai_gateway logs an error code, not the exception text. SF-F13 closed as already satisfied (writeCache never throws). Evidence: core/changes/2026-10-15-server-review-fixes-3-logs-quota.md; no checks run.

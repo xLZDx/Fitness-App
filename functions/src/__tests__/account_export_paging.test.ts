@@ -196,7 +196,7 @@ test("page boundary: exactly 500 rows is final, 501 rows has a cursor at the 500
   expect(next.paging.foodEntries).toEqual({ returned: 1, hasMore: false, nextCursor: null });
 });
 
-test("continuations are charged to accountExportPage (400/day), not the 3/day export quota", async () => {
+test("continuations are charged to accountExportPage (150/day), not the 3/day export quota", async () => {
   seedFood();
   await run(); // full export: 1 of 3
   await run({ cursors: { foodEntries: expectedFood()[499] } });
@@ -215,15 +215,15 @@ test("continuations are charged to accountExportPage (400/day), not the 3/day ex
   await expect(run()).rejects.toMatchObject({ code: "resource-exhausted" });
 });
 
-test("the page counter is bounded at 400/day and a refusal reads nothing", async () => {
+test("the page counter is bounded at 150/day and a refusal reads nothing", async () => {
   seedFood();
-  usage = { accountExportPage: 399 };
+  usage = { accountExportPage: 149 };
   await run({ cursors: { foodEntries: expectedFood()[499] } });
-  expect(usage.accountExportPage).toBe(400);
+  expect(usage.accountExportPage).toBe(150);
   await expect(
     run({ cursors: { foodEntries: expectedFood()[499] } }),
   ).rejects.toMatchObject({ code: "resource-exhausted" });
-  expect(usage.accountExportPage).toBe(400);
+  expect(usage.accountExportPage).toBe(150);
   // A full export is still possible: separate counter.
   const full = await run();
   expect(full.foodEntries).toHaveLength(500);

@@ -337,7 +337,11 @@ export async function generate(opts: GenerateOptions): Promise<string> {
       logger.warn("ai_gateway: call timed out", { timeoutMs: opts.timeoutMs });
       throw new HttpsError("deadline-exceeded", "The AI assistant took too long to answer.");
     }
-    logger.error("ai_gateway: generate failed", { error: String(e) });
+    // The error code only: SDK messages can echo prompt text or identifiers (P-9).
+    const code = (e as { code?: unknown } | null | undefined)?.code;
+    logger.error("ai_gateway: generate failed", {
+      errorCode: typeof code === "string" || typeof code === "number" ? String(code) : "unknown",
+    });
     throw new HttpsError("internal", "Could not reach the AI assistant.");
   } finally {
     clearTimeout(timer);

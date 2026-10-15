@@ -155,8 +155,15 @@ const PAGED_COLLECTIONS = [
 type PagedKey = (typeof PAGED_COLLECTIONS)[number]["key"];
 
 /** Continuation pages are cheap but not free; own counter, never `accountExport`. */
+/** A bare error code, never a message (messages can embed the uid or a path). */
+function errorSlug(err: unknown): string {
+  const code = (err as { code?: unknown } | null | undefined)?.code;
+  const text = typeof code === "string" || typeof code === "number" ? String(code) : "";
+  return /^[A-Za-z0-9_./-]{1,64}$/.test(text) ? text : "unknown";
+}
+
 const PAGE_QUOTA_ACTION = "accountExportPage";
-const PAGE_QUOTA_LIMIT = 400;
+const PAGE_QUOTA_LIMIT = 150;
 
 interface PageInfo {
   returned: number;
@@ -580,7 +587,6 @@ export const exportAccountData = onCall(
     if (err instanceof ExportTooLarge) {
       logger.error(EXPORT_ACCOUNT_FAILED, {
         event: EXPORT_ACCOUNT_FAILED,
-        uid,
         err: "export exceeds the response size limit after trimming",
       });
       throw new HttpsError(
@@ -594,8 +600,8 @@ export const exportAccountData = onCall(
     // `data_export.dart` already guards with `progressPhotosIncomplete`.
     logger.error(EXPORT_ACCOUNT_FAILED, {
       event: EXPORT_ACCOUNT_FAILED,
-      uid,
-      err: String(err),
+      // A bare code only: SDK messages can embed document paths and the uid (D-67).
+      errorCode: errorSlug(err),
     });
     throw new HttpsError(
       "internal",
