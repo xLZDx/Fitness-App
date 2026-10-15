@@ -56052,3 +56052,9 @@ Decision: C20 food callables are proven by one jest file per module (T104-T111 p
 ## 2026-10-15 - Commit: C22 tests (food diary data layer)
 
 Decision: C22 data layer is covered by seven single-file functional test files (246 tests, all green). The item `sourceId` value `llm_estimate` is pinned by `food_source_test.dart` as a known mismatch with the stale design s5.6 allowlist; `firestore.rules` does not check `sourceId`, so the design line should be reconciled, not the layer. Evidence: `core/changes/2026-10-15-c22-tests.md`.
+
+Evidence addendum (C18 review record tests): plan_review_record_test.dart ran green, 22 tests.
+
+## 2026-10-15 - Commit: C23 part 1 (food API client and diary repositories)
+
+Decision: the diary talks to food callables only through the FoodApi interface (feature-disabled is a calm not-available state) and stores through ports with Firestore and in-memory implementations; firestore.rules already cover food_entries and saved_foods and accept item sourceId llm_estimate (rules check only item name), so no rules change. Evidence: `core/changes/2026-10-15-c23-state-ports.md`; no checks run.
