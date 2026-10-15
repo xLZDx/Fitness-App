@@ -49,6 +49,12 @@ import 'features/marketplace/state/marketplace_providers.dart';
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
 import 'features/profile/data/device_health_profile_repository.dart';
+import 'features/nutrition_plan/data/firestore_plan_repository.dart';
+import 'features/nutrition_plan/data/firestore_weight_repository.dart';
+import 'features/nutrition_plan/state/nutrition_providers.dart'
+    show nutritionPlanRepositoryProvider;
+import 'features/nutrition_plan/state/weight_providers.dart'
+    show weightRepositoryProvider;
 import 'features/profile/data/firestore_profile_repository.dart';
 import 'features/profile/data/local_sensitive_store.dart';
 import 'features/profile/state/profile_providers.dart';
@@ -379,6 +385,11 @@ Future<void> main() async {
             sensitiveStore,
           ),
         ),
+        // Nutrition plan + weigh-ins (C18): Firestore, same rules-shaped docs.
+        nutritionPlanRepositoryProvider
+            .overrideWith((_) => FirestorePlanRepository()),
+        weightRepositoryProvider
+            .overrideWith((_) => FirestoreWeightRepository()),
         subscriptionRepositoryProvider
             .overrideWith((_) => FirestoreSubscriptionRepository()),
         stripeCheckoutServiceProvider
