@@ -56542,3 +56542,7 @@ Decision: attribution consistency is tested by parsing the real file and renderi
 ## 2026-10-15 - Commit: C19 plan_arb_parity_test.dart
 
 Decision: the C19 EN/RU keys stay in parity and RU plural forms resolve correctly. Evidence: core/changes/2026-10-15-c19-tests.md (plan_arb_parity_test.dart 14 passed).
+
+## 2026-10-15 - Commit: C15 tests - c15_body_scan_arb_test
+
+Decision: ARB parity test reads the ARB files directly so it needs no generated l10n. Evidence: core/changes/2026-10-15-c15-tests.md.
