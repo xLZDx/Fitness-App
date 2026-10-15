@@ -55822,3 +55822,7 @@ Decision: replace the marker guard with a write-revision compare-and-swap after 
 ## 2026-10-15 - Commit: Phase 1 documentation index
 
 Decision: Phase 1 line gets a navigation index (`docs/phase1/README.md`) as part of the S00 split; no documents moved. The tag `phase1-baseline` at `42d1b849` is a historical split point, not a production-ready certificate. Evidence: core/changes/2026-10-15-s00-phase1-docs-index.md.
+
+## 2026-10-15 - Commit: Phase 1 index review fix
+
+Decision: after GPT-PM round 1 (MODIFY, MAJOR-01) the Phase 1 index labels `docs/EXPERIMENTS.md` and the roadmap plan as Phase 2 line files that are absent from `phase1/main` until the Phase 2 documentation PR is merged and synced. Evidence: core/changes/2026-10-15-s00-phase1-docs-index-review-fix.md.
