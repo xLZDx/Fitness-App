@@ -56388,3 +56388,7 @@ Progress: scan history list widget tests added (C16).
 ## 2026-10-15 - Commit: C15 tests - intro_view_test
 
 Decision: intro tests assert the rough-estimate label shows only for the provisional estimator. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 meal slot section tests
+
+Decision: slot total and row values use hand-computed kcal (150 g x 130 / 100 = 195). Evidence: core/changes/2026-10-15-c23-tests.md.
