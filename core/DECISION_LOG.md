@@ -56328,3 +56328,5 @@ Decision: debounce and cache are proven with the widget-test fake clock (599 ms 
 ## 2026-10-15 - Commit: C19 macro_ranges_card_test.dart
 
 Decision: the ICU '#' in nutritionStepsValue and nutritionReviewBasis rendered literally, so the placeholder names are used in EN and RU. Evidence: core/changes/2026-10-15-c19-tests.md (macro_ranges_card_test.dart 7 passed).
+
+Progress: history actions tests added (C16).
