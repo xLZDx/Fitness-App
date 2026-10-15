@@ -175,11 +175,16 @@ void main() {
     expect(find.text('Step a little closer.'), findsWidgets);
   });
 
-  testWidgets('manual shutter works without readiness', (tester) async {
+  testWidgets('manual shutter works without readiness (after the timer)',
+      (tester) async {
     final r = _Rig();
     await r.pump(tester);
     await tester.tap(find.byKey(const Key('scan.shutter')));
     await tester.pump();
+    expect(r.camera.stills, 0, reason: 'the manual shutter no longer fires at once');
+    for (var i = 0; i < kScanManualTimerDefault; i++) {
+      await tester.pump(const Duration(seconds: 1));
+    }
     await tester.pump();
     expect(r.camera.stills, 1);
   });
@@ -285,6 +290,9 @@ void main() {
     final r = _Rig(camera: _TestCamera()..failStill = true);
     await r.pump(tester);
     await tester.tap(find.byKey(const Key('scan.shutter')));
+    for (var i = 0; i < kScanManualTimerDefault; i++) {
+      await tester.pump(const Duration(seconds: 1));
+    }
     await tester.pump();
     await tester.pump();
     final button = tester.widget<FilledButton>(find.byKey(const Key('scan.shutter')));
