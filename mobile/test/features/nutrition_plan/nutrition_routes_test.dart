@@ -67,7 +67,7 @@ void main() {
     }
   });
 
-  test('the route table registers every /nutrition* path exactly once', () {
+  test('the route table registers every /nutrition* path', () {
     final container = ProviderContainer(overrides: [
       authRepositoryProvider.overrideWithValue(auth),
       profileRepositoryProvider.overrideWithValue(profiles),
