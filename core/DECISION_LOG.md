@@ -56330,3 +56330,7 @@ Decision: debounce and cache are proven with the widget-test fake clock (599 ms 
 Decision: the ICU '#' in nutritionStepsValue and nutritionReviewBasis rendered literally, so the placeholder names are used in EN and RU. Evidence: core/changes/2026-10-15-c19-tests.md (macro_ranges_card_test.dart 7 passed).
 
 Progress: history actions tests added (C16).
+
+## 2026-10-15 - Commit: C25 export paging tests
+
+Decision: the paging test seeds food ids uncorrelated with loggedAt so a document-id-order read would fail it; the legacy export test gets a typed runExport helper because the handler return type became a union. Evidence: core/changes/2026-10-15-c25-tests.md (account_export 19 passed, account_export_paging 16 passed).

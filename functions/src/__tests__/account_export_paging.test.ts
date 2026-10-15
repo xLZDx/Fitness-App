@@ -1,9 +1,18 @@
 /**
- * C25 / D-61 — newest-first paging of the body-scan and nutrition collections.
+ * C25 / D-61 (PRIV-25, PRIV-12) - newest-first paging of the body-scan and
+ * nutrition collections in `exportAccountData`.
+ *
+ * The in-memory Firestore double implements `orderBy(field, "desc")`,
+ * `startAfter(snapshot)` and `limit(n)` over seeded rows, so the assertions
+ * below are about WHICH rows come back in WHAT order, not about call shapes.
+ * Document ids are deliberately NOT correlated with `loggedAt` for
+ * `food_entries` (real ids are random UUIDs), so a read that falls back to
+ * document-id order returns a visibly wrong subset.
  */
 
 const docs = new Map<string, any>();
 const collections = new Map<string, Array<{ id: string; data: any }>>();
+const logged: unknown[][] = [];
 
 const snapOf = (rows: Array<{ id: string; data: any }>) => ({
   docs: rows.map((r) => ({ id: r.id, data: () => r.data })),
@@ -34,7 +43,7 @@ const collectionRef = (name: string): any => ({
   where: () => ({ limit: () => ({ get: async () => snapOf([]) }) }),
 });
 
-const usage: Record<string, Record<string, number>> = {};
+let usage: Record<string, number> = {};
 
 jest.mock("firebase-admin", () => ({
   firestore: jest.fn(() => ({
@@ -52,20 +61,16 @@ jest.mock("firebase-admin", () => ({
           const row = (collections.get(parts.join("/")) ?? []).find(
             (r) => r.id === id,
           );
-          return {
-            exists: row !== undefined,
-            id,
-            data: () => row?.data,
-          };
+          return { exists: row !== undefined, id, data: () => row?.data };
         },
       };
     }),
     collection: jest.fn((name: string) => collectionRef(name)),
     runTransaction: jest.fn(async (fn: (tx: any) => Promise<void>) =>
       fn({
-        get: async () => ({ data: () => ({ ...(usage.u1 ?? {}) }) }),
+        get: async () => ({ data: () => ({ ...usage }) }),
         set: (_ref: any, data: Record<string, number>) => {
-          usage.u1 = { ...(usage.u1 ?? {}), ...data };
+          usage = { ...usage, ...data };
         },
       }),
     ),
@@ -73,114 +78,239 @@ jest.mock("firebase-admin", () => ({
 }));
 
 jest.mock("firebase-functions/logger", () => ({
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
+  info: (...a: unknown[]) => logged.push(a),
+  warn: (...a: unknown[]) => logged.push(a),
+  error: (...a: unknown[]) => logged.push(a),
 }));
 
 import { exportAccountData } from "../account_export";
+import { QUOTAS } from "../abuse_guard";
 
-const req = (data: unknown = {}): any => ({
-  data,
-  auth: { uid: "u1", token: {} },
-  rawRequest: {},
-});
+const run = (data: unknown = {}): Promise<any> =>
+  exportAccountData.run({
+    data,
+    auth: { uid: "u1", token: {} },
+    rawRequest: {},
+  } as any);
 
 beforeEach(() => {
   docs.clear();
   collections.clear();
-  delete usage.u1;
+  logged.length = 0;
+  usage = {};
 });
 
-const seed = (): void => {
+/** 2500 food rows; ids are a permutation unrelated to loggedAt (newest = 2499). */
+const foodIds = Array.from({ length: 2500 }, (_, i) => `e${((i * 7919) % 2500).toString(36)}x${i}`);
+const seedFood = (n = 2500): void => {
   collections.set(
     "users/u1/food_entries",
-    Array.from({ length: 1200 }, (_, i) => ({
-      id: `f${String(i).padStart(4, "0")}`,
+    Array.from({ length: n }, (_, i) => ({
+      id: foodIds[i],
       data: { loggedAt: i, name: `meal ${i}` },
     })),
   );
+};
+/** Expected newest-first id list for the first `n` seeded food rows. */
+const expectedFood = (n = 2500): string[] =>
+  Array.from({ length: n }, (_, k) => foodIds[n - 1 - k]);
+
+/** 800 consecutive days; ids are ISO dates so id order == date order. */
+const weightIds = Array.from({ length: 800 }, (_, i) =>
+  new Date(Date.UTC(2023, 0, 1 + i)).toISOString().slice(0, 10),
+);
+const seedWeight = (): void => {
   collections.set(
     "users/u1/weight_entries",
-    Array.from({ length: 800 }, (_, i) => ({
-      id: `2024-01-${String(i).padStart(4, "0")}`,
-      data: { kg: 80 },
-    })),
+    weightIds.map((id, i) => ({ id, data: { kg: 80 + (i % 5) } })),
   );
 };
 
-test("food_entries and weight_entries come newest first with per-section paging", async () => {
-  seed();
-  const res: any = await exportAccountData.run(req());
-  expect(res.foodEntries[0].id).toBe("f1199");
-  expect(res.foodEntries).toHaveLength(500);
+test("first call returns the newest 500 of each section, with exact paging state", async () => {
+  seedFood();
+  seedWeight();
+  const res = await run();
+  expect(res.foodEntries.map((r: any) => r.id)).toEqual(expectedFood().slice(0, 500));
   expect(res.paging.foodEntries).toEqual({
     returned: 500,
     hasMore: true,
-    nextCursor: "f0700",
+    nextCursor: expectedFood()[499],
   });
-  expect(res.weightEntries[0].id).toBe("2024-01-0799");
-  expect(res.paging.weightEntries.hasMore).toBe(true);
-  expect(res.paging.bodyScans).toEqual({
-    returned: 0,
-    hasMore: false,
-    nextCursor: null,
+  expect(res.weightEntries.map((r: any) => r.id)).toEqual(
+    [...weightIds].reverse().slice(0, 500),
+  );
+  expect(res.paging.weightEntries).toEqual({
+    returned: 500,
+    hasMore: true,
+    nextCursor: [...weightIds].reverse()[499],
   });
+  // Empty sections are present, empty and final.
+  expect(res.bodyScans).toEqual([]);
+  expect(res.paging.bodyScans).toEqual({ returned: 0, hasMore: false, nextCursor: null });
+  // The legacy `truncated` string array is untouched by paged sections.
+  expect(res.truncated).toEqual([]);
 });
 
-test("a continuation page resumes after the cursor, reads only named sections and ends", async () => {
-  seed();
-  let cursor = "f0700";
-  const ids: string[] = [];
-  let pages = 0;
-  for (;;) {
-    const res: any = await exportAccountData.run(
-      req({ cursors: { foodEntries: cursor } }),
-    );
-    pages++;
-    expect(res.weightEntries).toBeUndefined();
+test("PRIV-25: 2500 food + 800 weight entries are exported completely, newest first, no gaps or duplicates", async () => {
+  seedFood();
+  seedWeight();
+  const first = await run();
+  const food: string[] = first.foodEntries.map((r: any) => r.id);
+  const weight: string[] = first.weightEntries.map((r: any) => r.id);
+  let paging = first.paging;
+  let calls = 1;
+  while (paging.foodEntries.hasMore || paging.weightEntries.hasMore) {
+    const cursors: Record<string, string> = {};
+    if (paging.foodEntries.hasMore) cursors.foodEntries = paging.foodEntries.nextCursor;
+    if (paging.weightEntries.hasMore) cursors.weightEntries = paging.weightEntries.nextCursor;
+    const res = await run({ cursors });
+    calls++;
+    // A continuation reads only the named sections.
     expect(res.profile).toBeUndefined();
-    ids.push(...res.foodEntries.map((r: any) => r.id));
-    if (!res.paging.foodEntries.hasMore) break;
-    cursor = res.paging.foodEntries.nextCursor;
+    if (cursors.foodEntries) food.push(...res.foodEntries.map((r: any) => r.id));
+    else expect(res.foodEntries).toBeUndefined();
+    if (cursors.weightEntries) weight.push(...res.weightEntries.map((r: any) => r.id));
+    else expect(res.weightEntries).toBeUndefined();
+    paging = { ...paging, ...res.paging };
+    expect(calls).toBeLessThan(20);
   }
-  expect(pages).toBe(2);
-  expect(ids).toHaveLength(700);
-  expect(ids[0]).toBe("f0699");
-  expect(ids[ids.length - 1]).toBe("f0000");
-  // Continuations do not spend the 3/day full-export quota.
-  expect(usage.u1.accountExport).toBeUndefined();
-  expect(usage.u1.accountExportPage).toBe(2);
+  expect(calls).toBe(5); // 1 full + 4 continuations (2500 / 500)
+  expect(food).toEqual(expectedFood());
+  expect(new Set(food).size).toBe(2500);
+  expect(weight).toEqual([...weightIds].reverse());
+  expect(paging.foodEntries).toEqual({ returned: 500, hasMore: false, nextCursor: null });
+  expect(paging.weightEntries).toEqual({ returned: 300, hasMore: false, nextCursor: null });
 });
 
-test("scan rows carry photoLinksAvailable and never a link or path field", async () => {
+test("page boundary: exactly 500 rows is final, 501 rows has a cursor at the 500th", async () => {
+  seedFood(500);
+  let res = await run();
+  expect(res.paging.foodEntries).toEqual({ returned: 500, hasMore: false, nextCursor: null });
+
+  seedFood(501);
+  res = await run();
+  expect(res.paging.foodEntries.hasMore).toBe(true);
+  expect(res.paging.foodEntries.nextCursor).toBe(expectedFood(501)[499]);
+  const next = await run({ cursors: { foodEntries: res.paging.foodEntries.nextCursor } });
+  expect(next.foodEntries.map((r: any) => r.id)).toEqual([expectedFood(501)[500]]);
+  expect(next.paging.foodEntries).toEqual({ returned: 1, hasMore: false, nextCursor: null });
+});
+
+test("continuations are charged to accountExportPage (400/day), not the 3/day export quota", async () => {
+  seedFood();
+  await run(); // full export: 1 of 3
+  await run({ cursors: { foodEntries: expectedFood()[499] } });
+  await run({ cursors: { foodEntries: expectedFood()[999] } });
+  expect(usage.accountExport).toBe(1);
+  expect(usage.accountExportPage).toBe(2);
+  expect(QUOTAS.accountExport).toBe(3);
+
+  // The full-export quota exhausted does not block paging ...
+  usage = { accountExport: 3, accountExportPage: 10 };
+  const res = await run({ cursors: { foodEntries: expectedFood()[499] } });
+  expect(res.foodEntries).toHaveLength(500);
+  expect(usage.accountExport).toBe(3);
+  expect(usage.accountExportPage).toBe(11);
+  // ... but a fresh full export is refused.
+  await expect(run()).rejects.toMatchObject({ code: "resource-exhausted" });
+});
+
+test("the page counter is bounded at 400/day and a refusal reads nothing", async () => {
+  seedFood();
+  usage = { accountExportPage: 399 };
+  await run({ cursors: { foodEntries: expectedFood()[499] } });
+  expect(usage.accountExportPage).toBe(400);
+  await expect(
+    run({ cursors: { foodEntries: expectedFood()[499] } }),
+  ).rejects.toMatchObject({ code: "resource-exhausted" });
+  expect(usage.accountExportPage).toBe(400);
+  // A full export is still possible: separate counter.
+  const full = await run();
+  expect(full.foodEntries).toHaveLength(500);
+});
+
+test("scan rows are newest first by takenAt, carry photoLinksAvailable and never a link or path field", async () => {
   collections.set("users/u1/body_scans", [
     {
-      id: "s1",
+      id: "a-old",
       data: {
         takenAt: 1,
         photosState: "stored",
         signedUrl: "https://example.invalid/x?sig=1",
+        downloadUrl: "https://example.invalid/y?sig=2",
+        photoLink: "https://example.invalid/z",
         objectPath: "users/u1/scans/s1/front.jpg",
+        storagePath: "users/u1/scans/s1/side.jpg",
+        weightKg: 80,
       },
     },
-    { id: "s2", data: { takenAt: 2, photosState: "deleted" } },
+    { id: "z-mid", data: { takenAt: 2, photosState: "deleted" } },
+    { id: "m-new", data: { takenAt: 3, photosState: "none" } },
   ]);
-  const res: any = await exportAccountData.run(req());
-  expect(res.bodyScans.map((r: any) => r.id)).toEqual(["s2", "s1"]);
-  expect(res.bodyScans[1].photoLinksAvailable).toBe(true);
+  const res = await run();
+  expect(res.bodyScans.map((r: any) => r.id)).toEqual(["m-new", "z-mid", "a-old"]);
+  const old = res.bodyScans[2];
+  expect(old.photoLinksAvailable).toBe(true);
+  expect(old.weightKg).toBe(80);
+  expect(Object.keys(old).sort()).toEqual(
+    ["id", "photoLinksAvailable", "photosState", "takenAt", "weightKg"],
+  );
   expect(res.bodyScans[0].photoLinksAvailable).toBeUndefined();
-  expect(JSON.stringify(res)).not.toMatch(/sig=1|objectPath|front\.jpg/);
+  expect(res.bodyScans[1].photoLinksAvailable).toBeUndefined();
+  expect(JSON.stringify(res)).not.toMatch(/sig=|example\.invalid|objectPath|front\.jpg|side\.jpg/);
 });
 
-test("a stale cursor is refused with failed-precondition, malformed ones with invalid-argument", async () => {
-  await expect(
-    exportAccountData.run(req({ cursors: { foodEntries: "gone" } })),
-  ).rejects.toMatchObject({ code: "failed-precondition" });
-  await expect(
-    exportAccountData.run(req({ cursors: { nope: "x" } })),
-  ).rejects.toMatchObject({ code: "invalid-argument" });
-  await expect(
-    exportAccountData.run(req({ cursors: { foodEntries: "a/b" } })),
-  ).rejects.toMatchObject({ code: "invalid-argument" });
+test("D-67: single-document sections and the response notes contain no signed URL, and nothing photo-related is logged", async () => {
+  docs.set("users/u1/body_scan_settings/main", { retentionDays: 0 });
+  docs.set("users/u1/nutrition_plan/main", { status: "active" });
+  collections.set("users/u1/body_scans", [
+    { id: "s1", data: { takenAt: 1, photosState: "stored", signedUrl: "https://x.invalid/?sig=1" } },
+  ]);
+  const res = await run();
+  expect(res.bodyScanSettings).toMatchObject({ id: "main", retentionDays: 0 });
+  expect(res.nutritionPlan).toMatchObject({ id: "main", status: "active" });
+  expect(res.notes.join(" ")).toMatch(/no photo links/i);
+  expect(JSON.stringify(res)).not.toContain("sig=1");
+  expect(JSON.stringify(logged)).not.toContain("sig=1");
+});
+
+test("a stale cursor is refused with failed-precondition and consumes no full-export quota", async () => {
+  seedFood(10);
+  await expect(run({ cursors: { foodEntries: "deleted-since" } })).rejects.toMatchObject({
+    code: "failed-precondition",
+  });
+  expect(usage.accountExport).toBeUndefined();
+});
+
+test.each([
+  ["unknown section", { nope: "x" }],
+  ["slash in cursor", { foodEntries: "a/b" }],
+  ["empty cursor", { foodEntries: "" }],
+  ["non-string cursor", { foodEntries: 5 }],
+  ["over-long cursor", { foodEntries: "x".repeat(201) }],
+])("malformed cursor (%s) is invalid-argument", async (_n, cursors) => {
+  await expect(run({ cursors })).rejects.toMatchObject({ code: "invalid-argument" });
+});
+
+test.each([["a string", "foodEntries"], ["an array", ["x"]]])(
+  "cursors given as %s is invalid-argument",
+  async (_n, cursors) => {
+    await expect(run({ cursors })).rejects.toMatchObject({ code: "invalid-argument" });
+  },
+);
+
+test("saved_foods and nutrition_plan_reviews page by document id descending", async () => {
+  collections.set("users/u1/saved_foods", [
+    { id: "b", data: {} },
+    { id: "a", data: {} },
+    { id: "c", data: { createdAt: 1 } },
+  ]);
+  collections.set("users/u1/nutrition_plan_reviews", [
+    { id: "2026-W02", data: { decision: "keep" } },
+    { id: "2026-W10", data: { decision: "keep" } },
+  ]);
+  const res = await run();
+  // The row lacking createdAt is not dropped: ordering does not depend on it.
+  expect(res.savedFoods.map((r: any) => r.id)).toEqual(["c", "b", "a"]);
+  expect(res.nutritionPlanReviews.map((r: any) => r.id)).toEqual(["2026-W10", "2026-W02"]);
 });

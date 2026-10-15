@@ -106,6 +106,10 @@ import {
 } from "../account_export";
 import { QUOTAS } from "../abuse_guard";
 
+// C25: the handler now returns either a full export or a continuation page, so its
+// inferred type is a union; these legacy assertions read the full-export keys.
+const runExport = (r: any): Promise<any> => exportAccountData.run(r);
+
 const req = (uid: string | null = "u1"): any => ({
   data: {},
   auth: uid ? { uid, token: {} } : undefined,
@@ -120,7 +124,7 @@ beforeEach(() => {
 });
 
 test("refuses when signed out", async () => {
-  await expect(exportAccountData.run(req(null))).rejects.toBeInstanceOf(
+  await expect(runExport(req(null))).rejects.toBeInstanceOf(
     HttpsError,
   );
 });
@@ -156,7 +160,7 @@ test("carries every store the inventory lists for this user", async () => {
   ]);
   collections.set("debug_sessions", [{ id: "d1", data: { uid: "u1" } }]);
 
-  const res = await exportAccountData.run(req());
+  const res = await runExport(req());
 
   expect(res.profile).toMatchObject({ injuries: ["knee"] });
   expect(res.subscription).toMatchObject({ tier: "standard" });
@@ -203,7 +207,7 @@ test("reaches the three collections a phone cannot read at all", async () => {
   ]);
   collections.set("debug_sessions", [{ id: "d1", data: { uid: "u1" } }]);
 
-  const res = await exportAccountData.run(req());
+  const res = await runExport(req());
 
   expect(res.coachBookings).toHaveLength(1);
   expect(res.equipmentReports).toHaveLength(1);
@@ -220,7 +224,7 @@ test("never exports another user's rows", async () => {
   ]);
   collections.set("debug_sessions", [{ id: "theirs", data: { uid: "u2" } }]);
 
-  const res = await exportAccountData.run(req());
+  const res = await runExport(req());
 
   expect(res.coachBookings.map((b: any) => b.id)).toEqual(["mine"]);
   expect(res.equipmentReports).toEqual([]);
@@ -231,7 +235,7 @@ test("a uid in the request body is ignored", async () => {
   docs.set("users/u1/profile/main", { goal: "mine" });
   docs.set("users/victim/profile/main", { goal: "theirs" });
 
-  const res = await exportAccountData.run({
+  const res = await runExport({
     data: { uid: "victim" },
     auth: { uid: "u1", token: {} },
     rawRequest: {},
@@ -258,7 +262,7 @@ test("a coach's export does not carry their clients' uids or payment ids",
       },
     ]);
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
     const booking = res.coachBookings[0] as any;
 
     expect(JSON.stringify(res)).not.toContain("client_7");
@@ -282,7 +286,7 @@ test("a self-booking matched by both queries is exported once, as the client's o
       },
     ]);
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     expect(res.coachBookings).toHaveLength(1);
     expect(res.coachBookings[0]).toMatchObject({
@@ -300,7 +304,7 @@ test("bookings where the user is client and where the user is coach are both lis
       { id: "asCoach", data: { clientUid: "c8", coachUid: "u1" } },
     ]);
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     const byRole = Object.fromEntries(
       res.coachBookings.map((b: any) => [b.yourRole, b]),
@@ -321,7 +325,7 @@ test("a capped section is named, never silently short", async () => {
     })),
   );
 
-  const res = await exportAccountData.run(req());
+  const res = await runExport(req());
 
   expect(res.debugSessions).toHaveLength(2000);
   expect(res.truncated).toContain("debug_sessions.uid");
@@ -340,7 +344,7 @@ test("an export over the byte ceiling is trimmed and named, never silently short
       })),
     );
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     expect(res.truncated).toContain("debugSessions");
     expect(res.debugSessions.length).toBeLessThan(1500);
@@ -362,7 +366,7 @@ test("an export under the byte ceiling is returned untouched, with no truncated 
       })),
     );
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     expect(res.debugSessions).toHaveLength(700);
     expect(res.truncated).toEqual([]);
@@ -380,7 +384,7 @@ test("F-03: a single oversized non-array section over the hard ceiling is reject
     let caught: any;
     let res: any;
     try {
-      res = await exportAccountData.run(req());
+      res = await runExport(req());
     } catch (e) {
       caught = e;
     }
@@ -398,7 +402,7 @@ test("F-03: a non-array response between the soft and hard ceilings still succee
     expect(size).toBeLessThan(HARD_RESPONSE_BYTES);
     docs.set("users/u1/profile/main", { blob: "x".repeat(size) });
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     expect((res.profile as { blob: string }).blob).toHaveLength(size);
     const bytes = Buffer.byteLength(JSON.stringify(res), "utf8");
@@ -422,7 +426,7 @@ test("every section trimmed for size is named, once, and keeps its leading rows"
       })),
     );
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     expect(res.truncated).toContain("workoutLogs");
     expect(res.truncated).toContain("debugSessions");
@@ -450,7 +454,7 @@ test("a section that hit the row cap and the byte ceiling is named once",
       })),
     );
 
-    const res = await exportAccountData.run(req());
+    const res = await runExport(req());
 
     expect(res.truncated).toContain("debug_sessions.uid");
     expect(res.truncated).toContain("debugSessions");
@@ -466,7 +470,7 @@ test("exactly at the cap is not reported as truncated", async () => {
     Array.from({ length: 2000 }, (_, i) => ({ id: `l${i}`, data: {} })),
   );
 
-  const res = await exportAccountData.run(req());
+  const res = await runExport(req());
 
   expect(res.workoutLogs).toHaveLength(2000);
   expect(res.truncated).toEqual([]);
@@ -475,7 +479,7 @@ test("exactly at the cap is not reported as truncated", async () => {
 test("absent documents export as null, not as missing keys", async () => {
   // A reader must be able to tell "you have no subscription" from "this export
   // forgot about subscriptions".
-  const res = await exportAccountData.run(req());
+  const res = await runExport(req());
 
   expect(res.subscription).toBeNull();
   expect(res.donorWall).toBeNull();
@@ -509,7 +513,7 @@ test("one failed read fails the whole export instead of shipping it short",
     const original = admin.firestore.getMockImplementation();
     admin.firestore.mockImplementation(failingReads);
     try {
-      await expect(exportAccountData.run(req())).rejects.toThrow(
+      await expect(runExport(req())).rejects.toThrow(
         /Could not assemble/,
       );
     } finally {
@@ -523,9 +527,9 @@ test("one failed read fails the whole export instead of shipping it short",
       // may fill itself. The mechanism existed and was pointed at the video
       // endpoints only.
       for (let i = 0; i < QUOTAS.accountExport; i++) {
-        await exportAccountData.run(req());
+        await runExport(req());
       }
-      await expect(exportAccountData.run(req())).rejects.toThrow(
+      await expect(runExport(req())).rejects.toThrow(
         /resource-exhausted|quota|limit/i,
       );
       expect(usagePaths.some((p) => p.includes("/usage/"))).toBe(true);
