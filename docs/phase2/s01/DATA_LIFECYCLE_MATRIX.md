@@ -37,9 +37,9 @@ These rows document what the code does today so new rows can be compared with th
 | Workout logs, sessions, scheduled sessions, programmes, stats | Per session, on entry | Yes | `users/{uid}/...` owner-only | No | While the account exists (`public/privacy.html` line 91) | Yes: `workout_logs`, `workout_sessions`, `scheduled_sessions`, `programmes`, `stats` (`account_export.ts`) | Yes: `recursiveDelete(users/{uid})` | Event name and uid in function logs; no payload |
 | Profile and onboarding answers | Onboarding | Health fields stay on the device | `users/{uid}/profile/main` without health free text; rules refuse health content (`firestore.rules` lines 165-211) | No | While the account exists | Yes: profile | Yes | uid only |
 | Progress photos | On capture, with consent | AES-GCM encrypted, key local; never uploaded | None | Never | Until deleted on the device | Metadata only, bytes excluded and stated in the file | Device deletion by the user; no server copy exists | No |
-| Body Scan cloud photos | On scan, with consent | Local first | Only with `BODY_SCAN_CLOUD` (flag default OFF); the code is not in this worktree (UNVERIFIED) | Never | Per setting (roadmap matrix) | Links only (roadmap matrix) | Yes (roadmap matrix); no Storage cleanup exists in `deleteAccount` today (FACT, `index.ts` lines 2073-2077) | No |
+| Body Scan cloud photos | On scan, with consent | Local first | Only with `BODY_SCAN_CLOUD` (flag default OFF); the code is present since PR #5 (`functions/src/body_scan`, `mobile/lib/features/body_scan`) | Never | Per setting (roadmap matrix) | Links only (roadmap matrix) | Yes (roadmap matrix); the account sweep deletes the user's prefix in the private Body Scan bucket (FACT, `sweepBodyScanObjects`, `index.ts` line 2376 onward) | No |
 | Meal and label photos | On capture | Not stored | Never stored server-side (roadmap matrix, D-27, PROPOSED in plan) | Never | n/a | n/a | n/a | No |
-| Nutrition diary and weight | On entry | Yes | Yes (roadmap matrix; implementation not in this worktree, UNVERIFIED) | No | Account lifetime | Yes | Yes | No |
+| Nutrition diary and weight | On entry | Yes | Yes (roadmap matrix; implementation present since PR #5 in `mobile/lib/features/nutrition_plan` and `food_diary`, not reviewed here) | No | Account lifetime | Yes | Yes | No |
 | Subscription and receipts | Via Stripe webhook / receipt function | No | `users/{uid}/subscription/main`, `users/{uid}/receipts/{year}`, server-authored, client read closed for receipts | No | Account lifetime; Stripe keeps its own records | Yes | Yes, Stripe subscription cancelled first | Event name and uid |
 | Donor wall | Opt-in | No | `donor_wall/{uid}` public read | Public (display name, optional message) | Until opt-out | Yes | Yes | uid |
 | Debug sessions (DEBUG builds only) | Debug builds | Ring buffer, 500 events | `debug_sessions/{id}` create-only | No | While the account exists | Yes, capped | Yes, via the shared-records sweep | Redacted before send; contents not shape-checked by rules |
@@ -72,7 +72,7 @@ Failure injection (GPS-PRIV-077): a test interrupts the cascade after each of th
 |---|---|---|
 | New subcollections under `users/{uid}` are client-readable and client-writable by default | `firestore.rules` lines 61-83 | GPS-PRIV-058, GPS-PRIV-060, S02 and S09 rule blocks |
 | `storage.rules` exists (deny-all for the default bucket, PR #5) and `firebase.json` has a `storage` block; GPS prefixes or a separate private bucket are not defined yet | `storage.rules`, `firebase.json` | GPS-PRIV-064 (extend, never loosen; Body Scan bucket stays separate) |
-| Account deletion does not remove Storage objects | `functions/src/index.ts` lines 2073-2077 | GPS-PRIV-055 in the same change that adds Storage paths |
+| Account deletion removes Storage objects only for the private Body Scan bucket (`sweepBodyScanObjects`); no GPS or default-bucket cleanup exists | `functions/src/index.ts` line 2376 onward | GPS-PRIV-055 in the same change that adds Storage paths |
 | Export response capped near 8 MiB; streams cannot ride inside it | `functions/src/account_export.ts` lines 54-58 | GPS-PRIV-052, S02 |
 | Unknown age is treated as adult for training policy | `mobile/lib/features/safety/data/age_policy.dart` lines 27, 52-57 | GPS-PRIV-043 (separate sharing gate) |
 | Profile is client-writable, so a birth year is client-asserted | `firestore.rules` lines 194-211 | GPS-PRIV-044, D-17 age source |
@@ -81,7 +81,7 @@ Failure injection (GPS-PRIV-077): a test interrupts the cascade after each of th
 | Equipment-identity collections are DELETE-only (export gap already recorded) | `scripts/ci/data_lifecycle_policy.json` | Out of scope here; unchanged |
 | Wildcard lists exclusions separately for read and write; a new server-authored subcollection must be added to both | `firestore.rules` lines 61-82 | GPS-PRIV-071 |
 | Android backup rules exclude only progress photos and three preference files; any GPS file in app storage would be backed up | `mobile/android/app/src/main/res/xml/backup_rules.xml` lines 35-43; manifest lines 41-42 | GPS-PRIV-083 |
-| Deletion sweep is a hardcoded list; no location collection outside `users/{uid}` and no Storage step | `functions/src/index.ts` lines 2265-2289, 2372-2379 | Section 3 above; GPS-PRIV-076 |
+| Deletion sweep is a hardcoded list; no location collection outside `users/{uid}` and no GPS Storage step (the only Storage step is `sweepBodyScanObjects` for the private Body Scan bucket) | `functions/src/index.ts` `sweepAccountData` (line 2376) and `sweepBodyScanObjects` | Section 3 above; GPS-PRIV-076 |
 | Backup, soft-delete, CDN and log retention of the cloud project are not visible in the repository | none (UNVERIFIED) | GPS-PRIV-078, 079 |
 
 ## 5. Maintenance

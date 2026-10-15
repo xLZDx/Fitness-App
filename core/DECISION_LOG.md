@@ -56763,3 +56763,7 @@ Decision: the UI-0 baseline gets a separate delta document for the Body Scan, nu
 ## 2026-10-16 - Commit: S01 fixes for GPT-PM round 1
 
 Decision: the contract baseline follows the PR #5 state (deny-all storage.rules, separate Body Scan bucket); a server-side guarantee for debug telemetry (sanitising callable or per-event documents) is mandatory before any GPS code ships, because rules cannot check list elements. Evidence: core/changes/2026-10-16-s01-gptpm-round1-fixes.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 2
+
+Decision: every statement about Storage, account deletion and Body Scan code in the S01 documents follows the PR #5 tree (sweepBodyScanObjects exists, Body Scan code is present); the UI-0 audit keeps its explicit pre-PR #5 date. Evidence: core/changes/2026-10-16-s01-gptpm-round2-fixes.md.
