@@ -56293,3 +56293,7 @@ Progress: T111 parse_nutrition_label tests added (30 passing).
 ## 2026-10-15 - Commit: C25 policy rows and privacy text
 
 Decision (Q-10): privacy.html text is shipped as a draft; the data-lifecycle rows name CONDITIONAL-cell tests that the test agents must add. Evidence: `core/changes/2026-10-15-c25-policy-and-privacy.md`; no checks run.
+
+## 2026-10-15 - Commit: C24 capture state, thumbnail store, ARB keys
+
+Decision: the optional meal thumbnail reuses the progress-photo cipher and per-uid directory (meals/ subfolder) and is deleted by FoodDiaryActions.deleteEntry; barcode decoding keeps only GTIN-valid values with no format filter. Evidence: `core/changes/2026-10-15-c24-capture-state-l10n.md`; nothing was run.

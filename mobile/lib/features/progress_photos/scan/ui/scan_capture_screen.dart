@@ -236,6 +236,7 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
     }
 
     final wasCounting = _countdown != null;
+    final liveBefore = _liveHint;
     final events = _machine.update(now, ready: result.isReady);
     int? countdown = _countdown;
     var shutter = false;
@@ -266,7 +267,10 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
     // Rebuild only when something the UI shows has changed.
     final changed = previous == null ||
         _readinessChanged(previous, result) ||
-        _countdown != countdown;
+        _countdown != countdown ||
+        // A cue that was throttled earlier reaches the live region on a later
+        // frame; without a rebuild it would stay stale until readiness changed.
+        _liveHint != liveBefore;
     _countdown = countdown;
     if (changed) setState(() {});
     if (shutter) unawaited(_capture(pose, frame));
@@ -743,12 +747,19 @@ class _ScanCaptureBodyState extends ConsumerState<_ScanCaptureBody>
                       icon: const Icon(Icons.close),
                       onPressed: () => Navigator.of(context).maybePop(),
                     ),
-                    const Spacer(),
-                    _PosePill(
-                      pose: pose,
-                      index: _session.capturedCount + 1,
+                    // Takes the space between the icon buttons and scales down
+                    // instead of overflowing at large text sizes (D-80).
+                    Expanded(
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _PosePill(
+                            pose: pose,
+                            index: _session.capturedCount + 1,
+                          ),
+                        ),
+                      ),
                     ),
-                    const Spacer(),
                     IconButton(
                       key: const Key('scan.voice'),
                       tooltip: muted ? l10n.scanVoiceOff : l10n.scanVoiceOn,
