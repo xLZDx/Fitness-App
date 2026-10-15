@@ -56288,3 +56288,4 @@ Decision: callable errors are tested through the pure `mapFoodCallableError` and
 ## 2026-10-15 - Commit: C13 tests: manual timer, announcement channels, text scale 2.0; fix l10n plurals, top-bar overflow, stale live cue
 
 Decision: Capture screen tests prove timer/override/channel/throttle/overflow contracts; three product defects (literal # in ICU plurals, top-bar overflow at 2.0x RU, stale throttled live-region cue) fixed minimally in ARB and scan_capture_screen. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+Progress: T111 parse_nutrition_label tests added (30 passing).
