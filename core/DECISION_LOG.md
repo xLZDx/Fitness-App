@@ -56767,3 +56767,7 @@ Decision: the contract baseline follows the PR #5 state (deny-all storage.rules,
 ## 2026-10-16 - Commit: S01 fixes for GPT-PM round 2
 
 Decision: every statement about Storage, account deletion and Body Scan code in the S01 documents follows the PR #5 tree (sweepBodyScanObjects exists, Body Scan code is present); the UI-0 audit keeps its explicit pre-PR #5 date. Evidence: core/changes/2026-10-16-s01-gptpm-round2-fixes.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 3
+
+Decision: all file and line citations and "absent" claims in the S01 contract and lifecycle matrix were re-verified against the PR #5 tree in one sweep (the documents were drafted before PR #5); the existing Storage rules test and the server read of the client-writable birth year are recorded as facts. Evidence: core/changes/2026-10-16-s01-gptpm-round3-fixes.md.
