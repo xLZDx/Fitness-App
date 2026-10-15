@@ -178,7 +178,7 @@ function childEnv(fx: Fixture, extra: Record<string, string> = {}): NodeJS.Proce
   const env: NodeJS.ProcessEnv = {};
   for (const [k, v] of Object.entries(process.env)) {
     const upper = k.toUpperCase();
-    if (upper === "PATH" || upper === "GCLOUD_PROJECT" || upper === "FIREBASE_PROJECT" || upper === "NODE_PATH") continue;
+    if (upper === "PATH" || upper === "GCLOUD_PROJECT" || upper === "FIREBASE_PROJECT" || upper === "NODE_PATH" || upper === "BODY_SCAN_BUCKET") continue;
     if (upper.startsWith("FAKE_")) continue;
     env[k] = v;
   }

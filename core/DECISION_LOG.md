@@ -56683,3 +56683,7 @@ Decision: the deploy guard fix is accepted for review with 275 focused tests pas
 ## 2026-10-15 - Commit: merge phase2/main into the S00 branch
 
 Decision: the S00 branch integrates PR #5 (5137ccda) before its own PR so the guard knows the Body Scan checks and every deploy target, including the storage block PR #5 introduced, carries the deploy-line guard. Evidence: core/changes/2026-10-15-s00-merge-phase2-main-into-s00.md; tests rerun follows.
+
+## 2026-10-15 - Commit: guard tests after merge
+
+Decision: the merged guard (PR #5 checks plus deploy-line coverage and provenance) is covered by 436 passing jest tests across the three files that import release_guard; the Python deployment-isolation scripts that mention the guard were not run. Evidence: core/changes/2026-10-15-s00-guard-tests-after-merge.md.

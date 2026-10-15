@@ -2126,3 +2126,129 @@ describe("runReleaseGuard: flag-gated body-scan bucket check (C12 leftovers, D-6
     }
   });
 });
+
+describe("merge interactions: deploy-line gate x PR #5 six callables x body-scan bucket check", () => {
+  const BUCKET = "fitness-app-korostelev-body-scans";
+  const BUCKET_CHECK = "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged";
+  const INVENTORY_CHECK = "AI callables match the intended fn-ai-runtime deployed set";
+  const SCAN_SA = `serviceAccount:fn-bodyscan@${PROJECT}.iam.gserviceaccount.com`;
+  const DELETE_SA = `serviceAccount:fn-account-delete@${PROJECT}.iam.gserviceaccount.com`;
+  const CANARY_CLOSED = JSON.stringify({
+    step8KillSwitch: { status: "closed" },
+    s23PlayIntegrityProof: { status: "closed" },
+    bodyScanBucketCanary: { status: "closed" },
+  });
+  const phase2Rc = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+  const ok = (v: unknown): CommandResult => ({ ok: true, stdout: JSON.stringify(v), stderr: "" });
+
+  /** Healthy everywhere (six callables, bucket configured and healthy, canary closed) except what the test overrides. */
+  function healthyWithBucket(opts: Parameters<typeof makeDeps>[0]): ReleaseGuardDeps {
+    const base = makeDeps({ evidence: CANARY_CLOSED, ...opts });
+    const baseRun = base.runCommand;
+    return {
+      ...base,
+      env: { BODY_SCAN_BUCKET: BUCKET },
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "storage" && args[1] === "buckets") {
+          if (args[2] === "describe") {
+            return ok({ iamConfiguration: { publicAccessPrevention: "enforced", uniformBucketLevelAccess: { enabled: true } } });
+          }
+          return ok({ bindings: [{ role: "roles/storage.objectAdmin", members: [SCAN_SA, DELETE_SA] }] });
+        }
+        return baseRun(cmd, args, timeoutMs);
+      },
+    };
+  }
+
+  test("control: healthy phase1 line with provenance, six callables and a healthy bucket -> PASS with 11 checks", async () => {
+    const result = await runReleaseGuard(healthyWithBucket({ branch: "phase1/main" }));
+    expect(result.verdict).toBe("PASS");
+    expect(result.checks).toHaveLength(11);
+    expect(result.checks.every((c) => c.status === "OK")).toBe(true);
+  });
+
+  test("phase1 provenance failure still BLOCKs through the Deploy target check even though the bucket check is OK and all six callables are present", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({ branch: "phase1/main", isCommitOnProtectedLine: async () => false }),
+    );
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.checks).toHaveLength(11);
+    expect(byName(result, BUCKET_CHECK).status).toBe("OK");
+    expect(byName(result, INVENTORY_CHECK).status).toBe("OK");
+    expect(byName(result, INVENTORY_CHECK).detail).toContain("all 6 callables");
+    const notOk = result.checks.filter((c) => c.status !== "OK");
+    expect(notOk.map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
+    expect(notOk[0].detail.split(":")[0]).toBe("phase1-provenance-unverified");
+  });
+
+  test("phase1 provenance reader rejecting is the same BLOCK with the bucket and callable checks OK", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({
+        branch: "phase1/x",
+        isCommitOnProtectedLine: async () => {
+          throw new Error("git exploded");
+        },
+      }),
+    );
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.checks.filter((c) => c.status !== "OK").map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
+  });
+
+  test("phase2 branch + production project is BLOCKed (phase2-project-mismatch) while the bucket and callable checks pass", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({ branch: "phase2/s00-split-docs", project: EXPECTED_PROJECT_ID, firebaserc: phase2Rc }),
+    );
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.line).toBe("phase2");
+    expect(byName(result, BUCKET_CHECK).status).toBe("OK");
+    expect(byName(result, INVENTORY_CHECK).status).toBe("OK");
+    const notOk = result.checks.filter((c) => c.status !== "OK");
+    expect(notOk.map((c) => c.name)).toEqual([DEPLOY_TARGET_CHECK]);
+    expect(notOk[0].detail.split(":")[0]).toBe("phase2-project-mismatch");
+  });
+
+  test("a missing body-scan canary evidence blocks on the bucket check only, and the deploy-line gate stays OK (the two gates are independent)", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({ branch: "phase1/main", evidence: JSON.stringify({
+        step8KillSwitch: { status: "closed" },
+        s23PlayIntegrityProof: { status: "closed" },
+      }) }),
+    );
+    expect(result.verdict).toBe("BLOCK");
+    expect(byName(result, DEPLOY_TARGET_CHECK).status).toBe("OK");
+    expect(result.checks.filter((c) => c.status !== "OK").map((c) => c.name)).toEqual([BUCKET_CHECK]);
+  });
+
+  test("the six AI source paths used by the fixtures all exist in the repository", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    expect(Object.keys(AI_SOURCE_PATHS).sort()).toEqual([...AI_CALLABLES].sort());
+    for (const rel of Object.values(AI_SOURCE_PATHS)) {
+      expect({ rel, exists: fs.existsSync(path.join(repoRoot, rel)) }).toEqual({ rel, exists: true });
+    }
+    expect(fs.existsSync(path.join(repoRoot, SCALING_PATH))).toBe(true);
+  });
+
+  test("REAL firebase.json: the storage block PR #5 added exists, has its rules file, runs the guard, and the whole file reports no unguarded target", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.json"), "utf8")) as {
+      storage?: { rules?: string; predeploy?: string[] };
+    };
+    expect(config.storage).toBeDefined();
+    expect(fs.existsSync(path.join(repoRoot, config.storage!.rules!))).toBe(true);
+    expect((config.storage!.predeploy ?? []).filter((c) => c.includes(GUARD_COMMAND_MARKER))).toHaveLength(1);
+    expect(findUnguardedDeployTargets(config)).toEqual([]);
+  });
+
+  test("the same real config with its storage guard removed reports exactly storage", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.json"), "utf8")) as {
+      storage: { predeploy?: string[] };
+    };
+    config.storage.predeploy = config.storage.predeploy!.filter((c) => !c.includes(GUARD_COMMAND_MARKER));
+    expect(findUnguardedDeployTargets(config)).toEqual(["storage"]);
+  });
+});
