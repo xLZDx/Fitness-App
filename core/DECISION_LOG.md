@@ -55988,3 +55988,15 @@ Decision (D-4, D-67): every callable failure is reduced to a closed slug before 
 ## 2026-10-15 - Commit: C15 part 1 (ARB keys for the body scan flow and result)
 
 Decision (D-73, D-74, D-78, D-81, D-85): all C15 user-visible strings are added to both ARB files up front under `bodyScan*` and `checkCode*` keys; decimals are passed as pre-formatted strings (locale-aware formatting in the widgets) with non-inflecting RU units, plurals only for integer counts. Evidence: change record `core/changes/2026-10-15-c15-arb-keys.md`; no checks run by operator rule.
+
+## 2026-10-15 - Commit: C20 food scanning Cloud Functions
+
+Decision (D-63, D-64, D-65, D-66, D-67 as implemented): analyzeMealPhoto and parseNutritionLabel join the release-guard set (AI_CALLABLES 4 to 6) and run flag-gated (FOOD_AI_ENABLED) before any quota charge; lookupBarcode and searchFoods run on FOOD_LOOKUP (FOOD_LOOKUP_ENABLED), do not call the AI kill switch (fn-data has no grant on it), charge only cache misses (negative results included) and take a per-uid burst slot and the global OFF budget before any upstream call. All model output is clamped, sanitised and recomputed server-side; USDA key is read from Secret Manager at runtime and an absent key degrades to llm_estimate. Recorded deviations: flat functions/src layout per design 2.3; secretAccessor on USDA_FDC_API_KEY needed for fn-data as well as fn-ai-runtime; response schema gains a packaged flag. Evidence: reading only; nothing executed (rules v4). Change record: core/changes/2026-10-15-c20-food-functions.md.
+
+## 2026-10-15 - Commit: C18 functional tests (review transaction and undo)
+
+Decision (D-57, D-55): C18 is verified by pure-function tests that assert nothing is written on every refusal path (already reviewed, no plan, stale planVersion, cooldown, drift cap, bounds) and that review plus plan change come from one result. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C12 server tests (manage)
+
+Decision: manageBodyScanData tests prove the paging contract (200 per call, whole-user prefix sweep only on the final delete-all page, applyRetention never sweeping) and that delete-all is not gated by the per-scan delete quota. Evidence: `npx jest src/__tests__/body_scan/manage.test.ts` in functions/ = 41 passed. Residual risk noted, not tested: exportLinks pages by takenAt millis, so two scans with an identical takenAt straddling a page boundary would skip one. Change record: core/changes/2026-10-15-body-scan-server-tests-manage.md.
