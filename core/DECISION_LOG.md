@@ -56204,3 +56204,11 @@ Decision (defect fix, C01 rules): `cloudConsent` withdrawal was refused by an ev
 Decision (deferral): lifecycle-policy rows for the new collections (PRIV-21, RULES-14) are `test.todo` until C25 adds them to `scripts/ci/data_lifecycle_policy.json`.
 
 Evidence: firestore_rules + data_access_policy 491 passed / 4 todo; storage_rules 82 passed (emulator, alternate port config). Change record: core/changes/2026-10-15-e0-tests-rules.md.
+
+## 2026-10-15 - Commit: C23 part 8 (search page, routes)
+
+Decision: server food search is explicit-submit only and the weight link reuses the C19 weight log page. Evidence: `core/changes/2026-10-15-c23-search-routes.md`; no checks run.
+
+## 2026-10-15 - Commit: C16 functional tests (test-engineer pass)
+
+Decision: C16 history/privacy/compare behaviour is covered by focused Dart tests using fakes and provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c16-tests.md`.

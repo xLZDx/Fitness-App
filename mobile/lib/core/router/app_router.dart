@@ -31,6 +31,10 @@ import '../../features/body_scan/body_scan_flow_page.dart';
 import '../../features/body_scan/body_scan_history_page.dart';
 import '../../features/body_scan/body_scan_privacy_page.dart';
 import '../../features/body_scan/body_scan_result_page.dart';
+import '../../features/food_diary/add_food_page.dart';
+import '../../features/food_diary/data/food_entry.dart' show MealSlot;
+import '../../features/food_diary/food_diary_page.dart';
+import '../../features/food_diary/food_search_page.dart';
 import '../../features/nutrition_plan/nutrition_plan_page.dart';
 import '../../features/nutrition_plan/nutrition_profile_flow_page.dart';
 import '../../features/nutrition_plan/plan_explainer_page.dart';
@@ -142,6 +146,14 @@ String? resolveRedirect({
   }
   if (isSignedIn && isOnboarded && location == '/onboarding') {
     return '/home';
+  }
+  return null;
+}
+
+/// `slot` query value of the food routes; unknown values mean "no slot".
+MealSlot? _slotParam(String? raw) {
+  for (final s in MealSlot.values) {
+    if (s.name == raw) return s;
   }
   return null;
 }
@@ -558,6 +570,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/nutrition/weight',
         pageBuilder: (_, __) => _fadeThrough(const WeightLogPage()),
+      ),
+      // C23. Food diary, add-food and search.
+      GoRoute(
+        path: '/nutrition/diary',
+        pageBuilder: (_, __) => _fadeThrough(const FoodDiaryPage()),
+      ),
+      GoRoute(
+        path: '/nutrition/add',
+        pageBuilder: (_, state) => _fadeThrough(AddFoodPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/add/search',
+        pageBuilder: (_, state) => _fadeThrough(FoodSearchPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+          savedOnly: state.uri.queryParameters['saved'] == '1',
+        )),
       ),
       GoRoute(
         path: '/nutrition/sources',

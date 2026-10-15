@@ -5,11 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/config/body_scan_flags.dart';
-import '../../core/privacy/data_notice.dart';
 import '../nutrition_plan/data/nutrition_eligibility.dart';
-import '../nutrition_plan/data/weight_entry.dart';
 import '../nutrition_plan/state/nutrition_providers.dart';
-import '../nutrition_plan/state/weight_providers.dart';
+import '../nutrition_plan/state/weight_providers.dart' show nutritionClockProvider;
 import 'data/food_entry.dart';
 import 'food_detail_sheet.dart';
 import 'state/diary_providers.dart';
@@ -133,15 +131,6 @@ class _DiaryBody extends ConsumerWidget {
     ));
   }
 
-  Future<void> _logWeight(BuildContext context, WidgetRef ref) async {
-    if (!await ensureDataNoticeAcknowledged(context, ref)) return;
-    if (!context.mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (_) => const _WeightDialog(),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -250,80 +239,13 @@ class _DiaryBody extends ConsumerWidget {
             TextButton.icon(
               key: const Key('diary.weightLink'),
               style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-              onPressed: () => _logWeight(context, ref),
+              onPressed: () => context.push('/nutrition/weight'),
               icon: const Icon(Icons.monitor_weight_outlined),
               label: Text(l10n.foodDiaryWeightLink),
             ),
           ],
         );
       },
-    );
-  }
-}
-
-/// Small weigh-in dialog: one number, validated 30..300 kg, saved through the
-/// same actions as the weight log (the notice was acknowledged by the caller).
-class _WeightDialog extends ConsumerStatefulWidget {
-  const _WeightDialog();
-
-  @override
-  ConsumerState<_WeightDialog> createState() => _WeightDialogState();
-}
-
-class _WeightDialogState extends ConsumerState<_WeightDialog> {
-  final _c = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    final l10n = AppLocalizations.of(context);
-    final kg = double.tryParse(_c.text.trim().replaceAll(',', '.'));
-    if (kg == null || !WeightEntry.isValidKg(kg)) {
-      setState(() => _error = l10n.foodDiaryWeightInvalid);
-      return;
-    }
-    final status = await ref.read(weightLogActionsProvider).add(kg);
-    if (!mounted) return;
-    if (status == WeightWriteStatus.saved) {
-      Navigator.of(context).pop();
-    } else {
-      setState(() => _error = l10n.foodDiaryWriteFailed);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(l10n.foodDiaryWeightTitle),
-      content: TextField(
-        key: const Key('diary.weightField'),
-        controller: _c,
-        autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: l10n.foodDiaryWeightField,
-          errorText: _error,
-        ),
-        onSubmitted: (_) => _save(),
-      ),
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.commonCancel),
-        ),
-        FilledButton(
-          style: FilledButton.styleFrom(minimumSize: const Size(48, 48)),
-          onPressed: _save,
-          child: Text(l10n.commonSave),
-        ),
-      ],
     );
   }
 }
