@@ -56482,3 +56482,7 @@ Progress: history/privacy route tests added (C16).
 ## 2026-10-15 - Commit: C19 plan_sources_page_test.dart
 
 Decision: the sources page attributes formulas and food data and states estimate and no-medical-advice limits. Evidence: core/changes/2026-10-15-c19-tests.md (plan_sources_page_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C19 plan_explainer_page_test.dart
+
+Decision: the explainer page describes the weekly review and ownership modes without promising dates or results. Evidence: core/changes/2026-10-15-c19-tests.md (plan_explainer_page_test.dart 6 passed).
