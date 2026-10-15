@@ -56364,3 +56364,7 @@ Decision: macro values are asserted as text and through the semantics label, not
 ## 2026-10-15 - Commit: C19 professional_notice_test.dart
 
 Decision: the referProfessional notice carries no numbers or reasons. Evidence: core/changes/2026-10-15-c19-tests.md (professional_notice_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C13 tests: scan ports defaults, speaker bridge and haptic patterns
+
+Decision: Port tests prove luminance default, 3/5/10 s timer provider, speech success/failure observability and six distinct haptic sequences. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
