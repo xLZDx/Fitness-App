@@ -55900,3 +55900,7 @@ Decision (Q-2 / D-26 default): AppFeature gets one entry per feature; only bodyS
 Decision (D-79): first-use data notice is a single-tap, versioned, device-local acknowledgement (key data_notice.v<version>.<uid>); a dismissed sheet defers the write and never loses it; the Vertex AI paragraph is shown only when FOOD_AI is compiled in. The ARB keys ship in C03 (SD-3) although the coordinator expected l10n later.
 
 Evidence: reading only; not analyzed or run. Change record: core/changes/2026-10-15-client-flags-and-gates.md.
+
+## 2026-10-15 - Commit: C05 nutrition maths, safety clamps and eligibility
+
+Decision (D-13, D-39, D-55 as implemented): all safety numbers are named constants in `SafetyClamps`; the lose-goal calorie range is target -200/+100 (D-39) and is clamped inside the recomputed slider bounds, whose low end applies the 25 % TDEE / absolute-rate deficit cap, so the hand vectors V-LOSE-M and V-LOSE-CAP of the coverage map (written with +-150 and without the bounds clamp) are superseded for the range values only; TDEE, rate, deficit and target agree. When TDEE is at or under the calorie floor the floor wins and the upper bound is lifted to min + 100. The eligibility verdict is computed on the device and never persisted. Shared EWMA and Theil-Sen primitives live in `mobile/lib/core/math/series_math.dart` (D-71). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-maths-and-eligibility.md.
