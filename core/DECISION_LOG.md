@@ -56236,3 +56236,7 @@ Decision: the result page gets History, Edit weight and Delete photos wired to t
 ## 2026-10-15 - Commit: C25 data inventory rows
 
 Decision: new stores are listed with deletion and export behaviour; nutrition_cache and body_scan_purge_state are EXEMPT (no user data). Evidence: `core/changes/2026-10-15-c25-data-inventory.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 weight providers tests
+
+Decision: weight provider tests prove one current-weight definition (14 days, stale fallback), validation, the deletion fence and that a scan weight never replaces an equal same-day manual entry. Evidence: core/changes/2026-10-15-c18-tests.md.
