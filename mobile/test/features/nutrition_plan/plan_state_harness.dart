@@ -31,6 +31,7 @@ UserProfile eligibleProfile({
   double? weightKg = 80,
   GoalDirection goal = GoalDirection.lose,
   PlanOwnership? ownership,
+  double? targetBodyFatPct,
   ActivityLevel? activity = ActivityLevel.moderatelyActive,
 }) =>
     UserProfile(
@@ -43,7 +44,10 @@ UserProfile eligibleProfile({
         activityLevel: activity,
       ),
       health: HealthHistory(flags: flags),
-      nutrition: NutritionPrefs(goalDirection: goal, planOwnership: ownership),
+      nutrition: NutritionPrefs(
+          goalDirection: goal,
+          planOwnership: ownership,
+          targetBodyFatPct: targetBodyFatPct),
     );
 
 class PlanHarness {
