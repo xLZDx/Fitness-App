@@ -3354,7 +3354,7 @@
   },
   "nutritionMacrosNote": "These are ranges, not exact targets. Anywhere inside them is fine.",
   "nutritionStepsTitle": "Daily steps goal",
-  "nutritionStepsValue": "{steps, plural, one{# step} other{# steps}}",
+  "nutritionStepsValue": "{steps, plural, one{{steps} step} other{{steps} steps}}",
   "@nutritionStepsValue": {
     "placeholders": {
       "steps": {
@@ -3479,7 +3479,7 @@
       }
     }
   },
-  "nutritionReviewBasis": "{points, plural, one{Based on # weigh-in} other{Based on # weigh-ins}}",
+  "nutritionReviewBasis": "{points, plural, one{Based on {points} weigh-in} other{Based on {points} weigh-ins}}",
   "@nutritionReviewBasis": {
     "placeholders": {
       "points": {

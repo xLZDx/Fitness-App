@@ -2155,7 +2155,7 @@
   },
   "nutritionMacrosNote": "Это диапазоны, а не точные цели. Любое значение внутри них подходит.",
   "nutritionStepsTitle": "Цель по шагам в день",
-  "nutritionStepsValue": "{steps, plural, one{# шаг} few{# шага} many{# шагов} other{# шага}}",
+  "nutritionStepsValue": "{steps, plural, one{{steps} шаг} few{{steps} шага} many{{steps} шагов} other{{steps} шага}}",
   "@nutritionStepsValue": {
     "placeholders": {
       "steps": {
@@ -2280,7 +2280,7 @@
       }
     }
   },
-  "nutritionReviewBasis": "{points, plural, one{На основе # записи веса} few{На основе # записей веса} many{На основе # записей веса} other{На основе # записи веса}}",
+  "nutritionReviewBasis": "{points, plural, one{На основе {points} записи веса} few{На основе {points} записей веса} many{На основе {points} записей веса} other{На основе {points} записи веса}}",
   "@nutritionReviewBasis": {
     "placeholders": {
       "points": {

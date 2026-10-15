@@ -56324,3 +56324,7 @@ Decision: chart tests assert one summary node plus an expand action instead of p
 ## 2026-10-15 - Commit: C23 food search controller tests
 
 Decision: debounce and cache are proven with the widget-test fake clock (599 ms no call, 600 ms call). Evidence: core/changes/2026-10-15-c23-tests.md (food_search_controller_test 26 passed).
+
+## 2026-10-15 - Commit: C19 macro_ranges_card_test.dart
+
+Decision: the ICU '#' in nutritionStepsValue and nutritionReviewBasis rendered literally, so the placeholder names are used in EN and RU. Evidence: core/changes/2026-10-15-c19-tests.md (macro_ranges_card_test.dart 7 passed).
