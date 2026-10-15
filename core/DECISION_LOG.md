@@ -56574,3 +56574,7 @@ Decision: The rebuild-stability test now starts after the 2 s live-region thrott
 ## 2026-10-15 - Commit: C23 text scale 2.0 RU tests and overflow fixes
 
 Decision: text-scale overflow is asserted through takeException on a 360x640 RU 2.0 render of every diary surface. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C23 food ARB parity tests
+
+Decision: RU plural forms are proven by output of the generated localizations, not only by the ARB text. Evidence: core/changes/2026-10-15-c23-tests.md.
