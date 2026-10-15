@@ -56096,3 +56096,7 @@ Decision: fixed three product defects found by the tests: Eggplant no longer car
 ## 2026-10-15 - Commit: fix(body-scan): import CustomSemanticsAction in trend_chart
 
 Decision: one-line import fix; the widget did not compile under the pinned Flutter 3.27.1, blocking every test that imports it. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C18 in-memory repository tests
+
+Decision: repository tests prove version-checked saves, one atomic review+plan write, concurrent same-week idempotency and the offline no-write rule. Evidence: core/changes/2026-10-15-c18-tests.md.
