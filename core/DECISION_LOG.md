@@ -56468,3 +56468,7 @@ Decision: label draft validation is tested at exact bounds with hand-computed sc
 ## 2026-10-15 - Commit: C19 weight_log_page_test.dart
 
 Decision: the weight log writes only valid 30..300 kg weights, only after the data notice, and edit/delete touch exactly one entry. Evidence: core/changes/2026-10-15-c19-tests.md (weight_log_page_test.dart 20 passed).
+
+## 2026-10-15 - Commit: C15 tests - body_scan_flow_driver_test
+
+Decision: driver tests use a recording fake runner and a stateful record list instead of Firestore. Evidence: core/changes/2026-10-15-c15-tests.md.
