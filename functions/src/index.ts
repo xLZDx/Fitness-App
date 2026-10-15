@@ -2982,3 +2982,11 @@ export { estimateBodyScan } from "./body_scan/estimate";
 export { deleteBodyScan } from "./body_scan/delete";
 export { manageBodyScanData } from "./body_scan/manage";
 export { purgeExpiredBodyScanPhotos } from "./body_scan/purge";
+
+// Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
+// AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
+// `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until
+// FOOD_AI_ENABLED / FOOD_LOOKUP_ENABLED are set; deploy by name.
+export { analyzeMealPhoto } from "./analyze_meal_photo";
+export { parseNutritionLabel } from "./parse_nutrition_label";
+export { lookupBarcode, searchFoods } from "./nutrition_lookup";

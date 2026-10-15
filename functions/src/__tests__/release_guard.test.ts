@@ -120,6 +120,8 @@ const AI_SOURCE_PATHS: Record<string, string> = {
   aiEquipmentRecognition: "functions/src/ai_equipment_recognition.ts",
   aiMachineDescription: "functions/src/ai_machine_description.ts",
   aiExerciseGeneration: "functions/src/ai_exercise_generation.ts",
+  analyzeMealPhoto: "functions/src/analyze_meal_photo.ts",
+  parseNutritionLabel: "functions/src/parse_nutrition_label.ts",
 };
 const SCALING_PATH = "functions/src/scaling.ts";
 
@@ -432,7 +434,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    const check = byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables");
+    const check = byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables");
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("aiEquipmentRecognition");
   });
@@ -451,7 +453,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("OK");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("OK");
   });
 
   test("App Check OK when APP_CHECK_ENFORCED_AI is off but APP_CHECK_ENFORCED covers it", async () => {
@@ -471,7 +473,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("OK");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("OK");
   });
 
   test("anonymous-refusal FAILED when AI_ALLOW_ANONYMOUS=true on any callable", async () => {
@@ -486,7 +488,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    const check = byName(result, "Anonymous callers are refused on all 4 AI callables");
+    const check = byName(result, "Anonymous callers are refused on all 6 AI callables");
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("aiMachineDescription");
   });
@@ -495,8 +497,8 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     const result = await runReleaseGuard(
       makeDeps({ gcloud: { "describe:aiExerciseGeneration": () => ({ ok: false, stdout: "", stderr: "not found" }) } }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("UNAVAILABLE");
-    expect(byName(result, "Anonymous callers are refused on all 4 AI callables").status).toBe("UNAVAILABLE");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("UNAVAILABLE");
+    expect(byName(result, "Anonymous callers are refused on all 6 AI callables").status).toBe("UNAVAILABLE");
   });
 
   test("kill switch FAILED when fn-ai-runtime lacks secretAccessor entirely", async () => {
