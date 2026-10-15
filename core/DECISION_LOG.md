@@ -56279,3 +56279,12 @@ Evidence addendum (C18 scan plan context source tests): scan_plan_context_source
 ## 2026-10-15 - Commit: C19 kcal range slider tests
 
 Decision: the slider persists the last drag value on release (stale parent range could be written when the last move and the release share a frame). Evidence: core/changes/2026-10-15-c19-tests.md (kcal_range_slider_test 22 passed).
+Evidence: scan_plan_context_source_test.dart green (14), part of the C18 set of ten files.
+
+## 2026-10-15 - Commit: C23 food_api tests
+
+Decision: callable errors are tested through the pure `mapFoodCallableError` and the parsers; the real `HttpsCallable` wiring is not faked. Evidence: core/changes/2026-10-15-c23-tests.md (food_api_test 33 passed).
+
+## 2026-10-15 - Commit: C13 tests: manual timer, announcement channels, text scale 2.0; fix l10n plurals, top-bar overflow, stale live cue
+
+Decision: Capture screen tests prove timer/override/channel/throttle/overflow contracts; three product defects (literal # in ICU plurals, top-bar overflow at 2.0x RU, stale throttled live-region cue) fixed minimally in ARB and scan_capture_screen. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
