@@ -223,10 +223,19 @@ export interface CheckResult {
 
 export type Verdict = "PASS" | "BLOCK";
 
+/** Which product line the checked-out branch belongs to -- see `classifyDeployLine`. */
+export type DeployLine = "phase1" | "phase2" | "other";
+
 export interface ReleaseGuardResult {
   verdict: Verdict;
   generatedAt: string;
   checks: CheckResult[];
+  /** Deploy line derived from the current git branch. */
+  line: DeployLine;
+  /** Current git branch, or `null` when it could not be read / HEAD is detached. */
+  branch: string | null;
+  /** The project id the guard validated (`deps.project`). */
+  project: string;
 }
 
 export interface CommandResult {
@@ -249,6 +258,10 @@ export interface ReleaseGuardDeps {
   runCommand: CommandRunner;
   readFile: FileReader;
   now: () => number;
+  /** Current git branch name (`git rev-parse --abbrev-ref HEAD`). Returns
+   * `null` when it cannot be read; a detached HEAD is reported as the literal
+   * `"HEAD"` by git and is treated as an unknown line. Never throws. */
+  currentBranch: () => Promise<string | null>;
 }
 
 /** The exact 4 AI Gateway callables this gate covers -- see `abuse_guard.ts`'s own QUOTAS map. */
@@ -266,6 +279,115 @@ export const RELEASE_EVIDENCE_PATH = "core/state/g4_release_evidence.json";
 /** The single real Firebase project this guard is meaningful for -- see
  * `.firebaserc`, which also defines an unrelated `legacy-shared` alias. */
 export const EXPECTED_PROJECT_ID = "fitness-app-korostelev";
+
+/** The unrelated legacy project alias in `.firebaserc` -- never a deploy target. */
+export const LEGACY_PROJECT_ID = "traidingbot-b4061";
+
+/** The `.firebaserc` alias the operator creates for the separate Phase 2 Firebase project. */
+export const PHASE2_ALIAS = "phase2";
+
+export const FIREBASERC_PATH = ".firebaserc";
+
+/** Closed set of deploy-line block reasons; each appears as the leading slug
+ * of the failing `checkDeployTarget` detail. */
+export const DEPLOY_LINE_REASONS = [
+  "deploy-line-unknown",
+  "phase1-wrong-project",
+  "firebaserc-unreadable",
+  "phase2-alias-missing",
+  "phase2-targets-production",
+  "phase2-project-mismatch",
+] as const;
+export type DeployLineReason = (typeof DEPLOY_LINE_REASONS)[number];
+
+/** Maps a git branch name to a deploy line. `phase2/*` -> phase2;
+ * `phase1/main`, `master`, `phase1/*` -> phase1; anything else (feature
+ * branches, detached HEAD = "HEAD", empty, unreadable = null) -> other. */
+export function classifyDeployLine(branch: string | null): DeployLine {
+  if (branch === null) return "other";
+  const b = branch.trim();
+  if (b.startsWith("phase2/")) return "phase2";
+  if (b === "phase1/main" || b === "master" || b.startsWith("phase1/")) return "phase1";
+  return "other";
+}
+
+export type DeployTargetResolution =
+  | { ok: true; line: DeployLine; branch: string | null; allowedProject: string }
+  | { ok: false; line: DeployLine; branch: string | null; reason: DeployLineReason; detail: string };
+
+interface FirebaseRc {
+  projects?: Record<string, unknown>;
+}
+
+/** Resolves the deploy line from the current branch and the single project id
+ * that line may deploy to. Fails closed with a closed-slug reason; there is
+ * deliberately no environment override. */
+export async function resolveDeployTarget(deps: ReleaseGuardDeps): Promise<DeployTargetResolution> {
+  let branch: string | null;
+  try {
+    branch = await deps.currentBranch();
+  } catch {
+    branch = null;
+  }
+  const line = classifyDeployLine(branch);
+  if (line === "other") {
+    return {
+      ok: false,
+      line,
+      branch,
+      reason: "deploy-line-unknown",
+      detail: `deploy-line-unknown: branch ${branch === null ? "could not be read" : JSON.stringify(branch)} is not on a deploy line (phase1/*, master, phase2/*) -- no deploy from here`,
+    };
+  }
+  if (line === "phase1") {
+    return { ok: true, line, branch, allowedProject: EXPECTED_PROJECT_ID };
+  }
+
+  // phase2 line: the only allowed project is the id under alias `phase2`.
+  const raw = await deps.readFile(FIREBASERC_PATH);
+  let rc: FirebaseRc | undefined;
+  if (raw !== null) {
+    try {
+      rc = JSON.parse(raw) as FirebaseRc;
+    } catch {
+      rc = undefined;
+    }
+  }
+  if (rc === undefined || rc === null || typeof rc !== "object" || typeof rc.projects !== "object" || rc.projects === null) {
+    return {
+      ok: false,
+      line,
+      branch,
+      reason: "firebaserc-unreadable",
+      detail: `firebaserc-unreadable: ${FIREBASERC_PATH} is missing, unparseable or has no "projects" map -- cannot resolve alias "${PHASE2_ALIAS}"`,
+    };
+  }
+  const projects = rc.projects;
+  const alias = projects[PHASE2_ALIAS];
+  if (typeof alias !== "string" || alias.trim().length === 0) {
+    return {
+      ok: false,
+      line,
+      branch,
+      reason: "phase2-alias-missing",
+      detail: `phase2-alias-missing: ${FIREBASERC_PATH} has no non-empty alias "${PHASE2_ALIAS}" -- the operator must create the Phase 2 Firebase project and add it`,
+    };
+  }
+  const forbidden = new Set<string>([EXPECTED_PROJECT_ID, LEGACY_PROJECT_ID]);
+  for (const [key, value] of Object.entries(projects)) {
+    if (key !== PHASE2_ALIAS && typeof value === "string") forbidden.add(value);
+  }
+  if (forbidden.has(alias)) {
+    return {
+      ok: false,
+      line,
+      branch,
+      reason: "phase2-targets-production",
+      detail: `phase2-targets-production: alias "${PHASE2_ALIAS}" = "${alias}" is the production/legacy/other-alias project -- Phase 2 must have its own Firebase project`,
+    };
+  }
+  return { ok: true, line, branch, allowedProject: alias };
+}
 
 /** Known-safe roles for the kill-switch secret -- skipped without further resolution. */
 const KNOWN_SAFE_SECRET_ROLES = new Set([
@@ -401,16 +523,24 @@ async function describeAiFunctions(
  * silently checks the wrong project) if this one is wrong. See
  * `run_release_guard.mjs` for how `deps.project` is derived from
  * `GCLOUD_PROJECT`. */
-async function checkDeployTarget(deps: ReleaseGuardDeps): Promise<CheckResult> {
+export async function checkDeployTarget(
+  deps: ReleaseGuardDeps,
+  resolution?: DeployTargetResolution,
+): Promise<CheckResult> {
   const name = "Deploy target is this project's real Firebase project";
-  if (deps.project !== EXPECTED_PROJECT_ID) {
+  const resolved = resolution ?? (await resolveDeployTarget(deps));
+  if (!resolved.ok) {
+    return { name, status: "FAILED", detail: resolved.detail };
+  }
+  if (deps.project !== resolved.allowedProject) {
+    const reason: DeployLineReason = resolved.line === "phase2" ? "phase2-project-mismatch" : "phase1-wrong-project";
     return {
       name,
       status: "FAILED",
-      detail: `resolved project is "${deps.project}", expected "${EXPECTED_PROJECT_ID}" -- every other check below would validate the wrong project`,
+      detail: `${reason}: resolved project is "${deps.project}", the ${resolved.line} line may deploy only to "${resolved.allowedProject}" -- every other check below would validate the wrong project`,
     };
   }
-  return { name, status: "OK", detail: `project = ${EXPECTED_PROJECT_ID}` };
+  return { name, status: "OK", detail: `line = ${resolved.line}, project = ${resolved.allowedProject}` };
 }
 
 async function checkFunctionsInventory(deps: ReleaseGuardDeps): Promise<CheckResult> {
@@ -1110,8 +1240,9 @@ export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGu
   const evidence = await loadEvidence(deps);
   const describedFunctions = await describeAiFunctions(deps);
 
+  const target = await resolveDeployTarget(deps);
   const checks: CheckResult[] = [];
-  checks.push(await checkDeployTarget(deps));
+  checks.push(await checkDeployTarget(deps, target));
   checks.push(await checkCandidateSourceInvariants(deps));
   checks.push(await checkFunctionsInventory(deps));
   checks.push(
@@ -1131,5 +1262,12 @@ export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGu
   checks.push(await checkSourceProvenance(deps));
 
   const verdict: Verdict = checks.every((c) => c.status === "OK") ? "PASS" : "BLOCK";
-  return { verdict, generatedAt: new Date(deps.now()).toISOString(), checks };
+  return {
+    verdict,
+    generatedAt: new Date(deps.now()).toISOString(),
+    checks,
+    line: target.line,
+    branch: target.branch,
+    project: deps.project,
+  };
 }

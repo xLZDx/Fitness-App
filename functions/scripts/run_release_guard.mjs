@@ -111,6 +111,16 @@ async function readFile(relPath) {
   }
 }
 
+/** Current git branch via `git rev-parse --abbrev-ref HEAD`; `null` on any
+ * failure or empty output. A detached HEAD prints "HEAD", which the guard
+ * classifies as an unknown deploy line. Never throws. */
+async function currentBranch() {
+  const res = await runCommand("git", ["rev-parse", "--abbrev-ref", "HEAD"], 15_000);
+  if (!res.ok) return null;
+  const branch = res.stdout.trim();
+  return branch.length > 0 ? branch : null;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const result = await runReleaseGuard({
@@ -118,9 +128,11 @@ async function main() {
     runCommand,
     readFile,
     now: () => Date.now(),
+    currentBranch,
   });
 
   console.log(`\nMVP1.G4 Step 9 -- AI Gateway release guard (${args.project})`);
+  console.log(`deploy line: ${result.line} (branch: ${result.branch ?? "unknown"}), project: ${result.project}`);
   console.log(`generatedAt: ${result.generatedAt}\n`);
   for (const check of result.checks) {
     const marker = check.status === "OK" ? "OK  " : check.status === "FAILED" ? "FAIL" : "N/A ";
