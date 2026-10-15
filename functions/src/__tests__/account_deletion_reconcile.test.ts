@@ -272,6 +272,16 @@ jest.mock("firebase-functions/logger", () => ({
   error: jest.fn(),
 }));
 
+/**
+ * C12: the account sweep also deletes the user's objects in the private
+ * body-scan bucket. Storage is modelled by `deleteFiles` only.
+ */
+const storageDeleteFiles = jest.fn(async (_opts?: unknown) => undefined as unknown);
+const storageBucket = jest.fn((_name?: string) => ({ deleteFiles: storageDeleteFiles }));
+jest.mock("firebase-admin/storage", () => ({
+  getStorage: jest.fn(() => ({ bucket: storageBucket })),
+}));
+
 import * as logger from "firebase-functions/logger";
 import { deleteAccount, reconcileAccountDeletions } from "../index";
 
@@ -346,6 +356,9 @@ beforeEach(() => {
   txCommitted.length = 0;
   txRetries = 0;
   recursiveDelete.mockClear();
+  storageDeleteFiles.mockReset().mockResolvedValue(undefined);
+  storageBucket.mockClear();
+  delete process.env.BODY_SCAN_BUCKET;
   getUser.mockReset().mockImplementation(async () => {
     throw notFound();
   });
@@ -1196,5 +1209,117 @@ describe("booking sweep under concurrent deletions (F13)", () => {
       clientUid: "deleted_user",
       coachUid: "coach_9",
     });
+  });
+});
+
+describe("reconciler: body-scan storage sweep (C12, design s7.6, SD-6)", () => {
+  const BUCKET = "body-scan-test-bucket";
+  const gcsError = (code?: number): Error =>
+    Object.assign(new Error(`gcs failure for users/${U}/scans/s1/front.jpg`), code === undefined ? {} : { code });
+
+  test("bucket set: the due record's sweep also deletes users/<uid>/ with force: true, then the record is removed", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    seedUserData(U);
+    seedRecord(U, { nextAttemptAt: T0 });
+
+    await runReconciler();
+
+    expect(storageBucket.mock.calls).toEqual([[BUCKET]]);
+    expect(storageDeleteFiles.mock.calls).toEqual([[{ prefix: `users/${U}/`, force: true }]]);
+    expect(keysUnder(`users/${U}`)).toEqual([]);
+    expect(store.has(RECORD)).toBe(false);
+    expect(logged("info", "account_deletion_reconciled")).toHaveLength(1);
+  });
+
+  test("bucket unset: storage is never touched and the record is still reconciled", async () => {
+    seedUserData(U);
+    seedRecord(U, { nextAttemptAt: T0 });
+    await runReconciler();
+    expect(storageBucket).not.toHaveBeenCalled();
+    expect(storageDeleteFiles).not.toHaveBeenCalled();
+    expect(store.has(RECORD)).toBe(false);
+    expect(logged("info", "body_scan_storage_sweep_skipped_unconfigured")).toHaveLength(1);
+  });
+
+  test.each([
+    ["a single 404", gcsError(404)],
+    ["an array of 404s", [gcsError(404), gcsError(404)]],
+  ])("%s is 'nothing to delete': the record is reconciled", async (_name, rejection) => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockRejectedValue(rejection);
+    seedUserData(U);
+    seedRecord(U, { nextAttemptAt: T0 });
+    await runReconciler();
+    expect(store.has(RECORD)).toBe(false);
+    expect(keysUnder(`users/${U}`)).toEqual([]);
+  });
+
+  test("a 403 fails the attempt AFTER the Firestore data was swept: the record persists with the bare code and backoff, and the next run (storage recovered) finishes it", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockRejectedValue(gcsError(403));
+    seedUserData(U);
+    seedRecord(U, { attempts: 1, nextAttemptAt: T0 });
+
+    await runReconciler();
+
+    expect(keysUnder(`users/${U}`)).toEqual([]); // Firestore part completed first
+    expect(store.has(`donor_wall/${U}`)).toBe(false);
+    const rec = store.get(RECORD)!;
+    expect(rec.status).toBe("pending");
+    expect(rec.attempts).toBe(2);
+    expect(rec.lastErrorCode).toBe("403");
+    expect(rec.nextAttemptAt).toEqual(ts(T0 + 30 * MIN));
+    expect(storageDeleteFiles).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify((logger.error as jest.Mock).mock.calls)).not.toContain("front.jpg");
+    expect(JSON.stringify(rec)).not.toContain("front.jpg");
+
+    // Not due yet: no second storage call.
+    now = T0 + 29 * MIN;
+    await runReconciler();
+    expect(storageDeleteFiles).toHaveBeenCalledTimes(1);
+
+    // IAM fixed; the retry completes and removes the record.
+    storageDeleteFiles.mockResolvedValue(undefined);
+    now = T0 + 30 * MIN;
+    await runReconciler();
+    expect(storageDeleteFiles).toHaveBeenCalledTimes(2);
+    expect(store.has(RECORD)).toBe(false);
+  });
+
+  test("a mixed array [404, 500] is a real failure (one non-404 is enough) and records the first error's code", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockRejectedValue([gcsError(500), gcsError(404)]);
+    seedUserData(U);
+    seedRecord(U, { attempts: 1, nextAttemptAt: T0 });
+    await runReconciler();
+    expect(store.get(RECORD)!.lastErrorCode).toBe("500");
+    expect(store.get(RECORD)!.attempts).toBe(2);
+  });
+
+  test("a storage failure with no error code is recorded as 'unknown'", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockRejectedValue(gcsError());
+    seedUserData(U);
+    seedRecord(U, { attempts: 1, nextAttemptAt: T0 });
+    await runReconciler();
+    expect(store.get(RECORD)!.lastErrorCode).toBe("unknown");
+  });
+
+  test("deleteAccount's final sweep failing on storage (403) leaves the record that this reconciler then finishes", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    seedUserData(U);
+    storageDeleteFiles
+      .mockResolvedValueOnce(undefined) // Step 2 sweep
+      .mockRejectedValueOnce(gcsError(403)); // final sweep, after the Auth user is gone
+
+    const res = await deleteAccount.run(callReq(U));
+
+    expect(res).toEqual({ success: true, finalCleanup: "scheduled" });
+    expect(store.get(RECORD)).toMatchObject({ status: "pending", lastErrorCode: "403", attempts: 1 });
+
+    now = T0 + 15 * MIN;
+    await runReconciler();
+    expect(store.has(RECORD)).toBe(false);
+    expect(storageDeleteFiles).toHaveBeenCalledTimes(3);
   });
 });

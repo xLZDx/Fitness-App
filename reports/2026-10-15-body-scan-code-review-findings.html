@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Scan + Nutrition Coach: code review findings</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:16px;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #8884;padding:6px 8px;text-align:left;vertical-align:top}
+h2{margin-top:28px}
+</style>
+</head>
+<body>
+<header>
+<h1>Body Scan + Nutrition Coach: code review findings</h1>
+<p>Branch feature/body-scan-nutrition-coach, 15 October 2026. Four read-only reviews finished (database, flutter, silent-failure, security) on head aae03deb. Fix agents are running; this is a checkpoint, not a gate closure.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ 9738b5a3</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>1. Confirmed MAJOR findings</h2>
+<table>
+<tr><th>Id</th><th>Claim</th><th>Planned fix</th><th>Status</th></tr>
+<tr><td>P-1</td><td>Purge takes the uid from the path of any body_scans document, so fake nested documents can starve retention.</td><td>Require path users/{uid}/body_scans/{id} in every pass.</td><td>Fix agent running (server)</td></tr>
+<tr><td>P-2 / DB-F2</td><td>Rollback by unsetting the bucket and the AI kill switch disable every erase path.</td><td>Separate upload switch; erase keyed on the bucket only; runbook rewrite.</td><td>Fix agent running (server)</td></tr>
+<tr><td>DB-F1 / P-3</td><td>Failed scans are never purged.</td><td>Purge or delete objects for failed scans.</td><td>Fix agent running (server)</td></tr>
+<tr><td>SF-F1</td><td>Offline cancel or delete does not stop an unfinished scan; it is re-uploaded after the flush.</td><td>Cancel the runner, persist terminal state, keep the owed-delete flag.</td><td>Fix agent running (mobile)</td></tr>
+<tr><td>SF-F2</td><td>A still-loading profile makes the scan fail permanently with subject-missing.</td><td>Loading means not ready; stay queued.</td><td>Fix agent running (mobile)</td></tr>
+<tr><td>SF-F3</td><td>A retry timer that fires while the runner is busy is lost.</td><td>Recompute the earliest due time after the loop.</td><td>Fix agent running (mobile)</td></tr>
+<tr><td>SF-F4</td><td>deletePhotos reports deleted while the cloud copy remains when cloud photos are off.</td><td>Persist the owed delete before removing the local copy.</td><td>Fix agent running (mobile)</td></tr>
+</table>
+
+<h2>2. MINOR findings</h2>
+<p>About 30 MINOR items were recorded (consent recheck before estimate, per-scan attempt cap, export continuation quota, gateway error logging, uid in export logs, cursor ties, barcode error handling, stale diary day after midnight and others). The valuable ones are assigned to the same two fix agents; the rest go to the backlog.</p>
+
+<h2>3. Next</h2>
+<ol>
+<li>Fix agents commit the changes with regression tests written.</li>
+<li>Test agents run the affected sets, then the complete agent-written sets once more after the last fix.</li>
+<li>GPT-PM final review on the exact head, then push and one PR.</li>
+</ol>
+
+<h2>4. Not verified</h2>
+<p>All findings are from reading code; none was reproduced. Both server MAJOR findings are dormant until BODY_SCAN_CLOUD is enabled.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

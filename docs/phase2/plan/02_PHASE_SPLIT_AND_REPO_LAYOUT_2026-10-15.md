@@ -1,5 +1,7 @@
 # Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only)
 
+> **CURRENT STATE (2026-10-15, after S00 execution).** This document is the approved planning baseline (GPT-PM APPROVE on revision 3; operator approval on 2026-10-15). Wording below such as "draft", "nothing has been executed" or "PR #5 is open" is historical. Executed so far: the snapshot, tag `phase1-baseline`, branches `phase1/main` and `phase2/main`, PR #5 retargeted to `phase2/main` and merged as `5137ccda`, the worktrees, and the S00 documentation and deploy-line guard work (still under review). Recorded operator decisions: D-1, D-2, D-4, D-5 (see `core/DECISION_LOG.md` and `docs/phase2/README.md`). Where this text and those two files disagree, the decision log and the README win.
+
 Date: 2026-10-15 (revision 2 after GPT-PM planning review round 1: F-02, F-03, F-05, F-06). Status: DRAFT FOR GPT-PM VERIFICATION, then operator approval. Nothing here has been executed. Every step needs the operator's approval of this plan first. Creating a branch, tag or worktree is reversible routine work once approved; deleting any ref, branch or worktree stays a separate operator approval (global contract section 3).
 
 ## 1. Goal

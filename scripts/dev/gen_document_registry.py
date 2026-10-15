@@ -16,6 +16,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SCAN_DIRS = ["docs", "core", "runbooks", "reports"]
 TOP_FILES = ["README.md", "CLAUDE.md", "AGENTS.md", "FITNESS_APP_TASK_LIST.md"]
 SKIP_PARTS = {"node_modules", ".git", "changes"}
+# The registry itself, and the append-only decision log whose size changes with every commit.
+SKIP_FILES = {"docs/DOCUMENT_REGISTRY.md", "core/DECISION_LOG.md"}
 OUT = os.path.join(ROOT, "docs", "DOCUMENT_REGISTRY.md")
 
 
@@ -46,14 +48,13 @@ def collect() -> list[tuple[str, str, int]]:
                     continue
                 full = os.path.join(dirpath, fname)
                 rel = os.path.relpath(full, ROOT).replace(os.sep, "/")
-                if rel == "docs/DOCUMENT_REGISTRY.md":
+                if rel in SKIP_FILES:
                     continue
                 rows.append((rel, first_heading(full), os.path.getsize(full)))
     return sorted(rows)
 
 
-def main() -> int:
-    rows = collect()
+def render(rows: list[tuple[str, str, int]]) -> str:
     lines = [
         "# Document registry (derived)",
         "",
@@ -67,8 +68,30 @@ def main() -> int:
     for rel, title, size in rows:
         lines.append("| `%s` | %s | %d |" % (rel, title, size))
     lines.append("")
+    return "\n".join(lines)
+
+
+def check() -> int:
+    """Exit 1 when the committed registry differs from a fresh render."""
+    expected = render(collect())
+    try:
+        with io.open(OUT, encoding="utf-8", newline="") as fh:
+            current = fh.read().replace("\r\n", "\n")
+    except OSError:
+        current = ""
+    if current != expected:
+        sys.stderr.write("docs/DOCUMENT_REGISTRY.md is stale: run scripts/dev/gen_document_registry.py\n")
+        return 1
+    sys.stdout.write("registry is up to date\n")
+    return 0
+
+
+def main() -> int:
+    if "--check" in sys.argv[1:]:
+        return check()
+    rows = collect()
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("\n".join(lines))
+        fh.write(render(rows))
     sys.stdout.write("wrote %s (%d documents)\n" % (os.path.relpath(OUT, ROOT), len(rows)))
     return 0
 

@@ -203,4 +203,28 @@ void main() {
     );
     expect(profile, contains('flags.isEmpty'));
   });
+
+  // ---- E1 additions: the two nutrition fields (ONB-05, PRIV-16, F014 class) ----
+
+  test('E1: the parser sees the two nutrition fields with the right nullability', () {
+    final f = declaredFields();
+    expect(f.containsKey('nutritionGuidance'), isTrue);
+    expect(f['nutritionGuidance'], isTrue,
+        reason: 'null must mean "never asked"');
+    expect(f.containsKey('foodAllergens'), isTrue);
+    expect(f['foodAllergens'], isFalse,
+        reason: 'an empty set is a legitimate "none"');
+  });
+
+  test('E1: isUnanswered names nutritionGuidance but NOT foodAllergens', () {
+    final unanswered = members()['bool get isUnanswered']!;
+    expect(unanswered, matches(RegExp(r'\bnutritionGuidance\b')));
+    expect(unanswered, isNot(matches(RegExp(r'\bfoodAllergens\b'))),
+        reason: 'allergens never make the safety questions "answered"');
+  });
+
+  test('E1: isEmpty names foodAllergens (an answered allergen list is not "nothing stored")', () {
+    expect(members()['bool get isEmpty']!,
+        matches(RegExp(r'\bfoodAllergens\b')));
+  });
 }

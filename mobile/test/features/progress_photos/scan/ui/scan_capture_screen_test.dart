@@ -175,11 +175,16 @@ void main() {
     expect(find.text('Step a little closer.'), findsWidgets);
   });
 
-  testWidgets('manual shutter works without readiness', (tester) async {
+  testWidgets('manual shutter works without readiness (after the timer)',
+      (tester) async {
     final r = _Rig();
     await r.pump(tester);
     await tester.tap(find.byKey(const Key('scan.shutter')));
     await tester.pump();
+    expect(r.camera.stills, 0, reason: 'the manual shutter no longer fires at once');
+    for (var i = 0; i < kScanManualTimerDefault; i++) {
+      await tester.pump(const Duration(seconds: 1));
+    }
     await tester.pump();
     expect(r.camera.stills, 1);
   });
@@ -285,6 +290,9 @@ void main() {
     final r = _Rig(camera: _TestCamera()..failStill = true);
     await r.pump(tester);
     await tester.tap(find.byKey(const Key('scan.shutter')));
+    for (var i = 0; i < kScanManualTimerDefault; i++) {
+      await tester.pump(const Duration(seconds: 1));
+    }
     await tester.pump();
     await tester.pump();
     final button = tester.widget<FilledButton>(find.byKey(const Key('scan.shutter')));
@@ -315,9 +323,11 @@ void main() {
       (tester) async {
     final r = _Rig();
     await r.pump(tester);
-    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 500);
+    // The first cue is throttled until the 2 s live-region gap has passed and
+    // then rebuilds ONCE (the stale-cue fix); after that nothing may rebuild.
+    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 2500);
     final before = r.camera.previews;
-    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 3000);
+    await r.drive(tester, emptyFrame(), until: () => r.nowMs >= 6000);
     expect(r.camera.previews, before,
         reason: 'identical evaluations must not call setState');
   });

@@ -621,6 +621,78 @@
   "focusZoneFullBody": "Всё тело",
   "onbStepBarriers": "Что мешает",
   "onbStepPreview": "Первая тренировка",
+  "onbStepNutrition": "Питание и активность",
+  "onbNutritionTitle": "Питание и активность",
+  "onbNutritionSubtitle": "Всё необязательно. Это поможет подобрать подходящий диапазон калорий.",
+  "onbNutritionLockedNotice": "Цели по питанию и калориям мы оставим на потом. Вы сможете добавить их в любой момент в профиле питания.",
+  "onbNutritionGuidanceTitle": "Прежде чем предлагать цели по питанию",
+  "onbNutritionGuidancePrompt": "Подходит ли вам что-то из этого?",
+  "onbNutritionGuidanceOptionSupervised": "Ваш рацион контролирует или советует врач либо диетолог.",
+  "onbNutritionGuidanceOptionRelationship": "У вас сейчас или раньше были сложные отношения с едой или питанием.",
+  "onbNutritionGuidanceNone": "Ничего из этого",
+  "onbNutritionGuidanceReported": "Подходит один или несколько пунктов",
+  "onbNutritionGuidanceWhy": "Мы спрашиваем, чтобы давать общие ориентиры только тем, кому они подходят. Ответ хранится только на этом устройстве и не отправляется на наши серверы.",
+  "onbNutritionGuidanceConsequence": "Если что-то подходит, мы не показываем цели по калориям и питанию и советуем обратиться к специалисту.",
+  "onbNutritionSexAtBirth": "Пол при рождении",
+  "onbNutritionSexFemale": "Женский",
+  "onbNutritionSexMale": "Мужской",
+  "onbNutritionSexNeutral": "Нейтральная оценка",
+  "onbNutritionSexHint": "Используется только в формуле расхода энергии.",
+  "onbNutritionGoal": "Направление цели",
+  "onbNutritionGoalLose": "Снизить вес",
+  "onbNutritionGoalMaintain": "Удерживать вес",
+  "onbNutritionGoalGain": "Набрать вес",
+  "onbNutritionTargetLine": "Целевой вес: {kg} кг",
+  "onbNutritionTargetMissing": "Целевой вес пока не указан. Его можно добавить на экране «О вас».",
+  "onbNutritionTargetChange": "Изменить",
+  "onbNutritionPaceMessage": "При безопасном темпе около {kg} кг в неделю это займёт примерно {weeks, plural, one{{weeks} неделю} few{{weeks} недели} many{{weeks} недель} other{{weeks} недели}}.",
+  "onbNutritionPaceBelowRange": "Такой целевой вес ниже диапазона, который поддерживает этот план, поэтому мы не можем строить план под него. Попробуйте указать больше.",
+  "onbNutritionPaceUnderweight": "При вашем текущем весе мы не планируем дефицит калорий. План удерживает вес на одном уровне.",
+  "onbNutritionTargetBodyFat": "Целевой процент жира (необязательно)",
+  "onbNutritionTargetBodyFatClear": "Без цели по жиру",
+  "onbNutritionSteps": "Обычное число шагов в день",
+  "onbNutritionStepsHint": "Подключите приложение здоровья, чтобы брать реальные шаги, или выберите ближайший диапазон.",
+  "onbNutritionSteps0": "Менее 3 000",
+  "onbNutritionSteps1": "3 000-5 000",
+  "onbNutritionSteps2": "5 000-8 000",
+  "onbNutritionSteps3": "8 000-11 000",
+  "onbNutritionSteps4": "11 000 и больше",
+  "onbNutritionAllergens": "Аллергены, которых нужно избегать",
+  "onbNutritionAllergenGluten": "Глютен",
+  "onbNutritionAllergenCrustaceans": "Ракообразные",
+  "onbNutritionAllergenEggs": "Яйца",
+  "onbNutritionAllergenFish": "Рыба",
+  "onbNutritionAllergenPeanuts": "Арахис",
+  "onbNutritionAllergenSoy": "Соя",
+  "onbNutritionAllergenMilk": "Молоко",
+  "onbNutritionAllergenTreeNuts": "Орехи",
+  "onbNutritionAllergenCelery": "Сельдерей",
+  "onbNutritionAllergenMustard": "Горчица",
+  "onbNutritionAllergenSesame": "Кунжут",
+  "onbNutritionAllergenSulphites": "Сульфиты",
+  "onbNutritionAllergenLupin": "Люпин",
+  "onbNutritionAllergenMolluscs": "Моллюски",
+  "onbNutritionDeviceOnly": "Хранится только на этом устройстве.",
+  "onbNutritionExcluded": "Продукты, которые вы не едите",
+  "onbNutritionExcludedHint": "Добавьте продукт",
+  "onbNutritionExcludedAdd": "Добавить",
+  "onbNutritionExcludedRemove": "Убрать: {food}",
+  "onbNutritionExcludedLimit": "Можно добавить не более {max} продуктов.",
+  "onbNutritionMeals": "Приёмов пищи в день",
+  "onbNutritionMealsDefault": "Если пропустить, мы планируем 3 приёма пищи.",
+  "onbNutritionOwnership": "Кто задаёт цифры?",
+  "onbNutritionOwnershipCoached": "С помощником",
+  "onbNutritionOwnershipCoachedHint": "Мы предлагаем и раз в неделю корректируем. Изменение можно отменить.",
+  "onbNutritionOwnershipShared": "Совместно",
+  "onbNutritionOwnershipSharedHint": "Мы предлагаем, вы подтверждаете каждое изменение.",
+  "onbNutritionOwnershipManual": "Вручную",
+  "onbNutritionOwnershipManualHint": "Цифры задаёте вы. Мы только показываем наблюдения.",
+  "onbNutritionOwnershipDefault": "По умолчанию выбран вариант «С помощником».",
+  "nutProfileTitle": "Профиль питания",
+  "nutProfileStepOf": "Шаг {n} из {total}",
+  "nutProfileSafetyTitle": "Два коротких вопроса",
+  "nutProfileSafetyIntro": "Мы задаём их первыми, чтобы предлагать цели по питанию только тем, кому они подходят.",
+  "nutProfileBodyTitle": "О вас и цели",
   "onbPreviewTitle": "Вот ваша первая тренировка",
   "onbPreviewSubtitle": "Собрана по вашим ответам и будет меняться по ходу занятий",
   "onbPreviewLength": "Примерно {minutes} минут",
@@ -734,6 +806,7 @@
   "onbDietDairyFree": "Без молочного",
   "onbDietHalal": "Халяль",
   "onbDietKosher": "Кошерное",
+  "onbDietPescatarian": "Пескетарианское",
   "onbDietNone": "Без ограничений",
   "onbSmoking": "Курение",
   "onbSmokingNever": "Не курю",
@@ -959,6 +1032,7 @@
   "scanReviewBody": "Переснимите любую позу, которая не устраивает, затем сохраните.",
   "scanRetake": "Переснять",
   "scanSave": "Сохранить скан",
+  "scanSaving": "Сохранение",
   "scanSaveFailed": "Скан не сохранён: {arg0}",
   "@scanSaveFailed": {
     "placeholders": {
@@ -1574,7 +1648,7 @@
   "recoveryDeloadHardSessions": "{count, plural, one{Ваша последняя тренировка в среднем ощущалась «слишком тяжело» — организму нужен отдых.} few{Ваши последние {count} тренировки в среднем ощущались «слишком тяжело» — организму нужен отдых.} many{Ваши последние {count} тренировок в среднем ощущались «слишком тяжело» — организму нужен отдых.} other{Ваши последние {count} тренировок в среднем ощущались «слишком тяжело» — организму нужен отдых.}}",
   "recoveryDeloadMissedSessions": "Вы пропустили {missed} из {scheduled} запланированных тренировок за последние 2 недели.",
   "recoveryDeloadHrvBelowBaseline": "ВСР на {percent}% ниже вашей 30-дневной базовой линии — восстановление отстаёт.",
-  "healthStepProfessionalGuidance": "Вы сейчас беременны или находитесь в первые месяцы после родов?",
+  "healthStepProfessionalGuidance": "Вы сейчас беременны, кормите грудью или находитесь в первые месяцы после родов?",
   "guidanceNeedNone": "Нет",
   "guidanceNeedReported": "Да",
   "eligReasonProfessionalGuidance": "Вы сообщили, что беременны или недавно родили. Тренировки в этот период могут быть уместны, но подходящий план зависит от ваших личных обстоятельств — поэтому SPTR не составляет здесь персональную программу и предлагает обратиться к акушерке, врачу или квалифицированному специалисту по перинатальным тренировкам.",
@@ -1701,5 +1775,1012 @@
   "equipmentIdentityNeedMoreViewPrompt": "Серверу нужен другой ракурс, чтобы подтвердить этот тренажёр. Попробуйте отсканировать ещё раз под другим углом.",
   "@equipmentIdentityNeedMoreViewPrompt": {
     "description": "P2.G4: shown instead of the badge when decision is NEED_MORE_VIEW."
-  }
+  },
+  "dataNoticeTitle": "Как хранятся данные о вашем теле и питании",
+  "@dataNoticeTitle": {
+    "description": "Heading of the one-time data notice."
+  },
+  "dataNoticeBody": "Ваши взвешивания, цели по питанию и дневник питания надёжно хранятся в вашем аккаунте, чтобы остаться доступными при смене телефона. Измерения тела — это чувствительные персональные данные. Вы можете экспортировать или удалить их в любой момент, а при удалении аккаунта они стираются.",
+  "@dataNoticeBody": {
+    "description": "Body of the data notice: what is stored server-side."
+  },
+  "dataNoticeBodyFoodAi": "Когда вы сканируете блюдо или этикетку либо описываете блюдо словами, фото или текст отправляются в Vertex AI от Google Cloud для анализа. Фото мы не храним.",
+  "@dataNoticeBodyFoodAi": {
+    "description": "Extra paragraph of the data notice, shown only when AI food recognition is enabled in this build."
+  },
+  "dataNoticeAcknowledge": "Понятно",
+  "@dataNoticeAcknowledge": {
+    "description": "Single-tap acknowledgement button of the data notice."
+  },
+  "scanManualTimerStarted": "Фото через {seconds, plural, one{{seconds} секунду} few{{seconds} секунды} many{{seconds} секунд} other{{seconds} секунды}}",
+  "@scanManualTimerStarted": {
+    "description": "Announced when the manual shutter timer starts.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "scanManualTimerCancel": "Отменить таймер",
+  "@scanManualTimerCancel": {
+    "description": "Button that aborts the running manual shutter timer."
+  },
+  "scanAllChecksOk": "Все четыре проверки в порядке, не двигайтесь",
+  "@scanAllChecksOk": {
+    "description": "Cue announced and spoken when distance, lighting, position and pose all pass."
+  },
+  "scanRetakePose": "Переснять: {pose}",
+  "@scanRetakePose": {
+    "description": "Pose-specific retake button on the review screen.",
+    "placeholders": {
+      "pose": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanCompareBaselineOnly": "Первый скан — ваша точка отсчёта. Сделайте второй скан, чтобы увидеть сравнение.",
+  "bodyScanCompareTakeSecond": "Сделать второй скан",
+  "bodyScanHistoryTitle": "История сканов",
+  "bodyScanHistoryEmpty": "Сканов пока нет. Первый скан станет точкой отсчёта.",
+  "bodyScanHistoryCount": "{count, plural, one{{count} скан} few{{count} скана} many{{count} сканов} other{{count} скана}}",
+  "bodyScanHistoryBaseline": "Точка отсчёта",
+  "bodyScanHistoryNewEstimator": "Новый метод оценки: прежние сканы с этим не сравниваются",
+  "bodyScanHistoryPhotosOnly": "Только фото, без оценки",
+  "bodyScanHistoryBodyFat": "Жир {value}%",
+  "bodyScanHistoryWeight": "{value} кг",
+  "bodyScanHistoryChangeNone": "Без значимых изменений с прошлого скана",
+  "bodyScanHistoryChangeDown": "Ниже, чем в прошлом скане",
+  "bodyScanHistoryChangeUp": "Выше, чем в прошлом скане",
+  "bodyScanHistoryDeletePending": "Облачная копия будет удалена, когда появится сеть",
+  "bodyScanHistoryMenu": "Действия со сканом",
+  "bodyScanHistoryActionOpen": "Открыть результат",
+  "bodyScanHistoryActionEditWeight": "Изменить вес",
+  "bodyScanHistoryActionDeletePhotos": "Удалить фото",
+  "bodyScanHistoryCompareBaseline": "Сравнить с точкой отсчёта",
+  "bodyScanHistoryComparePrevious": "Сравнить с прошлым сканом",
+  "bodyScanEditWeightTitle": "Изменить записанный вес",
+  "bodyScanEditWeightHint": "Это также обновит ваш журнал веса за этот день.",
+  "bodyScanEditWeightInvalid": "Введите вес от 30 до 300 кг.",
+  "bodyScanEditWeightSave": "Сохранить",
+  "bodyScanEditWeightSaved": "Вес обновлён.",
+  "bodyScanEditWeightFailed": "Часть изменений не удалось сохранить. Попробуйте ещё раз.",
+  "bodyScanDeletePhotosTitle": "Удалить фото этого скана?",
+  "bodyScanDeletePhotosBody": "Фото удаляются с этого телефона, облачная копия тоже. Если вы не в сети, облачная копия удалится, когда сеть появится, а скан до тех пор останется здесь.",
+  "bodyScanDeletePhotosConfirm": "Удалить фото",
+  "bodyScanDeletePhotosDone": "Фото удалены.",
+  "bodyScanDeletePhotosQueued": "Нет сети. Облачная копия будет удалена, когда сеть появится.",
+  "bodyScanDeletePhotosFailed": "Не удалось удалить фото. Попробуйте ещё раз.",
+  "bodyScanPrivacyTitle": "Приватность фото",
+  "bodyScanPrivacyIntroCloud": "Фото по умолчанию приватны. Облачные копии сначала размываются на телефоне, хранятся только выбранный срок и удаляются в течение 48 часов после него.",
+  "bodyScanPrivacyIntroLocal": "Фото сканов остаются на этом телефоне. В этой версии ничего не загружается.",
+  "bodyScanPrivacyRetentionTitle": "Хранить облачные фото",
+  "bodyScanRetention0": "Удалить после анализа",
+  "bodyScanRetentionDays": "{days, plural, one{{days} день} few{{days} дня} many{{days} дней} other{{days} дня}}",
+  "bodyScanRetentionHonest": "Фото удаляются в течение 48 часов после выбранного срока. Фото на этом телефоне это не затрагивает.",
+  "bodyScanPrivacyApply": "Применить к уже сохранённым фото",
+  "bodyScanPrivacyApplyHelp": "Сокращает срок хранения уже сохранённых фото, но никогда не увеличивает его.",
+  "bodyScanPrivacyApplyDone": "Готово. Подходящие фото будут удалены в течение 48 часов.",
+  "bodyScanPrivacyConsentOn": "Вы согласились на облачный анализ фото.",
+  "bodyScanPrivacyConsentOff": "Облачный анализ фото выключен. Ваши фото остаются на этом телефоне.",
+  "bodyScanPrivacyWithdraw": "Отозвать согласие",
+  "bodyScanPrivacyDeleteTitle": "Удалить облачные данные",
+  "bodyScanPrivacyDeleteHelp": "Эти действия затрагивают только облачные копии. Фото на этом телефоне не удаляются.",
+  "bodyScanPrivacyDeletePhotos": "Удалить все облачные фото",
+  "bodyScanPrivacyDeleteScans": "Удалить все облачные сканы",
+  "bodyScanPrivacyDeletePhotosTitle": "Удалить все облачные фото?",
+  "bodyScanPrivacyDeletePhotosBody": "Все фото в облаке будут удалены в течение 48 часов. Результаты сохранятся.",
+  "bodyScanPrivacyDeletePhotosConfirm": "Удалить фото",
+  "bodyScanPrivacyDeleteScansTitle": "Удалить все облачные сканы?",
+  "bodyScanPrivacyDeleteScansBody": "Все облачные сканы и их фото будут удалены в течение 48 часов. Это нельзя отменить.",
+  "bodyScanPrivacyDeleteScansConfirm": "Удалить сканы",
+  "bodyScanPrivacyDeleteDone": "Удаление запущено. Фото удаляются в течение 48 часов.",
+  "bodyScanPrivacyFailed": "Не получилось. Попробуйте ещё раз.",
+  "bodyScanPrivacyWorking": "Выполняется",
+  "bodyScanPrivacyPause": "Приостановить отслеживание",
+  "bodyScanPrivacyPauseHelp": "Скрывает напоминания и подсказки о сканах. Данные сохраняются.",
+  "bodyScanTitle": "Скан тела",
+  "bodyScanIntroTitle": "Оценка состава тела",
+  "bodyScanIntroBodyRough": "Эта версия даёт примерную оценку по росту, весу и возрасту. По фотографиям тело она не измеряет. Фото остаются на этом телефоне.",
+  "bodyScanIntroBodyPhotos": "Три фото размываются на телефоне и после вашего согласия отправляются на анализ. Удалить их можно в любой момент.",
+  "bodyScanIntroTime": "Съёмка по подсказкам занимает около 20 секунд.",
+  "bodyScanIntroStart": "Начать скан",
+  "bodyScanIntroClose": "Закрыть",
+  "bodyScanRoughLabel": "Примерная оценка по росту, весу и возрасту",
+  "bodyScanMeasurementOnlyNote": "Только фото и история. Цели и связанные с ними показатели здесь не отображаются.",
+  "bodyScanMeasurementOnlyAsk": "Показать мою оценку",
+  "bodyScanWeightTitle": "Сначала запишите вес",
+  "bodyScanWeightBodyMissing": "Недавних записей веса нет. Актуальный вес делает оценку надёжнее.",
+  "bodyScanWeightBodyStale": "{days, plural, one{Последней записи веса {days} день.} few{Последней записи веса {days} дня.} many{Последней записи веса {days} дней.} other{Последней записи веса {days} дня.}} Актуальный вес делает оценку надёжнее.",
+  "@bodyScanWeightBodyStale": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanWeightLabel": "Вес (кг)",
+  "bodyScanWeightInvalid": "Введите вес от 20 до 400 кг.",
+  "bodyScanWeightSave": "Сохранить и продолжить",
+  "bodyScanWeightSkip": "Пропустить",
+  "bodyScanStagePhotos": "Фото сохранены",
+  "bodyScanStagePhotosLocal": "Фото остаются на устройстве",
+  "bodyScanStageComposition": "Состав тела",
+  "bodyScanStagePlausibility": "Проверка правдоподобия",
+  "bodyScanStageTrend": "Проверка тренда",
+  "bodyScanStageSaved": "Результат сохранён",
+  "bodyScanStageDone": "готово",
+  "bodyScanStageActive": "выполняется",
+  "bodyScanStagePending": "ожидает",
+  "bodyScanStageAnnounce": "Шаг {n} из {total}: {stage}",
+  "@bodyScanStageAnnounce": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanAnalysingTitle": "Анализ скана",
+  "bodyScanElapsed": "Прошло: {time}",
+  "@bodyScanElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanSlowNotice": "Это занимает дольше обычного. Можно подождать или отменить.",
+  "bodyScanKeepWaiting": "Подождать",
+  "bodyScanTimeout": "Время анализа вышло. Фото в безопасности. Попробуйте ещё раз.",
+  "bodyScanRetry": "Повторить",
+  "bodyScanCancel": "Отмена",
+  "bodyScanResultTitle": "Результат скана",
+  "bodyScanResultNotFound": "Этот скан не найден.",
+  "bodyScanResultLoadError": "Не удалось загрузить результат.",
+  "bodyScanLikelyRange": "Вероятный диапазон: от {low}% до {high}%",
+  "@bodyScanLikelyRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanBestGuess": "Лучшая единичная оценка: {value}%",
+  "@bodyScanBestGuess": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanThisReading": "Это измерение",
+  "bodyScanFromTrend": "По вашему тренду",
+  "bodyScanLimitNote": "Единичные измерения могут расходиться на 1-2 пункта даже у хорошей модели; тренд важнее одного скана.",
+  "bodyScanConfidence": "Уверенность: {level}",
+  "@bodyScanConfidence": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanConfidenceLow": "низкая",
+  "bodyScanConfidenceMedium": "средняя",
+  "bodyScanConfidenceHigh": "высокая",
+  "bodyScanProvisionalBannerTitle": "Примерная оценка",
+  "bodyScanProvisionalBannerBody": "Это число рассчитано по росту, весу и возрасту, а не по фото. Считайте его грубым ориентиром и следите за трендом веса.",
+  "bodyScanChangeNone": "Значимых изменений с прошлого скана нет.",
+  "bodyScanChangeDown": "Ниже на {pts} п.п. с прошлого скана.",
+  "bodyScanChangeUp": "Выше на {pts} п.п. с прошлого скана.",
+  "@bodyScanChangeDown": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChangeUp": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanNoiseNote": "Изменения меньше {pts} п.п. укладываются в погрешность измерения.",
+  "@bodyScanNoiseNote": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanPointsToGoal": "До цели: {pts} п.п.",
+  "@bodyScanPointsToGoal": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanEtaRange": "Примерно {low}-{high} нед., если темп сохранится",
+  "@bodyScanEtaRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanFatMass": "Жировая масса",
+  "bodyScanLeanMass": "Безжировая масса",
+  "bodyScanMassValue": "{value} кг (диапазон {low}-{high})",
+  "@bodyScanMassValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanWeightTrendTitle": "Тренд веса",
+  "bodyScanWeightTrendDown": "Снижение: {kg} кг в неделю",
+  "bodyScanWeightTrendUp": "Рост: {kg} кг в неделю",
+  "bodyScanWeightTrendFlat": "Вес стабилен, явных изменений нет",
+  "bodyScanWeightTrendNone": "Пока мало взвешиваний для тренда. Записывайте вес несколько раз в неделю.",
+  "@bodyScanWeightTrendDown": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanWeightTrendUp": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanStrengthTitle": "Силовые тренировки",
+  "bodyScanStrengthCount": "{count, plural, one{{count} тренировка за последние 4 недели} few{{count} тренировки за последние 4 недели} many{{count} тренировок за последние 4 недели} other{{count} тренировки за последние 4 недели}}",
+  "@bodyScanStrengthCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanStrengthNone": "За последние 4 недели силовых тренировок не записано.",
+  "bodyScanSeePlan": "Открыть план",
+  "nutritionKcalSpoken": "{value} килокалорий",
+  "@nutritionKcalSpoken": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderLowLabel": "Нижняя граница калорий в день",
+  "nutritionSliderHighLabel": "Верхняя граница калорий в день",
+  "nutritionSliderMinReached": "Достигнут минимум, {value}",
+  "@nutritionSliderMinReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderMaxReached": "Достигнут максимум, {value}",
+  "@nutritionSliderMaxReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMin": "Диапазон не может быть уже {gap}",
+  "@nutritionSliderGapMin": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMax": "Диапазон не может быть шире {gap}",
+  "@nutritionSliderGapMax": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperDecrease": "{label}: уменьшить на {step}",
+  "@nutritionStepperDecrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperIncrease": "{label}: увеличить на {step}",
+  "@nutritionStepperIncrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosTitle": "Макронутриенты",
+  "nutritionProteinLabel": "Белки",
+  "nutritionFatLabel": "Жиры",
+  "nutritionCarbsLabel": "Углеводы",
+  "nutritionGramsRange": "{min}–{max} г",
+  "@nutritionGramsRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionProteinAim": "Ориентир: около {target} г",
+  "@nutritionProteinAim": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosNote": "Это диапазоны, а не точные цели. Любое значение внутри них подходит.",
+  "nutritionStepsTitle": "Цель по шагам в день",
+  "nutritionStepsValue": "{steps, plural, one{{steps} шаг} few{{steps} шага} many{{steps} шагов} other{{steps} шага}}",
+  "@nutritionStepsValue": {
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsDecrease": "Уменьшить цель по шагам на {n}",
+  "@nutritionStepsDecrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsIncrease": "Увеличить цель по шагам на {n}",
+  "@nutritionStepsIncrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionOwnershipTitle": "Кто корректирует ваш план",
+  "nutritionOwnershipCoached": "С помощником",
+  "nutritionOwnershipCoachedBody": "Приложение раз в неделю корректирует план в безопасных пределах и сообщает вам. Изменение можно отменить в течение 7 дней.",
+  "nutritionOwnershipShared": "Совместно",
+  "nutritionOwnershipSharedBody": "Приложение предлагает изменения, а вы решаете, принимать ли их.",
+  "nutritionOwnershipManual": "Вручную",
+  "nutritionOwnershipManualBody": "Цифры задаёте вы. Приложение лишь показывает наблюдения и не меняет план.",
+  "nutritionOwnershipNote": "Безопасные пределы действуют в любом режиме. Изменение вступает в силу со следующей недельной проверки.",
+  "nutritionAutoTitle": "Автоматическая корректировка",
+  "nutritionAutoSteps": "Корректировать цель по шагам",
+  "nutritionAutoKcal": "Корректировать диапазон калорий",
+  "nutritionAutoManualOff": "Выключено, пока план в режиме «Вручную».",
+  "nutritionAutoSharedHint": "В режиме «Совместно» это будут предложения, которые можно принять.",
+  "nutritionAutoCoachedHint": "Выключите переключатель, чтобы эта часть плана не менялась.",
+  "nutritionProfessionalTitle": "Мы не можем задать здесь цели по питанию",
+  "nutritionProfessionalBody": "В вашей ситуации цели по питанию лучше определит врач или диетолог. Мы не показываем калории и макронутриенты. Остальные возможности приложения работают как обычно.",
+  "reviewReasonOnTrack": "Динамика веса близка к ожидаемой по плану.",
+  "reviewReasonAheadOfPlan": "Вес меняется чуть быстрее, чем по плану. Менять ничего не нужно.",
+  "reviewReasonBehindWaiting": "Прогресс медленнее плана. Перед изменениями мы дождёмся ещё одной проверки.",
+  "reviewReasonCooldownActive": "План недавно меняли, поэтому пока он остаётся прежним.",
+  "reviewReasonTooFast": "Вес меняется быстрее комфортного темпа, поэтому энергию увеличили.",
+  "reviewReasonStepsRaised": "Сначала увеличили цель по шагам как самое мягкое изменение.",
+  "reviewReasonKcalLowered": "Диапазон калорий немного уменьшили.",
+  "reviewReasonKcalRaised": "Диапазон калорий немного увеличили.",
+  "reviewReasonAtSafetyLimit": "Дальнейшее изменение вышло бы за безопасные пределы, поэтому план остаётся прежним.",
+  "reviewReasonRecomposition": "Измерения жира и вес показывают разные направления, поэтому ничего не меняли.",
+  "reviewReasonDriftTooLarge": "Автоматические изменения достигли общего предела.",
+  "reviewReasonNeedMoreDataPoints": "Сначала нужно больше записей веса.",
+  "reviewReasonNeedMoreDataSpan": "Записи веса должны охватывать более длительный период.",
+  "reviewReasonAutoAdjustOff": "Автоматическая корректировка этой части плана выключена.",
+  "trainingReasonDeficitVolumeTrim": "Объём тренировок немного ниже, пока ваш диапазон калорий ниже привычного рациона.",
+  "trainingReasonSurplusVolumeBoost": "Объём тренировок немного выше, пока ваш диапазон калорий выше привычного рациона.",
+  "trainingReasonProteinLow": "Записанный белок был ниже своего диапазона, поэтому объём тренировок остаётся прежним.",
+  "trainingReasonSleepLow": "Записанный сон был коротким, поэтому интенсивность немного снижена.",
+  "trainingReasonLossTooFast": "Вес меняется быстрее запланированного, поэтому объём тренировок немного снижен.",
+  "trainingReasonLowIntakeHighLoad": "Ваш рацион близок к самому низкому запланированному уровню, и вы тренируетесь часто. Можно взять более лёгкую неделю.",
+  "trainingReasonRecoveryDeload": "Предлагаем более лёгкую неделю тренировок, чтобы дать больше времени на восстановление.",
+  "nutritionReviewTitle": "Недельная проверка",
+  "nutritionReviewNone": "Проверок пока нет. Первая появится примерно после 3 записей веса за 2 недели.",
+  "nutritionReviewDecidedOn": "Проверка от {date}",
+  "@nutritionReviewDecidedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewWhyTitle": "Почему",
+  "nutritionReviewKeep": "План остаётся прежним.",
+  "nutritionReviewNeedMoreData": "Для проверки плана пока мало записей веса.",
+  "nutritionReviewNeedRecalculation": "Ваши данные изменились настолько, что план стоит пересчитать.",
+  "nutritionReviewKcalApplied": "{direction, select, down{Калории уменьшены на {amount} ккал.} other{Калории увеличены на {amount} ккал.}}",
+  "@nutritionReviewKcalApplied": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalProposed": "{direction, select, down{Предложение: уменьшить калории на {amount} ккал.} other{Предложение: увеличить калории на {amount} ккал.}}",
+  "@nutritionReviewKcalProposed": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalInsight": "{direction, select, down{Наблюдение: калории можно уменьшить на {amount} ккал. План в режиме «Вручную», поэтому ничего не изменилось.} other{Наблюдение: калории можно увеличить на {amount} ккал. План в режиме «Вручную», поэтому ничего не изменилось.}}",
+  "@nutritionReviewKcalInsight": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsApplied": "Цель по шагам увеличена на {amount}.",
+  "@nutritionReviewStepsApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsProposed": "Предложение: увеличить цель по шагам на {amount}.",
+  "@nutritionReviewStepsProposed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsInsight": "Наблюдение: цель по шагам можно увеличить на {amount}. План в режиме «Вручную», поэтому ничего не изменилось.",
+  "@nutritionReviewStepsInsight": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewBasis": "{points, plural, one{На основе {points} записи веса} few{На основе {points} записей веса} many{На основе {points} записей веса} other{На основе {points} записи веса}}",
+  "@nutritionReviewBasis": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionReviewTrend": "Динамика веса: {slope} кг/нед.",
+  "@nutritionReviewTrend": {
+    "placeholders": {
+      "slope": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndoUntil": "Изменение можно отменить до {date}.",
+  "@nutritionReviewUndoUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndo": "Отменить изменение",
+  "nutritionReviewAccept": "Принять предложение",
+  "nutritionPlanTitle": "План питания",
+  "nutritionEntryRange": "{low}–{high} ккал в день",
+  "@nutritionEntryRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEntryProfessional": "Цели по питанию лучше определит врач или диетолог.",
+  "nutritionEntrySetUp": "Настройте свой план",
+  "nutritionSaved": "План сохранён.",
+  "nutritionActionConflict": "План изменился на другом устройстве. Мы его обновили, попробуйте ещё раз.",
+  "nutritionActionOffline": "Нет соединения, изменение не сохранено.",
+  "nutritionActionRefused": "Это изменение выходит за безопасные пределы и не сохранено.",
+  "nutritionActionFailed": "Не удалось сохранить изменение.",
+  "nutritionNeedsProfileTitle": "Заполните профиль питания",
+  "nutritionNeedsProfileBody": "Нужно ответить на несколько вопросов, чтобы предложить план.",
+  "nutritionNeedsProfileAction": "Продолжить",
+  "nutritionLinkWeightLog": "Журнал веса",
+  "nutritionLinkHowItAdapts": "Как адаптируется план",
+  "nutritionLinkSources": "Источники данных и ограничения",
+  "nutritionCreateTitle": "Создайте план",
+  "nutritionCreateBody": "Мы предложим диапазон калорий на день по вашему профилю. Его можно менять в любой момент.",
+  "nutritionCreateAction": "Создать план",
+  "nutritionPlanLoadError": "Не удалось загрузить план. Попробуйте чуть позже.",
+  "nutritionKcalTitle": "Калории в день",
+  "nutritionKcalRangeValue": "{low}–{high} ккал",
+  "@nutritionKcalRangeValue": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionKcalBoundsHint": "Допустимо для вас: {min}–{max} ккал",
+  "@nutritionKcalBoundsHint": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEditSharedNote": "Если вы измените диапазон сами, план станет совместным: приложение будет предлагать изменения, а не применять их.",
+  "nutritionWeightHint": "Для первой проверки нужно примерно 3 записи веса за 2 недели. Записывайте вес в журнале веса.",
+  "weightLogCurrent": "Текущий вес: {kg} кг",
+  "@weightLogCurrent": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogCurrentStale": "Последний известный вес: {kg} кг (из профиля)",
+  "@weightLogCurrentStale": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "planToneNoDeficit": "При вашем текущем весе дефицит калорий не рекомендуется, поэтому план поддерживает вес.",
+  "planToneTargetRange": "Ваша цель ниже диапазона, к которому мы строим план, поэтому темп не показывается.",
+  "planToneFloorBinding": "Ваш диапазон находится на самом низком уровне, который мы предлагаем.",
+  "planToneNoEta": "Мы не называем дату. Прогресс редко идёт по прямой, и более медленная неделя — это нормально.",
+  "planToneScansMonthly": "Сканирование тела лучше всего делать примерно раз в месяц; раз в неделю — по желанию.",
+  "nutritionPauseTitle": "Приостановить отслеживание",
+  "nutritionPauseBody": "Скрывает недельные напоминания и напоминание о сканировании, пока вы не включите их снова. Данные сохраняются.",
+  "weightLogTitle": "Журнал веса",
+  "weightLogIntro": "Записывайте вес, когда удобно. Для первой проверки плана нужно примерно 3 записи за 2 недели.",
+  "weightLogEmpty": "Записей веса пока нет.",
+  "weightLogAdd": "Добавить вес",
+  "weightLogEdit": "Изменить вес",
+  "weightLogDelete": "Удалить",
+  "weightLogSave": "Сохранить",
+  "weightLogCancel": "Отмена",
+  "weightLogFieldLabel": "Вес (кг)",
+  "weightLogInvalid": "Введите вес от 30 до 300 кг.",
+  "weightLogDeleteTitle": "Удалить эту запись веса?",
+  "weightLogDeleteBody": "Она перестанет учитываться в плане.",
+  "weightLogSaved": "Вес сохранён.",
+  "weightLogDeleted": "Запись удалена.",
+  "weightLogUnavailable": "Не удалось сохранить. Проверьте, что вы вошли в аккаунт.",
+  "weightLogLoadError": "Не удалось загрузить записи веса.",
+  "weightLogValue": "{kg} кг",
+  "@weightLogValue": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogSourceScan": "Из сканирования",
+  "weightLogSourceManual": "Добавлено вами",
+  "nutritionSourcesTitle": "Источники данных и ограничения",
+  "nutritionSourcesIntro": "Откуда берутся ваши цифры и чего они не могут сказать.",
+  "nutritionSourcesFormulasTitle": "Формулы",
+  "nutritionSourcesMifflin": "Энергия покоя считается по уравнению Миффлина-Сан Жеора (Mifflin и соавт., 1990) с поправкой на активность.",
+  "nutritionSourcesProtein": "Диапазоны белка основаны на опубликованных обзорах по спортивному питанию (Jäger 2017, Morton 2018).",
+  "nutritionSourcesEnergyPerKg": "Около 7700 ккал принимается за один килограмм массы тела (правило Вишновски); это грубое среднее.",
+  "nutritionSourcesFoodTitle": "Данные о продуктах",
+  "nutritionSourcesUsda": "Базовые продукты: USDA FoodData Central, Foundation Foods и SR Legacy (общественное достояние, CC0 1.0).",
+  "nutritionSourcesOff": "Упакованные продукты: Open Food Facts, данные доступны по лицензии Open Database License. Записи добавляют волонтёры, они могут быть неполными.",
+  "nutritionSourcesLimitsTitle": "Ограничения",
+  "nutritionSourcesLimitEstimates": "Все цифры являются оценками. Реальные потребности различаются у разных людей и по неделям.",
+  "nutritionSourcesLimitScan": "Сканирование тела даёт вероятный диапазон, а не точное измерение. Фото нужны для вашего собственного сравнения.",
+  "nutritionSourcesLimitNotMedical": "Приложение не даёт медицинских рекомендаций. При наличии проблем со здоровьем обратитесь к врачу или диетологу.",
+  "nutritionExplainerTitle": "Как адаптируется план",
+  "nutritionExplainerWeeklyTitle": "Каждую неделю",
+  "nutritionExplainerWeekly1": "Раз в неделю приложение сравнивает динамику веса с ожидаемой по плану.",
+  "nutritionExplainerWeekly2": "Для изменения нужно достаточно записей веса, две проверки подряд в одну сторону и не менее 2 недель после прошлого изменения.",
+  "nutritionExplainerWeekly3": "Каждая проверка объясняет, почему план изменили или не изменили.",
+  "nutritionExplainerModesTitle": "Кто решает",
+  "nutritionExplainerLimitsTitle": "Безопасные пределы",
+  "nutritionExplainerLimits1": "Диапазон калорий всегда остаётся в пределах, рассчитанных по вашим данным, в любом режиме.",
+  "nutritionExplainerLimits2": "Автоматические изменения небольшие и имеют общий предел.",
+  "nutritionExplainerLimits3": "Цель по шагам увеличивается раньше калорий, потому что это более мягкое изменение.",
+  "bodyScanPlanDecisionTitle": "План на эту неделю",
+  "bodyScanChecksTitle": "Проверьте",
+  "bodyScanChecksCount": "{count, plural, one{{count} пункт для проверки} few{{count} пункта для проверки} many{{count} пунктов для проверки} other{{count} пункта для проверки}}",
+  "@bodyScanChecksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanChipNeeds": "нужно проверить",
+  "bodyScanChipResolved": "проверено",
+  "bodyScanChipMarkResolved": "Отметить как проверенное",
+  "bodyScanChipItem": "{item}, {state}",
+  "@bodyScanChipItem": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChecksAllResolved": "Все пункты проверены",
+  "bodyScanActionRetake": "Переснять фото",
+  "bodyScanActionLogWeight": "Записать вес",
+  "bodyScanActionConfirmWeight": "Проверить вес",
+  "checkCodeProvisionalEstimator": "Это примерная оценка по росту, весу и возрасту, а не измерение по фото.",
+  "checkCodeManualCapture": "Фото сделано ручным затвором, не все проверки готовности были зелёными.",
+  "checkCodePoorLighting": "Освещение было плохим. Переснимите при ровном свете.",
+  "checkCodePartialBody": "Часть тела не попала в кадр.",
+  "checkCodeLooseClothing": "Свободная одежда скрывает форму тела. Переснимите в облегающей одежде.",
+  "checkCodePoseMismatch": "Поза не совпала с запрошенной.",
+  "checkCodeWeightMissing": "Для этого скана нет записанного веса.",
+  "checkCodeWeightStale": "Записанному весу больше 7 дней.",
+  "checkCodeWeightJump": "Вес сильно отличается от прошлого скана. Проверьте его.",
+  "checkCodeWideRange": "Вероятный диапазон широкий, поэтому это измерение менее надёжно.",
+  "checkCodeEstimateFarFromProfile": "Оценка сильно отличается от ожидаемой по профилю. Проверьте вес и рост.",
+  "checkCodeLargeJumpVsTrend": "Это измерение далеко от вашего тренда. Одно необычное измерение почти не меняет тренд.",
+  "checkCodeBlurUnavailable": "Фото не удалось обезличить, поэтому ничего не отправлено.",
+  "bodyScanChartTitle": "Тренд жировой массы",
+  "bodyScanChartSummaryDown": "Сглаженный тренд {value} процента, снижение на {pts} п.п. за {weeks} нед.",
+  "bodyScanChartSummaryUp": "Сглаженный тренд {value} процента, рост на {pts} п.п. за {weeks} нед.",
+  "bodyScanChartSummaryFlat": "Сглаженный тренд {value} процента, значимых изменений за {weeks} нед. нет.",
+  "bodyScanChartSummaryFew": "Сглаженный тренд {value} процента. Чтобы описать изменение, нужно больше сканов.",
+  "@bodyScanChartSummaryDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryUp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFlat": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFew": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChartExpand": "Показать таблицу данных",
+  "bodyScanChartCollapse": "Скрыть таблицу данных",
+  "bodyScanChartLegend": "Точки это единичные шумные измерения. Линия это сглаженный тренд.",
+  "bodyScanChartNewEstimator": "Здесь начинается новый метод оценки",
+  "bodyScanChartColDate": "Дата",
+  "bodyScanChartColReading": "Измерение",
+  "bodyScanChartColSmoothed": "Сглаженное",
+  "bodyScanChartColOutlier": "Выброс",
+  "bodyScanChartYes": "да",
+  "bodyScanChartNo": "нет",
+  "bodyScanChartRowLabel": "{date}: измерение {value} процента, диапазон {low}-{high}, сглаженное {smoothed} процента, выброс: {outlier}",
+  "@bodyScanChartRowLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      },
+      "smoothed": {
+        "type": "String"
+      },
+      "outlier": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanCloudTitle": "Отправить фото на анализ?",
+  "bodyScanCloudBody": "Для анализа тела три фото размываются на телефоне, из них удаляются данные снимка, например место съёмки и сведения о камере, и только затем фото загружаются. Сервер не может проверить размытие, а особые приметы, например татуировки или шрамы, не размываются. Скан можно удалить в любой момент.",
+  "bodyScanCloudAgree": "Согласен, загрузить",
+  "bodyScanCloudDecline": "Не сейчас",
+  "bodyScanResumeTitle": "Завершите скан",
+  "bodyScanResumeBody": "Скан ждёт завершения.",
+  "bodyScanResumeAction": "Продолжить",
+  "bodyScanFailedTitle": "Не удалось завершить скан",
+  "bodyScanFailedBody": "Фото по-прежнему на этом телефоне. Можно повторить попытку, оставить их здесь или удалить скан.",
+  "bodyScanFailedRetry": "Повторить",
+  "bodyScanFailedKeep": "Оставить на устройстве",
+  "bodyScanFailedDelete": "Удалить скан",
+  "bodyScanSheetClose": "Закрыть",
+  "foodDiaryTitle": "Дневник питания",
+  "foodDiaryAdd": "Добавить еду",
+  "foodDiaryToday": "Сегодня",
+  "foodDiaryPrevDay": "Предыдущий день",
+  "foodDiaryNextDay": "Следующий день",
+  "foodDiarySlotBreakfast": "Завтрак",
+  "foodDiarySlotLunch": "Обед",
+  "foodDiarySlotDinner": "Ужин",
+  "foodDiarySlotSnack": "Перекусы",
+  "foodDiarySlotEmpty": "Пока пусто",
+  "foodDiarySlotAdd": "Добавить: {slot}",
+  "foodDiaryEmptyTitle": "За этот день ничего не записано",
+  "foodDiaryEmptyBody": "Добавьте приём пищи, когда будет удобно. Заполнять каждый приём не обязательно.",
+  "foodDiaryLoading": "Загружаем дневник",
+  "foodDiaryError": "Не удалось загрузить дневник.",
+  "foodDiaryErrorBody": "Ваши записи в безопасности. Проверьте соединение и повторите.",
+  "foodDiaryAiOff": "Распознавание блюд пока недоступно. Поиск и быстрая запись работают.",
+  "foodDiaryNotAvailableYet": "Это пока недоступно. Поиск и быстрая запись работают.",
+  "foodDiaryHiddenTitle": "Дневник питания не показывается",
+  "foodDiaryHiddenBody": "Цели и дневник питания не показываются при ваших ответах. Подходящий совет может дать специалист по здоровью.",
+  "foodDiaryNeedsProfileTitle": "Сначала завершите профиль питания",
+  "foodDiaryNeedsProfileBody": "Нужно ответить на несколько вопросов, чтобы сравнивать ваш день с целями.",
+  "foodDiaryNeedsProfileAction": "Открыть профиль питания",
+  "foodDiarySummaryTitle": "Съедено сегодня",
+  "foodDiaryRingLabel": "Съедено примерно {eaten} килокалорий. Ваш диапазон: от {low} до {high} килокалорий.",
+  "foodDiaryRingLabelNoPlan": "Съедено примерно {eaten} килокалорий.",
+  "foodDiaryRemaining": "Осталось в диапазоне: около {kcal} ккал",
+  "foodDiaryStatusBelow": "День ещё не закончился. Ешьте то, что вам подходит.",
+  "foodDiaryStatusWithin": "Сегодня вы в своём диапазоне.",
+  "foodDiaryStatusAbove": "Сегодня немного выше диапазона. Один день не меняет тенденцию.",
+  "foodDiaryProteinReached": "Минимум белка достигнут",
+  "foodDiaryDeleteEntry": "Удалить запись",
+  "foodDiaryEntryRemoved": "Запись удалена",
+  "foodDiaryUndo": "Отменить",
+  "foodDiaryWeightLink": "Записать вес",
+  "foodDiaryWeightTitle": "Записать вес",
+  "foodDiaryWeightField": "Вес (кг)",
+  "foodDiaryWeightInvalid": "Введите вес от 30 до 300 кг.",
+  "foodDiaryWriteFailed": "Не удалось сохранить. Повторите.",
+  "foodMacroProtein": "Белки",
+  "foodMacroCarbs": "Углеводы",
+  "foodMacroFat": "Жиры",
+  "foodUnitKcal": "{value} ккал",
+  "foodUnitGrams": "{value} г",
+  "foodRangeOf": "от {low} до {high}",
+  "foodConfidenceLow": "Низкая уверенность",
+  "foodConfidenceMedium": "Средняя уверенность",
+  "foodConfidenceHigh": "Высокая уверенность",
+  "foodSourceOff": "Open Food Facts",
+  "foodSourceUsda": "USDA FoodData Central",
+  "foodSourceEstimate": "Оценка",
+  "foodSourceUser": "Ваш продукт",
+  "foodSourceLabel": "Этикетка",
+  "foodSourceBadgeLabel": "Источник: {name}",
+  "foodAddTitle": "Добавить еду",
+  "foodAddSearch": "Поиск продуктов",
+  "foodAddDescribe": "Описать блюдо",
+  "foodAddPhoto": "Сфотографировать блюдо",
+  "foodAddBarcode": "Сканировать штрихкод",
+  "foodAddLabel": "Сканировать этикетку",
+  "foodAddQuickLog": "Быстрая запись",
+  "foodAddSaved": "Сохранённые продукты",
+  "foodDescribeHint": "Например: два яйца и тост с маслом",
+  "foodDescribeSubmit": "Оценить",
+  "foodDescribeWorking": "Оцениваем",
+  "foodDescribeNothing": "В этом тексте не нашлось еды. Опишите иначе.",
+  "foodDescribeFailed": "Оценка не завершилась. Повторите или воспользуйтесь поиском.",
+  "foodQuickTitle": "Быстрая запись",
+  "foodQuickName": "Название",
+  "foodQuickKcal": "Калории (ккал)",
+  "foodQuickProtein": "Белки (г)",
+  "foodQuickCarbs": "Углеводы (г)",
+  "foodQuickFat": "Жиры (г)",
+  "foodQuickAdd": "Добавить в дневник",
+  "foodQuickInvalid": "Введите название и калории.",
+  "foodSearchTitle": "Поиск продуктов",
+  "foodSearchHint": "Название продукта",
+  "foodSearchSubmit": "Найти",
+  "foodSearchTooShort": "Введите не меньше 3 символов.",
+  "foodSearchLoading": "Ищем",
+  "foodSearchEmpty": "Ничего не найдено. Попробуйте другое слово или быструю запись.",
+  "foodSearchError": "Поиск не завершился. Проверьте соединение и повторите.",
+  "foodSearchRateLimited": "Вы только что искали много раз. Повторите через минуту.",
+  "foodSearchNotAvailable": "Поиск упакованных продуктов пока недоступен. Встроенные продукты работают.",
+  "foodSearchGenericHeading": "Обычные продукты",
+  "foodSearchPackagedHeading": "Упакованные продукты",
+  "foodSearchSavedHeading": "Сохранённые продукты",
+  "foodSearchPartialData": "Для этого продукта часть значений отсутствует.",
+  "foodSearchPer100": "на 100 г",
+  "foodDetailTitle": "Добавить в дневник",
+  "foodDetailSlot": "Приём пищи",
+  "foodDetailPortion": "Порция (г)",
+  "foodDetailPortionRange": "Вероятно, от {low} до {high} г",
+  "foodDetailPortionLess": "Меньше",
+  "foodDetailPortionMore": "Больше",
+  "foodDetailPortionInvalid": "Введите порцию больше нуля.",
+  "foodDetailTotals": "Около {kcal} ккал, диапазон от {low} до {high}",
+  "foodDetailItems": "Продукты",
+  "foodDetailSave": "Добавить в дневник",
+  "foodDetailSaveFood": "Сохранить продукт",
+  "foodDetailFoodSaved": "Продукт сохранён",
+  "foodDetailEstimateNote": "Эти значения — оценка, а не запись из базы данных.",
+  "foodDetailPer100": "На 100 г: {kcal} ккал, белки {protein} г, углеводы {carbs} г, жиры {fat} г",
+  "foodCheckHeading": "Проверьте",
+  "foodCheckCount": "{count, plural, one{{count} пункт для проверки} few{{count} пункта для проверки} many{{count} пунктов для проверки} other{{count} пункта для проверки}}",
+  "foodCheckNeeds": "Нужно проверить",
+  "foodCheckDone": "Проверено",
+  "foodCheckChipLabel": "{title}, {state}",
+  "foodCheckMarkDone": "Отметить проверенным",
+  "foodCheckPortionUnclear": "Размер порции",
+  "foodCheckHiddenIngredients": "Масло или соус",
+  "foodCheckLiquidUnknown": "Что за напиток",
+  "foodCheckCookingMethod": "Как приготовлено",
+  "foodCheckMultipleItems": "Несколько продуктов",
+  "foodCheckBrandUnknown": "Бренд",
+  "foodCheckFoodNotMatched": "Подбор продукта",
+  "foodCheckLowConfidenceItem": "Неуверенный пункт",
+  "foodCheckLabelAmbiguous": "Цифры на этикетке",
+  "foodCheckDataInconsistent": "Цифры не сходятся",
+  "foodCheckScaleMissing": "Вес порции",
+  "foodCheckHelpPortionUnclear": "Измените порцию выше на ту, что вы действительно съели.",
+  "foodCheckHelpHiddenIngredients": "Масло и соус часто не видны. Выберите, сколько добавлено.",
+  "foodCheckHelpLiquidUnknown": "Проверьте, что это за напиток и был ли он подслащён.",
+  "foodCheckHelpCookingMethod": "Жарка добавляет жир. Проверьте, как это приготовлено.",
+  "foodCheckHelpMultipleItems": "Найдено несколько продуктов. Проверьте список.",
+  "foodCheckHelpBrandUnknown": "У другого бренда значения могут отличаться. Найдите точный продукт, если знаете его.",
+  "foodCheckHelpFoodNotMatched": "Близкого совпадения нет. Найдите подходящий продукт поиском.",
+  "foodCheckHelpLowConfidenceItem": "Этот пункт — грубая догадка. Найдите более подходящий продукт.",
+  "foodCheckHelpLabelAmbiguous": "Часть цифр на этикетке прочиталась плохо. Сверьте с упаковкой.",
+  "foodCheckHelpDataInconsistent": "Цифры не согласуются друг с другом. Сверьте с упаковкой.",
+  "foodCheckHelpScaleMissing": "Введите вес порции в граммах с упаковки.",
+  "foodOilNone": "Без масла",
+  "foodOilTeaspoon": "1 чайная ложка (5 г)",
+  "foodOilTablespoon": "1 столовая ложка (14 г)",
+  "scanReminderTitle": "Пора на проверку тела",
+  "scanReminderBody": "Короткая проверка помогает сравнивать результаты.",
+  "bodyCheckInTitle": "Проверка тела",
+  "bodyCheckInStart": "Начать проверку",
+  "bodyCheckInNever": "Проверок пока не было.",
+  "bodyCheckInLast": "{days, plural, =0{Последняя проверка: сегодня} one{Последняя проверка: {days} день назад} few{Последняя проверка: {days} дня назад} many{Последняя проверка: {days} дней назад} other{Последняя проверка: {days} дня назад}}",
+  "@bodyCheckInLast": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyCheckInHomeAction": "Открыть",
+  "scanReminderWeeklyLabel": "Еженедельное напоминание",
+  "scanReminderSummary": "Каждый раз: {when}",
+  "@scanReminderSummary": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "scanReminderChangeTime": "Изменить время",
+  "scanReminderDayGroup": "День напоминания",
+  "scanReminderPausedLabel": "Приостановить отслеживание",
+  "scanReminderPausedHint": "Скрывает напоминания о проверке и отменяет уведомление.",
+  "scanReminderMeasurementOnlyOff": "Напоминание по умолчанию выключено. Вы можете включить его.",
+  "foodScanCancel": "Отмена",
+  "foodScanRateLimited": "На сегодня лимит для этого исчерпан. Воспользуйтесь поиском или быстрой записью.",
+  "foodScanNotAllowed": "Войдите в аккаунт, чтобы пользоваться этим.",
+  "foodMealScanTitle": "Сфотографировать блюдо",
+  "foodMealScanIntro": "Сфотографируйте блюдо или выберите снимок. Он уменьшается на телефоне и отправляется только для этой оценки. На наших серверах фото не хранится.",
+  "foodMealTake": "Сделать фото",
+  "foodMealPick": "Выбрать из галереи",
+  "foodMealPreviewLabel": "Предпросмотр фото блюда",
+  "foodMealNoteHint": "Заметка (необязательно), например: это овсяное молоко",
+  "foodMealThumbSwitch": "Хранить личную миниатюру на этом телефоне",
+  "foodMealThumbHint": "Зашифрована, остаётся на устройстве и удаляется вместе с записью.",
+  "foodMealAnalyse": "Оценить",
+  "foodMealAnalysing": "Оцениваем",
+  "foodMealNoFood": "На этом фото не удалось найти еду. Попробуйте другое фото или опишите блюдо.",
+  "foodMealFailed": "Оценку не удалось завершить. Повторите попытку или воспользуйтесь поиском.",
+  "foodMealImageInvalid": "Не удалось прочитать это изображение. Выберите другое фото.",
+  "foodMealChange": "Выбрать другое фото",
+  "foodBarcodeTitle": "Сканировать штрихкод",
+  "foodBarcodeHint": "Наведите камеру на штрихкод на упаковке.",
+  "foodBarcodeCameraError": "Камера недоступна. Разрешите доступ к камере в настройках или введите штрихкод ниже.",
+  "foodBarcodeManualField": "Номер штрихкода",
+  "foodBarcodeManualGo": "Найти",
+  "foodBarcodeInvalid": "Это не похоже на штрихкод товара.",
+  "foodBarcodeLooking": "Ищем продукт",
+  "foodBarcodeNotFound": "Этого продукта пока нет в базе. Отсканируйте этикетку с составом или добавьте его вручную.",
+  "foodBarcodeFailed": "Поиск не удалось завершить. Повторите попытку.",
+  "foodBarcodeScanAgain": "Сканировать снова",
+  "foodBarcodeTorch": "Фонарик",
+  "foodLabelTitle": "Сканировать этикетку",
+  "foodLabelIntro": "Сфотографируйте таблицу пищевой ценности на упаковке. Перед сохранением вы проверите каждое число.",
+  "foodLabelRead": "Прочитать этикетку",
+  "foodLabelReading": "Читаем этикетку",
+  "foodLabelFailed": "Не удалось прочитать этикетку. Повторите попытку или введите значения вручную.",
+  "foodLabelConfirmTitle": "Проверьте значения с этикетки",
+  "foodLabelConfirmHint": "Значения на 100 г. Исправьте всё, что не совпадает с упаковкой.",
+  "foodLabelNothing": "Значения прочитать не удалось. Введите их вручную или сделайте более чёткое фото.",
+  "foodLabelConverted": "Пересчитано из значений на порцию по весу порции.",
+  "foodLabelName": "Название продукта",
+  "foodLabelServing": "Порция в граммах (необязательно)",
+  "foodLabelInvalid": "Введите название и числа от 0 до 1000.",
+  "foodLabelConfirm": "Подтвердить и сохранить",
+  "nutritionSourcesSoftwareTitle": "Программы и справочные материалы",
+  "nutritionSourcesScanner": "Сканирование штрихкодов использует пакет mobile_scanner (BSD-3-Clause).",
+  "nutritionSourcesCalorieTracker": "Идеи анализа блюд (структурированный ответ с уверенностью по каждому продукту) переработаны по проекту calorie-tracker (MIT). Код не копировался.",
+  "nutritionSourcesReferenceOnly": "OpenNutriTracker (GPL-3.0) и calorie-count (лицензия неясна) изучались только как справочные материалы по устройству. Ничего не копировалось.",
+  "nutritionSourcesFullList": "Полный список с лицензиями хранится в файле проекта ATTRIBUTIONS_NUTRITION.md."
 }

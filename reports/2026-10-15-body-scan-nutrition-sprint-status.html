@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Scan + Nutrition Coach: sprint status</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:16px;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #8884;padding:6px 8px;text-align:left;vertical-align:top}
+h2{margin-top:28px}
+.ok{color:#1a7f37}.warn{color:#b35900}
+</style>
+</head>
+<body>
+<header>
+<h1>Body Scan + Nutrition Coach: sprint status</h1>
+<p>Branch feature/body-scan-nutrition-coach, 15 October 2026. Interim status: code for epics C01-C26 is committed; test agents are still writing and running tests.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ 52a08255</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>1. Summary</h2>
+<p>Epics C01-C26 are implemented: rules and functions, the provisional body-fat estimate (Deurenberg formula on the device, a plus or minus 5 range, photos do not enter the estimate), the scan flow, result, history and compare, the reminder, the weekly nutrition plan review, the plan UI, the food diary, meal, barcode and label capture, privacy, deletion and export, and the l10n and accessibility audit. Cloud functions are off behind flags. Epic C27 (documents) is in progress. Remaining steps: a complete re-run of all agent-written tests, specialist reviews, GPT-PM review, then push and one PR.</p>
+
+<h2>2. Epics</h2>
+<table>
+<tr><th>Epic</th><th>Planned / Definition of Done</th><th>Status</th><th>Tail</th></tr>
+<tr><td>E0 flags, quotas, rules, indexes, release guard</td><td>Server foundation, rules tests on the emulator</td><td class="ok">Done, 13 test files green</td><td>Emulator run used overridden ports</td></tr>
+<tr><td>E1 nutrition maths, estimate, trend, activity</td><td>Pure logic, coverage-map vectors</td><td class="ok">Done, 27 files, 1075 tests green</td><td>None</td></tr>
+<tr><td>E2 onboarding</td><td>Nutrition step after safety questions</td><td class="warn">158 tests green, 1 file (router) not run because of another epic's compile error</td><td>Router test compiles now (e171c62); re-run needed</td></tr>
+<tr><td>C12 body-scan server functions</td><td>Create, estimate, delete, purge</td><td class="ok">10 suites, 477 tests green</td><td>None</td></tr>
+<tr><td>C13-C14 capture and scan data</td><td>Record v2, manual timer, runner, upload</td><td class="warn">Code done, tests partial, final report pending</td><td>Finish and run the set</td></tr>
+<tr><td>C15 flow and result</td><td>Screens, provisional rules, routes</td><td class="warn">Code done, tests running</td><td>Final per-file report</td></tr>
+<tr><td>C16 history, compare, privacy</td><td>History, delete, weight edit, retention</td><td class="ok">8 files, 138 tests green</td><td>None</td></tr>
+<tr><td>C17 reminder and entry cards</td><td>Weekly rule, Progress and Home cards</td><td class="ok">5 files, 110 tests green</td><td>Notification tap only opens the app</td></tr>
+<tr><td>C18 plan state and weekly review</td><td>Review transaction, undo, scheduler</td><td class="ok">10 files, 333 tests green</td><td>Firestore implementations not covered by the emulator</td></tr>
+<tr><td>C19 nutrition plan UI</td><td>Plan pages, weight log, range slider</td><td class="warn">Code done, tests running</td><td>Final per-file report</td></tr>
+<tr><td>C20 food recognition functions</td><td>Meal photo, label, barcode, search</td><td class="ok">13 suites, 581 tests green</td><td>Live Vertex, OFF, USDA not exercised</td></tr>
+<tr><td>C21 generic foods table</td><td>2590 USDA rows, Russian names, suggestions</td><td class="ok">Tests green (68 and 77)</td><td>321 Russian names against a target of about 400</td></tr>
+<tr><td>C22 diary data layer</td><td>Entries, portions, day totals, GTIN</td><td class="ok">7 files, 246 tests green</td><td>None</td></tr>
+<tr><td>C23 food diary UI</td><td>Diary, add, search pages</td><td class="warn">Code done, tests running</td><td>Final per-file report</td></tr>
+<tr><td>C24 meal, barcode, label capture</td><td>Three pages, attributions, scanner dependency</td><td class="warn">Code done, tests running</td><td>mobile_scanner 6.x API not verified on a device</td></tr>
+<tr><td>C25 privacy, deletion, export</td><td>Paged export, wipe, policy, privacy.html</td><td class="ok">Tests green (35, 208, 21)</td><td>privacy.html text is a draft pending Q-10</td></tr>
+<tr><td>C26 l10n and accessibility audit</td><td>EN/RU keys, contrast, wording</td><td class="warn">Code done, tests launched</td><td>Contrast and text-scale tests still to run</td></tr>
+<tr><td>C27 documents</td><td>CODEMAP, INDEX, CURRENT_STATE, DECISION_LOG</td><td class="warn">In progress</td><td>None</td></tr>
+</table>
+
+<h2>3. Real defects found by tests</h2>
+<ul>
+<li>firestore.rules: writing food_entries was impossible (expression limit), so the food diary would not have worked.</li>
+<li>firestore.rules: withdrawing cloudConsent was refused although the design allows it.</li>
+<li>nutrition_http: a bare .. path segment was collapsed into path navigation.</li>
+<li>The blurred photo kept EXIF metadata on upload (fixed in 25546977).</li>
+<li>Cancelling a local-only scan emitted a server delete without a server document.</li>
+<li>Cyrillic serving units were not parsed, eggplant was tagged as an egg allergen, malt liquor was not tagged as alcohol.</li>
+<li>Blind-written compile errors (C12, router closure): fixed.</li>
+<li>Coverage-map vectors V-LOSE-M and V-LOSE-CAP were wrong; the implementation is correct.</li>
+</ul>
+
+<h2>4. Known limits and risks</h2>
+<ul>
+<li>The body-fat estimate is provisional: height, weight and age only, photos do not enter it; the ETA is hidden.</li>
+<li>The cloud path is off: the face check on the blurred photo always refuses (UnavailableFaceCheck).</li>
+<li>Cancelling a scan from the queue after an attempt emits no delete; an orphaned uploaded object is possible.</li>
+<li>The accountExportPage quota log and the export failure log carry the uid, which differs from D-67.</li>
+<li>/body-scan?scanId is ignored by the flow page; the meal thumbnail is stored but not displayed.</li>
+<li>nutrition_plan imports body_scan in two non-pure files (pinned by a guard test).</li>
+<li>Not run: live Vertex, OFF, USDA, TalkBack, a real device, Firestore implementations on the emulator.</li>
+</ul>
+
+<h2>5. Next</h2>
+<ol>
+<li>Finish tests for C13/C14, C15, C19, C23, C24, C26.</li>
+<li>Complete re-run of all agent-written test sets after the last epic.</li>
+<li>Specialist reviews: silent-failure-hunter, security-reviewer, database-reviewer, flutter-reviewer, code-reviewer.</li>
+<li>Fix confirmed BLOCKER and MAJOR findings, then GPT-PM on the exact head, then push and one PR.</li>
+</ol>
+
+<h2>6. Needed from the operator</h2>
+<p>IAM and the private bucket before enabling flags; the USDA_FDC_API_KEY secret with access for two service accounts; review of the privacy.html text (Q-10); a real face detector before enabling the cloud scan; real gym photos and machine names from fails.jpg; Q-4, Q-5, Q-6; items O-3 to O-5.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

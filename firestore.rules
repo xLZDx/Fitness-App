@@ -33,6 +33,18 @@ service cloud.firestore {
     // read/write pair lives in one self-contained block a reviewer (or a
     // mutation test) can point at without cross-referencing this wildcard.
     //
+    // Body Scan + Nutrition Coach (design s6.1, D-25): `body_scans`,
+    // `body_scan_settings`, `weight_entries`, `nutrition_plan`,
+    // `nutrition_plan_reviews`, `food_entries` and `saved_foods` join the
+    // carve-out list in BOTH the read and the write condition below. Each has
+    // its own explicit block further down that re-grants exactly what is
+    // intended and shape-checks it; without the exclusion those blocks would
+    // be dead, because this wildcard would still allow the very same request
+    // (Firestore allows a request if ANY matching rule permits it). `body_scans`
+    // in particular is server-authored: a client that kept the wildcard's
+    // blanket write could forge a provider estimate or erase the tombstone the
+    // purge job relies on.
+    //
     // MVP1.G3 Step 8/9: `isCanaryToken()` excludes the synthetic canary
     // identity (core/G3_STEP8_RUNTIME_PREREQUISITES.md Sec 3/9) from this
     // wildcard explicitly, regardless of what uid it is minted for. Without
@@ -68,7 +80,14 @@ service cloud.firestore {
                   && coll != 'recognised_models'
                   && coll != 'equipment_identity_sessions'
                   && coll != 'equipment_identity_latest_session'
-                  && coll != 'equipment_identity_telemetry';
+                  && coll != 'equipment_identity_telemetry'
+                  && coll != 'body_scans'
+                  && coll != 'body_scan_settings'
+                  && coll != 'weight_entries'
+                  && coll != 'nutrition_plan'
+                  && coll != 'nutrition_plan_reviews'
+                  && coll != 'food_entries'
+                  && coll != 'saved_foods';
       allow write: if request.auth != null
                    && request.auth.uid == uid
                    && !isCanaryToken()
@@ -79,7 +98,14 @@ service cloud.firestore {
                    && coll != 'recognised_models'
                    && coll != 'equipment_identity_sessions'
                    && coll != 'equipment_identity_latest_session'
-                   && coll != 'equipment_identity_telemetry';
+                   && coll != 'equipment_identity_telemetry'
+                   && coll != 'body_scans'
+                   && coll != 'body_scan_settings'
+                   && coll != 'weight_entries'
+                   && coll != 'nutrition_plan'
+                   && coll != 'nutrition_plan_reviews'
+                   && coll != 'food_entries'
+                   && coll != 'saved_foods';
     }
 
     // The canary's ENTIRE grant. A synthetic identity minted via
@@ -182,14 +208,57 @@ service cloud.firestore {
     // it must not have is a value in any of them. `hasOnly` closes the same
     // gap as `healthIsStripped` above, for the same reason -- kept in sync
     // with `HealthFlags.toJson` (mobile/lib/features/safety/data/health_flags.dart).
+    //
+    // Body Scan + Nutrition Coach (D-11, D-70): `nutritionGuidance` and
+    // `foodAllergens` are health answers like the rest, so they join both the
+    // key list and the "no value" list. The two new keys are checked
+    // null-safely: a key that is present with a null value must not make
+    // `.size()` error, and an erroring rule denies the whole profile save.
+    // `HealthFlags.toJson` omits both keys while they are null/empty, so the
+    // stripped form the server ever sees carries only the original five keys
+    // and the deploy order of rules and client is not load-bearing.
     function flagsAreStripped(f) {
       return f.keys().hasOnly(['restrictions', 'bloodPressure', 'surgery',
-              'clinicianAdvice', 'professionalGuidance'])
+              'clinicianAdvice', 'professionalGuidance',
+              'nutritionGuidance', 'foodAllergens'])
           && f.get('restrictions', []).size() == 0
           && f.get('bloodPressure', null) == null
           && f.get('surgery', null) == null
           && f.get('clinicianAdvice', null) == null
-          && f.get('professionalGuidance', null) == null;
+          && f.get('professionalGuidance', null) == null
+          && f.get('nutritionGuidance', null) == null
+          && (f.get('foodAllergens', null) == null
+              || f.get('foodAllergens', []).size() == 0);
+    }
+    // Shape check for the additive `nutrition` map on the profile document
+    // (design s6.1d, D-68). Nothing in it is health data by construction:
+    // allergens, the guidance answer and `excludedFoods` (free text that can
+    // name an intolerance or a condition) are device-only, so `excludedFoods`
+    // is deliberately NOT in the allowlist and a write carrying it is refused
+    // (D-55). Every typed key is tolerant of an explicit null, because the
+    // serializer may emit one and a type error here would refuse the whole
+    // profile save. The ranges mirror the Dart clamps; this is a backstop.
+    function nutritionOk(n) {
+      return n is map
+          && n.keys().hasOnly(['schema', 'sexAtBirth', 'goalDirection',
+              'targetBodyFatPct', 'typicalDailySteps', 'mealsPerDay',
+              'planOwnership', 'healthConnectChoice', 'completedAt'])
+          && (n.get('sexAtBirth', null) == null
+              || n.sexAtBirth in ['female', 'male', 'unspecified'])
+          && (n.get('goalDirection', null) == null
+              || n.goalDirection in ['lose', 'maintain', 'gain'])
+          && (n.get('planOwnership', null) == null
+              || n.planOwnership in ['coached', 'shared', 'manual'])
+          && (n.get('mealsPerDay', null) == null
+              || (n.mealsPerDay is int
+                  && n.mealsPerDay >= 2 && n.mealsPerDay <= 6))
+          && (n.get('targetBodyFatPct', null) == null
+              || (n.targetBodyFatPct is number
+                  && n.targetBodyFatPct >= 5 && n.targetBodyFatPct <= 60))
+          && (n.get('typicalDailySteps', null) == null
+              || (n.typicalDailySteps is int
+                  && n.typicalDailySteps >= 0
+                  && n.typicalDailySteps <= 100000));
     }
     match /users/{uid}/profile/{docId} {
       allow read: if isOrdinaryUser() && request.auth.uid == uid;
@@ -202,6 +271,9 @@ service cloud.firestore {
                    && request.auth.uid == uid
                    && (!('health' in request.resource.data)
                        || healthIsStripped(request.resource.data.health))
+                   && (!('nutrition' in request.resource.data)
+                       || request.resource.data.nutrition == null
+                       || nutritionOk(request.resource.data.nutrition))
                    && (!('lifestyle' in request.resource.data)
                        || (!('smoking' in request.resource.data.lifestyle)
                            || request.resource.data.lifestyle.smoking == null))
@@ -439,6 +511,366 @@ service cloud.firestore {
     // explicit and greppable here, matching every other server-only
     // collection in this file rather than relying on the implicit default.
     match /equipment_model_text_keys/{docId} {
+      allow read, write: if false;
+    }
+
+    // ---------------------------------------------------------------------
+    // Body Scan + Nutrition Coach (design s6.1b, D-25). Every collection below
+    // is carved out of the `users/{uid}/{coll}/{document=**}` wildcard in BOTH
+    // its read and its write condition, so each block here is the ONLY grant
+    // for its path. Every grant goes through `isOrdinaryUser()` so the canary
+    // identity gets nothing (CR-05).
+    //
+    // These are the LAST line of defence against a forged or corrupted write,
+    // not the policy: the profile-dependent safety clamps live in Dart. Rules
+    // cannot measure document size and cannot loop, so list elements are
+    // checked at fixed indexes only (see `listStringsOk`/`foodItemsOk`) and
+    // the per-user caps on saved foods are client-side (stated limits).
+    // ---------------------------------------------------------------------
+
+    // Rules numeric helpers: `x is number` accepts both int and float.
+    function numberIn(v, lo, hi) {
+      return v is number && v >= lo && v <= hi;
+    }
+    function schemaOk(d) {
+      return !('schema' in d) || d.schema is int;
+    }
+
+    // body_scans: SERVER-AUTHORED (D-7, D-52 cloud path only). The estimate,
+    // provider, status and photo state can be neither forged nor erased by a
+    // client, so create and delete are closed (the callables write with the
+    // Admin SDK). The one client edit is `weightKg` / `clientNote`, judged on
+    // `affectedKeys()` so an update that touches only `weightKg` on a document
+    // that has no `clientNote` yet never errors on the missing key (D-68);
+    // removing `clientNote` is allowed, removing `weightKg` is not.
+    function bodyScanEditOk(n, o) {
+      return n.diff(o).affectedKeys().hasOnly(['weightKg', 'clientNote'])
+          && (!('weightKg' in n.diff(o).affectedKeys())
+              || ('weightKg' in n && numberIn(n.weightKg, 30, 300)))
+          && (!('clientNote' in n.diff(o).affectedKeys())
+              || !('clientNote' in n)
+              || (n.clientNote is string && n.clientNote.size() <= 200));
+    }
+    match /users/{uid}/body_scans/{scanId} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create: if false;
+      allow update: if isOrdinaryUser()
+                    && request.auth.uid == uid
+                    && bodyScanEditOk(request.resource.data, resource.data);
+      allow delete: if false;
+    }
+
+    // body_scan_settings: one document, `main`. `cloudConsent` follows the
+    // FIXED D-56 rule: valid when UNCHANGED (so a later retention / reminder /
+    // paused write that merely carries the old consent passes), or when it is
+    // new or bumped with `acceptedAt == request.time` and a version that does
+    // not go down. Withdrawal (the key removed) is allowed and means "no
+    // consent". A forged old timestamp, or a changed version carrying an old
+    // timestamp, is refused.
+    function priorConsentVersion(r) {
+      return r == null ? 0 : r.data.get('cloudConsent', {}).get('version', 0);
+    }
+    function consentOk(n, r) {
+      return !('cloudConsent' in n)
+          || n.get('cloudConsent', null) == (r == null ? null : r.data.get('cloudConsent', null))
+          || (n.cloudConsent is map
+              && n.cloudConsent.keys().hasOnly(['version', 'acceptedAt'])
+              && n.cloudConsent.keys().hasAll(['version', 'acceptedAt'])
+              && n.cloudConsent.version is int
+              && n.cloudConsent.version >= 1
+              && n.cloudConsent.version >= priorConsentVersion(r)
+              && n.cloudConsent.acceptedAt == request.time);
+    }
+    function reminderOk(m) {
+      return m is map
+          && m.keys().hasOnly(['enabled', 'weekday', 'minutes'])
+          && (!('enabled' in m) || m.enabled is bool)
+          && (!('weekday' in m) || (m.weekday is int && numberIn(m.weekday, 1, 7)))
+          && (!('minutes' in m) || (m.minutes is int && numberIn(m.minutes, 0, 1439)));
+    }
+    function bodyScanSettingsOk(n, r) {
+      return n.keys().hasOnly(['schema', 'cloudConsent', 'retentionDays',
+              'reminder', 'paused'])
+          && schemaOk(n)
+          && consentOk(n, r)
+          && (!('retentionDays' in n) || n.retentionDays in [0, 30, 90, 365])
+          && (!('paused' in n) || n.paused is bool)
+          && (!('reminder' in n) || reminderOk(n.reminder));
+    }
+    match /users/{uid}/body_scan_settings/{docId} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create, update: if isOrdinaryUser()
+                            && request.auth.uid == uid
+                            && docId == 'main'
+                            && bodyScanSettingsOk(request.resource.data, resource);
+      allow delete: if isOrdinaryUser() && request.auth.uid == uid;
+    }
+
+    // weight_entries: day-keyed (`yyyy-MM-dd`), so a re-weigh the same day
+    // overwrites. The trend maths uses `at`, not the key.
+    function weightEntryOk(day, d) {
+      return day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && d.keys().hasOnly(['schema', 'kg', 'at', 'source'])
+          && d.keys().hasAll(['kg', 'at', 'source'])
+          && schemaOk(d)
+          && numberIn(d.kg, 30, 300)
+          && d.at is timestamp
+          && d.source in ['manual', 'scan'];
+    }
+    match /users/{uid}/weight_entries/{day} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create, update: if isOrdinaryUser()
+                            && request.auth.uid == uid
+                            && weightEntryOk(day, request.resource.data);
+      allow delete: if isOrdinaryUser() && request.auth.uid == uid;
+    }
+
+    // nutrition_plan: one document, `main`. `status` has no `referProfessional`
+    // value (D-55: an ineligible verdict is computed on the device and never
+    // persisted). `planVersion` is monotonic: an update must be exactly the
+    // stored version + 1, which is what makes the weekly-review transaction's
+    // `basePlanVersion` check meaningful across devices (D-57). The kcal floor
+    // and ceiling are a HARD backstop only; the real, profile-dependent clamps
+    // live in Dart (design s13).
+    function gramsOk(v) {
+      return v is int && v >= 0 && v <= 1000;
+    }
+    function macroBoundsOk(m, ks) {
+      return m is map
+          && m.keys().hasOnly(ks)
+          && gramsOk(m.get('minG', 0))
+          && gramsOk(m.get('targetG', 0))
+          && gramsOk(m.get('maxG', 0));
+    }
+    function nutritionPlanOk(d) {
+      return d.keys().hasOnly(['schema', 'status', 'planVersion', 'reviewUndo',
+              'ownership', 'autoAdjust', 'goalDirection', 'ratePctPerWeek',
+              'kcalRange', 'kcalBounds', 'protein', 'fat', 'carbs',
+              'stepsGoal', 'inputsDigest', 'computedAt', 'lastKcalAdjustAt',
+              'driftFromInitialKcal'])
+          && d.keys().hasAll(['status', 'planVersion'])
+          && schemaOk(d)
+          && d.status in ['active', 'needsProfile']
+          && d.planVersion is int
+          && d.planVersion >= 1
+          && (!('ownership' in d) || d.ownership in ['coached', 'shared', 'manual'])
+          && (!('goalDirection' in d) || d.goalDirection in ['lose', 'maintain', 'gain'])
+          && (!('ratePctPerWeek' in d) || d.ratePctPerWeek is number)
+          && (!('driftFromInitialKcal' in d) || d.driftFromInitialKcal is int)
+          && (!('stepsGoal' in d) || (d.stepsGoal is int && numberIn(d.stepsGoal, 2000, 30000)))
+          && (!('kcalRange' in d)
+              || (d.kcalRange is map
+                  && d.kcalRange.keys().hasOnly(['low', 'high'])
+                  && d.kcalRange.low is int
+                  && d.kcalRange.high is int
+                  && d.kcalRange.low >= 1200
+                  && d.kcalRange.high <= 6000
+                  && d.kcalRange.low <= d.kcalRange.high))
+          && (!('kcalBounds' in d)
+              || (d.kcalBounds is map
+                  && d.kcalBounds.keys().hasOnly(['min', 'max'])))
+          && (!('autoAdjust' in d)
+              || (d.autoAdjust is map
+                  && d.autoAdjust.keys().hasOnly(['steps', 'kcal'])))
+          && (!('reviewUndo' in d)
+              || (d.reviewUndo is map
+                  && d.reviewUndo.keys().hasOnly(['week', 'prevKcalRange',
+                      'prevStepsGoal', 'prevDrift', 'expiresAt', 'undone'])))
+          && (!('inputsDigest' in d)
+              || (d.inputsDigest is map && d.inputsDigest.keys().size() <= 12))
+          && (!('protein' in d) || macroBoundsOk(d.protein, ['minG', 'targetG', 'maxG']))
+          && (!('fat' in d) || macroBoundsOk(d.fat, ['minG', 'maxG']))
+          && (!('carbs' in d) || macroBoundsOk(d.carbs, ['minG', 'maxG']));
+    }
+    match /users/{uid}/nutrition_plan/{docId} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create: if isOrdinaryUser()
+                    && request.auth.uid == uid
+                    && docId == 'main'
+                    && nutritionPlanOk(request.resource.data);
+      allow update: if isOrdinaryUser()
+                    && request.auth.uid == uid
+                    && docId == 'main'
+                    && nutritionPlanOk(request.resource.data)
+                    && request.resource.data.planVersion == resource.data.planVersion + 1;
+      allow delete: if isOrdinaryUser() && request.auth.uid == uid;
+    }
+
+    // nutrition_plan_reviews: keyed by ISO week, IMMUTABLE once written (the
+    // "always explain why" history); written in one transaction together with
+    // the plan change. `referProfessional` is not a valid decision (D-55).
+    // List elements are checked at the first eight indexes, which is every
+    // element a document with `size() <= 8` can have.
+    function codeAt(l, i) {
+      return l.size() <= i || (l[i] is string && l[i].size() <= 40);
+    }
+    function reviewOk(week, d) {
+      return week.matches('^[0-9]{4}-W[0-9]{2}$')
+          && d.keys().hasOnly(['schema', 'decidedAt', 'basePlanVersion',
+              'decision', 'deltaKcal', 'deltaSteps', 'reasonCodes', 'inputs'])
+          && d.keys().hasAll(['decision'])
+          && schemaOk(d)
+          && d.decision in ['keep', 'adjustKcal', 'adjustSteps',
+              'needMoreData', 'needRecalculation']
+          && (!('basePlanVersion' in d) || d.basePlanVersion is int)
+          && (!('deltaKcal' in d) || d.deltaKcal is int)
+          && (!('deltaSteps' in d) || d.deltaSteps is int)
+          && (!('inputs' in d) || d.inputs is map)
+          && (!('reasonCodes' in d)
+              || (d.reasonCodes is list
+                  && d.reasonCodes.size() <= 8
+                  && codeAt(d.reasonCodes, 0) && codeAt(d.reasonCodes, 1)
+                  && codeAt(d.reasonCodes, 2) && codeAt(d.reasonCodes, 3)
+                  && codeAt(d.reasonCodes, 4) && codeAt(d.reasonCodes, 5)
+                  && codeAt(d.reasonCodes, 6) && codeAt(d.reasonCodes, 7)));
+    }
+    match /users/{uid}/nutrition_plan_reviews/{week} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create: if isOrdinaryUser()
+                    && request.auth.uid == uid
+                    && reviewOk(week, request.resource.data);
+      allow update: if false;
+      allow delete: if isOrdinaryUser() && request.auth.uid == uid;
+    }
+
+    // food_entries and saved_foods (D-68). `items` is checked per element at
+    // fixed indexes in groups of ten, deliberately CHEAP (element is a map with
+    // a string `name` <= 80): a full numeric check of every field of 30 items
+    // would exceed the per-request expression budget and refuse legitimate
+    // large entries. The numeric ranges are enforced on `totals` (and on
+    // `per100g` for saved foods); the server recomputes macros from
+    // `per100g x grams` for AI-assisted entries. Bounds the SHAPE, not the
+    // bytes (rules cannot measure document size).
+    // Per-element check, INLINED for all 30 slots. Firestore Rules allow 1000
+    // expression evaluations per request, and the function-call form
+    // (`foodItemAt(l, s + k)`) exceeded that budget for EVERY entry, even a
+    // one-item one, which made `food_entries` unwritable (found by the E0 rules
+    // test). Inlined, a 30-item entry with every optional field fits (measured
+    // on the emulator). A non-map element, or one without a string-like
+    // `name`, makes `.name.size()` ERROR, and an erroring rule refuses the
+    // write, the same outcome as an explicit type check at a fraction of the cost.
+    function foodItemsAll(l) {
+      return (l.size() <= 0 || l[0].name.size() <= 80)
+          && (l.size() <= 1 || l[1].name.size() <= 80)
+          && (l.size() <= 2 || l[2].name.size() <= 80)
+          && (l.size() <= 3 || l[3].name.size() <= 80)
+          && (l.size() <= 4 || l[4].name.size() <= 80)
+          && (l.size() <= 5 || l[5].name.size() <= 80)
+          && (l.size() <= 6 || l[6].name.size() <= 80)
+          && (l.size() <= 7 || l[7].name.size() <= 80)
+          && (l.size() <= 8 || l[8].name.size() <= 80)
+          && (l.size() <= 9 || l[9].name.size() <= 80)
+          && (l.size() <= 10 || l[10].name.size() <= 80)
+          && (l.size() <= 11 || l[11].name.size() <= 80)
+          && (l.size() <= 12 || l[12].name.size() <= 80)
+          && (l.size() <= 13 || l[13].name.size() <= 80)
+          && (l.size() <= 14 || l[14].name.size() <= 80)
+          && (l.size() <= 15 || l[15].name.size() <= 80)
+          && (l.size() <= 16 || l[16].name.size() <= 80)
+          && (l.size() <= 17 || l[17].name.size() <= 80)
+          && (l.size() <= 18 || l[18].name.size() <= 80)
+          && (l.size() <= 19 || l[19].name.size() <= 80)
+          && (l.size() <= 20 || l[20].name.size() <= 80)
+          && (l.size() <= 21 || l[21].name.size() <= 80)
+          && (l.size() <= 22 || l[22].name.size() <= 80)
+          && (l.size() <= 23 || l[23].name.size() <= 80)
+          && (l.size() <= 24 || l[24].name.size() <= 80)
+          && (l.size() <= 25 || l[25].name.size() <= 80)
+          && (l.size() <= 26 || l[26].name.size() <= 80)
+          && (l.size() <= 27 || l[27].name.size() <= 80)
+          && (l.size() <= 28 || l[28].name.size() <= 80)
+          && (l.size() <= 29 || l[29].name.size() <= 80);
+    }
+    // `low <= mid <= high` plus `0 <= low` and `high <= 100000` bounds every
+    // value in one comparison chain (a missing or non-numeric key errors, which
+    // refuses the write). The earlier per-value `numberIn(r.get(...))` form cost
+    // about four times as many expressions.
+    function rangeOk(r) {
+      return r is map
+          && r.keys().hasOnly(['low', 'mid', 'high'])
+          && r.low >= 0 && r.low <= r.mid && r.mid <= r.high && r.high <= 100000;
+    }
+    function totalsOk(t) {
+      return t is map
+          && t.keys().hasOnly(['kcal', 'proteinG', 'carbsG', 'fatG'])
+          && t.keys().hasAll(['kcal', 'proteinG', 'carbsG', 'fatG'])
+          && rangeOk(t.kcal)
+          && rangeOk(t.proteinG)
+          && rangeOk(t.carbsG)
+          && rangeOk(t.fatG);
+    }
+    function foodEntryOk(d) {
+      return d.keys().hasOnly(['schema', 'day', 'slot', 'loggedAt', 'name',
+              'source', 'confidence', 'items', 'totals', 'checkThese', 'model'])
+          && d.keys().hasAll(['day', 'slot', 'loggedAt', 'name', 'source',
+              'items', 'totals'])
+          && schemaOk(d)
+          && d.day is string
+          && d.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && d.slot in ['breakfast', 'lunch', 'dinner', 'snack']
+          && d.source in ['photo', 'describe', 'search', 'barcode', 'label', 'manual']
+          && (!('confidence' in d) || d.confidence in ['low', 'medium', 'high'])
+          && d.loggedAt is timestamp
+          && d.name is string
+          && d.name.size() <= 80
+          && d.items is list
+          && d.items.size() >= 1
+          && d.items.size() <= 30
+          && foodItemsAll(d.items)
+          && (!('checkThese' in d)
+              || (d.checkThese is list && d.checkThese.size() <= 8))
+          && (!('model' in d) || d.model is map)
+          && totalsOk(d.totals);
+    }
+    match /users/{uid}/food_entries/{entryId} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create, update: if isOrdinaryUser()
+                            && request.auth.uid == uid
+                            && foodEntryOk(request.resource.data);
+      allow delete: if isOrdinaryUser() && request.auth.uid == uid;
+    }
+
+    function per100gOk(p) {
+      return p is map
+          && p.keys().hasOnly(['kcal', 'proteinG', 'carbsG', 'fatG'])
+          && numberIn(p.get('kcal', 0), 0, 1000)
+          && numberIn(p.get('proteinG', 0), 0, 1000)
+          && numberIn(p.get('carbsG', 0), 0, 1000)
+          && numberIn(p.get('fatG', 0), 0, 1000);
+    }
+    function savedFoodOk(d) {
+      return d.keys().hasOnly(['schema', 'name', 'per100g', 'servingG',
+              'barcode', 'createdAt'])
+          && d.keys().hasAll(['name', 'per100g'])
+          && schemaOk(d)
+          && d.name is string
+          && d.name.size() <= 80
+          && per100gOk(d.per100g)
+          && (!('servingG' in d) || numberIn(d.servingG, 0, 100000))
+          && (!('barcode' in d) || (d.barcode is string && d.barcode.size() <= 32))
+          && (!('createdAt' in d) || d.createdAt is timestamp);
+    }
+    match /users/{uid}/saved_foods/{foodId} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow create, update: if isOrdinaryUser()
+                            && request.auth.uid == uid
+                            && savedFoodOk(request.resource.data);
+      allow delete: if isOrdinaryUser() && request.auth.uid == uid;
+    }
+
+    // Top-level, NOT user data, Admin SDK only. `nutrition_cache` holds the
+    // central cache of public nutrition-database responses AND the upstream
+    // budget counters (`budget_off_*`, D-64); `body_scan_purge_state` holds
+    // only purge bookkeeping: the unmatched-object sweep's listing page token
+    // (D-59), the per-operation delete fences and transient late_sweep_<hash>
+    // records. `nutrition_cache` carries no uid. In `body_scan_purge_state`
+    // only a late_sweep record carries a uid, for about 17 minutes under
+    // normal operation (retried every 5 minutes, no hard bound) until the
+    // late-upload sweep deletes it; server-only.
+    match /nutrition_cache/{key} {
+      allow read, write: if false;
+    }
+    match /body_scan_purge_state/{id} {
       allow read, write: if false;
     }
   }

@@ -50,7 +50,7 @@ export { AI_GATEWAY_OPERATIONS, AI_GATEWAY_OUTCOMES };
 const OPERATION_LABEL = {
   key: "operation",
   valueType: "STRING" as const,
-  description: "Which of the four AI Gateway surfaces made the call.",
+  description: "Which of the six AI Gateway surfaces made the call.",
   sourceField: "jsonPayload.operation",
 };
 
@@ -64,7 +64,7 @@ const OUTCOME_LABEL = {
 /**
  * 1. Call counter -- request rate / success rate / error rate / timeout
  * rate, all derivable from one `operation` x `outcome` counter without
- * choosing any threshold. Bounded at 4 x 3 = 12 max time series, enforced
+ * choosing any threshold. Bounded at 6 x 3 = 18 max time series (4 x 3 = 12 before D-63 added the two food operations), enforced
  * by the filter itself (see `BoundedLabel` in `types.ts`), not only by
  * this list being the intended set.
  */
@@ -154,7 +154,7 @@ export const AI_GATEWAY_TOKENS_METRIC: DistributionLogMetricSpec = {
  * call precedes its `generate({...})` call). `action` is renamed to
  * `operation` at the label level so this metric joins cleanly with the
  * call/latency/token metrics above despite reading a different event.
- * Bounded to exactly the four AI actions -- `enforceDailyQuota` is also
+ * Bounded to exactly the six AI actions -- `enforceDailyQuota` is also
  * called for non-AI actions (`accountExport`, `clipUrl`, `clipUrls`,
  * `startFreeTrial`, etc.), which are out of scope for an AI Gateway
  * pressure metric and are excluded by the filter itself, not just by
@@ -164,7 +164,7 @@ export const AI_GATEWAY_QUOTA_EXHAUSTIONS_METRIC: CounterLogMetricSpec = {
   name: "ai_gateway_quota_exhaustions",
   description:
     "Count of AI Gateway calls refused for exceeding the daily quota, " +
-    "before generate() was ever reached. Bounded to the four AI actions.",
+    "before generate() was ever reached. Bounded to the six AI actions.",
   message: QUOTA_EXCEEDED_EVENT,
   boundedLabels: [
     {

@@ -71,6 +71,12 @@ class FakeScanCamera implements ScanCamera {
   int stills = 0;
   Object? startError;
 
+  /// Mean brightness the fake reports; null = the camera cannot measure it.
+  double? lum;
+
+  @override
+  double? get luminance => lum;
+
   @override
   Stream<PoseFrame> frames() => ctrl.stream;
   @override
@@ -111,20 +117,30 @@ class FakeScanCamera implements ScanCamera {
 class FakeSpeaker implements ScanSpeaker {
   final List<String> said = [];
   int stops = 0;
+
+  /// What [say] resolves to; false simulates a speech failure.
+  bool result = true;
   @override
-  Future<void> say(String text) async => said.add(text);
+  Future<bool> say(String text) async {
+    said.add(text);
+    return result;
+  }
+
   @override
   Future<void> stop() async => stops++;
 }
 
 class FakeHaptics implements ScanHaptics {
   int ticks = 0, shutters = 0, warns = 0;
+  final List<ScanHapticPattern> patterns = [];
   @override
   void tick() => ticks++;
   @override
   void shutter() => shutters++;
   @override
   void warn() => warns++;
+  @override
+  void pattern(ScanHapticPattern p) => patterns.add(p);
 }
 
 class FakeScanRepository implements ScanRepository {

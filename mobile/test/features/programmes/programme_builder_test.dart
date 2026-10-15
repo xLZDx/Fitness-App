@@ -683,4 +683,129 @@ void main() {
       }
     });
   });
+
+  // ---- E1 additions: nutrition-aware volume factor (design s30.4) ----
+
+  group('E1 volumeFactor: nutrition may only LOWER volume', () {
+    ProgrammeBuildRequest withFactor(double f, {String id = 'strength_base'}) =>
+        ProgrammeBuildRequest(
+          spec: programmeSpecFor(id)!,
+          catalogue: catalogue,
+          safety: _cleared(),
+          weeks: 4,
+          daysPerWeek: 4,
+          volumeFactor: f,
+        );
+
+    List<int> setsOf(ProgrammeBuildResult r) => [
+          for (final s in (r as ProgrammeBuilt).sessions)
+            for (final e in s.exercises) e.sets,
+        ];
+
+    List<String> idsOf(ProgrammeBuildResult r) => [
+          for (final s in (r as ProgrammeBuilt).sessions)
+            for (final e in s.exercises) e.exercise.id,
+        ];
+
+    test('the default request is neutral (1.0)', () {
+      expect(_request().volumeFactor, 1.0);
+    });
+
+    test('setsAfterNutrition: neutral factor returns the input unchanged', () {
+      for (final n in const [1, 2, 3, 4, 5, 6]) {
+        expect(setsAfterNutrition(n, 1.0), n);
+      }
+    });
+
+    test('setsAfterNutrition: hand-derived rounding table', () {
+      // 3 * 0.85 = 2.55 -> 3 ; 3 * 0.95 = 2.85 -> 3 ; 3 * 0.84 = 2.52 -> 3
+      // 3 * 0.83 = 2.49 -> 2 ; 3 * 0.70 = 2.10 -> 2 ; 4 * 0.70 = 2.80 -> 3
+      // 4 * 0.85 = 3.40 -> 3 ; 5 * 0.85 = 4.25 -> 4 ; 2 * 0.70 = 1.40 -> 1
+      // 1 * 0.70 = 0.70 -> 1 (round gives 1; the floor of 1 also holds)
+      expect(setsAfterNutrition(3, 0.85), 3);
+      expect(setsAfterNutrition(3, 0.95), 3);
+      expect(setsAfterNutrition(3, 0.84), 3);
+      expect(setsAfterNutrition(3, 0.83), 2);
+      expect(setsAfterNutrition(3, 0.70), 2);
+      expect(setsAfterNutrition(4, 0.70), 3);
+      expect(setsAfterNutrition(4, 0.85), 3);
+      expect(setsAfterNutrition(5, 0.85), 4);
+      expect(setsAfterNutrition(2, 0.70), 1);
+      expect(setsAfterNutrition(1, 0.70), 1);
+    });
+
+    test('setsAfterNutrition: above 1.0 is capped to 1.0, below 0.70 floors at 0.70', () {
+      expect(setsAfterNutrition(4, 1.5), 4);
+      expect(setsAfterNutrition(4, 100), 4);
+      expect(setsAfterNutrition(4, 0.10), 3, reason: 'floored at 0.70 -> 2.8 -> 3');
+      expect(setsAfterNutrition(4, 0.0), 3);
+      expect(setsAfterNutrition(4, -2.0), 3);
+      expect(setsAfterNutrition(3, 0.50), 2, reason: 'floored at 0.70 -> 2.1 -> 2');
+    });
+
+    test('setsAfterNutrition: NaN and infinities are neutral, never a crash', () {
+      expect(setsAfterNutrition(4, double.nan), 4);
+      expect(setsAfterNutrition(4, double.infinity), 4);
+      expect(setsAfterNutrition(4, double.negativeInfinity), 4);
+    });
+
+    test('a neutral factor builds the identical programme to the default request', () {
+      final a = buildProgramme(_request(daysPerWeek: 4, weeks: 4));
+      final b = buildProgramme(withFactor(1.0));
+      expect(a, isA<ProgrammeBuilt>());
+      expect(setsOf(b), setsOf(a));
+      expect(idsOf(b), idsOf(a));
+    });
+
+    test('a factor above 1.0 never raises any set count', () {
+      final neutral = setsOf(buildProgramme(withFactor(1.0)));
+      final over = setsOf(buildProgramme(withFactor(1.6)));
+      expect(over, neutral);
+    });
+
+    test('0.70 lowers every slot to the rounded value and builds (the validator minimum is proportional)', () {
+      final spec = programmeSpecFor('strength_base')!;
+      final neutral = buildProgramme(withFactor(1.0));
+      final lowered = buildProgramme(withFactor(0.70));
+      expect(lowered, isA<ProgrammeBuilt>(),
+          reason: 'trimming volume must not turn into a refusal: '
+              '${lowered is ProgrammeRefused ? lowered.findings : ''}');
+      final expected = (spec.setsPerSlot * 0.70).round().clamp(1, spec.setsPerSlot);
+      expect(setsOf(neutral).toSet(), {spec.setsPerSlot});
+      expect(setsOf(lowered).toSet(), {expected});
+      expect(expected, lessThan(spec.setsPerSlot),
+          reason: 'a 4-set slot at 0.70 must actually lose a set');
+      final sumN = setsOf(neutral).fold<int>(0, (a, b) => a + b);
+      final sumL = setsOf(lowered).fold<int>(0, (a, b) => a + b);
+      expect(sumL, lessThan(sumN));
+    });
+
+    test('a factor below the floor behaves exactly like 0.70', () {
+      expect(setsOf(buildProgramme(withFactor(0.20))),
+          setsOf(buildProgramme(withFactor(0.70))));
+    });
+
+    test('the volume factor never changes exercise selection (safety filters untouched)', () {
+      expect(idsOf(buildProgramme(withFactor(0.70))),
+          idsOf(buildProgramme(withFactor(1.0))));
+    });
+
+    test('the injury filter output is unchanged by the factor', () {
+      ProgrammeBuildRequest kneeRequest(double f) => ProgrammeBuildRequest(
+            spec: programmeSpecFor('strength_base')!,
+            catalogue: catalogue,
+            safety: _cleared(injuries: const [
+              Injury(bodyPart: 'knee', type: 'strain'),
+            ]),
+            weeks: 4,
+            daysPerWeek: 4,
+            volumeFactor: f,
+          );
+      final a = buildProgramme(kneeRequest(1.0));
+      final b = buildProgramme(kneeRequest(0.70));
+      expect(a, isA<ProgrammeBuilt>());
+      expect(b, isA<ProgrammeBuilt>());
+      expect(idsOf(b), idsOf(a));
+    });
+  });
 }

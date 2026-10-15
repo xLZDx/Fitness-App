@@ -12,10 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/hud/hud_surface.dart';
-import '../../../../core/notifications/notification_service.dart'
-    show ReminderOutcome;
 import '../scan_access.dart';
-import '../scan_reminder.dart';
+import 'scan_reminder_editor.dart';
 import 'scan_gate_view.dart';
 
 class ScanEntryCard extends ConsumerWidget {
@@ -33,7 +31,7 @@ class ScanEntryCard extends ConsumerWidget {
     switch (access) {
       case ScanAccess.allowed:
         action = _Actions(
-          onStart: () => GoRouter.of(context).push('/photos/scan'),
+          onStart: () => GoRouter.of(context).push('/body-scan'),
           onCompare: () => GoRouter.of(context).push('/photos/compare'),
         );
       case ScanAccess.needsConsent:
@@ -41,7 +39,7 @@ class ScanEntryCard extends ConsumerWidget {
           key: const Key('scan.entry.consent'),
           onPressed: () async {
             if (await runScanConsent(context, ref) && context.mounted) {
-              GoRouter.of(context).push('/photos/scan');
+              GoRouter.of(context).push('/body-scan');
             }
           },
           child: Text(l10n.scanEntryStart),
@@ -82,7 +80,7 @@ class ScanEntryCard extends ConsumerWidget {
             const SizedBox(height: 12),
             action,
           ],
-          if (access == ScanAccess.allowed) const _ReminderSwitch(),
+          if (access == ScanAccess.allowed) const ScanReminderEditor(),
         ],
       ),
     );
@@ -113,39 +111,6 @@ class _Actions extends StatelessWidget {
           child: Text(l10n.scanEntryCompare),
         ),
       ],
-    );
-  }
-}
-
-class _ReminderSwitch extends ConsumerWidget {
-  const _ReminderSwitch();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final on = ref.watch(scanReminderEnabledProvider);
-    return SwitchListTile(
-      key: const Key('scan.entry.reminder'),
-      contentPadding: EdgeInsets.zero,
-      dense: true,
-      title: Text(l10n.scanReminderLabel),
-      value: on,
-      onChanged: (v) async {
-        final messenger = ScaffoldMessenger.of(context);
-        final outcome =
-            await ref.read(scanReminderEnabledProvider.notifier).setEnabled(v);
-        // The notifier already flipped the toggle back to off; say why.
-        if (v && outcome == ReminderOutcome.denied) {
-          messenger.showSnackBar(SnackBar(
-              key: const Key('scan.entry.reminderDenied'),
-              content: Text(l10n.scanReminderDenied)));
-        }
-        if (v && outcome == ReminderOutcome.failed) {
-          messenger.showSnackBar(SnackBar(
-              key: const Key('scan.entry.reminderFailed'),
-              content: Text(l10n.commonSomethingWentWrong)));
-        }
-      },
     );
   }
 }

@@ -148,6 +148,9 @@ class FirestoreProfileRepository implements ProfileRepository {
             if (_enumByName(TrainingBarrier.values, b) case final v?) v,
         ],
       ),
+      // Absent on every profile written before the nutrition coach: reads as
+      // empty, never throws.
+      nutrition: NutritionPrefs.fromJson(map['nutrition']),
       completedAt: completedAt,
     );
   }

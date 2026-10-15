@@ -9,17 +9,18 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `AGENTS.md` | AGENTS.md — Fitness App | 6067 |
 | `CLAUDE.md` | Fitness App — router | 9955 |
 | `FITNESS_APP_TASK_LIST.md` | Fitness App — Complete Task List | 15792 |
+| `core/ATTRIBUTIONS_NUTRITION.md` | Attributions: nutrition, food diary and body check-in | 4343 |
 | `core/AUDIT_REPORT_2026-08-11.md` | Полный аудит Fitness App | 28796 |
 | `core/BACKLOG_2026-07-31.md` | Backlog — operator dump of 2026-07-31 | 31308 |
 | `core/CATALOG_STATE_2026-08-03.md` | Catalog — full picture, 2026-08-03 | 4114 |
 | `core/CLIP_LICENCE_AUDIT_2026-08-03.md` | The legacy catalog was still serving unlicensed footage — audit and repair | 9834 |
-| `core/CODEMAP.md` | CODEMAP — where everything lives | 15037 |
+| `core/CODEMAP.md` | CODEMAP — where everything lives | 20851 |
 | `core/COMMIT_PLANS_2026-08-04.md` | Планы коммитов — сессия 2026-08-04 | 57252 |
 | `core/CONVENTIONS.md` | Engineering conventions | 4241 |
 | `core/CURRENT_STATE.md` | Current state | 14555 |
-| `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 12447 |
+| `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md` | Current state: Body Scan + Nutrition Coach sprint | 8754 |
+| `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 14841 |
 | `core/DEBUGGING.md` | Dev observability — debug daemon | 8855 |
-| `core/DECISION_LOG.md` | Decision log — Fitness App | 4167815 |
 | `core/DECISION_SELF_BOOKING.md` | Operator decision — should a coach be able to book themselves? | 11742 |
 | `core/DEPENDENCIES.md` | DEPENDENCIES | 1108 |
 | `core/EQUIPMENT_REGISTRY_EXPANSION_2026-08-03.md` | Equipment registry expansion, 52 -> 69 -- 2026-08-03 / 2026-08-04 | 10219 |
@@ -40,7 +41,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/G4_STEP8_KILL_SWITCH_2026-08-29.md` | G4 Step 8 — rollback mechanism: a live, redeploy-free kill switch for the AI Gateway | 16957 |
 | `core/G4_STEP9_RELEASE_GUARD_2026-08-29.md` | G4 Step 9 — a fail-closed release guard for the AI Gateway | 34718 |
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
-| `core/INDEX.md` | core/ — documentation index | 9793 |
+| `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
@@ -176,6 +177,10 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/B3_MEDIA_DIAGNOSIS_2026-08-07.md` | B3 — фото людей в карточках: диагноз ОПРОВЕРГНУТ (2026-08-07) | 5948 |
 | `core/plans/B5_DATA_SOURCES_2026-08-07.md` | B5 — откуда брать картинки: измерено, а не предположено (2026-08-07) | 9144 |
 | `core/plans/B5b_TEXT_ANCHOR_2026-08-07.md` | B5b — второй якорь: читать то, что написано на тренажёре (2026-08-07) | 8772 |
+| `core/plans/BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md` | Body Scan + Nutrition Coach - sprint plan | 55479 |
+| `core/plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md` | Body Scan + Nutrition Coach - technical design | 215874 |
+| `core/plans/BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md` | Body Scan + Nutrition Coach - requirements-to-test coverage map | 138952 |
+| `core/plans/BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md` | Body Scan + Nutrition Coach - reference behaviour notes (clean-room distillation) | 16723 |
 | `core/plans/CARD_403_CONTENT_REMEDIATION_2026-08-15.md` | Card — 403-exercise content remediation (B3 set) | 10119 |
 | `core/plans/CARD_FULL_CATALOG_AUDIT_2026-08-15.md` | Card — full-catalog re-check (1887 exercises) | 22699 |
 | `core/plans/CATALOG_DESCRIPTION_COVERAGE_2026-08-15.md` | Exercise catalog — description coverage and defect accounting | 8237 |
@@ -190,6 +195,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/NEXT_TICKETS.md` | Next implementation tickets | 11865 |
 | `core/plans/O0_ONBOARDING_SCHEMA_2026-08-12.md` | O0 — предложение схемы под фигмовский онбординг (2026-08-12) | 14237 |
 | `core/plans/PHASE2_BODY_SCAN_COACH_REFERENCE_REVIEW_2026-10-09.md` | Phase 2 candidate: body-composition scan + adaptive-coaching features — reference app walkthrough | 12092 |
+| `core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md` | Phase 2 priority backlog: multi-sport tracking, device ecosystem, nutrition-aware programmes | 27904 |
 | `core/plans/PLAN_AI_RESTRUCTURE_2026-07-28.md` | Plan — AI-Friendly Repo Restructure (2026-07-28) | 19394 |
 | `core/plans/PLAN_AUDIT_2026-08-11_REMEDIATION.md` | Audit remediation plan — 2026-08-11 | 12677 |
 | `core/plans/PLAN_BUGS_2026-08-13.md` | План: баги со скриншотов 13 августа + остаток | 32013 |
@@ -201,6 +207,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md` | R11 — Figma parity rebuild, plan (2026-08-08) | 18737 |
 | `core/plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md` | Остаток редизайна — состояние на 2026-08-12 | 20122 |
 | `core/plans/PRODUCT_HARDENING_SPRINT_2026-10-13.md` | Product hardening sprint — plan (2026-10-13) | 25518 |
+| `core/plans/PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md` | PRODUCT_PHASE2_EXPANSION - reconciliation of the research handoff package with the repo | 42173 |
 | `core/plans/RECOG_C1_GT_FREEZE_2026-09-05.md` | RECOG-C1 — ground-truth freeze | 3885 |
 | `core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md` | RECOG-C1 — the measurement | 8759 |
 | `core/plans/RECOG_C1_STEP5_ROUND2.md` | RECOG-C1 step 5 — round 2, verification of the round-1 remediation | 5308 |
@@ -236,7 +243,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/screenshots/README.md` | Screenshots | 2654 |
 | `core/state/REVIEW_STATUS_2026-10-07.md` | Fitness App / SPTR — где мы сейчас, 2026-10-07 | 11364 |
 | `core/vendor_requests/legs_2026-08-06.md` | Missing clip request -- Legs | 1344 |
-| `docs/EXPERIMENTS.md` | Experiments register | 1473 |
+| `docs/EXPERIMENTS.md` | Experiments register | 1489 |
 | `docs/README.md` | docs/ — screenshot index | 1737 |
 | `docs/Redisign/DEV_COMPLETION_SCOPE_v1.5.md` | Dev Agent — Complete Missing Refactor Scope — v1.5 | 3957 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.6.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v1.6 | 60996 |
@@ -260,12 +267,21 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/R2_SCANNER_SCOPE_CORRECTION_v1.9.md` | R2 Scanner Scope Correction — v1.9 | 646 |
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
-| `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1002 |
-| `docs/phase2/README.md` | Phase 2 documents (development line) | 1638 |
-| `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 19919 |
-| `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12139 |
-| `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 32259 |
-| `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 18611 |
-| `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 6991 |
+| `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
+| `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
+| `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
+| `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20755 |
+| `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12952 |
+| `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33265 |
+| `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
+| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 17426 |
+| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 72197 |
+| `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 24724 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
+| `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
+| `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
+| `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
+| `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |
 | `runbooks/video_hosting.md` | Video hosting | 8833 |
