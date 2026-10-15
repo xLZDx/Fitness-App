@@ -56440,3 +56440,7 @@ Decision: Fake-FirebaseFunctions tests prove exact payloads, tolerant parsing an
 ## 2026-10-15 - Commit: C25 local wipe key tests
 
 Decision: the wipe rule is tested as prefix plus exact-uid final segment, including look-alike uids. Evidence: core/changes/2026-10-15-c25-tests.md (local_data_wipe_c25_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C19 nutrition_plan_page_test.dart
+
+Decision: the plan page gates numbers on the verdict, acknowledges the data notice before any write and persists edits only through NutritionPlanActions. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_plan_page_test.dart 25 passed).
