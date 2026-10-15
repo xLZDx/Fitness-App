@@ -56297,3 +56297,7 @@ Decision (Q-10): privacy.html text is shipped as a draft; the data-lifecycle row
 ## 2026-10-15 - Commit: C24 capture state, thumbnail store, ARB keys
 
 Decision: the optional meal thumbnail reuses the progress-photo cipher and per-uid directory (meals/ subfolder) and is deleted by FoodDiaryActions.deleteEntry; barcode decoding keeps only GTIN-valid values with no format filter. Evidence: `core/changes/2026-10-15-c24-capture-state-l10n.md`; nothing was run.
+
+## 2026-10-15 - Commit: C15 tests - analysis_progress_view_test
+
+Decision: progress tests fix that the live text carries only stage changes and notices, never the elapsed counter. Evidence: core/changes/2026-10-15-c15-tests.md.
