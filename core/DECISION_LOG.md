@@ -56062,3 +56062,7 @@ Decision: the diary talks to food callables only through the FoodApi interface (
 ## 2026-10-15 - Commit: design fix (sourceId allowlist)
 
 Decision: design s5.6 FoodItem sourceId allowlist now includes llm_estimate (stale line fixed; the C22 data layer was already correct). Evidence: `core/changes/2026-10-15-design-sourceid-allowlist.md`.
+
+## 2026-10-15 - Commit: C18 review input builder tests
+
+Decision: builder tests prove the 21-day window edges, previousClass from the newest review and cooldown days feed decide() correctly. Evidence: core/changes/2026-10-15-c18-tests.md.
