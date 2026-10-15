@@ -56145,3 +56145,9 @@ Evidence record: the C16 part 2 decision entry above was swept into a concurrent
 ## 2026-10-15 - Commit: C19 plan page, review card, entry card
 
 Decision: the plan screen is gated by the device-local verdict (referProfessional shows one notice, no numbers); every plan or weight write passes ensureDataNoticeAcknowledged first; the entry card is exported but mounted by the Progress/Home owners (C17). Evidence: core/changes/2026-10-15-c19-plan-page.md; no checks run.
+
+## 2026-10-15 - Commit: C23 part 5 (chips, macro bars, ring)
+
+Decision: the day ring never colours or words a low day as failure (D-78); check chips expose state as text and manage focus after resolution. Evidence: `core/changes/2026-10-15-c23-widgets-b.md`; no checks run.
+
+Evidence addendum (C19): plan widgets are in core/changes/2026-10-15-c19-plan-widgets.md; plan page and cards in core/changes/2026-10-15-c19-plan-page.md.
