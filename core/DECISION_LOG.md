@@ -55890,3 +55890,13 @@ Decision (flags): server flags are read per call through three modules only (bod
 Decision (SD-11 kept): release_guard.ts, discover_callables.ts and index.ts sweepAccountData are untouched in C02; they change in C12/C20 with their callables. AI_GATEWAY_OPERATIONS grows to six in C02 so the type and monitoring filters are ready (monitoring series bound 6 x 3 = 18).
 
 Evidence: reading only; not compiled or run. Unverified: Schema import and DOM fetch types under the existing tsconfig, all behaviour. Change record: core/changes/2026-10-15-functions-infra-and-flags.md.
+
+## 2026-10-15 - Commit C03: client flags, feature gates, data notice (Body Scan + Nutrition Coach, E0)
+
+Decision (SD-2 client side): BodyScanFlags (BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP) are compile-time dart-defines, default false, read through bodyScanFlagsProvider; they decide what the UI offers while the server enforces its own flag and answers feature-disabled.
+
+Decision (Q-2 / D-26 default): AppFeature gets one entry per feature; only bodyScan is tier-gated, mirroring ScanAccess.needsSupporter (any non-free tier); nutritionPlan, weeklyReview, foodDiary, foodAiRecognition and foodBarcodeLabel are ungated. Changing a tier is a one-line edit in canAccess.
+
+Decision (D-79): first-use data notice is a single-tap, versioned, device-local acknowledgement (key data_notice.v<version>.<uid>); a dismissed sheet defers the write and never loses it; the Vertex AI paragraph is shown only when FOOD_AI is compiled in. The ARB keys ship in C03 (SD-3) although the coordinator expected l10n later.
+
+Evidence: reading only; not analyzed or run. Change record: core/changes/2026-10-15-client-flags-and-gates.md.

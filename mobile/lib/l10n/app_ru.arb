@@ -1701,5 +1701,21 @@
   "equipmentIdentityNeedMoreViewPrompt": "Серверу нужен другой ракурс, чтобы подтвердить этот тренажёр. Попробуйте отсканировать ещё раз под другим углом.",
   "@equipmentIdentityNeedMoreViewPrompt": {
     "description": "P2.G4: shown instead of the badge when decision is NEED_MORE_VIEW."
+  },
+  "dataNoticeTitle": "Как хранятся данные о вашем теле и питании",
+  "@dataNoticeTitle": {
+    "description": "Heading of the one-time data notice."
+  },
+  "dataNoticeBody": "Ваши взвешивания, цели по питанию и дневник питания надёжно хранятся в вашем аккаунте, чтобы остаться доступными при смене телефона. Измерения тела — это чувствительные персональные данные. Вы можете экспортировать или удалить их в любой момент, а при удалении аккаунта они стираются.",
+  "@dataNoticeBody": {
+    "description": "Body of the data notice: what is stored server-side."
+  },
+  "dataNoticeBodyFoodAi": "Когда вы сканируете блюдо или этикетку либо описываете блюдо словами, фото или текст отправляются в Vertex AI от Google Cloud для анализа. Фото мы не храним.",
+  "@dataNoticeBodyFoodAi": {
+    "description": "Extra paragraph of the data notice, shown only when AI food recognition is enabled in this build."
+  },
+  "dataNoticeAcknowledge": "Понятно",
+  "@dataNoticeAcknowledge": {
+    "description": "Single-tap acknowledgement button of the data notice."
   }
 }

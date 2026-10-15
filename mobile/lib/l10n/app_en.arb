@@ -2820,5 +2820,21 @@
   "equipmentIdentityNeedMoreViewPrompt": "The server needs another angle to confirm this machine. Try scanning again from a different angle.",
   "@equipmentIdentityNeedMoreViewPrompt": {
     "description": "P2.G4: shown instead of the badge when decision is NEED_MORE_VIEW -- a plain re-scan prompt, not the collapsible badge."
+  },
+  "dataNoticeTitle": "How your body and food data is stored",
+  "@dataNoticeTitle": {
+    "description": "Heading of the one-time data notice shown before the first weight entry, nutrition plan save or food diary write."
+  },
+  "dataNoticeBody": "Your weigh-ins, nutrition targets and food diary are stored securely under your account so they stay available if you change phone. Body measurements are sensitive personal data. You can export or delete them at any time, and deleting your account erases them.",
+  "@dataNoticeBody": {
+    "description": "Body of the data notice: what is stored server-side. Shown with the flags off as well."
+  },
+  "dataNoticeBodyFoodAi": "When you scan a meal or a label, or describe a meal in words, the photo or text is sent to Google Cloud's Vertex AI to be analysed. We do not store the photo.",
+  "@dataNoticeBodyFoodAi": {
+    "description": "Extra paragraph of the data notice, shown only when AI food recognition is enabled in this build."
+  },
+  "dataNoticeAcknowledge": "Got it",
+  "@dataNoticeAcknowledge": {
+    "description": "Single-tap acknowledgement button of the data notice."
   }
 }
