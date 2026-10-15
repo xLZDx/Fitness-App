@@ -56534,3 +56534,7 @@ Progress: scan_gate_delete_test fake aligned with the C17 sync signature.
 ## 2026-10-15 - Commit: C15 tests - body_scan_wiring_test
 
 Decision: wiring tests drive the bridge with overrides only; no Firebase. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 attribution file vs in-app sources tests
+
+Decision: attribution consistency is tested by parsing the real file and rendering the real sources page. Evidence: core/changes/2026-10-15-c24-tests.md.
