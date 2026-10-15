@@ -56630,3 +56630,7 @@ Decision: analyzeMealPhoto and parseNutritionLabel treat unparseable model outpu
 ## 2026-10-15 - Commit: mobile plan and diary read fixes
 
 Decision: "document exists but unreadable" is an error state distinct from "no document" (plan), and a diary entry with missing totals or time is `degraded` (never written back). Evidence: core/changes/2026-10-15-mobile-plan-and-diary-reads.md; no checks run.
+
+## 2026-10-15 - Commit: cancel vs unresolved createBodyScan race tests
+
+Decision: the cloud-scan cancel-while-create-unresolved race is covered by deterministic tests; no production change was needed. cancel() sends deleteBodyScan (the scan is persisted as `uploading` before create) or persists pendingRemoteDelete, and the server tombstone makes a late create harmless. Evidence: core/changes/2026-10-15-cancel-create-race-tests.md; focused run of body_scan_job_runner_test.dart only.

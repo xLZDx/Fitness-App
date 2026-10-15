@@ -1198,6 +1198,196 @@ void main() {
       expect(x.repo['next'].analysis!.status, JobStatus.done);
     });
   });
+
+  // Cancel while createBodyScan is unresolved. The server writes a cancellation
+  // tombstone on deleteBodyScan even when the scan doc does not exist yet and
+  // then refuses createBodyScan for that id ('scan-cancelled'), so the client
+  // only has to guarantee that the delete is SENT or durably OWED.
+  group('cancel while createBodyScan is unresolved', () {
+    /// A second runner over the same stores = an app restart.
+    BodyScanJobRunner restarted(_H x) => BodyScanJobRunner(
+          scans: x.repo,
+          readPhoto: (id) async => Uint8List.fromList([1, 2, 3]),
+          api: x.api,
+          uploader: x.uploader,
+          blur: x.blur,
+          faceCheck: x.face,
+          flags: x.flags,
+          settings: () => x.settings,
+          resolveSubject: (r) async => _subject,
+          accountChanged: () => false,
+          now: () => x.clock,
+          onError: x.errors.add,
+        );
+
+    /// Waits until createBodyScan is in flight.
+    Future<void> waitCreateInFlight(_H x) async {
+      for (var i = 0; i < 50 && x.api.createIds.isEmpty; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(x.api.createIds, ['s1'], reason: 'precondition: create in flight');
+      expect(x.repo['s1'].analysis!.status, JobStatus.uploading,
+          reason: 'precondition: the scan is persisted as uploading');
+
+    }
+
+    void expectNothingStartedAfterCancel(_H x) {
+      expect(x.api.estimateIds, isEmpty);
+      expect(x.uploader.puts, isEmpty, reason: 'no photo PUT after a cancel');
+      expect(x.reads, isEmpty);
+      expect(x.done, isEmpty);
+      expect(x.api.createIds, ['s1'], reason: 'the scan is never re-created');
+    }
+
+    test('(a) create then succeeds: delete was sent, scan stays cancelled, nothing starts',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      final gate = Completer<CreateScanResult>();
+      x.api.createQueue.add((id, n) => gate.future);
+      x.repo.put(_rec('s1'));
+      final running = x.runner.resume();
+      await waitCreateInFlight(x);
+
+      await x.runner.cancel('s1');
+      expect(x.api.log, ['create:s1', 'delete:s1'],
+          reason: 'the delete is sent while create is still unresolved');
+      expect(x.api.deletes, [('s1', false)]);
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expect(x.repo['s1'].pendingRemoteDelete, isFalse);
+
+      gate.complete(_Api.pending('s1', 1)); // the late create succeeds
+      await running;
+      await x.settle();
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expect(x.repo['s1'].pendingRemoteDelete, isFalse);
+      expectNothingStartedAfterCancel(x);
+
+      await x.run(); // a later resume must not restart it either
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expectNothingStartedAfterCancel(x);
+      expect(x.api.deletes, [('s1', false)], reason: 'delete is not repeated');
+    });
+
+    test('(b) delete fails: owed delete is persisted and flushed after a restart',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      final gate = Completer<CreateScanResult>();
+      x.api.createQueue.add((id, n) => gate.future);
+      x.api.deleteError = const BodyScanApiException('scan-delete-failed');
+      x.repo.put(_rec('s1'));
+      final running = x.runner.resume();
+      await waitCreateInFlight(x);
+
+      await x.runner.cancel('s1');
+      expect(x.api.deletes, [('s1', false)]);
+      expect(x.repo['s1'].pendingRemoteDelete, isTrue);
+      expect(x.repo['s1'].remoteId, 's1');
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+
+      gate.complete(_Api.pending('s1', 1));
+      await running;
+      await x.settle();
+      expect(x.repo['s1'].pendingRemoteDelete, isTrue,
+          reason: 'the late create must not clear or lose the owed delete');
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expectNothingStartedAfterCancel(x);
+
+      // App restart: a brand new runner over the same stores, server reachable.
+      x.runner.dispose();
+      x.api.deleteError = null;
+      await restarted(x).resume();
+      expect(x.api.deletes, [('s1', false), ('s1', false)],
+          reason: 'the owed delete is sent after the restart');
+      expect(x.repo['s1'].pendingRemoteDelete, isFalse);
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expectNothingStartedAfterCancel(x);
+    });
+
+    test('(c) create response lost: delete is still sent and the scan is not retried',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      final gate = Completer<CreateScanResult>();
+      x.api.createQueue.add((id, n) => gate.future);
+      x.repo.put(_rec('s1'));
+      final running = x.runner.resume();
+      await waitCreateInFlight(x);
+
+      await x.runner.cancel('s1');
+      expect(x.api.deletes, [('s1', false)]);
+
+      gate.completeError(const BodyScanApiException('network-error')); // lost
+      await running;
+      await x.settle();
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled,
+          reason: 'a lost create must not requeue or fail a cancelled scan');
+      expect(x.repo['s1'].analysis!.attempt, 0);
+      expect(x.repo['s1'].pendingRemoteDelete, isFalse);
+      expectNothingStartedAfterCancel(x);
+      await x.run();
+      expectNothingStartedAfterCancel(x);
+    });
+
+    test('(c2) create response lost AND delete fails: delete stays owed, flushed on restart',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      final gate = Completer<CreateScanResult>();
+      x.api.createQueue.add((id, n) => gate.future);
+      x.api.deleteError = StateError('offline');
+      x.repo.put(_rec('s1'));
+      final running = x.runner.resume();
+      await waitCreateInFlight(x);
+
+      await x.runner.cancel('s1');
+      gate.completeError(StateError('connection reset')); // lost
+      await running;
+      await x.settle();
+      expect(x.repo['s1'].pendingRemoteDelete, isTrue);
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expectNothingStartedAfterCancel(x);
+
+      x.runner.dispose();
+      x.api.deleteError = null;
+      await restarted(x).resume();
+      expect(x.api.deletes.length, 2);
+      expect(x.repo['s1'].pendingRemoteDelete, isFalse);
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expectNothingStartedAfterCancel(x);
+    });
+
+    test('(d) delete lands first, late create hits the tombstone: stays cancelled, no re-create',
+        () async {
+      final x = h(cloud: true, consent: 1);
+      final gate = Completer<void>();
+      // Fake server: a create that is resolved after a delete of the same id is
+      // refused with the tombstone slug.
+      x.api.createQueue.add((id, n) async {
+        await gate.future;
+        if (x.api.deletes.any((d) => d.$1 == id)) {
+          throw const BodyScanApiException('scan-cancelled', retriable: false);
+        }
+        return _Api.pending(id, n);
+      });
+      x.repo.put(_rec('s1'));
+      final running = x.runner.resume();
+      await waitCreateInFlight(x);
+
+      await x.runner.cancel('s1');
+      expect(x.api.deletes, [('s1', false)], reason: 'delete reached the server first');
+
+      gate.complete();
+      await running;
+      await x.settle();
+      expect(x.repo['s1'].analysis!.status, JobStatus.cancelled);
+      expect(x.repo['s1'].pendingRemoteDelete, isFalse);
+      expect(x.repo['s1'].remoteId, 's1',
+          reason: 'the tombstone must not rotate the id of a cancelled scan');
+      expectNothingStartedAfterCancel(x);
+
+      await x.run();
+      expectNothingStartedAfterCancel(x);
+      expect(x.api.deletes, [('s1', false)]);
+    });
+  });
 }
 
 class _ObservingRepo implements ScanRepository {
