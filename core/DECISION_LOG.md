@@ -55958,3 +55958,15 @@ Decision (D-55, D-57, D-72, D-74): the review transaction rules are one pure fun
 ## 2026-10-15 - Commit: C12 server tests (estimate, validate_estimate, registry)
 
 Decision: estimate tests drive the provider through the __setTestEstimatorForTests seam and assert persisted state and quota counters (not mock calls); the 25 s timeout is proved by capturing the setTimeout delay and firing it at once. Evidence: `npx jest` on the three files in functions/ = 131 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-estimate.md.
+
+## 2026-10-15 - Commit: E1 tests, nutrition maths (written, run pending)
+
+Decision: the E1 nutrition-maths tests (energy_math, safety_clamps, plan_calculator, nutrition_eligibility, weekly_review) take every expected number from an independent scratch oracle written from design s13, not from the code. Deviation resolved by arithmetic: the lose range follows D-39 (-200/+100) and is pulled inside the slider bounds, so V-LOSE-M is range 1900-2110 / bounds 1900-2440 and V-LOSE-CAP is 1840-1940; the coverage map is corrected accordingly. Evidence: written only at this commit; run results follow in a later record. Change record: core/changes/2026-10-15-e1-tests-nutrition-maths.md.
+
+## 2026-10-15 - Commit: E0 functions tests and nutrition_http dot-segment fix
+
+Decision (defect fix): `buildUrl` in `nutrition_http.ts` refuses a bare `.` or `..` path segment with the new closed slug `upstream-invalid-request`, because percent-encoding does not stop the URL parser from collapsing it into path navigation. Found by the E0 functional test, fixed minimally in the E0 file.
+
+Decision (deferral): the "six callables in the release guard" expectation (RULES-21) is a `test.todo` until C20 creates the food callables; it is not faked.
+
+Evidence: focused jest runs of each new or extended file passed; complete-set results are recorded in the E0 evidence record. Change record: core/changes/2026-10-15-e0-tests-functions.md.

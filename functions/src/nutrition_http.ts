@@ -41,6 +41,7 @@ export const UPSTREAM_ERROR_SLUGS = [
   "upstream-unavailable",
   "upstream-redirect-rejected",
   "upstream-too-large",
+  "upstream-invalid-request",
 ] as const;
 export type UpstreamErrorSlug = (typeof UPSTREAM_ERROR_SLUGS)[number];
 
@@ -85,6 +86,13 @@ export interface SafeFetchDeps {
 export function buildUrl(req: Pick<SafeFetchRequest, "host" | "pathSegments" | "query">): URL {
   if (!(NUTRITION_HOSTS as readonly string[]).includes(req.host)) {
     throw new UpstreamError("upstream-host-not-allowed");
+  }
+  // A dot segment is the one thing percent-encoding cannot neutralise: the URL
+  // parser treats "..", "." and their %2e forms as path navigation and would
+  // silently collapse the path ("/fdc/../x" -> "/x"). No caller has a legitimate
+  // reason to send one, so it is refused rather than normalised.
+  if (req.pathSegments.some((s) => s === "." || s === "..")) {
+    throw new UpstreamError("upstream-invalid-request");
   }
   const url = new URL(`https://${req.host}`);
   url.pathname = "/" + req.pathSegments.map((s) => encodeURIComponent(s)).join("/");

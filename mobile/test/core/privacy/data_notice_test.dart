@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsFlag;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -300,8 +302,11 @@ void main() {
       final results = <bool>[];
       await tester.pumpWidget(_host(
         store: store,
-        onTap: (c, r) async =>
-            results.add(await ensureDataNoticeAcknowledged(c, r)),
+        onTap: (c, r) async {
+          final ok = await ensureDataNoticeAcknowledged(c, r);
+          results.add(ok);
+          return ok;
+        },
       ));
       await tester.tap(find.byKey(const Key('trigger')));
       await tester.pumpAndSettle();

@@ -326,3 +326,77 @@ describe("structured observability event (GPT-PM round-2, Sec 9)", () => {
     expect(callCountAfterFailure).toBe(2);
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* E0 / C02: food operations and the optional responseSchema (T09)     */
+/* ------------------------------------------------------------------ */
+
+describe("Body Scan + Nutrition Coach additions (C02, D-63)", () => {
+  test("AI_GATEWAY_OPERATIONS is exactly the four originals plus the two food operations", () => {
+    const { AI_GATEWAY_OPERATIONS } = require("../ai_gateway") as typeof import("../ai_gateway");
+    expect([...AI_GATEWAY_OPERATIONS]).toEqual([
+      "aiCoachAdvice",
+      "aiEquipmentRecognition",
+      "aiMachineDescription",
+      "aiExerciseGeneration",
+      "analyzeMealPhoto",
+      "parseNutritionLabel",
+    ]);
+  });
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"] as const)(
+    "operation %s is accepted and logged under its own name",
+    async (operation) => {
+      await generate({ ...BASE, operation });
+      expect(jest.mocked(logger.info)).toHaveBeenCalledWith(
+        "ai_gateway: call",
+        expect.objectContaining({ operation, outcome: "success" }),
+      );
+    },
+  );
+
+  test("responseSchema is passed through to config.responseSchema untouched (same object)", async () => {
+    const schema = {
+      type: "OBJECT",
+      properties: { name: { type: "STRING" } },
+      required: ["name"],
+    } as never;
+    await generate({ ...BASE, jsonResponse: true, responseSchema: schema });
+    const config = generateContent.mock.calls[0][0].config;
+    expect(config.responseSchema).toBe(schema);
+    expect(config.responseMimeType).toBe("application/json");
+  });
+
+  test("responseSchema is omitted (key absent, not undefined) for callers that do not set it", async () => {
+    await generate({ ...BASE, jsonResponse: true });
+    expect(generateContent.mock.calls[0][0].config).not.toHaveProperty("responseSchema");
+    await generate(BASE);
+    expect(generateContent.mock.calls[1][0].config).not.toHaveProperty("responseSchema");
+  });
+
+  test("the original callers' request is byte-for-byte unchanged: exact config key set", async () => {
+    await generate({ ...BASE, temperature: 0, disableThinking: true, jsonResponse: true });
+    const config = generateContent.mock.calls[0][0].config;
+    expect(Object.keys(config).sort()).toEqual(
+      [
+        "abortSignal",
+        "maxOutputTokens",
+        "responseMimeType",
+        "safetySettings",
+        "temperature",
+        "thinkingConfig",
+      ].sort(),
+    );
+  });
+
+  test("a schema alone does not switch JSON mode on (the gateway sets the mime type only from jsonResponse)", async () => {
+    await generate({ ...BASE, responseSchema: { type: "OBJECT" } as never });
+    const config = generateContent.mock.calls[0][0].config;
+    expect(config.responseSchema).toEqual({ type: "OBJECT" });
+    expect(config).not.toHaveProperty("responseMimeType");
+  });
+});
+
+// FOOD-08 (analyzeMealPhoto call options: temperature 0, maxOutputTokens 1200,
+// timeout 25000, quoted-note prompt) belongs to the callable, which lands in C20
+// (epic E5); its assertions live in analyze_meal_photo.test.ts (T110).
