@@ -56004,3 +56004,7 @@ Decision: manageBodyScanData tests prove the paging contract (200 per call, whol
 ## 2026-10-15 - Commit: C21 generic foods table
 
 Decision (D-71, design 17.5/17.8): the generic food table is generated offline from USDA FDC Foundation and SR Legacy (CC0) by scripts/nutrition/build_generic_foods.py (2,590 rows committed); tags default restrictive (null animal/pescatarian, allergenCertain=false for mixed foods) and suggestions live in food_diary/data. Halal and kosher also hide land-animal meat because slaughter certification is not modelled. Russian names: 321 own-authored entries (below the ~400 target). Evidence: core/changes/2026-10-15-c21-generic-foods-table.md; verification not run (v4).
+
+## 2026-10-15 - Commit: E1 tests, scan trend / slope / result maths / provisional estimator
+
+Decision: trend vectors are derived with a scratch script from design s12.5; V-EWMA 25.5669 is tested without the D-37 warm-up and the warm-up behaviour (second reading weight 0.5) is tested separately, resolving map deviation 2. Evidence: flutter test of energy_math_test + scan_trend_test + weight_slope_test + scan_result_math_test + provisional_estimator_test = 173 passed, 0 failed. Change record: core/changes/2026-10-15-e1-tests-scan-trend-result.md.

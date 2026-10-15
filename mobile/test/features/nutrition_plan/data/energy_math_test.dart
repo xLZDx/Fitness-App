@@ -238,7 +238,8 @@ void main() {
       expect(resolveKcal(kcal: 539, kj: 2252), 539);
     });
     test('kJ is converted only when kcal is absent', () {
-      expect(resolveKcal(kj: 2252)!, closeTo(538.2218, 1e-3));
+      // 2252 / 4.184 = 538.2409 (scratch division; the map's 538.2 is rounded).
+      expect(resolveKcal(kj: 2252)!, closeTo(538.2409, 1e-3));
       expect(resolveKcal(kj: 4.184), closeTo(1.0, 1e-12));
     });
     test('neither -> null', () {
