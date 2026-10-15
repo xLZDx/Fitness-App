@@ -53,6 +53,10 @@ List<Override> diaryOverrides({
       bodyScanFlagsProvider.overrideWithValue(flags),
       dataNoticeAcknowledgedProvider
           .overrideWith((ref) async => noticeAcknowledged),
+      // The gate reads the STORE, not the flag provider: an in-memory one so a
+      // test never touches SharedPreferences.
+      dataNoticeStoreProvider.overrideWith((ref) async =>
+          InMemoryDataNoticeStore(acknowledged: noticeAcknowledged)),
       genericFoodTableProvider.overrideWith((ref) async => kTestTable),
       ...extra,
     ];

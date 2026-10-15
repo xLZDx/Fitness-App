@@ -368,6 +368,8 @@ void main() {
       expect(
           e.totals.kcal.mid, closeTo(195 + 14 * kOilKcalPer100 / 100, 1e-9));
       expect(e.items.map((i) => i.name), ['Rice', 'Olive oil']);
+      expect(e.items.last.foodRef, 'gen:4',
+          reason: 'the table id already carries the gen: prefix');
       expect(e.checkThese.single.resolved, isTrue);
     });
 

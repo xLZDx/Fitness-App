@@ -192,7 +192,7 @@ class _FoodSearchPageState extends ConsumerState<FoodSearchPage> {
                   ),
                   source: FoodSource.usda,
                   onTap: () => _pick(
-                    foodRef: 'gen:${h.food.id}',
+                    foodRef: h.food.id,
                     name: h.food.displayName(_lang),
                     per100g: Per100g(
                       kcal: h.food.per100g.kcal,

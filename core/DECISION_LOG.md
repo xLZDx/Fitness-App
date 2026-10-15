@@ -56524,3 +56524,7 @@ Decision: route agreement is checked by tile taps against the harness plus a sou
 ## 2026-10-15 - Commit: C19 nutrition_routes_test.dart
 
 Decision: C19 routes are registered in the real router and reachable without redirect. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_routes_test.dart 5 passed).
+
+## 2026-10-15 - Commit: C23 food search page tests and generic foodRef fix
+
+Decision: generic foodRef is the table id as is (gen:<fdcId>); the doubled prefix was a product defect. Evidence: core/changes/2026-10-15-c23-tests.md.

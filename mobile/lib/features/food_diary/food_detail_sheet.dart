@@ -279,7 +279,7 @@ class _ResolveSheet extends ConsumerWidget {
                   final updated = applyHiddenOil(
                     entry,
                     c,
-                    oilFoodRef: 'gen:${oilFood.id}',
+                    oilFoodRef: oilFood.id,
                     oilName: oilFood.name,
                     oilPer100g: Per100g(
                       kcal: oilFood.per100g.kcal,
