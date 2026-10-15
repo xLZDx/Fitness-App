@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Scan + Nutrition Coach: статус спринта</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:16px;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #8884;padding:6px 8px;text-align:left;vertical-align:top}
+h2{margin-top:28px}
+.ok{color:#1a7f37}.warn{color:#b35900}
+</style>
+</head>
+<body>
+<header>
+<h1>Body Scan + Nutrition Coach: статус спринта</h1>
+<p>Ветка feature/body-scan-nutrition-coach, 15 октября 2026. Промежуточный статус: код всех эпиков C01–C26 закоммитирован, тесты пишут и гоняют агенты.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ 52a08255</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>1. Итог одним абзацем</h2>
+<p>Реализованы эпики C01–C26: правила и функции, провизорная оценка жира (формула Дюрена на устройстве, диапазон ±5, фото в оценке не участвуют), поток скана, результат, история и сравнение, напоминание, недельный обзор плана питания, UI плана, дневник питания, съёмка блюда, штрихкода и этикетки, приватность, удаление и экспорт, аудит l10n и доступности. Облачные функции выключены флагами. Эпик C27 (документы) выполняется. Финальные шаги: общий повторный прогон тестов агентами, ревью специалистами, GPT-PM, затем push и один PR.</p>
+
+<h2>2. Эпики</h2>
+<table>
+<tr><th>Эпик</th><th>Что планировалось / DoD</th><th>Статус</th><th>Хвост</th></tr>
+<tr><td>E0 флаги, квоты, правила, индексы, release guard</td><td>Серверная основа, тесты правил на эмуляторе</td><td class="ok">Готово, тесты 13 файлов зелёные</td><td>Эмуляторный прогон на переопределённых портах</td></tr>
+<tr><td>E1 математика питания, оценка, тренд, активность</td><td>Чистая логика, векторы из карты покрытия</td><td class="ok">Готово, 27 файлов, 1075 тестов зелёные</td><td>Нет</td></tr>
+<tr><td>E2 онбординг</td><td>Шаг питания после вопросов безопасности</td><td class="warn">158 тестов зелёные, 1 файл (маршрут) не запускался из-за чужой ошибки компиляции</td><td>Маршрутный тест позже компилируется (исправлено e171c62), нужен перепрогон</td></tr>
+<tr><td>C12 серверные функции скана</td><td>Создание, оценка, удаление, очистка</td><td class="ok">10 наборов, 477 тестов зелёные</td><td>Нет</td></tr>
+<tr><td>C13–C14 захват и данные скана</td><td>Запись v2, ручной таймер, runner, загрузка</td><td class="warn">Код готов, тесты частично, финальный отчёт ещё не получен</td><td>Дописать и прогнать набор</td></tr>
+<tr><td>C15 поток и результат</td><td>Экраны, провизорные правила, маршруты</td><td class="warn">Код готов, тесты идут</td><td>Финальный отчёт по набору</td></tr>
+<tr><td>C16 история, сравнение, приватность</td><td>История, удаление, правка веса, хранение</td><td class="ok">8 файлов, 138 тестов зелёные</td><td>Нет</td></tr>
+<tr><td>C17 напоминание и карточки входа</td><td>Недельное правило, карточки на Progress и Home</td><td class="ok">5 файлов, 110 тестов зелёные</td><td>Нажатие на уведомление только открывает приложение</td></tr>
+<tr><td>C18 состояние плана и недельный обзор</td><td>Транзакция обзора, отмена, планировщик</td><td class="ok">10 файлов, 333 теста зелёные</td><td>Firestore-реализации не покрыты эмулятором</td></tr>
+<tr><td>C19 UI плана питания</td><td>Страницы плана, журнал веса, слайдер диапазона</td><td class="warn">Код готов, тесты идут</td><td>Финальный отчёт по набору</td></tr>
+<tr><td>C20 функции распознавания еды</td><td>Фото блюда, этикетка, штрихкод, поиск</td><td class="ok">13 наборов, 581 тест зелёные</td><td>Живые Vertex, OFF, USDA не проверялись</td></tr>
+<tr><td>C21 таблица продуктов</td><td>2590 строк USDA, русские названия, подсказки</td><td class="ok">Тесты зелёные (68 и 77)</td><td>Русских названий 321 при цели около 400</td></tr>
+<tr><td>C22 данные дневника</td><td>Записи, порции, итоги дня, GTIN</td><td class="ok">7 файлов, 246 тестов зелёные</td><td>Нет</td></tr>
+<tr><td>C23 дневник питания UI</td><td>Страницы дневника, добавления, поиска</td><td class="warn">Код готов, тесты идут</td><td>Финальный отчёт по набору</td></tr>
+<tr><td>C24 съёмка блюда, штрихкода, этикетки</td><td>Три страницы, атрибуции, зависимость сканера</td><td class="warn">Код готов, тесты идут</td><td>API mobile_scanner 6.x не проверен на устройстве</td></tr>
+<tr><td>C25 приватность, удаление, экспорт</td><td>Постраничный экспорт, очистка, политика, privacy.html</td><td class="ok">Тесты зелёные (35, 208, 21)</td><td>Текст privacy.html — черновик до решения Q-10</td></tr>
+<tr><td>C26 аудит l10n и доступности</td><td>Ключи EN/RU, контраст, формулировки</td><td class="warn">Код готов, тесты запущены</td><td>Нужен прогон тестов контраста и масштаба текста</td></tr>
+<tr><td>C27 документы</td><td>CODEMAP, INDEX, CURRENT_STATE, DECISION_LOG</td><td class="warn">В работе</td><td>Нет</td></tr>
+</table>
+
+<h2>3. Реальные дефекты, найденные тестами</h2>
+<ul>
+<li>firestore.rules: запись в food_entries была невозможна (лимит выражений), то есть дневник питания не работал бы.</li>
+<li>firestore.rules: отзыв cloudConsent отклонялся, хотя дизайн его разрешает.</li>
+<li>nutrition_http: сегмент пути .. превращался в навигацию по пути.</li>
+<li>Размытое фото содержало метаданные EXIF при загрузке (исправлено 25546977).</li>
+<li>Отмена локального скана отправляла удаление без серверного документа.</li>
+<li>Кириллические единицы порции не разбирались, баклажан считался яичным аллергеном, malt liquor не помечался алкоголем.</li>
+<li>Ошибки компиляции, написанные вслепую (C12, маршрутное замыкание): исправлены.</li>
+<li>Векторы V-LOSE-M и V-LOSE-CAP в карте покрытия были неверны, реализация правильна.</li>
+</ul>
+
+<h2>4. Известные ограничения и риски</h2>
+<ul>
+<li>Оценка жира провизорная: формула по росту, весу, возрасту, фото в оценке не участвуют; ETA скрыт.</li>
+<li>Облачный путь выключен: проверка лица на размытом фото пока всегда отказывает (UnavailableFaceCheck).</li>
+<li>Отмена скана из очереди после попытки не отправляет удаление; возможен осиротевший загруженный объект.</li>
+<li>Лог квоты accountExportPage и ошибка экспорта содержат uid, что расходится с D-67.</li>
+<li>/body-scan?scanId не используется страницей потока; миниатюра блюда хранится, но не показывается.</li>
+<li>Модуль nutrition_plan импортирует body_scan в двух нечистых файлах (закреплено защитным тестом).</li>
+<li>Не запускалось: живые Vertex, OFF, USDA, TalkBack, устройство, Firestore-реализации на эмуляторе.</li>
+</ul>
+
+<h2>5. Дальше</h2>
+<ol>
+<li>Завершение тестов C13/C14, C15, C19, C23, C24, C26.</li>
+<li>Общий повторный прогон всех наборов тестовыми агентами после последнего эпика.</li>
+<li>Ревью специалистами: silent-failure-hunter, security-reviewer, database-reviewer, flutter-reviewer, code-reviewer.</li>
+<li>Исправление подтверждённых BLOCKER и MAJOR, затем GPT-PM на точной голове, затем push и один PR.</li>
+</ol>
+
+<h2>6. Нужно от оператора</h2>
+<p>IAM и приватный бакет перед включением флагов; секрет USDA_FDC_API_KEY с доступом для двух сервисных аккаунтов; ревью текста privacy.html (Q-10); реальный детектор лиц перед включением облачного скана; реальные фото из залов и названия машин из fails.jpg; Q-4, Q-5, Q-6; пункты O-3…O-5.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
