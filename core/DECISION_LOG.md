@@ -56398,3 +56398,7 @@ Decision: slot total and row values use hand-computed kcal (150 g x 130 / 100 = 
 Decision: with the C25 lifecycle rows present, the T05 deferrals became real tests: the twelve CONDITIONAL-cell tests carry the exact titles the policy rows reference, and a governance test compares each new row to an expected matrix written from the rules, not from the policy file.
 
 Evidence: complete E0 set green on the recorded heads (jest 409, firestore rules + policy 547, storage 82, Dart 49 plus three flag-define runs); details in core/changes/2026-10-15-e0-test-evidence.md.
+
+## 2026-10-15 - Commit: C14 tests: body scan job runner (local path, cloud gates, fence, rotation, backoff, cancel)
+
+Decision: Runner tests drive the real runner with fakes for api/uploader/blur/face check and assert call counts, persisted states and slugs. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
