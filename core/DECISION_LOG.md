@@ -56520,3 +56520,7 @@ Decision: the flow page test drives the real page with a fake runner and a stub 
 ## 2026-10-15 - Commit: test(food): C24 capture routes and add-food tiles tests
 
 Decision: route agreement is checked by tile taps against the harness plus a source-level check of app_router.dart. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 nutrition_routes_test.dart
+
+Decision: C19 routes are registered in the real router and reachable without redirect. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_routes_test.dart 5 passed).
