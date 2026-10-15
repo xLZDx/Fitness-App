@@ -32,6 +32,9 @@ import '../../features/body_scan/body_scan_history_page.dart';
 import '../../features/body_scan/body_scan_privacy_page.dart';
 import '../../features/body_scan/body_scan_result_page.dart';
 import '../../features/food_diary/add_food_page.dart';
+import '../../features/food_diary/barcode_scan_page.dart';
+import '../../features/food_diary/label_scan_page.dart';
+import '../../features/food_diary/meal_scan_page.dart';
 import '../../features/food_diary/data/food_entry.dart' show MealSlot;
 import '../../features/food_diary/food_diary_page.dart';
 import '../../features/food_diary/food_search_page.dart';
@@ -589,6 +592,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           day: state.uri.queryParameters['day'],
           slot: _slotParam(state.uri.queryParameters['slot']),
           savedOnly: state.uri.queryParameters['saved'] == '1',
+        )),
+      ),
+      // C24. Meal photo, barcode and label capture.
+      GoRoute(
+        path: '/nutrition/add/photo',
+        pageBuilder: (_, state) => _fadeThrough(MealScanPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/add/barcode',
+        pageBuilder: (_, state) => _fadeThrough(BarcodeScanPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
+        )),
+      ),
+      GoRoute(
+        path: '/nutrition/add/label',
+        pageBuilder: (_, state) => _fadeThrough(LabelScanPage(
+          day: state.uri.queryParameters['day'],
+          slot: _slotParam(state.uri.queryParameters['slot']),
         )),
       ),
       GoRoute(
