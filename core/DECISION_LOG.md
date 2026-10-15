@@ -56083,3 +56083,7 @@ Decision: shared scan fakes extended in place (luminance, Future<bool> speech, h
 ## 2026-10-15 - Commit: C12 server tests, final complete run
 
 Evidence: the complete set of C12 server test files (8 new, 2 extended) ran in one jest invocation at head 269e72d: 10 suites, 477 tests passed, 0 failed. Change record: core/changes/2026-10-15-body-scan-server-tests-final-run.md.
+
+## 2026-10-15 - Commit: E1 tests for body-scan guards, activity and nutrition state
+
+Decision: fixed the SCAN-52 product defect in body_scan_flow_machine.dart (a local-only cancel must not emit a server delete); the coverage map V-LOSE-M/V-LOSE-CAP values are wrong against D-39 and are corrected, the implementation stands. Evidence: core/changes/2026-10-15-e1-tests-body-scan-activity-nutrition-state.md.
