@@ -37,7 +37,7 @@ import { AI_MODEL, generate, InlineImage } from "./ai_gateway";
 import { validateImageInput } from "./image_validation";
 import { assertFeatureEnabled } from "./feature_flags";
 import { foodAiEnabled } from "./food_flags";
-import { coerceMealAnalysis, sumMacros } from "./coerce_meal_analysis";
+import { coerceMealAnalysis, parseModelJson, sumMacros } from "./coerce_meal_analysis";
 import { FOOD_CHECK_CODES } from "./food_types";
 import { findForbiddenPromptChar } from "./food_text";
 import { enrichItems, entryConfidence } from "./nutrition_sources/enrich";
@@ -197,6 +197,14 @@ export const analyzeMealPhoto = onCall(AI_METERED, async (request) => {
     throw e;
   }
 
+  // Unusable output (not JSON, truncated, no `items` list) is a failed call, not
+  // an empty meal: the user gets nothing, so the charge is returned (SF-F9).
+  // A well-formed `{"items": []}` stays a legitimate "no food found" success.
+  const parsed = parseModelJson(text) as { items?: unknown } | null | undefined;
+  if (typeof parsed !== "object" || parsed === null || !Array.isArray(parsed.items)) {
+    await refundQuota(uid, "analyzeMealPhoto", 1);
+    throw new HttpsError("unavailable", "The meal could not be analysed. Please try again.");
+  }
   const meal = coerceMealAnalysis(text);
   const items = await enrichItems(meal.items);
   const totals = sumMacros(items.map((i) => i.macros));

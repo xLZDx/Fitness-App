@@ -216,14 +216,11 @@ describe("FOOD-15 post-step on the model output", () => {
   });
 
   test.each([["prose", "I cannot read this label"], ["empty", ""], ["array", "[]"], ["truncated", '{"per100g":{"kcal":1']])(
-    "unusable model output (%s) -> per100g null + labelAmbiguous, no throw, still charged",
+    "unusable model output (%s) -> unavailable and the quota charge is refunded (SF-F9)",
     async (_l, text) => {
       generate.mockResolvedValue(text);
-      const res = await run(VALID);
-      expect(res.per100g).toBeNull();
-      expect(res.dataQuality).toBe("unusable");
-      expect(res.checkCodes).toEqual(["labelAmbiguous"]);
-      expect(usageOf(UID, "parseNutritionLabel")).toBe(1);
+      await expectHttpsError(run(VALID), "unavailable");
+      expect(usageOf(UID, "parseNutritionLabel")).toBe(0);
     },
   );
 

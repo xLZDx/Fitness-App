@@ -116,8 +116,14 @@ export const parseNutritionLabel = onCall(AI_METERED, async (request) => {
     throw e;
   }
 
+  // Unusable output is a failed call, not an empty label: refund (SF-F9).
+  const parsed = parseModelJson(text);
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    await refundQuota(uid, "parseNutritionLabel", 1);
+    throw new HttpsError("unavailable", "The label could not be read. Please try again.");
+  }
   return {
-    ...normaliseLabel(parseModelJson(text)),
+    ...normaliseLabel(parsed),
     model: { id: AI_MODEL, version: LABEL_PROMPT_VERSION },
   };
 });

@@ -476,13 +476,23 @@ describe("FOOD-09 enrichment chain, source tags, match quality, confidences", ()
   });
 
   test.each([
-    ["no food", modelAnswer([])],
     ["garbage", "I am sorry, I cannot help with that"],
     ["empty text", ""],
     ["array", "[1,2,3]"],
-  ])("model answer '%s' -> empty items, zero totals, low confidence, no throw", async (_l, text) => {
+    ["truncated JSON", '{"mealName":"Lunch","items":[{"name":"rice"'],
+    ["object without an items list", '{"mealName":"Lunch"}'],
+  ])("unusable model answer '%s' -> unavailable and the quota charge is refunded (SF-F9)", async (_l, text) => {
+    generate.mockResolvedValue(text);
+    await expectHttpsError(run(DESCRIBE), "unavailable");
+    expect(usageOf(UID, "analyzeMealPhoto")).toBe(0);
+  });
+
+  test.each([
+    ["no food", modelAnswer([])],
+  ])("model answer '%s' (well-formed, empty items) -> empty items, zero totals, low confidence, no throw, still charged", async (_l, text) => {
     generate.mockResolvedValue(text);
     const res = await run(DESCRIBE);
+    expect(usageOf(UID, "analyzeMealPhoto")).toBe(1);
     expect(res.items).toEqual([]);
     expect(res.totals.kcal).toEqual({ low: 0, mid: 0, high: 0 });
     expect(res.entryConfidence).toBe("low");

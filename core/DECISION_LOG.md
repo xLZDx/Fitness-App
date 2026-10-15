@@ -56622,3 +56622,7 @@ Decision: no runner call is fire-and-forget without an error observer; the runne
 ## 2026-10-15 - Commit: server review fixes part 3 (export quota, log redaction)
 
 Decision: account export continuation quota is 150/day; accountExport and accountExportPage quota logs and export failure logs are uid-free (error code only); ai_gateway logs an error code, not the exception text. SF-F13 closed as already satisfied (writeCache never throws). Evidence: core/changes/2026-10-15-server-review-fixes-3-logs-quota.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 4 (unusable model output)
+
+Decision: analyzeMealPhoto and parseNutritionLabel treat unparseable model output as a failed call (refund, unavailable); only a well-formed empty items list is a successful empty meal. Evidence: core/changes/2026-10-15-server-review-fixes-4-unusable-model-output.md; no checks run.
