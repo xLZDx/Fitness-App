@@ -56334,3 +56334,7 @@ Progress: history actions tests added (C16).
 ## 2026-10-15 - Commit: C25 export paging tests
 
 Decision: the paging test seeds food ids uncorrelated with loggedAt so a document-id-order read would fail it; the legacy export test gets a typed runExport helper because the handler return type became a union. Evidence: core/changes/2026-10-15-c25-tests.md (account_export 19 passed, account_export_paging 16 passed).
+
+## 2026-10-15 - Commit: C19 ownership_selector_test.dart
+
+Decision: ownership selector reports only real changes and is inert when disabled. Evidence: core/changes/2026-10-15-c19-tests.md (ownership_selector_test.dart 7 passed).
