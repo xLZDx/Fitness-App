@@ -56228,3 +56228,11 @@ Progress: T109 search_foods tests added.
 
 Decision: C17 weekly reminder, editor, settings field and entry cards are covered by focused Dart tests using provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c17-tests.md`.
 Progress: T109 hostile-name fixture corrected.
+
+## 2026-10-15 - Commit: C15 follow-up result actions
+
+Decision: the result page gets History, Edit weight and Delete photos wired to the C16 flows; resume-card Cancel/Delete use the remote-delete-aware deletePhotos path; the nutrition entry card is mounted on Progress and (compact) Home. Evidence: `core/changes/2026-10-15-c15-followup-result-actions.md`; no checks run.
+
+## 2026-10-15 - Commit: C25 data inventory rows
+
+Decision: new stores are listed with deletion and export behaviour; nutrition_cache and body_scan_purge_state are EXEMPT (no user data). Evidence: `core/changes/2026-10-15-c25-data-inventory.md`; no checks run.
