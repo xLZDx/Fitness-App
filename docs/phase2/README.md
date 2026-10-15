@@ -21,8 +21,8 @@ Branch family: `phase2/main`, work branches `phase2/<sprint-id>`. Phase 2 is clo
 ## Current S00 state (2026-10-15)
 
 Done: snapshot, tag `phase1-baseline` (42d1b849), branches `phase1/main` and `phase2/main`, PR #5 retargeted and merged into `phase2/main` (5137ccda), worktrees `D:\Repo\Fitness_App_Phase1` and `D:\Repo\Fitness_App_Phase2`, the separate Firebase project `fitness-app-phase2-korostelev` (Spark plan, created 2026-10-15), retirement of merged sprint branches and helper worktrees with recovery tags `retired/2026-10-15/*`.
-In review: S00 documentation PR and the deploy-line guard (GPT-PM round 1 returned MODIFY; fixes in progress). Until the guard is approved and the `phase2` alias is committed to `.firebaserc`, no Phase 2 deploy is allowed.
-Open and operator-owned: Blaze billing for the Phase 2 project (linking to the existing billing account failed with a Cloud billing quota error on 2026-10-15), deleting remote branches (blocked by the shell policy hook).
+S00 documentation and the deploy-line guard were merged into `phase2/main` as PR #7 (GPT-PM APPROVE for exact head `48ad73a7` after four rounds). The `phase2` alias in `.firebaserc` points at `fitness-app-phase2-korostelev` (committed in the sync branch `phase2/s00b-sync-alias`); the first Phase 1 to Phase 2 sync (merge commit `39dc95cd`) is logged in `docs/SYNC_LOG.md`.
+Open before the first Phase 2 cloud deploy (see `split/BACKEND_SEPARATION.md`): the hardcoded production project number in the kill-switch secret path of `functions/src/abuse_guard.ts`, the candidate dotenv check, separate production deploy credentials or protected CI. Open and operator-owned: Blaze billing for the Phase 2 project (linking to the existing billing account failed with a Cloud billing quota error on 2026-10-15), deleting remote branches (blocked by the shell policy hook).
 The plan documents under `plan/` keep their original wording; the banner at the top of each states which parts are historical.
 
 ## Operator decisions recorded for S00

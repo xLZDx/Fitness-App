@@ -267,8 +267,9 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/R2_SCANNER_SCOPE_CORRECTION_v1.9.md` | R2 Scanner Scope Correction — v1.9 | 646 |
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
-| `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1002 |
-| `docs/phase2/README.md` | Phase 2 documents (development line) | 2666 |
+| `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1542 |
+| `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
+| `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
 | `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20616 |
 | `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12836 |
 | `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 32956 |

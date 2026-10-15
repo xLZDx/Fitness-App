@@ -56727,3 +56727,7 @@ Decision: after GPT-PM round 1 (MODIFY, MAJOR-01) the Phase 1 index labels `docs
 ## 2026-10-16 - Commit: sync merge of phase1/main
 
 Decision: the first Phase 1 to Phase 2 sync is a pure merge commit of origin/phase1/main (0eee9ca2, documentation only) so that the sync log can name its exact SHA. Evidence: core/changes/2026-10-16-s00b-sync-merge.md.
+
+## 2026-10-16 - Commit: phase2 alias and sync log entry
+
+Decision: the phase2 Firebase alias points at fitness-app-phase2-korostelev and the first sync is logged with the exact merge commit 39dc95cd. Phase 2 stays on the emulator until the open items in docs/phase2/split/BACKEND_SEPARATION.md are closed. Evidence: core/changes/2026-10-16-s00b-phase2-alias-and-sync-log.md.
