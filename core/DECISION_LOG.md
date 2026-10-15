@@ -56242,3 +56242,7 @@ Decision: new stores are listed with deletion and export behaviour; nutrition_ca
 Decision: weight provider tests prove one current-weight definition (14 days, stale fallback), validation, the deletion fence and that a scan weight never replaces an equal same-day manual entry. Evidence: core/changes/2026-10-15-c18-tests.md.
 
 Progress: manage API client tests added (C16).
+
+## 2026-10-15 - Commit: C18 nutrition providers tests
+
+Decision: provider tests prove the median-steps rule, that an ineligible or unknown verdict hides the plan without deleting it, and that the live review is read-only. Evidence: core/changes/2026-10-15-c18-tests.md.
