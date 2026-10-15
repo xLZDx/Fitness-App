@@ -56452,3 +56452,7 @@ Decision: the notice gate is proven by zero repository writes until the acknowle
 ## 2026-10-15 - Commit: C25 client export paging tests
 
 Decision: the cap is asserted as 49 continuations because the first page counts toward the 50. Evidence: core/changes/2026-10-15-c25-tests.md (server_export_paging_test.dart 15 passed).
+
+## 2026-10-15 - Commit: test(food): C24 barcode port and page tests
+
+Decision: barcode page tests drive the page through FakeBarcodePort with a recording FoodApi and assert call arguments, not only UI. Evidence: core/changes/2026-10-15-c24-tests.md.
