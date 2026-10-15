@@ -56032,3 +56032,7 @@ Decision: one parameterised table proves the guard order and the zero-charge ref
 ## 2026-10-15 - Commit: C15 part 5 (result view, resume and failure card)
 
 Decision (D-73, D-74, D-78): the result is rendered from a pure view model; provisional and measurement-only presentation hide goal figures; the ETA stays hidden until C18 supplies pace inputs. Evidence: `core/changes/2026-10-15-c15-result-resume.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 stored plan tests
+
+Decision (D-55, D-57): stored plan tests prove validated() recomputes bounds from the digest and that only an active readable plan is read; no referProfessional key exists in the document. Evidence: core/changes/2026-10-15-c18-tests.md.
