@@ -56040,3 +56040,15 @@ Decision (D-55, D-57): stored plan tests prove validated() recomputes bounds fro
 ## 2026-10-15 - Commit: C15 part 6 (flow page, result page, routes)
 
 Decision: the flow page only renders the pure flow state and delegates capture to the existing guided capture route; the result route reads through a narrow port so C14/C16 binding is a wiring step. Evidence: `core/changes/2026-10-15-c15-pages-routes.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 review record tests
+
+Decision: review record tests prove the classification round-trips through inputs and referProfessional never reads as a review (D-55). Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C20 food function tests
+
+Decision: C20 food callables are proven by one jest file per module (T104-T111 plus cache, breaker, food_text, sources) using the shared Firestore fake and injected fetch/clock/budget/key deps; product defects found are fixed minimally and noted in the record. Evidence: `core/changes/2026-10-15-c20-tests.md`.
+
+## 2026-10-15 - Commit: C22 tests (food diary data layer)
+
+Decision: C22 data layer is covered by seven single-file functional test files (246 tests, all green). The item `sourceId` value `llm_estimate` is pinned by `food_source_test.dart` as a known mismatch with the stale design s5.6 allowlist; `firestore.rules` does not check `sourceId`, so the design line should be reconciled, not the layer. Evidence: `core/changes/2026-10-15-c22-tests.md`.
