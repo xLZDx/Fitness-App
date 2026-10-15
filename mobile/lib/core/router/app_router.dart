@@ -27,6 +27,7 @@ import '../../features/workouts/workout_summary_page.dart';
 import '../../features/form_check/form_check_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/marketplace/marketplace_page.dart';
+import '../../features/nutrition_plan/nutrition_profile_flow_page.dart';
 import '../../features/onboarding/onboarding_page.dart';
 import '../../features/data_export/backup_page.dart';
 import '../../features/posture/posture_page.dart';
@@ -521,6 +522,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/photos/compare',
         pageBuilder: (_, __) => _fadeThrough(const ScanCompareScreen()),
+      ),
+      // C11. The "complete your nutrition profile" flow for users who already
+      // finished onboarding. Only this path is registered here; the other
+      // /nutrition* and /body-scan* paths are added by the commit that creates
+      // each page.
+      GoRoute(
+        path: '/nutrition/profile',
+        pageBuilder: (_, __) => _fadeThrough(const NutritionProfileFlowPage()),
       ),
       GoRoute(
         path: '/backup',

@@ -1321,6 +1321,22 @@
   "onbNutritionOwnershipManual": "Manual",
   "onbNutritionOwnershipManualHint": "You set the numbers. We only show insights.",
   "onbNutritionOwnershipDefault": "Coached is the default.",
+  "nutProfileTitle": "Nutrition profile",
+  "nutProfileStepOf": "Step {n} of {total}",
+  "@nutProfileStepOf": {
+    "description": "Progress line of the nutrition profile flow; total counts only the sheets this profile needs (1 to 3).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "nutProfileSafetyTitle": "Two quick questions",
+  "nutProfileSafetyIntro": "We ask these first, so we only suggest food targets that suit you.",
+  "nutProfileBodyTitle": "About you and your goal",
   "onbPreviewTitle": "Here's your first session",
   "onbPreviewSubtitle": "Built from your answers — it changes as you train",
   "onbPreviewLength": "About {minutes} minutes",
