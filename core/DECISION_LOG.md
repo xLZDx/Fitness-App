@@ -56424,3 +56424,7 @@ Decision: only positive values up to 10000 reach the callback. Evidence: core/ch
 Decision: the entry card hides every number for non-eligible verdicts even when a plan doc exists. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_entry_card_test.dart 9 passed).
 
 Progress: compare start/prompt/deleteScanFiles tests added (C16).
+
+## 2026-10-15 - Commit: C15 tests - resume_scan_card_test
+
+Decision: resume card tests assert that each terminal-failure action reaches its own callback. Evidence: core/changes/2026-10-15-c15-tests.md.
