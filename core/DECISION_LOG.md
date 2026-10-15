@@ -56008,3 +56008,7 @@ Decision (D-71, design 17.5/17.8): the generic food table is generated offline f
 ## 2026-10-15 - Commit: E1 tests, scan trend / slope / result maths / provisional estimator
 
 Decision: trend vectors are derived with a scratch script from design s12.5; V-EWMA 25.5669 is tested without the D-37 warm-up and the warm-up behaviour (second reading weight 0.5) is tested separately, resolving map deviation 2. Evidence: flutter test of energy_math_test + scan_trend_test + weight_slope_test + scan_result_math_test + provisional_estimator_test = 173 passed, 0 failed. Change record: core/changes/2026-10-15-e1-tests-scan-trend-result.md.
+
+## 2026-10-15 - Commit: C12 server tests (purge)
+
+Decision: purge tests prove non-starvation (stuck documents stay in the query yet later documents are purged through startAfter paging), the persisted listing token and the 240 s start-of-work budget. The shared Storage fake now pages by object name like GCS. Evidence: `npx jest src/__tests__/body_scan/purge.test.ts` in functions/ = 31 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-purge.md.

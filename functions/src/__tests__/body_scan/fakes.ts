@@ -493,12 +493,16 @@ const bucketObject: any = {
   getFiles: async (options: { prefix?: string; autoPaginate?: boolean; maxResults?: number; pageToken?: string }) => {
     gcs.getFilesCalls.push(options);
     gcsCheck("getFiles", options.prefix ?? "");
-    const names = [...gcs.objects.keys()].filter((n) => n.startsWith(options.prefix ?? "")).sort();
-    const start = options.pageToken ? Number(options.pageToken) : 0;
+    // Like GCS, the continuation token is a position in NAME order (here: the last
+    // name returned), so objects deleted between pages never shift later pages.
+    const names = [...gcs.objects.keys()]
+      .filter((n) => n.startsWith(options.prefix ?? ""))
+      .sort()
+      .filter((n) => !options.pageToken || n > options.pageToken);
     const size = options.maxResults ?? 1000;
-    const slice = names.slice(start, start + size);
-    const more = start + size < names.length;
-    return [slice.map((n) => fileOf(n)), more ? { pageToken: String(start + size) } : null];
+    const slice = names.slice(0, size);
+    const more = names.length > size;
+    return [slice.map((n) => fileOf(n)), more ? { pageToken: slice[slice.length - 1] } : null];
   },
 };
 
