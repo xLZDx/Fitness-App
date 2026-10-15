@@ -56512,3 +56512,7 @@ Decision: the meal page is proven to call the food AI only after the data notice
 ## 2026-10-15 - Commit: C15 fix - Delete scan on the failed card
 
 Decision: Delete on the terminal failure card calls driver.deleteFailedScan (runner cancel plus flow reset) because the machine has no cancel from failed. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - flow page and driver delete
+
+Decision: the flow page test drives the real page with a fake runner and a stub capture route. Evidence: core/changes/2026-10-15-c15-tests.md.

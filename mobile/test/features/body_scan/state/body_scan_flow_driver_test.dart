@@ -335,7 +335,33 @@ void main() {
     });
   });
 
-  group('no runner (signed out)', () {
+  group("deleteFailedScan (D-78)", () {
+    test("cancels the scan on the runner and returns the flow to idle", () async {
+      final r = await _rig();
+      await r.toCapturing();
+      r.driver.captureReturned("scan-1");
+      await _settle();
+      r.setRecords([recordWith("scan-1", JobStatus.failed, lastError: "x")]);
+      await _settle();
+      expect(r.stage, FlowStage.failed);
+      r.runner.calls.clear();
+      r.driver.deleteFailedScan();
+      await _settle();
+      expect(r.runner.calls, ["cancel:scan-1"]);
+      expect(r.stage, FlowStage.idle);
+    });
+
+    test("without a scan id it only resets", () async {
+      final r = await _rig();
+      await _settle();
+      r.send(FlowEventKind.open);
+      r.driver.deleteFailedScan();
+      expect(r.runner.calls, isEmpty);
+      expect(r.stage, FlowStage.idle);
+    });
+  });
+
+  group("no runner (signed out)", () {
     test('the flow still advances and nothing throws', () async {
       final container = ProviderContainer(
           overrides: driverOverrides(weights: [
