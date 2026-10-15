@@ -56161,3 +56161,7 @@ Decision: scheduler tests prove it writes nothing for signed-out, deleting, noti
 ## 2026-10-15 - Commit: C23 part 6 (slot section, detail sheet)
 
 Decision: the data-notice gate runs inside the detail sheet right before the first diary write, so no write or food-AI call precedes disclosure (D-79). Evidence: `core/changes/2026-10-15-c23-detail-sheet.md`; no checks run.
+
+## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
+
+Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md (l10n 18, flow 16, journey 8, step_answered 19 passed; router test not run: other epics do not compile).
