@@ -56175,3 +56175,7 @@ Decision: view-model tests assert provisional and measurement-only hide every go
 ## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
 
 Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md.
+
+## 2026-10-15 - Commit: C17 Body check-in entry card and mounting
+
+Decision: one BodyScanEntryCard (full on Progress with resume card and history/privacy links, compact on Home); result-page hooks deferred. Evidence: core/changes/2026-10-15-c17-entry-cards.md (no checks run yet).

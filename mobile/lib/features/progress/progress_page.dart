@@ -10,6 +10,7 @@ import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../body_scan/widgets/body_scan_entry_card.dart';
 import '../progress_photos/data/photo_timeline.dart';
 import '../progress_photos/data/progress_photo.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
@@ -48,6 +49,8 @@ class ProgressPage extends ConsumerWidget {
           // row and are kept as the line underneath rather than dropped —
           // a redesign is not a reason to stop showing real history.
           const _HeadlineStats(),
+          const SizedBox(height: 16),
+          const BodyScanEntryCard(),
           const SizedBox(height: 24),
           Text(
             AppLocalizations.of(context).progressLast8Weeks,
