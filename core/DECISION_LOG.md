@@ -56368,3 +56368,5 @@ Decision: the referProfessional notice carries no numbers or reasons. Evidence: 
 ## 2026-10-15 - Commit: C13 tests: scan ports defaults, speaker bridge and haptic patterns
 
 Decision: Port tests prove luminance default, 3/5/10 s timer provider, speech success/failure observability and six distinct haptic sequences. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Progress: retention settings view tests added (C16).
