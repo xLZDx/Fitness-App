@@ -56538,3 +56538,7 @@ Decision: wiring tests drive the bridge with overrides only; no Firebase. Eviden
 ## 2026-10-15 - Commit: test(food): C24 attribution file vs in-app sources tests
 
 Decision: attribution consistency is tested by parsing the real file and rendering the real sources page. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 plan_arb_parity_test.dart
+
+Decision: the C19 EN/RU keys stay in parity and RU plural forms resolve correctly. Evidence: core/changes/2026-10-15-c19-tests.md (plan_arb_parity_test.dart 14 passed).
