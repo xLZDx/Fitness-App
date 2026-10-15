@@ -81,7 +81,11 @@ describe("schedule and bucket flag", () => {
     const ep = (purgeExpiredBodyScanPhotos as any).__endpoint;
     expect(ep.scheduleTrigger.schedule).toBe("30 3 * * *");
     expect(ep.timeoutSeconds).toBe(300);
-    expect(ep.maxInstances ?? ep.scheduleTrigger?.maxInstances).toBeDefined();
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+    expect(ep.availableMemoryMb).toBe(256);
+    expect(ep.region).toEqual(["europe-west1"]);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@/);
   });
 
   test("the scheduled handler runs the purge (an overdue scan is purged by `.run`)", async () => {
