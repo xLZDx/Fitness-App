@@ -56301,3 +56301,7 @@ Decision: the optional meal thumbnail reuses the progress-photo cipher and per-u
 ## 2026-10-15 - Commit: C15 tests - analysis_progress_view_test
 
 Decision: progress tests fix that the live text carries only stage changes and notices, never the elapsed counter. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C13 tests: setup status panel rows, hint mapping, semantics, RU
+
+Decision: Panel tests prove four rows with icon+text per state, per-row hint prompts, generic Adjust fallback and semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
