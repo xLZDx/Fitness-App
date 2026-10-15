@@ -56496,3 +56496,7 @@ Decision: the label page is proven to write a saved_food only after Confirm, usi
 ## 2026-10-15 - Commit: C23 add food page tests
 
 Decision: tile routes are asserted by the URI the pushed stub receives, matching the routes C24 registered. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: blur service, fix EXIF leak in blurred upload
+
+Decision: Real-pixel blur tests found that the uploaded JPEG kept source EXIF; blur_service now clears exif and ICC before encoding. Evidence: core/changes/2026-10-15-c13-c14-tests.md.

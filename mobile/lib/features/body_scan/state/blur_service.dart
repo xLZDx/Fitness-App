@@ -141,6 +141,10 @@ _BlurResult _blurInIsolate(_BlurJob job) {
   }
   // Landmarks come from the upright preview, so the still is upright too.
   var image = img.bakeOrientation(decoded);
+  // The decoded image still carries the source EXIF (camera make, GPS) and ICC
+  // profile and the encoder would write them back: drop them explicitly.
+  image.exif = img.ExifData();
+  image.iccProfile = null;
   final aspect = image.width / image.height;
   final verdict = computeFaceRegion(frameFromScanLandmarks(landmarks, aspect));
   final region = verdict.region;
