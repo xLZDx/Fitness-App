@@ -55908,3 +55908,9 @@ Decision (D-13, D-39, D-55 as implemented): all safety numbers are named constan
 ## 2026-10-15 - Commit: C06 weekly review pure logic
 
 Decision (D-8, D-55, D-57, D-71 as implemented): `decide()` returns null for any non-eligible user and has no `referProfessional` value; a change needs two consecutive same classifications plus a 14-day cooldown except the `tooFast` correction; a shift that would leave the recomputed bounds becomes `keep(atSafetyLimit)`, never a truncated change; the steps-first path applies to loss goals only (more steps would work against a gain goal); the ISO week key takes an explicit UTC offset. The body-fat trend enters only through the `BodyFatTrendSource` port and is ignored when provisional or when the estimator changed. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-weekly-review-logic.md.
+
+## 2026-10-15 - Commit: E0 client tests (flags, feature gates, data notice)
+
+Decision (operator test policy 2026-10-15): E0 client tests are written by e2e-runner as detailed functional tests: `body_scan_flags_test.dart` (T01), the extended `feature_gates_test.dart` and the new `data_notice_test.dart` (both added to coverage map section 12). Flag-to-define mapping is proven by extra runs with `--dart-define`.
+
+Evidence: written; run results are recorded in the follow-up change record. Change record: core/changes/2026-10-15-e0-tests-client.md.
