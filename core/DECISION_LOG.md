@@ -56478,3 +56478,7 @@ Decision: driver tests use a recording fake runner and a stateful record list in
 Decision: Scripted Dio adapter proves retry/backoff/expiry/cancel; trend source tests prove provisional or changed estimators never count as a decrease. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
 
 Progress: history/privacy route tests added (C16).
+
+## 2026-10-15 - Commit: C19 plan_sources_page_test.dart
+
+Decision: the sources page attributes formulas and food data and states estimate and no-medical-advice limits. Evidence: core/changes/2026-10-15-c19-tests.md (plan_sources_page_test.dart 6 passed).
