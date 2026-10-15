@@ -56012,3 +56012,11 @@ Decision: trend vectors are derived with a scratch script from design s12.5; V-E
 ## 2026-10-15 - Commit: C12 server tests (purge)
 
 Decision: purge tests prove non-starvation (stuck documents stay in the query yet later documents are purged through startAfter paging), the persisted listing token and the 240 s start-of-work budget. The shared Storage fake now pages by object name like GCS. Evidence: `npx jest src/__tests__/body_scan/purge.test.ts` in functions/ = 31 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-purge.md.
+
+## 2026-10-15 - Commit: C14 part 2 (job runner, upload port, repositories, providers)
+
+Decision (D-52, D-69, D-71, D-72): the job runner has a LOCAL path (default; zero callable and zero PUT calls, offline) and a CLOUD path reachable only with the flag on, a current consent and a server-reported photo provider; the fail-closed default face check means flipping the flag without a detector uploads nothing. A server `scan-cancelled` rotates `remoteId` and re-queues. The weight repository and `currentWeightProvider` already exist from the C18 commit and are reused, not duplicated. The app root must still bind the plan-context, trend-source, result-source and Firestore repository overrides and bridge `scanCompletedProvider` to the nutrition `scanDoneSignalProvider` (listed in the change record). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-runner-providers.md.
+
+## 2026-10-15 - Commit: C15 parts 2-3 (state seams, intro, weight prompt, analysis progress)
+
+Decision (SD-9, D-73, D-74, D-81, D-85): plan-context port has a measurement-only default plus a named app-root placeholder until C18; stage announcements are limited to stage changes, the 20 s notice and one assertive 25 s timeout with focus to Retry. Evidence: change records c15-state and c15-intro-weight-progress; no checks run.
