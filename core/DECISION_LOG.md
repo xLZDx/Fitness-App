@@ -56570,3 +56570,7 @@ Decision: `contrast_tokens_test.dart` compiled only after replacing `toARGB32()`
 ## 2026-10-15 - Commit: C13 tests: capture screen no-rebuild window accounts for throttled first cue
 
 Decision: The rebuild-stability test now starts after the 2 s live-region throttle. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C23 text scale 2.0 RU tests and overflow fixes
+
+Decision: text-scale overflow is asserted through takeException on a 360x640 RU 2.0 render of every diary surface. Evidence: core/changes/2026-10-15-c23-tests.md.

@@ -69,12 +69,21 @@ class DaySummaryRing extends StatelessWidget {
                       fill: theme.colorScheme.primary,
                     ),
                   ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(eatenText, style: theme.textTheme.headlineMedium),
-                      Text(l10n.foodUnitKcal('').trim(),style: theme.textTheme.bodySmall),
-                    ],
+                  // Inside the ring and scaled down, so 200 % text never
+                  // overflows the fixed 160 dp circle.
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(eatenText, style: theme.textTheme.headlineMedium),
+                          Text(l10n.foodUnitKcal('').trim(),
+                              style: theme.textTheme.bodySmall),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

@@ -43,8 +43,11 @@ class MealSlotSection extends StatelessWidget {
               ),
             ),
             if (entries.isNotEmpty)
-              Text(l10n.foodUnitKcal(fmtInt(context, kcal)),
-                  style: theme.textTheme.bodyMedium),
+              Flexible(
+                child: Text(l10n.foodUnitKcal(fmtInt(context, kcal)),
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodyMedium),
+              ),
             IconButton(
               key: Key('diary.add.${slot.name}'),
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
@@ -65,26 +68,27 @@ class MealSlotSection extends StatelessWidget {
             minVerticalPadding: 12,
             contentPadding: EdgeInsets.zero,
             title: Text(e.name.isEmpty ? e.items.first.name : e.name),
-            subtitle: Row(
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Flexible(child: SourceBadge(source: e.items.first.source)),
-                const SizedBox(width: 8),
-                Text(confidenceLabel(l10n, e.confidence),
-                    style: theme.textTheme.bodySmall),
+                Row(
+                  children: [
+                    Flexible(child: SourceBadge(source: e.items.first.source)),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(confidenceLabel(l10n, e.confidence),
+                          style: theme.textTheme.bodySmall),
+                    ),
+                  ],
+                ),
+                Text(l10n.foodUnitKcal(fmtInt(context, e.totals.kcal.mid))),
               ],
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(l10n.foodUnitKcal(fmtInt(context, e.totals.kcal.mid))),
-                IconButton(
-                  constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 48),
-                  tooltip: l10n.foodDiaryDeleteEntry,
-                  onPressed: () => onDelete(e),
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              ],
+            trailing: IconButton(
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              tooltip: l10n.foodDiaryDeleteEntry,
+              onPressed: () => onDelete(e),
+              icon: const Icon(Icons.delete_outline),
             ),
             onTap: () => onOpen(e),
           ),
