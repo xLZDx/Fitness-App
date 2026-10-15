@@ -355,6 +355,208 @@ T? _enumByNameOrNull<T extends Enum>(List<T> values, dynamic name) {
   return null;
 }
 
+/// Sex used ONLY as the constant term of the BMR formula. Ordinary personal
+/// data like [Gender] (disclosed in the privacy text), not health data.
+/// `unspecified` is the neutral, conservative estimate for anyone who prefers
+/// not to say.
+enum SexAtBirth { female, male, unspecified }
+
+/// The direction of the body-weight goal the nutrition plan is built for.
+enum GoalDirection { lose, maintain, gain }
+
+/// Who owns the plan numbers. `coached` is the default; the safety clamps bind
+/// every mode (design s18).
+enum PlanOwnership { coached, shared, manual }
+
+/// What the user chose about reading steps from the health platform. Stored as
+/// a choice only; the health seam itself is unchanged.
+enum HealthConnectChoice { connected, manual, declined }
+
+/// Nutrition preferences (design s16.2). Every field is optional: an empty
+/// instance is a valid profile and reads as "nothing answered yet".
+///
+/// Nothing here is health data by construction. The allergen list and the
+/// nutrition-guidance answer live in `HealthFlags` (device-only), and
+/// [excludedFoods] is free text that can name an intolerance or a condition, so
+/// it is DEVICE-ONLY too: `stripSensitive` blanks it and the rules allowlist
+/// refuses it (D-55).
+class NutritionPrefs {
+  const NutritionPrefs({
+    this.sexAtBirth,
+    this.goalDirection,
+    this.targetBodyFatPct,
+    this.typicalDailySteps,
+    this.mealsPerDay,
+    this.excludedFoods = const [],
+    this.planOwnership,
+    this.healthConnectChoice,
+    this.completedAt,
+  });
+
+  final SexAtBirth? sexAtBirth;
+  final GoalDirection? goalDirection;
+
+  /// Optional body-fat target in percent. The target WEIGHT is not stored here:
+  /// `PersonalInfo.weightTargetKg` already holds it and is never asked twice.
+  final double? targetBodyFatPct;
+
+  /// Self-reported typical daily steps (bucket midpoint) when the health
+  /// platform is not connected.
+  final int? typicalDailySteps;
+
+  /// 2..6; anything else is read as "not answered".
+  final int? mealsPerDay;
+
+  /// At most [maxExcludedFoods] entries of at most [maxExcludedFoodChars]
+  /// characters. DEVICE-ONLY.
+  final List<String> excludedFoods;
+  final PlanOwnership? planOwnership;
+  final HealthConnectChoice? healthConnectChoice;
+
+  /// When the user finished the nutrition questions (step or profile flow).
+  final DateTime? completedAt;
+
+  static const maxExcludedFoods = 20;
+  static const maxExcludedFoodChars = 40;
+  static const minMealsPerDay = 2;
+  static const maxMealsPerDay = 6;
+
+  static const empty = NutritionPrefs();
+
+  /// True when the user has answered none of it.
+  bool get isEmpty =>
+      sexAtBirth == null &&
+      goalDirection == null &&
+      targetBodyFatPct == null &&
+      typicalDailySteps == null &&
+      mealsPerDay == null &&
+      excludedFoods.isEmpty &&
+      planOwnership == null &&
+      healthConnectChoice == null &&
+      completedAt == null;
+
+  /// Omit-empty: only fields the user set are written, so an empty instance is
+  /// `{schema: 1}` and an old reader or rule never meets a null it does not
+  /// know. [excludedFoods] is written when non-empty; `stripSensitive` blanks it
+  /// before anything reaches the server.
+  Map<String, dynamic> toJson() => {
+        'schema': 1,
+        if (sexAtBirth != null) 'sexAtBirth': sexAtBirth!.name,
+        if (goalDirection != null) 'goalDirection': goalDirection!.name,
+        if (targetBodyFatPct != null) 'targetBodyFatPct': targetBodyFatPct,
+        if (typicalDailySteps != null) 'typicalDailySteps': typicalDailySteps,
+        if (mealsPerDay != null) 'mealsPerDay': mealsPerDay,
+        if (excludedFoods.isNotEmpty) 'excludedFoods': excludedFoods,
+        if (planOwnership != null) 'planOwnership': planOwnership!.name,
+        if (healthConnectChoice != null)
+          'healthConnectChoice': healthConnectChoice!.name,
+        if (completedAt != null) 'completedAt': completedAt!.toIso8601String(),
+      };
+
+  /// Tolerant by design: absent, wrongly typed or unknown values degrade to
+  /// null/empty rather than throwing, so a profile written before this block
+  /// existed (or by a newer build) still loads.
+  static NutritionPrefs fromJson(Object? raw) {
+    if (raw is! Map) return empty;
+    final steps = raw['typicalDailySteps'];
+    final meals = raw['mealsPerDay'];
+    final bf = raw['targetBodyFatPct'];
+    final done = raw['completedAt'];
+    final foods = <String>[];
+    final rawFoods = raw['excludedFoods'];
+    if (rawFoods is List) {
+      for (final f in rawFoods) {
+        if (f is! String) continue;
+        final t = f.trim();
+        if (t.isEmpty) continue;
+        if (foods.length >= maxExcludedFoods) break;
+        foods.add(t.length > maxExcludedFoodChars
+            ? t.substring(0, maxExcludedFoodChars)
+            : t);
+      }
+    }
+    return NutritionPrefs(
+      sexAtBirth: _enumByNameOrNull(SexAtBirth.values, raw['sexAtBirth']),
+      goalDirection:
+          _enumByNameOrNull(GoalDirection.values, raw['goalDirection']),
+      targetBodyFatPct: bf is num ? bf.toDouble() : null,
+      typicalDailySteps: steps is num ? steps.toInt() : null,
+      mealsPerDay: meals is num &&
+              meals.toInt() >= minMealsPerDay &&
+              meals.toInt() <= maxMealsPerDay
+          ? meals.toInt()
+          : null,
+      excludedFoods: List.unmodifiable(foods),
+      planOwnership:
+          _enumByNameOrNull(PlanOwnership.values, raw['planOwnership']),
+      healthConnectChoice: _enumByNameOrNull(
+          HealthConnectChoice.values, raw['healthConnectChoice']),
+      completedAt: done is String ? DateTime.tryParse(done) : null,
+    );
+  }
+
+  NutritionPrefs copyWith({
+    SexAtBirth? sexAtBirth,
+    GoalDirection? goalDirection,
+    double? targetBodyFatPct,
+    bool clearTargetBodyFat = false,
+    int? typicalDailySteps,
+    int? mealsPerDay,
+    List<String>? excludedFoods,
+    PlanOwnership? planOwnership,
+    HealthConnectChoice? healthConnectChoice,
+    DateTime? completedAt,
+  }) =>
+      NutritionPrefs(
+        sexAtBirth: sexAtBirth ?? this.sexAtBirth,
+        goalDirection: goalDirection ?? this.goalDirection,
+        targetBodyFatPct: clearTargetBodyFat
+            ? null
+            : (targetBodyFatPct ?? this.targetBodyFatPct),
+        typicalDailySteps: typicalDailySteps ?? this.typicalDailySteps,
+        mealsPerDay: mealsPerDay ?? this.mealsPerDay,
+        excludedFoods: excludedFoods ?? this.excludedFoods,
+        planOwnership: planOwnership ?? this.planOwnership,
+        healthConnectChoice: healthConnectChoice ?? this.healthConnectChoice,
+        completedAt: completedAt ?? this.completedAt,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NutritionPrefs &&
+          other.sexAtBirth == sexAtBirth &&
+          other.goalDirection == goalDirection &&
+          other.targetBodyFatPct == targetBodyFatPct &&
+          other.typicalDailySteps == typicalDailySteps &&
+          other.mealsPerDay == mealsPerDay &&
+          _listEq(other.excludedFoods, excludedFoods) &&
+          other.planOwnership == planOwnership &&
+          other.healthConnectChoice == healthConnectChoice &&
+          other.completedAt == completedAt;
+
+  @override
+  int get hashCode => Object.hash(
+        sexAtBirth,
+        goalDirection,
+        targetBodyFatPct,
+        typicalDailySteps,
+        mealsPerDay,
+        Object.hashAll(excludedFoods),
+        planOwnership,
+        healthConnectChoice,
+        completedAt,
+      );
+
+  static bool _listEq(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+}
+
 class HealthHistory {
   const HealthHistory({
     this.conditions = const [],
@@ -902,6 +1104,7 @@ class UserProfile {
     this.equipment = EquipmentAccess.empty,
     this.schedule = TrainingSchedule.empty,
     this.motivation = MotivationPrefs.empty,
+    this.nutrition = NutritionPrefs.empty,
     this.completedAt,
   });
 
@@ -914,6 +1117,10 @@ class UserProfile {
   final EquipmentAccess equipment;
   final TrainingSchedule schedule;
   final MotivationPrefs motivation;
+
+  /// Nutrition preferences. A profile without this block reads as
+  /// [NutritionPrefs.empty]; nothing is written until the user answers.
+  final NutritionPrefs nutrition;
 
   /// Set when the user submits the questionnaire. `null` means draft only.
   final DateTime? completedAt;
@@ -991,6 +1198,7 @@ class UserProfile {
           'preferredDuration': motivation.preferredDuration?.name,
           'barriers': motivation.barriers.map((b) => b.name).toList(),
         },
+        'nutrition': nutrition.toJson(),
       };
 
   UserProfile copyWith({
@@ -1002,10 +1210,12 @@ class UserProfile {
     EquipmentAccess? equipment,
     TrainingSchedule? schedule,
     MotivationPrefs? motivation,
+    NutritionPrefs? nutrition,
     DateTime? completedAt,
   }) =>
       UserProfile(
         uid: uid,
+        nutrition: nutrition ?? this.nutrition,
         personal: personal ?? this.personal,
         health: health ?? this.health,
         goals: goals ?? this.goals,
