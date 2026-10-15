@@ -37,9 +37,19 @@ Closed block reasons (leading slug of the `Deploy target` check detail; exported
 Closed reasons for the effective-project step (exported as `PROJECT_RESOLUTION_REASONS`; the CLI blocks
 before any other check):
 
-- `project-undeterminable`: neither `GCLOUD_PROJECT` nor an explicit project flag is present (or a flag has
-  no value).
+- `project-undeterminable`: neither `GCLOUD_PROJECT` nor an explicit project flag is present, a flag has
+  no value, or a combined short-flag token (for example `-ic x.json`, `-iPprod`) could hide `--config` or
+  `--project`.
 - `project-conflict`: `GCLOUD_PROJECT` and the project flag disagree, or several different project flags.
+- `project-invalid`: the resolved project is not a valid project id (`PROJECT_ID_PATTERN`,
+  `^[a-z][a-z0-9-]{4,28}[a-z0-9]$`); the id is interpolated into gcloud arguments, so it is refused before any
+  command runs. `runReleaseGuard` applies the same check to `deps.project` and reports it as a failing
+  `Deploy target` check whose detail leads with `project-invalid`.
+
+Order inside `runReleaseGuard`: the deploy-target check runs FIRST. If it does not pass, no gcloud or git
+state command is run; the nine remaining checks are reported as `UNAVAILABLE` with the detail "not run: the
+deploy-target check did not pass" and the verdict is BLOCK. Each remaining check is also wrapped, so an
+unexpected throw becomes an `UNAVAILABLE` check with the error message instead of aborting the report.
 
 The CLI output prints the line, branch and project, and keeps exit code 0 = PASS, 1 = BLOCK.
 
@@ -63,6 +73,11 @@ of every deploy target present: `functions[0]` (`default`), `functions[1]` (`equ
 `predeploy` for `firestore`, `hosting`, `storage`, `database`, `dataconnect` and `remoteconfig`; the
 non-functions targets rebuild `functions/lib` first so the guard is never stale.
 
+A deploy target counts as guarded only when its `predeploy` contains the exact command
+`node functions/scripts/run_release_guard.mjs` (`GUARD_COMMAND`); a bare substring such as an `echo` of the
+script name does not count. The wrapper `guarded_deploy.mjs` runs `findUnguardedDeployTargets` on the real
+`firebase.json` and refuses to deploy when any present target lacks the guard or the file is unreadable.
+
 The `storage` block arrived with the Body Scan + Nutrition Coach merge and carries the guard. Any future
 `database`, `dataconnect` or `remoteconfig` block, or a second `storage` entry, MUST carry the same `predeploy` guard entries; the exported
 `findUnguardedDeployTargets(firebaseJson)` lists any present deploy target that lacks the guard and is the
@@ -80,7 +95,9 @@ node scripts/deploy/guarded_deploy.mjs --only firestore:rules --project <alias-o
 ```
 
 (`npm run deploy` in `functions/` uses it for `functions:default`.) The wrapper builds the guard library,
-refuses `--config`/`-c`, determines the project, runs the guard with `GCLOUD_PROJECT` set to it, and only on
+refuses `--config`/`-c` and short-flag clusters that could hide them (`-ic x.json`, `-iPprod`; pass flags
+separately, `-m message` and the long flags are unaffected), checks that every target in `firebase.json` is
+guarded, determines the project, runs the guard with `GCLOUD_PROJECT` set to it, and only on
 PASS runs the repo-pinned `firebase deploy --project <id> ...`. Without `--project` it derives the project
 from the deploy line and passes it explicitly, so the CLI's per-user active project can never redirect the
 deploy. The `predeploy` hooks then run the guard again inside the CLI as a backstop (deliberate duplication).
@@ -104,6 +121,9 @@ neither is present; it never falls back to a hardcoded or `.firebaserc`-default 
   or editing `firebase.json`. Real enforcement needs separate production deploy credentials and/or
   protected CI. This is operator-owned and an OPEN ITEM, not claimed as solved.
 - Provenance depends on the local remote-tracking refs; it does not contact the remote.
+- The clean-tree check covers `functions`, `functions-equipment-identity`, `firebase.json`, `.firebaserc`,
+  `.gitignore`, the release-evidence file, `firestore.rules`, `firestore.indexes.json`, `storage.rules` and
+  `public`, plus any rules, indexes, hosting public dir and functions source named in `firebase.json`.
 
 ## Operator step (required before any Phase 2 deploy)
 
@@ -118,3 +138,18 @@ Until then Phase 2 stays on the emulator and any Phase 2 deploy is blocked with 
 
 - Separate production deploy credentials / protected CI for Phase 1 production deploys.
 - Decide whether the guard check set should be split per deploy target for the Phase 2 project.
+
+## Open items before the first Phase 2 cloud deploy
+
+1. `functions/src/abuse_guard.ts` (around line 206) hardcodes
+   `projects/988522745882/secrets/ai-gateway-kill-switch/versions/latest`, and `988522745882` is the
+   PRODUCTION project number (the Phase 2 project `fitness-app-phase2-korostelev` is `254096452830`). The
+   secret path must become project-relative, with its own kill-switch secret in the Phase 2 project. This is
+   runtime code, not the deploy guard, and is a separate sprint.
+2. The release guard reads the previously deployed environment, not the candidate's deploy-time environment
+   (`process.env` and `functions/.env*` files, last value wins), and the body-scan bucket check can be skipped
+   silently if the dotenv sources are not read. Pre-existing from PR #5 and out of scope of S00; backlog for a
+   guard hardening sprint.
+3. Blaze billing for the Phase 2 project (operator; the billing account's project quota is exceeded).
+4. Residual limit already stated above: a local guard cannot stop use of the firebase CLI with another
+   config or credentials; separate production deploy credentials or protected CI are operator-owned.

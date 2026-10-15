@@ -215,6 +215,21 @@ import {
   aiGatewayQuotaExhaustionsMetricJson,
 } from "./monitoring/ai_gateway_definitions";
 
+/** Names of every check `runReleaseGuard` reports (one place, so the not-run list cannot drift). */
+export const CHECK_NAME = {
+  target: "Deploy target is this project's real Firebase project",
+  inventory: "AI callables match the intended fn-ai-runtime deployed set",
+  appCheck: "App Check enforcement is on (fail-closed) for all 6 AI callables",
+  anonymous: "Anonymous callers are refused on all 6 AI callables",
+  killSwitch: "Step 8 kill switch secret exists with genuinely read-only runtime IAM",
+  drill: "Step 8 kill-switch drill evidence recorded as closed",
+  observability: "AI Gateway observability metrics exist, match source, and are producing",
+  s23: "S23 production Play Integrity proof gates an AI-enabled release",
+  candidate: "Candidate source still carries its App Check / anonymous-refusal / gateway-guard wiring (AST-verified)",
+  provenance: "Release comes from a clean, committed working tree",
+  bodyScanBucket: "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged",
+} as const;
+
 export type CheckStatus = "OK" | "FAILED" | "UNAVAILABLE";
 
 export interface CheckResult {
@@ -321,8 +336,12 @@ export const DEPLOY_LINE_REASONS = [
 ] as const;
 export type DeployLineReason = (typeof DEPLOY_LINE_REASONS)[number];
 
-/** Closed set of reasons `resolveEffectiveProject` can fail with. */
-export const PROJECT_RESOLUTION_REASONS = ["project-undeterminable", "project-conflict"] as const;
+/** A Firebase/GCP project id (6-30 chars, lowercase letters, digits, hyphens, starts with a letter, does not end
+ * with a hyphen). The id is interpolated into gcloud arguments, so anything else is refused before any command runs. */
+export const PROJECT_ID_PATTERN = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/;
+
+/** Closed set of reasons `resolveEffectiveProject` (and the project-id validation in `runReleaseGuard`) can fail with. */
+export const PROJECT_RESOLUTION_REASONS = ["project-undeterminable", "project-conflict", "project-invalid"] as const;
 export type ProjectResolutionReason = (typeof PROJECT_RESOLUTION_REASONS)[number];
 
 /** Remote-tracking refs of the protected Phase 1 line. A Phase 1 production
@@ -447,6 +466,9 @@ export interface DeployArgs {
   projects: string[];
   /** True when `--config`/`-c` is present: a different firebase config carries different (possibly no) guard hooks. */
   hasConfigFlag: boolean;
+  /** True when a short-flag cluster such as `-ic x.json` or `-iPprod` could hide `-c` or `-P`: any token matching
+   * `/^-[A-Za-z]{2,}/` that contains `c` or `P` (and is not itself `-P<value>`/`-c...`). Treated as fail closed. */
+  hasShortFlagCluster: boolean;
   /** The arguments with every project flag (and its value) removed. */
   rest: string[];
 }
@@ -457,6 +479,7 @@ export function parseDeployArgs(argv: string[]): DeployArgs {
   const projects: string[] = [];
   const rest: string[] = [];
   let hasConfigFlag = false;
+  let hasShortFlagCluster = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--project" || a === "-P") {
@@ -474,10 +497,12 @@ export function parseDeployArgs(argv: string[]): DeployArgs {
     }
     if (a === "-c" || a === "--config" || a.startsWith("--config=") || (a.startsWith("-c") && !a.startsWith("--"))) {
       hasConfigFlag = true;
+    } else if (/^-[A-Za-z]{2,}/.test(a) && /[cP]/.test(a)) {
+      hasShortFlagCluster = true;
     }
     rest.push(a);
   }
-  return { projects, hasConfigFlag, rest };
+  return { projects, hasConfigFlag, hasShortFlagCluster, rest };
 }
 
 export type EffectiveProjectResolution =
@@ -523,7 +548,15 @@ export function resolveEffectiveProject(input: {
     return typeof mapped === "string" && mapped.trim().length > 0 ? mapped.trim() : value;
   };
 
-  const flagValues = parseDeployArgs(input.argv).projects.map((v) => v.trim());
+  const parsedArgs = parseDeployArgs(input.argv);
+  if (parsedArgs.hasShortFlagCluster) {
+    return {
+      ok: false,
+      reason: "project-undeterminable",
+      detail: "project-undeterminable: a combined short-flag token (for example -ic or -iPprod) could hide --config or --project -- pass flags separately",
+    };
+  }
+  const flagValues = parsedArgs.projects.map((v) => v.trim());
   if (flagValues.some((v) => v.length === 0)) {
     return {
       ok: false,
@@ -548,8 +581,17 @@ export function resolveEffectiveProject(input: {
       detail: `project-conflict: GCLOUD_PROJECT = "${envProject}" but --project resolves to "${flagProjects[0]}" -- refusing to guess which one the deploy hits`,
     };
   }
-  if (envProject.length > 0) return { ok: true, project: envProject, source: "GCLOUD_PROJECT" };
-  if (flagProjects.length === 1) return { ok: true, project: flagProjects[0], source: "--project" };
+  const invalid = (value: string): EffectiveProjectResolution => ({
+    ok: false,
+    reason: "project-invalid",
+    detail: `project-invalid: ${JSON.stringify(value)} is not a valid project id (expected ${PROJECT_ID_PATTERN.source})`,
+  });
+  if (envProject.length > 0) {
+    return PROJECT_ID_PATTERN.test(envProject) ? { ok: true, project: envProject, source: "GCLOUD_PROJECT" } : invalid(envProject);
+  }
+  if (flagProjects.length === 1) {
+    return PROJECT_ID_PATTERN.test(flagProjects[0]) ? { ok: true, project: flagProjects[0], source: "--project" } : invalid(flagProjects[0]);
+  }
   return {
     ok: false,
     reason: "project-undeterminable",
@@ -560,6 +602,10 @@ export function resolveEffectiveProject(input: {
 
 /** Marker proving a `predeploy` entry runs this guard. */
 export const GUARD_COMMAND_MARKER = "run_release_guard.mjs";
+
+/** The exact `predeploy` command that runs the guard; `findUnguardedDeployTargets` requires this whole string
+ * (after trimming), not a substring, so `echo run_release_guard.mjs` or a neutered variant does not count. */
+export const GUARD_COMMAND = "node functions/scripts/run_release_guard.mjs";
 
 /** `firebase.json` sections whose schema accepts `predeploy` (verified in
  * firebase-tools' `schema/firebase-config.json`): each must run the guard. */
@@ -594,7 +640,7 @@ export function findUnguardedDeployTargets(config: unknown): string[] {
       const label = Array.isArray(value) ? `${section}[${index}]` : section;
       const predeploy = entry !== null && typeof entry === "object" ? (entry as { predeploy?: unknown }).predeploy : undefined;
       const commands = typeof predeploy === "string" ? [predeploy] : Array.isArray(predeploy) ? predeploy : [];
-      if (!commands.some((cmd) => typeof cmd === "string" && cmd.includes(GUARD_COMMAND_MARKER))) out.push(label);
+      if (!commands.some((cmd) => typeof cmd === "string" && cmd.trim() === GUARD_COMMAND)) out.push(label);
     });
   }
   for (const section of UNGUARDABLE_DEPLOY_SECTIONS) {
@@ -748,7 +794,7 @@ export async function checkDeployTarget(
   deps: ReleaseGuardDeps,
   resolution?: DeployTargetResolution,
 ): Promise<CheckResult> {
-  const name = "Deploy target is this project's real Firebase project";
+  const name = CHECK_NAME.target;
   const resolved = resolution ?? (await resolveDeployTarget(deps));
   if (!resolved.ok) {
     return { name, status: "FAILED", detail: resolved.detail };
@@ -765,7 +811,7 @@ export async function checkDeployTarget(
 }
 
 async function checkFunctionsInventory(deps: ReleaseGuardDeps): Promise<CheckResult> {
-  const name = "AI callables match the intended fn-ai-runtime deployed set";
+  const name = CHECK_NAME.inventory;
   const result = await runGcloudJson<GcloudFunctionSummary[]>(deps, [
     "functions",
     "list",
@@ -809,7 +855,7 @@ function appCheckEnforced(env: Record<string, string> | undefined): boolean {
 async function checkAppCheckEnforcement(
   described: { byName: Map<string, GcloudFunctionSummary> },
 ): Promise<CheckResult> {
-  const name = "App Check enforcement is on (fail-closed) for all 6 AI callables";
+  const name = CHECK_NAME.appCheck;
   const unenforced: string[] = [];
   for (const callable of AI_CALLABLES) {
     const env = described.byName.get(callable)?.serviceConfig?.environmentVariables;
@@ -824,7 +870,7 @@ async function checkAppCheckEnforcement(
 async function checkAnonymousRefused(
   described: { byName: Map<string, GcloudFunctionSummary> },
 ): Promise<CheckResult> {
-  const name = "Anonymous callers are refused on all 6 AI callables";
+  const name = CHECK_NAME.anonymous;
   const allowed: string[] = [];
   for (const callable of AI_CALLABLES) {
     const env = described.byName.get(callable)?.serviceConfig?.environmentVariables;
@@ -862,7 +908,7 @@ async function describeRolePermissions(
 }
 
 async function checkKillSwitchExists(deps: ReleaseGuardDeps): Promise<CheckResult> {
-  const name = "Step 8 kill switch secret exists with genuinely read-only runtime IAM";
+  const name = CHECK_NAME.killSwitch;
   const describeResult = await runGcloudJson<{ name?: string }>(deps, [
     "secrets",
     "describe",
@@ -938,7 +984,7 @@ async function checkKillSwitchExists(deps: ReleaseGuardDeps): Promise<CheckResul
 }
 
 async function checkStep8DrillEvidence(evidence: ReleaseEvidence | undefined): Promise<CheckResult> {
-  const name = "Step 8 kill-switch drill evidence recorded as closed";
+  const name = CHECK_NAME.drill;
   if (evidence === undefined) {
     return { name, status: "UNAVAILABLE", detail: `${RELEASE_EVIDENCE_PATH} missing or unparseable` };
   }
@@ -1021,7 +1067,7 @@ function canonicalMetricSubset(m: LiveMetric): object {
 }
 
 async function checkAiObservability(deps: ReleaseGuardDeps): Promise<CheckResult> {
-  const name = "AI Gateway observability metrics exist, match source, and are producing";
+  const name = CHECK_NAME.observability;
   const problems: string[] = [];
 
   for (const [metricName, buildCanonical] of Object.entries(AI_GATEWAY_METRIC_BUILDERS)) {
@@ -1077,7 +1123,7 @@ async function checkS23Gate(
   deps: ReleaseGuardDeps,
   evidence: ReleaseEvidence | undefined,
 ): Promise<CheckResult> {
-  const name = "S23 production Play Integrity proof gates an AI-enabled release";
+  const name = CHECK_NAME.s23;
   const res = await deps.runCommand(
     "gcloud",
     [
@@ -1322,7 +1368,7 @@ function checkCallableAst(text: string, path: string, callable: string, problems
  * satisfied by a commented-out call, since it never distinguished real code
  * from comment text). */
 async function checkCandidateSourceInvariants(deps: ReleaseGuardDeps): Promise<CheckResult> {
-  const name = "Candidate source still carries its App Check / anonymous-refusal / gateway-guard wiring (AST-verified)";
+  const name = CHECK_NAME.candidate;
   const problems: string[] = [];
 
   const scaling = await deps.readFile(SCALING_SOURCE_FILE);
@@ -1393,7 +1439,58 @@ const PROVENANCE_RELEVANT_PATHS = [
   ".firebaserc",
   ".gitignore",
   RELEASE_EVIDENCE_PATH,
+  // Everything else `firebase deploy` reads (review fix A): rules, indexes and the hosting public dir.
+  "firestore.rules",
+  "firestore.indexes.json",
+  "storage.rules",
+  "public",
 ] as const;
+
+/** Only plain repo-relative paths may enter the `git status` pathspec (no absolute paths, no `..`, no pathspec magic). */
+function isSafeRepoRelativePath(p: string): boolean {
+  return (
+    p.length > 0 &&
+    !p.startsWith("/") &&
+    !p.startsWith(":") &&
+    !p.startsWith("-") &&
+    !/^[A-Za-z]:/.test(p) &&
+    !p.includes("\\") &&
+    !p.split("/").includes("..")
+  );
+}
+
+/** The fixed list plus every rules/indexes file, hosting public dir and functions source named in `firebase.json`
+ * (when readable and well-formed); the fixed list is always included, so an unreadable file only loses the extras. */
+async function provenancePaths(deps: ReleaseGuardDeps): Promise<string[]> {
+  const out = new Set<string>(PROVENANCE_RELEVANT_PATHS);
+  let config: unknown;
+  try {
+    const raw = await deps.readFile("firebase.json");
+    config = raw === null ? undefined : JSON.parse(raw);
+  } catch {
+    config = undefined;
+  }
+  if (config === null || typeof config !== "object") return [...out];
+  const c = config as Record<string, unknown>;
+  const asList = (v: unknown): Record<string, unknown>[] =>
+    (Array.isArray(v) ? v : v === undefined ? [] : [v]).filter(
+      (e): e is Record<string, unknown> => e !== null && typeof e === "object",
+    );
+  const add = (v: unknown): void => {
+    if (typeof v === "string") {
+      const norm = v.trim().replace(/^\.\//, "").replace(/\/+$/, "");
+      if (isSafeRepoRelativePath(norm)) out.add(norm);
+    }
+  };
+  for (const e of asList(c["firestore"])) {
+    add(e["rules"]);
+    add(e["indexes"]);
+  }
+  for (const e of asList(c["storage"])) add(e["rules"]);
+  for (const e of asList(c["hosting"])) add(e["public"]);
+  for (const e of asList(c["functions"])) add(e["source"]);
+  return [...out];
+}
 
 /**
  * Confirmed live, round 4's own follow-up verification: a bare `git status
@@ -1446,15 +1543,16 @@ const PROVENANCE_RELEVANT_PATHS = [
  * ad-hoc alternative release path without first fixing this file for it.
  */
 async function checkSourceProvenance(deps: ReleaseGuardDeps): Promise<CheckResult> {
-  const name = "Release comes from a clean, committed working tree";
-  const status = await deps.runCommand("git", ["status", "--porcelain", "--", ...PROVENANCE_RELEVANT_PATHS], 15_000);
+  const name = CHECK_NAME.provenance;
+  const paths = await provenancePaths(deps);
+  const status = await deps.runCommand("git", ["status", "--porcelain", "--", ...paths], 15_000);
   if (!status.ok) return { name, status: "UNAVAILABLE", detail: status.stderr || "git status failed" };
   if (status.stdout.trim().length > 0) {
-    return { name, status: "FAILED", detail: `uncommitted changes under ${PROVENANCE_RELEVANT_PATHS.join(", ")}` };
+    return { name, status: "FAILED", detail: `uncommitted changes under ${paths.join(", ")}` };
   }
   const head = await deps.runCommand("git", ["rev-parse", "HEAD"], 15_000);
   if (!head.ok) return { name, status: "UNAVAILABLE", detail: head.stderr || "git rev-parse HEAD failed" };
-  return { name, status: "OK", detail: `clean tree (scoped to ${PROVENANCE_RELEVANT_PATHS.join(", ")}) at ${head.stdout.trim()}` };
+  return { name, status: "OK", detail: `clean tree (scoped to ${paths.join(", ")}) at ${head.stdout.trim()}` };
 }
 
 const BODY_SCAN_BUCKET_NAME = /^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$/;
@@ -1493,7 +1591,7 @@ async function checkBodyScanBucket(
   bucket: string,
   evidence: ReleaseEvidence | undefined,
 ): Promise<CheckResult> {
-  const name = "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged";
+  const name = CHECK_NAME.bodyScanBucket;
   const described = await runGcloudJson<Record<string, unknown>>(deps, [
     "storage",
     "buckets",
@@ -1540,32 +1638,109 @@ async function checkBodyScanBucket(
   return { name, status: "OK", detail: `bucket ${bucket}: private, uniform access, fn-bodyscan and fn-account-delete objectAdmin, canary closed` };
 }
 
-export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGuardResult> {
-  const evidence = await loadEvidence(deps);
-  const describedFunctions = await describeAiFunctions(deps);
+/** Turns an unexpected throw inside one check into an UNAVAILABLE check (the report must stay complete). */
+async function guardedCheck(name: string, fn: () => Promise<CheckResult>): Promise<CheckResult> {
+  try {
+    return await fn();
+  } catch (e) {
+    return { name, status: "UNAVAILABLE", detail: `check threw an unexpected error: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
 
-  const target = await resolveDeployTarget(deps);
-  const checks: CheckResult[] = [];
-  checks.push(await checkDeployTarget(deps, target));
-  checks.push(await checkCandidateSourceInvariants(deps));
-  checks.push(await checkFunctionsInventory(deps));
+/** Every check except the deploy-target one, in report order -- used for the deterministic "not run" report. */
+const DOWNSTREAM_CHECK_NAMES = [
+  CHECK_NAME.candidate,
+  CHECK_NAME.inventory,
+  CHECK_NAME.appCheck,
+  CHECK_NAME.anonymous,
+  CHECK_NAME.killSwitch,
+  CHECK_NAME.drill,
+  CHECK_NAME.observability,
+  CHECK_NAME.s23,
+  CHECK_NAME.provenance,
+] as const;
+
+export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGuardResult> {
+  // 1. Deploy target FIRST: no gcloud/git-state command may run against a project that is not validated.
+  let target: DeployTargetResolution;
+  try {
+    target = await resolveDeployTarget(deps);
+  } catch (e) {
+    target = {
+      ok: false,
+      line: "other",
+      branch: null,
+      reason: "deploy-line-unknown",
+      detail: `deploy-line-unknown: deploy-line resolution threw an unexpected error: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
+  const projectValid = typeof deps.project === "string" && PROJECT_ID_PATTERN.test(deps.project);
+  const targetCheck: CheckResult = !projectValid
+    ? {
+        name: CHECK_NAME.target,
+        status: "FAILED",
+        detail: `project-invalid: ${JSON.stringify(deps.project)} is not a valid project id (expected ${PROJECT_ID_PATTERN.source})`,
+      }
+    : await guardedCheck(CHECK_NAME.target, () => checkDeployTarget(deps, target));
+  const checks: CheckResult[] = [targetCheck];
+
+  if (targetCheck.status !== "OK") {
+    for (const name of DOWNSTREAM_CHECK_NAMES) {
+      checks.push({ name, status: "UNAVAILABLE", detail: "not run: the deploy-target check did not pass, so no command was run against this project" });
+    }
+    return {
+      verdict: "BLOCK",
+      generatedAt: new Date(deps.now()).toISOString(),
+      checks,
+      line: target.line,
+      branch: target.branch,
+      project: deps.project,
+    };
+  }
+
+  // 2. Everything else; one check throwing never aborts the report.
+  let evidence: ReleaseEvidence | undefined;
+  try {
+    evidence = await loadEvidence(deps);
+  } catch {
+    evidence = undefined;
+  }
+  let describedFunctions: Awaited<ReturnType<typeof describeAiFunctions>>;
+  try {
+    describedFunctions = await describeAiFunctions(deps);
+  } catch (e) {
+    describedFunctions = { error: `describing AI functions threw: ${e instanceof Error ? e.message : String(e)}` };
+  }
+
+  checks.push(await guardedCheck(CHECK_NAME.candidate, () => checkCandidateSourceInvariants(deps)));
+  checks.push(await guardedCheck(CHECK_NAME.inventory, () => checkFunctionsInventory(deps)));
   checks.push(
     "error" in describedFunctions
-      ? { name: "App Check enforcement is on (fail-closed) for all 6 AI callables", status: "UNAVAILABLE", detail: describedFunctions.error }
-      : await checkAppCheckEnforcement(describedFunctions),
+      ? { name: CHECK_NAME.appCheck, status: "UNAVAILABLE", detail: describedFunctions.error }
+      : await guardedCheck(CHECK_NAME.appCheck, () => checkAppCheckEnforcement(describedFunctions)),
   );
   checks.push(
     "error" in describedFunctions
-      ? { name: "Anonymous callers are refused on all 6 AI callables", status: "UNAVAILABLE", detail: describedFunctions.error }
-      : await checkAnonymousRefused(describedFunctions),
+      ? { name: CHECK_NAME.anonymous, status: "UNAVAILABLE", detail: describedFunctions.error }
+      : await guardedCheck(CHECK_NAME.anonymous, () => checkAnonymousRefused(describedFunctions)),
   );
-  checks.push(await checkKillSwitchExists(deps));
-  checks.push(await checkStep8DrillEvidence(evidence));
-  checks.push(await checkAiObservability(deps));
-  checks.push(await checkS23Gate(deps, evidence));
-  checks.push(await checkSourceProvenance(deps));
-  const bodyScanBucket = await configuredBodyScanBucket(deps);
-  if (bodyScanBucket !== undefined) checks.push(await checkBodyScanBucket(deps, bodyScanBucket, evidence));
+  checks.push(await guardedCheck(CHECK_NAME.killSwitch, () => checkKillSwitchExists(deps)));
+  checks.push(await guardedCheck(CHECK_NAME.drill, () => checkStep8DrillEvidence(evidence)));
+  checks.push(await guardedCheck(CHECK_NAME.observability, () => checkAiObservability(deps)));
+  checks.push(await guardedCheck(CHECK_NAME.s23, () => checkS23Gate(deps, evidence)));
+  checks.push(await guardedCheck(CHECK_NAME.provenance, () => checkSourceProvenance(deps)));
+  try {
+    const bodyScanBucket = await configuredBodyScanBucket(deps);
+    if (bodyScanBucket !== undefined) {
+      checks.push(await guardedCheck(CHECK_NAME.bodyScanBucket, () => checkBodyScanBucket(deps, bodyScanBucket, evidence)));
+    }
+  } catch (e) {
+    checks.push({
+      name: CHECK_NAME.bodyScanBucket,
+      status: "UNAVAILABLE",
+      detail: `could not determine whether BODY_SCAN_BUCKET is configured: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
 
   const verdict: Verdict = checks.every((c) => c.status === "OK") ? "PASS" : "BLOCK";
   return {

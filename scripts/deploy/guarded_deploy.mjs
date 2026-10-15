@@ -8,8 +8,10 @@
  * What it does, in order (any failure blocks, nothing is deployed):
  *   1. Builds the guard library (`npm --prefix functions run build`) so the
  *      guard that runs is the current source, not a stale `functions/lib`.
- *   2. Refuses `--config`/`-c` (a different firebase config carries different,
- *      possibly missing, guard hooks).
+ *   2. Refuses `--config`/`-c` and short-flag clusters that could hide them
+ *      (a different firebase config carries different, possibly missing, guard
+ *      hooks), and refuses to run when any deploy target in firebase.json lacks
+ *      the guard (or firebase.json is unreadable).
  *   3. Determines the project the deploy will hit. An explicit
  *      `--project`/`-P` is honoured (alias resolved via `.firebaserc`); when
  *      absent, the project is derived from the deploy line (phase1 ->
@@ -65,11 +67,25 @@ async function main() {
   if (build.status !== 0) block("could not build functions/lib (the guard library); fix the build first");
 
   const lib = await loadGuardLib();
-  const { parseDeployArgs, resolveEffectiveProject, resolveDeployTarget, PROTECTED_PHASE1_REFS } = lib;
+  const { parseDeployArgs, resolveEffectiveProject, resolveDeployTarget, findUnguardedDeployTargets, PROTECTED_PHASE1_REFS } = lib;
 
   // 2. Arguments.
   const parsed = parseDeployArgs(process.argv.slice(2));
   if (parsed.hasConfigFlag) block("--config/-c is not allowed: a different firebase config bypasses the guard hooks");
+  if (parsed.hasShortFlagCluster) {
+    block("a combined short-flag token (for example -ic or -iPprod) could hide --config or --project; pass each flag separately");
+  }
+
+  // Every deploy target present in firebase.json must run the guard (fail closed on an unreadable file).
+  const firebaseJsonText = await readFile("firebase.json");
+  let firebaseJson;
+  try {
+    firebaseJson = firebaseJsonText === null ? undefined : JSON.parse(firebaseJsonText);
+  } catch {
+    firebaseJson = undefined;
+  }
+  const unguarded = findUnguardedDeployTargets(firebaseJson);
+  if (unguarded.length > 0) block(`firebase.json has deploy targets without the release guard in predeploy: ${unguarded.join(", ")}`);
   if (!existsSync(FIREBASE_BIN)) block(`repo-pinned firebase-tools not found at ${FIREBASE_BIN} (run npm ci in functions)`);
 
   // 3. Project.
