@@ -56550,3 +56550,7 @@ Decision: ARB parity test reads the ARB files directly so it needs no generated 
 ## 2026-10-15 - Commit: test(food): C24 EN/RU ARB parity tests
 
 Decision: ARB parity is asserted on the real files for the new key family and the food* family. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 routes tests
+
+Decision: route agreement is asserted from the add-food source against the router source plus the live router. Evidence: core/changes/2026-10-15-c23-tests.md.
