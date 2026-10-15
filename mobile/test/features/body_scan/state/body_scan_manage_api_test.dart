@@ -107,6 +107,25 @@ void main() {
       expect(await _api(f).deleteAllPhotos(), 4);
     });
 
+    test('fenceToken returned with nextCursor is echoed with the next page; '
+        'an absent token is not sent', () async {
+      final tok = 'a' * 32;
+      final f = _FakeFunctions((p, n) => switch (n) {
+            1 => {'processed': 1, 'nextCursor': 'c1', 'fenceToken': tok},
+            2 => {'processed': 1, 'nextCursor': 'c2'},
+            _ => {'processed': 1},
+          });
+      expect(await _api(f).deleteAllScans(), 3);
+      expect(f.payloads, hasLength(3));
+      expect(f.payloads[0], {'action': 'deleteAllScans'},
+          reason: 'the first page carries neither cursor nor token');
+      expect(f.payloads[1],
+          {'action': 'deleteAllScans', 'cursor': 'c1', 'fenceToken': tok});
+      expect(f.payloads[2], {'action': 'deleteAllScans', 'cursor': 'c2'},
+          reason: 'page 2 returned no token, so none is sent on page 3');
+      expect(f.payloads[2].containsKey('fenceToken'), isFalse);
+    });
+
     test('a server that never stops is cut off at kManageMaxPages with a '
         'retriable scan-manage-failed', () async {
       final f = _FakeFunctions((p, n) => {'processed': 1, 'nextCursor': 'again'});

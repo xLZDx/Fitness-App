@@ -861,8 +861,11 @@ service cloud.firestore {
     // Top-level, NOT user data, Admin SDK only. `nutrition_cache` holds the
     // central cache of public nutrition-database responses AND the upstream
     // budget counters (`budget_off_*`, D-64); `body_scan_purge_state` holds
-    // only the unmatched-object sweep's listing page token (D-59). Neither
-    // carries a uid.
+    // only purge bookkeeping: the unmatched-object sweep's listing page token
+    // (D-59), the per-operation delete fences and transient late_sweep_<hash>
+    // records. `nutrition_cache` carries no uid. In `body_scan_purge_state`
+    // only a late_sweep record carries a uid, for at most about 17 minutes
+    // until the 5-minute late-upload sweep deletes it; server-only.
     match /nutrition_cache/{key} {
       allow read, write: if false;
     }

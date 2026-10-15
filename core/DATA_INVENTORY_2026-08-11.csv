@@ -41,7 +41,7 @@ firestore,users/{uid}/nutrition_plan_reviews/*,weekly review decisions,path,yes,
 firestore,users/{uid}/food_entries/*,"diary entries: name, items, totals, timestamps",path,yes,yes (paged),C25
 firestore,users/{uid}/saved_foods/*,user saved foods,path,yes,yes (paged),C25
 firestore,nutrition_cache/{key},public nutrition-database responses (no user data),none,n/a,n/a (EXEMPT),C25
-firestore,body_scan_purge_state/{id},purge cursor bookkeeping (no user data),none,n/a,n/a (EXEMPT),C25
+firestore,body_scan_purge_state/{id},"purge cursor bookkeeping (no user content; transient late_sweep_<hash> records carry a uid for at most ~17 minutes, server-only)",none,n/a,n/a (EXEMPT),C25
 storage,<project>-bodyscan-private users/{uid}/scans/*,"face-blurred scan JPEGs; default retention 0 = deleted after analysis (within 48 hours worst case)",path prefix,yes (sweepAccountData prefix delete),metadata only (photoLinksAvailable; 1-hour links on demand),C25
 prefs,data_notice.v{N}.{uid},first-use data notice acknowledgement,key,yes,no,C25
 prefs,progress_photos.scan_reminder.v1.{uid},scan reminder toggle,key,yes,no,C25

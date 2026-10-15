@@ -56642,3 +56642,7 @@ Decision: delete-all pages raise a 15 min per-user fence in `body_scan_purge_sta
 ## 2026-10-15 - Commit: fence ownership and late-upload sweep (MAJOR-02A/02B)
 
 Decision: the bulk-delete fence holds one transactional entry per operation (random `fenceToken` returned with the cursor and echoed back); each operation refreshes and clears only its own entry and `createBodyScan` refuses while any entry is active. Because already-issued signed PUT URLs cannot be revoked, a completed delete-all records a `late_sweep` record (due = completion + 10 min URL TTL + 2 min) and the new `sweepLateBodyScanUploads` schedule (every 5 min) removes orphan objects of the user's scans prefix, so the stated bound is 17 minutes. Trade-off: the transient late-sweep record carries the uid. Evidence: core/changes/2026-10-15-fence-ownership-late-sweep.md.
+
+## 2026-10-15 - Commit: fence ownership test sweep and uid statement alignment
+
+Decision: the uid carried by the transient `late_sweep_<hash>` record (at most ~17 minutes, server-only, deny-all to clients) is stated exactly in the firestore.rules comment and the data inventory (md and csv) instead of the earlier "no uid" wording; classification and access cells stay EXEMPT/NONE. Added a Dart test for the `fenceToken` echo. Evidence: core/changes/2026-10-15-fence-ownership-tests.md.
