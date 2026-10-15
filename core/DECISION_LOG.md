@@ -56418,3 +56418,7 @@ Decision: `prepareJpeg` clears EXIF and the ICC profile explicitly, because re-e
 ## 2026-10-15 - Commit: C23 portion editor tests
 
 Decision: only positive values up to 10000 reach the callback. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C19 nutrition_entry_card_test.dart
+
+Decision: the entry card hides every number for non-eligible verdicts even when a plan doc exists. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_entry_card_test.dart 9 passed).
