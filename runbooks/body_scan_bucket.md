@@ -43,7 +43,7 @@ BODY_SCAN_BUCKET=<project>-bodyscan-private
 BODY_SCAN_PROVIDER=<registered estimator id, e.g. licensed-api>
 ```
 
-Both are read through `functions/src/body_scan/flags.ts` only. With `BODY_SCAN_BUCKET` unset the body-scan callables answer `failed-precondition: feature-disabled` before charging any quota, and the storage step of `sweepAccountData` is a logged no-op.
+Both are read through `functions/src/body_scan/flags.ts` only. With `BODY_SCAN_BUCKET` unset every body-scan callable answers `failed-precondition: feature-disabled` before charging any quota, and the storage step of `sweepAccountData` is a logged no-op. `BODY_SCAN_ACCEPT_UPLOADS` (default on when the bucket is set; `false`/`0`/`off`/`no` turns it off) gates only `createBodyScan` and `estimateBodyScan`; see section 7.
 
 ## 4. Canary (go-live BLOCKER)
 
@@ -80,4 +80,12 @@ All three are required before the client flag is turned on; none blocks the defa
 
 ## 7. Rollback
 
-Unset `BODY_SCAN_BUCKET` and redeploy: the callables refuse, the client flag stays off. Objects already stored are removed by the daily purge, by `deleteBodyScan` / `manageBodyScanData`, by account deletion, or by the 400-day lifecycle rule.
+NEVER unset or change `BODY_SCAN_BUCKET` while objects exist in the bucket: every erase path (`deleteBodyScan`, `manageBodyScanData`, the daily purge, the account-delete storage sweep) finds the bucket through that variable alone, so unsetting it strands stored photos with no way to delete them.
+
+To stop intake, set `BODY_SCAN_ACCEPT_UPLOADS=false` in `functions/.env.<project>` and redeploy. `createBodyScan` and `estimateBodyScan` then answer `failed-precondition: feature-disabled`; deletion, export, the purge and account deletion keep working, and they do not depend on the AI kill switch either. Keep the client `BODY_SCAN_CLOUD` flag off in the next build. Stored objects are then removed by the daily purge, by `deleteBodyScan` / `manageBodyScanData`, by account deletion, or by the 400-day lifecycle rule.
+
+Only after the bucket is verifiably empty (no objects under `users/`) may `BODY_SCAN_BUCKET` be unset.
+
+## 8. Deploying storage rules
+
+`firebase.json` contains a `storage` block, so a plain `firebase deploy` also deploys `storage.rules`. Deploy functions with `--only functions` and the storage rules separately with `--only storage`, after the check in section 5.

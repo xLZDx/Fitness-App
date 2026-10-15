@@ -210,7 +210,9 @@ describe("retention 0 (delete after analysis)", () => {
 
   test("objects deleted but the follow-up document update fails -> still `stored` with photosExpireAt = now", async () => {
     store.set(`users/${UID}/body_scan_settings/main`, { cloudConsent: { version: 1 }, retentionDays: 0 });
-    fx.failOn = (op, path) => (op === "update" && path === SCAN_PATH ? firestoreError("x", "unavailable") : undefined);
+    let updates = 0;
+    // 1 = the estimateAttempts counter, 2 = the inline photosState write.
+    fx.failOn = (op, path) => (op === "update" && path === SCAN_PATH && ++updates === 2 ? firestoreError("x", "unavailable") : undefined);
     const res = await run();
     expect(res.status).toBe("done");
     const doc = scanDoc(UID, SCAN)!;
@@ -624,6 +626,68 @@ describe("provider failures", () => {
 
     fx.failOn = null;
     expect((await run()).status).toBe("done");
+    expect(usageOf(UID, "bodyScanEstimate")).toBe(1);
+  });
+});
+
+describe("consent re-check before the provider call (P-4)", () => {
+  test("consent withdrawn after create -> failed-precondition consent-required; no provider call; lease and marker cleared; charge refunded", async () => {
+    store.set(`users/${UID}/body_scan_settings/main`, { retentionDays: 30 });
+    await expectHttpsError(run(), "failed-precondition", "consent-required");
+
+    expect(fake.calls).toEqual([]);
+    const doc = scanDoc(UID, SCAN)!;
+    expect(doc.status).toBe("pending");
+    expect("estimateLeaseUntil" in doc).toBe(false);
+    expect("estimateCharged" in doc).toBe(false);
+    expect(usageOf(UID, "bodyScanEstimate")).toBe(0);
+    expect(bodyScanEvents(logger).map((e) => e.outcome)).toEqual(["consent-required"]);
+  });
+
+  test("an unreadable settings document before the provider call -> internal scan-estimate-failed, refund, no provider call", async () => {
+    let reads = 0;
+    // The retention read happens later; the first settings read is the consent check.
+    fx.failOn = (op, path) => (op === "get" && path.endsWith("body_scan_settings/main") && ++reads === 1 ? firestoreError("x", "unavailable") : undefined);
+    await expectHttpsError(run(), "internal", "scan-estimate-failed");
+    expect(fake.calls).toEqual([]);
+    expect(usageOf(UID, "bodyScanEstimate")).toBe(0);
+  });
+});
+
+describe("per-scan attempt cap (P-8)", () => {
+  test("a scan that already used 3 provider calls -> resource-exhausted estimate-attempts-exceeded, no provider call, no charge", async () => {
+    seedScan(UID, SCAN, pendingDoc({ estimateAttempts: 3 }));
+    await expectHttpsError(run(), "resource-exhausted", "estimate-attempts-exceeded");
+    expect(fake.calls).toEqual([]);
+    expect(usageOf(UID, "bodyScanEstimate")).toBe(0);
+  });
+
+  test("refunds never reset the counter: three failing provider calls, then the fourth is refused before any provider call", async () => {
+    fake.behaviour = async () => { throw new Error("boom"); };
+    for (let i = 0; i < 3; i++) await expectHttpsError(run(), "unavailable", "provider-unavailable");
+    expect(usageOf(UID, "bodyScanEstimate")).toBe(0);
+    expect(scanDoc(UID, SCAN)!.estimateAttempts).toBe(3);
+    fake.calls.length = 0;
+    await expectHttpsError(run(), "resource-exhausted", "estimate-attempts-exceeded");
+    expect(fake.calls).toEqual([]);
+  });
+
+  test("a missing-upload retry makes no provider call and does not consume an attempt", async () => {
+    gcs.objects.delete(`users/${UID}/scans/${SCAN}/side.jpg`);
+    await expectHttpsError(run(), "failed-precondition", "missing-upload:side");
+    expect(scanDoc(UID, SCAN)!.estimateAttempts).toBeUndefined();
+  });
+});
+
+describe("a failed charge-marker release must not refund (SF-F7)", () => {
+  test("provider error + the release update fails -> the marker stays true AND the quota is NOT refunded (no free provider call later)", async () => {
+    fake.behaviour = async () => { throw new Error("boom"); };
+    let updates = 0;
+    // 1 = estimateAttempts counter, 2 = releaseLease.
+    fx.failOn = (op, path) => (op === "update" && path === SCAN_PATH && ++updates === 2 ? firestoreError("x", "unavailable") : undefined);
+    await expectHttpsError(run(), "unavailable", "provider-unavailable");
+
+    expect(scanDoc(UID, SCAN)!.estimateCharged).toBe(true);
     expect(usageOf(UID, "bodyScanEstimate")).toBe(1);
   });
 });

@@ -56606,3 +56606,7 @@ Decision: `new_pages_tap_targets_test.dart` sweeps 14 new pages x EN/RU x 1.0/2.
 ## 2026-10-15 - Commit: mobile runner review fixes
 
 Decision: an owed server delete (`pendingRemoteDelete`) makes a scan permanently non-resumable and every runner write re-reads the record first; "inputs still loading" is not-ready (stays queued), never `subject-missing`; the retry timer is always re-armed from the stored queue after a pass. Evidence: core/changes/2026-10-15-mobile-runner-fixes.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 2 (tests and runbook)
+
+Decision: bucket runbook rollback is flipping BODY_SCAN_ACCEPT_UPLOADS, never unsetting BODY_SCAN_BUCKET while objects exist; storage rules are deployed separately with --only storage. Evidence: core/changes/2026-10-15-server-review-fixes-2-tests-runbook.md; no checks run.

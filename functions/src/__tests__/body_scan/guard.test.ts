@@ -31,6 +31,8 @@ interface Subject {
   quota: string;
   /** What a call that passes every guard does with seeded state. */
   control: (res: any, err: any) => void;
+  /** Erase callables ignore the AI kill switch and the intake switch (P-2). */
+  erase?: boolean;
 }
 
 const SUBJECTS: Subject[] = [
@@ -57,6 +59,7 @@ const SUBJECTS: Subject[] = [
     name: "deleteBodyScan",
     fn: deleteBodyScan,
     quota: "bodyScanDelete",
+    erase: true,
     data: () => ({ scanId: SCAN, photosOnly: false }),
     control: (res, err) => { expect(err).toBeUndefined(); expect(res.deleted).toBe(true); },
   },
@@ -64,6 +67,7 @@ const SUBJECTS: Subject[] = [
     name: "manageBodyScanData",
     fn: manageBodyScanData,
     quota: "bodyScanManage",
+    erase: true,
     data: () => ({ action: "deleteAllScans" }),
     control: (res, err) => { expect(err).toBeUndefined(); expect(res.processed).toBe(0); },
   },
@@ -125,17 +129,43 @@ describe.each(SUBJECTS)("$name guard preamble", (s) => {
     expectUntouched(s.quota);
   });
 
-  test("kill switch off -> unavailable, nothing charged or written", async () => {
+  test("kill switch off -> unavailable (erase callables: still work, the switch is not read), nothing charged or written when refused", async () => {
     gateway.enabled = false;
+    if (s.erase) {
+      const { res, err } = await settle(call(s));
+      s.control(res, err);
+      expect(gateway.reads).toBe(0);
+      return;
+    }
     await expectHttpsError(call(s), "unavailable", /temporarily unavailable/i);
     expect(gateway.reads).toBe(1);
     expectUntouched(s.quota);
   });
 
-  test("kill switch unreadable -> unavailable (fail closed), nothing charged or written", async () => {
+  test("kill switch unreadable -> unavailable fail closed (erase callables: still work)", async () => {
     gateway.readFails = true;
+    if (s.erase) {
+      const { res, err } = await settle(call(s));
+      s.control(res, err);
+      return;
+    }
     await expectHttpsError(call(s), "unavailable", /temporarily unavailable/i);
     expectUntouched(s.quota);
+  });
+
+  test("BODY_SCAN_ACCEPT_UPLOADS=false stops intake only: create/estimate refuse with feature-disabled, erase callables still run", async () => {
+    process.env.BODY_SCAN_ACCEPT_UPLOADS = "false";
+    try {
+      if (s.erase) {
+        const { res, err } = await settle(call(s));
+        s.control(res, err);
+        return;
+      }
+      await expectHttpsError(call(s), "failed-precondition", "feature-disabled");
+      expectUntouched(s.quota);
+    } finally {
+      delete process.env.BODY_SCAN_ACCEPT_UPLOADS;
+    }
   });
 
   test("bucket flag off (BODY_SCAN_BUCKET unset) -> failed-precondition feature-disabled, nothing charged or written", async () => {
@@ -150,10 +180,11 @@ describe.each(SUBJECTS)("$name guard preamble", (s) => {
     expectUntouched(s.quota);
   });
 
-  test("order: with the kill switch off AND the flag off the kill switch answers first (unavailable, not feature-disabled)", async () => {
+  test("order: with the kill switch off AND the flag off the kill switch answers first (erase callables: feature-disabled, they never read the switch)", async () => {
     gateway.enabled = false;
     delete process.env.BODY_SCAN_BUCKET;
-    await expectHttpsError(call(s), "unavailable");
+    if (s.erase) await expectHttpsError(call(s), "failed-precondition", "feature-disabled");
+    else await expectHttpsError(call(s), "unavailable");
     expectUntouched(s.quota);
   });
 

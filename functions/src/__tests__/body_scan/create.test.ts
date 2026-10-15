@@ -385,9 +385,9 @@ describe("daily quota", () => {
 });
 
 describe("idempotency (D-53, D-59)", () => {
-  test("replay of a pending scan re-issues fresh URLs, charges nothing and leaves the document untouched", async () => {
+  test("replay of a pending scan re-issues fresh URLs, charges nothing and only extends pendingExpiresAt (DB-F8)", async () => {
     const first = await run(valid());
-    const before = JSON.stringify(scanDoc(UID, SCAN));
+    const before = { ...scanDoc(UID, SCAN)! };
     const writesBefore = scanWrites().length;
     now += 5 * MIN;
     const second = await run(valid({ takenAtMs: now - 1000, subject: { ...valid().subject, weightKg: 99 } }));
@@ -396,9 +396,41 @@ describe("idempotency (D-53, D-59)", () => {
     expect(second.uploads.front.url).not.toBe(first.uploads.front.url);
     expect(second.uploads.front.expiresAtMs).toBe(now + 10 * MIN);
     expect(usageOf(UID, "bodyScanCreate")).toBe(1);
-    expect(JSON.stringify(scanDoc(UID, SCAN))).toBe(before);
-    expect(scanWrites().length).toBe(writesBefore);
+    expect(scanDoc(UID, SCAN)).toEqual({
+      ...before,
+      pendingExpiresAt: ts(now + 48 * 60 * MIN),
+      uploadReissues: 1,
+    });
+    expect(scanWrites().length).toBe(writesBefore + 1);
     expect(bodyScanEvents(logger).map((e) => e.outcome)).toEqual(["created", "reissue"]);
+  });
+
+  test("a reissue extends pendingExpiresAt from the reissue time, so the purge cannot tombstone a scan mid-upload (DB-F8)", async () => {
+    await run(valid());
+    now += 40 * 60 * MIN;
+    await run(valid());
+    expect(scanDoc(UID, SCAN)!.pendingExpiresAt).toEqual(ts(now + 48 * 60 * MIN));
+  });
+
+  test("signed-URL reissues are capped at 5 per scan: the 6th answers resource-exhausted upload-url-limit, no URLs, no charge (P-5)", async () => {
+    await run(valid());
+    for (let i = 0; i < 5; i++) await run(valid());
+    expect(scanDoc(UID, SCAN)!.uploadReissues).toBe(5);
+    const signedBefore = gcs.signed.length;
+    await expectHttpsError(run(valid()), "resource-exhausted", "upload-url-limit");
+    expect(gcs.signed.length).toBe(signedBefore);
+    expect(usageOf(UID, "bodyScanCreate")).toBe(1);
+  });
+
+  test("a failed scan reset starts a fresh reissue and attempt budget", async () => {
+    seedScan(UID, SCAN, {
+      schema: 1, createdAt: ts(T0 - DAY), takenAt: ts(T0 - DAY), weightKg: 70, status: "failed",
+      photosState: "awaiting_upload", purgeAttempts: 0, estimateAttempts: 3, uploadReissues: 5,
+    });
+    await run(valid());
+    const doc = scanDoc(UID, SCAN)!;
+    expect("estimateAttempts" in doc).toBe(false);
+    expect("uploadReissues" in doc).toBe(false);
   });
 
   test("replay of a done scan returns the stored entry: no URLs, no quota, no writes, no provider", async () => {
@@ -482,7 +514,7 @@ describe("idempotency (D-53, D-59)", () => {
 
     expect(a.status).toBe("pending");
     expect(b.status).toBe("pending");
-    expect(scanWrites().map((w) => w.op)).toEqual(["create"]);
+    expect(scanWrites().map((w) => w.op)).toEqual(["create", "update"]);
     expect(usageOf(UID, "bodyScanCreate")).toBe(1);
     expect(fx.txRetries).toBeGreaterThanOrEqual(1);
     expect(bodyScanEvents(logger).map((e) => e.outcome).sort()).toEqual(["created", "reissue"]);

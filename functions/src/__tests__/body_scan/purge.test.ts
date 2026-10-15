@@ -469,3 +469,126 @@ describe("failure isolation and logging", () => {
     expect(second).toEqual(first);
   });
 });
+
+describe("path guard (P-1): only users/{uid}/body_scans/{scanId} is a scan", () => {
+  const FAKE = (id: string): string => `users/${A}/notes/doc_0001/body_scans/${id}`;
+
+  test("fake body_scans collections nested elsewhere are skipped by every pass: not counted, no deleteFiles, not modified", async () => {
+    const stored = { status: "done", photosState: "stored", photosExpireAt: ts(now - DAY), purgeAttempts: 0 };
+    const pending = { status: "pending", photosState: "awaiting_upload", pendingExpiresAt: ts(now - HOUR), purgeAttempts: 0 };
+    const tomb = { status: "cancelled", photosState: "deleted", pendingExpiresAt: ts(now - HOUR), purgeAttempts: 0 };
+    const failed = { status: "failed", photosState: "awaiting_upload", pendingExpiresAt: ts(now - HOUR), purgeAttempts: 0 };
+    store.set(FAKE("fake_stored_1"), stored);
+    store.set(FAKE("fake_pending_1"), pending);
+    store.set(FAKE("fake_tomb_001"), tomb);
+    store.set(FAKE("fake_failed_01"), failed);
+    seedStored(A, "scan_real_001", -DAY);
+    putPhotos(A, "scan_real_001", { timeCreated: now - 3 * DAY });
+
+    const counts = await run();
+
+    expect(counts).toMatchObject({ expired: 1, pending: 0, tombstones: 0, failures: 0 });
+    expect(get(A, "scan_real_001").photosState).toBe("deleted");
+    for (const id of ["fake_stored_1", "fake_pending_1", "fake_tomb_001", "fake_failed_01"]) {
+      expect(store.get(FAKE(id))).toBeDefined();
+    }
+    expect(store.get(FAKE("fake_stored_1"))!.photosState).toBe("stored");
+    expect(store.get(FAKE("fake_pending_1"))!.status).toBe("pending");
+    expect(store.get(FAKE("fake_failed_01"))!.photosState).toBe("awaiting_upload");
+    const prefixes = gcs.deleteFilesCalls.map((c) => c.prefix);
+    expect(prefixes).toEqual([prefix(A, "scan_real_001")]);
+  });
+});
+
+describe("failed scans (DB-F1 / P-3)", () => {
+  const seedFailed = (id: string, expiresInMs: number, o: Record<string, unknown> = {}): void =>
+    seedScan(A, id, {
+      schema: 1, createdAt: ts(now - 3 * DAY), takenAt: ts(now - 3 * DAY), status: "failed",
+      photosState: "awaiting_upload", pendingExpiresAt: ts(now + expiresInMs), purgeAttempts: 0, ...o,
+    });
+
+  test("a failed scan past pendingExpiresAt loses its objects and is marked deleted; a not-yet-due one keeps them", async () => {
+    seedFailed("scan_fai_001", -HOUR);
+    seedFailed("scan_fai_002", HOUR);
+    putPhotos(A, "scan_fai_001", { timeCreated: now - 3 * DAY });
+    putPhotos(A, "scan_fai_002", { timeCreated: now - 3 * DAY });
+
+    const counts = await run();
+
+    expect(counts).toMatchObject({ pending: 1, failures: 0 });
+    const d = get(A, "scan_fai_001");
+    expect(d.status).toBe("failed");
+    expect(d.photosState).toBe("deleted");
+    expect(d.photosDeletedAt).toEqual(ts(now));
+    expect("pendingExpiresAt" in d).toBe(false);
+    expect(objectKeys(prefix(A, "scan_fai_001"))).toEqual([]);
+    expect(get(A, "scan_fai_002").photosState).toBe("awaiting_upload");
+    expect(objectKeys(prefix(A, "scan_fai_002"))).toHaveLength(3);
+  });
+
+  test("a failed scan with a live lease is left alone", async () => {
+    seedFailed("scan_fai_001", -HOUR, { estimateLeaseUntil: ts(now + 30 * 1000) });
+    putPhotos(A, "scan_fai_001", { timeCreated: now - 3 * DAY });
+    await run();
+    expect(objectKeys(prefix(A, "scan_fai_001"))).toHaveLength(3);
+  });
+
+  test("a delete failure keeps the scan, counts an attempt, and the next run retries", async () => {
+    seedFailed("scan_fai_001", -HOUR);
+    putPhotos(A, "scan_fai_001", { timeCreated: now - 3 * DAY });
+    gcs.failOn = (op) => (op === "deleteFiles" ? firestoreError("x", 503) : undefined);
+    const counts = await run();
+    expect(counts.failures).toBe(1);
+    expect(get(A, "scan_fai_001").purgeAttempts).toBe(1);
+    gcs.failOn = null;
+    await run();
+    expect(objectKeys(prefix(A, "scan_fai_001"))).toEqual([]);
+  });
+});
+
+describe("erase does not depend on anything but the bucket (P-2)", () => {
+  test("with the intake switch off and the bucket set the purge still deletes files", async () => {
+    process.env.BODY_SCAN_ACCEPT_UPLOADS = "false";
+    try {
+      seedStored(A, "scan_due_001", -MIN);
+      putPhotos(A, "scan_due_001");
+      const counts = await run();
+      expect(counts.expired).toBe(1);
+      expect(objectKeys(prefix(A, "scan_due_001"))).toEqual([]);
+    } finally {
+      delete process.env.BODY_SCAN_ACCEPT_UPLOADS;
+    }
+  });
+});
+
+describe("unmatched sweep keeps its position on a mid-page deadline (DB-F3)", () => {
+  test("the stored token is the one that STARTS the interrupted page, not the next page's", async () => {
+    for (let i = 0; i < 700; i++) {
+      gcs.objects.set(`users/${A}/scans/${sid(i)}/front.jpg`, { content: Buffer.alloc(10), contentType: "image/jpeg", timeCreated: new Date(now - DAY).toISOString() });
+    }
+    let deletes = 0;
+    gcs.failOn = (op) => {
+      if (op === "delete" && ++deletes === 100) now += 300 * 1000; // the clock passes the deadline mid-page
+      return undefined;
+    };
+    await run();
+    expect(store.get("body_scan_purge_state/main")!.pageToken).toBe("");
+    expect(objectKeys().length).toBe(600);
+  });
+});
+
+describe("abandoned documents are surfaced (DB-F4)", () => {
+  test("documents skipped at 10 attempts produce one purge-abandoned error with their count", async () => {
+    seedStored(A, "scan_stk_001", -DAY, { purgeAttempts: 10 });
+    seedStored(A, "scan_stk_002", -DAY, { purgeAttempts: 12 });
+    await run();
+    const ev = bodyScanEvents(logger, "error").filter((e) => e.outcome === "purge-abandoned");
+    expect(ev).toEqual([{ operation: "bodyScanPurge", outcome: "purge-abandoned", stuck: 2 }]);
+    expect(loggedText(logger)).not.toContain(A);
+  });
+
+  test("no abandoned documents -> no purge-abandoned event", async () => {
+    await run();
+    expect(bodyScanEvents(logger, "error")).toEqual([]);
+  });
+});
