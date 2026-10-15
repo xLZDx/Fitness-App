@@ -56153,3 +56153,11 @@ Decision: the day ring never colours or words a low day as failure (D-78); check
 Evidence addendum (C19): plan widgets are in core/changes/2026-10-15-c19-plan-widgets.md; plan page and cards in core/changes/2026-10-15-c19-plan-page.md.
 Progress: nutrition_cache tests added.
 Progress: nutrition_breaker tests added.
+
+## 2026-10-15 - Commit: C18 review scheduler tests
+
+Decision: scheduler tests prove it writes nothing for signed-out, deleting, notice-pending, ineligible, no-plan, reviewed or offline cases and reviews once per ISO week. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C23 part 6 (slot section, detail sheet)
+
+Decision: the data-notice gate runs inside the detail sheet right before the first diary write, so no write or food-AI call precedes disclosure (D-79). Evidence: `core/changes/2026-10-15-c23-detail-sheet.md`; no checks run.
