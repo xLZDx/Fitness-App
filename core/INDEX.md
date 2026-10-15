@@ -39,6 +39,10 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 | [TECHSTACK.md](TECHSTACK.md) | What frameworks/versions/SDKs does this repo use, plus local toolchain paths |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | What packages are pulled in, and why? (`DEPENDENCIES.csv` is the machine-readable twin) |
 | [ATTRIBUTIONS_NUTRITION.md](ATTRIBUTIONS_NUTRITION.md) | Which data sources, packages and reference projects the nutrition, food-diary and body check-in features use, their licences, and whether any code was copied. Update in the same commit as any new source. |
+| [CURRENT_STATE_BODY_SCAN_NUTRITION.md](CURRENT_STATE_BODY_SCAN_NUTRITION.md) | Honest status of the Body Scan + Nutrition Coach sprint: what is provisional, flag defaults, test results per epic, NOT_RUN list, known limits. (`CURRENT_STATE.md` is a generated gate ledger and is not edited by hand.) |
+| [body_scan_bucket.md](../runbooks/body_scan_bucket.md) | Operator runbook: private body-scan bucket, IAM and canary before `BODY_SCAN_CLOUD` is turned on |
+| [food_lookup.md](../runbooks/food_lookup.md) | Operator steps for food scanning: server flags (`FOOD_AI_ENABLED` and the lookup flag), sources and go-live gates; all off by default |
+| [changes/2026-10-15-*.md](changes/) | Change-record pattern: every commit of the Body Scan + Nutrition sprint has its own record (what, why, contracts, verification state); test evidence records are `*-tests*.md`, `e0-test-evidence`, `e1-tests-*`, `e2-tests-*`. Coverage map: [BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md) |
 | [DEBUGGING.md](DEBUGGING.md) | **Read first for any bug report.** Debug-daemon runbook — captures logs, errors, touches, screencaps per session. |
 | [PHASE_1B_FIREBASE_SETUP.md](PHASE_1B_FIREBASE_SETUP.md) | Firebase project wiring, `google-services.json`, auth setup |
 | [PHASE_4B_STRIPE_SETUP.md](PHASE_4B_STRIPE_SETUP.md) | Stripe **test-mode** price IDs and secret slots |
