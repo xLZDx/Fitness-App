@@ -168,4 +168,73 @@ void main() {
         reason: 'healthIsStripped names the `flags` key without checking its '
             'contents, so every HealthFlags answer is writable through it');
   });
+
+  // ---- E1 additions: nutrition fields (RULES-18, ONB-16, PRIV-16) ----
+
+  test('E1: with the nutrition answers set, every HealthFlags key is named by flagsAreStripped', () {
+    // The serializer omits null/empty answers, so the populated instance above
+    // does not emit the two new keys. This one does.
+    final keys = const HealthFlags(
+      restrictions: {MovementRestriction.overhead},
+      bloodPressure: BloodPressureStatus.diagnosedHigh,
+      surgery: SurgeryStatus.underRestrictions,
+      clinicianAdvice: ClinicianExerciseAdvice.limitsGiven,
+      professionalGuidance: ProfessionalGuidanceNeed.reported,
+      nutritionGuidance: NutritionGuidanceNeed.reported,
+      foodAllergens: {FoodAllergen.peanuts},
+    ).toJson().keys.toSet();
+    expect(keys, {
+      'restrictions',
+      'bloodPressure',
+      'surgery',
+      'clinicianAdvice',
+      'professionalGuidance',
+      'nutritionGuidance',
+      'foodAllergens',
+    });
+    final body = ruleFunction('flagsAreStripped');
+    for (final key in keys) {
+      expect(names(body, key), isTrue,
+          reason: 'HealthFlags.toJson can write "$key" and flagsAreStripped '
+              'does not name it (the F014 failure class).');
+    }
+  });
+
+  test('E1 RULES-18: empty flags serialise to NO nutrition keys; unset answers are never explicit null', () {
+    final json = HealthFlags.empty.toJson();
+    expect(json.containsKey('nutritionGuidance'), isFalse);
+    expect(json.containsKey('foodAllergens'), isFalse);
+    final partial = const HealthFlags(
+      professionalGuidance: ProfessionalGuidanceNeed.none,
+    ).toJson();
+    expect(partial.containsKey('nutritionGuidance'), isFalse);
+    expect(partial.containsKey('foodAllergens'), isFalse);
+    expect(partial['professionalGuidance'], 'none');
+  });
+
+  test('E1 ONB-16: every NutritionPrefs key except excludedFoods is allowed by nutritionOk; excludedFoods is NOT', () {
+    final prefs = NutritionPrefs(
+      sexAtBirth: SexAtBirth.female,
+      goalDirection: GoalDirection.lose,
+      targetBodyFatPct: 20,
+      typicalDailySteps: 6500,
+      mealsPerDay: 3,
+      excludedFoods: const ['peanut butter'],
+      planOwnership: PlanOwnership.coached,
+      healthConnectChoice: HealthConnectChoice.manual,
+      completedAt: DateTime.utc(2026, 10, 15),
+    );
+    final keys = prefs.toJson().keys.toSet();
+    expect(keys, contains('excludedFoods'));
+    expect(keys.length, 10, reason: 'schema + nine answers: $keys');
+    final body = ruleFunction('nutritionOk');
+    for (final key in keys.difference({'excludedFoods'})) {
+      expect(names(body, key), isTrue,
+          reason: 'NutritionPrefs.toJson writes "$key" but nutritionOk does '
+              'not allow it, so a normal profile save would be refused.');
+    }
+    expect(names(body, 'excludedFoods'), isFalse,
+        reason: 'excludedFoods is device-only free text (D-55); the rules '
+            'allowlist must refuse it');
+  });
 }

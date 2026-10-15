@@ -2,7 +2,7 @@
 /// Flutter imports.
 library;
 
-import 'device_source.dart';
+import 'source_kind.dart';
 
 class SourceRecord {
   const SourceRecord({

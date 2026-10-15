@@ -56269,3 +56269,7 @@ Decision: extracted SourceKind into its own file (re-exported from device_source
 ## 2026-10-15 - Commit: C24 attributions, scanner dependency, tile routes
 
 Decision: mobile_scanner ^6.0.11 (not 7.x, which needs Flutter 3.29 while the toolchain is 3.27.1); Android useUnbundled stays default pending an on-device VERIFY; add-food tiles use the planned /nutrition/add/photo|barcode|label paths. Evidence: `core/changes/2026-10-15-c24-attributions-deps-routes.md`; nothing was run.
+
+## 2026-10-15 - Commit: C18 scan plan context source tests
+
+Decision: context source tests prove the decision and target body fat reach the scan surfaces only for an eligible user and an unknown or refused verdict is measurement only. Evidence: core/changes/2026-10-15-c18-tests.md.

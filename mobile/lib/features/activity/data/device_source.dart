@@ -5,23 +5,9 @@ library;
 
 import 'activity_session.dart';
 import 'sample_stream.dart';
+import 'source_kind.dart';
 
-enum SourceKind {
-  platformHealth,
-  bleSensor,
-  vendorCloud,
-  companionApp,
-  fileImport;
-
-  static SourceKind parse(Object? name) {
-    if (name is String) {
-      for (final k in values) {
-        if (k.name == name) return k;
-      }
-    }
-    return SourceKind.fileImport;
-  }
-}
+export 'source_kind.dart';
 
 enum SourcePermission { granted, denied, notDetermined, restricted }
 

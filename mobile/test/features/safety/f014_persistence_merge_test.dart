@@ -163,4 +163,117 @@ void main() {
       );
     });
   });
+
+  // ---- E1 additions: the nutrition answers survive storage (ONB-16, PRIV-16) ----
+
+  UserProfile onlyNutritionGuidance(String uid) => UserProfile(
+        uid: uid,
+        personal: const PersonalInfo(age: 34, heightCm: 181),
+        health: const HealthHistory(
+          flags: HealthFlags(nutritionGuidance: NutritionGuidanceNeed.reported),
+        ),
+      );
+
+  group('E1: nutritionGuidance and foodAllergens survive storage', () {
+    test('a reported nutrition answer is distinguishable by == and hashCode', () {
+      const reported =
+          HealthFlags(nutritionGuidance: NutritionGuidanceNeed.reported);
+      const none = HealthFlags(nutritionGuidance: NutritionGuidanceNeed.none);
+      expect(reported, isNot(equals(HealthFlags.empty)));
+      expect(none, isNot(equals(HealthFlags.empty)));
+      expect(reported, isNot(equals(none)));
+      expect(reported.hashCode, isNot(equals(HealthFlags.empty.hashCode)));
+      expect({reported, none, HealthFlags.empty}, hasLength(3));
+    });
+
+    test('a health block holding only the nutrition answer is not empty', () {
+      const h = HealthHistory(
+        flags: HealthFlags(nutritionGuidance: NutritionGuidanceNeed.reported),
+      );
+      expect(h.isEmpty, isFalse);
+      expect(SensitiveProfile(health: h).isEmpty, isFalse);
+    });
+
+    test('an allergen-only block is not empty and allergen sets compare by content', () {
+      const h = HealthHistory(
+        flags: HealthFlags(foodAllergens: {FoodAllergen.peanuts}),
+      );
+      expect(h.isEmpty, isFalse);
+      expect(SensitiveProfile(health: h).isEmpty, isFalse);
+      expect(const HealthFlags(foodAllergens: {FoodAllergen.peanuts}),
+          isNot(equals(HealthFlags.empty)));
+      expect(const HealthFlags(foodAllergens: {FoodAllergen.peanuts}),
+          isNot(equals(const HealthFlags(foodAllergens: {FoodAllergen.milk}))));
+      expect(const HealthFlags(foodAllergens: {FoodAllergen.peanuts}),
+          equals(const HealthFlags(foodAllergens: {FoodAllergen.peanuts})));
+    });
+
+    test('the merge keeps the answer instead of falling back to the server copy', () {
+      final local = onlyNutritionGuidance('u1');
+      final server = stripSensitive(local);
+      expect(server.health.flags.nutritionGuidance, isNull);
+      final merged = mergeSensitive(server, extractSensitive(local));
+      expect(merged.health.flags.nutritionGuidance,
+          NutritionGuidanceNeed.reported);
+    });
+
+    test('it is there after a save/load round trip and absent from the server copy', () async {
+      final inner = _RecordingRepository();
+      final repo = DeviceHealthProfileRepository(inner, InMemorySensitiveStore());
+      await repo.save(onlyNutritionGuidance('u1'));
+      final back = (await repo.load('u1'))!;
+      expect(back.health.flags.nutritionGuidance, NutritionGuidanceNeed.reported);
+      expect(inner.stored!.health.flags.nutritionGuidance, isNull);
+    });
+
+    test('food allergens round trip locally and never reach the server copy', () async {
+      final inner = _RecordingRepository();
+      final repo = DeviceHealthProfileRepository(inner, InMemorySensitiveStore());
+      await repo.save(UserProfile(
+        uid: 'u1',
+        personal: const PersonalInfo(age: 34),
+        health: const HealthHistory(
+          flags: HealthFlags(
+              foodAllergens: {FoodAllergen.peanuts, FoodAllergen.milk}),
+        ),
+      ));
+      final back = (await repo.load('u1'))!;
+      expect(back.health.flags.foodAllergens,
+          {FoodAllergen.peanuts, FoodAllergen.milk});
+      expect(inner.stored!.health.flags.foodAllergens, isEmpty);
+    });
+
+    test('excludedFoods is device-only: kept locally, blanked on the server copy', () async {
+      final inner = _RecordingRepository();
+      final repo = DeviceHealthProfileRepository(inner, InMemorySensitiveStore());
+      await repo.save(UserProfile(
+        uid: 'u1',
+        personal: const PersonalInfo(age: 34),
+        nutrition: const NutritionPrefs(excludedFoods: ['peanut butter', 'oats']),
+      ));
+      final back = (await repo.load('u1'))!;
+      expect(back.nutrition.excludedFoods, ['peanut butter', 'oats']);
+      expect(inner.stored!.nutrition.excludedFoods, isEmpty);
+      expect(inner.stored!.nutrition.toJson().containsKey('excludedFoods'),
+          isFalse);
+      expect(extractSensitive(back).isEmpty, isFalse);
+    });
+
+    test('stripSensitive removes both new answers from the server copy', () {
+      final p = UserProfile(
+        uid: 'u',
+        health: const HealthHistory(
+          flags: HealthFlags(
+            nutritionGuidance: NutritionGuidanceNeed.reported,
+            foodAllergens: {FoodAllergen.milk},
+          ),
+        ),
+        nutrition: const NutritionPrefs(excludedFoods: ['x']),
+      );
+      final server = stripSensitive(p);
+      expect(server.health.flags.nutritionGuidance, isNull);
+      expect(server.health.flags.foodAllergens, isEmpty);
+      expect(server.nutrition.excludedFoods, isEmpty);
+    });
+  });
 }
