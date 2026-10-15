@@ -56476,3 +56476,5 @@ Decision: driver tests use a recording fake runner and a stateful record list in
 ## 2026-10-15 - Commit: C14 tests: photo upload port and scan trend source
 
 Decision: Scripted Dio adapter proves retry/backoff/expiry/cancel; trend source tests prove provisional or changed estimators never count as a decrease. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Progress: history/privacy route tests added (C16).
