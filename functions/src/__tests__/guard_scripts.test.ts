@@ -185,7 +185,7 @@ function makeFixture(
   if (opts.lib !== false) fs.cpSync(libTemplate, path.join(root, "functions", "lib"), { recursive: true });
 
   w("functions/package.json", JSON.stringify({ name: "fx-functions", private: true, scripts: { build: "node build.js" } }));
-  w("functions/build.js", `require("fs").appendFileSync("build.log", "x"); process.exit(${opts.buildExit ?? 0});\n`);
+  w("functions/build.js", `require("fs").appendFileSync(require("path").join(__dirname, "..", "build.log"), "x"); process.exit(${opts.buildExit ?? 0});\n`);
   if (opts.firebase !== false) w("functions/node_modules/firebase-tools/lib/bin/firebase.js", FAKE_FIREBASE);
   w("driver.mjs", DRIVER);
 
@@ -1135,5 +1135,181 @@ describe("guarded_deploy.mjs review fixes (real wrapper, fake firebase CLI)", ()
       expect(firebaseCalls(fx)).toEqual([]);
       expect(fs.existsSync(fx.guardSeen)).toBe(false);
     });
+  });
+});
+
+// =====================================================================
+// git-ignored deployable files, against REAL git with a real .gitignore
+// =====================================================================
+
+describe("git-ignored deployable files (real git, real .gitignore, real guard and wrapper)", () => {
+  const IGNORE_LIST_FUNCTIONS = ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"];
+  const FIREBASE_JSON_WITH_IGNORES = {
+    ...GUARDED_FIREBASE_JSON,
+    hosting: { ...GUARDED_FIREBASE_JSON.hosting, ignore: ["firebase.json", "**/.*", "**/node_modules/**"] },
+    functions: GUARDED_FIREBASE_JSON.functions.map((f) => ({ ...f, ignore: IGNORE_LIST_FUNCTIONS })),
+  };
+  const GITIGNORE = [
+    "node_modules/",
+    "functions/lib/",
+    "functions-equipment-identity/lib/",
+    "ignored_*",
+    ".hidden",
+    ".cache/",
+    ".env",
+    ".env.*",
+    "*.local",
+    "docs/tmp.log",
+    "",
+  ].join("\n");
+
+  const make = (opts: { gitignore?: string; firebaseJson?: object | string } = {}): Fixture =>
+    makePassFixture(PROD, "phase1/main", {
+      firebaseJson: opts.firebaseJson ?? FIREBASE_JSON_WITH_IGNORES,
+      extraFiles: { ".gitignore": opts.gitignore ?? GITIGNORE },
+    });
+
+  const mk = (fx: Fixture, rel: string, content = "x"): void => {
+    const p = path.join(fx.root, rel);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, content);
+  };
+
+  const provenanceLine = (stdout: string): string =>
+    stdout.split(/\r?\n/).find((l) => l.includes("Release comes from a clean, committed working tree")) ?? "";
+
+  test("control: the fixture with a real .gitignore (ignored node_modules and functions/lib on disk) PASSes", () => {
+    const fx = make();
+    // The fixture really has ignored entries in scope: they are on disk but not in the commit.
+    expect(git(fx.root, "ls-files", "functions/lib")).toBe("");
+    expect(fs.existsSync(path.join(fx.root, "functions", "lib", "release_guard.js"))).toBe(true);
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.stdout).toContain("VERDICT: PASS");
+    expect(r.status).toBe(0);
+    expect(okLines(r.stdout)).toBe(10);
+  });
+
+  test("ignored public/ignored_app.js (not excluded by hosting.ignore): FAILED 'ignored-deployable-files:', BLOCK, exit 1", () => {
+    const fx = make();
+    mk(fx, "public/ignored_app.js");
+    expect(git(fx.root, "status", "--porcelain", "--", "public", "functions")).toBe(""); // plain status (the old check) sees nothing: that was the hole
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toMatch(/\[FAIL\] Release comes from a clean, committed working tree/);
+    expect(r.stdout).toContain("ignored-deployable-files:");
+    expect(r.stdout).toContain("public/ignored_app.js");
+    expect(r.stdout).toContain("VERDICT: BLOCK");
+  });
+
+  test("guarded_deploy.mjs: the same ignored file blocks BEFORE firebase is spawned; control without it deploys", () => {
+    const control = make();
+    const ok = runDeploy(control, ["--only", "hosting"]);
+    expect({ status: ok.status, stderr: ok.stderr }).toEqual({ status: 0, stderr: expect.any(String) });
+    expect(firebaseCalls(control)).toEqual([["deploy", "--project", PROD, "--only", "hosting"]]);
+
+    const fx = make();
+    mk(fx, "public/ignored_app.js");
+    const r = runDeploy(fx, ["--only", "hosting"]);
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("ignored-deployable-files:");
+    expect(r.stderr).toContain("the release guard did not pass");
+    expect(firebaseCalls(fx)).toEqual([]);
+  });
+
+  test("every allowed kind of ignored entry together (dot files, nested dot dir, node_modules, lib dirs, env files, *.local, out-of-scope docs/tmp.log) still PASSes", () => {
+    const fx = make();
+    mk(fx, "public/.hidden");
+    mk(fx, "public/a/b/.cache/x.js");
+    mk(fx, "public/node_modules/pkg/index.js");
+    mk(fx, "functions/node_modules/pkg/index.js");
+    mk(fx, "functions-equipment-identity/lib/index.js");
+    mk(fx, "functions/.env");
+    mk(fx, "functions/.env.fitness-app-phase2-korostelev");
+    mk(fx, "functions/foo.local");
+    mk(fx, "docs/tmp.log");
+    const status = git(fx.root, "status", "--porcelain", "--ignored=matching");
+    for (const expected of ["public/.hidden", "functions/.env", "functions/foo.local", "functions-equipment-identity/lib/"]) {
+      expect(status).toContain(expected); // the ignored entries really exist from git's point of view
+    }
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.stdout).toContain("VERDICT: PASS");
+    expect(r.status).toBe(0);
+  });
+
+  test.each([
+    ["functions/src/ignored_evil.ts"],
+    ["functions-equipment-identity/src/ignored_evil.ts"],
+    ["public/sub/ignored_app.js"],
+    ["functions/ignored_.runtimeconfig.json"],
+  ])("ignored %s blocks", (rel) => {
+    const fx = make();
+    mk(fx, rel);
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(provenanceLine(r.stdout)).toContain("[FAIL]");
+    expect(r.stdout).toContain("ignored-deployable-files:");
+    expect(r.stdout).toContain(rel);
+  });
+
+  test("an ignored storage.rules (deploy input outside the uploaded directories) blocks", () => {
+    const fx = make({ gitignore: `${GITIGNORE}storage.rules\n` });
+    expect(git(fx.root, "ls-files", "storage.rules")).toBe("");
+    expect(fs.existsSync(path.join(fx.root, "storage.rules"))).toBe(true);
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("ignored-deployable-files:");
+    expect(r.stdout).toContain("storage.rules");
+  });
+
+  test("an ignored firestore.rules blocks", () => {
+    const fx = make({ gitignore: `${GITIGNORE}firestore.rules\n` });
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("ignored-deployable-files:");
+    expect(r.stdout).toContain("firestore.rules");
+  });
+
+  test("a path with special characters (git quotes it) blocks", () => {
+    const fx = make();
+    mk(fx, "public/ignored_pubé file.js");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("ignored-deployable-files:");
+  });
+
+  test("unreadable firebase.json: strict classification -- an ignored public/.hidden blocks while node_modules and lib stay allowed", () => {
+    const fx = make({ firebaseJson: "{not json" });
+    mk(fx, "public/.hidden");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("ignored-deployable-files:");
+    const detail = r.stdout.split("not in the verified commit: ")[1]?.split(/\r?\n/)[0] ?? "";
+    expect(detail).toBe("public/.hidden");
+  });
+
+  test("unreadable firebase.json without any extra ignored file still PASSes the provenance check (node_modules / lib / dot-free tree)", () => {
+    const fx = make({ firebaseJson: "{not json" });
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(provenanceLine(r.stdout)).toContain("[OK  ]");
+  });
+
+  test("mixed: an uncommitted change plus an allowed ignored entry reports the uncommitted change", () => {
+    const fx = make();
+    mk(fx, "functions/.env");
+    fs.appendFileSync(path.join(fx.root, "firestore.rules"), "// dirty\n");
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("uncommitted changes under");
+    expect(r.stdout).not.toContain("ignored-deployable-files:");
+  });
+
+  test("without a usable git repository the guard blocks at the deploy target (no branch), before any gcloud call", () => {
+    const fx = make();
+    // The branch cannot be read, so the deploy target fails first (unit tests cover git status itself failing -> UNAVAILABLE).
+    fs.rmSync(path.join(fx.root, ".git"), { recursive: true, force: true });
+    const r = runGuard(fx, [], { GCLOUD_PROJECT: PROD });
+    expect(r.status).toBe(1);
+    expect(r.stdout).toContain("VERDICT: BLOCK");
+    expect(gcloudCalls(fx)).toEqual([]); // blocked at the deploy target (no branch) before any provenance/gcloud work
   });
 });

@@ -56702,3 +56702,7 @@ The registry generator no longer lists core/DECISION_LOG.md: its size changed wi
 ## 2026-10-16 - Commit: S00 deploy guard ignored files
 
 Decision: after GPT-PM round 2 (MAJOR-02A), the clean-tree check also inspects git-ignored files under the deploy-relevant paths, because Firebase uploads ignored files that its own ignore list does not exclude. Allowed: node_modules, functions/lib and functions-equipment-identity/lib, entries excluded by the target's own firebase.json ignore list, and functions .env files; everything else blocks with ignored-deployable-files. A git status failure fails closed. The candidate dotenv content stays unverified (open item before the first Phase 2 cloud deploy). Evidence: core/changes/2026-10-16-s00-guard-ignored-files.md; not yet tested.
+
+## 2026-10-16 - Commit: tests for the ignored deployable files check
+
+Decision: MAJOR-02A (git-ignored deployable files) is covered by 703 passing jest tests (477 + 101 + 125), including an end-to-end case with real git where an ignored public file blocks the wrapper before firebase is spawned. Evidence: core/changes/2026-10-16-s00-guard-ignored-files-tests.md.

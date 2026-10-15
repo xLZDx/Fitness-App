@@ -905,6 +905,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     expect(capturedArgs).toEqual([
       "status",
       "--porcelain",
+      "--ignored=matching",
       "--",
       "functions",
       "functions-equipment-identity",
@@ -2294,7 +2295,7 @@ describe("review fix A: clean-tree check covers every deploy input", () => {
     return {
       status: (args) => {
         seen.push(args);
-        const specs = args.slice(3);
+        const specs = args.slice(4);
         const covered =
           dirtyPath !== null && specs.some((p) => dirtyPath === p || dirtyPath.startsWith(`${p}/`));
         return { ok: true, stdout: covered ? ` M ${dirtyPath}\n` : "", stderr: "" };
@@ -2351,7 +2352,7 @@ describe("review fix A: clean-tree check covers every deploy input", () => {
     });
     await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
     expect(seen).toHaveLength(1);
-    const specs = seen[0].slice(3);
+    const specs = seen[0].slice(4);
     for (const expected of [...FIXED_LIST, "rules/fs.rules", "rules/idx.json", "rules/st.rules", "dist/web", "services/api"]) {
       expect(specs).toContain(expected);
     }
@@ -2384,7 +2385,7 @@ describe("review fix A: clean-tree check covers every deploy input", () => {
     const seen: string[][] = [];
     const json = JSON.stringify({ hosting: { public: "./site/" }, functions: { source: "./fn//" } });
     await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
-    const specs = seen[0].slice(3);
+    const specs = seen[0].slice(4);
     expect(specs).toContain("site");
     expect(specs).toContain("fn");
     expect(specs).not.toContain("./site/");
@@ -2411,7 +2412,7 @@ describe("review fix A: clean-tree check covers every deploy input", () => {
       functions: [{ source: bad }],
     });
     const result = await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
-    expect(seen[0].slice(3)).toEqual(FIXED_LIST);
+    expect(seen[0].slice(4)).toEqual(FIXED_LIST);
     expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
   });
 
@@ -2427,7 +2428,7 @@ describe("review fix A: clean-tree check covers every deploy input", () => {
     const result = await runReleaseGuard(
       makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": content } }),
     );
-    expect(seen[0]).toEqual(["status", "--porcelain", "--", ...FIXED_LIST]);
+    expect(seen[0]).toEqual(["status", "--porcelain", "--ignored=matching", "--", ...FIXED_LIST]);
     expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
   });
 
@@ -2442,7 +2443,7 @@ describe("review fix A: clean-tree check covers every deploy input", () => {
       },
     };
     const result = await runReleaseGuard(deps);
-    expect(seen[0].slice(3)).toEqual(FIXED_LIST);
+    expect(seen[0].slice(4)).toEqual(FIXED_LIST);
     expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
   });
 });
@@ -2803,5 +2804,286 @@ describe("review fix F: a throwing check becomes UNAVAILABLE and the report stay
     expect(bucket?.status).toBe("UNAVAILABLE");
     expect(bucket?.detail).toContain("dotenv unreadable");
     expect(result.verdict).toBe("BLOCK");
+  });
+});
+
+// =====================================================================
+// git-ignored deployable files (`git status --ignored=matching`)
+// =====================================================================
+
+describe("review fix: git-ignored deployable files in the clean-tree check", () => {
+  const IGNORED_DETAIL_PREFIX = "ignored-deployable-files:";
+  const FJ = (overrides: Record<string, unknown> = {}): string =>
+    JSON.stringify({
+      firestore: { rules: "firestore.rules", indexes: "firestore.indexes.json" },
+      storage: { rules: "storage.rules" },
+      hosting: { public: "public", ignore: ["firebase.json", "**/.*", "**/node_modules/**"] },
+      functions: [
+        {
+          source: "functions",
+          codebase: "default",
+          ignore: ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+        },
+        {
+          source: "functions-equipment-identity",
+          codebase: "equipment-identity",
+          ignore: ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+        },
+      ],
+      ...overrides,
+    });
+
+  /** git fake whose status output is pathspec-aware like real git: lines outside the requested pathspec are not reported. */
+  function gitStatusLines(lines: string[], seen: string[][] = []): Partial<Record<string, CommandHandler>> {
+    return {
+      status: (args) => {
+        seen.push(args);
+        const specs = args.slice(4);
+        const shown = lines.filter((l) => {
+          const p = l.slice(3).replace(/\/+$/, "");
+          return p.startsWith('"') || specs.some((s) => p === s || p.startsWith(`${s}/`));
+        });
+        return { ok: true, stdout: shown.length > 0 ? `${shown.join("\n")}\n` : "", stderr: "" };
+      },
+    };
+  }
+
+  const run = (lines: string[], firebaseJson: string | null = FJ()) =>
+    runReleaseGuard(makeDeps({ git: gitStatusLines(lines), sourceOverrides: { "firebase.json": firebaseJson } }));
+
+  test("git status is asked for ignored entries with --ignored=matching", async () => {
+    const seen: string[][] = [];
+    await runReleaseGuard(makeDeps({ git: gitStatusLines([], seen), sourceOverrides: { "firebase.json": FJ() } }));
+    expect(seen[0].slice(0, 4)).toEqual(["status", "--porcelain", "--ignored=matching", "--"]);
+  });
+
+  test.each([
+    ["ignored public/app.js (not excluded by hosting.ignore)", "!! public/app.js"],
+    ["ignored nested public/sub/app.js", "!! public/sub/app.js"],
+    ["ignored non-dot file public/Thumbs.db", "!! public/Thumbs.db"],
+    ["ignored functions/src/evil.ts", "!! functions/src/evil.ts"],
+    ["ignored functions-equipment-identity source", "!! functions-equipment-identity/src/x.ts"],
+    ["ignored functions/.runtimeconfig.json (documented false positive)", "!! functions/.runtimeconfig.json"],
+    ["ignored firestore.rules", "!! firestore.rules"],
+    ["ignored firestore.indexes.json", "!! firestore.indexes.json"],
+    ["ignored storage.rules", "!! storage.rules"],
+    ["quoted path with special characters", '!! "public/we\\303\\251ird.js"'],
+    ["ignored env file nested below the functions source (not directly in it)", "!! functions/sub/.env"],
+  ])("BLOCKS: %s", async (_label, line) => {
+    const result = await run([line]);
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail.startsWith(IGNORED_DETAIL_PREFIX)).toBe(true);
+    expect(check.detail).toContain(line.slice(3));
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test.each([
+    ["ignored public/.hidden (excluded by **/.*)", "!! public/.hidden"],
+    ["ignored public/.cache/ directory", "!! public/.cache/"],
+    ["nested ignored dot directory public/a/b/.git/", "!! public/a/b/.git/"],
+    ["ignored functions/node_modules/", "!! functions/node_modules/"],
+    ["node_modules below another directory", "!! functions/sub/node_modules/"],
+    ["node_modules inside public (excluded by **/node_modules/**)", "!! public/node_modules/x/"],
+    ["ignored functions/lib/", "!! functions/lib/"],
+    ["ignored file inside functions/lib", "!! functions/lib/index.js"],
+    ["ignored functions-equipment-identity/lib/", "!! functions-equipment-identity/lib/"],
+    ["ignored functions/.env", "!! functions/.env"],
+    ["ignored functions/.env.fitness-app-phase2-korostelev", "!! functions/.env.fitness-app-phase2-korostelev"],
+    ["ignored env file of the second codebase", "!! functions-equipment-identity/.env.fitness-app-korostelev"],
+    ["ignored functions/foo.local (excluded by *.local)", "!! functions/foo.local"],
+    ["ignored functions/firebase-debug.log", "!! functions/firebase-debug.log"],
+    ["ignored functions/firebase-debug.1.log (firebase-debug.*.log)", "!! functions/firebase-debug.1.log"],
+    ["ignored functions/.git/", "!! functions/.git/"],
+  ])("ALLOWS: %s", async (_label, line) => {
+    const result = await run([line]);
+    const check = byName(result, PROVENANCE_CHECK);
+    expect({ line, status: check.status, detail: check.detail }).toEqual({ line, status: "OK", detail: check.detail });
+    expect(check.detail).toContain("clean tree");
+  });
+
+  test("a mix of ONLY allowed ignored entries is OK", async () => {
+    const result = await run([
+      "!! public/.hidden",
+      "!! functions/node_modules/",
+      "!! functions/lib/",
+      "!! functions/.env",
+      "!! functions/foo.local",
+    ]);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("a mix of allowed and ONE disallowed ignored entry fails and names only the offender", async () => {
+    const result = await run(["!! functions/node_modules/", "!! public/app.js", "!! functions/lib/"]);
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public/app.js");
+    expect(check.detail).not.toContain("node_modules/,");
+    expect(check.detail.split("not in the verified commit: ")[1]).toBe("public/app.js");
+  });
+
+  test.each([
+    ["ignored entry OUTSIDE the deploy scope (docs/tmp.log) is never reported by git for this pathspec", ["!! docs/tmp.log"]],
+    ["several out-of-scope ignored entries", ["!! docs/tmp.log", "!! core/x.log", "!! tools/.venv/"]],
+  ])("%s", async (_label, lines) => {
+    const result = await run(lines);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  describe("mixed output", () => {
+    test("an uncommitted change plus allowed ignored entries reports the uncommitted change", async () => {
+      const result = await run([" M functions/src/a.ts", "!! functions/lib/", "!! functions/node_modules/"]);
+      const check = byName(result, PROVENANCE_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail.startsWith("uncommitted changes under")).toBe(true);
+    });
+
+    test("an uncommitted change plus a disallowed ignored entry still reports the uncommitted change (first)", async () => {
+      const result = await run(["!! public/app.js", " M firestore.rules"]);
+      expect(byName(result, PROVENANCE_CHECK).detail.startsWith("uncommitted changes under")).toBe(true);
+    });
+
+    test("an untracked file plus an allowed ignored entry reports the uncommitted change", async () => {
+      const result = await run(["?? public/new.html", "!! functions/lib/"]);
+      expect(byName(result, PROVENANCE_CHECK).detail.startsWith("uncommitted changes under")).toBe(true);
+    });
+  });
+
+  describe("unreadable firebase.json: strict classification (empty ignore lists)", () => {
+    test.each([["missing file", null], ["invalid JSON", "{not json"], ["JSON null", "null"]])(
+      "%s: ignored public/x and public/.hidden and functions/foo.local BLOCK",
+      async (_label, content) => {
+        for (const line of ["!! public/x", "!! public/.hidden", "!! functions/foo.local", "!! functions/firebase-debug.log"]) {
+          const check = byName(await run([line], content), PROVENANCE_CHECK);
+          expect({ line, status: check.status }).toEqual({ line, status: "FAILED" });
+          expect(check.detail.startsWith(IGNORED_DETAIL_PREFIX)).toBe(true);
+        }
+      },
+    );
+
+    test("with the same unreadable file node_modules, the build dirs and functions env files are still allowed", async () => {
+      const result = await run(
+        ["!! functions/node_modules/", "!! functions/lib/", "!! functions-equipment-identity/lib/", "!! functions/.env", "!! functions/.env.x"],
+        "{not json",
+      );
+      expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+    });
+
+    test("control: the same ignored public/.hidden is ALLOWED when firebase.json is readable (the difference is the ignore list)", async () => {
+      expect(byName(await run(["!! public/.hidden"]), PROVENANCE_CHECK).status).toBe("OK");
+    });
+  });
+
+  describe("ignore-list pattern syntax", () => {
+    const withHostingIgnore = (ignore: string[]): string =>
+      FJ({ hosting: { public: "public", ignore } });
+
+    test.each([
+      ["["], ["]"], ["{"], ["}"], ["("], [")"], ["!"], ["+"], ["@"], ["|"], ["\\"],
+    ])("a pattern containing %j is unsupported and never matches (stricter): the ignored file blocks", async (ch) => {
+      for (const pattern of [`app${ch}.js`, `${ch}app.js`, `app.js${ch}`, "app.js" + ch + "x"]) {
+        const result = await run(["!! public/app.js"], withHostingIgnore([pattern]));
+        const check = byName(result, PROVENANCE_CHECK);
+        expect({ pattern, status: check.status }).toEqual({ pattern, status: "FAILED" });
+      }
+    });
+
+    test.each([
+      ["app[a-z].js"],
+      ["{app,other}.js"],
+      ["(app).js"],
+      ["!app.js"],
+      ["app+.js"],
+      ["@app.js"],
+      ["app|x.js"],
+      ["app\\.js"],
+    ])("realistic unsupported pattern %j does not exclude public/app.js (and public/app.js blocks)", async (pattern) => {
+      const check = byName(await run(["!! public/app.js"], withHostingIgnore([pattern])), PROVENANCE_CHECK);
+      expect(check.status).toBe("FAILED");
+    });
+
+    test("control: the plain pattern app.js DOES exclude public/app.js", async () => {
+      expect(byName(await run(["!! public/app.js"], withHostingIgnore(["app.js"])), PROVENANCE_CHECK).status).toBe("OK");
+    });
+
+    test.each([
+      ["**/*.js", "!! public/sub/app.js", true],
+      ["*.js", "!! public/app.js", true],
+      ["*.js", "!! public/sub/app.js", false], // * does not cross a slash
+      ["app?.js", "!! public/app1.js", true],
+      ["app?.js", "!! public/app12.js", false],
+      ["generated/**", "!! public/generated/a/b.js", true],
+      ["generated/**", "!! public/generated/", true],
+      ["generated", "!! public/generated/a/b.js", true], // an ignored ancestor directory excludes its content
+      ["*", "!! public/.hidden", false], // * never matches a leading dot
+      ["*", "!! public/visible.js", true],
+      ["./app.js", "!! public/app.js", true],
+      ["**/.*", "!! public/x/.y", true],
+    ])("ignore pattern %j vs %s is allowed=%s", async (pattern, line, allowed) => {
+      const check = byName(await run([line], withHostingIgnore([pattern])), PROVENANCE_CHECK);
+      expect(check.status).toBe(allowed ? "OK" : "FAILED");
+    });
+
+    test("an ignore list with non-string / empty / whitespace entries does not crash and excludes nothing extra", async () => {
+      const json = JSON.stringify({ hosting: { public: "public", ignore: [1, null, "", "   ", {}] } });
+      const check = byName(await run(["!! public/app.js"], json), PROVENANCE_CHECK);
+      expect(check.status).toBe("FAILED");
+    });
+
+    test("a non-array ignore value is treated as an empty list", async () => {
+      const json = JSON.stringify({ hosting: { public: "public", ignore: "**/*" } });
+      expect(byName(await run(["!! public/app.js"], json), PROVENANCE_CHECK).status).toBe("FAILED");
+    });
+  });
+
+  test("more than 20 offending paths: still FAILED, detail truncated to 20 with a '+N more' count", async () => {
+    const lines = Array.from({ length: 25 }, (_, i) => `!! public/f${String(i + 1).padStart(2, "0")}.js`);
+    const check = byName(await run(lines), PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail.startsWith(IGNORED_DETAIL_PREFIX)).toBe(true);
+    expect(check.detail).toContain("public/f01.js");
+    expect(check.detail).toContain("public/f20.js");
+    expect(check.detail).not.toContain("public/f21.js");
+    expect(check.detail).not.toContain("public/f25.js");
+    expect(check.detail).toContain("(+5 more)");
+  });
+
+  test("exactly 20 offending paths: all listed, no '+N more'", async () => {
+    const lines = Array.from({ length: 20 }, (_, i) => `!! public/f${String(i + 1).padStart(2, "0")}.js`);
+    const check = byName(await run(lines), PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public/f20.js");
+    expect(check.detail).not.toContain("more)");
+  });
+
+  test("duplicate ignored lines are counted once", async () => {
+    const check = byName(await run(["!! public/a.js", "!! public/a.js"]), PROVENANCE_CHECK);
+    expect(check.detail.split("not in the verified commit: ")[1]).toBe("public/a.js");
+  });
+
+  test("git status failure stays UNAVAILABLE (and BLOCKs), with git's message", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ git: { status: () => ({ ok: false, stdout: "!! public/.hidden\n", stderr: "fatal: not a git repository" }) } }),
+    );
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("UNAVAILABLE");
+    expect(check.detail).toBe("fatal: not a git repository");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("blank and whitespace-only output lines are ignored; clean output proceeds to rev-parse", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ git: { status: () => ({ ok: true, stdout: "\n   \n\r\n", stderr: "" }) } }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("CRLF line endings in git's output are handled", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ git: { status: () => ({ ok: true, stdout: "!! functions/lib/\r\n!! public/app.js\r\n", stderr: "" }) } }),
+    );
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public/app.js");
   });
 });
