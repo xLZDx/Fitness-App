@@ -126,7 +126,7 @@ ANIMAL_WORDS = re.compile(
 )
 PORK_WORDS = re.compile(r"\b(pork|bacon|ham|lard|prosciutto|salami|pepperoni|swine)\b", re.I)
 ALCOHOL_WORDS = re.compile(
-    r"\b(alcoholic|beer|wine|liqueur|whiskey|vodka|rum|gin|brandy|sake|cider, alcoholic)\b",
+    r"\b(alcoholic|beer|wine|liqueur|liquor|whiskey|vodka|rum|gin|brandy|sake|cider, alcoholic)\b",
     re.I,
 )
 GLUTEN_WORDS = re.compile(
@@ -256,7 +256,7 @@ def classify(name: str, category: str) -> dict:
         allergens.add("milk")
         if category in PLANT_CATEGORIES or category == "Beverages":
             certain = False
-    if re.search(r"\begg|eggs\b", lower):
+    if re.search(r"\beggs?\b", lower):
         allergens.add("eggs")
     if GLUTEN_WORDS.search(lower) or (
         category in {"Baked Products", "Breakfast Cereals", "Snacks", "Soups, Sauces, and Gravies",
