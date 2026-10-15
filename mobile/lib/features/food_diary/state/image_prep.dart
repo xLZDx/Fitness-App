@@ -34,6 +34,10 @@ Uint8List? prepareJpeg(Uint8List source, {required int longEdge}) {
   }
   if (decoded == null) return null;
   var image = img.bakeOrientation(decoded);
+  // The encoder would copy these through; drop them so no EXIF, GPS or ICC
+  // block leaves the device.
+  image.exif.clear();
+  image.iccProfile = null;
   final edge = math.max(image.width, image.height);
   if (edge > longEdge) {
     image = image.width >= image.height
