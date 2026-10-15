@@ -55818,3 +55818,7 @@ Decision: settle write guarded by the ordering marker after a reliability review
 ## 2026-10-14 - Commit: Stripe tie settle revision CAS
 
 Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
+
+## 2026-10-16 -- SDLC workflow pointer added to CLAUDE.md
+
+Operator request: every project points its sessions to the global skill `sdlc-orchestrator` (virtual scrum team). Change limited to `CLAUDE.md`; no behavior change.
