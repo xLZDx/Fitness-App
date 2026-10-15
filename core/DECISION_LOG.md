@@ -56110,3 +56110,7 @@ Decision: the weekly reminder choice is stored as `body_scan_settings/main.remin
 Decision: diary copy uses non-inflecting units for decimals and neutral, non-budget wording; one integer-only plural carries all four RU forms. Evidence: `core/changes/2026-10-15-c23-arb.md`; no checks run.
 
 Evidence addendum (C21): change record completed with both test files, the halal/kosher fix and commit ids.
+
+## 2026-10-15 - Commit: C13 tests: ScanRecord v2 round trip and v1 tolerance
+
+Decision: scan_models_v2_test covers legacy v1 reading, v2 round trip through JSON text, unknown status as failed, manualOverride strictness. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
