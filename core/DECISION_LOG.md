@@ -55926,3 +55926,7 @@ Decision (D-52, D-53, D-58, D-59, D-60, D-62, D-67 as implemented): the server r
 ## 2026-10-15 - Commit: C08 activity model foundation and pure merge/dedup
 
 Decision (D-34 as implemented): `mobile/lib/features/activity/data/` holds the sport-agnostic model, the `DeviceSource` and capability interfaces and a deterministic, order-independent `merge` (sorted by priority, start, id) with no UI, persistence or adapters; complementary-stream alignment uses the start-time skew (not cross-correlation) and a stream kind is taken only from a source covering at least 80 % of the session; user edits always win. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-activity-foundation.md.
+
+## 2026-10-15 - Commit: C10 onboarding nutrition step
+
+Decision (D-75 as implemented): `OnboardingStep.nutrition` sits after `healthFlags` and before `screening`; the two safety questions (pregnancy/breastfeeding, nutrition guidance) are asked on `healthFlags`, and the nutrition step renders any goal, pace, body-fat target, sex, steps or ownership element only when BOTH answers are `none` (`nutritionSafetyClear`); otherwise one neutral lock-out line with no reason and no number, and only allergens, excluded foods and meals remain. The target weight is never asked twice (read-only line with a link back to the personal step). Existing users are not routed back to onboarding; they use the C11 profile flow. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-onboarding-nutrition-step.md.

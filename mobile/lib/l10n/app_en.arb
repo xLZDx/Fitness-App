@@ -1213,6 +1213,114 @@
   "focusZoneFullBody": "Full body",
   "onbStepBarriers": "What gets in the way",
   "onbStepPreview": "Your first session",
+  "onbStepNutrition": "Food and activity",
+  "onbNutritionTitle": "Food and activity",
+  "onbNutritionSubtitle": "All optional. This helps us size a calorie range that suits you.",
+  "onbNutritionLockedNotice": "We'll leave food and calorie targets for later. You can add them any time in your nutrition profile.",
+  "@onbNutritionLockedNotice": {
+    "description": "D-75 lock-out copy. Shown instead of every goal, pace and target element while either nutrition safety answer is 'reported' or unanswered. Deliberately names no reason and shows no number."
+  },
+  "onbNutritionGuidanceTitle": "Before we suggest food targets",
+  "onbNutritionGuidancePrompt": "Do any of these apply to you?",
+  "onbNutritionGuidanceOptionSupervised": "A doctor or dietitian supervises or advises what you eat.",
+  "onbNutritionGuidanceOptionRelationship": "You have had a difficult relationship with food or eating, now or in the past.",
+  "onbNutritionGuidanceNone": "None of these",
+  "onbNutritionGuidanceReported": "One or more applies",
+  "onbNutritionGuidanceWhy": "We ask so we only give general targets to people they suit. Your answer stays on this device and is never sent to our servers.",
+  "onbNutritionGuidanceConsequence": "If one applies, we won't show calorie or food targets, and we suggest talking to a professional.",
+  "@onbNutritionGuidanceTitle": {
+    "description": "D-75 nutrition safety question. Product-reviewed wording with no diagnostic words; there is no 'prefer not to say' option because it would be indistinguishable from unanswered, which already locks the coach. The l10n parity test covers every onbNutritionGuidance* key."
+  },
+  "onbNutritionSexAtBirth": "Sex at birth",
+  "onbNutritionSexFemale": "Female",
+  "onbNutritionSexMale": "Male",
+  "onbNutritionSexNeutral": "Use a neutral estimate",
+  "onbNutritionSexHint": "Used only in the energy formula.",
+  "onbNutritionGoal": "Goal direction",
+  "onbNutritionGoalLose": "Lose weight",
+  "onbNutritionGoalMaintain": "Maintain weight",
+  "onbNutritionGoalGain": "Gain weight",
+  "onbNutritionTargetLine": "Target weight: {kg} kg",
+  "@onbNutritionTargetLine": {
+    "description": "Read-only target weight line; the value is asked on the personal screen. kg is a pre-formatted decimal string; the unit is a non-inflecting abbreviation (D-84).",
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "onbNutritionTargetMissing": "No target weight yet. You can add one on the personal screen.",
+  "onbNutritionTargetChange": "Change",
+  "onbNutritionPaceMessage": "At a safe pace of about {kg} kg per week, this takes roughly {weeks, plural, one{1 week} other{{weeks} weeks}}.",
+  "@onbNutritionPaceMessage": {
+    "description": "Realistic-pace line from the plan calculator. Shown only when both safety answers are 'none'. kg is a pre-formatted decimal string; weeks is a whole number (RU has one/few/many/other forms).",
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "onbNutritionPaceBelowRange": "That target weight is below the healthy range, so we can't plan towards it. Try a higher target.",
+  "onbNutritionPaceUnderweight": "At your current weight we won't plan a calorie deficit. Keeping your weight steady is the safe choice.",
+  "onbNutritionTargetBodyFat": "Target body fat (optional)",
+  "onbNutritionTargetBodyFatClear": "No body-fat target",
+  "onbNutritionSteps": "Typical daily steps",
+  "onbNutritionStepsHint": "Connect your health app to use your real steps, or pick the closest range.",
+  "onbNutritionSteps0": "Under 3,000",
+  "onbNutritionSteps1": "3,000-5,000",
+  "onbNutritionSteps2": "5,000-8,000",
+  "onbNutritionSteps3": "8,000-11,000",
+  "onbNutritionSteps4": "11,000 or more",
+  "onbNutritionAllergens": "Allergens to avoid",
+  "onbNutritionAllergenGluten": "Gluten",
+  "onbNutritionAllergenCrustaceans": "Crustaceans",
+  "onbNutritionAllergenEggs": "Eggs",
+  "onbNutritionAllergenFish": "Fish",
+  "onbNutritionAllergenPeanuts": "Peanuts",
+  "onbNutritionAllergenSoy": "Soy",
+  "onbNutritionAllergenMilk": "Milk",
+  "onbNutritionAllergenTreeNuts": "Tree nuts",
+  "onbNutritionAllergenCelery": "Celery",
+  "onbNutritionAllergenMustard": "Mustard",
+  "onbNutritionAllergenSesame": "Sesame",
+  "onbNutritionAllergenSulphites": "Sulphites",
+  "onbNutritionAllergenLupin": "Lupin",
+  "onbNutritionAllergenMolluscs": "Molluscs",
+  "onbNutritionDeviceOnly": "Stays on this device only.",
+  "onbNutritionExcluded": "Foods you don't eat",
+  "onbNutritionExcludedHint": "Add a food",
+  "onbNutritionExcludedAdd": "Add",
+  "onbNutritionExcludedRemove": "Remove {food}",
+  "@onbNutritionExcludedRemove": {
+    "description": "Screen-reader label of an excluded-food chip; tapping removes it.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "onbNutritionExcludedLimit": "You can add up to {max} foods.",
+  "@onbNutritionExcludedLimit": {
+    "description": "Shown instead of the input once the list is full.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "onbNutritionMeals": "Meals per day",
+  "onbNutritionMealsDefault": "If you skip this, we plan for 3 meals.",
+  "onbNutritionOwnership": "Who sets your numbers?",
+  "onbNutritionOwnershipCoached": "Coached",
+  "onbNutritionOwnershipCoachedHint": "We suggest and adjust weekly. You can undo a change.",
+  "onbNutritionOwnershipShared": "Shared",
+  "onbNutritionOwnershipSharedHint": "We suggest, you approve each change.",
+  "onbNutritionOwnershipManual": "Manual",
+  "onbNutritionOwnershipManualHint": "You set the numbers. We only show insights.",
+  "onbNutritionOwnershipDefault": "Coached is the default.",
   "onbPreviewTitle": "Here's your first session",
   "onbPreviewSubtitle": "Built from your answers — it changes as you train",
   "onbPreviewLength": "About {minutes} minutes",
@@ -1361,6 +1469,7 @@
   "onbDietDairyFree": "Dairy-free",
   "onbDietHalal": "Halal",
   "onbDietKosher": "Kosher",
+  "onbDietPescatarian": "Pescatarian",
   "onbDietNone": "No restrictions",
   "onbSmoking": "Smoking",
   "onbSmokingNever": "Never",
@@ -2678,7 +2787,7 @@
       }
     }
   },
-  "healthStepProfessionalGuidance": "Are you currently pregnant, or within the first few months after giving birth?",
+  "healthStepProfessionalGuidance": "Are you currently pregnant or breastfeeding, or within the first few months after giving birth?",
   "@healthStepProfessionalGuidance": {
     "description": "F014. The question names the states it asks about, because a user has to understand what they are answering. The STORED value does not -- see ProfessionalGuidanceNeed. Deliberately not asking for a trimester, a due date or a postpartum week: none of those change what the app does, and collecting them would make a medical record out of a product boundary."
   },

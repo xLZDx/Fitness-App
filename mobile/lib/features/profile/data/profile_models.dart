@@ -49,6 +49,10 @@ enum DietaryPreference {
   dairyFree,
   halal,
   kosher,
+
+  /// Added with the nutrition step (design s16.2). Stored by name, so a profile
+  /// written before it existed reads unchanged and an old build drops it.
+  pescatarian,
   none
 }
 
