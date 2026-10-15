@@ -56020,3 +56020,7 @@ Decision (D-52, D-69, D-71, D-72): the job runner has a LOCAL path (default; zer
 ## 2026-10-15 - Commit: C15 parts 2-3 (state seams, intro, weight prompt, analysis progress)
 
 Decision (SD-9, D-73, D-74, D-81, D-85): plan-context port has a measurement-only default plus a named app-root placeholder until C18; stage announcements are limited to stage changes, the 20 s notice and one assertive 25 s timeout with focus to Retry. Evidence: change records c15-state and c15-intro-weight-progress; no checks run.
+
+## 2026-10-15 - Commit: C15 part 4 (check items card, trend chart, cloud consent sheet)
+
+Decision (D-5, D-85): chart is semantics-excluded with a single summary node plus data table; check chips carry text state labels and move focus after resolve; the cloud sheet is a separate explicit consent. Evidence: `core/changes/2026-10-15-c15-checks-chart-consent.md`; no checks run.
