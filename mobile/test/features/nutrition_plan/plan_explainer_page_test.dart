@@ -64,7 +64,7 @@ void main() {
       for (final w in ['guarantee', 'will lose', 'you will reach', 'by december']) {
         expect(l.contains(w), isFalse, reason: '$w in: $s');
       }
-      expect(RegExp(r'eta').hasMatch(l), isFalse, reason: s);
+      expect(RegExp(r'(^|\W)eta(\W|$)').hasMatch(l), isFalse, reason: s);
     }
   });
 

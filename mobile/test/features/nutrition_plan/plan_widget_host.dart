@@ -69,3 +69,12 @@ void tallSurface(WidgetTester tester, {Size size = const Size(800, 3200)}) {
   tester.view.physicalSize = size;
   addTearDown(tester.view.reset);
 }
+
+/// Lets stream providers created inside the fake-async zone deliver: drains the
+/// real event queue, then pumps a few frames.
+Future<void> settleAsync(WidgetTester tester) async {
+  await tester.runAsync(() => pumpEventQueue());
+  for (var i = 0; i < 4; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
