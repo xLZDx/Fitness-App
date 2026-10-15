@@ -97,6 +97,8 @@ describe("validation and quota", () => {
     ["export cursor negative", { action: "exportLinks", cursor: "-5" }],
     ["export cursor too long", { action: "exportLinks", cursor: "1".repeat(17) }],
     ["export cursor empty", { action: "exportLinks", cursor: "" }],
+    ["export cursor is a bare timestamp (no scan id)", { action: "exportLinks", cursor: "1700000000000" }],
+    ["export cursor with a bad id part", { action: "exportLinks", cursor: "1700000000000:a/b" }],
   ])("%s -> invalid-cursor", async (_n, data) => {
     await expectHttpsError(run(data), "invalid-argument", "invalid-cursor");
   });
@@ -219,13 +221,21 @@ describe("deleteAllPhotos", () => {
     expect(prefixes[prefixes.length - 1]).toBe(USER_PREFIX);
   });
 
-  test("the document is marked before its objects are deleted (per scan)", async () => {
+  test("the objects are deleted before the document is marked deleted (per scan, DB-F7)", async () => {
     seedStored("scan_one_1", now - DAY);
     await run({ action: "deleteAllPhotos" });
     const marked = timeline.indexOf(`fs:update:users/${UID}/body_scans/scan_one_1`);
     const deleted = timeline.indexOf(`gcs:deleteFiles:${scanPrefix("scan_one_1")}`);
-    expect(marked).toBeGreaterThanOrEqual(0);
-    expect(deleted).toBeGreaterThan(marked);
+    expect(deleted).toBeGreaterThanOrEqual(0);
+    expect(marked).toBeGreaterThan(deleted);
+  });
+
+  test("an object-delete failure leaves the scan photosState stored (never 'deleted' over surviving objects)", async () => {
+    seedStored("scan_one_1", now - DAY);
+    gcs.failOn = (op) => (op === "deleteFiles" ? firestoreError("x", 503) : undefined);
+    await expectHttpsError(run({ action: "deleteAllPhotos" }), "internal", "scan-manage-failed");
+    expect(scanDoc(UID, "scan_one_1")!.photosState).toBe("stored");
+    expect(objectKeys(scanPrefix("scan_one_1"))).toHaveLength(3);
   });
 
   test("the final sweep also removes objects no document accounts for (a late PUT, a document-less object)", async () => {
@@ -372,7 +382,7 @@ describe("exportLinks", () => {
     expect(first.processed).toBe(60);
     expect(first.links[0].scanId).toBe(sid(1)); // newest first
     expect(first.links[59].scanId).toBe(sid(20));
-    expect(first.nextCursor).toBe(String(now - 20 * HOUR));
+    expect(first.nextCursor).toBe(`${now - 20 * HOUR}:${sid(20)}`);
 
     const second = await run({ action: "exportLinks", cursor: first.nextCursor });
     expect(second.links).toHaveLength(15);
@@ -388,7 +398,18 @@ describe("exportLinks", () => {
     const first = await run({ action: "exportLinks" });
     expect(first.links).toEqual([]);
     expect(first.processed).toBe(0);
-    expect(first.nextCursor).toBe(String(now - 20 * HOUR));
+    expect(first.nextCursor).toBe(`${now - 20 * HOUR}:${sid(20)}`);
+  });
+
+  test("scans sharing one takenAt millisecond across a page boundary are neither skipped nor repeated (DB-F6)", async () => {
+    for (let i = 1; i <= 25; i++) seedStored(sid(i), now - DAY, {}, false);
+    const first = await run({ action: "exportLinks" });
+    const second = await run({ action: "exportLinks", cursor: first.nextCursor });
+    expect(first.links).toHaveLength(60);
+    expect(second.links).toHaveLength(15);
+    expect(second.nextCursor).toBeUndefined();
+    const ids = [...first.links, ...second.links].map((l: any) => l.scanId);
+    expect(new Set(ids).size).toBe(25);
   });
 
   test("another user's photos are never linked", async () => {

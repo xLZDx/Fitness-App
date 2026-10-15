@@ -11,6 +11,8 @@
  *     48 h `cancelled` tombstone.
  *  3. tombstones past `pendingExpiresAt`: delete leftover objects once more,
  *     then delete the document.
+ *  3b. FAILED scans past `pendingExpiresAt` (a terminal vendor rejection leaves
+ *     the objects behind): delete the objects, mark `photosState = deleted`.
  *  4. UNMATCHED-OBJECT SWEEP: list the bucket prefix `users/`; an object older
  *     than one hour whose scan document is missing, `cancelled`, or has
  *     `photosState` in `{none, deleted}` is deleted. The listing page token is
@@ -30,6 +32,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { RUNTIME_SA } from "../scaling";
 import { bodyScanCloudEnabled } from "./flags";
 import {
+  SCAN_DOC_PATH,
   TOMBSTONE_TTL_MS,
   UNMATCHED_OBJECT_MIN_AGE_MS,
   db,
@@ -63,9 +66,19 @@ export interface Counts {
 
 type ScanDoc = FirebaseFirestore.QueryDocumentSnapshot;
 
+/**
+ * The owning uid, or `undefined` for any document that is not exactly
+ * `users/{uid}/body_scans/{scanId}`. The collection-group query also matches a
+ * `body_scans` collection nested anywhere a client may write (P-1); such a
+ * document is skipped, never counted and never gets a `deleteFiles`.
+ */
 function uidOf(doc: ScanDoc): string | undefined {
+  if (!SCAN_DOC_PATH.test(doc.ref.path)) return undefined;
   return doc.ref.parent.parent?.id;
 }
+
+/** Documents skipped in this run because they used up their purge attempts (DB-F4). */
+let stuckInRun = 0;
 
 /** Records one failed purge of a document; logs `purge-stuck` when it reaches the cap. */
 async function noteFailure(doc: ScanDoc, counts: Counts, err: unknown): Promise<void> {
@@ -86,7 +99,9 @@ async function noteFailure(doc: ScanDoc, counts: Counts, err: unknown): Promise<
 
 /** True when the document has already used up its purge attempts. */
 function isStuck(doc: ScanDoc): boolean {
-  return (Number(doc.data().purgeAttempts) || 0) >= MAX_PURGE_ATTEMPTS;
+  const stuck = (Number(doc.data().purgeAttempts) || 0) >= MAX_PURGE_ATTEMPTS;
+  if (stuck) stuckInRun += 1;
+  return stuck;
 }
 
 /** Walks a query page by page until it is exhausted or the deadline passes. */
@@ -193,6 +208,38 @@ async function removeTombstones(nowMs: number, deadline: number, counts: Counts)
   );
 }
 
+async function purgeFailedScans(nowMs: number, deadline: number, counts: Counts) {
+  await walk(
+    () =>
+      db()
+        .collectionGroup("body_scans")
+        .where("status", "==", "failed")
+        .where("pendingExpiresAt", "<=", tsFromMillis(nowMs))
+        .orderBy("pendingExpiresAt"),
+    deadline,
+    async (doc) => {
+      const uid = uidOf(doc);
+      if (!uid || isStuck(doc)) return;
+      // A live processing lease means an estimate is still running.
+      const lease = millisOf(doc.data().estimateLeaseUntil);
+      if (lease !== undefined && lease > nowMs) return;
+      try {
+        await deleteScanObjects(uid, doc.id);
+        await doc.ref.update({
+          photosState: "deleted",
+          photosDeletedAt: tsFromMillis(Date.now()),
+          photosExpireAt: admin.firestore.FieldValue.delete(),
+          pendingExpiresAt: admin.firestore.FieldValue.delete(),
+          estimateLeaseUntil: admin.firestore.FieldValue.delete(),
+        });
+        counts.pending += 1; // pending and failed scans share one counter
+      } catch (e) {
+        await noteFailure(doc, counts, e);
+      }
+    },
+  );
+}
+
 /** Whether a scan document means "no object under this scan may exist". */
 function objectsAreOrphans(data: FirebaseFirestore.DocumentData | undefined): boolean {
   if (!data) return true;
@@ -221,8 +268,12 @@ async function sweepUnmatchedObjects(nowMs: number, deadline: number, counts: Co
     });
 
     const verdicts = new Map<string, boolean>();
+    let interrupted = false;
     for (const file of files) {
-      if (Date.now() >= deadline) break;
+      if (Date.now() >= deadline) {
+        interrupted = true;
+        break;
+      }
       const match = OBJECT_NAME.exec(file.name);
       if (!match) continue;
       const created = Date.parse(String(file.metadata?.timeCreated ?? ""));
@@ -248,6 +299,12 @@ async function sweepUnmatchedObjects(nowMs: number, deadline: number, counts: Co
       }
     }
 
+    if (interrupted) {
+      // The deadline hit mid-page: keep the token that STARTS this page so the
+      // next run re-reads it; persisting `next` would skip the unvisited rest.
+      await stateRef.set({ pageToken: pageToken ?? "", updatedAt: tsFromMillis(Date.now()) });
+      return;
+    }
     pageToken = next?.pageToken;
     // Persist the position after every page so a timeout resumes, not restarts.
     await stateRef.set({ pageToken: pageToken ?? "", updatedAt: tsFromMillis(Date.now()) });
@@ -264,9 +321,11 @@ export async function runBodyScanPurge(
   // Unset bucket: nothing could ever have been stored (SD-6).
   if (!bodyScanCloudEnabled()) return counts;
   const deadline = nowMs + budgetMs;
+  stuckInRun = 0;
   const passes = [
     purgeExpiredPhotos,
     cancelExpiredPending,
+    purgeFailedScans,
     removeTombstones,
     sweepUnmatchedObjects,
   ];
@@ -283,6 +342,10 @@ export async function runBodyScanPurge(
         errorCode: errorSlug(e),
       });
     }
+  }
+  if (stuckInRun > 0) {
+    // Abandoned documents are otherwise silent: surface the count every run.
+    logBodyScan("error", "bodyScanPurge", { outcome: "purge-abandoned", stuck: stuckInRun });
   }
   logBodyScan("info", "bodyScanPurge", {
     outcome: "run-complete",

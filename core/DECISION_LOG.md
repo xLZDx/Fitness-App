@@ -56594,3 +56594,7 @@ Decision: the fake repositories are held to the same refusals as the rules. Evid
 ## 2026-10-15 - Commit: C26 capture screen large-text test (T126)
 
 Decision: `body_scan_a11y_test.dart` added (7 tests pass); the capture panel is bounded and scrolls at 2.0 in RU on 360x640, the shutter stays >= 48 dp and tappable. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: server review fixes part 1
+
+Decision: erase paths (deleteBodyScan, manageBodyScanData, purge, account-delete sweep) depend on the bucket name only; a separate BODY_SCAN_ACCEPT_UPLOADS switch (default on) gates new scans and estimates, and rollback means flipping it, never unsetting the bucket while objects exist. The purge trusts only documents at users/{uid}/body_scans/{id}. Failed scans are purged after pendingExpiresAt. Estimate attempts per scan are capped at 3 and not reset by refunds. Evidence: core/changes/2026-10-15-server-review-fixes-1.md; no checks run.

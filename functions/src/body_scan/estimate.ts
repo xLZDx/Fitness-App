@@ -28,6 +28,7 @@ import { EstimatorTerminalError, resolveEstimator } from "./estimator";
 import { providerMap, publicEstimate } from "./create";
 import { validateEstimate } from "./validate_estimate";
 import {
+  BODY_SCAN_CLOUD_CONSENT_VERSION,
   DAY_MS,
   ESTIMATE_LEASE_MS,
   MAX_PHOTO_BYTES,
@@ -35,6 +36,7 @@ import {
   SCAN_ID_PATTERN,
   UPLOAD_CONTENT_TYPE,
   authorizeBodyScanCall,
+  consentVersionOf,
   db,
   deleteScanObjects,
   errorSlug,
@@ -81,26 +83,52 @@ function doneResponse(scanId: string, data: FirebaseFirestore.DocumentData) {
   };
 }
 
-type LeaseOutcome = "leased" | "in-progress" | "done" | "cancelled" | "failed" | "not-ready";
+type LeaseOutcome =
+  | "leased"
+  | "in-progress"
+  | "done"
+  | "cancelled"
+  | "failed"
+  | "not-ready"
+  | "exhausted";
 
-/** Clears the lease (and, when `refund`, the charge marker) after a non-final outcome. */
+/** Provider calls one scan may cause, refunds notwithstanding (P-8). */
+export const MAX_ESTIMATE_ATTEMPTS = 3;
+
+/**
+ * Clears the lease (and, when `clearCharged`, the charge marker) after a
+ * non-final outcome. Returns whether the update landed.
+ */
 async function releaseLease(
   uid: string,
   scanId: string,
   clearCharged: boolean,
-): Promise<void> {
+): Promise<boolean> {
   try {
     await scanRef(uid, scanId).update({
       estimateLeaseUntil: admin.firestore.FieldValue.delete(),
       ...(clearCharged ? { estimateCharged: admin.firestore.FieldValue.delete() } : {}),
     });
+    return true;
   } catch (e) {
     // A lease that cannot be cleared simply expires after 60 s.
     logBodyScan("warn", "bodyScanEstimate", {
       outcome: "lease-release-failed",
       errorCode: errorSlug(e),
     });
+    return false;
   }
+}
+
+/**
+ * Gives the work back: clears the lease AND the charge marker, then refunds the
+ * quota -- but only when the marker really was cleared. A marker that stays
+ * `true` while the quota is refunded would let the next call run the provider
+ * for free (SF-F7), so on a failed release the charge simply stays on the scan.
+ */
+async function releaseAndRefund(uid: string, scanId: string, refund: boolean): Promise<void> {
+  const cleared = await releaseLease(uid, scanId, true);
+  if (cleared && refund) await refundQuota(uid, "bodyScanEstimate", 1);
 }
 
 /**
@@ -192,6 +220,7 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
       if (d.status !== "pending" || d.photosState !== "awaiting_upload") return "not-ready";
       const leaseUntil = millisOf(d.estimateLeaseUntil);
       if (leaseUntil !== undefined && leaseUntil > Date.now()) return "in-progress";
+      if ((Number(d.estimateAttempts) || 0) >= MAX_ESTIMATE_ATTEMPTS) return "exhausted";
       claimed.subject = d.subject as Subject;
       claimed.manualOverride = d.capture?.manualOverride as Record<Pose, boolean>;
       tx.update(ref, {
@@ -217,6 +246,9 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
       throw new HttpsError("failed-precondition", "estimate-in-progress");
     }
     if (lease === "failed") throw new HttpsError("failed-precondition", "scan-failed");
+    if (lease === "exhausted") {
+      throw new HttpsError("resource-exhausted", "estimate-attempts-exceeded");
+    }
     if (lease === "not-ready") {
       throw new HttpsError("failed-precondition", "scan-not-ready");
     }
@@ -228,8 +260,7 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
   try {
     uploads = await readUploads(uid, scanId);
   } catch (e) {
-    await releaseLease(uid, scanId, true);
-    if (needsCharge) await refundQuota(uid, "bodyScanEstimate", 1);
+    await releaseAndRefund(uid, scanId, needsCharge);
     logBodyScan("error", "bodyScanEstimate", {
       outcome: "storage-failed",
       errorCode: errorSlug(e),
@@ -247,6 +278,38 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
       providerVersion: provider.version,
     });
     throw new HttpsError("failed-precondition", `missing-upload:${uploads.missing.join(",")}`);
+  }
+
+  // Consent is re-checked HERE, right before the paid call: it may have been
+  // withdrawn since `createBodyScan` (P-4). Nothing is delivered, so give back.
+  let consented: boolean;
+  try {
+    consented = consentVersionOf(await readSettings(uid)) >= BODY_SCAN_CLOUD_CONSENT_VERSION;
+  } catch (e) {
+    await releaseAndRefund(uid, scanId, needsCharge);
+    logBodyScan("error", "bodyScanEstimate", {
+      outcome: "settings-failed",
+      errorCode: errorSlug(e),
+    });
+    throw new HttpsError("internal", "scan-estimate-failed");
+  }
+  if (!consented) {
+    await releaseAndRefund(uid, scanId, needsCharge);
+    logBodyScan("info", "bodyScanEstimate", { outcome: "consent-required" });
+    throw new HttpsError("failed-precondition", "consent-required");
+  }
+
+  // Count the provider call on the scan BEFORE making it; a refund never resets
+  // this, so a loop of failing calls is bounded per scan (P-8).
+  try {
+    await ref.update({ estimateAttempts: admin.firestore.FieldValue.increment(1) });
+  } catch (e) {
+    await releaseAndRefund(uid, scanId, needsCharge);
+    logBodyScan("error", "bodyScanEstimate", {
+      outcome: "firestore-failed",
+      errorCode: errorSlug(e),
+    });
+    throw new HttpsError("internal", "scan-estimate-failed");
   }
 
   // The provider call. A failure BEFORE output refunds the charge and leaves
@@ -267,6 +330,7 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
     const terminal = e instanceof EstimatorTerminalError;
     const slug = e instanceof EstimatorTimeout ? "timeout" : terminal ? "terminal" : "error";
     if (terminal) {
+      let marked = false;
       try {
         await db().runTransaction(async (tx) => {
           const snap = await tx.get(ref);
@@ -277,13 +341,14 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
             estimateCharged: admin.firestore.FieldValue.delete(),
           });
         });
+        marked = true;
       } catch {
-        await releaseLease(uid, scanId, true);
+        await releaseAndRefund(uid, scanId, needsCharge);
       }
+      if (marked && needsCharge) await refundQuota(uid, "bodyScanEstimate", 1);
     } else {
-      await releaseLease(uid, scanId, true);
+      await releaseAndRefund(uid, scanId, needsCharge);
     }
-    if (needsCharge) await refundQuota(uid, "bodyScanEstimate", 1);
     logBodyScan("warn", "bodyScanEstimate", {
       outcome: `provider-${slug}`,
       latencyMs: Date.now() - started,
@@ -300,8 +365,7 @@ export const estimateBodyScan = onCall(BODY_SCAN, async (request) => {
   try {
     estimate = validateEstimate(output, provider.id, provider.version);
   } catch (e) {
-    await releaseLease(uid, scanId, true);
-    if (needsCharge) await refundQuota(uid, "bodyScanEstimate", 1);
+    await releaseAndRefund(uid, scanId, needsCharge);
     logBodyScan("error", "bodyScanEstimate", {
       outcome: "provider-output-invalid",
       latencyMs: Date.now() - started,

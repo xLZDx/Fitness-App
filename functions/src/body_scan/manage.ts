@@ -52,7 +52,8 @@ const CHUNK = 10;
 const EXPORT_PAGE_SCANS = 20;
 
 const CURSOR_ID = /^[A-Za-z0-9_-]{8,64}$/;
-const CURSOR_MS = /^[0-9]{1,16}$/;
+/** `exportLinks` cursor: `<takenAt ms>:<scan id>` so equal timestamps cannot skip scans. */
+const CURSOR_EXPORT = /^([0-9]{1,16}):([A-Za-z0-9_-]{8,64})$/;
 
 function bad(slug: string): never {
   throw new HttpsError("invalid-argument", slug);
@@ -157,12 +158,14 @@ async function pagedAction(
     }
     if (action === "deleteAllPhotos") {
       if (d.photosState === "deleted" || d.photosState === "none") return;
+      // Objects first: a "deleted" marker over surviving objects would hide them
+      // from every pass that keys on photosState (DB-F7).
+      await deleteScanObjects(uid, doc.id);
       await doc.ref.update({
         photosState: "deleted",
         photosDeletedAt: tsFromMillis(nowMs),
         photosExpireAt: admin.firestore.FieldValue.delete(),
       });
-      await deleteScanObjects(uid, doc.id);
       return;
     }
     // deleteAllScans: an existing tombstone only needs its objects re-swept.
@@ -195,12 +198,14 @@ interface LinksResult extends PageResult {
 }
 
 async function exportLinks(uid: string, cursor: string | undefined): Promise<LinksResult> {
-  if (cursor !== undefined && !CURSOR_MS.test(cursor)) bad("invalid-cursor");
+  const parsed = cursor === undefined ? undefined : CURSOR_EXPORT.exec(cursor);
+  if (cursor !== undefined && !parsed) bad("invalid-cursor");
   let query = db()
     .collection(`users/${uid}/body_scans`)
     .orderBy("takenAt", "desc")
+    .orderBy(admin.firestore.FieldPath.documentId(), "desc")
     .limit(EXPORT_PAGE_SCANS);
-  if (cursor !== undefined) query = query.startAfter(tsFromMillis(Number(cursor)));
+  if (parsed) query = query.startAfter(tsFromMillis(Number(parsed[1])), parsed[2]);
   const page = await query.get();
 
   const nowMs = Date.now();
@@ -235,6 +240,6 @@ async function exportLinks(uid: string, cursor: string | undefined): Promise<Lin
   return {
     processed: links.length,
     links,
-    ...(hasMore ? { nextCursor: String(lastMs) } : {}),
+    ...(hasMore && last ? { nextCursor: `${lastMs}:${last.id}` } : {}),
   };
 }

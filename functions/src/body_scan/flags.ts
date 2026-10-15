@@ -36,6 +36,21 @@ export function bodyScanCloudEnabled(): boolean {
 }
 
 /**
+ * Whether NEW scans may be created and estimated (`createBodyScan`,
+ * `estimateBodyScan`). On by default whenever the bucket is configured; the
+ * operator sets `BODY_SCAN_ACCEPT_UPLOADS=false` (or `0`/`off`/`no`) to stop
+ * intake WITHOUT unsetting the bucket. Erase paths (`deleteBodyScan`,
+ * `manageBodyScanData`, the purge job, the account-delete sweep) never read
+ * this: they depend on the bucket name alone, so rolling back intake can never
+ * strand stored objects.
+ */
+export function bodyScanAcceptUploads(): boolean {
+  if (!bodyScanCloudEnabled()) return false;
+  const raw = process.env.BODY_SCAN_ACCEPT_UPLOADS?.trim().toLowerCase();
+  return !(raw === "false" || raw === "0" || raw === "off" || raw === "no");
+}
+
+/**
  * The registered estimator id the server should use (`licensed-api` or
  * `test-fake`), or `undefined` when none is configured. There is no server-side
  * provisional estimator (D-52): the provisional estimate is computed on the

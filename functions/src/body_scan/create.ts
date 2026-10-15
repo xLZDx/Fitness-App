@@ -217,7 +217,10 @@ async function signUploads(uid: string, scanId: string, nowMs: number): Promise<
   }
 }
 
-type Decision = "created" | "reset" | "reissue" | "done" | "cancelled";
+type Decision = "created" | "reset" | "reissue" | "done" | "cancelled" | "capped";
+
+/** Signed-URL reissues one scan may get (P-5); a fresh create/reset starts at 0. */
+export const MAX_UPLOAD_REISSUES = 5;
 
 export const createBodyScan = onCall(BODY_SCAN, async (request) => {
   const started = Date.now();
@@ -307,11 +310,21 @@ export const createBodyScan = onCall(BODY_SCAN, async (request) => {
         tx.update(ref, {
           ...fresh,
           estimateLeaseUntil: admin.firestore.FieldValue.delete(),
+          estimateAttempts: admin.firestore.FieldValue.delete(),
+          uploadReissues: admin.firestore.FieldValue.delete(),
         });
         return "reset";
       }
       if (status === "cancelled") return "cancelled";
-      return status === "done" ? "done" : "reissue";
+      if (status === "done") return "done";
+      if ((Number(snap.data()?.uploadReissues) || 0) >= MAX_UPLOAD_REISSUES) return "capped";
+      // A fresh URL set means the user is still uploading: the purge must not
+      // tombstone the scan mid-upload (DB-F8).
+      tx.update(ref, {
+        pendingExpiresAt: tsFromMillis(started + PENDING_TTL_MS),
+        uploadReissues: admin.firestore.FieldValue.increment(1),
+      });
+      return "reissue";
     });
   } catch (e) {
     // The pre-read said "absent" but another call created it first: the charge
@@ -330,6 +343,10 @@ export const createBodyScan = onCall(BODY_SCAN, async (request) => {
   if (decision === "cancelled") {
     if (needsCharge) await refundQuota(uid, "bodyScanCreate", 1);
     throw new HttpsError("failed-precondition", "scan-cancelled");
+  }
+  if (decision === "capped") {
+    if (needsCharge) await refundQuota(uid, "bodyScanCreate", 1);
+    throw new HttpsError("resource-exhausted", "upload-url-limit");
   }
   if (decision === "done") {
     // A concurrent estimate finished between the lookup and the transaction.

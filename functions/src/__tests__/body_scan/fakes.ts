@@ -241,6 +241,8 @@ interface QState {
   orders: Array<{ f: string | DocIdSentinel; dir: "asc" | "desc" }>;
   limit: number;
   startAfter?: any;
+  /** Every value passed to `startAfter(...)`, one per orderBy (a composite cursor). */
+  startAfterAll?: any[];
 }
 
 function makeQuery(s: QState): any {
@@ -249,7 +251,7 @@ function makeQuery(s: QState): any {
     orderBy: (f: string | DocIdSentinel, dir: "asc" | "desc" = "asc") =>
       makeQuery({ ...s, orders: [...s.orders, { f, dir }] }),
     limit: (n: number) => makeQuery({ ...s, limit: n }),
-    startAfter: (v: any) => makeQuery({ ...s, startAfter: v }),
+    startAfter: (...vs: any[]) => makeQuery({ ...s, startAfter: vs[0], startAfterAll: vs }),
     get: async () => {
       check("query", s.name);
       queries.push({
@@ -301,10 +303,13 @@ function makeQuery(s: QState): any {
       };
       rows.sort((x, y) => cmp(keyOf(x), keyOf(y)));
       if (s.startAfter !== undefined) {
-        if (s.orders.length !== 1) throw new Error("fake firestore: startAfter needs exactly one orderBy");
+        const all = s.startAfterAll ?? [s.startAfter];
+        if (all.length !== s.orders.length) throw new Error("fake firestore: startAfter needs one value per orderBy");
         const cursor = s.startAfter;
         let ck: any[];
-        if (cursor && typeof cursor === "object" && cursor.ref && typeof cursor.ref.path === "string") {
+        if (all.length > 1) {
+          ck = all.map((v, i) => (s.orders[i].f instanceof DocIdSentinel ? v : norm(v)));
+        } else if (cursor && typeof cursor === "object" && cursor.ref && typeof cursor.ref.path === "string") {
           // A snapshot cursor carries the data it had WHEN it was read (the
           // document may have been updated or deleted since).
           ck = keyOf([cursor.ref.path, cursor.data() ?? {}]);

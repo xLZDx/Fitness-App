@@ -23,7 +23,7 @@ import {
   noteAppCheck,
 } from "../abuse_guard";
 import { assertFeatureEnabled, FEATURE_DISABLED_MESSAGE } from "../feature_flags";
-import { bodyScanBucketName, bodyScanCloudEnabled } from "./flags";
+import { bodyScanAcceptUploads, bodyScanBucketName, bodyScanCloudEnabled } from "./flags";
 import { POSES, type Pose } from "./types";
 
 /** `scanId` = the client's scan id; the same regex bounds the object prefix. */
@@ -103,10 +103,25 @@ export async function authorizeBodyScanCall(
   }
   noteAppCheck(request, fn);
   enforceNonAnonymousForAi(request.auth.token?.firebase?.sign_in_provider);
+  if (ERASE_CALLABLES.has(fn)) {
+    // Erasure must keep working with the AI kill switch thrown and with intake
+    // switched off: it needs only the bucket name (P-2, DB-F2).
+    assertFeatureEnabled(bodyScanCloudEnabled());
+    return request.auth.uid;
+  }
   await enforceAiGatewayEnabled(fn);
-  assertFeatureEnabled(bodyScanCloudEnabled());
+  assertFeatureEnabled(bodyScanAcceptUploads());
   return request.auth.uid;
 }
+
+/** Callables that erase or export the caller's own data; gated by the bucket only. */
+const ERASE_CALLABLES: ReadonlySet<BodyScanCallable> = new Set<BodyScanCallable>([
+  "deleteBodyScan",
+  "manageBodyScanData",
+]);
+
+/** The purge path guard (P-1): only `users/{uid}/body_scans/{scanId}` is a scan. */
+export const SCAN_DOC_PATH = /^users\/[^/]+\/body_scans\/[^/]+$/;
 
 /** `users/{uid}/scans/{scanId}/` -- every object of one scan. */
 export function scanPrefix(uid: string, scanId: string): string {
@@ -181,6 +196,8 @@ export function tombstoneScrub(): Record<string, FirebaseFirestore.FieldValue> {
     photosExpireAt: gone,
     estimateLeaseUntil: gone,
     estimateCharged: gone,
+    estimateAttempts: gone,
+    uploadReissues: gone,
   };
 }
 
