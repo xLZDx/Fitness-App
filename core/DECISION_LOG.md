@@ -56406,3 +56406,7 @@ Decision: Runner tests drive the real runner with fakes for api/uploader/blur/fa
 ## 2026-10-15 - Commit: C15 tests - weight_prompt_sheet_test
 
 Decision: weight prompt tests keep skip (explicit) distinct from dismissal (null) and bound the weight to 20-400 kg. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C25 CONDITIONAL cell rules tests
+
+Decision: cell tests use inline template-literal doc paths because the access checker cannot resolve helper calls; the DEFERRED todo block became real governance tests. Evidence: core/changes/2026-10-15-c25-tests.md (data_access_policy.test.ts 208 passed on the emulator, alternate port 18080).
