@@ -56352,3 +56352,7 @@ Decision: check card tests pin one announcement and focus movement after resolve
 Decision: the announcement is captured from the accessibility channel and focus is read from FocusManager debug labels. Evidence: core/changes/2026-10-15-c23-tests.md.
 
 Evidence addendum (C17 Home card test): home_body_check_in_card_test.dart ran green, 6 tests.
+
+## 2026-10-15 - Commit: C19 auto_adjust_toggles_test.dart
+
+Decision: auto-adjust toggles are inert and off under Manual and independent otherwise. Evidence: core/changes/2026-10-15-c19-tests.md (auto_adjust_toggles_test.dart 6 passed).
