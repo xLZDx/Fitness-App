@@ -57199,3 +57199,7 @@ Decision: The late job never runs its destructive part while the Auth user exist
 ## 2026-10-16 - Commit: S02 client stream uploader and retry policy
 
 Decision: Stream upload reuses the journal sync state (markSynced after commit, upload_failed after the cap) because the journal has no separate stream-state field; every run starts a new upload and nothing but the journal state survives an app restart.
+
+## 2026-10-16 - Commit: S02 client cloud settings client and consent-withdrawal flow
+
+Decision: Withdrawal flips the local consent cache before the network call and cancels queued uploads first; the bulk-delete offer is a separate method that sends deleteExisting once, and the client does not itself continue the resumable job (the reconciler does).
