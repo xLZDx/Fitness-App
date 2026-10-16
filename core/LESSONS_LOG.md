@@ -358,3 +358,9 @@ Why it worked: both accounts hold the same deterministic id, so any missing guar
 Kind: SUCCESS.
 Facts: Complete H-B run: 02:46 +167 passed; one observability shortcoming found (silent mid-flight skip) and fixed. Evidence: core/changes/2026-10-16-s02-test-epic14b-findings.md.
 Why it worked: oracles written from the notes and the promise, one Gate per await, positive controls for every guard.
+
+## 2026-10-16 - H-A guards met every interleaving oracle; one oracle slip of mine
+
+Kind: SUCCESS.
+Facts: All consent store, client, uploader and startup guards of remediation H-A passed 42 gated interleaving tests with no production change; my first run was +41 -1 because test 16d expected B to finish while A held the journal bind, but the scoped journal serializes binds, so B waits behind A (my oracle slip, caught by the first run; fixed by releasing A first). Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-binding.md.
+Why it worked: each test holds the exact await (platform store read, syncAll, signIn, load, commit) so the guard is the only protection. Limit: no mutation run by operator rule; the real uploader provider supplier for accountBeingDeleted is untested.

@@ -57646,3 +57646,7 @@ Decision: One adversarial journey test over the real FileActivityJournal, real r
 ## 2026-10-16 - Commit: docs(s02): test epic 14b findings section
 
 Decision: The epic 14 findings file records the epic 14b files, the one production log change, defects, exact commands and the complete-run summary line (02:46 +167: All tests passed!). Evidence: core/changes/2026-10-16-s02-test-epic14b-findings.md.
+
+## 2026-10-16 - Commit: test(s02): consent binding, uploader and startup interleaving tests (epic 14a)
+
+Decision: 42 tests with Completer gates cover the five reviewer scenarios (A delayed init, B delayed init, A granted/B unknown, A granted/B withdrawn, stale completion after sign-out) through the real startup closure and the real store/client/uploader, plus the uploader consentUid and mark guards and the client grant/withdraw/delete rules. The accountBeingDeleted supplier inside the real uploader provider is not tested (no seam without Firebase). Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-binding.md.
