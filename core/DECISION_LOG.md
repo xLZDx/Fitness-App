@@ -57139,3 +57139,7 @@ Decision: Widget tests of the sheet tap inside the real-async zone (the journal 
 ## 2026-10-16 - Commit: S02 test epic 4: findings and final epic run
 
 Decision: Epic 4 closes with 127 tests green and no production change; I15-I17, I27, I28 have no client code and stay with the stream-upload story.
+
+## 2026-10-16 - Commit: S02 test epic 5: activity rules emulator tests and rules expression-budget fix
+
+Decision: R32/R34 follow the design (rev strictly greater on update, resent equal rev refused); the activity helper functions bind `d.get(k, default)` with `let` because a document with all 32 allowlisted keys exceeded the 1000-expression budget.

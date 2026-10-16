@@ -903,13 +903,16 @@ service cloud.firestore {
     // Optional scalar checks: an absent key passes, a present key must have the
     // right type and bound. `x is int` / `x is number` reject lists and maps.
     function actNumOk(d, k, lo, hi) {
-      return !(k in d) || numberIn(d[k], lo, hi);
+      let v = d.get(k, lo);
+      return v is number && v >= lo && v <= hi;
     }
     function actIntOk(d, k, lo, hi) {
-      return !(k in d) || (d[k] is int && numberIn(d[k], lo, hi));
+      let v = d.get(k, lo);
+      return v is int && v >= lo && v <= hi;
     }
     function actStrOk(d, k, re) {
-      return !(k in d) || (d[k] is string && d[k].matches(re));
+      let v = d.get(k, 'a');
+      return v is string && (!(k in d) || v.matches(re));
     }
     function actCountsOk(d) {
       return actIntOk(d, 'utcOffsetMinutes', -840, 840)
