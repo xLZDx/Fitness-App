@@ -57654,3 +57654,7 @@ Decision: 42 tests with Completer gates cover the five reviewer scenarios (A del
 ## 2026-10-16 - Commit: test(s02): consent switch end-to-end test (epic 14a)
 
 Decision: One adversarial e2e over the real journal, store, client, uploader and startup closure asserts that with A granted and B unknown and A stalled in syncAll, zero create/PUT/commit happens, B stream marker stays unset and A data and stored consent are untouched; a control run uploads for A alone. Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-switch-e2e.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14a findings section
+
+Decision: Epic 14a is recorded in S02_TEST_FINDINGS_EPIC14.md: no production defect in remediation H-A, four notes gaps and two oracle slips of mine, final complete run +784 green. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md and core/changes/2026-10-16-s02-test-epic14a-findings.md.
