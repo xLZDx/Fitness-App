@@ -57119,3 +57119,7 @@ Decision: The merger budget keeps the design ceilings and adds frozen calibrated
 ## 2026-10-16 - Commit: S02 test epic 3: GPX and FIT encoders, test-only FIT decoder, summary-only upload and offline queue (U17-U20, I11, I12)
 
 Decision: FIT acceptance is a structural round trip through an independent test-only decoder; the I11/I12 plan file name is kept but the tests run on ActivitySyncRepository (no FirestoreActivityRepository exists).
+
+## 2026-10-16 - Commit: S02 test epic 3: findings and final epic run
+
+Decision: Epic 3 closes with 170 tests green; plan/design contradictions and four production changes are recorded in S02_TEST_FINDINGS_EPIC3.md.
