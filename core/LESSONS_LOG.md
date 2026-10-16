@@ -65,3 +65,6 @@ Problem: a device-wide journal plus a separate owner marker meant a different si
 Root cause: ownership was stored apart from the data it protected, and a destructive default (wipe on switch) stood in for an export flow that did not exist yet.
 Layers: design review accepted the wipe-on-switch as an interim rule; the external gate caught it.
 Rule next time: make ownership the location of the data (per-account scope) and never let an interim flow default to deleting user data.
+
+## 2026-10-16 - Scoped journal tests (test epic 11a, part a)
+SUCCESS: the never-run scoped journal compiled and passed 22 behaviour tests on real files; the only defects were in the tests themselves (record equality on lists, a consumed gate). Layer: epic tests now cover what the review rounds only argued about.

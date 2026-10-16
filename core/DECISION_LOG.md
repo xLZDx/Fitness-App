@@ -57445,3 +57445,7 @@ Decision: account deletion wipes exactly the deleted uid journal scope; design s
 ## 2026-10-16 - Commit: lessons log and S02 retrospective draft
 
 Decision: the program keeps core/LESSONS_LOG.md from now on, one entry per commit that carries a lesson (operator global rule 2026-10-16); the S02 retrospective is a living draft built from it. Evidence: core/changes/2026-10-16-lessons-log-and-s02-retro.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (a) scoped journal tests
+
+Decision: the account-scoped journal is verified on real files with a per-scope fake key store; oracles come from the E1 notes and the account-switch promise. Evidence: core/changes/2026-10-16-s02-test-epic11a-scoped-journal-tests.md.
