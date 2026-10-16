@@ -364,3 +364,9 @@ Why it worked: oracles written from the notes and the promise, one Gate per awai
 Kind: SUCCESS.
 Facts: All consent store, client, uploader and startup guards of remediation H-A passed 42 gated interleaving tests with no production change; my first run was +41 -1 because test 16d expected B to finish while A held the journal bind, but the scoped journal serializes binds, so B waits behind A (my oracle slip, caught by the first run; fixed by releasing A first). Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-binding.md.
 Why it worked: each test holds the exact await (platform store read, syncAll, signIn, load, commit) so the guard is the only protection. Limit: no mutation run by operator rule; the real uploader provider supplier for accountBeingDeleted is untested.
+
+## 2026-10-16 - Sync repository is single-flight: B waits behind a stalled A pass
+
+Kind: SHORTCOMING.
+Facts: My first e2e run (+1 -1) expected B to reach its consent step while A was held in syncAll; it does not, because the repository joins the in-flight pass. Safe for the promise (nothing runs for B earlier than A) but it delays B until A releases. Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-switch-e2e.md.
+Root cause: my oracle assumed independent chains. Layer that missed it: me (test author); caught by the first run. Rule next time: check single-flight and serialization in the seam before writing a stall-then-switch test.

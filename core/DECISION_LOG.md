@@ -57650,3 +57650,7 @@ Decision: The epic 14 findings file records the epic 14b files, the one producti
 ## 2026-10-16 - Commit: test(s02): consent binding, uploader and startup interleaving tests (epic 14a)
 
 Decision: 42 tests with Completer gates cover the five reviewer scenarios (A delayed init, B delayed init, A granted/B unknown, A granted/B withdrawn, stale completion after sign-out) through the real startup closure and the real store/client/uploader, plus the uploader consentUid and mark guards and the client grant/withdraw/delete rules. The accountBeingDeleted supplier inside the real uploader provider is not tested (no seam without Firebase). Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-binding.md.
+
+## 2026-10-16 - Commit: test(s02): consent switch end-to-end test (epic 14a)
+
+Decision: One adversarial e2e over the real journal, store, client, uploader and startup closure asserts that with A granted and B unknown and A stalled in syncAll, zero create/PUT/commit happens, B stream marker stays unset and A data and stored consent are untouched; a control run uploads for A alone. Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-switch-e2e.md.
