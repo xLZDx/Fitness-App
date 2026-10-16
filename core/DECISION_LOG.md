@@ -57123,3 +57123,7 @@ Decision: FIT acceptance is a structural round trip through an independent test-
 ## 2026-10-16 - Commit: S02 test epic 3: findings and final epic run
 
 Decision: Epic 3 closes with 170 tests green; plan/design contradictions and four production changes are recorded in S02_TEST_FINDINGS_EPIC3.md.
+
+## 2026-10-16 - Commit: S02 test epic 4: two-device fake server, rev convergence, tombstone sync, override convergence
+
+Decision: Two devices are two journal directories over one rule-enforcing fake server (rev, immutability, shape, clamp, tombstone, fence); a device can only adopt a server-only change of a field it holds a value for (otherwise sync_conflict, design rule 3).
