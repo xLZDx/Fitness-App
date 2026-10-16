@@ -56791,3 +56791,7 @@ Decision: the explorer fact sheet is kept in the repository as the shared starti
 ## 2026-10-16 - Commit: S02 design draft
 
 Decision: the S02 design draft recommends a dedicated private bucket with signed URLs and scheduled purge, a sanitising callable for debug telemetry and a file journal locally; all remain PROPOSED until architecture and security review and GPT-PM. Evidence: core/changes/2026-10-16-s02-design-draft.md.
+
+## 2026-10-16 - Commit: S02 design revision 2
+
+Decision: the S02 design applies all 24 internal review findings (tombstone with TTL instead of callable-only summary writes to keep offline-first; four permanent rules exclusions; closed server schema for streams; expiry derived at purge time) and answers the 15 test-plan questions as proposals; three questions stay with the operator (cloud stream kinds beyond GPS, "never" retention, default expiry). Evidence: core/changes/2026-10-16-s02-design-revision-2.md.

@@ -276,13 +276,14 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
 | `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2456 |
 | `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 18972 |
-| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 84288 |
+| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 84881 |
 | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 25034 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
 | `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
-| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 40247 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 81247 |
+| `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 44522 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
 | `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 5433 |
