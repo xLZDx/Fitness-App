@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
@@ -33,16 +34,23 @@ Future<void> _invokeSendDebugTelemetry(Map<String, Object?> batch) async {
 /// recorded in the S02-09 change record). Batches hold at most
 /// [kTelemetryMaxEvents] events.
 ///
-/// Resilience (design 8.1): [send] NEVER throws. A failed batch is retried at
-/// most [maxRetries] times with doubling backoff; if it still fails its events
-/// are counted as dropped and the (capped) count is reported in the next batch.
-/// Nothing is buffered beyond the session's own bounded ring buffer.
+/// Resilience (design 8.1):
+/// - [send] NEVER throws and does NOT wait for the network: it queues the events
+///   and starts a background drain; [flush] awaits that drain (tests, shutdown).
+/// - A failed batch is retried at most [maxRetries] times with doubling backoff.
+///   If it still fails, its events stay in a local buffer for the next [send].
+/// - The buffer holds at most [maxBufferEvents] events and [maxBufferBytes]
+///   bytes of serialised events; the OLDEST are dropped first and counted.
+/// - The dropped count is reported (capped at [kTelemetryCounterMax]) in the
+///   next batch that is delivered, then reset.
 class CallableDebugTelemetrySink implements DebugTelemetrySink {
   CallableDebugTelemetrySink({
     TelemetryCallableInvoker? invoke,
     Future<void> Function(Duration)? delay,
     this.maxRetries = 3,
     this.baseBackoff = const Duration(seconds: 1),
+    this.maxBufferEvents = 500,
+    this.maxBufferBytes = 64 * 1024,
   })  : _invoke = invoke ?? _invokeSendDebugTelemetry,
         _delay = delay ?? Future<void>.delayed;
 
@@ -50,68 +58,107 @@ class CallableDebugTelemetrySink implements DebugTelemetrySink {
   final Future<void> Function(Duration) _delay;
   final int maxRetries;
   final Duration baseBackoff;
+  final int maxBufferEvents;
+  final int maxBufferBytes;
 
+  /// Events waiting for delivery, oldest first (closed-schema maps without `seq`).
+  final List<Map<String, Object?>> _buffer = [];
+  int _bufferBytes = 0;
+  int _inFlightCount = 0; // leading events of _buffer being sent now
   int _pendingDropped = 0;
+  int _carriedDropped = 0;
+  Future<void>? _drain;
 
-  /// Events lost to failed sends and not yet reported (uncapped locally).
+  /// Events lost to buffer overflow and not yet reported (uncapped locally).
   int get pendingDropped => _pendingDropped;
 
-  /// Converts the session JSON into closed-schema batches.
-  @visibleForTesting
-  List<Map<String, Object?>> buildBatches(Map<String, Object?> payload) {
+  /// Events currently held for delivery (queued plus in flight).
+  int get bufferedCount => _buffer.length;
+
+  /// Serialised size of the events currently held.
+  int get bufferedBytes => _bufferBytes;
+
+  static int _sizeOf(Map<String, Object?> e) => utf8.encode(jsonEncode(e)).length;
+
+  void _enqueue(Map<String, Object?> payload) {
     final raw = payload['events'];
-    final events = <Map<String, Object?>>[];
     if (raw is List) {
       for (final e in raw) {
         if (e is! Map) continue;
         final level = telemetryLevelFor('${e['level']}');
-        events.add({
+        final event = <String, Object?>{
           'type': level == 'error' ? 'error' : 'log',
           'level': level,
           'component': telemetryComponentFor('${e['area']}'),
-        });
+        };
+        _buffer.add(event);
+        _bufferBytes += _sizeOf(event);
       }
     }
     final carried = payload['droppedCount'];
-    final dropped = _pendingDropped + (carried is int ? carried : 0);
-    final batches = <Map<String, Object?>>[];
-    for (var i = 0; i < events.length || batches.isEmpty; i += kTelemetryMaxEvents) {
-      final end = i + kTelemetryMaxEvents < events.length
-          ? i + kTelemetryMaxEvents
-          : events.length;
-      final chunk = events.sublist(i, end);
-      final batch = <String, Object?>{
-        'events': [
-          for (var n = 0; n < chunk.length; n++) {...chunk[n], 'seq': n},
-        ],
-      };
-      if (batches.isEmpty && dropped > 0) {
-        batch['droppedCount'] = telemetryCounter(dropped);
-      }
-      batches.add(batch);
-      if (end >= events.length) break;
+    if (carried is int && carried > 0) _carriedDropped = carried;
+    _trim();
+  }
+
+  /// Drops the oldest queued events until both caps hold.
+  void _trim() {
+    while (_buffer.isNotEmpty &&
+        (bufferedCount > maxBufferEvents || bufferedBytes > maxBufferBytes)) {
+      _bufferBytes -= _sizeOf(_buffer.removeAt(0));
+      if (_inFlightCount > 0) _inFlightCount--;
+      _pendingDropped++;
     }
-    if (dropped == 0 && batches.length == 1 && events.isEmpty) return const [];
-    return batches;
   }
 
   @override
   Future<void> send(Map<String, Object?> payload) async {
     try {
-      final batches = buildBatches(payload);
-      final reported = _pendingDropped;
-      _pendingDropped = 0;
-      var first = true;
-      for (final batch in batches) {
+      _enqueue(payload);
+      _drain ??= _drainLoop().whenComplete(() => _drain = null);
+    } catch (_) {
+      // Never throws into app flow (design 8.1).
+    }
+  }
+
+  /// Completes when the running drain (if any) has finished. Never throws.
+  Future<void> flush() async {
+    while (_drain != null) {
+      await _drain;
+    }
+  }
+
+  Future<void> _drainLoop() async {
+    try {
+      while (true) {
+        final reportedPending = _pendingDropped;
+        final dropped = reportedPending + _carriedDropped;
+        if (_buffer.isEmpty && dropped == 0) return;
+        final n = _buffer.length < kTelemetryMaxEvents
+            ? _buffer.length
+            : kTelemetryMaxEvents;
+        // The chunk stays in the buffer while it is sent, so the caps always
+        // count it and an overflow evicts the OLDEST event, in flight or not.
+        final chunk = _buffer.sublist(0, n);
+        _inFlightCount = n;
+        final batch = <String, Object?>{
+          'events': [
+            for (var i = 0; i < n; i++) {...chunk[i], 'seq': i},
+          ],
+        };
+        if (dropped > 0) batch['droppedCount'] = telemetryCounter(dropped);
         final ok = await _sendWithRetry(batch);
-        if (!ok) {
-          final n = (batch['events'] as List).length;
-          _pendingDropped += n + (first ? reported : 0);
+        // Events evicted during the send no longer count as in flight.
+        final sent = _inFlightCount;
+        _inFlightCount = 0;
+        if (!ok) return;
+        for (var i = 0; i < sent; i++) {
+          _bufferBytes -= _sizeOf(_buffer.removeAt(0));
         }
-        first = false;
+        _pendingDropped -= reportedPending;
+        _carriedDropped = 0;
       }
     } catch (_) {
-      // Never throws into app flow (design 8.1); nothing to report to.
+      // Never throws (design 8.1).
     }
   }
 

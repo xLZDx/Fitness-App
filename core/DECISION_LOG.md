@@ -57107,3 +57107,7 @@ Decision: A replay with an unknown base marks synced when the merged summary equ
 ## 2026-10-16 - Commit: S02 test epic 3: native id, replay, quarantine, cursor and DeviceSource surface tests (U10, U11, U14, U15, U16, U23)
 
 Decision: The quarantine duplicate-key test compares decoded keys (an escape-spelled duplicate was accepted before).
+
+## 2026-10-16 - Commit: S02 test epic 3: telemetry sink buffer, schema parity, redaction (U25, U26, U34, U35, I14)
+
+Decision: The debug telemetry sink gets the 500-event / 64 KiB oldest-dropped buffer and a non-blocking send (design 8.1); redact() also masks coordinates, geohashes, heart-rate readings and labelled places.

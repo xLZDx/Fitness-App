@@ -103,6 +103,9 @@ import 'shared/widgets/aurora_background.dart';
 /// Top-level rather than passed down: `captureDebugPrint` hooks a global, so
 /// pretending the owner is local would be a lie about its lifetime.
 DebugTelemetry? _telemetry;
+/// One sink for the whole run, so its bounded buffer and dropped counter survive
+/// between flushes (S02 design 8.1).
+final CallableDebugTelemetrySink _telemetrySink = CallableDebugTelemetrySink();
 
 /// Held only to keep the listener alive for the process lifetime.
 ///
@@ -130,7 +133,7 @@ Future<void> _flushTelemetry() async {
   if (uid == null) return;
   try {
     // S02-09: sent through the sanitising callable; the server sets uid/time.
-    await CallableDebugTelemetrySink().send(t.toJson());
+    await _telemetrySink.send(t.toJson());
   } catch (e) {
     // Not debugPrint: that is captured back into the very log we failed to
     // send, which would grow the buffer on every retry.
