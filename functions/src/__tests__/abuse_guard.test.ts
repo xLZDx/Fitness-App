@@ -285,7 +285,7 @@ describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
   // S02 unified activity (design 5.4, 8.1): redacted like the Body Scan actions; starting limits, unmeasured.
   const S02_QUOTAS = {
     activitySettingsSet: 20,
-    activityDelete: 100,
+    activityDelete: 1000,
     activityStreamUpload: 30,
     activityStreamCommit: 60,
     activityDeleteAll: 10,

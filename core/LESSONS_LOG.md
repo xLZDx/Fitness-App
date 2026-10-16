@@ -71,3 +71,13 @@ SUCCESS: the never-run scoped journal compiled and passed 22 behaviour tests on 
 
 ## 2026-10-16 - Tombstone continuation tests (test epic 11b)
 SHORTCOMING: the E2 continuation compiled and met its notes (34 tests green), but account-scoped state was missed: the retry timer, the confirmed-id set (ids are deterministic, so account A's confirmed id would never be pushed for account B) and the backoff budget lived for the whole process and nothing reset them on sign-out or uid change. Root cause: E2 was designed per process while E1 made the journal per account; the two remediations were not read against each other. Layers: E2 author and design review missed it; the E2 test notes did not mention it; the E2 agent only noted that nothing calls `cancelTombstoneRetry()`; the epic test found it. Rule next time: any in-memory state next to an account-scoped store is reset on the account change, and a test switches accounts.
+
+## 2026-10-16 - Erasure quota tests (test epic 11b, server)
+SUCCESS: the four pinned 100s were found from the E2 notes and moved to 1000 without a surprise; the new test pins the 1000th/1001st call, per-user scope and the fence refund, so a regression to the abuse-limit value fails a test. Layer: tests, because the production change had left the pinned values stale.
+
+## 2026-10-16 - Scoped journal did not compile (test epic 11a, part b)
+Kind: FAILURE.
+Facts: `journal is AccountScopedJournal` does not promote an `ActivityJournal` to the unrelated interface in Dart, so `bindUid` and `wipeForUid` were undefined in the wiring and the wipe decorator; the app did not compile after remediation E1 (see core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md).
+Root cause: E1 was committed without ever being compiled (no checks until all coding was done).
+Layers: author and the review rounds missed it; the first test compile caught it.
+Rule next time: a remediation touching a type contract gets one compile of its own test files before it is handed to review.

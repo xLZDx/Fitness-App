@@ -244,7 +244,7 @@ describe("F82 activityDeleteAll has its own quota", () => {
     expect(store.has(`users/${UID}/activities/${ACT}`)).toBe(true);
   });
   test("exhausting activityDelete does not block the bulk call; exhausting the bulk quota does not block deleteActivity", async () => {
-    store.set(`users/${UID}/usage/2026-10-15`, { activityDelete: 100 });
+    store.set(`users/${UID}/usage/2026-10-15`, { activityDelete: 1000 });
     expect((await all()).status).toBe("done");
     store.set(`users/${UID}/usage/2026-10-15`, { activityDeleteAll: 10 });
     const del = await SEVEN.find((e) => e.name === "deleteActivity")!.call(w, { activityId: ACT });

@@ -55,7 +55,7 @@ export const SEVEN: SevenEntry[] = [
     ok: (c) => ({ activityId: ACT, uploadId: c.uploadId }),
   },
   {
-    name: "deleteActivity", quotaAction: "activityDelete", limit: 100,
+    name: "deleteActivity", quotaAction: "activityDelete", limit: 1000,
     call: (w, d, uid = UID, p = "password") => handleDeleteActivity(w.deps, uid, p, d),
     ok: () => ({ activityId: ACT_2 }),
   },

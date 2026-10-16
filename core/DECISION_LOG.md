@@ -57453,3 +57453,11 @@ Decision: the account-scoped journal is verified on real files with a per-scope 
 ## 2026-10-16 - Commit: S02 test epic 11b tombstone continuation and account change
 
 Decision: the E2 tombstone continuation is verified on a real journal with a fake pusher and timer; the repository gets `onAccountChanged()` (cancels the retry timer, drops per-account confirmed/failed sets, backoff budget and last error, stops a pass in flight) because a timer and the confirmed-id set otherwise outlive a sign-out or uid change. Evidence: core/changes/2026-10-16-s02-test-epic11b-tombstone-continuation.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b erasure quota 1000
+
+Decision: the pinned `activityDelete` limit is 1000 in four server test files and the F82 plan row, with a new test for the 1000/1001 boundary, per-user scope and fence refund. Evidence: core/changes/2026-10-16-s02-test-epic11b-erasure-quota.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (b) wiring and decorator tests, compile fix
+
+Decision: the wipe-wiring and account-switch tests run the real scoped journal over real files; type promotion to AccountScopedJournal is replaced by pattern matching. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.

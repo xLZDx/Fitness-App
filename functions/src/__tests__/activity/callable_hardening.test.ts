@@ -7,7 +7,7 @@ import { join } from "path";
 import * as logger from "firebase-functions/logger";
 import { QUOTAS } from "../../abuse_guard";
 import {
-  ACT, ACT_2, DAY, T0, UID, UID_B, callReq, createWorld, expectHttpsError, loggedText, quarantinePath, releaseClock,
+  ACT, ACT_2, DAY, T0, UID, UID_B, callReq, ts, createWorld, expectHttpsError, loggedText, quarantinePath, releaseClock,
   resetAll, rowOf, seedReady, setNow, store, uploadOf, usageOf, useClock, validPayload, writes, type World,
 } from "./support/fakes";
 import { commit, create, outcome, stage } from "./support/flow";
@@ -169,13 +169,32 @@ describe("F61 quota per callable", () => {
   });
   test("exhausting activityDelete does not block deleteAllActivityStreams and the reverse (design 5.4)", async () => {
     clearUsage();
-    for (let i = 0; i < 100; i++) await by("deleteActivity").call(w, { activityId: ACT_2 });
+    for (let i = 0; i < 1000; i++) await by("deleteActivity").call(w, { activityId: ACT_2 });
     await expectHttpsError(by("deleteActivity").call(w, { activityId: ACT_2 }), "resource-exhausted", "quota_exceeded");
     expect((await by("deleteAllActivityStreams").call(w, {})).status).toBe("done");
     clearUsage();
     for (let i = 0; i < 10; i++) await by("deleteAllActivityStreams").call(w, {});
     await expectHttpsError(by("deleteAllActivityStreams").call(w, {}), "resource-exhausted", "quota_exceeded");
     expect((await by("deleteActivity").call(w, { activityId: ACT_2 })).deleted).toBe(true);
+  });
+  test("E2 / MAJOR-03: the activityDelete daily limit is 1000, per user, and fence refusals refund the charge", async () => {
+    expect(QUOTAS.activityDelete).toBe(1000);
+    clearUsage();
+    const day = `users/${UID}/usage/2026-10-15`;
+    store.set(day, { activityDelete: 999 });
+    // 1000th call of the day is accepted, the 1001st is refused.
+    expect((await by("deleteActivity").call(w, { activityId: ACT_2 })).deleted).toBe(true);
+    expect(usageOf(UID, "activityDelete")).toBe(1000);
+    await expectHttpsError(by("deleteActivity").call(w, { activityId: ACT_2 }), "resource-exhausted", "quota_exceeded");
+    // Per user: another account is not affected by UID's exhaustion.
+    expect(usageOf(UID_B, "activityDelete")).toBe(0);
+    await by("deleteActivity").call(w, { activityId: ACT_2 }, UID_B).catch(() => undefined);
+    expect(usageOf(UID_B, "activityDelete")).toBe(1);
+    // Fence refusal refunds: at 999 used, a fenced call leaves the counter at 999.
+    store.set(day, { activityDelete: 999 });
+    store.set(`activity_account_state/${UID}`, { fenceAt: ts(T0) });
+    await expectHttpsError(by("deleteActivity").call(w, { activityId: ACT_2 }), "failed-precondition", "account_deleting");
+    expect(usageOf(UID, "activityDelete")).toBe(999);
   });
 });
 
