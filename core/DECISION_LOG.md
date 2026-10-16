@@ -56975,3 +56975,7 @@ Decision: The seventh callable is a resumable job whose state (job id, cursor, p
 ## 2026-10-16 - Commit: S02-07: account export sections for unified activity
 
 Decision: The export reuses the existing paged path for activities and stream index rows (first response capped at MAX_ROWS and named in truncated, continuation by cursor), exposes stream rows through an allow-list with no object path or samples, adds the activity settings document and an always-present note that GPS is delivered by short-lived links and heart rate stays on the device. Evidence: core/changes/2026-10-16-s02-07-export-sections.md.
+
+## 2026-10-16 - Commit: S02-07: getActivityStreamDownloadUrls callable and quota
+
+Decision: The download callable is fence-aware and read-only in one transaction, signs 15-minute V4 GET links only for stored rows whose object path lies under the owner and activity prefix, answers deleted, tombstoned, missing and foreign ids with the same not_found, has its own redacted activityDownloadUrls quota, and logs only outcome slugs and counts. Evidence: core/changes/2026-10-16-s02-07-download-urls.md.

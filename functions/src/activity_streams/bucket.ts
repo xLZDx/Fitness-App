@@ -23,12 +23,16 @@ export interface StreamFile {
   download(): Promise<[Buffer, ...unknown[]]>;
   save(data: Buffer, options: { contentType: string; resumable?: boolean }): Promise<unknown>;
   delete(options?: { ignoreNotFound?: boolean }): Promise<unknown>;
-  /** V4 signed URL (S02-04b: the upload callable signs the quarantine PUT). */
+  /**
+   * V4 signed URL: the upload callable signs the quarantine PUT (`write`, with
+   * content type and length header); the download callable signs a GET (`read`,
+   * S02-07) for a promoted stream object.
+   */
   getSignedUrl(config: {
     version: "v4";
-    action: "write";
+    action: "write" | "read";
     expires: number;
-    contentType: string;
+    contentType?: string;
     extensionHeaders?: Record<string, string>;
   }): Promise<[string, ...unknown[]]>;
 }

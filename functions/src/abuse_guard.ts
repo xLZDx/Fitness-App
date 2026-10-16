@@ -482,6 +482,12 @@ export const QUOTAS = {
    * per-activity limit. Starting limit, unmeasured.
    */
   activityDeleteAll: 10,
+  /**
+   * S02 `getActivityStreamDownloadUrls` (design 5.4, 7): download-link requests
+   * per user per day (each call covers up to 20 activities). Starting limit,
+   * unmeasured.
+   */
+  activityDownloadUrls: 60,
 } as const;
 
 /**
@@ -515,6 +521,8 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "activityStreamCommit",
   // S02 bulk stream delete (design 5.4): the log must not record who erased GPS streams.
   "activityDeleteAll",
+  // S02 stream download links (design 5.4): the log must not record who fetched GPS streams.
+  "activityDownloadUrls",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",

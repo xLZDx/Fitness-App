@@ -3044,6 +3044,8 @@ export { sweepLateActivityStreams } from "./activity_streams/late_sweep";
 export { reconcileActivityStreams } from "./activity_streams/reconcile";
 // Seventh callable (S02-06b, design 5.4/9.1): resumable bulk "delete my cloud streams"; own quota activityDeleteAll.
 export { deleteAllActivityStreams } from "./activity_streams/delete_all_streams";
+// Short-lived V4 GET links for the owner's stored streams (S02-07, design 7/7.1); own quota activityDownloadUrls.
+export { getActivityStreamDownloadUrls } from "./activity_streams/download_urls";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until
