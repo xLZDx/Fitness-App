@@ -57610,3 +57610,7 @@ Decision: onSignOut wipes the uid captured before the prompts (wipeForUid) and a
 ## 2026-10-16 - Commit: S02 remediation H-B design item 24 and test notes
 
 Decision: design section 17 item 24 records remediation H; the H-B test notes list the oracles and stale fakes. Evidence: core/changes/2026-10-16-s02-remediation-h-b-docs.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A startup wiring code (H3 code commit)
+
+Decision: the H3 decision entry above landed in the sibling H-B commit because the two agents share one git index; this commit carries the H3 code and its change record. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.

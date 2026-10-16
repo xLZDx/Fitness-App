@@ -70,11 +70,23 @@ List<Override> activityRootOverrides({
           backend: FirestoreActivitySummaryBackend(),
           tombstonePusher: CloudFunctionsActivityTombstonePusher().push,
           authUid: () => FirebaseAuth.instance.currentUser?.uid,
+          accountBeingDeleted: _accountBeingDeletedSupplier(ref),
         );
         ref.onDispose(repo.dispose);
         return repo;
       }),
   ];
+}
+
+/// Supplies the uid whose account deletion is in progress (null = none), read
+/// from [accountBeingDeletedUidProvider] through the provider that owns [ref].
+/// The provider layer is the seam: [activityRootOverrides] has no `ref`, but the
+/// override body it creates does. After the owning provider is disposed the
+/// supplier answers null (a disposed repository or uploader is dead anyway).
+String? Function() _accountBeingDeletedSupplier(Ref ref) {
+  var disposed = false;
+  ref.onDispose(() => disposed = true);
+  return () => disposed ? null : ref.read(accountBeingDeletedUidProvider);
 }
 
 /// The opened journal (only overridden when a journal flag is on).
@@ -287,6 +299,8 @@ final activityStreamUploaderProvider = Provider<ActivityStreamUploader?>((ref) {
     flags: ref.watch(activityFlagsProvider),
     // Every run is bound to the account it started with (design 5.2 item 4).
     currentUid: () => _syncUid(ref.read(authUserProvider).valueOrNull),
+    // Deletion in progress stops uploads (stored data is untouched).
+    accountBeingDeleted: _accountBeingDeletedSupplier(ref),
   );
 });
 
@@ -315,28 +329,51 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
   if (!ref.watch(activityFlagsProvider).cloudSync) return;
   if (ref.watch(activityJournalProvider) == null) return;
   var disposed = false;
-  ref.onDispose(() => disposed = true);
+  // Start generation: incremented on every auth value with a real change, on an
+  // account deletion that starts for the signed-in uid and on disposal. Every
+  // asynchronous start continuation re-verifies it (and the uid) after each
+  // await, so an obsolete account's continuation does nothing.
+  var startGeneration = 0;
+  ref.onDispose(() {
+    disposed = true;
+    startGeneration++;
+  });
   ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
     final user = next.valueOrNull;
     final previousUid = _syncUid(previous?.valueOrNull);
     final nextUid = _syncUid(user);
+    final previousRaw = previous?.valueOrNull?.uid;
+    if (previousRaw != user?.uid || previousUid != nextUid) startGeneration++;
+    final settings = ref.read(activityCloudSettingsClientProvider);
+    final consentStore = ref.read(activityConsentStoreProvider);
     // The signed-in account changed or went away: stop the previous account's
     // queued and in-flight uploads before anything else happens.
     // Decided on the RAW uid (anonymous users included): an anonymous user X
     // replaced by a real user B must also drop X's caches and queued uploads.
-    final previousRaw = previous?.valueOrNull?.uid;
     if (previousRaw != null &&
         previousRaw.isNotEmpty &&
         previousRaw != user?.uid) {
       ref.read(activitySyncRepositoryProvider).onAccountChanged();
       ref.read(activityStreamUploaderProvider)?.cancelQueued();
+      // The consent cache and state belonged to the previous account: unbind
+      // them. Stored consent of any account is NOT deleted.
+      consentStore.signOut();
+      settings.reset();
     }
     if (user == null || nextUid == null) return;
     if (previousUid == nextUid) return;
     final uploader = ref.read(activityStreamUploaderProvider);
-    final settings = ref.read(activityCloudSettingsClientProvider);
-    final consentStore = ref.read(activityConsentStoreProvider);
     final journal = ref.read(activityJournalProvider)!;
+    final myUid = nextUid;
+    final myGeneration = startGeneration;
+    // True only while this start is still the current one: not disposed, no
+    // newer auth change, the same signed-in account, and that account is not
+    // being deleted.
+    bool current() =>
+        !disposed &&
+        myGeneration == startGeneration &&
+        _syncUid(ref.read(authUserProvider).valueOrNull) == myUid &&
+        ref.read(accountBeingDeletedUidProvider) != myUid;
     unawaited(() async {
       try {
         // The journal of this uid must be bound first (account-scoped
@@ -362,10 +399,7 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
           }
         }
         // The account may have changed while the bind ran: do nothing more.
-        if (_syncUid(ref.read(authUserProvider).valueOrNull) != nextUid) return;
-        // Uploads were cancelled when the previous account went away; they
-        // resume only now that this account's journal is bound.
-        uploader?.resume();
+        if (!current()) return;
         try {
           await ref
               .read(activitySyncRepositoryProvider)
@@ -373,10 +407,17 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         } catch (e) {
           debugPrint('activity: start sync failed (${e.runtimeType})');
         }
+        if (!current()) return;
         // Stream upload: one run per app start, only with consent known granted.
+        // Each step re-verifies that this start is still the current one.
         try {
-          await consentStore.signIn(user.uid);
+          await consentStore.signIn(myUid);
+          if (!current()) return;
           await settings.load();
+          if (!current()) return;
+          // Uploads were cancelled when the previous account went away; they
+          // resume only now that THIS account's consent is loaded and verified.
+          uploader?.resume();
           await uploader?.runPending();
         } catch (e) {
           debugPrint('activity: start stream upload failed (${e.runtimeType})');
@@ -387,4 +428,15 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
       }
     }());
   }, fireImmediately: true);
+
+  // An account deletion that starts for the signed-in account stops sync and
+  // uploads at once and invalidates a pending start. Stored data (journal,
+  // consent) is untouched.
+  ref.listen<String?>(accountBeingDeletedUidProvider, (previous, next) {
+    if (next == null || next.isEmpty) return;
+    if (ref.read(authUserProvider).valueOrNull?.uid != next) return;
+    startGeneration++;
+    ref.read(activitySyncRepositoryProvider).onAccountChanged();
+    ref.read(activityStreamUploaderProvider)?.cancelQueued();
+  });
 });
