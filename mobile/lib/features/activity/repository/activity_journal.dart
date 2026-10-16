@@ -8,6 +8,7 @@ library;
 
 import '../data/activity_session.dart';
 import 'journal_models.dart';
+import 'uid_scoped_activity_journal.dart' show AccountScopedJournal;
 
 abstract class ActivityJournal {
   /// Opens the journal and runs the recovery pass. Must be called once before
@@ -118,16 +119,51 @@ class ActivityWipeCoordinator {
   /// Sign-out: an empty journal signs out without a prompt; a non-empty one
   /// offers export, asks for confirmation and wipes only when confirmed.
   /// Returns true when the journal holds no data afterwards.
+  ///
+  /// Account-bound (remediation H8): for an account-scoped journal the uid is
+  /// captured BEFORE any prompt and exactly that uid is wiped after the user's
+  /// confirmation. If the bound uid changed meanwhile (an account switch during
+  /// the prompt) nothing is wiped and false is returned: the confirmation was
+  /// given for another account.
   Future<bool> onSignOut(ActivitySignOutHooks hooks) async {
+    final uid = _capturedUid();
     final assessment = await _journal.assessSignOut();
+    if (!_stillBound(uid)) return false;
     if (!assessment.requiresWarning) {
-      await _journal.wipe();
+      await _wipeCaptured(uid);
       return true;
     }
     await hooks.offerExport(assessment);
     if (!await hooks.confirmWipe(assessment)) return false;
-    await _journal.wipe();
+    if (!_stillBound(uid)) return false;
+    await _wipeCaptured(uid);
     return true;
+  }
+
+  /// The uid an account-scoped journal is bound to now (null for a plain
+  /// journal or while nothing is bound).
+  String? _capturedUid() {
+    if (_journal case final AccountScopedJournal s) {
+      return s.isBound ? s.boundUid : null;
+    }
+    return null;
+  }
+
+  /// True while the journal is still in the state [uid] was captured in.
+  /// A plain journal has no account, so it is always "the same".
+  bool _stillBound(String? uid) {
+    if (_journal is! AccountScopedJournal) return true;
+    return _capturedUid() == uid;
+  }
+
+  Future<void> _wipeCaptured(String? uid) async {
+    if (uid != null) {
+      if (_journal case final AccountScopedJournal s) {
+        await s.wipeForUid(uid);
+        return;
+      }
+    }
+    await _journal.wipe();
   }
 
   /// Account deletion succeeded: wipe without a prompt or an export offer.

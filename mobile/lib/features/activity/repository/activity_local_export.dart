@@ -17,6 +17,7 @@ import '../data/gpx_encoder.dart';
 import 'activity_journal.dart';
 import 'journal_errors.dart';
 import 'journal_models.dart';
+import 'uid_scoped_activity_journal.dart' show AccountScopedJournal;
 
 enum ActivityExportFormat {
   gpx('gpx', 'application/gpx+xml'),
@@ -73,6 +74,13 @@ class ActivityExportStreamLost extends ActivityExportResult {
   const ActivityExportStreamLost(super.activityId);
 }
 
+/// The bound account changed while an export of the whole journal ran: the
+/// export was abandoned, nothing of it may be used (remediation H8). It is the
+/// only element of the list [ActivityLocalExport.exportAll] returns then.
+class ActivityExportAccountChanged extends ActivityExportResult {
+  const ActivityExportAccountChanged() : super('');
+}
+
 /// What a UI or the sign-out flow needs.
 abstract class ActivityLocalExport {
   /// Exports one activity.
@@ -107,14 +115,39 @@ class JournalActivityLocalExport implements ActivityLocalExport {
     return encodeEntry(entry, format);
   }
 
+  /// Account-bound (remediation H8): the bound uid of an account-scoped
+  /// journal is captured before listing and re-checked after the listing and
+  /// after every per-activity read. If it changed anywhere, the WHOLE export is
+  /// abandoned: the result is a single [ActivityExportAccountChanged] and no
+  /// file of either account is returned, so one export never mixes two
+  /// accounts. (The listing carries no streams, so each entry is read by id for
+  /// the full series; the check after each read covers that read.)
   @override
   Future<List<ActivityExportResult>> exportAll(ActivityExportFormat format) async {
+    final uid = _boundUid();
     final entries = await _journal.list();
+    if (!_stillBound(uid)) return const [ActivityExportAccountChanged()];
     final out = <ActivityExportResult>[];
     for (final e in entries) {
-      out.add(await exportActivity(e.session.id, format));
+      final r = await exportActivity(e.session.id, format);
+      if (!_stillBound(uid)) return const [ActivityExportAccountChanged()];
+      out.add(r);
     }
     return out;
+  }
+
+  /// The uid an account-scoped journal is bound to now (null for a plain
+  /// journal or while nothing is bound).
+  String? _boundUid() {
+    if (_journal case final AccountScopedJournal s) {
+      return s.isBound ? s.boundUid : null;
+    }
+    return null;
+  }
+
+  bool _stillBound(String? uid) {
+    if (_journal is! AccountScopedJournal) return true;
+    return _boundUid() == uid;
   }
 
   /// Pure encoding of one already-read entry (exposed for tests).

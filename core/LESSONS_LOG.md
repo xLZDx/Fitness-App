@@ -287,3 +287,19 @@ Facts: the conflict sheet drew view.conflicts and view.candidates after its load
 Root cause: my own batch G republished the state but did not check what the sheet draws in the error state; no test looked at the first frame of the new account.
 Layers: author and tests missed it; the class sweep caught it.
 Rule next time: for every state-reset fix, assert what the widget draws in the first frame and in the error state.
+
+## 2026-10-16 - S02 startup closure had no uid re-check between awaits
+
+Kind: FAILURE (third part of the round-12 MAJOR).
+Facts: the closure awaited syncAll, signIn, load and runPending in sequence with a uid check only after the journal bind; resume was called before consent was known. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+Root cause: the earlier account-switch fixes covered the bind step only; no test interleaved an account switch into each later await.
+Layers: author, diff-scoped reviewers and epic tests missed it; the external gate caught it.
+Rule next time: one current() predicate per async chain, re-checked after every await; one mid-flight switch test per await.
+
+## 2026-10-16 - Wipe and export hooks acted on whatever account was bound at call time
+
+Kind: FAILURE.
+Facts: onSignOut asked the user and then wiped the journal bound at that moment; exportAll could mix entries of two accounts. No production caller yet. Evidence: core/changes/2026-10-16-s02-remediation-h-b-wipe-and-export.md.
+Root cause: the author of these hooks did not scope them to the account; reviews were scoped to the remediation diff, so latent callers were never in scope.
+Layers: author and reviewers missed it; the class sweep caught it.
+Rule next time: an interface that will gain a caller later is reviewed for account binding now, not when the caller lands.

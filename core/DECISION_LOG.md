@@ -57598,3 +57598,11 @@ Decision: a sync pass or tombstone retry of the account whose deletion is in pro
 ## 2026-10-16 - Commit: S02 remediation H-B conflict presenter and sheet per account
 
 Decision: the conflict presenter depends on the signed-in uid (syncConflictUidProvider) and is rebuilt on a uid change; actions carry the uid captured at tap time as expectedUid; the sheet draws cards only for a loaded, non-failed state. Evidence: core/changes/2026-10-16-s02-remediation-h-b-presenter-and-sheet.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A startup wiring bound to the account
+
+Decision: every asynchronous step of the app-start sync and upload re-verifies the original uid, generation and deletion state; resume happens only after this account consent is loaded; an account change unbinds the consent store and resets the settings state without deleting stored consent; a deletion in progress stops sync and uploads. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B wipe coordinator and export bound to the account
+
+Decision: onSignOut wipes the uid captured before the prompts (wipeForUid) and aborts on a change; exportAll aborts the whole export with ActivityExportAccountChanged when the bound uid changes, and keeps reading each entry by id because the listing has no streams. Evidence: core/changes/2026-10-16-s02-remediation-h-b-wipe-and-export.md.
