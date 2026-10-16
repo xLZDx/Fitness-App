@@ -57275,3 +57275,7 @@ Decision: Account deletion wipes the activity journal through a decorator around
 ## 2026-10-16 - Commit: S02 test epic 8a: abandoned fence, usage cleanup and unset bucket
 
 Decision: The late-sweep contract of remediation A1, A5 and A10 is pinned by new jest tests whose oracles come from the remediation notes; the old skipped-live tests were updated to the 24 h window.
+
+## 2026-10-16 - Commit: S02 remediation B2: corrupt cloud summary and tombstone push error
+
+Decision: A cloud summary that is read but cannot be parsed is a distinct SummaryCorrupt result shown as a visible sync conflict instead of an offline retry; the last tombstone push error code is kept and printed through debugPrint, the existing diagnostics path of the sync layer.

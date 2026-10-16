@@ -36,6 +36,8 @@ extension ActivitySyncResolution on ActivitySyncRepository {
           server = await _backend.readSummary(id);
         } on SummaryBackendUnavailable {
           return SyncOutcome.unavailable; // still sync_conflict, data intact
+        } on SummaryCorrupt {
+          return SyncOutcome.conflict; // unreadable cloud copy: stays visible
         }
         if (server == null) {
           // No server document: keep device creates it; keep cloud has
@@ -127,6 +129,8 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         try {
           server = await _backend.readSummary(id);
         } on SummaryBackendUnavailable {
+          serverKnown = false;
+        } on SummaryCorrupt {
           serverKnown = false;
         }
         final res = SummaryProjection.resolveCandidate(

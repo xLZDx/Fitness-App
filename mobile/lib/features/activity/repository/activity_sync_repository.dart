@@ -18,6 +18,9 @@ library;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint;
+
+
 import '../data/activity_cloud_summary.dart';
 import '../data/activity_session.dart';
 import '../data/activity_versions.dart';
@@ -96,6 +99,25 @@ class ActivitySyncRepository {
   final ActivityTombstonePusher? _pushTombstone;
   final DateTime Function() _clock;
   final CalcVersions Function() _versions;
+
+  String? _lastTombstonePushError;
+  DateTime? _lastCorruptRead;
+
+  /// Error code (`FirebaseException.code` or the exception type) of the last
+  /// failed tombstone push, or null when none failed in this process (SF9).
+  String? get lastTombstonePushError => _lastTombstonePushError;
+
+  /// When a corrupt cloud summary was last met in this process (SF4), or null.
+  DateTime? get lastCorruptRead => _lastCorruptRead;
+
+  static String _errorCode(Object e) {
+    // Duck-typed: callable failures carry a `code`; anything else is its type.
+    try {
+      final code = (e as dynamic).code;
+      if (code is String && code.isNotEmpty) return code;
+    } catch (_) {}
+    return e.runtimeType.toString();
+  }
 
   final JournalMutex _ops = JournalMutex();
   final JournalMutex _stateLock = JournalMutex();
@@ -183,6 +205,16 @@ class ActivitySyncRepository {
         detail = _detailFor(e, s, server);
         _conflictCache[e.id] = detail;
       } on SummaryBackendUnavailable {
+        return SyncConflict(
+          id: e.id,
+          sport: s.sport,
+          startUtc: s.startUtc,
+          fields: const [],
+          cloudKnown: false,
+        );
+      } on SummaryCorrupt {
+        // Not cached: the cloud document is unreadable, so the conflict stays
+        // visible with no cloud values to compare.
         return SyncConflict(
           id: e.id,
           sport: s.sport,
@@ -341,6 +373,9 @@ class ActivitySyncRepository {
           tombsKnown = true;
         } on SummaryBackendUnavailable {
           // unknown is never deletion
+        } on SummaryCorrupt {
+          // Tombstone ids are document ids and cannot be corrupt; treated as
+          // unknown, never as deletion.
         }
         if (tombsKnown) await _pushLocalTombstones(tombs);
         for (final e in await _journal.list()) {
@@ -376,8 +411,11 @@ class ActivitySyncRepository {
       pushed++;
       try {
         await push(t.id);
-      } catch (_) {
-        // Offline or refused: owed, retried at the next pass.
+      } catch (e) {
+        // Offline or refused: owed, retried at the next pass. The error code
+        // is kept so a refusal is distinguishable from being offline.
+        _lastTombstonePushError = _errorCode(e);
+        debugPrint('activity: tombstone push failed ($_lastTombstonePushError)');
       }
     }
   }
@@ -459,6 +497,12 @@ class ActivitySyncRepository {
         server = await _backend.readSummary(entry.id);
       } on SummaryBackendUnavailable {
         return afterDenial ? _markConflict(entry, null, const []) : _markFailed(entry);
+      } on SummaryCorrupt {
+        // A corrupt cloud document will not heal by retrying: a visible
+        // conflict, local data kept, nothing written.
+        _lastCorruptRead = _clock();
+        debugPrint('activity: cloud summary unreadable (corrupt)');
+        return _markConflict(entry, null, const []);
       }
     }
     if (server == null) {

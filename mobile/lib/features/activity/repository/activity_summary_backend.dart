@@ -32,6 +32,19 @@ class SummaryBackendUnavailable implements Exception {
   String toString() => 'SummaryBackendUnavailable($cause)';
 }
 
+/// The server document was read but cannot be parsed (corrupt or of an
+/// unknown shape). Distinct from [SummaryBackendUnavailable]: retrying the
+/// read cannot help, so the sync layer shows a visible conflict instead of an
+/// offline retry loop. Never read as a deletion either.
+class SummaryCorrupt implements Exception {
+  const SummaryCorrupt([this.cause]);
+
+  final Object? cause;
+
+  @override
+  String toString() => 'SummaryCorrupt($cause)';
+}
+
 /// More summaries than one batched write allows (design 6.2: at most 8).
 class SummaryBatchTooLarge implements Exception {
   const SummaryBatchTooLarge(this.count, this.max);
@@ -48,7 +61,8 @@ const int kMaxSummaryBatch = 8;
 
 abstract class ActivitySummaryBackend {
   /// The server summary of [id], or null when the document does not exist.
-  /// Throws [SummaryBackendUnavailable] when it cannot be read.
+  /// Throws [SummaryBackendUnavailable] when it cannot be read and
+  /// [SummaryCorrupt] when the document exists but cannot be parsed.
   Future<Map<String, Object?>?> readSummary(String id);
 
   /// `true` = the tombstone `activity_tombstones/{id}` exists, `false` = the

@@ -7,6 +7,8 @@
 ///
 /// - `permission-denied` on a write -> [SummaryWriteDenied] (never read as a
 ///   deletion, design 6.2);
+/// - a document that was read but cannot be parsed -> [SummaryCorrupt] (the
+///   parse is outside the network catch);
 /// - every other failure, a timeout, or a missing sign-in ->
 ///   [SummaryBackendUnavailable] (the write MAY have been applied);
 /// - reads use the server source, so a stale local cache is never mistaken for
@@ -70,43 +72,55 @@ class FirestoreActivitySummaryBackend implements ActivitySummaryBackend {
     return uid;
   }
 
-  Future<T> _read<T>(Future<T> Function() body) async {
+  /// Only [fetch] (the network call) sits inside the catch; [parse] runs
+  /// after it, so a corrupt document is never reported as unavailable.
+  Future<T> _read<R, T>(
+      Future<R> Function() fetch, T Function(R raw) parse) async {
+    final R raw;
     try {
-      return await body().timeout(_timeout);
+      raw = await fetch().timeout(_timeout);
     } on SummaryBackendUnavailable {
       rethrow;
     } catch (e) {
       throw SummaryBackendUnavailable(_codeOf(e));
+    }
+    try {
+      return parse(raw);
+    } catch (e) {
+      throw SummaryCorrupt(e.runtimeType.toString());
     }
   }
 
   @override
   Future<Map<String, Object?>?> readSummary(String id) async {
     final uid = _requireUid();
-    return _read(() async {
-      final snap = await _summaryRef(uid, id).get(_serverRead);
-      final data = snap.data();
-      if (!snap.exists || data == null) return null;
-      return fromFirestoreSummary(data);
-    });
+    return _read<DocumentSnapshot<Map<String, dynamic>>,
+        Map<String, Object?>?>(
+      () => _summaryRef(uid, id).get(_serverRead),
+      (snap) {
+        final data = snap.data();
+        if (!snap.exists || data == null) return null;
+        return fromFirestoreSummary(data);
+      },
+    );
   }
 
   @override
   Future<bool> tombstoneExists(String id) async {
     final uid = _requireUid();
-    return _read(() async {
-      final snap = await _tombstones(uid).doc(id).get(_serverRead);
-      return snap.exists;
-    });
+    return _read<DocumentSnapshot<Map<String, dynamic>>, bool>(
+      () => _tombstones(uid).doc(id).get(_serverRead),
+      (snap) => snap.exists,
+    );
   }
 
   @override
   Future<Set<String>> listTombstoneIds() async {
     final uid = _requireUid();
-    return _read(() async {
-      final snap = await _tombstones(uid).get(_serverRead);
-      return {for (final d in snap.docs) d.id};
-    });
+    return _read<QuerySnapshot<Map<String, dynamic>>, Set<String>>(
+      () => _tombstones(uid).get(_serverRead),
+      (snap) => {for (final d in snap.docs) d.id},
+    );
   }
 
   @override
