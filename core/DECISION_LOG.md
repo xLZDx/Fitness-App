@@ -57715,3 +57715,7 @@ Decision: `functions/src/__tests__/activity/support/flow.ts` gains `withUid(data
 ## 2026-10-16 - Commit: test(s02): add expectedUid helper and handler tests (epic 16a)
 
 Decision: New `functions/src/__tests__/activity/expected_uid.test.ts` (unit tests of `verifyExpectedUid`) and `expected_uid_handlers.test.ts` (the four handlers: mismatch writes and charges nothing and logs `account_changed` without a uid, mismatch wins over an invalid request and an exhausted quota, missing or malformed key gives `invalid_request`, non-object data, matching key success, strict settings parser, anonymous gate first, onCall wrapper refuses a missing auth). Evidence: core/changes/2026-10-16-s02-test16a-2-new-tests.md; 88 tests in the two new files passed (88 total). Broader sets are recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md.
+
+## 2026-10-16 - Commit: docs(s02): record the epic 16a server test findings
+
+Decision: New `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` with the section "16a server": changes, new tests, exact commands and result lines, findings and limits. Evidence: core/changes/2026-10-16-s02-test16a-3-findings.md; Documentation only; the results quoted are from the runs described in the document.

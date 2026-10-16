@@ -491,3 +491,11 @@ Facts: the notes said the strict parser still refuses an unknown extra key for a
 Root cause: the notes were derived from reading, not from a run; my first draft also seeded data inside a body builder after taking the snapshot.
 Layer: the notes (author) missed it; the new tests caught it.
 Rule next time: confirm each strict-parser claim against the specific parser before writing the assertion, and keep request builders free of side effects.
+
+## 2026-10-16 - Commit: docs(s02): record the epic 16a server test findings
+
+Kind: SUCCESS.
+Facts: findings document for epic 16a server written from the actual run output, including the unrelated timeout flake and the inexact note. Evidence: core/changes/2026-10-16-s02-test16a-3-findings.md.
+Why it worked: results were quoted verbatim and the unverified parts were listed.
+Layer: tests.
+Rule next time: quote result lines verbatim and say what was not run.
