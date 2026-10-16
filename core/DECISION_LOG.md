@@ -56851,3 +56851,7 @@ Decision: an explicit user value is deliberately authoritative until the user re
 ## 2026-10-16 - Commit: S02 design and test plan revision 12
 
 Decision: resolving a recalculation or source candidate is a single atomic operation over the explicit value, the cloud override and the candidate, merged against the current base and server revision, so the user's choice is never undone by an older override. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-12.md.
+
+## 2026-10-16 - Commit: S02 documentation phase closed
+
+Decision: the S02 documentation gate is closed on GPT-PM APPROVE for head 9c68cab8 (verification round 10); implementation of S02 starts. Evidence: core/changes/2026-10-16-s02-documentation-phase-closed.md.

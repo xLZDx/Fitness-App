@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sprint S02: documentation phase</title>
+<title>Sprint S02: documentation phase approved</title>
 <style>
   :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
@@ -27,8 +27,8 @@
 <div class="wrap">
 <header>
   <p class="lede">Fitness App, Phase 2</p>
-  <h1>Sprint S02, documentation phase: internal reviews of the design and test plan</h1>
-  <p class="lede">Unified activity model: storage of workouts and GPS streams, retention, deletion, export and the server-side debug telemetry guarantee. No code yet. The documents passed two rounds of internal review (architecture, reliability, security) and now await the external GPT-PM review on commit <code>e6650c21</code>.</p>
+  <h1>Sprint S02, documentation phase: approved by the external reviewer</h1>
+  <p class="lede">Unified activity model: storage of workouts and GPS streams, retention, deletion, export and the server-side debug telemetry guarantee. After ten review rounds the external reviewer GPT-PM approved the documents on commit <code>9c68cab8</code> (no blocker or major findings remain). There is no code yet; implementation starts next.</p>
 </header>
 
 <!-- report-conform:begin -->
@@ -56,7 +56,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ e6650c21</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ 9c68cab8</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -64,26 +64,27 @@
 </div>
 <!-- report-conform:end -->
 
-<h2>What exists</h2>
+<h2>Outcome</h2>
 <div class="box ok"><ul>
-  <li><b>S02 design</b> (<code>docs/phase2/s02/S02_DESIGN.md</code>, revision 3, 15 sections): data model, access rules, stream storage, retention, account deletion, export, telemetry, sprint stories with dependencies.</li>
-  <li><b>Test plan</b> (<code>S02_TEST_PLAN.md</code>, revision 3): 212 planned tests (38 Dart unit, 37 integration, 35 Firestore rules, 3 Storage rules, 94 functions with fakes, 5 end to end) and a story to test map.</li>
-  <li><b>Code map</b> of the current state (<code>S02_CODE_MAP.md</code>).</li>
-  <li>The operator answers on GPS and heart-rate retention, age and maps are recorded in the privacy contract.</li>
+  <li><b>S02 design</b> (<code>docs/phase2/s02/S02_DESIGN.md</code>, revision 12) and <b>test plan</b> (<code>S02_TEST_PLAN.md</code>, revision 12, 239 planned tests) are approved. The tests are only planned; none has been run.</li>
+  <li>Internal reviews (architecture, reliability, security): 45 findings, all accepted. External reviewer: ten rounds, 1 blocker and 17 major findings closed.</li>
 </ul></div>
 
-<h2>What the internal reviews found</h2>
+<h2>What the external review fixed in the design</h2>
 <div class="tablewrap"><table>
-  <tr><th>Round</th><th>Result</th><th>Main findings in plain words</th></tr>
-  <tr><td>1 (architect, reliability, security)</td><td>24 findings, all accepted</td><td>A deleted activity could come back from another device. An upload finishing after account erasure brought GPS data back. Expiry could outrun the user's setting. Heart rate was guarded by a strip list instead of a closed schema. The only device copy was lost on sign-out.</td></tr>
-  <tr><td>2 (closing check)</td><td>21 findings, all applied in revision 3</td><td>My revision counter could wipe live data because a permission error was read as a deletion. The delete fence did not match the real account deletion flow. Two parallel commits could overwrite each other. Expiry recompute could not find users. Firestore rules limit for batched writes.</td></tr>
+  <tr><th>Topic</th><th>What was wrong in plain words</th><th>Resolution</th></tr>
+  <tr><td>Account deletion</td><td>A phone with queued writes could recreate activity data after the account was deleted.</td><td>The guard is part of the Firestore access rules themselves: while an account deletion runs, writes are refused.</td></tr>
+  <tr><td>Two edits from two devices</td><td>One device could silently overwrite the edit of another.</td><td>Three-way merge per field; the same field with different values stays a visible conflict with a user choice.</td></tr>
+  <tr><td>Journal on the phone</td><td>A crash in the middle of a write could lose the previous confirmed version.</td><td>Each version is written to its own directory and committed by a <code>COMMIT</code> marker; recovery selects only committed versions.</td></tr>
+  <tr><td>Values adopted from another device</td><td>An adopted value could roll back on the next recomputation, on a formula update or on a user edit.</td><td>Adopted values are kept as overrides with rules: passive change, explicit user edit and automatic recalculation are separated; a recalculation never replaces an adopted value by itself and is offered to the user.</td></tr>
+  <tr><td>Edit history</td><td>Unbounded history could make the cloud write impossible (the counter exceeded its allowed range).</td><td>The canonical value is stored separately, the history is capped at 64 entries and the counter never exceeds 64.</td></tr>
+  <tr><td>Test plan</td><td>Test data requirements contradicted each other, one test asserted the opposite, the story to test map was out of sync.</td><td>Valid and deliberately corrupted data are separated, tests fixed, the map checked against the plan (all 239 tests belong to a story).</td></tr>
 </table></div>
-<p class="lede">Decisions taken: a server tombstone (TTL 400 days), the delete fence in a separate server-only collection, a permission error never wipes data without a tombstone, write batches of at most 10, a seventh hardened callable for bulk stream deletion.</p>
 
 <h2>Next</h2>
 <div class="box warn"><ul>
-  <li>The GPT-PM review of the S02 documents is running; after APPROVE implementation starts with separate agents for code and tests.</li>
-  <li>Still open (design section 12.3): the batched-write access-call limit (10 chosen, 20 reported), Firestore index contents, the sport type table, and three operator answers: what else may go to the cloud besides GPS, whether "never" retention is offered, the default expiry (2 years proposed).</li>
+  <li>Implementation of sprint S02 (build phase) starts: a separate implementation agent writes the code in the order of the stories in the design, then test agents write and run tests per epic, then specialist reviews and the final GPT-PM check; one PR for the whole sprint.</li>
+  <li>Still needed from the operator (does not block starting implementation): what else besides GPS may go to the cloud, whether a "never" retention option is offered, the default retention (2 years proposed).</li>
   <li>Outside the repository the operator must create the tombstone TTL policy in the Firebase console before release.</li>
 </ul></div>
 
