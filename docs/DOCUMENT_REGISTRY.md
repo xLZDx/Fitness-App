@@ -290,7 +290,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md` | S02 remediation C: test notes (client findings) | 2000 |
 | `docs/phase2/s02/S02_REMEDIATION_D_TEST_NOTES.md` | S02 remediation D: test notes | 1702 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3144 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 3059 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 6259 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4305 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4714 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC4.md` | S02 test epic 4: findings (plan versus design versus code) | 5009 |

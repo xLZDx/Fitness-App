@@ -57401,3 +57401,7 @@ Decision: the ActivityFlags truth table and the wiring flag matrix (OFF, localJo
 ## 2026-10-16 - Commit: S02 test epic 10b primarySourceId parity table
 
 Decision: the Dart rules mirror, schema.ts sourceId pattern and firestore.rules actLabelsOk are pinned to one value table. Evidence: core/changes/2026-10-16-s02-test-epic10b-source-id-parity.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b findings
+
+Decision: epic 10b closes green; the only defect was a stale uploader fake in the epic 9b wiring test. Evidence: core/changes/2026-10-16-s02-test-epic10b-findings.md.

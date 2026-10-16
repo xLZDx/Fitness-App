@@ -35,3 +35,27 @@ Summary line: `00:10 +47: All tests passed!`
 
 ### Not covered
 Pixels and layout of the sheet (NOT_RUN by design); the real Firestore adapter; FL5 and FL6 (agent 10b).
+
+## Epic 10b (agent 10b): uploader account binding, wiring, flag matrix, rules mirror
+
+### Tests written
+- `mobile/test/features/activity/repository/activity_stream_upload_account_binding_test.dart` (20): uid flip to another uid and to null before create, PUT, commit, `markStreamUploaded` and the `upload_failed` mark -> `cancelled`, no later call, no mark; `runPending` stops before the next entry; single-flight for `runPending` and `uploadEntry`.
+- `mobile/test/features/activity/repository/activity_wiring_account_switch_test.dart` (20): cancel on A->B, A->null, A->guest; resume only after a successful claim and a still-matching uid; failed claim calls no resume/syncAll/runPending; FL6 exceptions are logged and do not escape; flag-off has no side effects.
+- `mobile/test/features/activity/config/activity_flags_test.dart` (12) and `activity_wiring_flag_matrix_test.dart` (22): flag matrix of the D notes.
+- `mobile/test/features/activity/data/primary_source_id_parity_test.dart` (27): Dart mirror vs `schema.ts` (lines 128, 168, copied literally) vs `firestore.rules` on one table.
+- `mobile/test/support/stream_upload_world.dart`: `makeUploader` takes an optional `currentUid` (additive).
+
+### Defects
+- D10b-1 (test defect, caused by remediation C): the fake `_Uploader` in `activity_journal_wipe_wiring_test.dart` (epic 9b) did not implement `cancelQueued()` and `resume()`, which the wiring now calls. The guarded closure caught the resulting error, so 3 tests ("wipe works", "same uid", "unclaimed journal") failed because `runPending` was never reached. Fixed by adding both no-op overrides to the fake.
+- No compile errors and no production defects found in remediation C (uploader binding, single-flight, wiring guard) or remediation D (flag, wiring, rules mirror); every new test passed on first run after trivial test-code fixes.
+
+### Notes
+- An auth stream error keeps the last known uid (Riverpod keeps the previous value), so a stream error mid-claim does not cancel the claim. This is not specified by the notes and was not pinned.
+
+### Run
+Command (from `mobile/`):
+`flutter test test/features/activity/repository/activity_stream_upload_account_binding_test.dart test/features/activity/repository/activity_wiring_account_switch_test.dart test/features/activity/config test/features/activity/data/primary_source_id_parity_test.dart test/features/activity/repository/activity_stream_upload_test.dart test/features/activity/repository/activity_stream_upload_retry_test.dart test/features/activity/repository/activity_consent_withdrawal_test.dart test/features/activity/repository/activity_journal_wipe_wiring_test.dart test/features/activity/data/summary_allowlist_parity_test.dart test/features/activity/data/activity_cloud_summary_test.dart test/features/activity/data/summary_golden_test.dart test/features/activity/repository/firestore_activity_repository_test.dart test/features/activity/e2e`
+Summary line: `02:41 +263: All tests passed!`
+
+### Not covered
+Real Firebase/Firestore adapters, a real device keystore for `openActivityJournal` (secure storage and path_provider are faked), `--dart-define` reading of `compileTime` (default build only), the Functions-side tests.

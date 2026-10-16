@@ -100,6 +100,13 @@ class _Inner implements LocalDataWipe {
 class _Uploader extends Fake implements ActivityStreamUploader {
   int runs = 0;
 
+  // Remediation C: the wiring calls cancelQueued() and resume().
+  @override
+  void cancelQueued() {}
+
+  @override
+  void resume() {}
+
   @override
   Future<void> runPending() async => runs++;
 }
