@@ -209,7 +209,12 @@ describe("A9/F42 public/privacy.html summary-sync disclosure (DRAFT wording, Eng
 
   test("the GPS paragraph from epic 6b is intact (GPS upload, expiry choice, heart rate stays on the device)", () => {
     expect(en).toMatch(/Heart rate stays on the device/);
-    expect(en).toMatch(/90 days, 1 year, 2 years or never/);
+    expect(en).toMatch(/90 days, 1 year or 2 years; the default is 2 years/);
+    // "never expire" is not offered (operator decision 2026-10-16): the retention sentence must not offer it.
+    const retentionSentence = /[^.<>]*expire automatically after the expiry period you choose \([^)]*\)[^.]*\./.exec(en);
+    expect(retentionSentence).not.toBeNull();
+    expect(retentionSentence![0]).not.toMatch(/never/i);
+    expect(en).not.toMatch(/2 years or never/);
   });
 
   // The page must not claim what the code does not do: every field the paragraph lists is an

@@ -21,27 +21,25 @@ export function activitySettingsPath(uid: string): string {
 export const CLOUD_STREAMS_CONSENT_VERSION = 1;
 
 /**
- * OPEN-DEFAULT (operator question 12.3 item 1 / DQ-7, still unanswered):
- * default stream retention in days. 730 (two years) is the PROPOSED value. It
- * is defined here once; change this constant when the operator answers.
+ * ANSWERED by the operator on 2026-10-16 (question 12.3 item 1 / DQ-7):
+ * default stream retention in days is 730 (two years). It is defined here once.
  */
 export const DEFAULT_STREAM_RETENTION_DAYS = 730;
 
 /**
- * OPEN-DEFAULT (operator question 12.3 item 1 / DQ-7, still unanswered): the
- * retention values the user may choose. Design 5.3 offers 90 days, 1 year and
- * 2 years. Any other number (0, negative, fractional, huge) is refused.
+ * ANSWERED by the operator on 2026-10-16 (question 12.3 item 1 / DQ-7): the
+ * retention values the user may choose are 90 days, 1 year and 2 years (design
+ * 5.3). Any other number (0, negative, fractional, huge) is refused.
  */
 export const ALLOWED_STREAM_RETENTION_DAYS: readonly number[] = [90, 365, 730];
 
 /**
- * OPEN-DEFAULT (operator question 12.3 item 1 / DQ-7, still unanswered): whether
- * "never expire" (`null`) is offered. Design 5.3 proposes it offered but
- * flagged. "Never" means GPS history is kept indefinitely. Set to `false` to
- * refuse `null` everywhere (settings validation and, in S02-05b, purge must
- * read this same constant so they cannot disagree, test F13/F15).
+ * ANSWERED by the operator on 2026-10-16 (question 12.3 item 1 / DQ-7): "never
+ * expire" (`null`) is NOT offered, so `null` is refused everywhere (settings
+ * validation and, in S02-05b, purge read this same constant so they cannot
+ * disagree, test F13/F15). "Never" would mean GPS history is kept indefinitely.
  */
-export const STREAM_RETENTION_NEVER_OFFERED = true;
+export const STREAM_RETENTION_NEVER_OFFERED = false;
 
 /** A retention value as stored: whole days, or `null` meaning never expire. */
 export type StreamRetentionDays = number | null;
@@ -114,7 +112,7 @@ export class SettingsRequestError extends Error {
 
 /** A parsed, validated request. At least one of the two fields is present. */
 export interface SettingsRequest {
-  /** Present when the caller sets retention; `null` = never expire. */
+  /** Present when the caller sets retention; whole days, `null` ("never") is refused by the validator. */
   streamRetentionDays?: StreamRetentionDays;
   /** Present when the caller grants (`true`) or withdraws (`false`) cloud-stream consent. */
   cloudStreamsGranted?: boolean;
@@ -134,7 +132,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  * Strict closed parse (design 5.4: validation first, bare codes). Unknown keys
  * are refused, never ignored. Request shape:
  *
- *   { streamRetentionDays?: 90 | 365 | 730 | null,
+ *   { streamRetentionDays?: 90 | 365 | 730,
  *     cloudStreams?: { granted: boolean, version: number, deleteExisting?: boolean } }
  *
  * `deleteExisting: true` is accepted only with `granted: false` (design 9.1: the

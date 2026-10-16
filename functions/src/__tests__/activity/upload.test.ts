@@ -134,7 +134,7 @@ describe("F09 commit happy path", () => {
     await fullUpload(w);
     expect(rowOf(UID, ACT).expiresAt.toMillis()).toBe(T0 + 730 * DAY);
   });
-  test("a retention of 90 days and a null (never) setting are applied to the hint", async () => {
+  test("a retention of 90 days is applied to the hint; a stored null (never is not offered) falls back to the 730 day default and carries an expiry", async () => {
     seedConsent(UID, { streamRetentionDays: 90, settingsGeneration: 4 });
     await fullUpload(w);
     expect(rowOf(UID, ACT).expiresAt.toMillis()).toBe(T0 - 2 * DAY + 90 * DAY);
@@ -144,7 +144,8 @@ describe("F09 commit happy path", () => {
     seedReady();
     seedConsent(UID, { streamRetentionDays: null });
     await fullUpload(w);
-    expect(rowOf(UID, ACT).expiresAt).toBeNull();
+    expect(rowOf(UID, ACT).expiresAt).not.toBeNull();
+    expect(rowOf(UID, ACT).expiresAt.toMillis()).toBe(T0 - 2 * DAY + 730 * DAY);
   });
 });
 

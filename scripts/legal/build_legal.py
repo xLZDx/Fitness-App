@@ -30,7 +30,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from legal_text import DOCS, STAMP, TITLES  # noqa: E402
+from legal_text import DOCS, PAGE_NOTES, STAMP, TITLES  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 ARB_DIR = ROOT / "mobile" / "lib" / "l10n"
@@ -130,7 +130,7 @@ _PAGE = """\
       </div>
     </div>
     <p class="stamp" data-t
-       data-en="{stamp_en}" data-ru="{stamp_ru}">{stamp_en}</p>
+       data-en="{stamp_en}" data-ru="{stamp_ru}">{stamp_en}</p>{page_note}
 
     <section data-body="en">
       {body_en}
@@ -178,6 +178,7 @@ def render_html(doc: str) -> str:
         title_ru=TITLES[doc]["ru"],
         stamp_en=html.escape(STAMP["en"]),
         stamp_ru=html.escape(STAMP["ru"]),
+        page_note=PAGE_NOTES.get(doc, ""),
         body_en=_html_of(DOCS[doc]["en"]),
         body_ru=_html_of(DOCS[doc]["ru"]),
     )

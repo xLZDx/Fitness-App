@@ -181,10 +181,19 @@ void main() {
   group('deletion disclosure tracks the deletion code', () {
     test('no shared collection is pseudonymised without being disclosed', () {
       final source = File('../functions/src/index.ts').readAsStringSync();
-      final start = source.indexOf('async function sweepSharedRecords');
-      expect(start, isNot(-1), reason: 'sweepSharedRecords was renamed or removed');
-      // The queries all sit in one `Promise.all` at the top of the function.
-      final body = source.substring(start, start + 1200);
+      // The queries live in two top-level functions: the booking queries in
+      // `sweepBookings`, the rest in `sweepSharedRecords`. Each body is cut at
+      // the function's own closing brace (a `}` in column 0), not at a fixed
+      // length, so growth or movement of either function cannot hide a query.
+      String bodyOf(String name) {
+        final start = source.indexOf('async function $name(');
+        expect(start, isNot(-1), reason: '$name was renamed or removed');
+        final end = source.indexOf('\n}', start);
+        expect(end, isNot(-1), reason: 'closing brace of $name not found');
+        return source.substring(start, end);
+      }
+
+      final body = '${bodyOf('sweepSharedRecords')}\n${bodyOf('sweepBookings')}';
       final queried = RegExp(r'db\.collection\("([a-z_]+)"\)')
           .allMatches(body)
           .map((m) => m.group(1)!)
