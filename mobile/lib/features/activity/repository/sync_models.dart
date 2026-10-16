@@ -168,6 +168,8 @@ class ActivitySyncState {
   const ActivitySyncState({
     this.conflicts = const [],
     this.candidates = const [],
+    this.pendingTombstones = 0,
+    this.lastTombstonePushError,
   });
 
   static const ActivitySyncState empty = ActivitySyncState();
@@ -175,16 +177,27 @@ class ActivitySyncState {
   final List<SyncConflict> conflicts;
   final List<SyncCandidate> candidates;
 
+  /// Local deletions the server has not confirmed yet (S02 design 6.2). Zero
+  /// means every local delete has reached the cloud. Not part of [isEmpty]: it
+  /// is a progress counter, not something the user must resolve.
+  final int pendingTombstones;
+
+  /// Error code of the last failed tombstone push in this process, or null.
+  final String? lastTombstonePushError;
+
   bool get isEmpty => conflicts.isEmpty && candidates.isEmpty;
 
   @override
   bool operator ==(Object other) =>
       other is ActivitySyncState &&
+      other.pendingTombstones == pendingTombstones &&
+      other.lastTombstonePushError == lastTombstonePushError &&
       _listEq(other.conflicts, conflicts) &&
       _listEq(other.candidates, candidates);
 
   @override
-  int get hashCode => Object.hash(conflicts.length, candidates.length);
+  int get hashCode => Object.hash(
+      conflicts.length, candidates.length, pendingTombstones, lastTombstonePushError);
 }
 
 bool _listEq<T>(List<T> a, List<T> b) {

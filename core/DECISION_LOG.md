@@ -57425,3 +57425,7 @@ Decision: S02 enters phase 8 Gate; the report pair and the SDLC state are commit
 ## 2026-10-16 - Commit: S02 remediation E1 (a) account-scoped journal class
 
 Decision: replace the device-wide journal plus owner marker by account-scoped journals (ownership is the location); this commit adds the scoped journal class and the per-scope key name. Evidence: core/changes/2026-10-16-s02-remediation-e1-scoped-journal.md.
+
+## 2026-10-16 - Commit: S02 remediation E2, tombstone continuation
+
+Decision: local deletions are pushed in continuation rounds (cap 128 rounds of 8 per sync call), stop at the first refusal, are observable as `pendingTombstones`, and are retried by one backed-off timer (60 s to 15 min, 6 attempts per start); the durable queue is the journal tombstone set. Evidence: core/changes/2026-10-16-s02-remediation-e2-client-continuation.md.

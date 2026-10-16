@@ -82,6 +82,48 @@ class _ConflictDetail {
 /// Throws on failure; the sync layer retries at the next pass.
 typedef ActivityTombstonePusher = Future<void> Function(String activityId);
 
+/// Creates the retry timer (injectable so tests need no real waiting).
+typedef TombstoneRetryTimerFactory = Timer Function(
+    Duration delay, void Function() callback);
+
+/// Hard cap of push rounds (of [kMaxSummaryBatch] each) per [syncAll] call:
+/// 128 rounds = 1024 deletions.
+const int kMaxTombstoneRounds = 128;
+
+/// Scheduled retry attempts per app start.
+const int kMaxTombstoneRetries = 6;
+
+/// Backoff before the Nth scheduled retry; the last entry is also the delay
+/// after quota exhaustion.
+const List<Duration> kTombstoneRetryDelays = [
+  Duration(seconds: 60),
+  Duration(minutes: 2),
+  Duration(minutes: 4),
+  Duration(minutes: 8),
+  Duration(minutes: 15),
+];
+
+/// `FirebaseException.code` of the server quota refusal.
+const String kQuotaExhaustedCode = 'resource-exhausted';
+
+/// Failures that end a round at once (retrying the rest of the batch is futile).
+const Set<String> _kSystemicCodes = {
+  kQuotaExhaustedCode,
+  'unavailable',
+  'permission-denied',
+  'unauthenticated',
+  'deadline-exceeded',
+};
+
+class _TombstoneRun {
+  const _TombstoneRun({this.failureCode, this.capped = false});
+
+  final String? failureCode;
+  final bool capped;
+
+  bool get failed => failureCode != null;
+}
+
 class ActivitySyncRepository {
   ActivitySyncRepository({
     required ActivityJournal journal,
@@ -89,9 +131,11 @@ class ActivitySyncRepository {
     ActivityTombstonePusher? tombstonePusher,
     DateTime Function()? clock,
     CalcVersions Function()? versionsInForce,
+    TombstoneRetryTimerFactory? retryTimerFactory,
   })  : _journal = journal,
         _backend = backend,
         _pushTombstone = tombstonePusher,
+        _timerFactory = retryTimerFactory ?? Timer.new,
         _clock = clock ?? DateTime.now,
         _versions = versionsInForce ?? (() => CalcVersions.current);
 
@@ -100,6 +144,13 @@ class ActivitySyncRepository {
   final ActivityTombstonePusher? _pushTombstone;
   final DateTime Function() _clock;
   final CalcVersions Function() _versions;
+
+  final TombstoneRetryTimerFactory _timerFactory;
+  final Set<String> _confirmedTombstones = {};
+  final Set<String> _failedTombstones = {};
+  Timer? _retryTimer;
+  int _retryAttempts = 0;
+  bool _disposed = false;
 
   String? _lastTombstonePushError;
   DateTime? _lastCorruptRead;
@@ -159,7 +210,12 @@ class ActivitySyncRepository {
           }
           candidates.addAll(_candidatesOf(e.id, session));
         }
-        return ActivitySyncState(conflicts: conflicts, candidates: candidates);
+        return ActivitySyncState(
+          conflicts: conflicts,
+          candidates: candidates,
+          pendingTombstones: await _pendingTombstoneCount(),
+          lastTombstonePushError: _lastTombstonePushError,
+        );
       });
 
   void _publish() {
@@ -169,7 +225,11 @@ class ActivitySyncRepository {
     }, onError: (Object _) {}));
   }
 
-  Future<void> dispose() => _changes.close();
+  Future<void> dispose() {
+    _disposed = true;
+    cancelTombstoneRetry();
+    return _changes.close();
+  }
 
   List<SyncCandidate> _candidatesOf(String id, ActivitySession s) {
     final out = <SyncCandidate>[];
@@ -392,7 +452,11 @@ class ActivitySyncRepository {
           // Tombstone ids are document ids and cannot be corrupt; treated as
           // unknown, never as deletion.
         }
-        if (tombsKnown) await _pushLocalTombstones(tombs);
+        // A failed tombstone listing is itself a reason for a backed-off retry.
+        final run = tombsKnown
+            ? await _pushLocalTombstones(tombs)
+            : const _TombstoneRun(failureCode: 'unavailable');
+        await _maybeScheduleRetry(run);
         for (final e in await _journal.list()) {
           if (tombs.contains(e.id)) {
             await _journal.delete(e.id);
@@ -412,27 +476,95 @@ class ActivitySyncRepository {
 
   /// Pushes local deletes the server does not know yet (no server tombstone in
   /// [serverTombs]) through the tombstone pusher, so another device removes
-  /// its copy (design 6.2). At most [kMaxSummaryBatch] per pass; a failure
-  /// leaves the local tombstone in place and the push is retried at the next
-  /// pass. Ids the server already tombstones are skipped, which keeps the
+  /// its copy (design 6.2). Rounds of [kMaxSummaryBatch]; a failure leaves the
+  /// local tombstone in place and the push is retried by the backed-off timer
+  /// or at the next pass. Ids the server already tombstones are skipped, which keeps the
   /// daily delete quota untouched by repeated passes.
-  Future<void> _pushLocalTombstones(Set<String> serverTombs) async {
+  ///
+  /// Continuation (remediation E2): after the first round, further rounds of
+  /// [kMaxSummaryBatch] follow inside the same pass while the previous round
+  /// pushed at least one and nothing failed, up to [kMaxTombstoneRounds]
+  /// rounds (a hard cap, never a hot loop). Any failure in a continuation
+  /// round, and any systemic refusal (quota, unavailable, permission) in any
+  /// round, ends the pass at once. Ids that failed earlier in this process
+  /// are tried last so one poisoned id cannot starve the rest.
+  Future<_TombstoneRun> _pushLocalTombstones(Set<String> serverTombs) async {
     final push = _pushTombstone;
-    if (push == null) return;
-    var pushed = 0;
-    for (final t in await _journal.listTombstones()) {
-      if (serverTombs.contains(t.id)) continue;
-      if (pushed >= kMaxSummaryBatch) break;
-      pushed++;
-      try {
-        await push(t.id);
-      } catch (e) {
-        // Offline or refused: owed, retried at the next pass. The error code
-        // is kept so a refusal is distinguishable from being offline.
-        _lastTombstonePushError = _errorCode(e);
-        debugPrint('activity: tombstone push failed ($_lastTombstonePushError)');
+    _confirmedTombstones.addAll(serverTombs);
+    if (push == null) return const _TombstoneRun();
+    var rounds = 0;
+    while (true) {
+      final owed = [
+        for (final t in await _journal.listTombstones())
+          if (!_confirmedTombstones.contains(t.id)) t.id,
+      ];
+      if (owed.isEmpty) return const _TombstoneRun();
+      if (rounds >= kMaxTombstoneRounds) {
+        return const _TombstoneRun(capped: true);
       }
+      rounds++;
+      owed.sort((a, b) {
+        final fa = _failedTombstones.contains(a) ? 1 : 0;
+        final fb = _failedTombstones.contains(b) ? 1 : 0;
+        return fa - fb;
+      });
+      var pushed = 0;
+      var anyFailed = false;
+      String? code;
+      for (final id in owed) {
+        if (pushed >= kMaxSummaryBatch) break;
+        pushed++;
+        try {
+          await push(id);
+          _confirmedTombstones.add(id);
+          _failedTombstones.remove(id);
+        } catch (e) {
+          // Offline or refused: owed, retried later. The error code is kept so
+          // a refusal is distinguishable from being offline.
+          anyFailed = true;
+          code = _errorCode(e);
+          _lastTombstonePushError = code;
+          _failedTombstones.add(id);
+          debugPrint('activity: tombstone push failed ($code)');
+          if (rounds > 1 || _kSystemicCodes.contains(code)) break;
+        }
+      }
+      if (anyFailed) return _TombstoneRun(failureCode: code);
+      if (pushed == 0) return const _TombstoneRun();
     }
+  }
+
+  /// Local tombstones the server has not confirmed (pushed OK or listed).
+  Future<int> _pendingTombstoneCount() async => [
+        for (final t in await _journal.listTombstones())
+          if (!_confirmedTombstones.contains(t.id)) t,
+      ].length;
+
+  /// Schedules ONE backed-off retry when tombstones are still owed after a
+  /// pass that ended on a failure or on the round cap. At most
+  /// [kMaxTombstoneRetries] scheduled attempts per app start; quota exhaustion
+  /// uses the longest delay. Cancelled by [dispose]/[cancelTombstoneRetry].
+  Future<void> _maybeScheduleRetry(_TombstoneRun run) async {
+    if (_disposed || _pushTombstone == null || _retryTimer != null) return;
+    if (!run.failed && !run.capped) return;
+    if (_retryAttempts >= kMaxTombstoneRetries) return;
+    if (await _pendingTombstoneCount() == 0) return;
+    final delays = kTombstoneRetryDelays;
+    final delay = run.failureCode == kQuotaExhaustedCode
+        ? delays.last
+        : delays[_retryAttempts.clamp(0, delays.length - 1)];
+    _retryAttempts++;
+    _retryTimer = _timerFactory(delay, () {
+      _retryTimer = null;
+      if (_disposed) return;
+      unawaited(syncAll().then((_) {}, onError: (Object _) {}));
+    });
+  }
+
+  /// Cancels a scheduled tombstone retry (sign-out / uid change).
+  void cancelTombstoneRetry() {
+    _retryTimer?.cancel();
+    _retryTimer = null;
   }
 
   /// Syncs at most [kMaxSummaryBatch] entries; a larger request is refused
