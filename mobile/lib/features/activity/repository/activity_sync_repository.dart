@@ -36,6 +36,7 @@ import 'journal_models.dart';
 import 'summary_codec.dart';
 import 'summary_write_denial.dart';
 import 'sync_models.dart';
+import 'uid_scoped_activity_journal.dart' show AccountScopedJournal;
 
 part 'activity_sync_resolution.dart';
 
@@ -116,12 +117,29 @@ const Set<String> _kSystemicCodes = {
 };
 
 class _TombstoneRun {
-  const _TombstoneRun({this.failureCode, this.capped = false});
+  const _TombstoneRun(
+      {this.failureCode, this.capped = false, this.aborted = false});
 
   final String? failureCode;
   final bool capped;
 
+  /// The pass identity went stale (account switch) during the phase: nothing
+  /// more was done and nothing may be concluded from the run.
+  final bool aborted;
+
   bool get failed => failureCode != null;
+}
+
+/// The identity of one serialized operation (remediation F1): the account
+/// epoch, the uid the scoped journal was bound to, and the signed-in uid, all
+/// at the moment the operation started. Every journal write and every backend
+/// call re-checks it, so an operation of account A never acts on account B.
+class _Pass {
+  const _Pass(this.epoch, this.journalUid, this.authUid);
+
+  final int epoch;
+  final String? journalUid;
+  final String? authUid;
 }
 
 class ActivitySyncRepository {
@@ -132,18 +150,70 @@ class ActivitySyncRepository {
     DateTime Function()? clock,
     CalcVersions Function()? versionsInForce,
     TombstoneRetryTimerFactory? retryTimerFactory,
+    String? Function()? authUid,
   })  : _journal = journal,
         _backend = backend,
         _pushTombstone = tombstonePusher,
         _timerFactory = retryTimerFactory ?? Timer.new,
         _clock = clock ?? DateTime.now,
-        _versions = versionsInForce ?? (() => CalcVersions.current);
+        _versions = versionsInForce ?? (() => CalcVersions.current),
+        _authUid = authUid;
 
   final ActivityJournal _journal;
   final ActivitySummaryBackend _backend;
   final ActivityTombstonePusher? _pushTombstone;
   final DateTime Function() _clock;
   final CalcVersions Function() _versions;
+
+  /// The signed-in uid as the backend would resolve it (null function = no
+  /// check, used by tests). Read synchronously right before each backend call.
+  final String? Function()? _authUid;
+
+  /// Identity of the operation now running inside [_ops] (operations are
+  /// serialized, so one field is exact).
+  _Pass _pass = const _Pass(-1, null, null);
+
+  /// True when the journal is an account-scoped one with nothing bound.
+  bool get _journalUnbound {
+    if (_journal case final AccountScopedJournal s) return !s.isBound;
+    return false;
+  }
+
+  String? _boundJournalUid() {
+    if (_journal case final AccountScopedJournal s) {
+      return s.isBound ? s.boundUid : null;
+    }
+    return null;
+  }
+
+  _Pass _beginPass() => _Pass(_epoch, _boundJournalUid(), _authUid?.call());
+
+  /// Runs [body] serialized, under a fresh pass identity.
+  Future<T> _serial<T>(Future<T> Function() body) => _ops.run(() async {
+        _pass = _beginPass();
+        return body();
+      });
+
+  /// True while [p] still describes the current account: same epoch and, for a
+  /// scoped journal, still bound to the uid the pass started under. Checked
+  /// synchronously before every journal write.
+  bool _alive(_Pass p) {
+    if (p.epoch != _epoch) return false;
+    if (_journal case final AccountScopedJournal s) {
+      return p.journalUid != null && s.isBound && s.boundUid == p.journalUid;
+    }
+    return true;
+  }
+
+  /// [_alive] plus the auth uid check; called synchronously immediately before
+  /// every backend or tombstone-pusher call (no await in between).
+  bool _mayCall(_Pass p) {
+    if (!_alive(p)) return false;
+    final f = _authUid;
+    if (f == null) return true;
+    final started = p.authUid;
+    return started != null && f() == started;
+  }
 
   final TombstoneRetryTimerFactory _timerFactory;
   final Set<String> _confirmedTombstones = {};
@@ -422,6 +492,7 @@ class ActivitySyncRepository {
     if (e.session.isReadOnly) return e;
     final r = SummaryProjection.reconcile(e.session, inForce: _versions());
     if (_recordKey(r) == _recordKey(e.session)) return e;
+    if (!_alive(_pass)) return null;
     final updated =
         await _journal.updateRecord(e.id, r, expectedGeneration: e.generation);
     if (updated == null) return null;
@@ -437,17 +508,23 @@ class ActivitySyncRepository {
 
   /// Syncs one entry. Safe to call repeatedly; a conflicting entry is retried
   /// by [syncAll] at most once per process.
-  Future<SyncOutcome> syncEntry(String id) => _ops.run(() => _syncLocked(id));
+  Future<SyncOutcome> syncEntry(String id) => _serial(() => _syncLocked(id));
 
   /// Start/foreground pass: deletes entries that carry a server tombstone,
   /// then syncs every unsynced entry. `sync_conflict` entries are retried only
   /// when [retryConflicts] is true and only once per process.
+  ///
+  /// The pass runs under one identity (remediation F1): if the account changes
+  /// while it is in flight it stops at the next check with nothing further
+  /// written, deleted or pushed (the entries then stay pending for account B's
+  /// own pass).
   Future<Map<String, SyncOutcome>> syncAll({bool retryConflicts = false}) =>
-      _ops.run(() async {
+      _serial(() async {
         final out = <String, SyncOutcome>{};
-        final epoch = _epoch;
+        final p = _pass;
         var tombs = <String>{};
         var tombsKnown = false;
+        if (!_mayCall(p)) return out;
         try {
           tombs = await _backend.listTombstoneIds();
           tombsKnown = true;
@@ -457,12 +534,20 @@ class ActivitySyncRepository {
           // Tombstone ids are document ids and cannot be corrupt; treated as
           // unknown, never as deletion.
         }
+        // A listing answered while the account changed belongs to nobody.
+        if (!_mayCall(p)) return out;
         // A failed tombstone listing is itself a reason for a backed-off retry.
         final run = tombsKnown
-            ? await _pushLocalTombstones(tombs, epoch)
+            ? await _pushLocalTombstones(tombs, p)
             : const _TombstoneRun(failureCode: 'unavailable');
-        if (epoch == _epoch) await _maybeScheduleRetry(run);
-        for (final e in await _journal.list()) {
+        if (!_alive(p) || run.aborted) return out;
+        await _maybeScheduleRetry(run, p);
+        if (!_alive(p)) return out;
+        final listed = await _journal.list();
+        for (final e in listed) {
+          // Re-checked before every entry: `listed` may belong to the account
+          // that has just been left (ids are deterministic across accounts).
+          if (!_alive(p)) return out;
           if (tombs.contains(e.id)) {
             await _journal.delete(e.id);
             _conflictCache.remove(e.id);
@@ -494,16 +579,20 @@ class ActivitySyncRepository {
   /// round, ends the pass at once. Ids that failed earlier in this process
   /// are tried last so one poisoned id cannot starve the rest.
   Future<_TombstoneRun> _pushLocalTombstones(
-      Set<String> serverTombs, int epoch) async {
+      Set<String> serverTombs, _Pass p) async {
+    const aborted = _TombstoneRun(aborted: true);
     final push = _pushTombstone;
-    if (epoch != _epoch) return const _TombstoneRun();
+    if (!_alive(p)) return aborted;
     _confirmedTombstones.addAll(serverTombs);
     if (push == null) return const _TombstoneRun();
     var rounds = 0;
     while (true) {
-      if (epoch != _epoch) return const _TombstoneRun();
+      if (!_alive(p)) return aborted;
+      final listedTombs = await _journal.listTombstones();
+      // The list may belong to the account just left; never push it.
+      if (!_alive(p)) return aborted;
       final owed = [
-        for (final t in await _journal.listTombstones())
+        for (final t in listedTombs)
           if (!_confirmedTombstones.contains(t.id)) t.id,
       ];
       if (owed.isEmpty) return const _TombstoneRun();
@@ -521,15 +610,17 @@ class ActivitySyncRepository {
       String? code;
       for (final id in owed) {
         if (pushed >= kMaxSummaryBatch) break;
-        if (epoch != _epoch) return const _TombstoneRun();
+        // Checked synchronously right before the call (no await in between):
+        // a push for account A must not start once the account changed.
+        if (!_mayCall(p)) return aborted;
         pushed++;
         try {
           await push(id);
-          if (epoch != _epoch) return const _TombstoneRun();
+          if (!_alive(p)) return aborted;
           _confirmedTombstones.add(id);
           _failedTombstones.remove(id);
         } catch (e) {
-          if (epoch != _epoch) return const _TombstoneRun();
+          if (!_alive(p)) return aborted;
           // Offline or refused: owed, retried later. The error code is kept so
           // a refusal is distinguishable from being offline.
           anyFailed = true;
@@ -555,7 +646,8 @@ class ActivitySyncRepository {
   /// pass that ended on a failure or on the round cap. At most
   /// [kMaxTombstoneRetries] scheduled attempts per app start; quota exhaustion
   /// uses the longest delay. Cancelled by [dispose]/[cancelTombstoneRetry].
-  Future<void> _maybeScheduleRetry(_TombstoneRun run) async {
+  Future<void> _maybeScheduleRetry(_TombstoneRun run, _Pass p) async {
+    if (!_alive(p)) return;
     if (_disposed || _pushTombstone == null || _retryTimer != null) return;
     if (!run.failed && !run.capped) return;
     if (_retryAttempts >= kMaxTombstoneRetries) return;
@@ -608,6 +700,8 @@ class ActivitySyncRepository {
   }
 
   Future<SyncOutcome> _syncLocked(String id, {_Server? known}) async {
+    final p = _pass;
+    if (!_alive(p)) return SyncOutcome.pending;
     JournalEntry? entry;
     try {
       entry = await _journal.read(id);
@@ -615,6 +709,8 @@ class ActivitySyncRepository {
       // Local read I/O error: nothing changed, retried at the next pass.
       return SyncOutcome.pending;
     }
+    // The read may have resolved against the next account's journal.
+    if (!_alive(p)) return SyncOutcome.pending;
     if (entry == null) return SyncOutcome.notFound;
     if (entry.session.isReadOnly) return SyncOutcome.readOnly;
     final reconciled = await _reconciled(entry);
@@ -633,6 +729,7 @@ class ActivitySyncRepository {
         return _markStored(entry, base, state.baseRev!);
       }
       // Optimistic update at baseRev + 1: no read.
+      if (!_mayCall(p)) return SyncOutcome.pending;
       try {
         await _backend.writeSummary(id, local, create: false);
       } on SummaryWriteDenied {
@@ -646,12 +743,15 @@ class ActivitySyncRepository {
   }
 
   Future<SyncOutcome> _onDenied(JournalEntry entry, Map<String, Object> local) async {
+    final p = _pass;
     bool? tomb;
+    if (!_mayCall(p)) return SyncOutcome.pending;
     try {
       tomb = await _backend.tombstoneExists(entry.id);
     } on SummaryBackendUnavailable {
       tomb = null;
     }
+    if (!_mayCall(p)) return SyncOutcome.pending;
     if (decideOnSummaryWriteDenied(tombstoneExists: tomb) ==
         SummaryDenialAction.deleteLocal) {
       await _journal.delete(entry.id);
@@ -668,10 +768,12 @@ class ActivitySyncRepository {
     required _Server? known,
     required bool afterDenial,
   }) async {
+    final p = _pass;
     Map<String, Object?>? server;
     if (known != null) {
       server = known.summary;
     } else {
+      if (!_mayCall(p)) return SyncOutcome.pending;
       try {
         server = await _backend.readSummary(entry.id);
       } on SummaryBackendUnavailable {
@@ -683,11 +785,14 @@ class ActivitySyncRepository {
         debugPrint('activity: cloud summary unreadable (corrupt)');
         return _markConflict(entry, null, const []);
       }
+      // The answer may belong to the account just left.
+      if (!_mayCall(p)) return SyncOutcome.pending;
     }
     if (server == null) {
       if (afterDenial) return _markConflict(entry, null, const []);
       // No server document: a create with rev 1.
       final create = {...local, 'rev': 1};
+      if (!_mayCall(p)) return SyncOutcome.pending;
       try {
         await _backend.writeSummary(entry.id, create, create: true);
       } on SummaryWriteDenied {
@@ -705,6 +810,7 @@ class ActivitySyncRepository {
     var current = entry;
     if (_recordKey(a.session!) != _recordKey(entry.session)) {
       // Persist the adopted overrides BEFORE writing (crash-safe replay).
+      if (!_alive(p)) return SyncOutcome.pending;
       final updated = await _journal.updateRecord(entry.id, a.session!,
           expectedGeneration: entry.generation);
       if (updated == null) return SyncOutcome.pending;
@@ -721,6 +827,7 @@ class ActivitySyncRepository {
       // resolution that changed nothing): no write, no spurious rev bump.
       return _markStored(current, _clean(server), summaryRev(server));
     }
+    if (!_mayCall(p)) return SyncOutcome.pending;
     try {
       await _backend.writeSummary(entry.id, merged, create: false);
     } on SummaryWriteDenied {
@@ -733,12 +840,15 @@ class ActivitySyncRepository {
   }
 
   Future<SyncOutcome> _onDeniedNoRetry(JournalEntry entry) async {
+    final p = _pass;
     bool? tomb;
+    if (!_mayCall(p)) return SyncOutcome.pending;
     try {
       tomb = await _backend.tombstoneExists(entry.id);
     } on SummaryBackendUnavailable {
       tomb = null;
     }
+    if (!_mayCall(p)) return SyncOutcome.pending;
     if (decideOnSummaryWriteDenied(tombstoneExists: tomb) ==
         SummaryDenialAction.deleteLocal) {
       await _journal.delete(entry.id);
@@ -757,6 +867,9 @@ class ActivitySyncRepository {
 
   Future<SyncOutcome> _markStored(
       JournalEntry entry, Map<String, Object?> stored, int rev) async {
+    // The summary may already be stored under the previous account; the entry
+    // of the next account must not be marked synced for it.
+    if (!_alive(_pass)) return SyncOutcome.pending;
     final ok = await _journal.markSynced(
       entry.id,
       expectedGeneration: entry.generation,
@@ -770,6 +883,7 @@ class ActivitySyncRepository {
 
   Future<SyncOutcome> _markConflict(
       JournalEntry entry, Map<String, Object?>? server, List<String> fields) async {
+    if (!_alive(_pass)) return SyncOutcome.pending;
     await _journal.updateSyncState(entry.id, JournalSyncState.syncConflict,
         expectedGeneration: entry.generation);
     if (server != null) {
@@ -782,6 +896,7 @@ class ActivitySyncRepository {
   }
 
   Future<SyncOutcome> _markFailed(JournalEntry entry) async {
+    if (!_alive(_pass)) return SyncOutcome.pending;
     if (entry.state.syncState != JournalSyncState.syncConflict) {
       await _journal.updateSyncState(entry.id, JournalSyncState.uploadFailed,
           expectedGeneration: entry.generation);
@@ -793,7 +908,8 @@ class ActivitySyncRepository {
   /// activity (for example a re-import) keeps the record state (explicit
   /// values, overrides, edit counter and history) of the stored entry, is put
   /// as ONE generation and synced.
-  Future<SyncOutcome> saveSession(ActivitySession incoming) => _ops.run(() async {
+  Future<SyncOutcome> saveSession(ActivitySession incoming) => _serial(() async {
+        final p = _pass;
         final JournalEntry? prev;
         try {
           prev = await _journal.read(incoming.id);
@@ -802,6 +918,8 @@ class ActivitySyncRepository {
           // not overwrite it blindly; nothing is changed, retry later.
           return SyncOutcome.pending;
         }
+        // `prev` may come from the next account's journal: never merge it in.
+        if (!_alive(p)) return SyncOutcome.pending;
         var next = incoming;
         JournalSyncState? keep;
         if (prev != null) {
@@ -817,6 +935,7 @@ class ActivitySyncRepository {
             keep = JournalSyncState.syncConflict;
           }
         }
+        if (!_alive(p)) return SyncOutcome.pending;
         await _journal.put(next, syncState: keep);
         _conflictCache.remove(incoming.id);
         return _syncLocked(incoming.id);

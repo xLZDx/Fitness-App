@@ -21,13 +21,15 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   /// summary is stored on the server. A repeated call returns
   /// [SyncOutcome.alreadyResolved].
   Future<SyncOutcome> resolveConflict(String id, ConflictChoice choice) =>
-      _ops.run(() async {
+      _serial(() async {
+        final p = _pass;
         final JournalEntry? read;
         try {
           read = await _journal.read(id);
         } on JournalIoException {
           return SyncOutcome.pending; // local read I/O error: retry later
         }
+        if (!_alive(p)) return SyncOutcome.pending; // account changed
         if (read == null) return SyncOutcome.notFound;
         if (read.session.isReadOnly) return SyncOutcome.readOnly;
         if (read.state.syncState != JournalSyncState.syncConflict) {
@@ -37,6 +39,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         if (entry == null) return SyncOutcome.pending;
 
         Map<String, Object?>? server;
+        if (!_mayCall(p)) return SyncOutcome.pending;
         try {
           server = await _backend.readSummary(id);
         } on SummaryBackendUnavailable {
@@ -44,6 +47,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         } on SummaryCorrupt {
           return SyncOutcome.conflict; // unreadable cloud copy: stays visible
         }
+        if (!_mayCall(p)) return SyncOutcome.pending;
         if (server == null) {
           // No server document: keep device creates it; keep cloud has
           // nothing to keep.
@@ -93,6 +97,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         }
 
         if (fields.isNotEmpty) {
+          if (!_alive(p)) return SyncOutcome.pending;
           final updated = await _journal.updateRecord(
             id,
             s,
@@ -119,13 +124,15 @@ extension ActivitySyncResolution on ActivitySyncRepository {
     String field,
     CandidateChoice choice,
   ) =>
-      _ops.run(() async {
+      _serial(() async {
+        final p = _pass;
         final JournalEntry? entry;
         try {
           entry = await _journal.read(id);
         } on JournalIoException {
           return SyncOutcome.pending; // local read I/O error: retry later
         }
+        if (!_alive(p)) return SyncOutcome.pending; // account changed
         if (entry == null) return SyncOutcome.notFound;
         if (entry.session.isReadOnly) return SyncOutcome.readOnly;
         final session =
@@ -136,6 +143,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         final base = decodeSummary(entry.state.baseSummary) ?? const {};
         Map<String, Object?>? server;
         var serverKnown = true;
+        if (!_mayCall(p)) return SyncOutcome.pending;
         try {
           server = await _backend.readSummary(id);
         } on SummaryBackendUnavailable {
@@ -143,6 +151,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         } on SummaryCorrupt {
           serverKnown = false;
         }
+        if (!_mayCall(p)) return SyncOutcome.pending;
         final res = SummaryProjection.resolveCandidate(
           session,
           field,
@@ -165,6 +174,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
             newState = JournalSyncState.pending;
           }
         }
+        if (!_alive(p)) return SyncOutcome.pending;
         final updated = await _journal.updateRecord(
           id,
           next,
@@ -186,13 +196,15 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   /// changes in that case.
   Future<SyncOutcome> applyExplicitEdit(
           String id, Map<String, double> edits) =>
-      _ops.run(() async {
+      _serial(() async {
+        final p = _pass;
         final JournalEntry? entry;
         try {
           entry = await _journal.read(id);
         } on JournalIoException {
           return SyncOutcome.pending; // local read I/O error: retry later
         }
+        if (!_alive(p)) return SyncOutcome.pending; // account changed
         if (entry == null) return SyncOutcome.notFound;
         if (entry.session.isReadOnly) return SyncOutcome.readOnly;
         final session =
@@ -200,6 +212,7 @@ extension ActivitySyncResolution on ActivitySyncRepository {
         final next = SummaryProjection.applyExplicitEdit(session, edits);
         final conflict =
             entry.state.syncState == JournalSyncState.syncConflict;
+        if (!_alive(p)) return SyncOutcome.pending;
         final updated = await _journal.updateRecord(
           id,
           next,
