@@ -56839,3 +56839,7 @@ Decision: the lifecycle of a merged summary override is decided by observable va
 ## 2026-10-16 - Commit: S02 design and test plan revision 9
 
 Decision: explicit user edits, passive changes and automatic recalculations are three different operations on a merged summary value; a calculation-version change never replaces an adopted cloud value on its own and is offered to the user as a recalculation candidate. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-9.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 10
+
+Decision: explicit user edits are stored in the record and applied by the summary projection, and version reconciliation of overrides is a mandatory atomic step that runs first, so neither a restart nor a version-only upgrade can change how the next edit is classified. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-10.md.
