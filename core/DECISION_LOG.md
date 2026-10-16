@@ -57353,3 +57353,11 @@ Decision: two expectations left stale by epic 6b were updated to the audited rea
 ## 2026-10-16 - Commit: S03-D UI design contract draft and S02 SDLC state
 
 Decision: the S03-D UI design contract (revision 2, after product-ux and accessibility review) is committed as a DRAFT prepared in parallel with the S02 verification phase (development rule 7). It records open operator decisions (U-1 shell option, U-2 tablet, D-9 monetisation, OD-9 open the local journal in the default build) and is not approved. docs/sdlc/STATE.md moves S02 to phase 7 Verify. Evidence: core/changes/2026-10-16-s03d-ui-design-contract-draft.md.
+
+## 2026-10-16 - Commit: S02 design corrections after the review rounds
+
+Decision: design 5.2 item 4 is corrected to the plan and the built uploader (no jitter, restart always starts a fresh upload); 12.1 records that the built client flag gates the whole cloud path and adds the independent ACTIVITY_LOCAL_JOURNAL define; section 17 records the release gate for off-UI-isolate work (before cloud streams go live or GPS recording ships), the accepted rev-cap behaviour and the account-bound uploader. Evidence: core/changes/2026-10-16-s02-design-review-round-corrections.md.
+
+## 2026-10-16 - Commit: S02 remediation C conflict view (FL1, FL2)
+
+Decision: watch() reports refresh failures on the stream, _conflictView treats any non-read backend error as cloudKnown:false, and the conflict sheet has loading, error and retry states instead of a false "in sync" text. Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
