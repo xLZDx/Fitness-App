@@ -57059,3 +57059,7 @@ Decision: Six policy rows (activities, activity_streams, activity_settings BOTH;
 ## 2026-10-16 - Commit: S02-08: lifecycle matrix
 
 Decision: The matrix rows C1, C2, C8, debug sessions and the section 3 sweep map now state the implemented S02 behaviour; the default expiry, the never option and C2 independence stay marked as open operator decisions.
+
+## 2026-10-16 - Commit: S02-08: bucket runbook
+
+Decision: The runbook records that the activity functions run as the default runtime identity (no dedicated service account exists in code), leaves a dedicated identity and the soft-delete window as open operator decisions, and makes the tombstone TTL policy and the telemetry deploy order explicit release steps.
