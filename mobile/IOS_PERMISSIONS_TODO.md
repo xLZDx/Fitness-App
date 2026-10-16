@@ -50,3 +50,14 @@ Plus the Health-Capabilities entitlement in
 
 When iOS lands, also enable HealthKit in the Xcode project Capabilities
 tab so the entitlement plumbs through to the provisioning profile.
+
+## Activity journal backup exclusion (S02-02, GPS-PRIV-083)
+
+The local activity journal lives in the app support directory under the
+names in `lib/features/activity/repository/journal_layout.dart`
+(`kActivityBackupExcludedDirs`: `journal`, `sources`, `quarantine`). On iOS
+those directories are included in iCloud/iTunes backups unless each one has
+the `isExcludedFromBackup` resource value. When the iOS project is generated,
+implement `BackupExclusionMarker` natively (`URLResourceValues.isExcludedFromBackup = true`
+on each directory, re-applied after the directories are created) and pass it to
+`FileActivityJournal`. Until then there is no iOS build, so nothing is backed up.

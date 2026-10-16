@@ -56871,3 +56871,7 @@ Decision: the summary is built only from the effective projection of the record 
 ## 2026-10-16 - Commit: S02-01 stream payload and sport-to-model table
 
 Decision: the stream payload is built by a closed-schema copy that hard-denies heart rate, and strength is the only sport owned by the workout model; every other sport and unknown names belong to the activity model. Evidence: core/changes/2026-10-16-s02-01-stream-payload-and-sport-model.md.
+
+## 2026-10-16 - Commit: S02-02: file-system seam, layout constants and backup exclusion
+
+Decision: The journal talks to storage only through an injectable file-system seam without a directory fsync, and one constant list of directories drives both Android backup XML files, the checker and the iOS marker interface. Evidence: core/changes/2026-10-16-s02-02-fs-seam-layout-backup.md.
