@@ -57743,3 +57743,7 @@ Decision: the allowlist entry of scripts/ci/check_data_access_policy.js for func
 ## 2026-10-16 - Commit: test(s02): Dart compile fixes for remediation J2/J3b (epic 16b, 1/3)
 
 Decision: keep the old client scenarios by wiring the settings client's live uid to the consent store's bound uid through one helper, record expectedUid in the stream fake, and give every tombstone pusher closure the second argument; the one stale assertion found (presenter tap without a uid) gets an explicit uid override instead of a weaker check.
+
+## 2026-10-16 - Commit: test(s02): settings client tests for remediation J2/J3b and findings 16b (epic 16b, 2/3)
+
+Decision: test the A to B flip with a read-counting live-uid supplier at every guard point of grant, withdraw and deleteCloudStreamsNow, and test the server-refusal mapping through a faked FirebaseFunctions so the real mapping code runs.

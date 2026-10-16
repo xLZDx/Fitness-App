@@ -65,3 +65,29 @@ Head under test: a3530664 on top of 7f15f7db (J3a product change is 01b9223c). A
 - The red state of the changed existing tests before the fix was not observed (edits were applied before the first run).
 - No mutation run (not permitted); assertions are justified by what they observe. `sendDebugTelemetry` is exempt and untested for the key by design.
 - Not run: the whole repository suite, lint, typecheck, build, CI, the rules emulator. The client half (J3b) is not part of this section.
+
+## 16b Dart settings client (J2 and J3b), test agent
+
+Head before: 5ec1acc1. Commits: 3239e4d4 (compile fixes), then the new tests commit (see git log).
+
+### What changed
+- Compile fixes (commit 3239e4d4): helper `storeUid(store)` and `expectedUid` recording in `mobile/test/support/stream_upload_world.dart`; `currentUid: storeUid(store)` in six test files; two-argument tombstone pusher closures in ten files; `FakeStreamCloudStub` takes `expectedUid`.
+- Stale assertion fixed: the presenter test of `activity_sync_pass_identity_test.dart` (group C) tapped without a uid; J3 B4 makes that a no-op, so the test now overrides `syncConflictUidProvider` with `'A'`.
+- New file `mobile/test/features/activity/repository/activity_settings_client_expected_uid_test.dart`, 33 tests (list in core/changes/2026-10-16-s02-test16b-2-settings-client-tests.md). The A to B flip uses a supplier answering A for N reads: grant N=1 (pre-call), N=2 (post-call), N=3 (after the write); withdraw N=1 (call not sent, A stays locally withdrawn, nothing for B), N=2; deleteCloudStreamsNow N=0, 1, 2. Each runs with B prior granted (identical to the usual A value) and withdrawn (different) and asserts zero requests carrying another uid, no write for B, B's stored value unchanged, and for delete that the refused call leaves no requested key (a later call under A sends exactly one).
+- The server refusal is tested through a faked `FirebaseFunctions` and `HttpsCallable` (`Fake implements`), so the real `cloudFunctionsSettingsCall` code runs.
+
+### Commands and verbatim results
+1. All 15 touched existing files, first run (before the presenter fix): `flutter test --timeout 60s test/features/activity/e2e/s02_consent_switch_e2e_test.dart ... test/features/activity/repository/activity_tombstone_sync_test.dart` -> `00:33 +238 -1: Some tests failed.` (the one failure: the presenter test, fixed as above).
+2. New file: `flutter test --timeout 60s test/features/activity/repository/activity_settings_client_expected_uid_test.dart` -> `00:00 +33: All tests passed!`
+3. `flutter test --timeout 60s test/features/activity/repository` -> `01:22 +749: All tests passed!`
+4. `flutter test --timeout 60s test/features/activity/e2e/s02_consent_switch_e2e_test.dart test/features/activity/e2e/s02_auth_flip_e2e_test.dart test/features/activity/e2e/s02_pass_account_switch_e2e_test.dart test/features/activity/e2e/s02_delete_wins_e2e_test.dart` -> `00:07 +29: All tests passed!`
+
+### Findings
+1. Only one older assertion changed behavior in the files run (the presenter, B4). The J3b notes predicted more places (withdraw with cancelQueued on a refused call, unbound isGranted, tombstone retry on account-changed, uploader journal tie); no existing test failed on them, so those behaviors had no prior test that pinned the old behavior. The tombstone retry and uploader journal tie are for part 16c.
+2. No product defect found in the settings client.
+
+### Not covered
+- Red-before-fix was not observed (no mutation or revert runs, by rule).
+- `cloudFunctionsSettingsCall` success path (the SDK result type has a private constructor); only failure mapping and the request map passed to the callable are asserted.
+- Wiring-level check that `activityCloudSettingsClientProvider` passes a live-uid supplier (needs Firebase) and parts 16c: uploader, tombstone push, real stream client and pusher.
+- The third grant flip test (flip during the write) accepts `unknown` or `granted` for the cache but asserts nothing is written for B and the cache is not attributed to B.

@@ -547,3 +547,11 @@ Facts: J2 added required parameters to the settings client, the stream client fa
 Root cause: implementers run no tests by the sprint rules, so signature changes surface only in the test phase; the J test notes listed the files, which made the fix mechanical.
 Layers: the implementer could not catch it; the test agent caught it on the first grouped run.
 Rule next time: keep the stale-test list in the remediation notes (it worked); a test that depends on an ambient provider value (here the uid) should set it explicitly.
+
+## 2026-10-16 - Commit: test(s02): settings client tests for remediation J2/J3b and findings 16b (epic 16b, 2/3)
+
+Kind: SUCCESS (no defect found).
+Facts: 33 new tests passed on the first run; the repository directory ran 749 tests green. Evidence: S02_TEST_FINDINGS_EPIC16.md section 16b.
+Why it worked: the guard points of the client are synchronous read counts, so a supplier answering A for N reads flips the account at an exact point; the J notes gave the read order.
+Layers: tests pinned the behavior; red-before-fix was not observed (no mutation runs by rule).
+Rule next time: count the live-uid reads of a client path once in the test header and parametrize the flip point over them.
