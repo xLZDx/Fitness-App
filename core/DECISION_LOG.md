@@ -57614,3 +57614,7 @@ Decision: design section 17 item 24 records remediation H; the H-B test notes li
 ## 2026-10-16 - Commit: S02 remediation H-A startup wiring code (H3 code commit)
 
 Decision: the H3 decision entry above landed in the sibling H-B commit because the two agents share one git index; this commit carries the H3 code and its change record. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A test notes
+
+Decision: the H-A test notes list 19 interleaving oracles and every stale fake or older assertion the new consent, uploader and wiring contracts break, so the test agent updates them in one pass. Evidence: core/changes/2026-10-16-s02-remediation-h-a-test-notes.md.

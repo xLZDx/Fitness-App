@@ -309,3 +309,10 @@ Rule next time: an interface that will gain a caller later is reviewed for accou
 Kind: SUCCESS.
 Facts: the test notes name the oracle for each guard and the stale fakes in the same batch as the code. Evidence: core/changes/2026-10-16-s02-remediation-h-b-docs.md.
 Why it worked: oracles written from the findings, each tied to a guard whose removal must fail it.
+
+## 2026-10-16 - S02 remediation H-A notes derive stale tests from a grep, not from interfaces
+
+Kind: SUCCESS.
+Facts: following the earlier lesson, the notes list older assertions by grepping the tests for the changed behaviour (write before sign-in, once-per-instance delete, resume order, uploader with an in-memory client). Evidence: core/changes/2026-10-16-s02-remediation-h-a-test-notes.md.
+Why it worked: the earlier retrospective rule was applied before the brief, not after the runs.
+Rule next time: keep grepping tests for the old behaviour whenever a contract changes.
