@@ -891,7 +891,7 @@
       "reason": "Account-deletion fence and late-sweep job, top-level `activity_account_state/{uid}` (S02 design 6.1). Deletion bookkeeping, not user content: holds the uid as document id plus fenceAt, lateSweepAt, authDeletedAt, lateSweepDone, lateSweepAttempts and a bare lastErrorCode; no profile, activity or location data, so there is nothing to export. Written Admin-SDK-only by deleteAccount (after the Stripe cancel and token revocation, immediately before the first sweep; authDeletedAt in Step 3b) and by the 5-minute sweepLateActivityStreams job. Deliberately outside users/{uid} so recursiveDelete cannot remove it, and deliberately WITHOUT a firestore.rules block (default deny to clients; the summary rules only read it through exists()). Lifecycle: the late job sweeps both bucket prefixes and does a final recursive delete of the activity collections, then removes the document at max(lateSweepDone + 1 h, authDeletedAt + 70 min); until then it must stay (it refuses callables and client writes).",
       "clientAccess": [
         {
-          "path": "/activity_account_state/{uid}",
+          "path": "/activity_account_state/{docId}",
           "access": {
             "read": "NONE",
             "create": "NONE",

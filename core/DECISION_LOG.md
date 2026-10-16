@@ -57179,3 +57179,7 @@ Decision: Design formula for fence removal wins over plan cell F95(a); the late 
 ## 2026-10-16 - Commit: S02 test epic 6b: export, download URLs, log hygiene and telemetry callable and schema (S02-07, S02-09)
 
 Decision: The 16 KiB batch boundary is proven on the sanitiser gate (a valid batch cannot be that large); every other telemetry and download assertion follows the plan.
+
+## 2026-10-16 - Commit: S02 test epic 6b: lifecycle policy checkers, indexes, privacy text and ops log metrics (S02-08)
+
+Decision: Plan F39 expects activity_tombstones classified BOTH; the policy row records the decision not to export tombstones (DELETE) and the test pins that. The five pre-S02 access checker violations stay out of S02 scope and are pinned.
