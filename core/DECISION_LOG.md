@@ -57626,3 +57626,7 @@ Decision: The deletion-flag tests (10 tests) assert the flag raised during listT
 ## 2026-10-16 - Commit: test(s02): H6 presenter reset per uid and sheet card rule (epic 14b)
 
 Decision: Presenter and sheet tests (3 + 4) assert the first frame of a new uid is loading with no conflicts, busy keys or failure flag, a stale action of A does not touch B, a refresh error clears the list, equal-uid re-emission does not reset, and the sheet draws cards only for a loaded, non-failed state (positive control included). Evidence: core/changes/2026-10-16-s02-test-epic14b-presenter-sheet.md.
+
+## 2026-10-16 - Commit: test(s02): H6 queued tap expectedUid and H7 cache and view guards (epic 14b)
+
+Decision: Eleven repository tests assert a tap queued under A behind a blocked syncAll leaves B's same-id entry byte-identical with outcome pending for resolveConflict and resolveCandidate, the direct expectedUid call, the conflict cache is not filled by a stale updateSyncState or readSummary, and refreshState discards a result across a switch (B's state, JournalUnbound, or three attempts then JournalUnbound). Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-state.md.

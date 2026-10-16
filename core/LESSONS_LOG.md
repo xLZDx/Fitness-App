@@ -328,3 +328,9 @@ Root cause: the author added the log to the start check only. Layers: author and
 Kind: SUCCESS.
 Facts: The remediation H presenter, uid provider and sheet changes compiled unchanged and passed 7 new tests on the first run; the older presenter and sheet tests also passed (+28). Evidence: core/changes/2026-10-16-s02-test-epic14b-presenter-sheet.md.
 Why it worked: the guards are small and the H-B notes named the stale tests exactly. Limit: the tests use the real container and a fake auth stream, so the real FirebaseAuth stream timing is not covered.
+
+## 2026-10-16 - H6 and H7 guards met every oracle at the first compiled run
+
+Kind: SUCCESS.
+Facts: All 11 tests passed on the first run, with a positive control for each guard (matching expectedUid resolves; no switch serves the cloud values). Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-state.md.
+Why it worked: each test blocks the exact await with a Gate and switches the account there, so the guard is the only thing between the stale result and B. Limit: the window between a passing _alive check and the delegated journal write is not closed (accepted limit).
