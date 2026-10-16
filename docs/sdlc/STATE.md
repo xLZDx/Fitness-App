@@ -45,8 +45,8 @@ Agents and models actually run in S00: implementation-engineer, tdd-guide (Sonne
 
 ## S02: unified activity (E1)
 
-Current phase: 5 Doc review (design revision 8 and test plan revision 8, GPT-PM round 5 findings remediated, round 6 verification pending; started 2026-10-16 on branch `phase2/s02-unified-activity` from `5bb61f15`). Entry decisions D-16 and D-17 are answered. Sprint scope is the S02 row of `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md`; GPS-specific requirements stay with S04 onwards, S02 covers the activity model, persistence, retention, deletion, export and the debug telemetry server guarantee (GPS-PRIV-050 and 098) that must exist before any GPS code.
+Current phase: 5 Doc review (design revision 9 and test plan revision 9, GPT-PM round 6 findings remediated, round 7 verification pending; started 2026-10-16 on branch `phase2/s02-unified-activity` from `5bb61f15`). Entry decisions D-16 and D-17 are answered. Sprint scope is the S02 row of `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md`; GPS-specific requirements stay with S04 onwards, S02 covers the activity model, persistence, retention, deletion, export and the debug telemetry server guarantee (GPS-PRIV-050 and 098) that must exist before any GPS code.
 
-Artifacts: `docs/phase2/s02/S02_CODE_MAP.md` (done, code-explorer); `docs/phase2/s02/S02_DESIGN.md` revision 8 (technical-writer); `docs/phase2/s02/S02_TEST_PLAN.md` revision 8 (functional-test-reviewer, 237 planned tests); two internal review rounds and five GPT-PM rounds done.
+Artifacts: `docs/phase2/s02/S02_CODE_MAP.md` (done, code-explorer); `docs/phase2/s02/S02_DESIGN.md` revision 9 (technical-writer); `docs/phase2/s02/S02_TEST_PLAN.md` revision 9 (functional-test-reviewer, 239 planned tests); two internal review rounds and six GPT-PM rounds done.
 
-Next role to launch: GPT-PM verification round 6 (only the value-based summary override rule and its scenario fixture plus direct regressions); after APPROVE, implementation-engineer starts phase 6.
+Next role to launch: GPT-PM verification round 7 (only the explicit-edit and automatic-recalculation handling of summary overrides plus direct regressions); after APPROVE, implementation-engineer starts phase 6.

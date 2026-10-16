@@ -56835,3 +56835,7 @@ Decision: summary override invalidation is driven by digests of ten classified i
 ## 2026-10-16 - Commit: S02 design and test plan revision 8
 
 Decision: the lifecycle of a merged summary override is decided by observable values (recomputed value versus the value at merge time and the adopted value), not by a classification of inputs; the matrix design was withdrawn after two review findings that no matrix could fix. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-8.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 9
+
+Decision: explicit user edits, passive changes and automatic recalculations are three different operations on a merged summary value; a calculation-version change never replaces an adopted cloud value on its own and is offered to the user as a recalculation candidate. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-9.md.
