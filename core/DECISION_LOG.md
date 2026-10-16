@@ -57393,3 +57393,7 @@ Decision: the sync entry card stays visible when the conflict view failed to loa
 ## 2026-10-16 - Commit: S02 test epic 10b wiring account-switch tests
 
 Decision: FL5 wiring and FL6 closure guard are pinned by activity_wiring_account_switch_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-wiring-account-switch.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b flag matrix tests
+
+Decision: the ActivityFlags truth table and the wiring flag matrix (OFF, localJournal only, cloudSync, both) are pinned by tests under mobile/test/features/activity/config. Evidence: core/changes/2026-10-16-s02-test-epic10b-flag-matrix.md.
