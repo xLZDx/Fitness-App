@@ -214,3 +214,7 @@ Facts: first compiled whole-directory run +1260 -4, all stale oracles (see docs/
 ## 2026-10-16 - S02 test epic 13a: G1 auth tie and G5 skip logs
 Kind: SUCCESS.
 Facts: G1 and G5 production code met every oracle on the first compiled run (+17). Why it worked: oracles came from the notes and the promise; the only error was a missing import in the test. Layer: none missed a production defect.
+
+## 2026-10-16 - S02 test epic 13a: G2 G3 G4 republish, raw-uid reset, wipe marker
+Kind: SHORTCOMING.
+Facts: G2 to G4 production code met all oracles; three first-run failures were my own test oracle (wipeForUid opens the scope once to delete it). Root cause: the notes said 'no directory created' without distinguishing the wipe's own open. Layer: notes author missed it; the first compiled run caught it. Rule next time: assert what the guarded call adds relative to the state after the wipe.

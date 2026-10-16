@@ -57565,3 +57565,7 @@ Decision: four tests that expected bindUid to succeed after wipeForUid of an unb
 ## 2026-10-16 - Commit: S02 test epic 13a G1 auth tie and G5 skip logs
 
 Decision: 17 tests prove the journal-auth tie yields zero backend and pusher calls on a uid disagreement, and that skipped passes log a reason word without a uid. Evidence: core/changes/2026-10-16-s02-test-epic13a-g1-g5-auth-tie.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a G2 G3 G4 republish, raw-uid reset, wipe marker
+
+Decision: 21 tests cover the live presenter without a tap, the wiring publish after every bind completion, the raw-uid reset, the unbound-branch wipe marker and the deleting-account skip. Evidence: core/changes/2026-10-16-s02-test-epic13a-g2-g4-republish-wiring.md.
