@@ -57195,3 +57195,7 @@ Decision: Epic 6b closes with 178 tests green and three small production fixes (
 ## 2026-10-16 - Commit: S02 test epic 6b: late sweep never erases a live account, F71 table, F72/F81/F54 gaps
 
 Decision: The late job never runs its destructive part while the Auth user exists; a fence left by an aborted deletion stays until the deletion completes (open question: deleteAccount does not remove its own fence on an abort before Step 3). Plan F72 and the F54 late-sweep wording are plan errors.
+
+## 2026-10-16 - Commit: S02 client stream uploader and retry policy
+
+Decision: Stream upload reuses the journal sync state (markSynced after commit, upload_failed after the cap) because the journal has no separate stream-state field; every run starts a new upload and nothing but the journal state survives an app restart.
