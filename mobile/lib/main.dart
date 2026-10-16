@@ -671,6 +671,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     ref.watch(interruptedWipeSweepProvider);
     // Body scan <-> nutrition bridges and runner resume triggers.
     ref.watch(bodyScanRootWiringProvider);
+    // Binds the signed-in account's activity journal (flag-gated; no-op off).
+    ref.watch(activityJournalBindingProvider);
     // Activity summary sync at start (flag-gated; a no-op when off).
     ref.watch(activityCloudSyncWiringProvider);
     final settings = ref.watch(settingsControllerProvider);

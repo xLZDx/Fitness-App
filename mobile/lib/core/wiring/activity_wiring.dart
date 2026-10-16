@@ -15,49 +15,39 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/account_deletion/data/local_data_wipe.dart';
 import '../../features/activity/repository/activity_aware_local_data_wipe.dart';
 import '../../features/activity/repository/activity_journal.dart';
-import '../../features/activity/repository/activity_journal_owner.dart';
 import '../../features/activity/repository/activity_cloud_settings_client.dart';
 import '../../features/activity/repository/activity_stream_uploader.dart';
 import '../../features/activity/repository/activity_sync_repository.dart';
 import '../../features/activity/repository/cloud_functions_activity_tombstone_pusher.dart';
-import '../../features/activity/repository/file_activity_journal.dart';
 import '../../features/activity/repository/firestore_activity_summary_backend.dart';
+import '../../features/activity/repository/uid_scoped_activity_journal.dart';
 import '../../features/activity/state/sync_conflict_presenter.dart';
 import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/state/auth_providers.dart';
 import '../config/activity_flags.dart';
 
-/// Opens and recovers the local journal when a journal flag is on; null when
-/// both are off or when opening fails (the app must still start; the cloud path
-/// then stays inactive).
+/// Returns the account-scoped journal (UNBOUND, no I/O, cannot fail the app
+/// start) when a journal flag is on; null when both are off. The journal of an
+/// account is opened and recovered by [activityJournalBindingProvider] when
+/// that account signs in. [factory] is for tests (temp directories, in-memory
+/// keys).
 Future<ActivityJournal?> openActivityJournal({
   ActivityFlags flags = ActivityFlags.compileTime,
+  ActivityJournalFactory? factory,
 }) async {
   if (!flags.journalEnabled) return null;
-  try {
-    final journal = await FileActivityJournal.openDefault();
-    await journal.start();
-    return journal;
-  } catch (e) {
-    debugPrint('activity: journal not opened (${e.runtimeType})');
-    return null;
-  }
+  return UidScopedActivityJournal(factory: factory);
 }
 
 /// The account-deletion device wipe extended with the journal wipe (design 6.2,
-/// 7). With no journal open (both flags off) [inner] is returned unchanged, so the
+/// 7). With no journal (both flags off) [inner] is returned unchanged, so the
 /// behaviour is exactly the pre-S02 one.
 LocalDataWipe activityAwareLocalDataWipe(
   LocalDataWipe inner,
-  ActivityJournal? journal, {
-  ActivityJournalOwnerStore? ownerStore,
-}) {
+  ActivityJournal? journal,
+) {
   if (journal == null) return inner;
-  return ActivityAwareLocalDataWipe(
-    inner: inner,
-    journal: journal,
-    ownerStore: ownerStore ?? PrefsActivityJournalOwnerStore(),
-  );
+  return ActivityAwareLocalDataWipe(inner: inner, journal: journal);
 }
 
 /// Provider overrides for the root `ProviderScope`. Empty unless a journal flag
@@ -86,9 +76,28 @@ List<Override> activityRootOverrides({
 /// The opened journal (only overridden when a journal flag is on).
 final activityJournalProvider = Provider<ActivityJournal?>((_) => null);
 
-/// Owner uid record of the device-wide journal (cross-account guard).
-final activityJournalOwnerStoreProvider = Provider<ActivityJournalOwnerStore>(
-    (_) => PrefsActivityJournalOwnerStore());
+/// Keep-alive binding of the account-scoped journal (S02 remediation E1):
+/// watch it once from the app root widget. Active whenever a journal flag is on,
+/// independent of `cloudSync`. The signed-in uid (anonymous users included)
+/// binds that account's journal; signed out unbinds it WITHOUT deleting any
+/// data. A loading or error auth state without a value changes nothing. Sign-out
+/// itself never wipes (the sign-out export offer is S03).
+final activityJournalBindingProvider = Provider<void>((ref) {
+  if (!ref.watch(activityFlagsProvider).journalEnabled) return;
+  final journal = ref.watch(activityJournalProvider);
+  if (journal is! AccountScopedJournal) return;
+  ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
+    if (!next.hasValue) return;
+    final uid = next.value?.uid;
+    unawaited(() async {
+      try {
+        await journal.bindUid(uid == null || uid.isEmpty ? null : uid);
+      } catch (e) {
+        debugPrint('activity: journal bind failed (${e.runtimeType})');
+      }
+    }());
+  }, fireImmediately: true);
+});
 
 /// Consent cache scoped to the signed-in account. Unknown (so: no upload)
 /// until [signIn] has run.
@@ -175,21 +184,20 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
     final settings = ref.read(activityCloudSettingsClientProvider);
     final consentStore = ref.read(activityConsentStoreProvider);
     final journal = ref.read(activityJournalProvider)!;
-    final ownerStore = ref.read(activityJournalOwnerStoreProvider);
     unawaited(() async {
       try {
-        // The journal is device-wide: when it belongs to another account it is
-        // wiped first (design 17: the sign-out export offer is S03). Fail
-        // closed: no sync and no upload unless this uid owns the journal.
-        if (!await claimActivityJournal(
-            journal: journal, store: ownerStore, uid: user.uid)) {
-          debugPrint('activity: journal owner check failed; sync not started');
+        // The journal of this uid must be bound first (account-scoped
+        // journals: ownership is the location). Fail closed: no sync and no
+        // upload unless the bind succeeded. Nothing is ever wiped here.
+        if (journal is AccountScopedJournal &&
+            !await journal.bindUid(nextUid)) {
+          debugPrint('activity: journal bind failed; sync not started');
           return;
         }
-        // The account may have changed while the claim ran: do nothing more.
+        // The account may have changed while the bind ran: do nothing more.
         if (_syncUid(ref.read(authUserProvider).valueOrNull) != nextUid) return;
         // Uploads were cancelled when the previous account went away; they
-        // resume only now that the new account owns the journal.
+        // resume only now that this account's journal is bound.
         uploader?.resume();
         try {
           await ref

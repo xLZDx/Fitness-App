@@ -57429,3 +57429,7 @@ Decision: replace the device-wide journal plus owner marker by account-scoped jo
 ## 2026-10-16 - Commit: S02 remediation E2, tombstone continuation
 
 Decision: local deletions are pushed in continuation rounds (cap 128 rounds of 8 per sync call), stop at the first refusal, are observable as `pendingTombstones`, and are retried by one backed-off timer (60 s to 15 min, 6 attempts per start); the durable queue is the journal tombstone set. Evidence: core/changes/2026-10-16-s02-remediation-e2-client-continuation.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (b) wiring and owner marker removal
+
+Decision: the app binds the journal of the signed-in uid through an always-on listener, cloud sync fails closed on a failed bind, and the owner marker mechanism is removed. Evidence: core/changes/2026-10-16-s02-remediation-e1-wiring.md.
