@@ -68,3 +68,6 @@ Rule next time: make ownership the location of the data (per-account scope) and 
 
 ## 2026-10-16 - Scoped journal tests (test epic 11a, part a)
 SUCCESS: the never-run scoped journal compiled and passed 22 behaviour tests on real files; the only defects were in the tests themselves (record equality on lists, a consumed gate). Layer: epic tests now cover what the review rounds only argued about.
+
+## 2026-10-16 - Tombstone continuation tests (test epic 11b)
+SHORTCOMING: the E2 continuation compiled and met its notes (34 tests green), but account-scoped state was missed: the retry timer, the confirmed-id set (ids are deterministic, so account A's confirmed id would never be pushed for account B) and the backoff budget lived for the whole process and nothing reset them on sign-out or uid change. Root cause: E2 was designed per process while E1 made the journal per account; the two remediations were not read against each other. Layers: E2 author and design review missed it; the E2 test notes did not mention it; the E2 agent only noted that nothing calls `cancelTombstoneRetry()`; the epic test found it. Rule next time: any in-memory state next to an account-scoped store is reset on the account change, and a test switches accounts.

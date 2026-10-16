@@ -57449,3 +57449,7 @@ Decision: the program keeps core/LESSONS_LOG.md from now on, one entry per commi
 ## 2026-10-16 - Commit: S02 test epic 11a (a) scoped journal tests
 
 Decision: the account-scoped journal is verified on real files with a per-scope fake key store; oracles come from the E1 notes and the account-switch promise. Evidence: core/changes/2026-10-16-s02-test-epic11a-scoped-journal-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b tombstone continuation and account change
+
+Decision: the E2 tombstone continuation is verified on a real journal with a fake pusher and timer; the repository gets `onAccountChanged()` (cancels the retry timer, drops per-account confirmed/failed sets, backoff budget and last error, stops a pass in flight) because a timer and the confirmed-id set otherwise outlive a sign-out or uid change. Evidence: core/changes/2026-10-16-s02-test-epic11b-tombstone-continuation.md.

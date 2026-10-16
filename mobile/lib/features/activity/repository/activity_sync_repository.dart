@@ -152,6 +152,10 @@ class ActivitySyncRepository {
   int _retryAttempts = 0;
   bool _disposed = false;
 
+  /// Bumped by [onAccountChanged]; a tombstone pass started under an older
+  /// value stops without pushing or scheduling anything.
+  int _epoch = 0;
+
   String? _lastTombstonePushError;
   DateTime? _lastCorruptRead;
 
@@ -441,6 +445,7 @@ class ActivitySyncRepository {
   Future<Map<String, SyncOutcome>> syncAll({bool retryConflicts = false}) =>
       _ops.run(() async {
         final out = <String, SyncOutcome>{};
+        final epoch = _epoch;
         var tombs = <String>{};
         var tombsKnown = false;
         try {
@@ -454,9 +459,9 @@ class ActivitySyncRepository {
         }
         // A failed tombstone listing is itself a reason for a backed-off retry.
         final run = tombsKnown
-            ? await _pushLocalTombstones(tombs)
+            ? await _pushLocalTombstones(tombs, epoch)
             : const _TombstoneRun(failureCode: 'unavailable');
-        await _maybeScheduleRetry(run);
+        if (epoch == _epoch) await _maybeScheduleRetry(run);
         for (final e in await _journal.list()) {
           if (tombs.contains(e.id)) {
             await _journal.delete(e.id);
@@ -488,12 +493,15 @@ class ActivitySyncRepository {
   /// round, and any systemic refusal (quota, unavailable, permission) in any
   /// round, ends the pass at once. Ids that failed earlier in this process
   /// are tried last so one poisoned id cannot starve the rest.
-  Future<_TombstoneRun> _pushLocalTombstones(Set<String> serverTombs) async {
+  Future<_TombstoneRun> _pushLocalTombstones(
+      Set<String> serverTombs, int epoch) async {
     final push = _pushTombstone;
+    if (epoch != _epoch) return const _TombstoneRun();
     _confirmedTombstones.addAll(serverTombs);
     if (push == null) return const _TombstoneRun();
     var rounds = 0;
     while (true) {
+      if (epoch != _epoch) return const _TombstoneRun();
       final owed = [
         for (final t in await _journal.listTombstones())
           if (!_confirmedTombstones.contains(t.id)) t.id,
@@ -513,12 +521,15 @@ class ActivitySyncRepository {
       String? code;
       for (final id in owed) {
         if (pushed >= kMaxSummaryBatch) break;
+        if (epoch != _epoch) return const _TombstoneRun();
         pushed++;
         try {
           await push(id);
+          if (epoch != _epoch) return const _TombstoneRun();
           _confirmedTombstones.add(id);
           _failedTombstones.remove(id);
         } catch (e) {
+          if (epoch != _epoch) return const _TombstoneRun();
           // Offline or refused: owed, retried later. The error code is kept so
           // a refusal is distinguishable from being offline.
           anyFailed = true;
@@ -561,10 +572,25 @@ class ActivitySyncRepository {
     });
   }
 
-  /// Cancels a scheduled tombstone retry (sign-out / uid change).
+  /// Cancels a scheduled tombstone retry.
   void cancelTombstoneRetry() {
     _retryTimer?.cancel();
     _retryTimer = null;
+  }
+
+  /// The signed-in account went away or changed (sign-out / uid change): the
+  /// retry timer, the confirmed/failed id sets, the backoff budget and the
+  /// last error belong to the previous account and are dropped, and a pass in
+  /// flight stops before its next push. Without this a timer of account A
+  /// would fire for account B, and an id A had confirmed (ids are
+  /// deterministic) would never be pushed for B.
+  void onAccountChanged() {
+    _epoch++;
+    cancelTombstoneRetry();
+    _confirmedTombstones.clear();
+    _failedTombstones.clear();
+    _retryAttempts = 0;
+    _lastTombstonePushError = null;
   }
 
   /// Syncs at most [kMaxSummaryBatch] entries; a larger request is refused
