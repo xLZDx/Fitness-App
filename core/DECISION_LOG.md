@@ -57385,3 +57385,7 @@ Decision: FL5 uploader behaviour (uid flip at five points, single-flight) is pin
 ## 2026-10-16 - Commit: S02 test epic 10a conflict view state tests
 
 Decision: FL1 and the presenter half of FL2 are covered by tests over the real repository with scripted failing collaborators (backend readSummary, journal list). Evidence: core/changes/2026-10-16-s02-test-epic10a-conflict-view-state.md.
+
+## 2026-10-16 - Commit: S02 test epic 10a sheet states and entry card fix
+
+Decision: the sync entry card stays visible when the conflict view failed to load, so the retry action is reachable (defect D10a-1 found by the new widget test); the sheet states are covered by widget tests. Evidence: core/changes/2026-10-16-s02-test-epic10a-sheet-states-and-card.md.

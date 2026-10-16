@@ -21,8 +21,9 @@ class ActivitySyncEntryCard extends ConsumerWidget {
     if (!ref.watch(activityFlagsProvider).cloudSync) {
       return const SizedBox.shrink();
     }
-    final hasItems = ref.watch(syncConflictPresenterProvider).hasItems;
-    if (!hasItems) return const SizedBox.shrink();
+    final view = ref.watch(syncConflictPresenterProvider);
+    // A failed load keeps the card so the user can reach the retry action.
+    if (!view.hasItems && !view.loadFailed) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return Padding(
