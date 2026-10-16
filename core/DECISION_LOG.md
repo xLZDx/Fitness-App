@@ -57573,3 +57573,7 @@ Decision: 21 tests cover the live presenter without a tap, the wiring publish af
 ## 2026-10-16 - Commit: S02 test epic 13a auth-flip end-to-end
 
 Decision: an end-to-end test over the real file journal proves that during an auth flip nothing of A reaches B's cloud and no local file changes. Evidence: core/changes/2026-10-16-s02-test-epic13a-auth-flip-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a complete runs, flaky ciphertext assertion, findings
+
+Decision: the I07 gzip-header assertion on random ciphertext is limited to the start of the stream because a whole-file search for two bytes is flaky; the complete runs are green and recorded. Evidence: core/changes/2026-10-16-s02-test-epic13a-findings-and-runs.md.

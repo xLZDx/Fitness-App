@@ -82,7 +82,9 @@ void main() {
         expect(containsSeq(bytes, f64(v, Endian.little)), isFalse);
       }
       expect(containsSeq(bytes, ascii.encode('"lats"')), isFalse);
-      expect(containsSeq(bytes, const [0x1F, 0x8B]), isFalse,
+      // A gzip header is visible only at the START of a stream. Searching the
+      // whole random ciphertext for the two bytes 1F 8B is flaky (about n/65536).
+      expect(bytes.sublist(0, 2), isNot(const [0x1F, 0x8B]),
           reason: 'not even a gzip header is visible');
       expect(bytes.sublist(0, 4), AesGcmJournalCipher.magic);
     });

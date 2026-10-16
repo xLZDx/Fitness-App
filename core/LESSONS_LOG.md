@@ -222,3 +222,7 @@ Facts: G2 to G4 production code met all oracles; three first-run failures were m
 ## 2026-10-16 - S02 test epic 13a: auth-flip end-to-end
 Kind: SUCCESS.
 Facts: the real-journal auth flip e2e passed on the first run (+2). Why it worked: the G1 tie is checked at pass start and before each call, so the promise holds at the real boundary. Layer: no defect.
+
+## 2026-10-16 - S02 test epic 13a: complete runs, flaky ciphertext assertion, findings
+Kind: FAILURE.
+Facts: the second whole-directory run failed once in file_activity_journal_encryption_test I07 (searching random ciphertext for 1F 8B), passed on reruns; fixed to a start-of-stream check (docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md). Root cause: an oracle on random data with a nonzero false-positive rate. Layers: the epic 4 test author and reviewers missed it; the repeated complete run caught it. Rule next time: never assert absence of a short byte sequence inside random data.
