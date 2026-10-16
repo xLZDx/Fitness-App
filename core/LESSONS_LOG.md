@@ -201,3 +201,8 @@ Facts: the cloud sync listener keyed the account-change reset on the filtered sy
 Root cause: the same rule (which uid may be bound or reset) was written twice with different filters instead of once.
 Layers: the author missed it; the F tests and first review round missed it; the second review round caught it.
 Rule next time: one helper per identity rule, used by every wiring; a reset keyed on identity uses the raw identity, not a filtered one.
+
+## 2026-10-16 - S02 remediation G docs: accepted backlog and test notes
+Kind: SUCCESS.
+Facts: the two accepted limits (late bind retry does not re-run the sync start; presenter retry cannot force a bind) were written into design 17 item 23 with their reason instead of being silently dropped (core/changes/2026-10-16-s02-remediation-g-docs.md).
+Why it worked: a secondary mechanism that already had its one fix round is accepted and documented, per the no-secondary-blockers rule.

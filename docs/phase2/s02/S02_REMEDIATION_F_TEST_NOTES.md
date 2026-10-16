@@ -107,3 +107,41 @@ Nothing in G was compiled or run by the author. Each assertion below must fail i
 - Case sensitivity: journal bound to `Abc`, `authUid` returns `abc`: zero backend calls (exact comparison).
 - `authUid` returns null at the start with a scoped bound journal: zero backend calls (fail closed, unchanged). Unbound scoped journal: unchanged (`syncAll` empty, `syncEntry` pending, resolution operations `unavailable`).
 - Agreeing uids (A and A) with a scoped journal: the existing happy-path tests still pass (sync writes, tombstones pushed). Plain (non-scoped) journal, any `authUid`, and a scoped journal with a null `authUid` supplier: behaviour unchanged (the whole existing pass-identity suite).
+
+### G2: republish on account or binding change
+
+- Live presenter: a `ProviderContainer` with the real `SyncConflictPresenter` subscribed once (non-autoDispose) over a repository on a scoped journal bound to A with a conflict X. Call `onAccountChanged()` and unbind the journal (`bindUid(null)`) with NO tap and no `syncAll`: the presenter ends with `loadFailed == true` (or, if it models it, empty and `loaded == false`), never A's conflict list. Removing the `onJournalBindingChanged()` call from `onAccountChanged` leaves A's conflicts on screen.
+- Bind of B succeeds, then `onJournalBindingChanged()`: the presenter shows B's state (B's conflicts, `loadFailed == false`) with no tap.
+- Bind of B fails (factory throws): the wiring calls `onJournalBindingChanged()` and the presenter shows `loadFailed == true` although `syncAll` never ran.
+- Wiring: with `cloudSync` on and a recording repository (see stale fakes), `activityJournalBindingProvider` calls `onJournalBindingChanged()` exactly once after each `bindUid` completion: a success, a `false` result and a thrown exception (three cases). The cloud sync wiring calls it once after its own `bindUid` in each of the same three cases. With `cloudSync` off the repository provider is never read (no throw, no call). After the container/provider is disposed while a `bindUid` is pending, no call is made.
+- `onJournalBindingChanged()` after `dispose()` does nothing and does not throw; with a `refreshState` that throws a non-`JournalUnbound` error nothing escapes and nothing is added to the stream.
+- `onAccountChanged()` itself never throws (journal unbound and bound).
+
+### G3: raw-uid account change in the cloud sync listener
+
+- Auth emits anonymous user X, then real user B: `onAccountChanged()` is called once and the uploader's `cancelQueued()` is called once (recording repository and uploader). Before the fix neither is called. The conflict caches of the real repository are empty afterwards (a second `refreshState` re-reads the backend).
+- Real A to anonymous Y, real A to null: `onAccountChanged()` and `cancelQueued()` are called once each. Null to A (initial emission, previous raw uid null) and A to A (same raw uid): not called.
+- The sync start still depends on the filtered uid: anonymous X alone starts no sync and no bind; real B after X binds B and runs `syncAll(retryConflicts: true)` once.
+
+### G4: wipe marker in both branches, deleting account skipped
+
+- Scoped journal, nothing bound for uid U: `wipeForUid(U)` then `bindUid(U)` returns false and no directory and no key for the scope of U exists afterwards (assert on the factory's created scope ids / the temp directory listing). Queued variant: start `bindUid(U)` (blocked factory) and `wipeForUid(U)` queued behind the mutex in either order; after both complete the bind of U is refused. Removing the marker in the unbound branch makes `bindUid(U)` create the scope.
+- `bindUid(null)` or `bindUid(other)` after the wipe clears the marker: `bindUid(U)` succeeds again (semantics unchanged); the bound-branch tests of epic 9b still pass.
+- Sync wiring: set `accountBeingDeletedUidProvider` to B, emit real user B: `bindUid` is NOT called on the journal, `syncAll` is not called, the debug line is logged; with the provider null the same emission binds and syncs. The binding provider behaviour is unchanged (existing tests), and both use the same `_bindableUid` helper (a code review item, no extra test).
+
+### G5: skipped passes are logged without any uid
+
+- Capture `debugPrint` (override `debugPrint` with a list collector and restore it): journal unbound, `syncAll()` logs `activity: syncAll skipped (journal-unbound)`; `syncEntry(id)` logs `activity: syncEntry skipped (journal-unbound)`; journal bound to A with `authUid` B logs `journal-auth-mismatch`; `authUid` null at start logs `auth-null`; an `onAccountChanged()` between the pass start and the check (blocked read) logs `pass-identity`; `authUid` flipped after the start logs `auth-changed`.
+- In every case no logged line contains the uid strings used by the test (assert `isNot(contains(uidA))` and `uidB`) nor the entry id, and the return values equal the pre-G values (`pending` / empty map).
+- A normal successful pass logs no `skipped` line.
+
+### Stale fakes and tests to review (G)
+
+Changed contract: `ActivitySyncRepository` gained the public `void onJournalBindingChanged()`; `onAccountChanged()` now publishes; no interface (`AccountScopedJournal`, `ActivityJournal`, `ActivitySummaryBackend`) changed.
+
+- `mobile/test/features/activity/repository/activity_wiring_account_switch_test.dart` `_ThrowingSyncRepo extends Fake implements ActivitySyncRepository`: the wiring now also calls `onJournalBindingChanged()` after a bind (inside `_publishBindingChange`, which swallows and logs any throw, so the test does not fail, but any count of calls to `onAccountChanged` or a recorded call list must add `onJournalBindingChanged`). Implement `onJournalBindingChanged()` explicitly (record it) and review its `onAccountChanged` expectations: a raw-uid change (anonymous to real) now calls it too.
+- `mobile/test/features/activity/state/sync_conflict_view_errors_test.dart` `_SlowRepo extends ActivitySyncRepository` and `mobile/test/features/activity/widgets/sync_conflict_sheet_states_test.dart` `_NoJournalRepo extends ActivitySyncRepository`: inherit the new method; `onAccountChanged` now publishes through the overridden `refreshState`, review tests that call it with a listener attached.
+- `mobile/test/features/activity/repository/activity_journal_binding_retry_test.dart` `_Scripted extends Fake implements ActivityJournal, AccountScopedJournal` and `activity_journal_wipe_wiring_test.dart` `_Scoped extends Fake implements ActivityJournal, AccountScopedJournal`: unchanged interface; the sync repository now also reads `boundUid` / `isBound` in `_beginPass` and `_mayCall` when an `authUid` supplier is given, so both must return the scripted values (a `Fake` throws on an unimplemented getter). Check any test that builds `ActivitySyncRepository(authUid: ...)` over a scoped fake whose `boundUid` differs from the `authUid` value (it now gets `pending`).
+- `mobile/test/features/activity/repository/activity_sync_pass_identity_test.dart` (12a): every test that passes `authUid` over a real scoped journal must bind the same uid the closure returns, otherwise the new tie makes the pass do nothing; the `authUid` mismatch cases there flip the closure AFTER the start, which still holds.
+- Tests that call `wipeForUid(uid)` for an unbound uid and then `bindUid(uid)` expecting success (search `wipeForUid` in `mobile/test`): now refused until `bindUid(null)` or another uid.
+- Tests that capture `debugPrint` output and assert exact lines of the sync repository: the new `skipped` lines are added.

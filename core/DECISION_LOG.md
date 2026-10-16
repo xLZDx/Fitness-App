@@ -57553,3 +57553,7 @@ Decision: `onAccountChanged()` and the new `onJournalBindingChanged()` publish t
 ## 2026-10-16 - Commit: S02 remediation G3 raw-uid account change, G4 wipe marker and deleting-account skip
 
 Decision: the account-change reset in the cloud sync listener is keyed on the raw uid (anonymous included); `wipeForUid` records the wiped uid in both branches; the sync wiring and the binding provider share one `_bindableUid` helper that excludes the account being deleted. Evidence: core/changes/2026-10-16-s02-remediation-g-raw-uid-and-wipe-marker.md.
+
+## 2026-10-16 - Commit: S02 remediation G docs, accepted backlog and test notes
+
+Decision: two items are accepted unchanged and recorded in design 17 item 23 (no re-run of the sync start after a late bind retry success, the bind-retry budget leaves the journal unbound until the next auth event; the presenter retry cannot force a bind); the test oracles for G2 to G5 and the stale fake list are in the F test notes section G. Evidence: core/changes/2026-10-16-s02-remediation-g-docs.md.
