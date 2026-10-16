@@ -3,7 +3,7 @@
  * (S02 design 5.2 item 1, 5.4; story S02-04b).
  *
  * Order (part of the contract): auth -> App Check note -> non-anonymous ->
- * validate -> feature (bucket configured) -> daily quota -> ONE Firestore
+ * `expectedUid` binding (refusal `account_changed`) -> validate -> feature (bucket configured) -> daily quota -> ONE Firestore
  * transaction that checks the delete fence (documents + Auth existence), the
  * tombstone, the summary, the `cloudStreams` consent, the derived expiry and the
  * attempt cap and writes the upload intent -> (after the commit of that
@@ -26,6 +26,7 @@ import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_g
 import { assertFeatureEnabled } from "../feature_flags";
 import { MAX_COMPRESSED_BYTES } from "./schema";
 import { isSha256Hex } from "./hash";
+import { ExpectedUidError, verifyExpectedUid } from "./expected_uid";
 import { activityStreamRowPath, isActivityId, quarantineObjectPath } from "./paths";
 import {
   MAX_ATTEMPTS_PER_DAY,
@@ -161,9 +162,20 @@ export async function handleCreateActivityStreamUpload(
   if (signInProvider === "anonymous") {
     throw new HttpsError("permission-denied", "anonymous_not_allowed");
   }
+  // Invocation-bound identity (design 17 item 25): before the parse, any quota, read or write.
+  let bound: unknown;
+  try {
+    bound = verifyExpectedUid(uid, data);
+  } catch (e) {
+    if (e instanceof ExpectedUidError && e.code === "account_changed") {
+      log("warn", { outcome: "account_changed" });
+      throw new HttpsError("failed-precondition", "account_changed");
+    }
+    throw toUploadHttpsError("invalid_request");
+  }
   let req: CreateUploadRequest;
   try {
-    req = parseCreateUploadRequest(data);
+    req = parseCreateUploadRequest(bound);
   } catch {
     throw toUploadHttpsError("invalid_request");
   }

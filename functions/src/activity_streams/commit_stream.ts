@@ -3,7 +3,7 @@
  * (S02 design 5.1, 5.1a, 5.2 item 2 and 3, 5.3, 5.4; story S02-04b).
  *
  * Order (part of the contract): auth -> App Check note -> non-anonymous ->
- * validate -> bucket configured -> daily quota -> then the idempotent commit:
+ * `expectedUid` binding (refusal `account_changed`) -> validate -> bucket configured -> daily quota -> then the idempotent commit:
  *
  *   T1  transaction: fence (documents + Auth existence), tombstone, summary,
  *       consent, "already stored" success, `uploadId` is the row's current id
@@ -39,6 +39,7 @@ import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_g
 import { assertFeatureEnabled } from "../feature_flags";
 import { MAX_COMPRESSED_BYTES, STREAM_PAYLOAD_SCHEMA } from "./schema";
 import type { StreamBucket } from "./bucket";
+import { ExpectedUidError, verifyExpectedUid } from "./expected_uid";
 import {
   activityStreamRowPath,
   isActivityId,
@@ -429,9 +430,20 @@ export async function handleCommitActivityStream(
   if (signInProvider === "anonymous") {
     throw new HttpsError("permission-denied", "anonymous_not_allowed");
   }
+  // Invocation-bound identity (design 17 item 25): before the parse, any quota, read or write.
+  let bound: unknown;
+  try {
+    bound = verifyExpectedUid(uid, data);
+  } catch (e) {
+    if (e instanceof ExpectedUidError && e.code === "account_changed") {
+      log("warn", { outcome: "account_changed" });
+      throw new HttpsError("failed-precondition", "account_changed");
+    }
+    throw toUploadHttpsError("invalid_request");
+  }
   let req: CommitRequest;
   try {
-    req = parseCommitRequest(data);
+    req = parseCommitRequest(bound);
   } catch {
     throw toUploadHttpsError("invalid_request");
   }

@@ -3,7 +3,7 @@
  * cloud activity streams (S02 design 5.3, 5.4, 6.1, 9, 9.1).
  *
  * Order (part of the contract, mirrors `createBodyScan`): auth -> App Check note
- * -> non-anonymous -> validate -> feature flag (only when granting) -> quota
+ * -> non-anonymous -> `expectedUid` binding (refusal `account_changed`) -> validate -> feature flag (only when granting) -> quota
  * (not charged for a pure withdrawal) -> ONE transaction that reads the delete
  * fence, the retries marker and the settings, checks that the Auth user still
  * exists, then writes retention, generation, recompute flag and consent
@@ -31,6 +31,7 @@ import { RARE } from "../scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_guard";
 import { assertFeatureEnabled } from "../feature_flags";
 import { activityStreamCloudEnabled } from "./flags";
+import { ExpectedUidError, verifyExpectedUid } from "./expected_uid";
 import { checkAccountFence, defaultFenceDeps, type FenceDeps } from "./fence";
 import { defaultDeleteAllDeps, hasActiveDeleteJob } from "./delete_all_streams";
 import {
@@ -215,9 +216,20 @@ export async function handleSetActivityCloudSettings(
   if (signInProvider === "anonymous") {
     throw new HttpsError("permission-denied", "anonymous_not_allowed");
   }
+  // Invocation-bound identity (design 17 item 25): before the parse, any quota, read or write.
+  let bound: unknown;
+  try {
+    bound = verifyExpectedUid(uid, data);
+  } catch (e) {
+    if (e instanceof ExpectedUidError && e.code === "account_changed") {
+      log("warn", { outcome: "account_changed" });
+      throw new HttpsError("failed-precondition", "account_changed");
+    }
+    throw toHttpsError("invalid_request");
+  }
   let req: SettingsRequest;
   try {
-    req = parseSettingsRequest(data);
+    req = parseSettingsRequest(bound);
   } catch (e) {
     if (e instanceof SettingsRequestError) throw toHttpsError(e.code);
     throw toHttpsError("invalid_request");

@@ -2,7 +2,7 @@
  * `deleteActivity` -- erases one activity from the cloud (S02 design 6, 6.1, 6.2, 5.4).
  *
  * Order (part of the contract, test F20): auth -> App Check note -> non-anonymous
- * -> validate -> daily quota -> ONE transaction (fence documents, Auth existence,
+ * -> `expectedUid` binding (refusal `account_changed`) -> validate -> daily quota -> ONE transaction (fence documents, Auth existence,
  * then the TOMBSTONE written first) -> objects under `streams/` and `quarantine/`
  * for that id -> stream index row -> summary document LAST.
  *
@@ -26,6 +26,7 @@ import { RARE } from "../scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_guard";
 import { activityStreamBucket, type StreamBucket } from "./bucket";
 import { checkAccountFence, defaultFenceDeps, type FenceDeps } from "./fence";
+import { ExpectedUidError, verifyExpectedUid } from "./expected_uid";
 import {
   activityQuarantinePrefix,
   activityStreamRowPath,
@@ -203,9 +204,20 @@ export async function handleDeleteActivity(
   if (signInProvider === "anonymous") {
     throw new HttpsError("permission-denied", "anonymous_not_allowed");
   }
+  // Invocation-bound identity (design 17 item 25): before the parse, any quota, read or write.
+  let bound: unknown;
+  try {
+    bound = verifyExpectedUid(uid, data);
+  } catch (e) {
+    if (e instanceof ExpectedUidError && e.code === "account_changed") {
+      log("warn", { outcome: "account_changed" });
+      throw new HttpsError("failed-precondition", "account_changed");
+    }
+    throw toHttpsError("invalid_request");
+  }
   let activityId: string;
   try {
-    activityId = parseDeleteRequest(data).activityId;
+    activityId = parseDeleteRequest(bound).activityId;
   } catch {
     throw toHttpsError("invalid_request");
   }

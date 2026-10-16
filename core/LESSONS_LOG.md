@@ -451,3 +451,11 @@ Facts: the verification review of H found that the display path (refreshState an
 Root cause: a guard was added to one path and the sibling path reading the same identity pair was not grepped; per-account state was bound behind unrelated steps.
 Layers: the H implementer and the epic 14 tests missed it; the second verification round caught it.
 Rule next time: when a guard is added, grep every sibling path that reads the same identity pair; verify a reviewer claim against the primary source before acting (it can be right or already covered).
+
+## 2026-10-16 - Commit: fix(s02): bind server activity callables to the initiating account (remediation J1)
+
+Kind: SHORTCOMING.
+Facts: GPT-PM round 13 found that ActivityCloudSettingsClient grant and withdraw checked only the locally bound consent-store uid, while the Firebase callable runs as whoever is signed in when the token is read and the server resolves the account from request.auth. A flip from A to B between the check and the token read changes B consent. The same class covers setActivityCloudSettings, createActivityStreamUpload, commitActivityStream and deleteActivity. Evidence: core/changes/2026-10-16-s02-remediation-j1-server-expected-uid.md and S02_DESIGN.md section 17 item 25.
+Root cause: the round 12 class sweep inventoried per-account state and async chains but never asked whether the identity travels WITH each outbound call that is authenticated only by ambient credentials.
+Layers: missed by the H and I implementers, by the sweep brief, and by tests that moved the store bound uid instead of the live auth source; caught by the external gate.
+Rule next time: any outbound call authenticated by ambient credentials carries the initiating identity in the request and the receiver verifies it before any side effect.
