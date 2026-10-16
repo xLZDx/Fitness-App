@@ -57135,3 +57135,7 @@ Decision: Override lifecycle tests assert record.json on disk, the rule-enforcin
 ## 2026-10-16 - Commit: S02 test epic 4: sync-conflict presenter and sheet, delete-wins end-to-end scenarios
 
 Decision: Widget tests of the sheet tap inside the real-async zone (the journal futures cannot progress in FakeAsync); layout stays NOT_RUN.
+
+## 2026-10-16 - Commit: S02 test epic 4: findings and final epic run
+
+Decision: Epic 4 closes with 127 tests green and no production change; I15-I17, I27, I28 have no client code and stay with the stream-upload story.
