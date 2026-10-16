@@ -101,6 +101,17 @@ const ENTRYPOINTS: Record<string, unknown> = {
   parseNutritionLabel: index.parseNutritionLabel,
   lookupBarcode: index.lookupBarcode,
   searchFoods: index.searchFoods,
+  // S02 unified activity (seven callables of design 5.4 plus the three scheduled jobs).
+  setActivityCloudSettings: index.setActivityCloudSettings,
+  deleteActivity: index.deleteActivity,
+  createActivityStreamUpload: index.createActivityStreamUpload,
+  commitActivityStream: index.commitActivityStream,
+  deleteAllActivityStreams: index.deleteAllActivityStreams,
+  getActivityStreamDownloadUrls: index.getActivityStreamDownloadUrls,
+  sendDebugTelemetry: index.sendDebugTelemetry,
+  purgeExpiredActivityStreams: index.purgeExpiredActivityStreams,
+  sweepLateActivityStreams: index.sweepLateActivityStreams,
+  reconcileActivityStreams: index.reconcileActivityStreams,
 };
 
 describe("scaling ceilings", () => {
@@ -201,6 +212,10 @@ describe("scaling ceilings", () => {
       "purgeExpiredBodyScanPhotos",
       "sweepLateBodyScanUploads",
       "reconcileAccountDeletions",
+      // S02 scheduled jobs, pinned single-flight (concurrency: 1).
+      "purgeExpiredActivityStreams",
+      "sweepLateActivityStreams",
+      "reconcileActivityStreams",
     ];
     // The food AI callables ride AI_METERED, which sets an explicit concurrency.
     explicitConcurrency.push("analyzeMealPhoto", "parseNutritionLabel");

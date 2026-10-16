@@ -57163,3 +57163,7 @@ Decision: Inclusive coordinate bounds and ratio-20-accepted follow the design (p
 ## 2026-10-16 - Commit: S02 test epic 6a: S02-04b create/commit state machine and callable hardening
 
 Decision: A concurrent duplicate commit of the same upload id returns already_stored (production fix in writeIntendedHash); over a stored row a create keeps state=stored (design), not pending (plan text).
+
+## 2026-10-16 - Commit: S02 test epic 6a: settings, consent, delete, fence, pinned quota set, findings
+
+Decision: Epic 6a closes with 669 tests green and two small production fixes; the scaling export registry lists the ten S02 exports and treats the three S02 scheduled jobs as single-flight.
