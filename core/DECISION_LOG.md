@@ -56919,3 +56919,7 @@ Decision: Settings validation and the change planner are pure functions; retenti
 ## 2026-10-16 - Commit: S02-05a: setActivityCloudSettings callable
 
 Decision: Consent and retention are written only by one fenced transaction (settings, account fence, deletion-retries marker, Auth existence), a no-op request writes nothing, a pure withdrawal is exempt from the daily quota, and the quota name activitySettingsSet is added to the redacted set. Evidence: core/changes/2026-10-16-s02-05a-set-settings-callable.md.
+
+## 2026-10-16 - Commit: S02-06a: shared fence helper and deleteAccount fence write
+
+Decision: All activity callables read the delete fence, the deletion-retries marker and Auth existence through one helper that fails closed on a transient Auth error; deleteAccount writes the fence after the Stripe cancel and before the first sweep (a failed cancel must not fence a live account). Evidence: core/changes/2026-10-16-s02-06a-fence-helper.md.

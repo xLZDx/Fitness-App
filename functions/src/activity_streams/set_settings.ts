@@ -28,6 +28,7 @@ import { RARE } from "../scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_guard";
 import { assertFeatureEnabled } from "../feature_flags";
 import { activityStreamCloudEnabled } from "./flags";
+import { checkAccountFence, defaultFenceDeps, type FenceDeps } from "./fence";
 import {
   CLOUD_STREAMS_CONSENT_VERSION,
   SettingsRequestError,
@@ -86,37 +87,10 @@ export interface SettingsResult {
   serverNowMs: number;
 }
 
-/** Injectable collaborators of the transaction. */
-export interface SettingsDeps {
-  firestore(): FirebaseFirestore.Firestore;
-  /** `true` when the Auth user exists, `false` when Auth says it is gone. Other failures must throw. */
-  authUserExists(uid: string): Promise<boolean>;
-  nowMs(): number;
-}
+/** Injectable collaborators of the transaction (the shared fence seam, `fence.ts`). */
+export type SettingsDeps = FenceDeps;
 
-export const defaultSettingsDeps: SettingsDeps = {
-  firestore: () => admin.firestore(),
-  async authUserExists(uid) {
-    try {
-      await admin.auth().getUser(uid);
-      return true;
-    } catch (e) {
-      if ((e as { code?: unknown } | null)?.code === "auth/user-not-found") return false;
-      throw e;
-    }
-  },
-  nowMs: () => Date.now(),
-};
-
-/** The delete fence of design 6.1: top-level, server-only, survives `recursiveDelete(users/{uid})`. */
-export function activityAccountStatePath(uid: string): string {
-  return `activity_account_state/${uid}`;
-}
-
-/** Existing Phase 1 marker written by `deleteAccount` once a deletion is in flight. */
-function accountDeletionRetriesPath(uid: string): string {
-  return `accountDeletionRetries/${uid}`;
-}
+export const defaultSettingsDeps: SettingsDeps = defaultFenceDeps;
 
 /**
  * The transaction. Reads (settings, both fence documents), then the Auth
@@ -130,19 +104,13 @@ export async function applyActivityCloudSettings(
 ): Promise<SettingsResult> {
   const fs = deps.firestore();
   const settingsRef = fs.doc(activitySettingsPath(uid));
-  const fenceRef = fs.doc(activityAccountStatePath(uid));
-  const retriesRef = fs.doc(accountDeletionRetriesPath(uid));
 
   return fs.runTransaction(async (tx): Promise<SettingsResult> => {
-    const [settingsSnap, fenceSnap, retriesSnap] = await Promise.all([
-      tx.get(settingsRef),
-      tx.get(fenceRef),
-      tx.get(retriesRef),
-    ]);
+    const settingsSnap = await tx.get(settingsRef);
     // Fence first (design 6.1): an account being deleted may not gain a consent document.
-    if (fenceSnap.exists || retriesSnap.exists) throw new SettingsRefusal("account_deleting");
     // Tokens stay valid for about an hour after `deleteUser`; Auth existence is the second guard.
-    if (!(await deps.authUserExists(uid))) throw new SettingsRefusal("account_deleted");
+    const fence = await checkAccountFence(tx, deps, uid);
+    if (fence !== "clear") throw new SettingsRefusal(fence);
 
     const nowMs = deps.nowMs();
     const current = settingsSnap.exists ? (settingsSnap.data() as Record<string, unknown>) : undefined;

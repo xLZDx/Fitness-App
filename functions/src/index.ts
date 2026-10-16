@@ -51,6 +51,7 @@ import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { bodyScanBucketName } from "./body_scan/flags";
+import { defaultFenceDeps, writeActivityAccountFence } from "./activity_streams/fence";
 import { INTERACTIVE, RARE, WEBHOOK, RUNTIME_SA } from "./scaling";
 import {
   noteAppCheck,
@@ -2629,6 +2630,27 @@ export const deleteAccount = onCall(
       });
     }
 
+    // Step 1c — S02 delete fence (design 6.1): write the top-level server-only
+    // `activity_account_state/{uid}` BEFORE the first sweep and before
+    // `accountDeletionRetries/{uid}` exists. From here on every activity callable
+    // refuses and the summary rules refuse client writes; the document survives
+    // `recursiveDelete(users/{uid})`. Idempotent (a retry keeps the earliest
+    // `fenceAt`). A failure aborts BEFORE anything is deleted, so the user can
+    // retry; the sweeps and the late job that read it belong to S02-06b.
+    try {
+      await writeActivityAccountFence(defaultFenceDeps, uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED, {
+        event: DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
+        uid,
+        err,
+      });
+      throw new HttpsError(
+        "internal",
+        "Your account has not been deleted. Please try again — this step is safe to repeat.",
+      );
+    }
+
     // Step 2 — delete every document under this uid, plus the two other
     // top-level collections a user can be written into elsewhere in this
     // file: `donor_wall/{uid}` (optInDonorWall) and `coach_listings/{uid}`
@@ -2986,7 +3008,6 @@ export { purgeExpiredBodyScanPhotos, sweepLateBodyScanUploads } from "./body_sca
 // Unified activity cloud settings and consent (S02-05a, design 5.3/9.1). Server-written
 // settings document; granting consent answers `feature-disabled` until ACTIVITY_STREAM_BUCKET is set.
 export { setActivityCloudSettings } from "./activity_streams/set_settings";
-
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until

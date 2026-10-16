@@ -67,3 +67,18 @@ export function userStreamsPrefix(uid: string): string {
 export function userQuarantinePrefix(uid: string): string {
   return `quarantine/${uidOf(uid)}/`;
 }
+
+/** `users/{uid}/activities/{activityId}`: the client-written summary document. */
+export function activitySummaryPath(uid: string, activityId: string): string {
+  return `users/${uidOf(uid)}/activities/${activityIdOf(activityId)}`;
+}
+
+/** `users/{uid}/activity_streams/{activityId}`: the server-written stream index row. */
+export function activityStreamRowPath(uid: string, activityId: string): string {
+  return `users/${uidOf(uid)}/activity_streams/${activityIdOf(activityId)}`;
+}
+
+/** `users/{uid}/activity_tombstones/{activityId}`: the server-written delete marker (design 6.2). */
+export function activityTombstonePath(uid: string, activityId: string): string {
+  return `users/${uidOf(uid)}/activity_tombstones/${activityIdOf(activityId)}`;
+}
