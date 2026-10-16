@@ -376,3 +376,9 @@ Root cause: my oracle assumed independent chains. Layer that missed it: me (test
 Kind: SUCCESS.
 Facts: Complete run of my tests plus the repository, e2e and config directories ended +784 all passed. The only breakages were stale fakes and assertions (notes incomplete on uid-flipping uploader tests). Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md.
 Why it worked: Completer gates on exact awaits. Rule next time: when a view gains a uid, grep fixtures that vary the uid supplier.
+
+## 2026-10-16 - docs(s02): test epic 14c final run findings
+
+Kind: SUCCESS.
+Facts: Four one-at-a-time complete runs on cf1a4eb5 (after the activityDelete quota change) were all green: +1389, +120, 791 and 315 tests; no stale oracle or production defect surfaced. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md.
+Why it worked: earlier epics already fixed stale fakes; running serially avoided jest timeouts. Open item: jest reports a worker that failed to exit gracefully in the activity run (possible leaked handle), not investigated.

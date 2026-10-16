@@ -96,3 +96,31 @@ account's consent". No production code was changed.
   tested (they build Firebase objects with no seam); the uploader and repository guards themselves are tested directly.
 - The platform preferences store is a fake; real plugin timing is not covered.
 - `flutter analyze`, the full suite and builds were not run by design.
+
+## Epic 14c - final complete run
+
+Head: `cf1a4eb5` (branch `phase2/s02-unified-activity`), clean worktree (`git status --short` empty). Date: 2026-10-16. No file changed before this section; these suites were last run before the activityDelete quota change, so this is new evidence.
+
+### Commands and results
+
+From `D:\Repo\Fitness_App_Phase2_s01\mobile`:
+
+1. `flutter test --timeout 60s test/features/activity` -> `03:29 +1389: All tests passed!`
+2. `flutter test --timeout 60s test/features/account_deletion test/core/architecture test/android/backup_rules_test.dart test/features/safety/health_rules_parity_test.dart test/adversarial/n07_team_activation_test.dart` -> `00:10 +120: All tests passed!`
+
+From `D:\Repo\Fitness_App_Phase2_s01\functions`:
+
+3. `npx jest src/__tests__/activity src/__tests__/abuse_guard.test.ts src/__tests__/callable_hardening.test.ts` -> `Test Suites: 27 passed, 27 total` / `Tests:       791 passed, 791 total`
+4. `npx jest src/__tests__/s02_remediation_a_policy.test.ts src/__tests__/scaling.test.ts src/__tests__/delete_account.test.ts src/__tests__/account_deletion_reconcile.test.ts src/__tests__/firestore_indexes_body_scan.test.ts` -> `Test Suites: 5 passed, 5 total` / `Tests:       315 passed, 315 total`
+
+All four paths existed as given; no path correction was needed.
+
+### Failures and dispositions
+
+None. No 5000 ms timeout occurred, so no isolated rerun was needed. Command 3 printed a jest warning (`A worker process has failed to exit gracefully ... tests leaking due to improper teardown`); it did not fail any test and is a pre-existing teardown note, not investigated here (no `--detectOpenHandles` run, by scope).
+
+### Not verified / remains
+
+- No `flutter analyze`, builds or rules-emulator run (rules and indexes unchanged since their last run).
+- No mutation run (operator rule).
+- The jest open-handle warning in command 3 is unexplained.
