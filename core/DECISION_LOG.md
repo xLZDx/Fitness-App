@@ -56803,3 +56803,7 @@ Decision: summary ordering uses a client-incremented rev enforced strictly incre
 ## 2026-10-16 - Commit: S02 design revision 3
 
 Decision: the delete fence and late job live in a top-level server-only collection written before the first deletion sweep (the Body Scan precedent); a permission-denied on a summary write never deletes local data without a tombstone; summary batches are capped at 10; bulk stream deletion is a seventh hardened callable. Evidence: core/changes/2026-10-16-s02-design-revision-3.md.
+
+## 2026-10-16 - Commit: S02 test plan revision 3
+
+Decision: Firebase Auth uids are treated as never re-issued (the fence document is removed one hour after the late job); a commit with an already-due expiry is refused so an expiry purge cannot be undone by a pending re-upload. Test plan: 212 planned tests. Evidence: core/changes/2026-10-16-s02-test-plan-revision-3.md.
