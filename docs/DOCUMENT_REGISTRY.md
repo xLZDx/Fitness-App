@@ -300,7 +300,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 11197 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC8.md` | S02 test findings, epic 8: remediation batch A | 6331 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC9.md` | S02 test findings, epic 9 | 6621 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 5906 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7009 |
 | `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328694 |
 | `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 88578 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |

@@ -47,3 +47,21 @@ Before the fixes, rows 4/5 files gave 74 failures in `delete_account.test.ts` an
 
 - `node scripts/ci/check_data_access_policy.js` (not in the S02 findings list) exits 1 with 5 unresolved non-literal `.collection()` calls in `functions/src/body_scan/manage.ts` (218, 317, 355) and `functions/src/nutrition_cache.ts` (74, 109). None is an S02 file; not investigated further and not changed.
 - Not run by instruction: lint, typecheck, build, full-repo suites. Mutation runs were not performed (operator decision). The emulator alternate config lived in the session scratchpad, not in the repository.
+
+## Rules emulator, complete set on the final head
+
+Head before and after: `479b7342`; `git status --short` was empty before and after the run. Test epic 5 reported 8 suites / 908 tests; there are now 9 files (the six `s02_*` files plus the three pre-existing rules files), re-proven after the A12 `primarySourceId` rules change (7c4a404d).
+
+Command (cwd `functions`; the alternate emulator config, ports 18080/19299, lived in the session scratchpad outside the repository):
+
+`FIREBASE_EMULATOR_CONFIG=<alt config> FIRESTORE_EMULATOR_PORT=18080 STORAGE_EMULATOR_PORT=19299 node scripts/run_emulator_tests.js jest.rules.config.js firestore,storage demo-fitness-rules src/__rules__/s02_ src/__rules__/data_access_policy.test.ts src/__rules__/firestore_rules.test.ts src/__rules__/storage_rules.test.ts`
+
+Verbatim summary lines (exit 0):
+
+```
+Test Suites: 9 passed, 9 total
+Tests:       953 passed, 953 total
+Script exited successfully (code 0)
+```
+
+No failures, no test or product changes. The `PERMISSION_DENIED` console.warn lines in the output are expected denial-path logging from the negative tests.
