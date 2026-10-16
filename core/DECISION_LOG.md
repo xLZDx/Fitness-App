@@ -57215,3 +57215,7 @@ Decision: The stream upload has its own journal marker (streamUploadedHash); the
 ## 2026-10-16 - Commit: S02 test epic 7b: shared fakes for the client upload tests
 
 Decision: The fake server refuses a commit without a complete PUT of that upload id, so wrong client sequences fail.
+
+## 2026-10-16 - Commit: S02 test epic 7b: client stream upload tests (I15, I16, I17)
+
+Decision: The real sequence summary sync then upload is pinned; HR is checked in stream, lap and field-name form with a positive control.
