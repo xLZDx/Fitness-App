@@ -305,7 +305,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 88578 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 6308 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 6782 |
 | `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13362 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |

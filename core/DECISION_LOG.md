@@ -57417,3 +57417,7 @@ Decision: the S02 server side closes green (744 + 191 + 289 + 124 tests); three 
 ## 2026-10-16 - Commit: S02 final run, complete rules emulator set
 
 Decision: the complete rules set (9 suites, 953 tests) is green on head 479b7342, re-proving the three pre-existing rules files after the A12 rules change. Evidence: core/changes/2026-10-16-s02-final-run-rules.md.
+
+## 2026-10-16 - Commit: S02 code gate submission
+
+Decision: S02 enters phase 8 Gate; the report pair and the SDLC state are committed before the GPT-PM review so the approved head stays final. Evidence: core/changes/2026-10-16-s02-code-gate-submission.md.
