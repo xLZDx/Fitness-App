@@ -637,3 +637,9 @@ Kind: SUCCESS.
 Facts: the S03-D documentation gate closed in two rounds: round 1 on 5302915e returned MODIFY (1 MAJOR, 2 MINOR); every item was verified against the contract text before it was fixed (the MAJOR was a real contradiction), all items were fixed in one batch, and round 2 on 45b9184b returned APPROVE with 0 BLOCKER and 0 MAJOR. Evidence: GPT-PM replies of request ids 9bdd45d1 and 6e9e542e, core/changes/2026-10-17-s03d-gate-round-1-fixes.md.
 Why it worked: two independent internal reviews before the gate removed most defects (4 and 3 MAJOR findings, overlapping, fixed first), the scope note told the reviewer exactly what changed, and the fix was one batch that rechecked the arithmetic by hand.
 Rule next time: keep the order internal reviews, one batch of fixes, external gate, one batch of fixes, verification round; and tell reviewers to recompute inherited rules (see the entry for the gate fixes).
+
+## 2026-10-17 - Commit: docs: start sprint S03 on the operator GO
+
+Kind: NEUTRAL.
+Facts: sprint S03 starts only after the operator's explicit GO; the previous turn asked the question in plain words with the consequences of each answer, and the GO arrived as a short standalone message. The S03 state section lists the phases and artifacts so the sprint can be resumed from the repository alone. Evidence: docs/sdlc/STATE.md section S03 and core/changes/2026-10-17-s03-start.md.
+Rule next time: record a GO in the decision log in the same commit that records the start state, and name the artifacts of each phase in the state file at once.
