@@ -368,14 +368,26 @@ class FileActivityJournal implements ActivityJournal {
   Future<_Meta> _commitStateOnly(
       String id, _Meta prev, JournalState state, String op,
       {Map<String, dynamic>? sessionMap}) async {
-    final Uint8List streams;
+    final streamsPath = '${_paths.genDir(id, prev.seq)}/$kStreamsFileName';
+    Uint8List streams;
+    var next = state;
     try {
-      streams = await _fs.readBytes(
-          '${_paths.genDir(id, prev.seq)}/$kStreamsFileName');
+      streams = await _fs.readBytes(streamsPath);
     } on FileSystemException catch (e) {
-      throw JournalIoException('cannot read current streams', cause: e);
+      // A MISSING streams.bin of a stream-lost entry must not block metadata
+      // edits (sync state, overrides): the new generation carries an empty
+      // streams.bin and the persisted streamLost flag. A file that exists but
+      // cannot be read right now is a transient failure: abort, change nothing.
+      if (await _fs.exists(streamsPath)) {
+        throw JournalIoException('cannot read current streams', cause: e);
+      }
+      streams = Uint8List(0);
+      next = next.copyWith(streamLost: true, streamsPlainHash: null);
     }
-    return _commit(id, sessionMap ?? prev.record.session, state, streams, op);
+    if (_lostIds.contains(id) && !next.streamLost) {
+      next = next.copyWith(streamLost: true);
+    }
+    return _commit(id, sessionMap ?? prev.record.session, next, streams, op);
   }
 
   /// Steps of design 10: new generation, COMMIT (the commit point), then the

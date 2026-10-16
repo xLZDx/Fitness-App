@@ -348,9 +348,16 @@ class FaultInjectingJournalFileSystem implements JournalFileSystem {
   Future<bool> exists(String path) =>
       _op(FsOpKind.exists, path, () => inner.exists(path));
 
+  /// Optional hook that may alter bytes returned by [readBytes] (a failing
+  /// read-back, bit rot between write and verify).
+  Uint8List Function(String path, Uint8List bytes)? onRead;
+
   @override
-  Future<Uint8List> readBytes(String path) =>
-      _op(FsOpKind.readBytes, path, () => inner.readBytes(path));
+  Future<Uint8List> readBytes(String path) => _op(FsOpKind.readBytes, path, () async {
+        final b = await inner.readBytes(path);
+        final hook = onRead;
+        return hook == null ? b : hook(path, b);
+      });
 
   @override
   Future<List<JournalDirEntry>> list(String path) =>

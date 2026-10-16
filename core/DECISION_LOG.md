@@ -57091,3 +57091,7 @@ Decision: Plan G17 is followed (candidate stays); G32 session-level version stri
 ## 2026-10-16 - Commit: S02 test epic 2: journal round trip, replay, corruption, ordering and write-order tests (I01, I06, I18, I19, I23)
 
 Decision: The fault-injection seam is an in-memory file system plus a logging wrapper over any seam; JournalInvalidIdException loses its const (did not compile).
+
+## 2026-10-16 - Commit: S02 test epic 2: crash matrix, commit cases A-D and recovery tests (I20, I21, I40, I41, I46-I49, I54, I55)
+
+Decision: Crash expectations follow the design (older generation removed after a verified read or at recovery); a missing streams.bin no longer blocks metadata edits of a stream-lost entry.
