@@ -531,3 +531,11 @@ Facts: J3a moved a line-pinned allowlist target in delete_all_streams.ts from li
 Root cause: the checker pins allowlist entries to line numbers and the J3a author did not run or search for the pin when inserting lines above it.
 Layer: author missed it; the broader policy suites caught it.
 Rule next time: after inserting lines in a file named in scripts/ci/check_data_access_policy.js, update the pinned line in the same commit (Grep the file name there).
+
+## 2026-10-16 - Commit: fix(s02): repin the data-access allowlist line for delete_all_streams
+
+Kind: SHORTCOMING (caught by the test agent of epic 16a2 on its first broader run).
+Facts: remediation J3a added an import and a guard block to functions/src/activity_streams/delete_all_streams.ts, which moved a `.collection(...)` call from line 201 to line 203. scripts/ci/check_data_access_policy.js pins its allowlist entry for that call to a line number, so the checker reported a violation and three tests went red (two in s02_remediation_a_policy.test.ts and one in activity/lifecycle_policy.test.ts). Evidence: S02_TEST_FINDINGS_EPIC16.md section 16a2.
+Root cause: the implementation brief did not say that implementers run no tests, so nobody grepped scripts/ci for the edited file name; an allowlist pinned to line numbers breaks on any unrelated edit above the pinned line.
+Layers: the J3a implementer and my brief missed it; the test agent caught it.
+Rule next time: before editing a server file, grep scripts/ci and the policy tests for its name; the briefs of implementers who run no tests must say so and list the pinned scripts to update. A line-pinned allowlist is fragile, but it is a secondary mechanism: update the line, do not redesign it.

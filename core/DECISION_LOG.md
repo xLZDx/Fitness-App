@@ -57735,3 +57735,7 @@ Decision: fix the existing server tests for the new expectedUid requirement and 
 ## 2026-10-16 - Commit: docs(s02): findings of test epic 16a2 server (J3a)
 
 Decision: record the 16a2 results; the line-pinned allowlist entry for delete_all_streams.ts in scripts/ci/check_data_access_policy.js (201 -> 203) is handed back to the implementer, not changed by the test agent. Evidence: core/changes/2026-10-16-s02-test16a2-2-findings.md.
+
+## 2026-10-16 - Commit: fix(s02): repin the data-access allowlist line for delete_all_streams
+
+Decision: the allowlist entry of scripts/ci/check_data_access_policy.js for functions/src/activity_streams/delete_all_streams.ts moves from line 201 to line 203, because remediation J3a shifted the pinned call by two lines. One-line change; no redesign of the line-pinned mechanism (secondary mechanism, one fix round). Evidence: core/changes/2026-10-16-s02-data-access-allowlist-repin.md; the three red tests are re-run by the test agents.

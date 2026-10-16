@@ -247,7 +247,7 @@ const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/activity_streams/delete_all_streams.ts'),
-    line: 201,
+    line: 203,
     arg: '`users/${uid}/activity_streams`',
     reason: 'S02 activity collection under users/{uid}: the target is always one of activities, activity_streams, activity_settings or activity_tombstones, each declared in data_lifecycle_policy.json and in firestore.rules. Verified 2026-10-16.',
   },
