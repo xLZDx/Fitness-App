@@ -28,7 +28,11 @@ Future<void> until(bool Function() cond, {int ms = 4000}) async {
 
 ProviderContainer containerFor(Device d) {
   final c = ProviderContainer(
-      overrides: [activitySyncRepositoryProvider.overrideWithValue(d.repo)]);
+      overrides: [
+        activitySyncRepositoryProvider.overrideWithValue(d.repo),
+        // J3 B4: a tap with no uid is a no-op, so the presenter needs one.
+        syncConflictUidProvider.overrideWithValue('uid'),
+      ]);
   c.listen(syncConflictPresenterProvider, (_, __) {}); // keep alive
   return c;
 }
@@ -212,7 +216,10 @@ void main() {
       late String id;
       await tester.runAsync(() async => id = await sameFieldConflict(w));
       await tester.pumpWidget(ProviderScope(
-        overrides: [activitySyncRepositoryProvider.overrideWithValue(w.b.repo)],
+        overrides: [
+          activitySyncRepositoryProvider.overrideWithValue(w.b.repo),
+          syncConflictUidProvider.overrideWithValue('uid'),
+        ],
         child: MaterialApp(
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,
@@ -283,7 +290,10 @@ void main() {
         await w.b.change(id, ascentM: 33);
       });
       await tester.pumpWidget(ProviderScope(
-        overrides: [activitySyncRepositoryProvider.overrideWithValue(w.b.repo)],
+        overrides: [
+          activitySyncRepositoryProvider.overrideWithValue(w.b.repo),
+          syncConflictUidProvider.overrideWithValue('uid'),
+        ],
         child: MaterialApp(
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,

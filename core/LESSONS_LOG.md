@@ -563,3 +563,11 @@ Facts: the first run had a compile error (FirebaseFunctionsException message is 
 Root cause: I did not read the reset rule in the sync pass before writing the budget assertion.
 Layers: author missed it; the first run caught it.
 Rule next time: read the reset and bookkeeping rules of a counter before asserting its value across passes.
+
+## 2026-10-16 - Commit: test(s02): stale presenter test fix and findings 16c (epic 16c, 2/2)
+
+Kind: FAILURE (test suite left stale by an implemented behavior change).
+Facts: the full activity run failed 7 tests of sync_conflict_presenter_test.dart and one widget test hung past the 60 s timeout; the J3b notes listed the presenter change but my grep for affected tests missed this file. After the uid override the run passed (1485). Evidence: S02_TEST_FINDINGS_EPIC16.md section 16c.
+Root cause: the stale-test list was derived from reading and I did not grep syncConflictPresenterProvider users in 16b.
+Layers: author missed it; the complete directory run caught it.
+Rule next time: grep every user of a changed provider or contract and run those files before the final complete run.

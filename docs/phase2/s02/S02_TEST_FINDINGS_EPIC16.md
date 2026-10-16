@@ -91,3 +91,28 @@ Head before: 5ec1acc1. Commits: 3239e4d4 (compile fixes), then the new tests com
 - `cloudFunctionsSettingsCall` success path (the SDK result type has a private constructor); only failure mapping and the request map passed to the callable are asserted.
 - Wiring-level check that `activityCloudSettingsClientProvider` passes a live-uid supplier (needs Firebase) and parts 16c: uploader, tombstone push, real stream client and pusher.
 - The third grant flip test (flip during the write) accepts `unknown` or `granted` for the cache but asserts nothing is written for B and the cache is not attributed to B.
+
+## 16c Dart uploader, tombstone, presenter, real clients (J2 and J3b), test agent
+
+Head before: 9e53d46a. Commits: 102210b8 (new tests), then the commit of this section.
+
+### What changed
+- New files (42 tests, all passed together on the first full compile after two test-bug fixes): `mobile/test/features/activity/repository/activity_stream_uploader_expected_uid_test.dart`, `activity_tombstone_expected_uid_test.dart`, `activity_real_clients_expected_uid_test.dart`, `mobile/test/features/activity/state/sync_conflict_presenter_null_uid_test.dart`. Contents: expectedUid equals the pass uid for create, commit and the tombstone push; ConsentAccountChangedException from create or commit ends cancelled with nothing marked, no backoff, no failure state, no quarantine (runPending still uploads afterwards); A to B flips before create, during the PUT, during commit and a sweep of flip points 0..8 send nothing for B; a scoped journal bound to another account or unbound is never read (uploadEntry, runPending), bound to the pass uid it is read, a plain journal still uploads; tombstone refusal while the pass is alive keeps the id owed, leaves lastTombstonePushError and the failed-set order untouched, schedules the 60 s retry, second refusal 2 minutes; a flip between two pushes sends nothing for B; real stream client and pusher through a faked FirebaseFunctions: null uid fails before any callable, payload carries expectedUid, account_changed mapped, account_deleting and other codes not mapped; presenter taps with a null uid call nothing (control rows with uid A).
+- Stale test fixed: `mobile/test/features/activity/state/sync_conflict_presenter_test.dart` built its containers without a uid; J3 B4 makes such a tap a no-op, so six presenter tests failed and the widget test then hung past the 60 s timeout. The test now overrides `syncConflictUidProvider` with a uid.
+
+### Commands and verbatim results
+1. New four files: `flutter test --timeout 60s <the four files>` -> `00:03 +42: All tests passed!`
+2. First complete activity run (before the presenter fix): `flutter test --timeout 60s test/features/activity` -> `21:12 +1478 -7: Some tests failed.` (seven failures, all in sync_conflict_presenter_test.dart).
+3. Final: `flutter test --timeout 60s test/features/activity` -> `03:03 +1485: All tests passed!`
+4. Final: `flutter test --timeout 60s test/features/account_deletion test/core/architecture test/android/backup_rules_test.dart test/features/safety/health_rules_parity_test.dart test/adversarial/n07_team_activation_test.dart` -> `00:10 +120: All tests passed!`
+
+### Findings
+1. Stale test (not a product defect): the presenter test above. A tap with a null uid is the specified J3 B4 behavior.
+2. Hang: in run 2 the widget test of that file hung far past `--timeout 60s` (the output stopped for about nine minutes); I stopped only that flutter_tester process by its own PID. It was the consequence of the stale test (no uid, nothing happens, the test waits for a change); it did not recur after the fix. Not investigated further.
+3. My own test bugs before the first pass: FirebaseFunctionsException needs a non-null message; I wrongly expected the retry budget to survive a clean pass. No product defect found in the uploader, tombstone push or real clients.
+
+### Not covered
+- Wiring-level check that activityCloudSettingsClientProvider passes a live-uid supplier: it reads FirebaseAuth.instance, which needs a Firebase app; gap.
+- The success path of the real callables (the SDK result type has a private constructor); only failure mapping and payloads are asserted.
+- A tombstone pass made stale by an account change returning aborted without a timer is not tested here.
+- Red-before-fix not observed (no mutation or revert runs by rule).

@@ -57751,3 +57751,7 @@ Decision: test the A to B flip with a read-counting live-uid supplier at every g
 ## 2026-10-16 - Commit: test(s02): uploader, tombstone, presenter and real client tests for remediation J2/J3b (epic 16c, 1/2)
 
 Decision: test the uploader flip with explicit flip points (before create, during the PUT, during commit) plus a sweep over flip points 0..8, test the tombstone refusal through the injectable retry timer and the retry order, and fake FirebaseFunctions for the real clients; the presenter null-uid test uses control rows so a blind observer cannot pass.
+
+## 2026-10-16 - Commit: test(s02): stale presenter test fix and findings 16c (epic 16c, 2/2)
+
+Decision: give the presenter tests an explicit uid instead of weakening the J3 B4 no-op rule; record both complete runs in findings 16c.
