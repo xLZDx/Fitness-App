@@ -689,3 +689,18 @@ Kind: SUCCESS.
 Facts: the gate returned a single MAJOR and no BLOCKER on a design of 21 stories and a plan of 452 tests; GPT-PM confirmed in its table that the single writer for the mode status, the three-way persisted-mode read, the uid and generation checks of the digests, the backup exclusion order, the element preservation of the shell, the owner uid of the timers and the lane ownership had no further proven BLOCKER or MAJOR, and accepted the sign-out guard refinement of contract J10.
 Why it worked: five role-scoped internal reviews before the gate, one merged remediation batch with fixed decisions, mechanical set checks of test ids and counts before the commit.
 Rule next time: keep the mechanical checks (id sets, sum of the count column, Cyrillic scan) as a standing pre-gate step.
+
+## 2026-10-17 - Commit: docs: S03 failedToOpen is defensive, retryNow contract and per-generation rules (GPT-PM MAJOR-02, reliability review)
+
+Kind: FAILURE.
+Facts: GPT-PM documentation gate round 2 on 27d6dc44 closed MAJOR-01 and found MAJOR-02 inside the remediation: the rewritten DT-0-5 started from failedToOpen and expected both an open spy and a bind spy to have count 1 after a failed retry. An independent read-only reliability review run before round 3 (0 BLOCKER, 5 MAJOR, 4 MINOR) then showed that the whole idea of a separate "open attempt" does not exist in the code: the UidScopedActivityJournal constructor does no I/O and the factory is called only inside bindUid (uid_scoped_activity_journal.dart:58-127), so failedToOpen cannot be reached in production. The review also found an unspecified retryNow() and busy contract, single flight that must be per generation, an unspecified seam for the recovery counts that would have broken the existing retry test, and an 11 minute 20 second LOADING window before the error panel.
+Root cause: the first remediation (round 1) and the coordinator's brief for DT-0-5 ("opener or bind spy count 1") were written from the design text, not from the control flow of activity_wiring.dart and uid_scoped_activity_journal.dart; the design invented an open step because an earlier review asked for a failedToOpen status.
+Layer that missed it: coordinator (brief), design author, test-plan author, five internal reviewers (none traced the control flow). Caught by: GPT-PM round 2 (the count), then the independent reliability review (the root cause), both before any code existed.
+Rule next time: before a gate round, trace every new state and every test expectation along the real call graph with numbers; run an independent read-only review of a state-machine remediation BEFORE sending it to the gate, not after; never invent a state that no code path can produce without saying that it is defensive.
+
+## 2026-10-17 - Commit: docs: S03 failedToOpen is defensive, retryNow contract and per-generation rules (GPT-PM MAJOR-02, reliability review)
+
+Kind: SUCCESS.
+Facts: the independent review took about two minutes of reviewer time and removed a probable third GPT-PM round; its traces of nine scripts (manual failure, manual success, timer due during a manual attempt, gave-up, account switch during a manual attempt, sign-out while waiting, recovery failure) agreed with DT-0-11 to DT-0-14 and DT-13-11 (six bind calls) and with the existing retry test.
+Why it worked: the reviewer was given the exact scripts to trace and the real code to compare with, and was told what previous reviewers had missed.
+Rule next time: give reviewers a list of scripts to trace, not only a scope.
