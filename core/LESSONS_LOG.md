@@ -483,3 +483,11 @@ Facts: the two support files were the only places where the existing activity te
 Why it worked: the J1 test notes listed the central fix points from the call graph before any run. The red state before the fix was not observed (the fix was applied before the first run), so the claim that these tests would have failed rests on the notes, not on a measurement.
 Layer: tests (author).
 Rule next time: when a seam gains a required request key, fix the shared request builders first and keep an explicit-key escape hatch for negative tests.
+
+## 2026-10-16 - Commit: test(s02): add expectedUid helper and handler tests (epic 16a)
+
+Kind: SHORTCOMING (the test notes were inexact; a failing new test caught it).
+Facts: the notes said the strict parser still refuses an unknown extra key for all four handlers. Running the new tests showed that createActivityStreamUpload, commitActivityStream and deleteActivity use lenient parsers that ignore unknown keys (existing F60 behavior pinned in callable_hardening.test.ts); only settings is strict. A first draft of my own helper test (an inherited prototype key) also asserted behavior the helper does not have; JSON request data cannot carry inherited keys, so that test was dropped. Evidence: core/changes/2026-10-16-s02-test16a-2-new-tests.md.
+Root cause: the notes were derived from reading, not from a run; my first draft also seeded data inside a body builder after taking the snapshot.
+Layer: the notes (author) missed it; the new tests caught it.
+Rule next time: confirm each strict-parser claim against the specific parser before writing the assertion, and keep request builders free of side effects.
