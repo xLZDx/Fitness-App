@@ -56899,3 +56899,7 @@ Decision: The journal serialises every operation through one mutex, acknowledges
 ## 2026-10-16 - Commit: S02-03: owner wildcard exclusions
 
 Decision: The four activity collections are excluded from both the read and the write clause of the owner wildcard as a permanent floor, before their dedicated blocks exist. Evidence: core/changes/2026-10-16-s02-03-owner-wildcard-exclusions.md.
+
+## 2026-10-16 - Commit: S02-03: activity summary, stream, settings and tombstone blocks
+
+Decision: The summary rules use one allowlist identical to summary_fields.dart, require rev 1 on create and a strictly higher rev on update, keep startUtc and sport immutable, and check the tombstone and the account-deletion fence with two exists() lookups; the other three paths are owner-read, server-write. Evidence: core/changes/2026-10-16-s02-03-activity-blocks.md.

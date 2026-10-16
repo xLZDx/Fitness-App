@@ -876,6 +876,146 @@ service cloud.firestore {
       allow delete: if isOrdinaryUser() && request.auth.uid == uid;
     }
 
+    // ---------------------------------------------------------------------
+    // Unified activity (S02 design s3.2 and s4; GPS-PRIV-058/061/070/071/072).
+    // The four collections are carved out of the owner wildcard in BOTH its
+    // read and its write condition (permanent floor, see the header comment),
+    // so each block below is the ONLY grant for its path and every grant goes
+    // through `isOrdinaryUser()` (CR-05).
+    //
+    // `activities/{id}` is the one client-writable path: a SCALAR summary with
+    // an explicit key allowlist, type and range checks. Rules cannot measure
+    // document size or inspect list elements, so lists and maps are not
+    // allowed at all (no allowlisted key can hold one: every key is
+    // type-checked) and there is no geometry, heart-rate, lap, provenance or
+    // place key. The allowlist and the bounds below MUST match
+    // `mobile/lib/features/activity/data/summary_fields.dart` key for key and
+    // bound for bound (a parity test parses this file).
+    // `activity_streams`, `activity_settings` and `activity_tombstones` are
+    // server-authored (Admin SDK): owner read, no client write. The top-level
+    // `activity_account_state/{uid}` has NO block on purpose: it is denied to
+    // every client by the default deny, and the summary rules below only
+    // READ it through `exists()` (a rule may read a document whose own read
+    // rule is closed).
+    // ---------------------------------------------------------------------
+
+    // Optional scalar checks: an absent key passes, a present key must have the
+    // right type and bound. `x is int` / `x is number` reject lists and maps.
+    function actNumOk(d, k, lo, hi) {
+      return !(k in d) || numberIn(d[k], lo, hi);
+    }
+    function actIntOk(d, k, lo, hi) {
+      return !(k in d) || (d[k] is int && numberIn(d[k], lo, hi));
+    }
+    function actStrOk(d, k, re) {
+      return !(k in d) || (d[k] is string && d[k].matches(re));
+    }
+    function actCountsOk(d) {
+      return actIntOk(d, 'utcOffsetMinutes', -840, 840)
+          && actIntOk(d, 'sourceCount', 0, 64)
+          && actIntOk(d, 'userEditCount', 0, 64)
+          && actIntOk(d, 'mergeNoteCount', 0, 64);
+    }
+    function actMeasuresOk(d) {
+      return actNumOk(d, 'movingTimeS', 0, 604800)
+          && actNumOk(d, 'distanceM', 0, 10000000)
+          && actNumOk(d, 'ascentM', 0, 100000)
+          && actNumOk(d, 'descentM', 0, 100000)
+          && actNumOk(d, 'avgSpeedMps', 0, 120)
+          && actNumOk(d, 'avgCadence', 0, 400)
+          && actNumOk(d, 'avgPowerW', 0, 5000)
+          && actNumOk(d, 'normalizedPowerW', 0, 5000)
+          && actNumOk(d, 'activeEnergyKcal', 0, 50000)
+          && actNumOk(d, 'steps', 0, 1000000)
+          && actNumOk(d, 'strokeCount', 0, 100000)
+          && actNumOk(d, 'poolLengthM', 0, 1000)
+          && actNumOk(d, 'lapCount', 0, 1000)
+          && actNumOk(d, 'avgSwolf', 0, 300)
+          && actNumOk(d, 'routeTrimMeters', 0, 2000);
+    }
+    function actLabelsOk(d) {
+      return (!('primarySourceId' in d)
+              || (d.primarySourceId is string && d.primarySourceId.size() <= 64))
+          && (!('primarySourceKind' in d)
+              || d.primarySourceKind in ['platformHealth', 'bleSensor',
+                   'vendorCloud', 'companionApp', 'fileImport'])
+          && (!('hasRoute' in d) || d.hasRoute is bool)
+          && (!('updatedAt' in d) || d.updatedAt is timestamp)
+          && actStrOk(d, 'formulaVersion', '^[A-Za-z0-9._:-]{1,32}$')
+          && actStrOk(d, 'metricDefinitionVersion', '^[A-Za-z0-9._:-]{1,32}$')
+          && actStrOk(d, 'thresholdPolicyVersion', '^[A-Za-z0-9._:-]{1,32}$')
+          && actStrOk(d, 'sourceTermsSnapshot', '^[A-Za-z0-9._:+/=-]{1,64}$');
+    }
+    function activitySummaryOk(id, d) {
+      return id.matches('^act_[0-9a-f]{40}$')
+          && d.keys().hasOnly(['schema', 'sport', 'startUtc', 'endUtc',
+               'utcOffsetMinutes', 'movingTimeS', 'distanceM', 'ascentM',
+               'descentM', 'avgSpeedMps', 'avgCadence', 'avgPowerW',
+               'normalizedPowerW', 'activeEnergyKcal', 'steps', 'strokeCount',
+               'poolLengthM', 'lapCount', 'avgSwolf', 'routeTrimMeters',
+               'primarySourceId', 'primarySourceKind', 'sourceCount',
+               'userEditCount', 'mergeNoteCount', 'hasRoute', 'formulaVersion',
+               'metricDefinitionVersion', 'thresholdPolicyVersion',
+               'sourceTermsSnapshot', 'rev', 'updatedAt'])
+          && d.keys().hasAll(['schema', 'sport', 'startUtc', 'endUtc', 'rev'])
+          && d.schema is int && numberIn(d.schema, 1, 1000)
+          && d.rev is int && numberIn(d.rev, 1, 1000000)
+          && d.sport is string && d.sport.matches('^[a-z][A-Za-z0-9]{0,31}$')
+          && d.startUtc is timestamp && d.endUtc is timestamp
+          && d.endUtc >= d.startUtc
+          && d.startUtc >= timestamp.date(2000, 1, 1)
+          && d.startUtc <= request.time + duration.value(1, 'd')
+          && actCountsOk(d)
+          && actMeasuresOk(d)
+          && actLabelsOk(d);
+    }
+    // Each exists() is one access call; the two lookups below make a summary
+    // write cost two, so the repository batches at most 8 (16 access calls, under
+    // the limit of about 20 for a batched write, S02 design s4).
+    // Tombstone: a deleted id cannot be re-created or updated (delete wins,
+    // design 6.2). Fence: while `activity_account_state/{uid}` exists no client
+    // summary write is accepted (account deletion in progress, design 6.1);
+    // a queued offline write replayed with a still-valid token is refused.
+    function activityNotTombstonedOrFenced(uid, id) {
+      return !exists(/databases/$(database)/documents/users/$(uid)/activity_tombstones/$(id))
+          && !exists(/databases/$(database)/documents/activity_account_state/$(uid));
+    }
+    match /users/{uid}/activities/{activityId} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      // rev is the client-incremented revision: a create starts at 1.
+      allow create: if isOrdinaryUser()
+                    && request.auth.uid == uid
+                    && activitySummaryOk(activityId, request.resource.data)
+                    && request.resource.data.rev == 1
+                    && activityNotTombstonedOrFenced(uid, activityId);
+      // Update: startUtc and sport are immutable (they feed the deterministic
+      // id) and rev must strictly increase, so a replayed older or equal
+      // write is refused without a server clock. Refusal is routine for the
+      // client (it reads and merges), never deletion.
+      allow update: if isOrdinaryUser()
+                    && request.auth.uid == uid
+                    && activitySummaryOk(activityId, request.resource.data)
+                    && request.resource.data.startUtc == resource.data.startUtc
+                    && request.resource.data.sport == resource.data.sport
+                    && request.resource.data.rev > resource.data.rev
+                    && activityNotTombstonedOrFenced(uid, activityId);
+      // Deletion goes through the `deleteActivity` callable so streams cannot
+      // be orphaned.
+      allow delete: if false;
+    }
+    match /users/{uid}/activity_streams/{id} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /users/{uid}/activity_settings/{id} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /users/{uid}/activity_tombstones/{id} {
+      allow read: if isOrdinaryUser() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     // Top-level, NOT user data, Admin SDK only. `nutrition_cache` holds the
     // central cache of public nutrition-database responses AND the upstream
     // budget counters (`budget_off_*`, D-64); `body_scan_purge_state` holds
