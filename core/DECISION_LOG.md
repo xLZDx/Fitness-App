@@ -56815,3 +56815,7 @@ Decision: PM Bridge mode was turned on through its normal tool after the direct 
 ## 2026-10-16 - Commit: S02 design revision 4
 
 Decision: the Firestore rules themselves refuse client summary writes while an account deletion fence exists (batches of 8), the fence outlives the ID-token window, concurrent edits are merged three-way or surfaced as a user-visible conflict, and the local journal switches generations atomically. Evidence: core/changes/2026-10-16-s02-design-revision-4.md.
+
+## 2026-10-16 - Commit: S02 test plan revision 4
+
+Decision: the test plan covers the rules-level deletion fence, the three-way merge, generation-directory journal recovery, a split valid and hostile corpus and a story-map lint; design section 11 is the single authoritative order and its test-id column equals the plan map. Evidence: core/changes/2026-10-16-s02-test-plan-revision-4.md.
