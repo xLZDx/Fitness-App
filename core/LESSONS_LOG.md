@@ -226,3 +226,32 @@ Facts: the real-journal auth flip e2e passed on the first run (+2). Why it worke
 ## 2026-10-16 - S02 test epic 13a: complete runs, flaky ciphertext assertion, findings
 Kind: FAILURE.
 Facts: the second whole-directory run failed once in file_activity_journal_encryption_test I07 (searching random ciphertext for 1F 8B), passed on reruns; fixed to a start-of-stream check (docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md). Root cause: an oracle on random data with a nonzero false-positive rate. Layers: the epic 4 test author and reviewers missed it; the repeated complete run caught it. Rule next time: never assert absence of a short byte sequence inside random data.
+
+## 2026-10-16 - S02 second independent review round on remediation E, F and G
+
+Kind: SUCCESS, with FAILURES it exposed.
+Facts: seven specialist reviews (four on the remediation E code, then three verification reviews on the F code) found real defects that 40 plus tests written by the test agents had not looked for: a sync pass that kept running for account A after a switch to B (found by all four first-round reviewers), an unbound journal reported as "in sync", a live conflict screen showing the previous account's data, a retry counter that never reset, and a pass that never tied the journal uid to the auth uid (found independently by two of three second-round reviewers). Evidence: commits aa8f24ec, 4a58317b, 39feb2a1 and the epic 12 and 13 findings.
+Why it worked: reviewers worked independently from the code and the stated contract, were NOT told that anything was already fixed, and every cited line was re-read before changing code.
+Layers: the author of E1 and E2 (pinned only the tombstone phase), the author of F1 and F2 (tied the pass to the epic and to the journal uid but not to the auth uid) and the epic 11 and 12 tests (they switched accounts between operations, never in the middle of one, and never with the journal and the auth user disagreeing) missed these; independent review caught them.
+Rule next time: (1) remediation code gets its own independent review round, always; (2) every async operation that touches per-account state carries a pass identity and re-checks it before each side effect; (3) when two sources of identity exist, tie them to each other at the start of the operation and test the disagreement case; (4) for each long-running operation add a "switch account mid-flight" test.
+
+## 2026-10-16 - S02 remediation E and F were written without compiling
+
+Kind: SHORTCOMING.
+Facts: the E1 code shipped with a compile error (a type check across unrelated interfaces does not promote the type in Dart, so bindUid and wipeForUid were undefined); the first test epic that compiled the tree (11a) found it. The operator rule forbids implementers from running builds, so no layer could see it earlier. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC11.md.
+Root cause: compile safety was left entirely to the test stage; the briefs asked for care but gave no checklist of Dart traps.
+Layers: implementer and reviewers (reading only) missed it; the first compiled test run caught it, within minutes.
+Rule next time: the first test agent of a remediation epic compiles the tree before writing any test; implementer briefs carry a short list of known Dart traps (type promotion, definite assignment, Fake classes needing every new member).
+
+## 2026-10-16 - S02 test notes listed fakes but not the assertions the new contract breaks
+
+Kind: SHORTCOMING (mine, as the author of the briefs).
+Facts: the F2 and G test notes listed the stale fakes but not the older assertions that the new contract changes (a wiped uid is no longer re-bindable; the error code is cleared after a clean pass; the retry timer count). Four older tests failed only in directory runs (epic 12b, 12a, 13a). Parallel agents sharing one git index also swept each other's log entries into their commits, and one agent killed every dart.exe process, which may have disturbed a parallel run.
+Root cause: the notes were derived from the changed interfaces, not from a search of the tests for the behaviours that changed; I started parallel test agents in one worktree.
+Layers: coordinator (briefs), implementers (notes); the complete directory runs caught the failures.
+Rule next time: when a contract changes, grep the tests for the old behaviour and list those assertions in the notes; run complete runs by one agent at a time; tell agents never to kill shared processes.
+
+## 2026-10-16 - Hook false positives on commit-subject quotes
+
+Kind: SHORTCOMING (tooling).
+Facts: the decision-references hook treated a parenthesised word such as "(s02)" in a quoted commit subject as an unexplained decision reference and blocked several replies; the quote line was changed to commit hashes only. Rule next time: quote hashes, not commit subjects, in evidence lines.

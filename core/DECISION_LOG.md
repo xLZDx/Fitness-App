@@ -57577,3 +57577,8 @@ Decision: an end-to-end test over the real file journal proves that during an au
 ## 2026-10-16 - Commit: S02 test epic 13a complete runs, flaky ciphertext assertion, findings
 
 Decision: the I07 gzip-header assertion on random ciphertext is limited to the start of the stream because a whole-file search for two bytes is flaky; the complete runs are green and recorded. Evidence: core/changes/2026-10-16-s02-test-epic13a-findings-and-runs.md.
+
+
+## 2026-10-16 - Commit: S02 documents after remediation E, F and G (report pair, state, lessons)
+
+Decision: the S02 code-gate report pair, the SDLC state and the retrospective draft are updated to the situation after the round-11 REJECT: three MAJOR findings remediated (E1, E2), a second independent review round fixed in F and G, test epics 11 to 13 green per the test agents, resubmission as round 12. Evidence: server, rules and indexes are unchanged since their last runs (git diff --stat empty for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since ac9b252f, and for the rules paths since 479b7342); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md. Accepted limits are recorded in design section 17 item 23 and in the report. Evidence: core/changes/2026-10-16-s02-documents-after-remediation.md.

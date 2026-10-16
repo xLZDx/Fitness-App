@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sprint S02: code and tests complete</title>
+<title>Sprint S02: remediation after rejection, re-review</title>
 <style>
   :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
@@ -27,8 +27,8 @@
 <div class="wrap">
 <header>
   <p class="lede">Fitness App, Phase 2</p>
-  <h1>Sprint S02: code and tests complete, submitted for the final review</h1>
-  <p class="lede">Unified activity model: storage of workouts and GPS streams on the phone and in the cloud, retention, deletion, export and the server-side debug telemetry guarantee. All code is written, the tests are written and pass, six independent specialists reviewed the result and the findings are fixed. Next step: the final GPT-PM review on the exact head. Nothing has been pushed to GitHub before that approval.</p>
+  <h1>Sprint S02: remediation after the external rejection, submitted for re-review</h1>
+  <p class="lede">Unified activity model: storage of workouts and GPS streams on the phone and in the cloud, retention, deletion, export and the server-side debug telemetry guarantee. The final code review rejected the previous version with three MAJOR findings. They are fixed, a second independent review found and closed defects in the fixes themselves, and the tests are green as reported by the test agents. Next step: re-review by the external reviewer on the exact head. Nothing has been pushed to GitHub.</p>
 </header>
 
 <!-- report-conform:begin -->
@@ -56,7 +56,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ c3657438</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ c9f8e3fc</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -64,42 +64,64 @@
 </div>
 <!-- report-conform:end -->
 
+
+
 <h2>Outcome</h2>
 <div class="box ok"><ul>
-  <li><b>Tests are green.</b> Test agents ran them, not the coordinator: Dart side (phone) 1117 + 97 + 23 + 11 tests, server side 744 + 191 + 124 tests, database rules (emulator) 953 tests, plus the CI self-checks. No failures and no skips.</li>
-  <li><b>Specialist reviews.</b> Security, reliability, database, silent failures, Flutter and architecture. No blocking finding. Every major finding is fixed and covered by new tests.</li>
-  <li><b>Default behaviour for users is unchanged.</b> The cloud path is behind a flag that is off. The server side and the rules can be rolled out first safely.</li>
+  <li><b>What happened.</b> The external final code review (GPT-PM, round 11) rejected the previous version: three MAJOR findings, no BLOCKER. I verified each against the source; all three were valid. They are remediated.</li>
+  <li><b>Tests.</b> The tests were written and run by the test agents, not by me. As reported by them: Dart (phone), the whole activity directory, 1304 tests, and a separate set on account deletion, architecture, backup rules and health rules, 120 tests. Server: 791 tests. Database rules (emulator): 953 tests. No failures and no skips. The server code, rules and indexes did not change after their runs (checked with a git diff).</li>
+  <li><b>Second independent review.</b> Four specialists reviewed the new code, then three more verified the fixes. They found defects in the fixes themselves (below). All were fixed and covered by tests.</li>
+  <li><b>Nothing is pushed to GitHub.</b> The push and the single sprint PR are possible only after approval by the external reviewer on the exact head.</li>
 </ul></div>
 
-<h2>What the tests and reviews found, in plain words</h2>
+<h2>The three round-11 findings in plain words</h2>
 <div class="tablewrap"><table>
-  <tr><th>Problem</th><th>Risk</th><th>Resolution</th></tr>
-  <tr><td>Streams were never uploaded</td><td>Summary sync marked an entry done and the uploader only picked up unfinished entries.</td><td>A dedicated stream-upload marker in the journal.</td></tr>
-  <tr><td>The on-phone journal was not wiped on account deletion</td><td>Data and key stayed on the device, and sessions of the first account could be pushed into the cloud of the second.</td><td>Journal wipe on account deletion and an owner guard: on an account switch the journal is wiped first.</td></tr>
-  <tr><td>A transient read failure deleted data</td><td>One I/O error at start deleted the last committed version or permanently marked a stream as lost.</td><td>Read errors no longer delete or mark data; retried at the next start.</td></tr>
-  <tr><td>Aborted account deletion</td><td>The account stayed alive but activity writes were refused for good.</td><td>After 24 hours with no retry and no deletion intent record the fence is cleared automatically; no data is touched.</td></tr>
-  <tr><td>Timeout and starvation of the stream deletion queue</td><td>Twenty stuck jobs blocked deletion for everyone else; the reconciler could overrun its time limit.</td><td>Fair queue by attempt age, a deadline, operator signals.</td></tr>
-  <tr><td>Memory pressure on stream commit</td><td>A crafted compressed file could exhaust function memory.</td><td>1 GiB memory and an element-count pre-check.</td></tr>
-  <tr><td>Stream upload under another account</td><td>On an account switch an unfinished upload could continue under the new account.</td><td>The uploader is bound to its account and re-checks it before every network step.</td></tr>
-  <tr><td>The conflict screen silently went empty</td><td>Any refresh error hid conflicts and the Retry button.</td><td>Loading and error states with retry.</td></tr>
+  <tr><th>Finding</th><th>Risk</th><th>What was done</th></tr>
+  <tr><td>An account switch erased another account's data. This was my decision and it was wrong.</td><td>When account A signed out and B signed in, A's whole journal was wiped: sessions, key, quarantine. GPS tracks and heart rate not yet uploaded were lost for good.</td><td>Each account now has its own journal and its own encryption key. Sign-out and account switch erase nothing. Only the deleted account's journal is wiped, and only that one.</td></tr>
+  <tr><td>A lost owner marker let the next account adopt another account's journal.</td><td>The journal was tied to an account by a separate flag in preferences. Without the flag a new account could get foreign data.</td><td>The flag is gone. Ownership is the location of the data: the directory and the key are named by a hash of the account id, so nothing can be swapped.</td></tr>
+  <tr><td>Bulk local deletions were not guaranteed to reach the cloud.</td><td>Deletions were pushed 8 per pass with no continuation, and a daily limit of 100 was shared with ordinary calls. Thirty offline deletions needed four app starts.</td><td>The pass continues in rounds while there is something to send (up to 1024 deletions at once). The remainder is retried with growing delays, then a slow fallback timer. A separate limit of 1000 deletions per day. The count of not-yet-sent deletions is exposed in the state.</td></tr>
 </table></div>
+
+<h2>What the second independent review found in the fixes themselves</h2>
+<div class="tablewrap"><table>
+  <tr><th>Problem</th><th>Risk</th><th>What was done</th></tr>
+  <tr><td>A sync pass of account A that was running at the moment of an account switch kept working on account B. All four reviewers found it.</td><td>B's entries were deleted using A's deletion list. A's data could be written to the cloud under B. Activity ids coincide across accounts when the same activity was imported.</td><td>Every operation remembers the account it started under and re-checks it before every write and every cloud call. When the cloud user and the journal point to different accounts, the operation does nothing.</td></tr>
+  <tr><td>An unbound journal answered "empty". The screen showed "all in sync" and tapping "keep mine" ended in "success".</td><td>The user saw success although nothing happened.</td><td>It is now a visible error with a retry button. Sync and conflict resolution do not pretend to succeed in that state.</td></tr>
+  <tr><td>A live conflict screen kept the previous account's data after a switch.</td><td>The new account saw foreign values.</td><td>The screen refreshes on account change and when the journal binds.</td></tr>
+  <tr><td>The deletion queue state lived for the whole app run.</td><td>A's timer could fire a push under B, and a deletion confirmed for A would not be pushed for B.</td><td>The state is reset on sign-out and account change.</td></tr>
+  <tr><td>The retry counter was never reset.</td><td>After about 44 minutes offline there were no more retries until the app restarted.</td><td>The counter resets after a clean pass, and after six attempts one fallback timer fires hourly.</td></tr>
+  <tr><td>A wiped account could come back as an empty scope with a new key on a repeated sign-in event.</td><td>Leftovers of a deleted account on the device.</td><td>Re-binding a wiped account is refused until sign-out or another account.</td></tr>
+  <tr><td>The encryption key could remain after a wipe that reported success.</td><td>A false "device is clean".</td><td>A failed key delete now fails the wipe, the pending marker stays and the next launch retries.</td></tr>
+  <tr><td>The stream uploader state survived an account switch.</td><td>The new account's upload could fail to start in that app run.</td><td>The state is reset on account change.</td></tr>
+  <tr><td>The new code contained a compile error: a type check did not behave as assumed. The app did not build.</td><td>The app does not build.</td><td>Fixed. The first test run found it, not the reviewers and not the implementer.</td></tr>
+</table></div>
+
+<h2>What I missed, in plain words</h2>
+<div class="box"><ul>
+  <li>I decided to wipe the journal on an account switch, checked only the leak risk between accounts and not what is lost. I also told two reviewers not to re-check that code, and they approved it. Only the external reviewer caught it.</li>
+  <li>The fix of that decision had defects of its own that the first tests did not look for: they tested an account switch between operations, not in the middle of a running one. The second independent review found that.</li>
+  <li>The project now keeps a lessons log, <code>core/LESSONS_LOG.md</code>, with an entry in every commit, including my own mistakes. The sprint retrospective is built from it.</li>
+</ul></div>
 
 <h2>Still needed from the operator</h2>
 <div class="box warn"><ul>
-  <li><b>Approve the privacy wording.</b> The paragraph about summary sync in <code>public/privacy.html</code> is a draft. Until approved, the cloud path stays off. Consequence: without approval nothing from the cloud can be enabled for users.</li>
-  <li><b>Three retention answers.</b> What else besides GPS may go to the cloud; whether a "keep forever" option is offered; the default retention (730 days proposed, allowed 90, 365, 730). Does not block the code, blocks enabling.</li>
-  <li><b>Steps outside the repository before enabling:</b> create the bucket, grant permissions, set up alerts, decide the soft-delete window and a dedicated service account. The tombstone TTL policy is now declared in the repository and deployed with the indexes, so no separate console step is needed for it.</li>
-  <li><b>Release condition.</b> Before cloud streams are enabled in a production build or GPS recording ships, the heavy processing (compression, hashing) must move off the app's main thread. It is not a problem at the current volume.</li>
-  <li><b>For S03.</b> Whether the local activity journal opens in the default build regardless of the cloud flag. Recommended: yes, otherwise the activity dashboard cannot show recorded workouts. Described in the S03-D design draft.</li>
+  <li><b>Approve the privacy policy wording.</b> The summary-sync paragraph in <code>public/privacy.html</code> stays a draft. Consequence: without your approval the cloud path stays off.</li>
+  <li><b>Three retention answers.</b> What besides GPS may go to the cloud; whether to offer "keep forever"; the default period (730 days proposed, allowed 90, 365, 730). Does not block the code, blocks enabling.</li>
+  <li><b>Steps outside the repository before enabling:</b> create the bucket, grant IAM, set alerts, decide the soft-delete window, a dedicated service account and the retention of deletion records (400 days proposed).</li>
+  <li><b>Release condition.</b> Before cloud streams are enabled in a production build or GPS recording ships, the heavy work (compression, hashing) must move off the UI isolate.</li>
+  <li><b>For the next sprint (S03).</b> Whether to open the local activity journal in the default build regardless of the cloud flag. Recommended: yes, otherwise the dashboard cannot show recorded workouts.</li>
+  <li><b>Accepted limits, not defects.</b> (1) Device data of an anonymous account stays after sign-out: wiping it would repeat the rejected data loss, so it is handled with the sign-out export offer in S03. (2) The user-facing "N deletions not yet synced" notice belongs to the S03 screens, the state for it already exists. (3) After a failed journal bind, sync resumes at the next sign-in event or restart; nothing is lost and nothing leaks.</li>
 </ul></div>
 
 <h2>Next</h2>
 <div class="box"><ul>
-  <li>Final GPT-PM review on the exact head. After approval: one pull request for the whole sprint, then the merge into the Phase 2 main branch.</li>
-  <li>In parallel, the draft design of the next item S03-D (app shell, mode chooser, dashboard skeleton) was prepared and has passed its UX and accessibility review.</li>
+  <li>Re-review by the external reviewer on the exact head (round 12): verification of the fixes and one broad sweep of the new code. After approval: push the branch and open one PR for the sprint.</li>
+  <li>If the reviewer finds a MAJOR defect, I fix the full set in one batch and submit again.</li>
 </ul></div>
 
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
