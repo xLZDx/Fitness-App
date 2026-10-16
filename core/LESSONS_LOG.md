@@ -382,3 +382,10 @@ Why it worked: Completer gates on exact awaits. Rule next time: when a view gain
 Kind: SUCCESS.
 Facts: Four one-at-a-time complete runs on cf1a4eb5 (after the activityDelete quota change) were all green: +1389, +120, 791 and 315 tests; no stale oracle or production defect surfaced. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md.
 Why it worked: earlier epics already fixed stale fakes; running serially avoided jest timeouts. Open item: jest reports a worker that failed to exit gracefully in the activity run (possible leaked handle), not investigated.
+
+## 2026-10-16 - fix(s02): tie state reads to the auth uid (remediation I1)
+
+Kind: FAILURE.
+Facts: The state read path (`refreshState`) compared the journal uid and the auth uid only for movement during the read, never for agreement, so in the account-flip gap A's cards could be emitted under B, although remediation G1 had already tied sync passes to the auth uid. Evidence: core/changes/2026-10-16-s02-remediation-i-display-tie.md.
+Root cause: the author of remediation H did not tie the display path to the auth uid although G1 had tied the pass; the guard was added to one path and its sibling path reading the same identity pair was not searched. Layers that missed it: author, epic 14 tests (no test exercised the display gap), first verification review; caught by the second verification review round (reliability).
+Rule next time: when a guard is added to one path, grep for every sibling path that reads the same identity pair (here `_beginPass` vs `_viewStamp`) and give each the same guard or an explicit reason.

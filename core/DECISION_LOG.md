@@ -57662,3 +57662,7 @@ Decision: Epic 14a is recorded in S02_TEST_FINDINGS_EPIC14.md: no production def
 ## 2026-10-16 - Commit: docs(s02): test epic 14c final run findings
 
 Decision: Final complete run for sprint S02 on head cf1a4eb5 is recorded: flutter activity directory +1389, flutter account/architecture/backup/parity/n07 set +120, jest activity/abuse/hardening 791 tests, jest policy/scaling/delete/reconcile/indexes 315 tests, all green with no production or test change. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md and core/changes/2026-10-16-s02-test-epic14c-final-run.md.
+
+## 2026-10-16 - Commit: fix(s02): tie state reads to the auth uid (remediation I1)
+
+Decision: `ActivitySyncRepository.refreshState` applies the same journal/auth tie as a pass (new private `_viewTied`, also inside `_viewCurrent`): with a scoped journal and an auth supplier, a read whose journal uid differs from the signed-in uid is logged as a skip (reason word, no uid), retried up to 3 times, then ends in `JournalUnbound`. Plain journals and a null supplier keep the old behaviour. Evidence: core/changes/2026-10-16-s02-remediation-i-display-tie.md.

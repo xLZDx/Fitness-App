@@ -360,6 +360,14 @@ class ActivitySyncRepository {
         for (var attempt = 0; attempt < attempts; attempt++) {
           if (_journalUnbound) throw const JournalUnbound();
           final stamp = _viewStamp();
+          // Remediation I1: like a pass, a read is valid only while the scoped
+          // journal's uid equals the signed-in uid; in the gap where auth
+          // already points to B and the journal is still A's, A's cards must
+          // not be shown. Retried (bounded), then JournalUnbound.
+          if (!_viewTied(stamp)) {
+            _logSkip('refreshState', stamp);
+            continue;
+          }
           final entries = await _journal.list();
           final conflicts = <SyncConflict>[];
           final candidates = <SyncCandidate>[];
@@ -394,10 +402,20 @@ class ActivitySyncRepository {
   /// journal uid and signed-in uid at the moment the read started.
   _Pass _viewStamp() => _Pass(_epoch, _boundJournalUid(), _authUid?.call());
 
+  /// True when [stamp] satisfies the journal/auth tie of [_beginPass]: with a
+  /// scoped journal and an auth supplier the journal must be bound and its uid
+  /// must equal the signed-in uid. Always true for a plain journal or a null
+  /// supplier (old behaviour).
+  bool _viewTied(_Pass stamp) {
+    if (!_tiesJournalToAuth) return true;
+    return stamp.journalUid != null && stamp.journalUid == stamp.authUid;
+  }
+
   /// True while the account a state read started under is still the current
   /// one (same epoch, same bound uid, same signed-in uid, no deletion).
   bool _viewCurrent(_Pass stamp) {
     if (!_alive(stamp)) return false;
+    if (!_viewTied(stamp)) return false;
     final f = _authUid;
     return f == null || f() == stamp.authUid;
   }
