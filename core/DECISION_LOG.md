@@ -57115,3 +57115,7 @@ Decision: The debug telemetry sink gets the 500-event / 64 KiB oldest-dropped bu
 ## 2026-10-16 - Commit: S02 test epic 3: merger operation-count budget, consent matrix, copy lint (U21, U22, U24, U33, U36)
 
 Decision: The merger budget keeps the design ceilings and adds frozen calibrated count ceilings (1000 and 6000; measured 300 and 2000).
+
+## 2026-10-16 - Commit: S02 test epic 3: GPX and FIT encoders, test-only FIT decoder, summary-only upload and offline queue (U17-U20, I11, I12)
+
+Decision: FIT acceptance is a structural round trip through an independent test-only decoder; the I11/I12 plan file name is kept but the tests run on ActivitySyncRepository (no FirestoreActivityRepository exists).
