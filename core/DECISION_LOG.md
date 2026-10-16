@@ -56823,3 +56823,7 @@ Decision: the test plan covers the rules-level deletion fence, the three-way mer
 ## 2026-10-16 - Commit: S02 design and test plan revision 5
 
 Decision: the merged activity summary is kept as explicit per-field overrides in the local record so it survives recomputation and restart; a journal generation is committed by its COMMIT marker (not by the CURRENT pointer) and recovery never activates an uncommitted generation; a stream-only checksum mismatch is recovered as streamLost rather than rolled back. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-5.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 6
+
+Decision: a summary override is bound to the input revision of its own field instead of the general journal sequence, so metadata-only mutations cannot undo a merge; an uncommitted first journal generation is never shown as an activity. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-6.md.
