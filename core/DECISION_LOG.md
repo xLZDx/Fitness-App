@@ -57299,3 +57299,7 @@ Decision: the privacy draft, the tombstone TTL text, the five-entry late-sweep l
 ## 2026-10-16 - Commit: S02 test epic 8a: reconciler deadline, bulk-delete fairness, silent skips (A2, A3, A4, A14, A15)
 
 Decision: Remediation A2, A3, A4, A14 and A15 are pinned by jest tests with fakes; the notes name the cycle fields shorthand while the code uses streamsCursorCycleStartedAt and quarantineCursorCycleStartedAt, the tests assert the code names.
+
+## 2026-10-16 - Commit: S02 test epic 9b: journal wipe wiring and owner guard tests
+
+Decision: The B2 wipe decorator, the owner skip, claimActivityJournal and the sync wiring fail-closed behaviour are pinned by tests whose oracles are the B2 test notes and design 6.2, 7 and 17.
