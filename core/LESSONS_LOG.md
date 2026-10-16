@@ -352,3 +352,9 @@ Why it worked: the guards compare a captured uid with the bound uid at each awai
 Kind: SUCCESS.
 Facts: The journey passed at the first run; logs show the queued pass skipped as pass-identity and the tap as uid-changed. Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-view-e2e.md.
 Why it worked: both accounts hold the same deterministic id, so any missing guard would have crossed accounts. Limit: auth stream timing is simulated by a mutable provider.
+
+## 2026-10-16 - Epic 14b: remediation H-B verified by 41 new tests
+
+Kind: SUCCESS.
+Facts: Complete H-B run: 02:46 +167 passed; one observability shortcoming found (silent mid-flight skip) and fixed. Evidence: core/changes/2026-10-16-s02-test-epic14b-findings.md.
+Why it worked: oracles written from the notes and the promise, one Gate per await, positive controls for every guard.

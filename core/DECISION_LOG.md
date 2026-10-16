@@ -57642,3 +57642,7 @@ Decision: Twelve tests assert onSignOut wipes exactly the uid captured before th
 ## 2026-10-16 - Commit: test(s02): stale view end-to-end journey over the real journal (epic 14b)
 
 Decision: One adversarial journey test over the real FileActivityJournal, real repository and real presenter asserts after an A to B switch with the same activity id: B's first frame is loading and empty, B never shows A's field values, A's queued tap leaves B byte-identical and writes nothing to any cloud, and A's conflict returns intact on the way back. Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-view-e2e.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14b findings section
+
+Decision: The epic 14 findings file records the epic 14b files, the one production log change, defects, exact commands and the complete-run summary line (02:46 +167: All tests passed!). Evidence: core/changes/2026-10-16-s02-test-epic14b-findings.md.
