@@ -116,3 +116,24 @@ Head before: 9e53d46a. Commits: 102210b8 (new tests), then the commit of this se
 - The success path of the real callables (the SDK result type has a private constructor); only failure mapping and payloads are asserted.
 - A tombstone pass made stale by an account change returning aborted without a timer is not tested here.
 - Red-before-fix not observed (no mutation or revert runs by rule).
+
+## 16d final server run
+
+Head under test: fe48b372 (includes the policy-checker repin 5ec1acc1 for finding 1 of "16a2 server"). Plus one test-timeout change described below.
+
+### Commands and verbatim results (run from `functions/`)
+| Command | Result |
+|---|---|
+| `npx jest src/__tests__/activity src/__tests__/abuse_guard.test.ts` (first run, before the timeout change) | `Test Suites: 1 failed, 29 passed, 30 total` / `Tests:       2 failed, 920 passed, 922 total` (only `remediation_a_validate_bound.test.ts`: the 32 MiB filler and the at-the-bound test, 5 s timeout under load) |
+| `npx jest src/__tests__/activity/remediation_a_validate_bound.test.ts` (alone) | `Tests:       6 passed, 6 total` |
+| `npx jest src/__tests__/activity src/__tests__/abuse_guard.test.ts` (final, after the change) | `Test Suites: 30 passed, 30 total` / `Tests:       922 passed, 922 total` |
+| `npx jest src/__tests__/s02_remediation_a_policy.test.ts src/__tests__/scaling.test.ts src/__tests__/delete_account.test.ts src/__tests__/account_deletion_reconcile.test.ts src/__tests__/firestore_indexes_body_scan.test.ts` | `Test Suites: 5 passed, 5 total` / `Tests:       315 passed, 315 total` |
+
+### Change made
+`functions/src/__tests__/activity/remediation_a_validate_bound.test.ts`: the two large-filler tests (32 MiB comma filler; exactly at the bound) now carry an explicit `60000` ms timeout (two one-line changes). Both build and scan tens of MiB and exceeded the 5 s default under parallel load; each passes alone. Assertions are unchanged.
+
+### Defects
+None open. The three red policy tests from "16a2 server" are green after 5ec1acc1.
+
+### Not covered
+Whole-repo suite, lint, typecheck, build, CI, rules emulator, mutation runs were not run.

@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 65835 |
+| `core/LESSONS_LOG.md` | Lessons log | 66464 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -284,7 +284,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
 | `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1513 |
 | `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
-| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 181451 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 182702 |
 | `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 5898 |
 | `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6324 |
 | `docs/phase2/s02/S02_REMEDIATION_B_TEST_NOTES.md` | S02 remediation B: test notes | 4680 |
@@ -302,7 +302,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md` | S02 test findings, epic 13 (remediation G) | 4333 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md` | S02 test findings, epic 14 (remediation H) | 11302 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md` | S02 test findings, epic 15 (remediation I) | 5377 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` | S02 test findings: epic 16 (remediation J) | 17911 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` | S02 test findings: epic 16 (remediation J) | 19648 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4305 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4714 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC4.md` | S02 test epic 4: findings (plan versus design versus code) | 5009 |

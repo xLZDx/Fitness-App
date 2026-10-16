@@ -571,3 +571,11 @@ Facts: the full activity run failed 7 tests of sync_conflict_presenter_test.dart
 Root cause: the stale-test list was derived from reading and I did not grep syncConflictPresenterProvider users in 16b.
 Layers: author missed it; the complete directory run caught it.
 Rule next time: grep every user of a changed provider or contract and run those files before the final complete run.
+
+## 2026-10-16 - Commit: test(s02): final server run and large-filler timeouts (epic 16d)
+
+Kind: SHORTCOMING and SUCCESS.
+Facts: two tests building 32 MiB inputs hit the 5 s default timeout in the full parallel run (first 1, then 2 tests), pass alone; the repin 5ec1acc1 turned the three policy tests green. Evidence: S02_TEST_FINDINGS_EPIC16.md, section 16d.
+Root cause: heavy-input tests were left on the default timeout; the earlier epic noted the flake but did not fix it.
+Layer: tests (author) left it; the full run caught it.
+Rule next time: give any test that allocates tens of MiB an explicit timeout when it is written.

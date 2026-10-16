@@ -35,7 +35,7 @@ describe("A8 validateUploadedStream separator bound", () => {
     const r = await validateUploadedStream(u.bytes, u.sha, RELAXED);
     expect(r).toEqual({ ok: false, code: "too_many" });
     expect(parseSpy).not.toHaveBeenCalled();
-  });
+  }, 60000);
   test("exactly at the bound the cheap check passes (the parse IS reached and the filler fails later, not as too_many)", async () => {
     const u = upload(("1,".repeat(BOUND)).slice(0, -1)); // BOUND-1 commas
     parseSpy.mockClear();
@@ -47,7 +47,7 @@ describe("A8 validateUploadedStream separator bound", () => {
     parseSpy.mockClear();
     const r2 = await validateUploadedStream(v.bytes, v.sha, RELAXED);
     if (!r2.ok) expect(r2.code).not.toBe("too_many");
-  });
+  }, 60000);
   test("a large valid payload (200000 gps samples) is still accepted", async () => {
     const n = MAX_SAMPLES_PER_STREAM;
     const p = validPayload();

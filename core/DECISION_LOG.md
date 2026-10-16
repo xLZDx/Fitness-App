@@ -57755,3 +57755,7 @@ Decision: test the uploader flip with explicit flip points (before create, durin
 ## 2026-10-16 - Commit: test(s02): stale presenter test fix and findings 16c (epic 16c, 2/2)
 
 Decision: give the presenter tests an explicit uid instead of weakening the J3 B4 no-op rule; record both complete runs in findings 16c.
+
+## 2026-10-16 - Commit: test(s02): final server run and large-filler timeouts (epic 16d)
+
+Decision: raise the timeout of the two large-filler tests to 60 s so the complete parallel run is deterministic; record the final server run (922 + 315 tests green). Evidence: core/changes/2026-10-16-s02-test16d-final-server-run.md.
