@@ -63,3 +63,10 @@ A queued offline summary put replayed while the fence exists (stages: between st
 |---|---|---|---|---|
 | E02 group 3: "deleting the account empties the activity journal" | skip `NOT WIRED` | 2026-10-16 | sprint lead | none exists; finding above |
 | E02 group 3: "killed after the server confirmed ... including the journal" | skip `NOT WIRED` | 2026-10-16 | sprint lead | none exists; finding above |
+
+### Epic 7a final run (git head before this commit: d973a6ed, from `mobile/`)
+
+Command: `flutter test test/features/activity/e2e/s02_roundtrip_e2e_test.dart test/features/activity/e2e/s02_account_wipe_e2e_test.dart test/features/activity/data/summary_allowlist_parity_test.dart test/features/activity/data/summary_golden_test.dart test/features/activity/data/activity_cloud_summary_test.dart test/features/activity/repository/firestore_activity_repository_test.dart test/features/safety/health_rules_parity_test.dart test/adversarial/n07_team_activation_test.dart test/features/account_deletion`
+Summary line: `02:03 +148 ~2: All tests passed!` (148 passed, 2 skipped = the two NOT WIRED tests, 0 failed). The rules-parsing tests (parity, golden, cloud summary, repository, health rules parity, team activation) pass after the let-binding fix of `firestore.rules`.
+
+Remaining: wire the journal wipe (items 1 to 4 above) and un-skip the two tests; run the rules half of E05 on the Firestore emulator (epic 5 files, not run here); plan wording: E01 says the oracle is the corpus, but the merge result differs from `corpus.valid` in 14 records (count and quotas are the true oracle).

@@ -57255,3 +57255,7 @@ Decision: The two real app-flow wipe tests are skipped with an explicit NOT WIRE
 ## 2026-10-16 - Commit: S02 remediation A: settings, rules, TTL, privacy and docs
 
 Decision: The tombstone TTL is declared in firestore.indexes.json instead of being an operator-only step; the summary-sync privacy paragraph is drafted but stays pending operator approval; purge scale, tombstone read cost, export deviation, cursor restart and soft-delete disclosure are recorded as accepted risk or backlog in design section 17.
+
+## 2026-10-16 - Commit: S02 test epic 7a: final run and findings
+
+Decision: Epic 7a closes with 148 passed and 2 skipped (NOT WIRED) tests; the journal wipe wiring and the emulator half of E05 remain open.

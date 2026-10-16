@@ -293,7 +293,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC5.md` | S02 test epic 5: findings (plan versus design versus rules) | 5834 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6A.md` | S02 test findings, epic 6a: functions stream upload, settings, tombstone and delete | 3791 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6B.md` | S02 test findings, epic 6b: retention, deletion sweeps, export, telemetry, lifecycle policy, story-map lint | 8031 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 10015 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 11197 |
 | `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328694 |
 | `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 88578 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
