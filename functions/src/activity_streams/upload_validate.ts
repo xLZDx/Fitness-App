@@ -148,7 +148,8 @@ export async function validateUploadedStream(
       // `fatal: true` rejects invalid UTF-8 instead of replacing it.
       parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(json));
     } catch (err) {
-      return reject(err instanceof TypeError ? "bad_encoding" : "bad_json");
+      // `name` as well as instanceof: the decoder's TypeError can come from another realm (jest sandbox).
+      return reject(err instanceof TypeError || (err as { name?: unknown })?.name === "TypeError" ? "bad_encoding" : "bad_json");
     }
 
     const result = validateStreamPayload(parsed);

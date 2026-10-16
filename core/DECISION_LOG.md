@@ -57155,3 +57155,7 @@ Decision: Epic 5 closes with 908 emulator tests green (8 suites) and one product
 ## 2026-10-16 - Commit: S02 test epic 6a: shared fakes and F94 self-test
 
 Decision: The existing body_scan Firestore double is reused unchanged (it already retries on conflicting writes); the new support file adds only the generation-pinned bucket, Auth, Date-only clock and gates.
+
+## 2026-10-16 - Commit: S02 test epic 6a: S02-04a validator, schema pin, canonical, decompression limits
+
+Decision: Inclusive coordinate bounds and ratio-20-accepted follow the design (plan rows F03/F50 are wrong); the encoding error is classified by name so it works across realms.
