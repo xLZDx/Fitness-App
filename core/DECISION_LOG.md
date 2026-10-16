@@ -57557,3 +57557,7 @@ Decision: the account-change reset in the cloud sync listener is keyed on the ra
 ## 2026-10-16 - Commit: S02 remediation G docs, accepted backlog and test notes
 
 Decision: two items are accepted unchanged and recorded in design 17 item 23 (no re-run of the sync start after a late bind retry success, the bind-retry budget leaves the journal unbound until the next auth event; the presenter retry cannot force a bind); the test oracles for G2 to G5 and the stale fake list are in the F test notes section G. Evidence: core/changes/2026-10-16-s02-remediation-g-docs.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a stale oracles and fakes after remediation G
+
+Decision: four tests that expected bindUid to succeed after wipeForUid of an unbound uid now expect the G4 refusal until bindUid(null); _ThrowingSyncRepo records onJournalBindingChanged. Evidence: core/changes/2026-10-16-s02-test-epic13a-stale-oracles.md.

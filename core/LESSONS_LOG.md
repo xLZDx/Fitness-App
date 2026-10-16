@@ -206,3 +206,7 @@ Rule next time: one helper per identity rule, used by every wiring; a reset keye
 Kind: SUCCESS.
 Facts: the two accepted limits (late bind retry does not re-run the sync start; presenter retry cannot force a bind) were written into design 17 item 23 with their reason instead of being silently dropped (core/changes/2026-10-16-s02-remediation-g-docs.md).
 Why it worked: a secondary mechanism that already had its one fix round is accepted and documented, per the no-secondary-blockers rule.
+
+## 2026-10-16 - S02 test epic 13a: stale oracles and fakes after remediation G
+Kind: FAILURE.
+Facts: first compiled whole-directory run +1260 -4, all stale oracles (see docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md). Root cause: the G stale-test search listed fakes, not assertions about wipe then bind. Layers: G authors and reviewers missed it; the first compiled run caught it. Rule next time: grep for the changed call sequence (wipeForUid then bindUid) in all tests, not only the named files.

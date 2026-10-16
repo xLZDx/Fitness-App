@@ -422,6 +422,9 @@ void main() {
       expect(await w.snapshot('B'), b, reason: 'B byte-identical');
       expect(w.journal.boundUid, 'B');
       expect([for (final e in await w.journal.list()) e.id], [idFor(2)]);
+      // Remediation G4: the wiped uid is refused until the marker is cleared.
+      expect(await w.journal.bindUid('A'), isFalse);
+      expect(await w.journal.bindUid(null), isTrue);
       expect(await w.journal.bindUid('A'), isTrue);
       expect(await w.journal.list(), isEmpty);
     });

@@ -128,11 +128,13 @@ void main() {
       expect(j().isBound, isFalse);
     });
 
-    test('a wipe of a NON-bound uid does not refuse a later bind of that uid '
-        '(nothing re-emits for a signed-out account)', () async {
+    test('remediation G4: a wipe of a NON-bound uid refuses a later bind of '
+        'that uid until bindUid(null) clears the marker', () async {
       await putFor('A', 1);
       expect(await j().bindUid('B'), isTrue);
       await j().wipeForUid('A');
+      expect(await j().bindUid('A'), isFalse);
+      expect(await j().bindUid(null), isTrue);
       expect(await j().bindUid('A'), isTrue);
       expect(await ids(), isEmpty);
     });

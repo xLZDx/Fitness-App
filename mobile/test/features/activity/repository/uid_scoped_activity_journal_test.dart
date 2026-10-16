@@ -380,6 +380,9 @@ void main() {
           reason: 'A\'s key is gone');
       expect(j().boundUid, isNull);
       expect(File('${w.rootOf('A')}/sources/a.json').existsSync(), isFalse);
+      // Remediation G4: refused until bindUid(null) clears the marker.
+      expect(await j().bindUid('A'), isFalse);
+      expect(await j().bindUid(null), isTrue);
       expect(await j().bindUid('A'), isTrue);
       expect(await ids(), isEmpty);
       expect(await j().bindUid('B'), isTrue);
@@ -396,6 +399,9 @@ void main() {
       expect(await w.snapshot('B'), b);
       await j().put(journalSession(idFor(3), seed: 3));
       expect(await ids(), [idFor(2), idFor(3)], reason: 'B still writable');
+      // Remediation G4: refused (and B unbound) until bindUid(null).
+      expect(await j().bindUid('A'), isFalse);
+      expect(await j().bindUid(null), isTrue);
       expect(await j().bindUid('A'), isTrue);
       expect(await ids(), isEmpty);
       expect(File('${w.rootOf('A')}/sources/a.json').existsSync(), isFalse);

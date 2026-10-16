@@ -84,7 +84,14 @@ class _ThrowingSyncRepo extends Fake implements ActivitySyncRepository {
   }
 
   @override
-  void onAccountChanged() {}
+  void onAccountChanged() {
+    events.add('onAccountChanged');
+  }
+
+  @override
+  void onJournalBindingChanged() {
+    events.add('onJournalBindingChanged');
+  }
 
   @override
   Future<void> dispose() async {}
