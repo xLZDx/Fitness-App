@@ -56775,3 +56775,7 @@ Decision: all file and line citations and "absent" claims in the S01 contract an
 ## 2026-10-16 - Commit: operator decisions D-16, D-17, D-6, D-7 recorded and S02 started
 
 Decision: the operator answered the four open S01 decisions in chat (GPS cloud with user-set expiry and heart rate device-only; friends by mutual accept, no public sharing for minors, self-declared age; open source tiles; open source tracks and maps). The interpretation and the points still open (default expiry, retention clock, region) are written into the contract section 9; the first-release region must be named before S07. Evidence: core/changes/2026-10-16-s02-operator-decisions-and-state.md.
+
+## 2026-10-16 - Commit: S01 gate closure report
+
+Decision: the closed S01 gate is reported as a Russian and English HTML pair in reports/. Two older reports without the provenance block are not part of this work and are left unchanged. Evidence: core/changes/2026-10-16-s01-gate-closure-report.md.
