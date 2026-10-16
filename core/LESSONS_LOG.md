@@ -643,3 +643,34 @@ Rule next time: keep the order internal reviews, one batch of fixes, external ga
 Kind: NEUTRAL.
 Facts: sprint S03 starts only after the operator's explicit GO; the previous turn asked the question in plain words with the consequences of each answer, and the GO arrived as a short standalone message. The S03 state section lists the phases and artifacts so the sprint can be resumed from the repository alone. Evidence: docs/sdlc/STATE.md section S03 and core/changes/2026-10-17-s03-start.md.
 Rule next time: record a GO in the decision log in the same commit that records the start state, and name the artifacts of each phase in the state file at once.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: FAILURE (inherited from S02, found by a reviewer of the S03 design).
+Facts: the Android backup rules exclude `files/journal`, `files/sources` and `files/quarantine`, but the production journal root is `<support>/activity_journal/<scopeId>` with those three as children (uid_scoped_activity_journal.dart:47-55, journal_generation_writer.dart:35-37, backup_rules.xml:50-52, data_extraction_rules.xml:32-34 and 41-43). The real tree was never excluded. The S02 backup tests compared the XML with the same constants the code uses, so they stayed green. The S03 design had marked the question UNGROUNDED (R11) instead of reading three files; the security-reviewer and silent-failure-hunter established it independently and the coordinator verified it with Grep before it went into the design.
+Root cause: an exclusion test derived its expected value from the constants under test, and a design left a one-Grep security fact open.
+Layer that missed it: S02 author, S02 tests and S02 reviewers. Caught by: S03 internal review (security-reviewer, silent-failure-hunter). No user data was exposed: the journal flag is off in every shipped build and the journal has no writer before S05.
+Rule next time: a path-exclusion or path-wipe test builds the real object (the factory, the real directory) and walks the files it created; a design must not leave a security fact UNGROUNDED when one Grep settles it.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: SHORTCOMING.
+Facts: five independent reviewers (architect, flutter-reviewer, silent-failure-hunter, security-reviewer, tdd-guide) returned 0 BLOCKER and 21 root causes in the first S03 design and test plan; three of them (architect, flutter-reviewer, silent-failure-hunter) found the same race between the start-up migration and the onboarding hook, and four found that a journal that is still binding looks open and empty. Evidence: the disposition table at the end of docs/phase2/s03/S03_DESIGN.md (RV-1 to RV-19).
+Root cause: the first draft gave several writers to one piece of per-account state, derived availability as "otherwise open", and reused a previous value without stamping the uid; the test plan used fakes where the real controller is the thing that can break and the default test font where the width rule needs a real measurement.
+Layer that missed it: design author and test-plan author. Caught by: internal reviewers before any code existed.
+Rule next time: for each per-account state name its single writer and stamp every async result with the uid and a generation; derive availability from positive facts, never from "otherwise"; a test that guards a running timer drives the real controller; a width rule needs a stub measurer that yields both outcomes.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: FAILURE (coordinator).
+Facts: for remediation batch 1 the coordinator resumed the design author and the test-plan author in parallel and gave both the same decision list but no single registry of test ids; both invented new ids in the same id scheme, so the same id (for example DT-08-2, DT-07-7, DT-13-6, DT-01-9) named different tests in the two files. The coordinator found it only after both authors finished, by a mechanical set comparison of the ids (83 in the design, 144 in the plan, five design-only and 64 plan-only) and a sample of meanings. 94 lines of the design cited ids.
+Root cause: shared decisions without a shared id owner; ownership of ids was not decided before parallel work started.
+Layer that missed it: coordinator (brief). Caught by: coordinator, before any reviewer or the gate saw it.
+Rule next time: when two authors write documents that cite each other's artifacts, name ONE owner of the id space in the brief (here the test plan) and tell the other author to cite, never to mint; run a set comparison of ids before a gate.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: SUCCESS.
+Facts: reviewers with different scopes found different parts of the same defect classes, and merging them into numbered findings (RV-1 to RV-19 plus nine test-plan findings) allowed ONE remediation batch with the decisions fixed up front and the same file for each author; the documentation went through review before any code was written.
+Why it worked: distinct role scopes, one finding contract, duplicates merged by root cause, decisions written down once and shared by both authors.
+Rule next time: keep the numbered merged-findings file as the single input of the remediation batch.
