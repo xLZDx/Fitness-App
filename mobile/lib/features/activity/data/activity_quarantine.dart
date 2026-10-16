@@ -112,7 +112,16 @@ QuarantineReason? _scan(String raw, QuarantineLimits limits) {
       if (j >= n) return QuarantineReason.malformedJson;
       if (j - i - 1 > limits.maxStringChars) return QuarantineReason.stringTooLong;
       if (stack.isNotEmpty && stack.last.isObject && stack.last.expectKey) {
-        if (!stack.last.keys.add(raw.substring(i + 1, j))) {
+        var key = raw.substring(i + 1, j);
+        if (key.contains(r'\')) {
+          // Compare the DECODED key: "a" and "a" are the same key.
+          try {
+            key = jsonDecode(raw.substring(i, j + 1)) as String;
+          } catch (_) {
+            return QuarantineReason.malformedJson;
+          }
+        }
+        if (!stack.last.keys.add(key)) {
           return QuarantineReason.duplicateKey;
         }
         stack.last.expectKey = false;

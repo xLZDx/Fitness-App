@@ -57103,3 +57103,7 @@ Decision: Backup exclusion test expects the real seven entries per section; read
 ## 2026-10-16 - Commit: S02 test epic 2: I05 synced marker and replay convergence, epic 2 findings
 
 Decision: A replay with an unknown base marks synced when the merged summary equals the server, instead of writing the same content with a higher rev.
+
+## 2026-10-16 - Commit: S02 test epic 3: native id, replay, quarantine, cursor and DeviceSource surface tests (U10, U11, U14, U15, U16, U23)
+
+Decision: The quarantine duplicate-key test compares decoded keys (an escape-spelled duplicate was accepted before).
