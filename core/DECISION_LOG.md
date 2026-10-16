@@ -56939,3 +56939,7 @@ Decision: The upload intent is decided in one fenced transaction (fence, tombsto
 ## 2026-10-16 - Commit: S02-04b: commitActivityStream callable
 
 Decision: The commit reads the quarantine object once pinned to its generation, validates and re-serialises those same bytes, records intendedStoredSha256 before promoting to the uploadId-specific path, selects the object in one second transaction, deletes the previous object only after it, and compensates only its own uploadId paths on a refusal. Evidence: core/changes/2026-10-16-s02-04b-commit-stream.md.
+
+## 2026-10-16 - Commit: S02-04b: export upload callables
+
+Decision: Both upload callables are exported from index.ts; their quota names were registered with the create callable. Evidence: core/changes/2026-10-16-s02-04b-exports.md.
