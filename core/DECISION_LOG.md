@@ -56987,3 +56987,7 @@ Decision: GpxEncoder is a pure function in activity/data returning a typed docum
 ## 2026-10-16 - Commit: S02-07: Dart FIT encoder
 
 Decision: FitEncoder is a pure function in activity/data producing a header-CRC and file-CRC protected FIT file with file_id, record, lap and session messages, fixed definitions with invalid-value fill, a GPS-first record timeline, and a public fitCrc16 so the test decoder can be proven able to fail. Evidence: core/changes/2026-10-16-s02-07-fit-encoder.md.
+
+## 2026-10-16 - Commit: S02-07: local export hook over the activity journal
+
+Decision: The device export reads the journal and returns typed results (file, no_geometry, not found, stream lost) with a safe file name, using only the pure encoders and the session JSON; it writes no files and has no UI, and a streamLost entry is refused for GPX and FIT rather than exported empty. Evidence: core/changes/2026-10-16-s02-07-local-export-hook.md.
