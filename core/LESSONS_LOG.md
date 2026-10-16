@@ -170,3 +170,10 @@ Facts: the E2 test "60 s, 2, 4, 8, 15, 15 min then no seventh attempt" failed on
 Root cause: the contract changed in F1 and the old assertion was listed in the notes but nobody ran it. Layers: F1 author and reviewers missed the stale assertion; the epic 12a run caught it.
 Own slip (mine): to stop a hung test run I killed every dart.exe process on the machine, which can also kill the parallel agent's runs; rule next time: stop only the process tree I started (use `timeout` and `--timeout` on the run itself).
 Rule next time: when a contract changes, run the tests that encode the old contract in the same commit.
+
+## 2026-10-16 - S02 test epic 12a (2): stale SF9 oracle found only by the directory run
+Kind: SHORTCOMING.
+Facts: `activity_sync_corrupt_summary_test.dart` SF9 still expected the tombstone error code to survive a clean pass; F1 clears it (expected 'permission-denied', actual null); only the full directory run found it, the notes did not list that file (core/changes/2026-10-16-s02-test-epic12a-e2e-and-run.md).
+Root cause: the F1 notes listed stale fakes by search of constructors, not tests asserting `lastTombstonePushError` semantics. Layers: F1 authors and note writer missed it; the epic 12a directory run caught it.
+Success: the account-switch e2e (3 tests) passed on the first run, so the pass-identity guards hold end to end.
+Rule next time: when a getter's semantics change, grep all tests that read it and run them in the same commit.

@@ -57533,3 +57533,7 @@ Decision: the single-flight and failed-id reset of the uploader on `cancelQueued
 ## 2026-10-16 - Commit: S02 test epic 12a (1) pass identity, caches, unbound, retry tests
 
 Decision: the F1 contract (pass identity, cache reset, unbound visibility, fallback timer) is pinned at the repository seam with a real scoped journal and a blocking backend; the E2 "no seventh attempt" assertion is replaced by "six attempts plus one 60-minute fallback timer" per design 17 item 23. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-pass-identity.md.
+
+## 2026-10-16 - Commit: S02 test epic 12a (2) account-switch pass e2e, complete run, findings
+
+Decision: the epic 9 oracle that a later success never clears `lastTombstonePushError` is superseded by F1 (a clean pass clears it); the account-switch promise for running passes is pinned end to end including the cloud side. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-e2e-and-run.md.

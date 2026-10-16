@@ -369,10 +369,9 @@ void main() {
       fail = false;
       await repo.syncAll();
       expect(calls, 3);
-      // Documented behaviour (getter doc): the field holds the LAST FAILED
-      // push and is null only when none failed in this process; a later
-      // success does not clear it. See S02_TEST_FINDINGS_EPIC9.md.
-      expect(repo.lastTombstonePushError, 'permission-denied');
+      // Remediation F1 (design 17 item 23) supersedes the epic 9 oracle: a
+      // fully clean pass clears the last error, since nothing is owed any more.
+      expect(repo.lastTombstonePushError, isNull);
     });
 
     test('a plain StateError is kept as its type name', () async {
