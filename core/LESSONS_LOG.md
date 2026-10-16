@@ -674,3 +674,18 @@ Kind: SUCCESS.
 Facts: reviewers with different scopes found different parts of the same defect classes, and merging them into numbered findings (RV-1 to RV-19 plus nine test-plan findings) allowed ONE remediation batch with the decisions fixed up front and the same file for each author; the documentation went through review before any code was written.
 Why it worked: distinct role scopes, one finding contract, duplicates merged by root cause, decisions written down once and shared by both authors.
 Rule next time: keep the numbered merged-findings file as the single input of the remediation batch.
+
+## 2026-10-17 - Commit: docs: S03 one retry state machine for automatic and manual journal bind (GPT-PM MAJOR-01)
+
+Kind: FAILURE.
+Facts: GPT-PM documentation gate round 1 on 3bedcba4 returned MODIFY with one MAJOR: the test plan's DT-0-5 required that after a failed manual "Try again" no automatic retry follows (count stays 1 after 5 s of fake time), while the design kept the existing automatic bind retry (5 s, 15 s, 60 s, 5 min, 5 min) and added a manual retryNow() with the sentence "it does not touch the automatic back-off schedule". The coordinator verified it: activity_wiring.dart:101-164 and 189-204 keep one pending retry timer per generation and the plan row contradicted it.
+Root cause: DT-0-5 was written from the pre-review semantics ("failedToOpen has no automatic loop"); the review batch then added a manual action next to an existing automatic mechanism (RV-3) without writing the combined state machine in one place, and the test was not re-derived from it.
+Layer that missed it: design author (no combined state machine), test-plan author (kept an old expectation), coordinator (brief did not ask for a cross-check of new tests against retained mechanisms) and all five internal reviewers (none compared a test expectation with the retained retry code). Caught by: GPT-PM documentation gate.
+Rule next time: when a design adds a manual action next to an existing automatic mechanism, write ONE state machine for both (states, who may start an attempt, what a failure does to the schedule) in the design and derive every test from it; tell reviewers to check each test expectation against the retained mechanisms in the code, not only against the design text.
+
+## 2026-10-17 - Commit: docs: S03 one retry state machine for automatic and manual journal bind (GPT-PM MAJOR-01)
+
+Kind: SUCCESS.
+Facts: the gate returned a single MAJOR and no BLOCKER on a design of 21 stories and a plan of 452 tests; GPT-PM confirmed in its table that the single writer for the mode status, the three-way persisted-mode read, the uid and generation checks of the digests, the backup exclusion order, the element preservation of the shell, the owner uid of the timers and the lane ownership had no further proven BLOCKER or MAJOR, and accepted the sign-out guard refinement of contract J10.
+Why it worked: five role-scoped internal reviews before the gate, one merged remediation batch with fixed decisions, mechanical set checks of test ids and counts before the commit.
+Rule next time: keep the mechanical checks (id sets, sum of the count column, Cyrillic scan) as a standing pre-gate step.
