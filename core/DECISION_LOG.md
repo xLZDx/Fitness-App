@@ -57638,3 +57638,7 @@ Decision: FakeConsent gets consentUid (fixed or following the uploader uid), fiv
 ## 2026-10-16 - Commit: test(s02): H8 sign-out wipe and local export bound to the account (epic 14b)
 
 Decision: Twelve tests assert onSignOut wipes exactly the uid captured before the prompt (wipeForUid), aborts with false and wipes nothing when the bound uid changes during the assessment or the prompt, keeps wipe() for a plain journal; exportAll returns one ActivityExportAccountChanged on a uid change after the listing or at any read, and a normal export keeps the full GPX route and FIT bytes of one account only. Evidence: core/changes/2026-10-16-s02-test-epic14b-wipe-export.md.
+
+## 2026-10-16 - Commit: test(s02): stale view end-to-end journey over the real journal (epic 14b)
+
+Decision: One adversarial journey test over the real FileActivityJournal, real repository and real presenter asserts after an A to B switch with the same activity id: B's first frame is loading and empty, B never shows A's field values, A's queued tap leaves B byte-identical and writes nothing to any cloud, and A's conflict returns intact on the way back. Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-view-e2e.md.

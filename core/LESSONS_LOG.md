@@ -346,3 +346,9 @@ Root cause: the uploader test fixtures assumed uid-agnostic consent. Layer that 
 Kind: SUCCESS.
 Facts: All 12 tests passed on the first run; positive controls cover the no-switch wipe, declined prompt, empty journal and plain journal. Evidence: core/changes/2026-10-16-s02-test-epic14b-wipe-export.md.
 Why it worked: the guards compare a captured uid with the bound uid at each await, which a hook that switches the bound uid inside the awaited call exercises directly. Limit: no production caller exists yet, so the tests exercise the hooks, not a UI.
+
+## 2026-10-16 - Stale-view promise holds end to end
+
+Kind: SUCCESS.
+Facts: The journey passed at the first run; logs show the queued pass skipped as pass-identity and the tap as uid-changed. Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-view-e2e.md.
+Why it worked: both accounts hold the same deterministic id, so any missing guard would have crossed accounts. Limit: auth stream timing is simulated by a mutable provider.
