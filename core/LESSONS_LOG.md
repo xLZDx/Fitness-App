@@ -579,3 +579,13 @@ Facts: two tests building 32 MiB inputs hit the 5 s default timeout in the full 
 Root cause: heavy-input tests were left on the default timeout; the earlier epic noted the flake but did not fix it.
 Layer: tests (author) left it; the full run caught it.
 Rule next time: give any test that allocates tens of MiB an explicit timeout when it is written.
+
+## 2026-10-16 - Commit: docs: S02 report, state and retro after external gate round 13
+
+Kind: SUCCESS (the remediation process), with two SHORTCOMINGS of mine recorded.
+Facts: gate round 13 on 0096dd88 returned REJECT with one MAJOR; it was verified against the source, and the whole class (outbound calls authenticated by ambient credentials) was fixed on the server and the client, swept again by three independent reviewers with an inventory table, fixed in one batch (J3), reviewed once more read-only (no BLOCKER or MAJOR), and covered by test epic 16 (final complete runs: Dart 1485 and 120, server 922 and 315 tests, all green by the test agents). Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md, core/changes/2026-10-16-s02-documents-after-round-13.md.
+Why it worked: the inventory table forced the reviewers to list every operation, which surfaced two unbound server callables and four client gaps that a diff review would not have; the fix was applied to the whole class, not to the four members named by the finding.
+SHORTCOMING 1 (mine): the first send of gate round 13 used the worktree folder as the project folder, but the project is registered on the main repository folder, so the send failed with a binding error and nothing was sent; I noticed it from the reply and resent. Rule: send every gate round with the same project folder as the previous rounds (the main repository folder).
+SHORTCOMING 2 (mine): the review and test agents have small turn limits; four of them stopped without a final report on the first run and had to be resumed (the J1 implementer left its work staged but uncommitted, and I reviewed and committed it myself). Rule: give agents narrower tasks, tell them to batch tool calls and to commit early, and expect to resume.
+Layers: caught by my own check of the reply, and by the resume handling.
+Rule next time: see the two rules above; for a gate resend, copy the previous command line exactly.

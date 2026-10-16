@@ -57759,3 +57759,7 @@ Decision: give the presenter tests an explicit uid instead of weakening the J3 B
 ## 2026-10-16 - Commit: test(s02): final server run and large-filler timeouts (epic 16d)
 
 Decision: raise the timeout of the two large-filler tests to 60 s so the complete parallel run is deterministic; record the final server run (922 + 315 tests green). Evidence: core/changes/2026-10-16-s02-test16d-final-server-run.md.
+
+## 2026-10-16 - Commit: docs: S02 report, state and retro after external gate round 13
+
+Decision: GPT-PM round 13 on 0096dd88 accepted all four earlier findings as resolved and returned REJECT with one MAJOR (consent calls checked only the locally bound account while the callable ran as the account signed in at that instant). Verified against the source. Decision: the initiating account travels in the request and the server verifies it first, for all six client-reachable activity callables (design section 17 item 25); three independent reviewers swept the whole surface with an inventory table; their findings in scope were fixed in one batch (J3); a withdrawal outbox, the stream PUT timeout and the other backlog items are NOT built now (accepted limits and backlog, item 25, with S03 requirements for the UI). Rules emulator not re-run: firestore.rules, storage.rules and firestore.indexes.json are unchanged since 479b7342 (empty git diff --stat). Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md; core/changes/2026-10-16-s02-documents-after-round-13.md.
