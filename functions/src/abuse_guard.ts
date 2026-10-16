@@ -451,6 +451,12 @@ export const QUOTAS = {
   barcodeLookup: 120,
   /** Food searches that may spend the shared upstream budget (D-64). */
   foodSearch: 150,
+  /**
+   * S02 unified activity (design 5.4): settings and consent changes per user
+   * per day. Starting limit, unmeasured. A pure consent WITHDRAWAL is not
+   * charged against it (design 9.1: an erasure-side action is never rate-limited).
+   */
+  activitySettingsSet: 20,
 } as const;
 
 /**
@@ -475,6 +481,8 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "parseNutritionLabel",
   "barcodeLookup",
   "foodSearch",
+  // S02 activity settings (design 5.4): the log must not record who changed GPS-stream consent.
+  "activitySettingsSet",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",

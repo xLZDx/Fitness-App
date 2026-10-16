@@ -56915,3 +56915,7 @@ Decision: Streams use a dedicated private bucket named by ACTIVITY_STREAM_BUCKET
 ## 2026-10-16 - Commit: S02-05a: activity settings model
 
 Decision: Settings validation and the change planner are pure functions; retention is a closed set (90, 365, 730 days, or null while the OPEN "never" question defaults to offered) with a single named default constant of 730 days marked OPEN-DEFAULT, and the generation increments once per effective change only. Evidence: core/changes/2026-10-16-s02-05a-settings-model.md.
+
+## 2026-10-16 - Commit: S02-05a: setActivityCloudSettings callable
+
+Decision: Consent and retention are written only by one fenced transaction (settings, account fence, deletion-retries marker, Auth existence), a no-op request writes nothing, a pure withdrawal is exempt from the daily quota, and the quota name activitySettingsSet is added to the redacted set. Evidence: core/changes/2026-10-16-s02-05a-set-settings-callable.md.
