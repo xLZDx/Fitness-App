@@ -57003,3 +57003,7 @@ Decision: Clients can no longer create debug_sessions documents; the sanitising 
 ## 2026-10-16 - Commit: S02-09: mobile debug-telemetry sink migration
 
 Decision: The debug telemetry sink now sends closed-schema batches (level, component enumeration, type, seq; no free text or build identity) through the sendDebugTelemetry callable, never throws, retries at most 3 times with doubling backoff and reports failed events as a capped droppedCount in the next batch; no extra offline buffer was added because the old writer had none. Evidence: core/changes/2026-10-16-s02-09-mobile-sink-migration.md.
+
+## 2026-10-16 - Commit: S02-10: merger performance restructuring
+
+Decision: The merger meets the operation-count budget by indexing echo detection by source id or app package and by clustering through a time-bucket window derived from the policy (start difference bound from minIou and the longest session), preserving the first-match cluster order; an optional onPairCompared seam counts comparisons and changes no result; sessions with a repeated id collapse to one with a deterministic tie-break. Record: core/changes/2026-10-16-s02-10-merger-perf.md
