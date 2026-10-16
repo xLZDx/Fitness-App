@@ -57027,3 +57027,7 @@ Decision: ActivitySyncRepository uploads with an optimistic rev, reads tombstone
 ## 2026-10-16 - Commit: S02-12: sync-conflict presenter
 
 Decision: The presenter is a Riverpod Notifier whose entry lists come only from the repository state stream, so a conflict or candidate disappears only after its resolution is stored; each action is guarded against double submission and the presenter exposes no delete
+
+## 2026-10-16 - Commit: S02-12: sync-conflict choice sheet and strings
+
+Decision: The choice sheet renders summary fields only with the two conflict actions and the two or three candidate actions, has no delete action, opens at most once and updates in place; strings are added to both app_en.arb and app_ru.arb as neighbouring features do
