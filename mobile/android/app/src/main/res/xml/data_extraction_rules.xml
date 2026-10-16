@@ -18,6 +18,10 @@
   training-context answer) and the `flutter_secure_storage` files
   `FlutterSecureStorage.xml` / `FlutterSecureKeyStorage.xml`. See
   `backup_rules.xml` for the reasoning and the consequence on restore.
+
+  The activity journal directories (`journal`, `sources`, `quarantine` under
+  `domain="file"`, S02-02 / GPS-PRIV-083) are excluded in BOTH sections for the
+  same reason: cloud backup and device transfer must not carry routes.
 -->
 <data-extraction-rules>
     <cloud-backup>
@@ -25,11 +29,17 @@
         <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
         <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
         <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
+        <exclude domain="file" path="journal" />
+        <exclude domain="file" path="sources" />
+        <exclude domain="file" path="quarantine" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="root" path="app_flutter/progress_photos" />
         <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
         <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
         <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
+        <exclude domain="file" path="journal" />
+        <exclude domain="file" path="sources" />
+        <exclude domain="file" path="quarantine" />
     </device-transfer>
 </data-extraction-rules>

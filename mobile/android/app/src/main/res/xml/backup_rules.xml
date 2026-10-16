@@ -32,6 +32,13 @@
   (wrapped cipher keys). Wrapped keys restored without the original Keystore
   entry cannot be unwrapped, so they must not travel.
 
+  The activity journal (S02-02, GPS-PRIV-083) is excluded as well: `journal`,
+  `sources` and `quarantine` directly under `getFilesDir()` (the app support
+  directory, `domain="file"`). They hold routes, heart rate and laps; the
+  stream key lives in the excluded secure-storage files, so a restored copy
+  would be undecryptable anyway. The names come from `journal_layout.dart`
+  (`kActivityBackupExcludedDirs`); keep both files and that constant in step.
+
   Everything else in the app stays backed up. This is an exclusion list, not a
   switch: `android:allowBackup` is untouched.
 -->
@@ -40,4 +47,7 @@
     <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
     <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
     <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
+    <exclude domain="file" path="journal" />
+    <exclude domain="file" path="sources" />
+    <exclude domain="file" path="quarantine" />
 </full-backup-content>

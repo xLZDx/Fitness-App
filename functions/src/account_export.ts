@@ -151,8 +151,45 @@ const PAGED_COLLECTIONS = [
   { key: "foodEntries", path: "food_entries", order: "loggedAt" },
   { key: "savedFoods", path: "saved_foods", order: null },
   { key: "nutritionPlanReviews", path: "nutrition_plan_reviews", order: null },
+  // S02-07 (design 7, 7.1): unified activity summaries and the stream INDEX rows
+  // (never stream bytes, GPS-PRIV-052). Newest first; the first response carries
+  // up to MAX_ROWS of each (see `CAPPED_FIRST_PAGE`), continuations page by PAGE_ROWS.
+  { key: "activities", path: "activities", order: "startUtc" },
+  { key: "activityStreams", path: "activity_streams", order: null },
 ] as const;
 type PagedKey = (typeof PAGED_COLLECTIONS)[number]["key"];
+
+/**
+ * Paged sections whose FIRST response is read up to [MAX_ROWS] (not [PAGE_ROWS])
+ * so the over-cap behaviour of every other section applies: reaching the cap is
+ * named in `truncated` and the rest is delivered by continuation cursors.
+ */
+const CAPPED_FIRST_PAGE: ReadonlySet<PagedKey> = new Set<PagedKey>([
+  "activities",
+  "activityStreams",
+]);
+
+/**
+ * What an activity stream index row exposes. An allow-list: the row's object
+ * path, hashes and upload bookkeeping are internal and would turn the export
+ * into a map of the private bucket. Samples are never in the row.
+ */
+const STREAM_ROW_FIELDS = ["id", "state", "bytes", "kinds", "expiresAt"] as const;
+
+function streamRow(row: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const f of STREAM_ROW_FIELDS) {
+    if (f in row) out[f] = row[f];
+  }
+  return out;
+}
+
+/** GPS-PRIV-053: the declared delivery of streams and the heart-rate exclusion. */
+export const STREAM_EXPORT_NOTE =
+  "GPS streams are not embedded in this file: each activityStreams row lists " +
+  "its state, size and expiry, and the app requests short-lived download " +
+  "links on demand; heart-rate streams are on your device only and are not " +
+  "part of this export.";
 
 /** Continuation pages are cheap but not free; own counter, never `accountExport`. */
 /** A bare error code, never a message (messages can embed the uid or a path). */
@@ -190,6 +227,7 @@ async function pagedRead(
   uid: string,
   spec: (typeof PAGED_COLLECTIONS)[number],
   cursor: string | undefined,
+  pageRows: number = PAGE_ROWS,
 ): Promise<{ rows: Record<string, unknown>[]; info: PageInfo }> {
   const base = `users/${uid}/${spec.path}`;
   let q = db()
@@ -205,11 +243,12 @@ async function pagedRead(
     }
     q = q.startAfter(at);
   }
-  const snap = await q.limit(PAGE_ROWS + 1).get();
-  const hasMore = snap.docs.length > PAGE_ROWS;
-  const rows = snap.docs.slice(0, PAGE_ROWS).map((d) => {
+  const snap = await q.limit(pageRows + 1).get();
+  const hasMore = snap.docs.length > pageRows;
+  const rows = snap.docs.slice(0, pageRows).map((d) => {
     const row = { id: d.id, ...d.data() } as Record<string, unknown>;
-    return spec.key === "bodyScans" ? scanRow(row) : row;
+    if (spec.key === "bodyScans") return scanRow(row);
+    return spec.key === "activityStreams" ? streamRow(row) : row;
   });
   return {
     rows,
@@ -404,13 +443,24 @@ export const exportAccountData = onCall(
       (c) => !continuation || cursors[c.key] !== undefined,
     );
     const pagedResults = await Promise.all(
-      wanted.map((c) => pagedRead(uid, c, cursors[c.key])),
+      wanted.map((c) =>
+        pagedRead(
+          uid,
+          c,
+          cursors[c.key],
+          !continuation && CAPPED_FIRST_PAGE.has(c.key) ? MAX_ROWS : PAGE_ROWS,
+        ),
+      ),
     );
     const pagedSections: Partial<Record<PagedKey, Record<string, unknown>[]>> = {};
     const paging: Partial<Record<PagedKey, PageInfo>> = {};
     wanted.forEach((c, i) => {
       pagedSections[c.key] = pagedResults[i].rows;
       paging[c.key] = pagedResults[i].info;
+      // Hitting the MAX_ROWS cap is named, like every other capped section.
+      if (!continuation && CAPPED_FIRST_PAGE.has(c.key) && pagedResults[i].info.hasMore) {
+        truncated.push(c.key);
+      }
     });
     const photoNote =
       "Photos are not embedded and no photo links are included. Scans with " +
@@ -426,7 +476,10 @@ export const exportAccountData = onCall(
         uid,
         ...pagedSections,
         paging,
-        notes: [photoNote],
+        notes: [
+          photoNote,
+          ...(pagedSections.activityStreams !== undefined ? [STREAM_EXPORT_NOTE] : []),
+        ],
       };
     }
 
@@ -454,6 +507,7 @@ export const exportAccountData = onCall(
       debugSessions,
       bodyScanSettings,
       nutritionPlan,
+      activitySettings,
     ] = await Promise.all([
       one(`users/${uid}/profile/main`),
       one(`users/${uid}/subscription/main`),
@@ -497,6 +551,9 @@ export const exportAccountData = onCall(
       // C25: single `main` documents of the body-scan / nutrition features.
       one(`users/${uid}/body_scan_settings/main`),
       one(`users/${uid}/nutrition_plan/main`),
+      // S02-07: cloud-stream consent and retention (activities and stream index
+      // rows arrive through the paged sections above).
+      one(`users/${uid}/activity_settings/main`),
     ]);
 
     const body = {
@@ -540,6 +597,7 @@ export const exportAccountData = onCall(
       debugSessions,
       bodyScanSettings,
       nutritionPlan,
+      activitySettings,
       // Named, never silent. A capped read that did not say so would be the
       // same lie as a partial export claiming to be whole.
       truncated,
@@ -549,7 +607,15 @@ export const exportAccountData = onCall(
     fitToByteBudget(body, truncated);
     // Paged sections get what the legacy sections left (at least one row each);
     // a trimmed page keeps a cursor so nothing is dropped silently.
+    const rowsBeforeFit = new Map<PagedKey, number>(
+      [...CAPPED_FIRST_PAGE].map((k) => [k, pagedSections[k]?.length ?? 0]),
+    );
     fitPaged(pagedSections, paging, MAX_EXPORT_BYTES - jsonBytes(body));
+    // A byte-budget trim of an activity section is named too (rows are not lost:
+    // `paging` keeps a cursor), so `truncated` is the one list of incomplete sections.
+    for (const [k, before] of rowsBeforeFit) {
+      if ((pagedSections[k]?.length ?? 0) < before && !truncated.includes(k)) truncated.push(k);
+    }
 
     const response = {
       ...body,
@@ -559,6 +625,7 @@ export const exportAccountData = onCall(
       paging,
       notes: [
         photoNote,
+        STREAM_EXPORT_NOTE,
         ...(truncated.length
           ? [
               "Some sections were capped at " +

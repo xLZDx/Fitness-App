@@ -10,6 +10,7 @@
 /// (default 5 s) means the stream is NOT aligned and is not taken.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'activity_session.dart';
@@ -30,17 +31,31 @@ class MergeResult {
 
 const double _eps = 1e-9;
 
-MergeResult merge(List<ActivitySession> candidates, MergePolicy policy) {
-  final echoes = _echoIds(candidates);
+/// Optional [onPairCompared] is a test seam (design 10): it is invoked once per
+/// pairwise comparison (echo lookup step or cluster-head comparison). With
+/// null the behaviour and the result are identical.
+MergeResult merge(
+  List<ActivitySession> candidates,
+  MergePolicy policy, {
+  void Function()? onPairCompared,
+}) {
+  final echoes = _echoIds(candidates, onPairCompared);
+  final ranks = Map<ActivitySession, int>.identity();
   int rankOf(ActivitySession s) {
-    if (echoes.contains(s.id)) return policy.echoRank;
+    final cached = ranks[s];
+    if (cached != null) return cached;
     var best = 50;
-    var any = false;
-    for (final p in s.provenance) {
-      final r = policy.priorityOf(p);
-      if (!any || r < best) best = r;
-      any = true;
+    if (echoes.contains(s.id)) {
+      best = policy.echoRank;
+    } else {
+      var any = false;
+      for (final p in s.provenance) {
+        final r = policy.priorityOf(p);
+        if (!any || r < best) best = r;
+        any = true;
+      }
     }
+    ranks[s] = best;
     return best;
   }
 
@@ -49,15 +64,22 @@ MergeResult merge(List<ActivitySession> candidates, MergePolicy policy) {
     if (r != 0) return r;
     final t = a.startUtc.compareTo(b.startUtc);
     if (t != 0) return t;
-    return a.id.compareTo(b.id);
+    final i = a.id.compareTo(b.id);
+    if (i != 0) return i;
+    return _sameIdTieBreak(a, b);
   }
 
   final sorted = [...candidates]..sort(compare);
 
+  // Rule 0 (native-id rule, design 9): the same id is the same recording
+  // (`activityIdFor` is a function of sourceId + externalId), so a replayed
+  // or re-synced record collapses to one session before any other rule.
   // Rule 1: exact duplicate (same sourceId + externalId) keeps the first.
+  final seenIds = <String>{};
   final seen = <String>{};
   final unique = <ActivitySession>[];
   for (final s in sorted) {
+    if (!seenIds.add(s.id)) continue;
     final keys = [
       for (final p in s.provenance)
         if (p.dedupKey != null) p.dedupKey!,
@@ -67,20 +89,26 @@ MergeResult merge(List<ActivitySession> candidates, MergePolicy policy) {
     unique.add(s);
   }
 
-  // Rules 2-4: cluster against each cluster's best-ranked member.
+  // Rules 2-4: cluster against each cluster's best-ranked member. Only heads
+  // in the time window of the session can match (see [_HeadWindow]), so the
+  // work is bounded by the local density, not by the number of clusters. The
+  // result is the same as scanning every head in creation order.
+  final window = _HeadWindow.of(unique, policy);
   final clusters = <List<ActivitySession>>[];
   for (final s in unique) {
-    List<ActivitySession>? home;
-    for (final c in clusters) {
-      if (_sameWorkout(c.first, s, policy)) {
-        home = c;
+    int? home;
+    for (final ci in window.candidates(s)) {
+      onPairCompared?.call();
+      if (_sameWorkout(clusters[ci].first, s, policy)) {
+        home = ci;
         break;
       }
     }
     if (home == null) {
+      window.addHead(clusters.length, s);
       clusters.add([s]);
     } else {
-      home.add(s);
+      clusters[home].add(s);
     }
   }
 
@@ -97,25 +125,114 @@ MergeResult merge(List<ActivitySession> candidates, MergePolicy policy) {
 
 /// Rule 3: a platform-health record whose recording app names a source we
 /// already hold is an echo of it.
-Set<String> _echoIds(List<ActivitySession> all) {
+///
+/// Indexed by source id / app package, so the lookup is O(sessions), not
+/// O(sessions^2): every holder list is scanned only until the first holder
+/// that is not the session itself.
+Set<String> _echoIds(List<ActivitySession> all, void Function()? onPair) {
+  final holders = <String, List<ActivitySession>>{};
+  for (final t in all) {
+    final keys = <String>{};
+    for (final p in t.provenance) {
+      if (p.sourceKind == SourceKind.platformHealth) continue;
+      keys.add(p.sourceId);
+      final app = p.appPackage;
+      if (app != null) keys.add(app);
+    }
+    for (final k in keys) {
+      holders.putIfAbsent(k, () => []).add(t);
+    }
+  }
   final echoes = <String>{};
   for (final s in all) {
     if (s.provenance.isEmpty) continue;
     final rec = s.provenance.first;
     final app = rec.appPackage;
     if (rec.sourceKind != SourceKind.platformHealth || app == null) continue;
-    for (final t in all) {
+    final held = holders[app];
+    if (held == null) continue;
+    for (final t in held) {
+      onPair?.call();
       if (identical(t, s)) continue;
-      final holds = t.provenance.any((p) =>
-          p.sourceKind != SourceKind.platformHealth &&
-          (p.sourceId == app || p.appPackage == app));
-      if (holds) {
-        echoes.add(s.id);
-        break;
-      }
+      echoes.add(s.id);
+      break;
     }
   }
   return echoes;
+}
+
+/// Deterministic order for two records with the same id, rank and start (a
+/// replay or a re-sync of one recording): the newer import wins, then the
+/// serialised content, so the kept record never depends on the input order.
+int _sameIdTieBreak(ActivitySession a, ActivitySession b) {
+  DateTime? newest(ActivitySession s) {
+    DateTime? best;
+    for (final p in s.provenance) {
+      if (best == null || p.importedAt.isAfter(best)) best = p.importedAt;
+    }
+    return best;
+  }
+
+  final na = newest(a);
+  final nb = newest(b);
+  if (na != null && nb != null) {
+    final c = nb.compareTo(na);
+    if (c != 0) return c;
+  } else if (na != null || nb != null) {
+    return na != null ? -1 : 1;
+  }
+  return jsonEncode(a.toJson()).compareTo(jsonEncode(b.toJson()));
+}
+
+/// Time-bucket index over cluster heads (blocking by start time).
+///
+/// Two sessions can only be the same workout when their starts differ by at
+/// most `W = max(maxStartDiff, (1 - minIou) / minIou * longest session)`:
+/// from `inter >= minIou * union` follows `|startA - startB| <= union - inter
+/// <= (1 - minIou) * union` and `union <= duration / minIou`. Heads are put in
+/// buckets of width W, so a query reads three buckets. A policy with
+/// `minIou <= 0` has no bound and uses one bucket (the old full scan).
+class _HeadWindow {
+  _HeadWindow._(this._width);
+
+  factory _HeadWindow.of(List<ActivitySession> all, MergePolicy p) {
+    var maxDurMs = 0;
+    for (final s in all) {
+      final d = s.endUtc.millisecondsSinceEpoch - s.startUtc.millisecondsSinceEpoch;
+      if (d > maxDurMs) maxDurMs = d;
+    }
+    if (p.minIou <= 0) return _HeadWindow._(null);
+    final iouSpan = p.minIou >= 1 ? 0.0 : (1 - p.minIou) / p.minIou * maxDurMs;
+    final w = math.max(p.maxStartDiffSeconds * 1000.0, iouSpan) + 1000;
+    return _HeadWindow._(w.isFinite && w < 1e15 ? w : null);
+  }
+
+  final double? _width;
+  final Map<int, List<int>> _buckets = {};
+
+  int _key(ActivitySession s) {
+    final w = _width;
+    return w == null ? 0 : (s.startUtc.millisecondsSinceEpoch / w).floor();
+  }
+
+  void addHead(int clusterIndex, ActivitySession s) {
+    _buckets.putIfAbsent(_key(s), () => []).add(clusterIndex);
+  }
+
+  /// Cluster indices that may match [s], in creation order.
+  List<int> candidates(ActivitySession s) {
+    final k = _key(s);
+    final out = <int>[];
+    if (_width == null) {
+      out.addAll(_buckets[0] ?? const []);
+    } else {
+      for (var b = k - 1; b <= k + 1; b++) {
+        out.addAll(_buckets[b] ?? const []);
+      }
+      out.sort();
+    }
+    return out;
+  }
 }
 
 bool _sameWorkout(ActivitySession a, ActivitySession b, MergePolicy p) {
@@ -327,6 +444,14 @@ ActivitySession _mergeCluster(
     schema: primary.schema,
     mergeNotes: notes.toList()..sort(),
     extras: primary.extras,
+    formulaVersion: primary.formulaVersion,
+    metricDefinitionVersion: primary.metricDefinitionVersion,
+    thresholdPolicyVersion: primary.thresholdPolicyVersion,
+    sourceTermsSnapshot: primary.sourceTermsSnapshot,
+    explicitValues: primary.explicitValues,
+    summaryOverrides: primary.summaryOverrides,
+    userEditCount: primary.userEditCount,
+    editHistory: primary.editHistory,
   );
 }
 
@@ -486,5 +611,13 @@ ActivitySession _join(ActivitySession a, ActivitySession b) {
     schema: a.schema,
     mergeNotes: ([...{...a.mergeNotes, ...b.mergeNotes, 'joinedSplit'}]..sort()),
     extras: a.extras,
+    formulaVersion: a.formulaVersion,
+    metricDefinitionVersion: a.metricDefinitionVersion,
+    thresholdPolicyVersion: a.thresholdPolicyVersion,
+    sourceTermsSnapshot: a.sourceTermsSnapshot,
+    explicitValues: a.explicitValues,
+    summaryOverrides: a.summaryOverrides,
+    userEditCount: a.userEditCount,
+    editHistory: a.editHistory,
   );
 }

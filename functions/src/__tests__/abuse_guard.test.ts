@@ -282,6 +282,17 @@ describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
     barcodeLookup: 120,
     foodSearch: 150,
   } as const;
+  // S02 unified activity (design 5.4, 8.1): redacted like the Body Scan actions; starting limits, unmeasured.
+  const S02_QUOTAS = {
+    activitySettingsSet: 20,
+    activityDelete: 1000,
+    activityStreamUpload: 30,
+    activityStreamCommit: 60,
+    activityDeleteAll: 10,
+    activityDownloadUrls: 60,
+    debugTelemetrySend: 200,
+    debugTelemetryEvents: 5000,
+  } as const;
   const FIXTURE_UID = "uid-SECRET-123";
 
   // The logger mock is shared across isolated registries; start every case clean.
@@ -331,6 +342,13 @@ describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
     }
   });
 
+  test("the eight S02 activity QUOTAS have exactly the designed daily values (F83)", () => {
+    const { QUOTAS } = require("../abuse_guard") as typeof import("../abuse_guard");
+    for (const [name, value] of Object.entries(S02_QUOTAS)) {
+      expect((QUOTAS as Record<string, number>)[name]).toBe(value);
+    }
+  });
+
   test("the pre-existing quotas are unchanged", () => {
     const { QUOTAS } = require("../abuse_guard") as typeof import("../abuse_guard");
     expect(QUOTAS.aiCoachAdvice).toBe(40);
@@ -341,13 +359,19 @@ describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
     expect(QUOTAS.equipmentReport).toBe(30);
   });
 
-  test("REDACTED_QUOTA_ACTIONS is the eight new action names plus the two account export counters (D-67)", () => {
+  test("REDACTED_QUOTA_ACTIONS is the eight new action names, the eight S02 activity names and the two account export counters (D-67, F83)", () => {
     const { REDACTED_QUOTA_ACTIONS } = require("../abuse_guard") as typeof import("../abuse_guard");
+    // An exact set, not a superset: dropping or adding any single name fails.
     expect([...REDACTED_QUOTA_ACTIONS].sort()).toEqual(
-      [...Object.keys(NEW_QUOTAS), "accountExport", "accountExportPage"].sort(),
+      [...Object.keys(NEW_QUOTAS), ...Object.keys(S02_QUOTAS), "accountExport", "accountExportPage"].sort(),
     );
     for (const old of ["aiCoachAdvice", "clipUrl", "equipmentReport", "startFreeTrial"]) {
       expect(REDACTED_QUOTA_ACTIONS.has(old)).toBe(false);
+    }
+    // The camelCase style of design 5.4: no snake_case name of the withdrawn revision 2.
+    for (const name of REDACTED_QUOTA_ACTIONS) expect(name).not.toContain("_");
+    for (const snake of ["activity_stream_upload", "activity_stream_commit", "activity_delete", "debug_telemetry_send"]) {
+      expect(REDACTED_QUOTA_ACTIONS.has(snake)).toBe(false);
     }
   });
 
@@ -379,7 +403,7 @@ describe("Body Scan + Nutrition Coach quotas (C02, FOOD-28, D-67)", () => {
     expect(store.docs.get(usagePath("u1"))?.bodyScanEstimate).toBe(14);
   });
 
-  test.each(Object.keys(NEW_QUOTAS))(
+  test.each([...Object.keys(NEW_QUOTAS), ...Object.keys(S02_QUOTAS)])(
     "%s refusal log carries NO uid anywhere in the payload",
     async (action) => {
       const store = makeStore();

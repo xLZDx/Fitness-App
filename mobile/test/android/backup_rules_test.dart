@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fitness_app/features/activity/repository/journal_layout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Decision B: Android Auto Backup / device transfer must not carry the
@@ -15,11 +16,15 @@ import 'package:flutter_test/flutter_test.dart';
 //
 // Paths are relative to the package root (`flutter test` cwd = mobile/).
 
-const _expected = {
+// S02-02 (GPS-PRIV-083): the activity journal directories are excluded in every
+// section as well, so each section now carries the four earlier entries plus
+// the three of androidBackupExclusions() (journal, sources, quarantine).
+final _expected = <String>{
   'root|app_flutter/progress_photos',
   'sharedpref|FlutterSharedPreferences.xml',
   'sharedpref|FlutterSecureStorage.xml',
   'sharedpref|FlutterSecureKeyStorage.xml',
+  ...androidBackupExclusions(),
 };
 
 String _read(String path) => File(path).readAsStringSync();
@@ -57,12 +62,12 @@ void main() {
     _expectExactly(_excludes(xml, 'full-backup-content'), 'full-backup-content');
   });
 
-  test('data_extraction_rules.xml cloud-backup excludes the same four', () {
+  test('data_extraction_rules.xml cloud-backup excludes the same seven', () {
     final xml = _read('$res/data_extraction_rules.xml');
     _expectExactly(_excludes(xml, 'cloud-backup'), 'cloud-backup');
   });
 
-  test('data_extraction_rules.xml device-transfer excludes the same four', () {
+  test('data_extraction_rules.xml device-transfer excludes the same seven', () {
     final xml = _read('$res/data_extraction_rules.xml');
     _expectExactly(_excludes(xml, 'device-transfer'), 'device-transfer');
   });
@@ -97,7 +102,7 @@ void main() {
     // FlutterSecureKeyStorage.xml are plugin implementation details. When one
     // of these versions changes, this test fails on purpose so a human
     // re-checks the on-device file names against the exclusion lists.
-    final lock = _read('pubspec.lock');
+    final lock = _read('pubspec.lock').replaceAll('\r\n', '\n');
     String versionOf(String pkg) {
       final m = RegExp('^  $pkg:\\n(?:    .*\\n)*?    version: "([^"]+)"',
               multiLine: true)

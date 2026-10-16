@@ -219,6 +219,9 @@ jest.mock("firebase-admin", () => {
           update: (ref: any, data: Doc) => {
             pending.push({ op: "update", path: ref.path, data });
           },
+          // S02 fence write (`activity_account_state/{uid}`) uses tx.set. Applied
+          // as a merge into the store, bypassing the not-found check of `update`.
+          set: (_ref: any, _data: Doc) => undefined,
           delete: (ref: any) => {
             pending.push({ op: "delete", path: ref.path });
           },

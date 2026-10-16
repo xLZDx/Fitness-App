@@ -56771,3 +56771,995 @@ Decision: every statement about Storage, account deletion and Body Scan code in 
 ## 2026-10-16 - Commit: S01 fixes for GPT-PM round 3
 
 Decision: all file and line citations and "absent" claims in the S01 contract and lifecycle matrix were re-verified against the PR #5 tree in one sweep (the documents were drafted before PR #5); the existing Storage rules test and the server read of the client-writable birth year are recorded as facts. Evidence: core/changes/2026-10-16-s01-gptpm-round3-fixes.md.
+
+## 2026-10-16 - Commit: operator decisions D-16, D-17, D-6, D-7 recorded and S02 started
+
+Decision: the operator answered the four open S01 decisions in chat (GPS cloud with user-set expiry and heart rate device-only; friends by mutual accept, no public sharing for minors, self-declared age; open source tiles; open source tracks and maps). The interpretation and the points still open (default expiry, retention clock, region) are written into the contract section 9; the first-release region must be named before S07. Evidence: core/changes/2026-10-16-s02-operator-decisions-and-state.md.
+
+## 2026-10-16 - Commit: S01 gate closure report
+
+Decision: the closed S01 gate is reported as a Russian and English HTML pair in reports/. Two older reports without the provenance block are not part of this work and are left unchanged. Evidence: core/changes/2026-10-16-s01-gate-closure-report.md.
+
+## 2026-10-16 - Commit: SDLC state header refresh
+
+Decision: STATE.md names the current branch and base, and links the S01 report; no separate S01 retrospective is written for a documentation-only sprint. Evidence: core/changes/2026-10-16-s02-state-header-and-s01-report-link.md.
+
+## 2026-10-16 - Commit: S02 code map
+
+Decision: the explorer fact sheet is kept in the repository as the shared starting point of the S02 design; claims stay labelled as the agent reported them and are re-verified by the design author. Evidence: core/changes/2026-10-16-s02-code-map.md.
+
+## 2026-10-16 - Commit: S02 design draft
+
+Decision: the S02 design draft recommends a dedicated private bucket with signed URLs and scheduled purge, a sanitising callable for debug telemetry and a file journal locally; all remain PROPOSED until architecture and security review and GPT-PM. Evidence: core/changes/2026-10-16-s02-design-draft.md.
+
+## 2026-10-16 - Commit: S02 design revision 2
+
+Decision: the S02 design applies all 24 internal review findings (tombstone with TTL instead of callable-only summary writes to keep offline-first; four permanent rules exclusions; closed server schema for streams; expiry derived at purge time) and answers the 15 test-plan questions as proposals; three questions stay with the operator (cloud stream kinds beyond GPS, "never" retention, default expiry). Evidence: core/changes/2026-10-16-s02-design-revision-2.md.
+
+## 2026-10-16 - Commit: S02 test plan and summary revision counter
+
+Decision: summary ordering uses a client-incremented rev enforced strictly increasing by rules instead of a server stamp, because the summary is an offline client write; resurrection after delete is stopped by the tombstone. Test plan: 181 planned tests, 5 more for rev. Evidence: core/changes/2026-10-16-s02-test-plan-and-rev.md.
+
+## 2026-10-16 - Commit: S02 design revision 3
+
+Decision: the delete fence and late job live in a top-level server-only collection written before the first deletion sweep (the Body Scan precedent); a permission-denied on a summary write never deletes local data without a tombstone; summary batches are capped at 10; bulk stream deletion is a seventh hardened callable. Evidence: core/changes/2026-10-16-s02-design-revision-3.md.
+
+## 2026-10-16 - Commit: S02 test plan revision 3
+
+Decision: Firebase Auth uids are treated as never re-issued (the fence document is removed one hour after the late job); a commit with an already-due expiry is refused so an expiry purge cannot be undone by a pending re-upload. Test plan: 212 planned tests. Evidence: core/changes/2026-10-16-s02-test-plan-revision-3.md.
+
+## 2026-10-16 - Commit: S02 documentation phase report
+
+Decision: PM Bridge mode was turned on through its normal tool after the direct review path reported that no orchestrator was active; no break-glass flag was used. The S02 documentation phase is reported as a Russian and English HTML pair. Evidence: core/changes/2026-10-16-s02-documentation-phase-report.md.
+
+## 2026-10-16 - Commit: S02 design revision 4
+
+Decision: the Firestore rules themselves refuse client summary writes while an account deletion fence exists (batches of 8), the fence outlives the ID-token window, concurrent edits are merged three-way or surfaced as a user-visible conflict, and the local journal switches generations atomically. Evidence: core/changes/2026-10-16-s02-design-revision-4.md.
+
+## 2026-10-16 - Commit: S02 test plan revision 4
+
+Decision: the test plan covers the rules-level deletion fence, the three-way merge, generation-directory journal recovery, a split valid and hostile corpus and a story-map lint; design section 11 is the single authoritative order and its test-id column equals the plan map. Evidence: core/changes/2026-10-16-s02-test-plan-revision-4.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 5
+
+Decision: the merged activity summary is kept as explicit per-field overrides in the local record so it survives recomputation and restart; a journal generation is committed by its COMMIT marker (not by the CURRENT pointer) and recovery never activates an uncommitted generation; a stream-only checksum mismatch is recovered as streamLost rather than rolled back. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-5.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 6
+
+Decision: a summary override is bound to the input revision of its own field instead of the general journal sequence, so metadata-only mutations cannot undo a merge; an uncommitted first journal generation is never shown as an activity. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-6.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 7
+
+Decision: summary override invalidation is driven by digests of ten classified input classes against an authoritative field matrix that is a superset by rule, and the tests compare the production constant with an independent golden fixture instead of reading the constant itself. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-7.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 8
+
+Decision: the lifecycle of a merged summary override is decided by observable values (recomputed value versus the value at merge time and the adopted value), not by a classification of inputs; the matrix design was withdrawn after two review findings that no matrix could fix. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-8.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 9
+
+Decision: explicit user edits, passive changes and automatic recalculations are three different operations on a merged summary value; a calculation-version change never replaces an adopted cloud value on its own and is offered to the user as a recalculation candidate. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-9.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 10
+
+Decision: explicit user edits are stored in the record and applied by the summary projection, and version reconciliation of overrides is a mandatory atomic step that runs first, so neither a restart nor a version-only upgrade can change how the next edit is classified. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-10.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 11
+
+Decision: an explicit user value is deliberately authoritative until the user reconsiders it, newer source data is surfaced as a candidate instead of being hidden or applied, and the edit history is a bounded ring separate from the canonical value map with a saturating cloud counter. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-11.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 12
+
+Decision: resolving a recalculation or source candidate is a single atomic operation over the explicit value, the cloud override and the candidate, merged against the current base and server revision, so the user's choice is never undone by an older override. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-12.md.
+
+## 2026-10-16 - Commit: S02 documentation phase closed
+
+Decision: the S02 documentation gate is closed on GPT-PM APPROVE for head 9c68cab8 (verification round 10); implementation of S02 starts. Evidence: core/changes/2026-10-16-s02-documentation-phase-closed.md.
+
+## 2026-10-16 - Commit: S02-01 model building blocks
+
+Decision: the cloud-summary allowlist and bounds live in one Dart constant file, sub-models keep unknown keys in extras, and explicit values and cloud overrides are plain data classes with tolerant readers. Evidence: core/changes/2026-10-16-s02-01-model-building-blocks.md.
+
+## 2026-10-16 - Commit: S02-01 schema 2 session and migration chain
+
+Decision: schema 2 adds the A-5 strings and record state to ActivitySession, the migration chain is total and returns newer-schema records untouched, and the design edit ring is a new editHistory field because the merger depends on the existing userEdits map. Evidence: core/changes/2026-10-16-s02-01-schema2-and-migration.md.
+
+## 2026-10-16 - Commit: S02-01 cloud summary, projection and three-way merge
+
+Decision: the summary is built only from the effective projection of the record by pure functions, and merge, override and candidate resolution are pure so they can be tested without Firestore. Evidence: core/changes/2026-10-16-s02-01-cloud-summary-and-projection.md.
+
+## 2026-10-16 - Commit: S02-01 stream payload and sport-to-model table
+
+Decision: the stream payload is built by a closed-schema copy that hard-denies heart rate, and strength is the only sport owned by the workout model; every other sport and unknown names belong to the activity model. Evidence: core/changes/2026-10-16-s02-01-stream-payload-and-sport-model.md.
+
+## 2026-10-16 - Commit: S02-02: file-system seam, layout constants and backup exclusion
+
+Decision: The journal talks to storage only through an injectable file-system seam without a directory fsync, and one constant list of directories drives both Android backup XML files, the checker and the iOS marker interface. Evidence: core/changes/2026-10-16-s02-02-fs-seam-layout-backup.md.
+
+## 2026-10-16 - Commit: S02-02: stream cipher and secure-storage key provider
+
+Decision: Streams are encrypted with AES-256-GCM under a secure-storage key that is never re-minted when the store is merely unreadable. Evidence: core/changes/2026-10-16-s02-02-cipher-and-key.md.
+
+## 2026-10-16 - Commit: S02-02: journal value types
+
+Decision: record.json is an envelope of the raw session map and journal-owned state so tombstone and synced survive an index rebuild. Evidence: core/changes/2026-10-16-s02-02-journal-models.md.
+
+## 2026-10-16 - Commit: S02-02: generation writer with COMMIT marker
+
+Decision: A mutation writes a new generation directory and the COMMIT marker rename is the only commit point; CURRENT and the index are written after it and are caches. Evidence: core/changes/2026-10-16-s02-02-generation-writer.md.
+
+## 2026-10-16 - Commit: S02-02: recovery pass
+
+Decision: Recovery selects the highest generation with a valid COMMIT, deletes everything uncommitted, and treats CURRENT and the index as rebuildable caches. Evidence: core/changes/2026-10-16-s02-02-recovery-pass.md.
+
+## 2026-10-16 - Commit: S02-02: journal repository API, tombstone, sync state, wipe and sign-out hooks
+
+Decision: The journal serialises every operation through one mutex, acknowledges only after the COMMIT rename, keeps tombstone and synced state inside record.json, and exposes sign-out and export as interfaces. Evidence: core/changes/2026-10-16-s02-02-journal-api.md.
+
+## 2026-10-16 - Commit: S02-03: owner wildcard exclusions
+
+Decision: The four activity collections are excluded from both the read and the write clause of the owner wildcard as a permanent floor, before their dedicated blocks exist. Evidence: core/changes/2026-10-16-s02-03-owner-wildcard-exclusions.md.
+
+## 2026-10-16 - Commit: S02-03: activity summary, stream, settings and tombstone blocks
+
+Decision: The summary rules use one allowlist identical to summary_fields.dart, require rev 1 on create and a strictly higher rev on update, keep startUtc and sport immutable, and check the tombstone and the account-deletion fence with two exists() lookups; the other three paths are owner-read, server-write. Evidence: core/changes/2026-10-16-s02-03-activity-blocks.md.
+
+## 2026-10-16 - Commit: S02-04a: closed-schema stream validator, canonical serialiser, SHA-256 helpers
+
+Decision: The server rejects (never strips) unknown keys at every depth, allows only gps, altitude and speed, re-serialises the parsed structure into a deterministic canonical gzip and returns separate contentSha256 and storedSha256; the string patterns are PROPOSED and carry an extra coordinate-like denial pending security review. Evidence: core/changes/2026-10-16-s02-04a-validator-and-schemas.md.
+
+## 2026-10-16 - Commit: S02-04a: stream bucket setting, path builders, bucket seam, runbook
+
+Decision: Streams use a dedicated private bucket named by ACTIVITY_STREAM_BUCKET (treated as unset when equal to the Body Scan bucket), storage.rules stays the single deny-all, and callables reach the bucket only through an injectable seam and validated-id path builders. Evidence: core/changes/2026-10-16-s02-04a-bucket-and-paths.md.
+
+## 2026-10-16 - Commit: S02-05a: activity settings model
+
+Decision: Settings validation and the change planner are pure functions; retention is a closed set (90, 365, 730 days, or null while the OPEN "never" question defaults to offered) with a single named default constant of 730 days marked OPEN-DEFAULT, and the generation increments once per effective change only. Evidence: core/changes/2026-10-16-s02-05a-settings-model.md.
+
+## 2026-10-16 - Commit: S02-05a: setActivityCloudSettings callable
+
+Decision: Consent and retention are written only by one fenced transaction (settings, account fence, deletion-retries marker, Auth existence), a no-op request writes nothing, a pure withdrawal is exempt from the daily quota, and the quota name activitySettingsSet is added to the redacted set. Evidence: core/changes/2026-10-16-s02-05a-set-settings-callable.md.
+
+## 2026-10-16 - Commit: S02-06a: shared fence helper and deleteAccount fence write
+
+Decision: All activity callables read the delete fence, the deletion-retries marker and Auth existence through one helper that fails closed on a transient Auth error; deleteAccount writes the fence after the Stripe cancel and before the first sweep (a failed cancel must not fence a live account). Evidence: core/changes/2026-10-16-s02-06a-fence-helper.md.
+
+## 2026-10-16 - Commit: S02-06a: deleteActivity callable
+
+Decision: deleteActivity writes the 400-day tombstone first inside the fenced transaction, then removes both object prefixes (404 is success, failures aggregate to one bare code), then the stream index row, then the summary last; it is idempotent, not behind the feature flag, and has its own redacted quota activityDelete. Evidence: core/changes/2026-10-16-s02-06a-delete-activity.md.
+
+## 2026-10-16 - Commit: S02-06a: mobile permission-denied decision
+
+Decision: With no sync layer yet, the rule "permission-denied is not deletion" is a pure function that deletes local data only when the tombstone read succeeded and found a document, and keeps data as sync_conflict on absence or a failed read. Evidence: core/changes/2026-10-16-s02-06a-mobile-denial-decision.md.
+
+## 2026-10-16 - Commit: S02-04b: createActivityStreamUpload callable
+
+Decision: The upload intent is decided in one fenced transaction (fence, tombstone, summary, consent, already-due expiry, 5 attempts per UTC day); a stored row keeps state stored and gains pending fields during a re-upload, and the signed PUT URL is minted only after that transaction commits. Evidence: core/changes/2026-10-16-s02-04b-create-upload.md.
+
+## 2026-10-16 - Commit: S02-04b: commitActivityStream callable
+
+Decision: The commit reads the quarantine object once pinned to its generation, validates and re-serialises those same bytes, records intendedStoredSha256 before promoting to the uploadId-specific path, selects the object in one second transaction, deletes the previous object only after it, and compensates only its own uploadId paths on a refusal. Evidence: core/changes/2026-10-16-s02-04b-commit-stream.md.
+
+## 2026-10-16 - Commit: S02-04b: export upload callables
+
+Decision: Both upload callables are exported from index.ts; their quota names were registered with the create callable. Evidence: core/changes/2026-10-16-s02-04b-exports.md.
+
+## 2026-10-16 - Commit: S02-05b: pure retention and purge logic
+
+Decision: Expiry stays derived (summary startUtc clamped plus the current retention, never the stored hint) through the same helpers the upload callables use; the recompute gets half of the run budget so it cannot starve the purge, and non-stored rows are stamped with the current generation so the final pass can finish. Evidence: core/changes/2026-10-16-s02-05b-retention-logic.md.
+
+## 2026-10-16 - Commit: S02-05b: purge function and recompute continuation
+
+Decision: One daily scheduled function first advances the recompute (20 users, bounded pages per user, generation-guarded cursor, final per-user pass before the flag clears) and then purges due streams by deleting the object before marking the row expired in the same re-reading transaction, retrying failures forever and signalling overdue age, capped rows, backlog and a missing index in one structured log entry. Evidence: core/changes/2026-10-16-s02-05b-purge-function.md.
+
+## 2026-10-16 - Commit: S02-05b: purge and recompute indexes
+
+Decision: The purge query gets a composite collection-group index (state, expiresAt) and the recompute discovery gets a single-field collection-group override on recomputePending; no settingsGeneration index is added because the final pass needs none. Evidence: core/changes/2026-10-16-s02-05b-indexes.md.
+
+## 2026-10-16 - Commit: S02-06b: activity object sweep in sweepAccountData
+
+Decision: sweepAccountData runs the Body Scan sweep and the new activity sweep as independent cleanups (both prefixes of the activity bucket attempted, failures aggregated into one bare code, a single failure rethrown unchanged) so both deleteAccount calls and the reconciler retry sweep both buckets. Evidence: core/changes/2026-10-16-s02-06b-sweep.md.
+
+## 2026-10-16 - Commit: S02-06b: late sweep job and fence lifetime
+
+Decision: The fence document written at deleteAccount Step 1c is the durable late job; a scheduled run sweeps both prefixes and ends with a final recursive delete of the activity collections (all parts attempted independently, done only after full success) and removes the fence at max(lateSweepDone+1h, authDeletedAt+70min) via compare-and-delete, deriving authDeletedAt from Auth absence when it was never recorded and never removing while the Auth user exists. Evidence: core/changes/2026-10-16-s02-06b-late-sweep.md.
+
+## 2026-10-16 - Commit: S02-06b: orphan reconciler
+
+Decision: A 5-minute reconciler repairs pending uploads only when the promoted object hash equals the intendedStoredSha256 recorded before promotion and the repair transaction (selectPromotedObject) re-checks fence, tombstone, summary and consent; otherwise it deletes the upload own objects. It also removes stored rows without summary, marks stored rows with a missing object deleted, and deletes unreferenced objects older than the upload TTL, using persisted cursors in a server-only state document. Evidence: core/changes/2026-10-16-s02-06b-reconciler.md.
+
+## 2026-10-16 - Commit: S02-06b: deleteAllActivityStreams bulk job
+
+Decision: The seventh callable is a resumable job whose state (job id, cursor, pending flag) lives on the settings document; each call deletes at most 50 rows object-first, is fence- and Auth-checked in both its transactions, uses its own activityDeleteAll quota charged only when a job starts, and unfinished jobs are continued by the reconciler. Evidence: core/changes/2026-10-16-s02-06b-delete-all-streams.md.
+
+## 2026-10-16 - Commit: S02-07: account export sections for unified activity
+
+Decision: The export reuses the existing paged path for activities and stream index rows (first response capped at MAX_ROWS and named in truncated, continuation by cursor), exposes stream rows through an allow-list with no object path or samples, adds the activity settings document and an always-present note that GPS is delivered by short-lived links and heart rate stays on the device. Evidence: core/changes/2026-10-16-s02-07-export-sections.md.
+
+## 2026-10-16 - Commit: S02-07: getActivityStreamDownloadUrls callable and quota
+
+Decision: The download callable is fence-aware and read-only in one transaction, signs 15-minute V4 GET links only for stored rows whose object path lies under the owner and activity prefix, answers deleted, tombstoned, missing and foreign ids with the same not_found, has its own redacted activityDownloadUrls quota, and logs only outcome slugs and counts. Evidence: core/changes/2026-10-16-s02-07-download-urls.md.
+
+## 2026-10-16 - Commit: S02-07: Dart GPX 1.1 encoder
+
+Decision: GpxEncoder is a pure function in activity/data returning a typed document or no_geometry; the owner export is the full series with optional heart rate, the shared export trims the route ends by routeTrimMeters and carries no heart rate, and indoor or fully trimmed sessions never produce a file. Evidence: core/changes/2026-10-16-s02-07-gpx-encoder.md.
+
+## 2026-10-16 - Commit: S02-07: Dart FIT encoder
+
+Decision: FitEncoder is a pure function in activity/data producing a header-CRC and file-CRC protected FIT file with file_id, record, lap and session messages, fixed definitions with invalid-value fill, a GPS-first record timeline, and a public fitCrc16 so the test decoder can be proven able to fail. Evidence: core/changes/2026-10-16-s02-07-fit-encoder.md.
+
+## 2026-10-16 - Commit: S02-07: local export hook over the activity journal
+
+Decision: The device export reads the journal and returns typed results (file, no_geometry, not found, stream lost) with a safe file name, using only the pure encoders and the session JSON; it writes no files and has no UI, and a streamLost entry is refused for GPX and FIT rather than exported empty. Evidence: core/changes/2026-10-16-s02-07-local-export-hook.md.
+
+## 2026-10-16 - Commit: S02-09: sanitising debug-telemetry callable
+
+Decision: sendDebugTelemetry is the only writer of debug_sessions; a closed schema (enumerated strings, integer counters capped at 255, flat events, 100 events and 16 KiB per call) rejects the whole batch with a bare code, identity is derived from the sign-in provider, uid and receivedAt are server-set, the account fence is read in the write transaction, droppedCount is emitted as a metric and not stored, and two redacted quotas (200 calls, 5000 events per day) apply. Evidence: core/changes/2026-10-16-s02-09-telemetry-callable.md.
+
+## 2026-10-16 - Commit: S02-09: debug_sessions rules create false
+
+Decision: Clients can no longer create debug_sessions documents; the sanitising callable is the only writer, and the rule change is the last, separately revertible step of the deploy order (callable, client switch, rule), outside the permanent activity rules floor. The data lifecycle policy cell for create is NONE. Evidence: core/changes/2026-10-16-s02-09-rules-create-false.md.
+
+## 2026-10-16 - Commit: S02-09: mobile debug-telemetry sink migration
+
+Decision: The debug telemetry sink now sends closed-schema batches (level, component enumeration, type, seq; no free text or build identity) through the sendDebugTelemetry callable, never throws, retries at most 3 times with doubling backoff and reports failed events as a capped droppedCount in the next batch; no extra offline buffer was added because the old writer had none. Evidence: core/changes/2026-10-16-s02-09-mobile-sink-migration.md.
+
+## 2026-10-16 - Commit: S02-10: merger performance restructuring
+
+Decision: The merger meets the operation-count budget by indexing echo detection by source id or app package and by clustering through a time-bucket window derived from the policy (start difference bound from minIou and the longest session), preserving the first-match cluster order; an optional onPairCompared seam counts comparisons and changes no result; sessions with a repeated id collapse to one with a deterministic tie-break. Record: core/changes/2026-10-16-s02-10-merger-perf.md
+
+## 2026-10-16 - Commit: S02-10: native-session id rule
+
+Decision: A native recording id is activityIdFor(sourceId app, externalId recording uuid) via nativeActivityId, with a matching provenance record, so replays and re-syncs share one id; this is the only dedup S02 promises and no cross-source matching is claimed; the journal upsert by id is reused unchanged. Record: core/changes/2026-10-16-s02-10-native-id-rule.md
+
+## 2026-10-16 - Commit: S02-10: A-1..A-3 interfaces
+
+Decision: Quarantine is a pure raw-text validation stage with hard limits and reason codes, the source cursor is a tolerant value record where corruption means no cursor, and DeviceSource gains healthStatus, deleteCached and an optional workout stream with no write-back; none of this claims cross-source dedup. Record: core/changes/2026-10-16-s02-10-interfaces-a1-a3.md
+
+## 2026-10-16 - Commit: S02-12: sync foundations
+
+Decision: The journal gains updateRecord, which commits a changed session map and sync state as one generation reusing the existing streams bytes, so overrides, explicit values, candidates and conflict state change atomically even for a streamLost entry; the cloud is reached only through a small backend seam whose denial is a typed exception never read as deletion, and baseSummary is stored with ISO timestamp strings
+
+## 2026-10-16 - Commit: S02-12: sync orchestration and resolution operations
+
+Decision: ActivitySyncRepository uploads with an optimistic rev, reads tombstone then server on a denial, merges three-way once and otherwise leaves sync_conflict; user choices and candidate resolutions persist their change (overrides, explicit values, adjusted baseSummary) in one generation before any write, so they are durable and idempotent; derived metadata keys are device-owned and cannot conflict
+
+## 2026-10-16 - Commit: S02-12: sync-conflict presenter
+
+Decision: The presenter is a Riverpod Notifier whose entry lists come only from the repository state stream, so a conflict or candidate disappears only after its resolution is stored; each action is guarded against double submission and the presenter exposes no delete
+
+## 2026-10-16 - Commit: S02-12: sync-conflict choice sheet and strings
+
+Decision: The choice sheet renders summary fields only with the two conflict actions and the two or three candidate actions, has no delete action, opens at most once and updates in place; strings are added to both app_en.arb and app_ru.arb as neighbouring features do
+
+## 2026-10-16 - Commit: S02 glue: Firestore summary backend and cloud-sync flag
+
+Decision: The Firestore adapter maps only permission-denied on a write to SummaryWriteDenied and every other failure (including a missing or anonymous sign-in) to SummaryBackendUnavailable, reads from the server source so a cache hit is never taken for server state, and batches at most 8 writes; the cloud path hangs on one compile-time flag ACTIVITY_CLOUD_STREAMS, default OFF, as design 12.1 prescribes
+
+## 2026-10-16 - Commit: S02 glue: app wiring, start-up sync and conflict entry point
+
+Decision: All runtime wiring (journal open, provider override, start-up syncAll with retryConflicts, Progress-page entry card for the conflict sheet) hangs on ACTIVITY_CLOUD_STREAMS; with it off nothing is opened or overridden and the card never reads the presenter; the entry point is a Progress-page card next to the body scan card and reuses the sheet title string instead of adding l10n keys
+
+## 2026-10-16 - Commit: S02 glue: push local tombstones to the server
+
+Decision: The tombstone push is an optional injected function on the sync repository (not a new method on the backend seam, so existing fakes keep compiling); it pushes only ids missing from a successfully read server tombstone list, at most 8 per pass, which keeps the delete quota untouched by repeated passes and never pushes when the server state is unknown
+
+## 2026-10-16 - Commit: S02 glue: consent withdrawal can start the bulk stream-delete job
+
+Decision: The offer is a boolean cloudStreams.deleteExisting inside the existing closed request (accepted only with granted=false), the job fields are written in the settings transaction itself so withdrawal and job start are atomic, a running job is never replaced, and the option also works for a later offer after an earlier withdrawal without bumping the settings generation
+
+## 2026-10-16 - Commit: S02 glue: coordinate-like string denial in the Dart payload builder
+
+Decision: The client conforms to the server validator instead of loosening it: strings failing the pattern or the shared coordinate-like denial are dropped (record dropped when a required string cannot be valid) and importedAt is cut to whole seconds because a fractional second itself matches the denial and would make every provenance record, and so every upload, be rejected
+
+## 2026-10-16 - Commit: S02-08: lifecycle policy rows
+
+Decision: Six policy rows (activities, activity_streams, activity_settings BOTH; activity_tombstones DELETE because S02-07 does not export tombstones; activity_account_state and activity_reconcile_state EXEMPT server-only) plus an informational storageObjects section for the streams/ and quarantine/ prefixes; test agents must use the named conditionalRefs test strings.
+
+## 2026-10-16 - Commit: S02-08: lifecycle matrix
+
+Decision: The matrix rows C1, C2, C8, debug sessions and the section 3 sweep map now state the implemented S02 behaviour; the default expiry, the never option and C2 independence stay marked as open operator decisions.
+
+## 2026-10-16 - Commit: S02-08: bucket runbook
+
+Decision: The runbook records that the activity functions run as the default runtime identity (no dedicated service account exists in code), leaves a dedicated identity and the soft-delete window as open operator decisions, and makes the tombstone TTL policy and the telemetry deploy order explicit release steps.
+
+## 2026-10-16 - Commit: S02-08: privacy text request
+
+Decision: The privacy wording is requested as content statements only and needs operator approval; public/privacy.html is not edited by this story and the cloud flag stays OFF until it is.
+
+## 2026-10-16 - Commit: S02-08: design corrections and implementation notes
+
+Decision: The design now states the fence write position after the Stripe cancel and token revoke (authDeletedAt at Step 3b) and carries a section 17 listing the build deviations from the change records; settled text elsewhere is untouched.
+
+## 2026-10-16 - Commit: S02 test epic 1: corpus, round trip and migration tests (U01-U04, U12, U27, U28)
+
+Decision: Corpus is generated by an own PRNG and pinned by digests; latitudes use 10 decimals so the 7351 sentinel does not quantise tracks (plan said 6).
+
+## 2026-10-16 - Commit: S02 test epic 1: cloud summary, payload, merge, ownership and schema pin tests (U05-U09, U13, U31, U32, U37-U39)
+
+Decision: Plan U08 is read literally: the string heartRate must not appear in the payload, including as a contributed field name.
+
+## 2026-10-16 - Commit: S02 test epic 1: golden summaries and hostile normalised tests (U30, U40)
+
+Decision: The golden file format is chosen by the test author because the plan names the file but not its layout.
+
+## 2026-10-16 - Commit: S02 test epic 1: summaryOverrides projection tests (U41) and findings
+
+Decision: Plan G17 is followed (candidate stays); G32 session-level version strings differ from the plan and are recorded, not changed.
+
+## 2026-10-16 - Commit: S02 test epic 2: journal round trip, replay, corruption, ordering and write-order tests (I01, I06, I18, I19, I23)
+
+Decision: The fault-injection seam is an in-memory file system plus a logging wrapper over any seam; JournalInvalidIdException loses its const (did not compile).
+
+## 2026-10-16 - Commit: S02 test epic 2: crash matrix, commit cases A-D and recovery tests (I20, I21, I40, I41, I46-I49, I54, I55)
+
+Decision: Crash expectations follow the design (older generation removed after a verified read or at recovery); a missing streams.bin no longer blocks metadata edits of a stream-lost entry.
+
+## 2026-10-16 - Commit: S02 test epic 2: crash, encryption, backup, wipe, ownership and overrides tests (I02-I04, I07-I10, I22, I24, I25, I29, I35, I36, I45)
+
+Decision: Backup exclusion test expects the real seven entries per section; read() treats a stream hash mismatch against the COMMIT marker as stream-lost.
+
+## 2026-10-16 - Commit: S02 test epic 2: I05 synced marker and replay convergence, epic 2 findings
+
+Decision: A replay with an unknown base marks synced when the merged summary equals the server, instead of writing the same content with a higher rev.
+
+## 2026-10-16 - Commit: S02 test epic 3: native id, replay, quarantine, cursor and DeviceSource surface tests (U10, U11, U14, U15, U16, U23)
+
+Decision: The quarantine duplicate-key test compares decoded keys (an escape-spelled duplicate was accepted before).
+
+## 2026-10-16 - Commit: S02 test epic 3: telemetry sink buffer, schema parity, redaction (U25, U26, U34, U35, I14)
+
+Decision: The debug telemetry sink gets the 500-event / 64 KiB oldest-dropped buffer and a non-blocking send (design 8.1); redact() also masks coordinates, geohashes, heart-rate readings and labelled places.
+
+## 2026-10-16 - Commit: S02 test epic 3: merger operation-count budget, consent matrix, copy lint (U21, U22, U24, U33, U36)
+
+Decision: The merger budget keeps the design ceilings and adds frozen calibrated count ceilings (1000 and 6000; measured 300 and 2000).
+
+## 2026-10-16 - Commit: S02 test epic 3: GPX and FIT encoders, test-only FIT decoder, summary-only upload and offline queue (U17-U20, I11, I12)
+
+Decision: FIT acceptance is a structural round trip through an independent test-only decoder; the I11/I12 plan file name is kept but the tests run on ActivitySyncRepository (no FirestoreActivityRepository exists).
+
+## 2026-10-16 - Commit: S02 test epic 3: findings and final epic run
+
+Decision: Epic 3 closes with 170 tests green; plan/design contradictions and four production changes are recorded in S02_TEST_FINDINGS_EPIC3.md.
+
+## 2026-10-16 - Commit: S02 test epic 4: two-device fake server, rev convergence, tombstone sync, override convergence
+
+Decision: Two devices are two journal directories over one rule-enforcing fake server (rev, immutability, shape, clamp, tombstone, fence); a device can only adopt a server-only change of a field it holds a value for (otherwise sync_conflict, design rule 3).
+
+## 2026-10-16 - Commit: S02 test epic 4: override value rule, explicit edit, recalculation and source candidates
+
+Decision: Override lifecycle tests assert record.json on disk, the rule-enforcing fake write log and restart/lost-ack replay; a version bump necessarily writes the merged formulaVersion string (plan G9/G32 "zero writes" is read as "no write of the stale distance").
+
+## 2026-10-16 - Commit: S02 test epic 4: sync-conflict presenter and sheet, delete-wins end-to-end scenarios
+
+Decision: Widget tests of the sheet tap inside the real-async zone (the journal futures cannot progress in FakeAsync); layout stays NOT_RUN.
+
+## 2026-10-16 - Commit: S02 test epic 4: findings and final epic run
+
+Decision: Epic 4 closes with 127 tests green and no production change; I15-I17, I27, I28 have no client code and stay with the stream-upload story.
+
+## 2026-10-16 - Commit: S02 test epic 5: activity rules emulator tests and rules expression-budget fix
+
+Decision: R32/R34 follow the design (rev strictly greater on update, resent equal rev refused); the activity helper functions bind `d.get(k, default)` with `let` because a document with all 32 allowlisted keys exceeded the 1000-expression budget.
+
+## 2026-10-16 - Commit: S02 test epic 5: golden seam, policy cells, debug_sessions, Storage rules, client constants
+
+Decision: The two debug_sessions expectations that assumed client create are updated to the S02-09 rule; the flush of 500 entries is asserted as single-summary backend calls (the client sends no multi-summary batch today).
+
+## 2026-10-16 - Commit: S02 test epic 5: findings and final epic run
+
+Decision: Epic 5 closes with 908 emulator tests green (8 suites) and one production rules fix (expression budget); the emulator access-call limit for activity batches is 19 summaries (fence lookup counted once), production unconfirmed.
+
+## 2026-10-16 - Commit: S02 test epic 6a: shared fakes and F94 self-test
+
+Decision: The existing body_scan Firestore double is reused unchanged (it already retries on conflicting writes); the new support file adds only the generation-pinned bucket, Auth, Date-only clock and gates.
+
+## 2026-10-16 - Commit: S02 test epic 6a: S02-04a validator, schema pin, canonical, decompression limits
+
+Decision: Inclusive coordinate bounds and ratio-20-accepted follow the design (plan rows F03/F50 are wrong); the encoding error is classified by name so it works across realms.
+
+## 2026-10-16 - Commit: S02 test epic 6a: S02-04b create/commit state machine and callable hardening
+
+Decision: A concurrent duplicate commit of the same upload id returns already_stored (production fix in writeIntendedHash); over a stored row a create keeps state=stored (design), not pending (plan text).
+
+## 2026-10-16 - Commit: S02 test epic 6a: settings, consent, delete, fence, pinned quota set, findings
+
+Decision: Epic 6a closes with 669 tests green and two small production fixes; the scaling export registry lists the ten S02 exports and treats the three S02 scheduled jobs as single-flight.
+
+## 2026-10-16 - Commit: S02 test epic 6b: retention, recompute, purge and index limits (S02-05b)
+
+Decision: Plan F18 (lengthening resurrects) is wrong; the design says lengthening does not resurrect an expired row. The shared Firestore fake now models index limits and null/type range exclusion so the purge and recompute queries are checked against the real index file.
+
+## 2026-10-16 - Commit: S02 test epic 6b: sweeps, late sweep, reconciler, bulk delete and the real deleteAccount flow (S02-06b)
+
+Decision: Design formula for fence removal wins over plan cell F95(a); the late sweep after an aborted deletion is an open risk recorded in the epic 6b findings and pinned by a test that documents current behaviour.
+
+## 2026-10-16 - Commit: S02 test epic 6b: export, download URLs, log hygiene and telemetry callable and schema (S02-07, S02-09)
+
+Decision: The 16 KiB batch boundary is proven on the sanitiser gate (a valid batch cannot be that large); every other telemetry and download assertion follows the plan.
+
+## 2026-10-16 - Commit: S02 test epic 6b: lifecycle policy checkers, indexes, privacy text and ops log metrics (S02-08)
+
+Decision: Plan F39 expects activity_tombstones classified BOTH; the policy row records the decision not to export tombstones (DELETE) and the test pins that. The five pre-S02 access checker violations stay out of S02 scope and are pinned.
+
+## 2026-10-16 - Commit: S02 test epic 6b: story-map completeness lint F96 with mutated-copy proofs (S02-11)
+
+Decision: The blocking-criterion check uses the GPS-PRIV ids of plan section 7; named MAJOR/BLOCKER tokens of design sections 6.1, 6.2 and 10 are not machine-mapped and are recorded as not covered.
+
+## 2026-10-16 - Commit: S02 test epic 6b: findings and final epic run
+
+Decision: Epic 6b closes with 178 tests green and three small production fixes (policy path and audited call sites of the access checker, privacy paragraph); the late sweep erasing a live account's activity data after an aborted deletion is recorded as an open risk, not changed.
+
+## 2026-10-16 - Commit: S02 test epic 6b: late sweep never erases a live account, F71 table, F72/F81/F54 gaps
+
+Decision: The late job never runs its destructive part while the Auth user exists; a fence left by an aborted deletion stays until the deletion completes (open question: deleteAccount does not remove its own fence on an abort before Step 3). Plan F72 and the F54 late-sweep wording are plan errors.
+
+## 2026-10-16 - Commit: S02 client stream uploader and retry policy
+
+Decision: Stream upload reuses the journal sync state (markSynced after commit, upload_failed after the cap) because the journal has no separate stream-state field; every run starts a new upload and nothing but the journal state survives an app restart.
+
+## 2026-10-16 - Commit: S02 client cloud settings client and consent-withdrawal flow
+
+Decision: Withdrawal flips the local consent cache before the network call and cancels queued uploads first; the bulk-delete offer is a separate method that sends deleteExisting once, and the client does not itself continue the resumable job (the reconciler does).
+
+## 2026-10-16 - Commit: S02 client upload wiring behind the flag
+
+Decision: Uploader and withdrawal providers exist only when ACTIVITY_CLOUD_STREAMS is on; one upload run per app start after the summary sync, with consent read from a per-account cache that is unknown (no upload) until loaded.
+
+## 2026-10-16 - Commit: S02 test epic 7b: dedicated stream-upload marker in the journal
+
+Decision: The stream upload has its own journal marker (streamUploadedHash); the synced state belongs to the summary sync only, because a summary-synced entry was never uploaded.
+
+## 2026-10-16 - Commit: S02 test epic 7b: shared fakes for the client upload tests
+
+Decision: The fake server refuses a commit without a complete PUT of that upload id, so wrong client sequences fail.
+
+## 2026-10-16 - Commit: S02 test epic 7b: client stream upload tests (I15, I16, I17)
+
+Decision: The real sequence summary sync then upload is pinned; HR is checked in stream, lap and field-name form with a positive control.
+
+## 2026-10-16 - Commit: S02 test epic 7b: client retry policy tests (I27)
+
+Decision: I27 restart wording is implemented as never resume, always a new upload; design 5.2 item 4 jitter and resume text is stale.
+
+## 2026-10-16 - Commit: S02 test epic 7b: consent withdrawal tests (I28) and findings
+
+Decision: Epic 7b closes with 198 tests green in the final run and one production defect fixed (stream marker); a grant path that calls uploader resume is open.
+
+## 2026-10-16 - Commit: S02 remediation A: abandoned fence of a live account
+
+Decision: The fence carries a heartbeat refreshed by every deleteAccount attempt; the late sweep clears a live account fence only by compare-and-delete after 24 h without heartbeat and without a deletion intent record, and never erases data while Auth exists.
+
+## 2026-10-16 - Commit: S02 test epic 7a: E01 100-session round trip
+
+Decision: The merge oracle is the count and the plan quotas because merged sessions differ from the corpus valid set in 14 records; cloud distance is compared with a 10 percent tolerance because it is the effective projection; the post-sync record is compared with the three version-stamp keys neutralised.
+
+## 2026-10-16 - Commit: S02 test epic 7b: findings and last test file
+
+Decision: The withdrawal tests and the epic 7 findings file are recorded; the epic 7b decision entry above was swept into commit 73820a0e by a concurrent session.
+
+## 2026-10-16 - Commit: S02 remediation A: reconciler deadline and bulk-delete fairness
+
+Decision: Bulk-delete jobs are ordered in memory by last attempt time over a bounded batch of 200 instead of adding a composite index, and every attempt is stamped before it runs.
+
+## 2026-10-16 - Commit: S02 remediation A: commit, download and delete hardening
+
+Decision: An already-due expiry at commit transaction 2 stores nothing; an unset bucket with a stream row is a failure for delete, never a silent no-op; the commit callable gets explicit 1GiB memory and concurrency 4.
+
+## 2026-10-16 - Commit: S02 test epic 7a: E02 account wipe and consent cache fix
+
+Decision: The two real app-flow wipe tests are skipped with an explicit NOT WIRED marker instead of being weakened, because no production code calls the journal wipe; the missing wiring is recorded in the epic 7 findings. The activity consent cache prefix is added to the per-account device wipe.
+
+## 2026-10-16 - Commit: S02 remediation A: settings, rules, TTL, privacy and docs
+
+Decision: The tombstone TTL is declared in firestore.indexes.json instead of being an operator-only step; the summary-sync privacy paragraph is drafted but stays pending operator approval; purge scale, tombstone read cost, export deviation, cursor restart and soft-delete disclosure are recorded as accepted risk or backlog in design section 17.
+
+## 2026-10-16 - Commit: S02 test epic 7a: final run and findings
+
+Decision: Epic 7a closes with 148 passed and 2 skipped (NOT WIRED) tests; the journal wipe wiring and the emulator half of E05 remain open.
+
+## 2026-10-16 - Commit: S02 remediation B1: recovery keeps committed generations on I/O errors
+
+Decision: Recovery distinguishes a missing or invalid COMMIT marker (uncommitted, deleted) from an I/O error (every generation of the activity kept, diagnostic `unreadable:<id>`, retried at the next start).
+
+## 2026-10-16 - Commit: S02 remediation B1: transient stream failures are not persisted as lost
+
+Decision: The journal keeps a persisted-lost set and a separate transient-unavailable set; only the persisted-lost set may write streamLost into a new generation, so a key store or read error is retried instead of hiding intact streams. Stream-lost counts and the sign-out assessment use the persisted-lost set only. A fully verified read clears both sets for the id.
+
+## 2026-10-16 - Commit: S02 remediation B1: read keeps the cache entry on I/O errors
+
+Decision: The journal read drops a cached entry only on a verified mismatch (marker or record missing, or hash different); an I/O error keeps the entry and surfaces JournalIoException so the caller can retry.
+
+## 2026-10-16 - Commit: S02 remediation B2: journal wipe wiring and owner guard
+
+Decision: Account deletion wipes the activity journal through a decorator around the device wipe (one object for the normal and the relaunch path); the device-wide journal records an owner uid and is wiped before sync when another uid signs in (fail closed). The sign-out export offer stays S03 scope.
+
+## 2026-10-16 - Commit: S02 test epic 8a: abandoned fence, usage cleanup and unset bucket
+
+Decision: The late-sweep contract of remediation A1, A5 and A10 is pinned by new jest tests whose oracles come from the remediation notes; the old skipped-live tests were updated to the 24 h window.
+
+## 2026-10-16 - Commit: S02 remediation B2: corrupt cloud summary and tombstone push error
+
+Decision: A cloud summary that is read but cannot be parsed is a distinct SummaryCorrupt result shown as a visible sync conflict instead of an offline retry; the last tombstone push error code is kept and printed through debugPrint, the existing diagnostics path of the sync layer.
+
+## 2026-10-16 - Commit: S02 test epic 9b: account wipe e2e un-skipped
+
+Decision: The two NOT WIRED account wipe tests run against the real decorator composition of main.dart (activityAwareLocalDataWipe around DeviceLocalDataWipe with an in-memory owner store); the epic 7a quarantine entries are closed.
+
+## 2026-10-16 - Commit: S02 test epic 8b: rules and TTL checker
+
+Decision: primarySourceId rule behaviour is pinned on the emulator against the stream sourceId pattern plus the coordinate-like denial; a new script check_ttl_overrides.js fails when a required TTL fieldOverride is missing from firestore.indexes.json.
+
+## 2026-10-16 - Commit: S02 test epic 8b: policy, privacy and scaling tests
+
+Decision: the privacy draft, the tombstone TTL text, the five-entry late-sweep list, the pre-S02 access-checker violations and the ACTIVITY_COMMIT and reconciler memory profiles are pinned by tests whose oracles come from the remediation notes; the Russian privacy section stays untested until its wording is approved.
+
+## 2026-10-16 - Commit: S02 test epic 8a: reconciler deadline, bulk-delete fairness, silent skips (A2, A3, A4, A14, A15)
+
+Decision: Remediation A2, A3, A4, A14 and A15 are pinned by jest tests with fakes; the notes name the cycle fields shorthand while the code uses streamsCursorCycleStartedAt and quarantineCursorCycleStartedAt, the tests assert the code names.
+
+## 2026-10-16 - Commit: S02 test epic 9b: journal wipe wiring and owner guard tests
+
+Decision: The B2 wipe decorator, the owner skip, claimActivityJournal and the sync wiring fail-closed behaviour are pinned by tests whose oracles are the B2 test notes and design 6.2, 7 and 17.
+
+## 2026-10-16 - Commit: S02 test epic 8a: commit expiry race and download expiry (A7)
+
+Decision: Remediation A7 is pinned at the callable, transaction and reconciler layers and for the download answer.
+
+## 2026-10-16 - Commit: S02 test epic 9b: corrupt cloud summary and tombstone push error tests
+
+Decision: SummaryCorrupt versus SummaryBackendUnavailable (backend over a fake Firestore) and the visible sync_conflict outcome without a retry loop are pinned by tests; lastTombstonePushError is pinned as the last failed push (not cleared by a later success, per its getter doc).
+
+## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation (B1) and read-failure callers
+
+Decision: SF1, SF2 and SF3 are pinned by tests whose oracles are the B1 test notes; a local read I/O failure is retryable per entry, so callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.
+
+## 2026-10-16 - Commit: S02 test epic 8a: validator separator bound (A8)
+
+Decision: Remediation A8 validator bound is pinned with a JSON.parse spy; the scaling profile pin belongs to epic 8b.
+
+## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation tests (B1 SF1-SF3)
+
+Decision: the B1 tests add an additive read-failure mode (failReadWhen, failReadsOnOpen) to the shared fault file system and harness instead of a new fake; B1 production code needed no change.
+
+## 2026-10-16 - Commit: S02 test epic 9a: read-failure callers fix and tests
+
+Decision: a local read I/O failure is retryable per entry; callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.
+
+## 2026-10-16 - Commit: S02 test epic 8a: withdrawal no-op, grant cancels delete job, recompute termination (A11, A13, A16)
+
+Decision: Remediation A11, A13 and A16 are pinned with spies on the transaction and Auth seams and with end-state checks.
+
+## 2026-10-16 - Commit: S02 test epic 9b: findings section
+
+Decision: Epic 9b evidence is recorded in S02_TEST_FINDINGS_EPIC9.md; no production defect was found in remediation B2 client code.
+
+Evidence: epic 9b run 02:22 +156 all passed; details in S02_TEST_FINDINGS_EPIC9.md.
+
+## 2026-10-16 - Commit: S02 test epic 8a: findings and final run
+
+Decision: Epic 8a closes green: 26 suites and 744 tests of the activity directory pass.
+
+## 2026-10-16 - Commit: S02 test epic 9a: final run evidence
+
+Decision: the epic 9a findings record the complete 14-file run at head 62ab9f9e (222 tests green).
+
+## 2026-10-16 - Commit: S02 test epic 8b: findings and stale expectations
+
+Decision: two expectations left stale by epic 6b were updated to the audited reality (account_export residue lines, activity_account_state path {docId}); no product change.
+
+## 2026-10-16 - Commit: S03-D UI design contract draft and S02 SDLC state
+
+Decision: the S03-D UI design contract (revision 2, after product-ux and accessibility review) is committed as a DRAFT prepared in parallel with the S02 verification phase (development rule 7). It records open operator decisions (U-1 shell option, U-2 tablet, D-9 monetisation, OD-9 open the local journal in the default build) and is not approved. docs/sdlc/STATE.md moves S02 to phase 7 Verify. Evidence: core/changes/2026-10-16-s03d-ui-design-contract-draft.md.
+
+## 2026-10-16 - Commit: S02 design corrections after the review rounds
+
+Decision: design 5.2 item 4 is corrected to the plan and the built uploader (no jitter, restart always starts a fresh upload); 12.1 records that the built client flag gates the whole cloud path and adds the independent ACTIVITY_LOCAL_JOURNAL define; section 17 records the release gate for off-UI-isolate work (before cloud streams go live or GPS recording ships), the accepted rev-cap behaviour and the account-bound uploader. Evidence: core/changes/2026-10-16-s02-design-review-round-corrections.md.
+
+## 2026-10-16 - Commit: S02 remediation C conflict view (FL1, FL2)
+
+Decision: watch() reports refresh failures on the stream, _conflictView treats any non-read backend error as cloudKnown:false, and the conflict sheet has loading, error and retry states instead of a false "in sync" text. Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
+
+## 2026-10-16 - Commit: S02 remediation C conflict view code and test notes (FL1, FL2)
+
+Decision: the FL1/FL2 production code lands with test notes in docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md; FL3, FL4 and FL7 stay as decided (skip, release gate, keep). Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
+
+## 2026-10-16 - Commit: S02 remediation C uploader account safety (FL5, FL6)
+
+Decision: stream upload runs are single-flight and bound to the uid they started with (checked before every network step and journal mark); the auth listener cancels on account change and resumes only after the new journal claim; the wiring closure is guarded. Evidence: core/changes/2026-10-16-s02-remediation-c-uploader-account-safety.md.
+
+## 2026-10-16 - Commit: S02 remediation D independent local journal flag
+
+Decision: a second client define ACTIVITY_LOCAL_JOURNAL (default OFF) opens the device journal without any network path; ActivityFlags.journalEnabled (localJournal or cloudSync) decides whether a journal exists, while every Firestore, sync, tombstone, conflict and upload object stays gated by cloudSync alone. Evidence: core/changes/2026-10-16-s02-remediation-d-local-journal-flag.md.
+
+## 2026-10-16 - Commit: S02 remediation D rules mirror parity
+
+Decision: the hand-written Dart mirror of the primarySourceId rule now uses the stream sourceId pattern plus the coordinate-like denial, matching firestore.rules (A12). Evidence: core/changes/2026-10-16-s02-remediation-d-rules-mirror.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b uploader account binding tests
+
+Decision: FL5 uploader behaviour (uid flip at five points, single-flight) is pinned by activity_stream_upload_account_binding_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-uploader-account-binding.md.
+
+## 2026-10-16 - Commit: S02 test epic 10a conflict view state tests
+
+Decision: FL1 and the presenter half of FL2 are covered by tests over the real repository with scripted failing collaborators (backend readSummary, journal list). Evidence: core/changes/2026-10-16-s02-test-epic10a-conflict-view-state.md.
+
+## 2026-10-16 - Commit: S02 test epic 10a sheet states and entry card fix
+
+Decision: the sync entry card stays visible when the conflict view failed to load, so the retry action is reachable (defect D10a-1 found by the new widget test); the sheet states are covered by widget tests. Evidence: core/changes/2026-10-16-s02-test-epic10a-sheet-states-and-card.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b wiring account-switch tests
+
+Decision: FL5 wiring and FL6 closure guard are pinned by activity_wiring_account_switch_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-wiring-account-switch.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b flag matrix tests
+
+Decision: the ActivityFlags truth table and the wiring flag matrix (OFF, localJournal only, cloudSync, both) are pinned by tests under mobile/test/features/activity/config. Evidence: core/changes/2026-10-16-s02-test-epic10b-flag-matrix.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b primarySourceId parity table
+
+Decision: the Dart rules mirror, schema.ts sourceId pattern and firestore.rules actLabelsOk are pinned to one value table. Evidence: core/changes/2026-10-16-s02-test-epic10b-source-id-parity.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b findings
+
+Decision: epic 10b closes green; the only defect was a stale uploader fake in the epic 9b wiring test. Evidence: core/changes/2026-10-16-s02-test-epic10b-findings.md.
+
+## 2026-10-16 - Commit: S02 final complete run (Dart side)
+
+Decision: the S02 Dart side closes green at 45c747b0 (1117 + 97 + 23 tests, zero skips, zero failures). Evidence: core/changes/2026-10-16-s02-final-run-dart.md.
+
+## 2026-10-16 - Commit: S02 final complete run (server side)
+
+Decision: the S02 server side closes green (744 + 191 + 289 + 124 tests); three stale test fakes/pins were updated, no product change. Evidence: core/changes/2026-10-16-s02-final-run-server.md.
+
+## 2026-10-16 - Commit: S02 final run, complete rules emulator set
+
+Decision: the complete rules set (9 suites, 953 tests) is green on head 479b7342, re-proving the three pre-existing rules files after the A12 rules change. Evidence: core/changes/2026-10-16-s02-final-run-rules.md.
+
+## 2026-10-16 - Commit: S02 code gate submission
+
+Decision: S02 enters phase 8 Gate; the report pair and the SDLC state are committed before the GPT-PM review so the approved head stays final. Evidence: core/changes/2026-10-16-s02-code-gate-submission.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (a) account-scoped journal class
+
+Decision: replace the device-wide journal plus owner marker by account-scoped journals (ownership is the location); this commit adds the scoped journal class and the per-scope key name. Evidence: core/changes/2026-10-16-s02-remediation-e1-scoped-journal.md.
+
+## 2026-10-16 - Commit: S02 remediation E2, tombstone continuation
+
+Decision: local deletions are pushed in continuation rounds (cap 128 rounds of 8 per sync call), stop at the first refusal, are observable as `pendingTombstones`, and are retried by one backed-off timer (60 s to 15 min, 6 attempts per start); the durable queue is the journal tombstone set. Evidence: core/changes/2026-10-16-s02-remediation-e2-client-continuation.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (b) wiring and owner marker removal
+
+Decision: the app binds the journal of the signed-in uid through an always-on listener, cloud sync fails closed on a failed bind, and the owner marker mechanism is removed. Evidence: core/changes/2026-10-16-s02-remediation-e1-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation E2, erasure quota
+
+Decision: the per-user daily `activityDelete` quota is 1000 (was 100) because it is privacy-erasure capacity for queued offline deletions, not an abuse limit. Evidence: core/changes/2026-10-16-s02-remediation-e2-server-docs.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (c) wipe decorator and design docs
+
+Decision: account deletion wipes exactly the deleted uid journal scope; design section 17 item 22 records account-scoped journals (sign-out and switch never wipe). Evidence: core/changes/2026-10-16-s02-remediation-e1-wipe-docs.md.
+
+## 2026-10-16 - Commit: lessons log and S02 retrospective draft
+
+Decision: the program keeps core/LESSONS_LOG.md from now on, one entry per commit that carries a lesson (operator global rule 2026-10-16); the S02 retrospective is a living draft built from it. Evidence: core/changes/2026-10-16-lessons-log-and-s02-retro.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (a) scoped journal tests
+
+Decision: the account-scoped journal is verified on real files with a per-scope fake key store; oracles come from the E1 notes and the account-switch promise. Evidence: core/changes/2026-10-16-s02-test-epic11a-scoped-journal-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b tombstone continuation and account change
+
+Decision: the E2 tombstone continuation is verified on a real journal with a fake pusher and timer; the repository gets `onAccountChanged()` (cancels the retry timer, drops per-account confirmed/failed sets, backoff budget and last error, stops a pass in flight) because a timer and the confirmed-id set otherwise outlive a sign-out or uid change. Evidence: core/changes/2026-10-16-s02-test-epic11b-tombstone-continuation.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b erasure quota 1000
+
+Decision: the pinned `activityDelete` limit is 1000 in four server test files and the F82 plan row, with a new test for the 1000/1001 boundary, per-user scope and fence refund. Evidence: core/changes/2026-10-16-s02-test-epic11b-erasure-quota.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (b) wiring and decorator tests, compile fix
+
+Decision: the wipe-wiring and account-switch tests run the real scoped journal over real files; type promotion to AccountScopedJournal is replaced by pattern matching. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (b) code commit
+
+Decision: the pattern-match compile fix and the rewritten wiring tests are committed together; the log entries above travelled in the previous parallel commit. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (c) flag matrix and account wipe e2e
+
+Decision: the flag matrix and the account-wipe e2e run on the real scoped journal; no owner-marker symbol remains under mobile/. Evidence: core/changes/2026-10-16-s02-test-epic11a-flag-matrix-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (d) account-switch promise e2e
+
+Decision: the promise "signing in as someone else never destroys my data" is pinned by an end-to-end test over the real file journal. Evidence: core/changes/2026-10-16-s02-test-epic11a-promise-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b findings and stale fake fix
+
+Decision: the complete epic 11b runs are green after the stale journal fake forwards `listTombstones()`; the epic findings file records defects, commands and remaining limits. Evidence: core/changes/2026-10-16-s02-test-epic11b-findings-and-fake-fix.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (e) findings
+
+Decision: epic 11a findings and the complete run are recorded in the epic 11 findings file. Evidence: core/changes/2026-10-16-s02-test-epic11a-findings.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (1/4) no rebind after wipe
+
+Decision: `UidScopedActivityJournal` remembers the uid it wiped while bound and refuses to bind it (fail closed) until another uid or null is bound; `AccountScopedJournal` exposes `boundUid` and `isBound`. Evidence: core/changes/2026-10-16-s02-remediation-f2-no-rebind.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (2/4) key deletion failure surfaces
+
+Decision: `forget()` propagates secure-storage failures so the wipe is reported incomplete and retried from the marker. Evidence: core/changes/2026-10-16-s02-remediation-f2-key-delete.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (1/4) sync pass identity and pinning
+
+Decision: every serialized sync operation carries a pass identity (account epoch, bound journal uid, auth uid) and re-checks it before every journal write and, synchronously, before every backend or tombstone-pusher call; a stale pass stops with `pending`. Evidence: core/changes/2026-10-16-s02-remediation-f1-pass-identity.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (4/4) uploader state reset on account change
+
+Decision: `cancelQueued()` drops the uploader single-flight state and failed ids and bumps an epoch; slot cleanup is identity-guarded. Evidence: core/changes/2026-10-16-s02-remediation-f2-uploader-switch.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (3/4) binding retry, deleting skip, authUid
+
+Decision: the journal binding retries a failed bind with bounded backoff through an injectable timer factory, never binds the account being deleted, and the sync repository receives an authUid supplier. Evidence: core/changes/2026-10-16-s02-remediation-f2-binding.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 test notes
+
+Decision: F2 test oracles recorded in docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md. Evidence: core/changes/2026-10-16-s02-remediation-f2-test-notes.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (2/4) account-change cache reset and unbound visibility
+
+Decision: an unbound scoped journal is a visible failure (state stream error, `unavailable` outcomes for resolutions, `pending` for syncs, no backend call), never an empty "in sync" state; the conflict caches belong to the account and are cleared on change. Evidence: core/changes/2026-10-16-s02-remediation-f1-unbound-and-caches.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (3/4) tombstone retry budget and fallback timer
+
+Decision: after six backed-off attempts one 60-minute fallback timer remains while deletions are owed; a clean pass resets the budget and the last error; phase exceptions schedule a retry; `requestTombstoneSync()` is the entry point for callers that create a local deletion. Evidence: core/changes/2026-10-16-s02-remediation-f1-tombstone-retry.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (4/4) design item 23 and F1 test notes
+
+Decision: remediation F1 is recorded in design 17 item 23 with the accepted/backlog list (anonymous sign-out data stays on disk until the S03 export offer; pending-deletions UI is S03). Evidence: core/changes/2026-10-16-s02-remediation-f1-docs.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (1) no rebind after wipe and key-delete failure
+
+Decision: `bindUid(null)` ends the wiped-uid refusal even when the journal is already unbound (smallest production fix); the epic 11a oracle that a wiped uid re-binds at once is superseded by the F2 contract. Evidence: core/changes/2026-10-16-s02-test-epic12b-wipe-rebind.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (2) binding retry tests
+
+Decision: the bind retry schedule and the deleting-account skip are pinned by tests with a fake timer; the `authUid` wiring check stays construction-level only and is not testable without a Firebase app (reported, no seam added). Evidence: core/changes/2026-10-16-s02-test-epic12b-binding-retry.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (3) uploader account-switch tests
+
+Decision: the single-flight and failed-id reset of the uploader on `cancelQueued()` are pinned by blocked-completer tests, including the old-epoch failure case; no production change. Evidence: core/changes/2026-10-16-s02-test-epic12b-uploader-switch.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (4) wipe and rebind e2e, complete runs, findings
+
+Decision: the throwing-close wipe test failure is a test defect (lazy key), the assertion is kept; the import of the deleting-uid provider into core/wiring needs no change (guards scan data/ only). Evidence: core/changes/2026-10-16-s02-test-epic12b-e2e-and-findings.md.
+
+## 2026-10-16 - Commit: S02 test epic 12a (1) pass identity, caches, unbound, retry tests
+
+Decision: the F1 contract (pass identity, cache reset, unbound visibility, fallback timer) is pinned at the repository seam with a real scoped journal and a blocking backend; the E2 "no seventh attempt" assertion is replaced by "six attempts plus one 60-minute fallback timer" per design 17 item 23. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-pass-identity.md.
+
+## 2026-10-16 - Commit: S02 test epic 12a (2) account-switch pass e2e, complete run, findings
+
+Decision: the epic 9 oracle that a later success never clears `lastTombstonePushError` is superseded by F1 (a clean pass clears it); the account-switch promise for running passes is pinned end to end including the cloud side. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-e2e-and-run.md.
+
+## 2026-10-16 - Commit: S02 remediation G1 journal uid tied to auth uid
+
+Decision: a sync pass on an account-scoped journal with an auth supplier is valid only when the bound journal uid equals the signed-in uid exactly at the start (`_beginPass`, otherwise a dead pass that does nothing) and again right before every backend or pusher call (`_mayCall`); plain journals and a null supplier are unchanged; a null auth uid stays fail-closed. Evidence: core/changes/2026-10-16-s02-remediation-g-journal-auth-tie.md.
+
+## 2026-10-16 - Commit: S02 remediation G2 republish on account or binding change, G5 skip logging
+
+Decision: `onAccountChanged()` and the new `onJournalBindingChanged()` publish the state (unbound reaches the stream as `JournalUnbound`); the binding provider and the cloud sync wiring call it after every `bindUid` completion only with `cloudSync` on and while not disposed; skipped passes log a reason word, never a uid. Evidence: core/changes/2026-10-16-s02-remediation-g-republish-and-skip-log.md.
+
+## 2026-10-16 - Commit: S02 remediation G3 raw-uid account change, G4 wipe marker and deleting-account skip
+
+Decision: the account-change reset in the cloud sync listener is keyed on the raw uid (anonymous included); `wipeForUid` records the wiped uid in both branches; the sync wiring and the binding provider share one `_bindableUid` helper that excludes the account being deleted. Evidence: core/changes/2026-10-16-s02-remediation-g-raw-uid-and-wipe-marker.md.
+
+## 2026-10-16 - Commit: S02 remediation G docs, accepted backlog and test notes
+
+Decision: two items are accepted unchanged and recorded in design 17 item 23 (no re-run of the sync start after a late bind retry success, the bind-retry budget leaves the journal unbound until the next auth event; the presenter retry cannot force a bind); the test oracles for G2 to G5 and the stale fake list are in the F test notes section G. Evidence: core/changes/2026-10-16-s02-remediation-g-docs.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a stale oracles and fakes after remediation G
+
+Decision: four tests that expected bindUid to succeed after wipeForUid of an unbound uid now expect the G4 refusal until bindUid(null); _ThrowingSyncRepo records onJournalBindingChanged. Evidence: core/changes/2026-10-16-s02-test-epic13a-stale-oracles.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a G1 auth tie and G5 skip logs
+
+Decision: 17 tests prove the journal-auth tie yields zero backend and pusher calls on a uid disagreement, and that skipped passes log a reason word without a uid. Evidence: core/changes/2026-10-16-s02-test-epic13a-g1-g5-auth-tie.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a G2 G3 G4 republish, raw-uid reset, wipe marker
+
+Decision: 21 tests cover the live presenter without a tap, the wiring publish after every bind completion, the raw-uid reset, the unbound-branch wipe marker and the deleting-account skip. Evidence: core/changes/2026-10-16-s02-test-epic13a-g2-g4-republish-wiring.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a auth-flip end-to-end
+
+Decision: an end-to-end test over the real file journal proves that during an auth flip nothing of A reaches B's cloud and no local file changes. Evidence: core/changes/2026-10-16-s02-test-epic13a-auth-flip-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a complete runs, flaky ciphertext assertion, findings
+
+Decision: the I07 gzip-header assertion on random ciphertext is limited to the start of the stream because a whole-file search for two bytes is flaky; the complete runs are green and recorded. Evidence: core/changes/2026-10-16-s02-test-epic13a-findings-and-runs.md.
+
+
+## 2026-10-16 - Commit: S02 documents after remediation E, F and G (report pair, state, lessons)
+
+Decision: the S02 code-gate report pair, the SDLC state and the retrospective draft are updated to the situation after the round-11 REJECT: three MAJOR findings remediated (E1, E2), a second independent review round fixed in F and G, test epics 11 to 13 green per the test agents, resubmission as round 12. Evidence: server, rules and indexes are unchanged since their last runs (git diff --stat empty for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since ac9b252f, and for the rules paths since 479b7342); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md. Accepted limits are recorded in design section 17 item 23 and in the report. Evidence: core/changes/2026-10-16-s02-documents-after-remediation.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A consent store and settings client bound to the account
+
+Decision: the consent store and the settings client carry the uid their state belongs to; a stale sign-in cannot overwrite a newer account, load/grant/withdraw refuse to act for another account, a write with no account throws, and the delete-request guard is per account. Stored consent is never deleted on account change. Evidence: core/changes/2026-10-16-s02-remediation-h-a-consent-store-and-settings-client.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A uploader requires consent of its own account
+
+Decision: the uploader uploads only when the consent view belongs to the uid the run is bound to, stops when that account is being deleted, and marks a journal entry only if the epoch and the scoped journal binding are unchanged. Evidence: core/changes/2026-10-16-s02-remediation-h-a-uploader.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B deletion in progress and conflict cache fills
+
+Decision: a sync pass or tombstone retry of the account whose deletion is in progress does nothing (optional accountBeingDeleted supplier, dead pass identity, skip reason account-deleting); the conflict cache is filled and the state read is kept only if the account identity is unchanged after the await. Evidence: core/changes/2026-10-16-s02-remediation-h-b-deletion-and-cache-fills.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B conflict presenter and sheet per account
+
+Decision: the conflict presenter depends on the signed-in uid (syncConflictUidProvider) and is rebuilt on a uid change; actions carry the uid captured at tap time as expectedUid; the sheet draws cards only for a loaded, non-failed state. Evidence: core/changes/2026-10-16-s02-remediation-h-b-presenter-and-sheet.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A startup wiring bound to the account
+
+Decision: every asynchronous step of the app-start sync and upload re-verifies the original uid, generation and deletion state; resume happens only after this account consent is loaded; an account change unbinds the consent store and resets the settings state without deleting stored consent; a deletion in progress stops sync and uploads. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B wipe coordinator and export bound to the account
+
+Decision: onSignOut wipes the uid captured before the prompts (wipeForUid) and aborts on a change; exportAll aborts the whole export with ActivityExportAccountChanged when the bound uid changes, and keeps reading each entry by id because the listing has no streams. Evidence: core/changes/2026-10-16-s02-remediation-h-b-wipe-and-export.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B design item 24 and test notes
+
+Decision: design section 17 item 24 records remediation H; the H-B test notes list the oracles and stale fakes. Evidence: core/changes/2026-10-16-s02-remediation-h-b-docs.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A startup wiring code (H3 code commit)
+
+Decision: the H3 decision entry above landed in the sibling H-B commit because the two agents share one git index; this commit carries the H3 code and its change record. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A test notes
+
+Decision: the H-A test notes list 19 interleaving oracles and every stale fake or older assertion the new consent, uploader and wiring contracts break, so the test agent updates them in one pass. Evidence: core/changes/2026-10-16-s02-remediation-h-a-test-notes.md.
+
+## 2026-10-16 - Commit: test(s02): H5 deletion-in-progress flag stops the sync pass (epic 14b)
+
+Decision: The deletion-flag tests (10 tests) assert the flag raised during listTombstoneIds, a tombstone push and a summary write; a pass that starts under the flag; the retry timer; and the account-deleting log line without a uid. One production line added: a mid-flight skip after the tombstone listing is now logged like the start-of-pass skip. Evidence: core/changes/2026-10-16-s02-test-epic14b-deletion-flag.md.
+
+## 2026-10-16 - Commit: test(s02): H6 presenter reset per uid and sheet card rule (epic 14b)
+
+Decision: Presenter and sheet tests (3 + 4) assert the first frame of a new uid is loading with no conflicts, busy keys or failure flag, a stale action of A does not touch B, a refresh error clears the list, equal-uid re-emission does not reset, and the sheet draws cards only for a loaded, non-failed state (positive control included). Evidence: core/changes/2026-10-16-s02-test-epic14b-presenter-sheet.md.
+
+## 2026-10-16 - Commit: test(s02): H6 queued tap expectedUid and H7 cache and view guards (epic 14b)
+
+Decision: Eleven repository tests assert a tap queued under A behind a blocked syncAll leaves B's same-id entry byte-identical with outcome pending for resolveConflict and resolveCandidate, the direct expectedUid call, the conflict cache is not filled by a stale updateSyncState or readSummary, and refreshState discards a result across a switch (B's state, JournalUnbound, or three attempts then JournalUnbound). Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-state.md.
+
+## 2026-10-16 - Commit: test(s02): update stale fakes and older assertions for remediation H-A (epic 14a)
+
+Decision: FakeConsent gets consentUid (fixed or following the uploader uid), five _Settings fakes get reset(), and four older assertions change to the new contract (write before sign-in throws, resume after sync, resume failure logged in the upload step, consent follows a flipped uid). Evidence: core/changes/2026-10-16-s02-test-epic14a-stale-fakes.md.
+
+## 2026-10-16 - Commit: test(s02): H8 sign-out wipe and local export bound to the account (epic 14b)
+
+Decision: Twelve tests assert onSignOut wipes exactly the uid captured before the prompt (wipeForUid), aborts with false and wipes nothing when the bound uid changes during the assessment or the prompt, keeps wipe() for a plain journal; exportAll returns one ActivityExportAccountChanged on a uid change after the listing or at any read, and a normal export keeps the full GPX route and FIT bytes of one account only. Evidence: core/changes/2026-10-16-s02-test-epic14b-wipe-export.md.
+
+## 2026-10-16 - Commit: test(s02): stale view end-to-end journey over the real journal (epic 14b)
+
+Decision: One adversarial journey test over the real FileActivityJournal, real repository and real presenter asserts after an A to B switch with the same activity id: B's first frame is loading and empty, B never shows A's field values, A's queued tap leaves B byte-identical and writes nothing to any cloud, and A's conflict returns intact on the way back. Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-view-e2e.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14b findings section
+
+Decision: The epic 14 findings file records the epic 14b files, the one production log change, defects, exact commands and the complete-run summary line (02:46 +167: All tests passed!). Evidence: core/changes/2026-10-16-s02-test-epic14b-findings.md.
+
+## 2026-10-16 - Commit: test(s02): consent binding, uploader and startup interleaving tests (epic 14a)
+
+Decision: 42 tests with Completer gates cover the five reviewer scenarios (A delayed init, B delayed init, A granted/B unknown, A granted/B withdrawn, stale completion after sign-out) through the real startup closure and the real store/client/uploader, plus the uploader consentUid and mark guards and the client grant/withdraw/delete rules. The accountBeingDeleted supplier inside the real uploader provider is not tested (no seam without Firebase). Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-binding.md.
+
+## 2026-10-16 - Commit: test(s02): consent switch end-to-end test (epic 14a)
+
+Decision: One adversarial e2e over the real journal, store, client, uploader and startup closure asserts that with A granted and B unknown and A stalled in syncAll, zero create/PUT/commit happens, B stream marker stays unset and A data and stored consent are untouched; a control run uploads for A alone. Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-switch-e2e.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14a findings section
+
+Decision: Epic 14a is recorded in S02_TEST_FINDINGS_EPIC14.md: no production defect in remediation H-A, four notes gaps and two oracle slips of mine, final complete run +784 green. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md and core/changes/2026-10-16-s02-test-epic14a-findings.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14c final run findings
+
+Decision: Final complete run for sprint S02 on head cf1a4eb5 is recorded: flutter activity directory +1389, flutter account/architecture/backup/parity/n07 set +120, jest activity/abuse/hardening 791 tests, jest policy/scaling/delete/reconcile/indexes 315 tests, all green with no production or test change. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md and core/changes/2026-10-16-s02-test-epic14c-final-run.md.
+
+## 2026-10-16 - Commit: fix(s02): tie state reads to the auth uid (remediation I1)
+
+Decision: `ActivitySyncRepository.refreshState` applies the same journal/auth tie as a pass (new private `_viewTied`, also inside `_viewCurrent`): with a scoped journal and an auth supplier, a read whose journal uid differs from the signed-in uid is logged as a skip (reason word, no uid), retried up to 3 times, then ends in `JournalUnbound`. Plain journals and a null supplier keep the old behaviour. Evidence: core/changes/2026-10-16-s02-remediation-i-display-tie.md.
+
+## 2026-10-16 - Commit: fix(s02): consent contract with an unbound store and early consent bind (remediation I2)
+
+Decision: `grant`, `withdraw` and `deleteCloudStreamsNow` throw `ConsentAccountChangedException` before any state change or server call when the consent store is unbound; the startup closure binds the consent store and loads the settings before the journal bind and `syncAll` (consent does not depend on either), keeps `resume` after the final `current()` check, and the account-change block unbinds consent first, each step in its own try/catch. Evidence: core/changes/2026-10-16-s02-remediation-i-consent-contract.md.
+
+## 2026-10-16 - Commit: docs(s02): remediation I accepted limits and test notes
+
+Decision: Design item 24 records four accepted limits honestly (server closes the account-deletion window, a tap during a transition is a no-op, exportAll cannot see an A to B to A switch inside one read, a failed sign-out after wipeForUid leaves the journal unbound) and the H test notes gain heading I with oracles for I1 and I2 and the stale-fake list. Evidence: core/changes/2026-10-16-s02-remediation-i-docs.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 stale assertions after remediation I
+
+Decision: stale tests are updated to the intended remediation I contract (bound in-memory store; start order signIn, load, bind, sync, resume; a consent load failure no longer blocks bind and sync), and the wiring keeps the `account is being deleted; sync not started` log by logging it in the new early `current()` check. Evidence: core/changes/2026-10-16-s02-test-epic15-stale-assertions.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 I1 display-tie tests
+
+Decision: the I1 guard is proved at three layers (repository read, presenter, pumped sheet) with a positive control each; candidates are not seeded because the guard sits before the journal read. Evidence: core/changes/2026-10-16-s02-test-epic15-i1-display-tie.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 I2 consent-contract tests
+
+Decision: the I2 contract is proved at the client level and through the real startup closure; the unguarded `onAccountChanged` call is accepted because consent is unbound before it (the order is the guarantee), and the test pins that order. Evidence: core/changes/2026-10-16-s02-test-epic15-i2-consent-contract.md.
+
+## 2026-10-16 - Commit: docs(s02): epic 15 final runs and findings
+
+Decision: epic 15 closes green on head 866a05b3; findings recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-test-epic15-final-run.md.
+
+
+## 2026-10-16 - Commit: S02 documents after external gate round 12, remediation H and I
+
+Decision: GPT-PM round 12 on 10288e57 returned REJECT with one MAJOR (consent cache shared by all accounts) and accepted the three round-11 findings as resolved. The finding was verified against the source, a class sweep by three independent reviewers added siblings, remediation H and I fixed them with tests (epics 14 and 15 per the test agents), and the report pair, state and lessons are updated for round 13. Accepted limits are in design section 17 item 24. Evidence: server, rules and indexes unchanged since their last runs (empty git diff --stat for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since cf1a4eb5); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-documents-after-round-12.md.
+
+## 2026-10-16 - Commit: fix(s02): bind server activity callables to the initiating account (remediation J1)
+
+Decision: GPT-PM round 13 on the head after remediation H and I returned REJECT with one MAJOR (the Dart consent client checks only the locally bound uid while the callable runs as the account signed in at that instant, so a sign-in flip between check and call applies account A action to account B). Decision: the initiating account travels with the call. The four client-initiated callables require `expectedUid`, verified against `request.auth.uid` right after the auth and anonymous gates and before the parse, any quota charge or any read or write; a mismatch is `failed-precondition` / `account_changed`. `expectedUid` is a consistency check, not the authorization boundary. The Dart half (J2) follows. Evidence: core/changes/2026-10-16-s02-remediation-j1-server-expected-uid.md; verification not run (test agent pending).
+
+## 2026-10-16 - Commit: fix(s02): bind client activity calls to the initiating account (remediation J2)
+
+Decision: the Dart half of remediation J. The settings client takes a required live-uid supplier and refuses grant, withdraw and delete-now unless the store uid equals the live uid (start, immediately before the call, after the call); the stream callables and the tombstone pusher send the uid captured for the pass as expectedUid and the real clients fail closed on null; the server pair failed-precondition / account_changed (message compared) maps to the existing account-changed outcome (cancelled uploader pass, stopped sync pass). Accepted limits are in design section 17 item 25. Evidence: core/changes/2026-10-16-s02-remediation-j2-client-expected-uid.md; verification not run (test agent pending).
+
+## 2026-10-16 - Commit: refactor(s02): move the account-changed outcome to its own file (remediation J2)
+
+Decision: ConsentAccountChangedException and isAccountChangedRefusal move from activity_cloud_settings_client.dart to a new account_changed.dart; the settings client re-exports both so existing importers keep working, and the uploader, the sync repository and the tombstone pusher import the new file. No behavior change; it removes an import cycle created by remediation J2. Evidence: core/changes/2026-10-16-s02-remediation-j2b-account-changed-file.md; verification not run (test agents pending).
+
+## 2026-10-16 - Commit: test(s02): send expectedUid from the activity test support (epic 16a)
+
+Decision: `functions/src/__tests__/activity/support/flow.ts` gains `withUid(data, uid)` (adds `expectedUid: uid` to a plain object that lacks the key; non-object data and an explicit key pass through). `create`, `commit` and the four J1 entries of the SEVEN table in `support/seven.ts` use it. The three other SEVEN entries are unchanged. Evidence: core/changes/2026-10-16-s02-test16a-1-central-fixes.md; Run after the fix: `npx jest src/__tests__/activity` gave 25 of 26 suites passing (744 of 745 tests); the one failure (a 32 MiB validator test hitting the 5 s timeout) is unrelated to the change and passed when run alone. The red state before the fix was not observed.
+
+## 2026-10-16 - Commit: test(s02): add expectedUid helper and handler tests (epic 16a)
+
+Decision: New `functions/src/__tests__/activity/expected_uid.test.ts` (unit tests of `verifyExpectedUid`) and `expected_uid_handlers.test.ts` (the four handlers: mismatch writes and charges nothing and logs `account_changed` without a uid, mismatch wins over an invalid request and an exhausted quota, missing or malformed key gives `invalid_request`, non-object data, matching key success, strict settings parser, anonymous gate first, onCall wrapper refuses a missing auth). Evidence: core/changes/2026-10-16-s02-test16a-2-new-tests.md; 88 tests in the two new files passed (88 total). Broader sets are recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md.
+
+## 2026-10-16 - Commit: docs(s02): record the epic 16a server test findings
+
+Decision: New `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` with the section "16a server": changes, new tests, exact commands and result lines, findings and limits. Evidence: core/changes/2026-10-16-s02-test16a-3-findings.md; Documentation only; the results quoted are from the runs described in the document.
+
+## 2026-10-16 - Commit: fix(s02): bind the remaining activity callables to the initiating account (remediation J3a)
+
+Decision: `getActivityStreamDownloadUrls` and `deleteAllActivityStreams` now require `expectedUid` and verify it right after the auth and anonymous gates, before the parse, any quota charge, read or write (same helper and error pair as the four J1 callables). `deleteAllActivityStreams` no longer ignores its body: after the key is stripped it must be an empty object, else `invalid_request` (smallest strict check; the handler never parsed a body). `handleDeleteAllActivityStreams` takes a required `data` argument before `limits`. `sendDebugTelemetry` stays unchanged (accepted limit). The accepted limits and the backlog of the class sweep are recorded in design item 25. Evidence: core/changes/2026-10-16-s02-remediation-j3a-server-more-callables.md; NOT RUN (no test, analysis or build executed); test agents must update the existing jest support and add tests as listed in the J3 section of docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md.
+
+## 2026-10-16 - Commit: fix(s02): class sweep findings in the client activity calls (remediation J3b)
+
+Decision: five client fixes from the class sweep: an unbound consent store is never granted and load() ignores it (B1); a refused withdrawal no longer cancels the uploader and a successful one re-arms the delete offer (B2); a transient account-changed tombstone push (pass still alive) schedules the normal backed-off retry with no failure bookkeeping (B3); the conflict presenter does nothing when the tap-time uid is null (B4); the uploader never reads a scoped journal bound to another account (B5). The accepted limits and backlog are in design item 25. Evidence: core/changes/2026-10-16-s02-remediation-j3b-client-class-sweep.md; NOT RUN (no test, analysis or build executed); test impact in docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md, section CLIENT (J3b, Dart).
+
+## 2026-10-16 - Commit: test(s02): server tests for remediation J3a (epic 16a2, 1/2)
+
+Decision: fix the existing server tests for the new expectedUid requirement and the deleteAll body argument, and add expected_uid_more_callables.test.ts with a structural scan of every onCall handler. Evidence: core/changes/2026-10-16-s02-test16a2-1-server-tests-j3a.md; focused run 7 suites / 321 tests passed.
+
+## 2026-10-16 - Commit: docs(s02): findings of test epic 16a2 server (J3a)
+
+Decision: record the 16a2 results; the line-pinned allowlist entry for delete_all_streams.ts in scripts/ci/check_data_access_policy.js (201 -> 203) is handed back to the implementer, not changed by the test agent. Evidence: core/changes/2026-10-16-s02-test16a2-2-findings.md.
+
+## 2026-10-16 - Commit: fix(s02): repin the data-access allowlist line for delete_all_streams
+
+Decision: the allowlist entry of scripts/ci/check_data_access_policy.js for functions/src/activity_streams/delete_all_streams.ts moves from line 201 to line 203, because remediation J3a shifted the pinned call by two lines. One-line change; no redesign of the line-pinned mechanism (secondary mechanism, one fix round). Evidence: core/changes/2026-10-16-s02-data-access-allowlist-repin.md; the three red tests are re-run by the test agents.
+
+## 2026-10-16 - Commit: test(s02): Dart compile fixes for remediation J2/J3b (epic 16b, 1/3)
+
+Decision: keep the old client scenarios by wiring the settings client's live uid to the consent store's bound uid through one helper, record expectedUid in the stream fake, and give every tombstone pusher closure the second argument; the one stale assertion found (presenter tap without a uid) gets an explicit uid override instead of a weaker check.
+
+## 2026-10-16 - Commit: test(s02): settings client tests for remediation J2/J3b and findings 16b (epic 16b, 2/3)
+
+Decision: test the A to B flip with a read-counting live-uid supplier at every guard point of grant, withdraw and deleteCloudStreamsNow, and test the server-refusal mapping through a faked FirebaseFunctions so the real mapping code runs.
+
+## 2026-10-16 - Commit: test(s02): uploader, tombstone, presenter and real client tests for remediation J2/J3b (epic 16c, 1/2)
+
+Decision: test the uploader flip with explicit flip points (before create, during the PUT, during commit) plus a sweep over flip points 0..8, test the tombstone refusal through the injectable retry timer and the retry order, and fake FirebaseFunctions for the real clients; the presenter null-uid test uses control rows so a blind observer cannot pass.
+
+## 2026-10-16 - Commit: test(s02): stale presenter test fix and findings 16c (epic 16c, 2/2)
+
+Decision: give the presenter tests an explicit uid instead of weakening the J3 B4 no-op rule; record both complete runs in findings 16c.
+
+## 2026-10-16 - Commit: test(s02): final server run and large-filler timeouts (epic 16d)
+
+Decision: raise the timeout of the two large-filler tests to 60 s so the complete parallel run is deterministic; record the final server run (922 + 315 tests green). Evidence: core/changes/2026-10-16-s02-test16d-final-server-run.md.
+
+## 2026-10-16 - Commit: docs: S02 report, state and retro after external gate round 13
+
+Decision: GPT-PM round 13 on 0096dd88 accepted all four earlier findings as resolved and returned REJECT with one MAJOR (consent calls checked only the locally bound account while the callable ran as the account signed in at that instant). Verified against the source. Decision: the initiating account travels in the request and the server verifies it first, for all six client-reachable activity callables (design section 17 item 25); three independent reviewers swept the whole surface with an inventory table; their findings in scope were fixed in one batch (J3); a withdrawal outbox, the stream PUT timeout and the other backlog items are NOT built now (accepted limits and backlog, item 25, with S03 requirements for the UI). Rules emulator not re-run: firestore.rules, storage.rules and firestore.indexes.json are unchanged since 479b7342 (empty git diff --stat). Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md; core/changes/2026-10-16-s02-documents-after-round-13.md.

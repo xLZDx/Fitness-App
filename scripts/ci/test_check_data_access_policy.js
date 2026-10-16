@@ -692,7 +692,8 @@ run('(o) [finding 2, positive] the REAL account_export.ts dynamic call sites are
     const accountExportViolations = violations.filter((v) => v.file.includes('account_export.ts'));
     assert.strictEqual(accountExportViolations.length, 0, `expected zero account_export.ts violations, got: ${JSON.stringify(accountExportViolations)}`);
     const residueLines = residue.filter((r) => r.file.includes('account_export.ts')).map((r) => r.line).sort((a, b) => a - b);
-    assert.deepStrictEqual(residueLines, [107, 131, 143], `expected account_export.ts residue at lines 107, 131, 143, got: ${JSON.stringify(residueLines)}`);
+    // S02 (epic 6b / 8b): owned() moved 143 -> 323 and two S02 export call sites (234, 237) were audited.
+    assert.deepStrictEqual(residueLines, [107, 131, 234, 237, 323], `expected account_export.ts residue at lines 107, 131, 234, 237, 323, got: ${JSON.stringify(residueLines)}`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

@@ -51,6 +51,9 @@ import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { bodyScanBucketName } from "./body_scan/flags";
+import { defaultFenceDeps, writeActivityAccountFence } from "./activity_streams/fence";
+import { defaultLateSweepDeps, recordAuthDeletedAt } from "./activity_streams/late_sweep";
+import { runIndependentCleanups, sweepActivityStreamObjects } from "./activity_streams/sweep";
 import { INTERACTIVE, RARE, WEBHOOK, RUNTIME_SA } from "./scaling";
 import {
   noteAppCheck,
@@ -936,6 +939,7 @@ const WEBHOOK_EVENT_FOR_DELETED_ACCOUNT = "webhook_event_for_deleted_account";
 const WEBHOOK_BOOKING_ID_MISSING = "webhook_booking_confirm_missing_booking_id";
 const WEBHOOK_BOOKING_DOC_MISSING = "webhook_booking_confirm_booking_doc_missing";
 const DELETE_ACCOUNT_REVOKE_TOKENS_FAILED = "delete_account_revoke_tokens_failed";
+const DELETE_ACCOUNT_AUTH_DELETED_AT_FAILED = "delete_account_auth_deleted_at_failed";
 // The alertable account-deletion events (DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
 // ACCOUNT_DELETION_RECONCILE_EXHAUSTED, ACCOUNT_DELETION_RECONCILE_RUN_FAILED)
 // are imported from ./monitoring/log_signals, the source of truth the alert
@@ -2370,8 +2374,12 @@ async function sweepBookings(uid: string): Promise<void> {
  * Covers `users/{uid}` (recursive), the two other uid-keyed top-level
  * collections (`donor_wall`, `coach_listings`), the three collections that
  * only MENTION the uid (see `sweepSharedRecords`), and the user's objects in the
- * private body-scan bucket (see `sweepBodyScanObjects`), which runs LAST so a
- * storage failure never leaves Firestore data behind.
+ * private body-scan bucket (see `sweepBodyScanObjects`) and in the private
+ * activity stream bucket (see `sweepActivityStreamObjects`, S02 design 6.1).
+ * The storage sweeps run LAST so a storage failure never leaves Firestore data
+ * behind. They are attempted INDEPENDENTLY: a failure of one never prevents the
+ * attempt of the other, the failures become ONE bare code, and the durable
+ * retry (`reconcileAccountDeletions`) completes whatever was left.
  */
 async function sweepAccountData(uid: string): Promise<void> {
   await Promise.all([
@@ -2380,7 +2388,10 @@ async function sweepAccountData(uid: string): Promise<void> {
     db.recursiveDelete(db.collection("coach_listings").doc(uid)),
   ]);
   await sweepSharedRecords(uid);
-  await sweepBodyScanObjects(uid);
+  await runIndependentCleanups([
+    () => sweepBodyScanObjects(uid),
+    () => sweepActivityStreamObjects(uid),
+  ]);
 }
 
 const BODY_SCAN_SWEEP_SKIPPED = "body_scan_storage_sweep_skipped_unconfigured";
@@ -2629,6 +2640,27 @@ export const deleteAccount = onCall(
       });
     }
 
+    // Step 1c — S02 delete fence (design 6.1): write the top-level server-only
+    // `activity_account_state/{uid}` BEFORE the first sweep and before
+    // `accountDeletionRetries/{uid}` exists. From here on every activity callable
+    // refuses and the summary rules refuse client writes; the document survives
+    // `recursiveDelete(users/{uid})`. Idempotent (a retry keeps the earliest
+    // `fenceAt`). A failure aborts BEFORE anything is deleted, so the user can
+    // retry; the sweeps and the late job that read it belong to S02-06b.
+    try {
+      await writeActivityAccountFence(defaultFenceDeps, uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED, {
+        event: DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
+        uid,
+        err,
+      });
+      throw new HttpsError(
+        "internal",
+        "Your account has not been deleted. Please try again — this step is safe to repeat.",
+      );
+    }
+
     // Step 2 — delete every document under this uid, plus the two other
     // top-level collections a user can be written into elsewhere in this
     // file: `donor_wall/{uid}` (optInDonorWall) and `coach_listings/{uid}`
@@ -2704,6 +2736,20 @@ export const deleteAccount = onCall(
             "Please contact support to finish closing your account.",
         );
       }
+    }
+
+    // Step 3b — S02 design 6.1 step 3: record `authDeletedAt` on the activity
+    // fence document (the earliest value is kept). Non-fatal: if this write is
+    // lost, the late sweep derives the value from Auth user absence at its first
+    // run and uses that later, safe time.
+    try {
+      await recordAuthDeletedAt(defaultLateSweepDeps, uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_AUTH_DELETED_AT_FAILED, {
+        event: DELETE_ACCOUNT_AUTH_DELETED_AT_FAILED,
+        uid,
+        err,
+      });
     }
 
     // Step 4 — final idempotent sweep, AFTER the Auth user is gone. Cancelling
@@ -2983,6 +3029,25 @@ export { deleteBodyScan } from "./body_scan/delete";
 export { manageBodyScanData } from "./body_scan/manage";
 export { purgeExpiredBodyScanPhotos, sweepLateBodyScanUploads } from "./body_scan/purge";
 
+// Unified activity cloud settings and consent (S02-05a, design 5.3/9.1). Server-written
+// settings document; granting consent answers `feature-disabled` until ACTIVITY_STREAM_BUCKET is set.
+export { setActivityCloudSettings } from "./activity_streams/set_settings";
+export { deleteActivity } from "./activity_streams/delete_activity";
+// Cloud stream upload state machine (S02-04b, design 5.2): quarantine, validate, promote.
+export { createActivityStreamUpload } from "./activity_streams/create_upload";
+export { commitActivityStream } from "./activity_streams/commit_stream";
+// Cloud stream retention (S02-05b, design 5.3): daily purge of due streams plus the recompute continuation.
+export { purgeExpiredActivityStreams } from "./activity_streams/purge";
+// Late sweep of the account-deletion fence job (S02-06b, design 6.1): every 5 minutes.
+export { sweepLateActivityStreams } from "./activity_streams/late_sweep";
+// Orphan reconciler (S02-06b, design 5.2/6): pending rows, stored rows, stray objects; every 5 minutes.
+export { reconcileActivityStreams } from "./activity_streams/reconcile";
+// Seventh callable (S02-06b, design 5.4/9.1): resumable bulk "delete my cloud streams"; own quota activityDeleteAll.
+export { deleteAllActivityStreams } from "./activity_streams/delete_all_streams";
+// Short-lived V4 GET links for the owner's stored streams (S02-07, design 7/7.1); own quota activityDownloadUrls.
+export { getActivityStreamDownloadUrls } from "./activity_streams/download_urls";
+// Sanitising debug-telemetry callable (S02-09, design 8/8.1): the only writer of debug_sessions; closed schema.
+export { sendDebugTelemetry } from "./activity_streams/telemetry";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until

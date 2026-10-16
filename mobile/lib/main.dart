@@ -20,6 +20,7 @@ import 'core/notifications/local_notification_service.dart';
 import 'core/notifications/notification_providers.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/router/app_router.dart';
+import 'core/wiring/activity_wiring.dart';
 import 'core/wiring/body_scan_wiring.dart';
 // Imported for the AppThemeModeX / AppLanguageX extensions used below —
 // extension methods are only visible where their library is imported.
@@ -102,6 +103,9 @@ import 'shared/widgets/aurora_background.dart';
 /// Top-level rather than passed down: `captureDebugPrint` hooks a global, so
 /// pretending the owner is local would be a lie about its lifetime.
 DebugTelemetry? _telemetry;
+/// One sink for the whole run, so its bounded buffer and dropped counter survive
+/// between flushes (S02 design 8.1).
+final CallableDebugTelemetrySink _telemetrySink = CallableDebugTelemetrySink();
 
 /// Held only to keep the listener alive for the process lifetime.
 ///
@@ -128,7 +132,8 @@ Future<void> _flushTelemetry() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
   if (uid == null) return;
   try {
-    await FirestoreDebugTelemetrySink(uid: uid).send(t.toJson());
+    // S02-09: sent through the sanitising callable; the server sets uid/time.
+    await _telemetrySink.send(t.toJson());
   } catch (e) {
     // Not debugPrint: that is captured back into the very log we failed to
     // send, which would grow the buffer on every retry.
@@ -367,9 +372,14 @@ Future<void> main() async {
   // ML Kit's LocalLabelerOptions can read them by absolute path.
   await AssetBootstrap().ensureBundledAssets();
 
+  // Unified activity (S02): the journal is opened only with the cloud flag
+  // (ACTIVITY_CLOUD_STREAMS, default OFF); null = device-only, no overrides.
+  final activityJournal = await openActivityJournal();
+
   runApp(
     ProviderScope(
       overrides: [
+        ...activityRootOverrides(journal: activityJournal),
         // Auth + profile + subscriptions
         authRepositoryProvider.overrideWith((_) => FirebaseAuthRepository()),
         // Firestore for everything except the health block, which never
@@ -588,7 +598,8 @@ Future<void> main() async {
         // A1 — the on-device half of the same operation. Real implementation
         // only here: the default provider records instead of deleting, so a
         // widget test can never wipe the host machine's documents directory.
-        localDataWipeProvider.overrideWith((_) => DeviceLocalDataWipe()),
+        localDataWipeProvider.overrideWith((_) =>
+            activityAwareLocalDataWipe(DeviceLocalDataWipe(), activityJournal)),
         pendingWipeMarkerProvider.overrideWith((_) => PrefsPendingWipeMarker()),
 
         // Nurture moments + notifications.
@@ -660,6 +671,10 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     ref.watch(interruptedWipeSweepProvider);
     // Body scan <-> nutrition bridges and runner resume triggers.
     ref.watch(bodyScanRootWiringProvider);
+    // Binds the signed-in account's activity journal (flag-gated; no-op off).
+    ref.watch(activityJournalBindingProvider);
+    // Activity summary sync at start (flag-gated; a no-op when off).
+    ref.watch(activityCloudSyncWiringProvider);
     final settings = ref.watch(settingsControllerProvider);
     // Resolved, never nullable: one source of truth shared with the exercise
     // catalog. Passing `null` here would hand resolution to Flutter alone and

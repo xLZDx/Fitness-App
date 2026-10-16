@@ -134,4 +134,53 @@ void main() {
     });
   });
 
+  // S02 test epic 3, U26: the client redaction also removes location and
+  // heart-rate shaped values (design 8, "additional defence").
+  group('U26 redaction of location, heart-rate and place values', () {
+    const sentinels = <String, String>{
+      'coordinate pair': 'at 51.507351, -0.127758 now',
+      'coordinate pair no comma': 'at 51.507351 -0.127758 now',
+      'labelled lat/lon': 'fix lat=51.507351 lon=-0.127758 ok',
+      'geohash labelled': 'cell geohash: gcpvj0duq ok',
+      'geohash bare': 'cell gcpvj0duq ok',
+      'hr value': 'sample hr 173.25 ok',
+      'heart rate words': 'heart rate: 173 recorded',
+      'bpm suffix': 'peak 173.25 bpm ok',
+      'place name': 'started at place=Hyde Park Corner',
+      'city label': 'city: London, UK',
+    };
+    const secrets = <String, List<String>>{
+      'coordinate pair': ['51.507351', '0.127758'],
+      'coordinate pair no comma': ['51.507351', '0.127758'],
+      'labelled lat/lon': ['51.507351', '0.127758'],
+      'geohash labelled': ['gcpvj0duq'],
+      'geohash bare': ['gcpvj0duq'],
+      'hr value': ['173.25'],
+      'heart rate words': ['173'],
+      'bpm suffix': ['173.25'],
+      'place name': ['Hyde Park'],
+      'city label': ['London'],
+    };
+    for (final e in sentinels.entries) {
+      test('${e.key} does not survive redact()', () {
+        final out = redact(e.value);
+        for (final s in secrets[e.key]!) {
+          expect(out, isNot(contains(s)), reason: out);
+        }
+      });
+    }
+
+    test('ordinary diagnostic text is left alone (controls)', () {
+      for (final line in [
+        'scanner: cloud timeout after 20s, falling back on-device',
+        'treadmill 0.892',
+        'retry 3 of 5 after 120 ms',
+        'build 1.0.0+14 started',
+        'component sync finished',
+      ]) {
+        expect(redact(line), line);
+      }
+    });
+  });
+
 }

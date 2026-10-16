@@ -115,7 +115,9 @@ export const fx: {
   /** Runs once after every committed write batch (clock advance, racing writes). */
   afterCommit: ((paths: string[]) => void) | null;
   txRetries: number;
-} = { failOn: null, afterTxRead: null, afterCommit: null, txRetries: 0 };
+  /** Throw to reject a query the way a missing index would (S02 F88). */
+  checkQuery: ((q: { kind: "collection" | "group"; name: string; filters: Array<{ f: string; op: string; v: any }>; orders: string[] }) => void) | null;
+} = { failOn: null, afterTxRead: null, afterCommit: null, txRetries: 0, checkQuery: null };
 
 function check(op: string, path: string): void {
   const err = fx.failOn?.(op, path);
@@ -249,11 +251,12 @@ function makeQuery(s: QState): any {
   return {
     where: (f: string, op: string, v: any) => makeQuery({ ...s, filters: [...s.filters, { f, op, v }] }),
     orderBy: (f: string | DocIdSentinel, dir: "asc" | "desc" = "asc") =>
-      makeQuery({ ...s, orders: [...s.orders, { f, dir }] }),
+      makeQuery({ ...s, orders: [...s.orders, { f: f === "__name__" ? DOC_ID : f, dir }] }),
     limit: (n: number) => makeQuery({ ...s, limit: n }),
     startAfter: (...vs: any[]) => makeQuery({ ...s, startAfter: vs[0], startAfterAll: vs }),
     get: async () => {
       check("query", s.name);
+      fx.checkQuery?.({ kind: s.kind, name: s.name, filters: s.filters, orders: s.orders.map((o) => (o.f instanceof DocIdSentinel ? "__name__" : (o.f as string))) });
       queries.push({
         kind: s.kind,
         name: s.name,
@@ -273,6 +276,8 @@ function makeQuery(s: QState): any {
           if (!(f in d)) return false;
           const a = norm(d[f]);
           const b = norm(v);
+          // Firestore orders types apart: null or another type never satisfies a range filter.
+          if (op !== "==" && (a === null || typeof a !== typeof b)) return false;
           switch (op) {
             case "==": return a === b;
             case "<=": return a <= b;
@@ -594,6 +599,7 @@ export function resetFakes(): void {
   fx.failOn = null;
   fx.afterTxRead = null;
   fx.afterCommit = null;
+  fx.checkQuery = null;
   fx.txRetries = 0;
   gcs.objects.clear();
   gcs.buckets.length = 0;

@@ -85,22 +85,15 @@
     },
     "debug_sessions": {
       "classification": "BOTH",
-      "reason": "Top-level, client-created (DEBUG builds only) with a uid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"debug_sessions\", \"uid\", uid, ...)`, capped at MAX_ROWS.",
+      "reason": "Top-level, written only by the sanitising callable sendDebugTelemetry (Admin SDK; clients cannot create, S02-09) with a uid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"debug_sessions\", \"uid\", uid, ...)`, capped at MAX_ROWS.",
       "clientAccess": [
         {
           "path": "/debug_sessions/{sessionId}",
           "access": {
             "read": "NONE",
-            "create": "CONDITIONAL",
+            "create": "NONE",
             "update": "NONE",
             "delete": "NONE"
-          },
-          "conditionalRefs": {
-            "create": {
-              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
-              "testName": "CONDITIONAL cell debug_sessions/create: a correctly-shaped, self-stamped session is accepted",
-              "operation": "create"
-            }
           }
         }
       ]
@@ -820,6 +813,119 @@
           }
         }
       ]
+    },
+    "activities": {
+      "classification": "BOTH",
+      "reason": "Unified activity SUMMARY documents (S02 design 3.2, 4). Subcollection under users/{uid}; scalar fields only (no geometry, no list, no heart-rate value: avgHrBpm/maxHrBpm are not on the rules allowlist). The one client-writable activity path: the owner creates (rev 1) and updates (rev strictly increasing, startUtc and sport immutable) through a shape-checked block that is excluded from BOTH wildcard clauses (GPS-PRIV-071); create and update are also refused while the id is tombstoned or the account-deletion fence activity_account_state/{uid} exists. Client delete is closed: deletion goes through the deleteActivity callable so streams cannot be orphaned. DELETE-covered by the recursiveDelete cascade of deleteAccount (Step 2), and again by the late sweep's final recursive delete of the activity collections (design 6.1 step 5). Exported by account_export.ts as the paged section `activities` (newest first by startUtc, S02-07). The streams themselves are NOT in this collection (see activity_streams and the storage section below).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/activities/{activityId}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "NONE"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell activities/create: an allowlisted summary is accepted, a geometry key or unknown key is refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell activities/update: a higher rev with an allowlisted summary is accepted, a geometry key or a rev that does not increase is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
+    },
+    "activity_streams": {
+      "classification": "BOTH",
+      "reason": "Stream INDEX rows (state pending | stored | expired | deleted, objectPath, bytes, kinds, hashes, expiresAt hint, settingsGeneration, purge bookkeeping and bare error codes; never coordinates). Subcollection under users/{uid}; server-written only (Admin SDK callables, purge, reconciler); client read is owner-only and every client write is closed (excluded from both wildcard clauses, GPS-PRIV-071, so a user cannot forge expiresAt or objectPath). DELETE-covered by the recursiveDelete cascade and the late sweep's final recursive delete. The OBJECTS they point to (GPS streams, never heart rate) live in the private bucket under streams/<uid>/<activityId>/<uploadId>.json.gz; they are removed by deleteActivity, deleteAllActivityStreams, the expiry purge (user-set retention, derived at purge time), the orphan reconciler and sweepActivityStreamObjects in sweepAccountData (both calls of deleteAccount). Exported: the index rows are in the paged section `activityStreams` of account_export.ts (allow-listed fields, no bytes); the stream bytes are NOT in the export body (GPS-PRIV-052) but delivered through short-lived V4 download links from the getActivityStreamDownloadUrls callable (GPS-PRIV-053).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/activity_streams/{id}",
+          "access": {
+            "read": "OWNER",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
+    "activity_settings": {
+      "classification": "BOTH",
+      "reason": "Activity cloud settings, one document `main`: cloudStreams consent (grantedAt / withdrawnAt), streamRetentionDays, settingsGeneration, recomputePending / recomputeCursor and the bulk-delete job fields (streamDeleteJobId, streamDeleteCursor, streamDeletePending). Subcollection under users/{uid}; written only by the setActivityCloudSettings callable and the continuation jobs (server-side consent so a client cannot forge it); client read is owner-only, every client write is closed. DELETE-covered by the recursiveDelete cascade and the late sweep's final recursive delete. Exported by account_export.ts as the single document `activitySettings` (S02-07).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/activity_settings/{id}",
+          "access": {
+            "read": "OWNER",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
+    "activity_tombstones": {
+      "classification": "DELETE",
+      "reason": "Delete markers `users/{uid}/activity_tombstones/{activityId}` (deletedAt, expireAt) written by deleteActivity BEFORE it deletes anything, so a queued offline summary write or a late commit cannot resurrect a deleted activity (design 6.2, delete wins). Holds the activity id and two timestamps only; no summary, no coordinates. Server-written; client read is owner-only (devices read the ids to apply delete-wins) and every client write is closed. DELETE-covered by the recursiveDelete cascade and the late sweep's final recursive delete; otherwise removed by the Firestore TTL policy on expireAt (400 days), declared as a ttl fieldOverride in firestore.indexes.json (like accountDeletionRetries and nutrition_cache) and enabled when the indexes are deployed, a release prerequisite (runbooks/activity_stream_bucket.md). EXPORT DECISION: not exported (S02-07 change record: bookkeeping of the user's own deletions, ids and timestamps only, no content); the S02 design table said BOTH, so reclassify to BOTH and add an export section if the operator wants the ids in the export.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/activity_tombstones/{id}",
+          "access": {
+            "read": "OWNER",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
+    "activity_account_state": {
+      "classification": "EXEMPT",
+      "reason": "Account-deletion fence and late-sweep job, top-level `activity_account_state/{uid}` (S02 design 6.1). Deletion bookkeeping, not user content: holds the uid as document id plus fenceAt, lateSweepAt, authDeletedAt, lateSweepDone, lateSweepAttempts and a bare lastErrorCode; no profile, activity or location data, so there is nothing to export. Written Admin-SDK-only by deleteAccount (after the Stripe cancel and token revocation, immediately before the first sweep; authDeletedAt in Step 3b) and by the 5-minute sweepLateActivityStreams job. Deliberately outside users/{uid} so recursiveDelete cannot remove it, and deliberately WITHOUT a firestore.rules block (default deny to clients; the summary rules only read it through exists()). Lifecycle: the late job sweeps both bucket prefixes and does a final recursive delete of the activity collections, then removes the document at max(lateSweepDone + 1 h, authDeletedAt + 70 min); until then it must stay (it refuses callables and client writes).",
+      "clientAccess": [
+        {
+          "path": "/activity_account_state/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
+    "activity_reconcile_state": {
+      "classification": "EXEMPT",
+      "reason": "Cursor bookkeeping of the 5-minute orphan reconciler, one document `activity_reconcile_state/main` (reconcile.ts, RECONCILE_STATE_PATH). Holds listing cursors only: no uid, no activity id, no user content, so it is neither deleted nor exported per user. Written and read only by Cloud Functions (Admin SDK); no firestore.rules block (default deny). Reached through a doc() path rather than a literal collection() call, so the lifecycle checker may report it as an entry without a current code reference (informational, not blocking).",
+      "clientAccess": [
+        {
+          "path": "/activity_reconcile_state/{id}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    }
+  },
+  "storageObjects": {
+    "_comment": "Informational, read by no checker: the private activity-stream bucket (ACTIVITY_STREAM_BUCKET, design 5; GPS-PRIV-064, 065). Object stores have no Firestore collection to discover, so each prefix is documented here with the same delete and export statements as a collection row. The default bucket stays deny-all in storage.rules.",
+    "streams/{uid}/{activityId}/{uploadId}.json.gz": {
+      "classification": "BOTH",
+      "reason": "Canonical re-serialised GPS, altitude and speed streams (heart rate and other sensor kinds are rejected by the server's closed schema). Written only by commitActivityStream after quarantine validation. DELETE: deleteActivity, deleteAllActivityStreams (consent-withdrawal offer), the daily purgeExpiredActivityStreams run at activity date + the user's retention (object first, then the row is marked expired), the orphan reconciler, and sweepActivityStreamObjects(uid) inside sweepAccountData (Step 2 and Step 4 of deleteAccount) plus the late sweep. NO bucket age rule on this prefix (retention is per user, including 'never'). EXPORT: not in the exportAccountData body (GPS-PRIV-052); V4 GET links with a 15 minute TTL from getActivityStreamDownloadUrls (GPS-PRIV-053); on-device GPX and FIT export."
+    },
+    "quarantine/{uid}/{activityId}/{uploadId}": {
+      "classification": "DELETE",
+      "reason": "Unvalidated uploaded bytes awaiting commit (signed PUT URL, 10 minute TTL). Never exported (not authoritative, unvalidated). Removed by commitActivityStream (promote or reject), a superseding upload, deleteActivity, the orphan reconciler, sweepActivityStreamObjects(uid) and the late sweep (covers a PUT through a still-valid signed URL after account deletion), and by the bucket lifecycle rule (age 1 day, backstop; valid here because quarantine has no user-set expiry)."
     }
   }
 }

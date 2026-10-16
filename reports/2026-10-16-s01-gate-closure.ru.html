@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спринт S01: закрытие гейта</title>
+<style>
+  :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,sans-serif; line-height:1.55; padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+  .wrap { max-width:820px; margin:0 auto; padding-block:32px 72px; }
+  h1 { font-size:30px; line-height:1.2; margin:0 0 10px; text-wrap:balance; }
+  h2 { font-size:20px; margin:32px 0 10px; }
+  .lede { color:var(--text-2); font-size:16px; max-width:64ch; margin:0 0 8px; }
+  .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { border-left:4px solid var(--accent); } .warn { border-left:4px solid var(--warn); }
+  .tablewrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border:1px solid var(--border); font-size:14px; }
+  th { background:var(--accent-soft); }
+  code { font-family:Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="lede">Проект Fitness App, Фаза 2</p>
+  <h1>Спринт S01 закрыт: контракты и базовый аудит интерфейса</h1>
+  <p class="lede">Спринт только документационный. Пакет документов слит в ветку <code>phase2/main</code> (PR #9, коммит <code>5bb61f15</code>) после одобрения внешним ревьюером GPT-PM на точном коммите <code>d16a5b65</code>. Вы ответили на четыре открытых решения, ответы записаны в репозиторий.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ 8ad33c9b</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>Что сделано</h2>
+<div class="box ok">
+  <ul>
+    <li><b>Контракт приватности GPS</b>: 98 требований с критериями проверки (все пока в статусе «предложено»), правила для минималок, друзей, публикации маршрутов, удаления и экспорта.</li>
+    <li><b>Матрица жизненного цикла данных</b>: для каждого класса данных (трек, пульс, фото маршрута, друзья и т. д.) видно, где хранится, сколько, как удаляется и экспортируется.</li>
+    <li><b>Исследование прав</b> на карты, маршруты и места с рекомендацией; требуется юридическая перечитка первоисточников.</li>
+    <li><b>Аудит интерфейса (UI-0)</b> до и после PR #5 (экраны Body Scan, питание, дневник питания).</li>
+    <li><b>Отчёт по спринту S00</b> и обновлённое состояние процесса.</li>
+  </ul>
+</div>
+
+<h2>Путь через ревью GPT-PM</h2>
+<div class="tablewrap">
+<table>
+  <tr><th>Раунд</th><th>Вердикт</th><th>Суть замечаний (простыми словами)</th></tr>
+  <tr><td>1</td><td>MODIFY</td><td>Документы считали, что правил для хранилища файлов нет, хотя после PR #5 они есть. Защита журнала отладки не могла остановить изменённое приложение, которое прячет координаты в записях.</td></tr>
+  <tr><td>2</td><td>MODIFY</td><td>Защита журнала отладки принята. Остались устаревшие упоминания про хранилище.</td></tr>
+  <tr><td>3</td><td>MODIFY</td><td>Три места ещё говорили, что кода Body Scan нет и что удаление аккаунта не чистит хранилище. Причину я устранил общей сверкой всех ссылок на строки с актуальным деревом.</td></tr>
+  <tr><td>4</td><td><b>APPROVE</b></td><td>Остаточных существенных замечаний нет; push, PR и merge разрешены.</td></tr>
+</table>
+</div>
+<p class="lede">Причина повторов: документы писались по дереву до PR #5, поэтому устаревали целым классом. Теперь номера строк и утверждения «нет/отсутствует» сверены с деревом после PR #5.</p>
+
+<h2>Ваши решения (ответы 2026-10-16)</h2>
+<div class="tablewrap">
+<table>
+  <tr><th>Решение</th><th>Ваш ответ</th><th>Что это значит на практике</th></tr>
+  <tr><td>D-16: хранение GPS и пульса</td><td>GPS в облаке с настройкой срока; пульс только на телефоне</td><td>Треки лежат в закрытом хранилище, пользователь сам выбирает автоудаление; данные о пульсе в облако не уходят. Нужно поменять текст политики конфиденциальности до релиза.</td></tr>
+  <tr><td>D-17: несовершеннолетние и показ маршрутов</td><td>Друзья по взаимному согласию можно, публично нельзя; возраст указывает сам пользователь</td><td>Неизвестный возраст = только личные маршруты. Возраст со слов можно солгать, поэтому правило снижает риск, а не доказывает возраст. Взрослый и несовершеннолетний пока не могут стать друзьями.</td></tr>
+  <tr><td>D-6: карта</td><td>Открытый исходный код</td><td>Свои векторные плитки на данных OpenStreetMap, запросы к карте не уходят сторонним сервисам.</td></tr>
+  <tr><td>D-7: данные маршрутов</td><td>Открытые треки и карты</td><td>Свои треки пользователей и данные OpenStreetMap для построения маршрутов и точек интереса.</td></tr>
+</table>
+</div>
+
+<h2>Что остаётся открытым</h2>
+<div class="box warn">
+  <ul>
+    <li><b>Регион первого релиза</b> не назван. Нужно выбрать до спринта S07 (карты и маршруты).</li>
+    <li><b>Срок по умолчанию</b> для облачных GPS-треков: предлагаю 2 года, пользователь может менять.</li>
+    <li><b>D-3</b> (что делать с именем ветки <code>master</code>) и <b>D-10</b> (юридический статус досье стороннего приложения) без ответа.</li>
+    <li><b>Платный тариф Blaze</b> для проекта Фазы 2: привязка к счёту упёрлась в квоту проектов на платёжном аккаунте; нужна ваша разблокировка.</li>
+    <li>Отдельные ключи или защищённая сборка для боевых деплоев; удаление трёх старых веток на GitHub (хук блокирует меня, теги восстановления есть).</li>
+  </ul>
+</div>
+
+<h2>Дальше</h2>
+<p class="lede">Начат спринт S02 (единая модель активности: хранение, срок, удаление, экспорт и серверная защита журнала отладки). Сейчас идёт разведка кода; затем проект, план тестов и ревью GPT-PM, и только потом код.</p>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

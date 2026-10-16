@@ -515,7 +515,8 @@ describe("canary identity: no other grant applies to it (CR-05)", () => {
     await assertFails(
       addDoc(collection(asCanary(), "debug_sessions"), session(CANARY_UID)),
     );
-    await assertSucceeds(
+    // S02-09: no client can create a debug session any more (Admin callable only).
+    await assertFails(
       addDoc(collection(asAlice(), "debug_sessions"), session(ALICE)),
     );
   });
@@ -530,8 +531,8 @@ describe("canary identity: no other grant applies to it (CR-05)", () => {
 });
 
 describe("debug sessions", () => {
-  test("a signed-in user creates one stamped with their own uid", async () => {
-    await assertSucceeds(
+  test("a signed-in user can no longer create one, not even stamped with their own uid (S02-09)", async () => {
+    await assertFails(
       addDoc(collection(asAlice(), "debug_sessions"), session(ALICE)),
     );
   });
@@ -581,11 +582,11 @@ describe("debug sessions", () => {
         );
       });
 
-    test("exactly the buffer capacity is accepted", async () => {
-      // The ceiling mirrors `debug_telemetry.dart:141`, so a full, legitimate
-      // buffer must not be refused.
+    test("exactly the buffer capacity is refused too since clients cannot create (S02-09)", async () => {
+      // Formerly "accepted" (the ceiling mirrors `debug_telemetry.dart:141`);
+      // S02-09 moved the only writer to the sanitising callable.
       const full = Array.from({ length: 500 }, (_, i) => ({ m: i }));
-      await assertSucceeds(
+      await assertFails(
         addDoc(collection(asAlice(), "debug_sessions"), session(ALICE, full)),
       );
     });

@@ -147,4 +147,28 @@ abstract class DeviceSource {
   /// Stops the source and, when [deleteImported] is true, discards what was
   /// imported from it.
   Future<void> disconnect({bool deleteImported = false});
+
+  /// A-3: the current health of the connection (never throws; a failing
+  /// source reports [SourceHealth.error]).
+  Future<SourceHealth> healthStatus();
+
+  /// A-3: discards everything this source cached locally (raw payloads,
+  /// cursors, temporary files) WITHOUT touching activities already saved in
+  /// the journal. Idempotent.
+  Future<void> deleteCached();
+
+  /// A-3, optional: samples while a workout is running. Sources without such
+  /// a stream keep the default (an empty stream). Sources are read-only: the
+  /// interface has no write-back method.
+  Stream<LiveSample> streamDuringWorkout(Set<StreamKind> kinds) =>
+      const Stream<LiveSample>.empty();
+}
+
+/// A-3: the health of a source connection, for the sources screen.
+enum SourceHealth {
+  ok,
+  permissionMissing,
+  unavailable,
+  stale,
+  error,
 }

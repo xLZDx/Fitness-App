@@ -20,7 +20,11 @@ class ActivitySummary {
     this.poolLengthM,
     this.lapCount,
     this.avgSwolf,
+    this.extras = const {},
   });
+
+  /// Unknown JSON keys, kept so a round trip loses nothing (S02 design 3.3).
+  final Map<String, dynamic> extras;
 
   final double? distanceM;
   final double? ascentM;
@@ -79,15 +83,43 @@ class ActivitySummary {
 
   /// Only set fields are written (missing optional fields read back as null).
   Map<String, dynamic> toJson() => {
+        ...extras,
         for (final e in toFieldMap().entries)
           if (e.value != null) e.key: e.value,
       };
 
   static ActivitySummary fromJson(Object? raw) {
     if (raw is! Map) return empty;
-    final names = empty.toFieldMap().keys;
-    return fromFieldMap({
+    final names = empty.toFieldMap().keys.toSet();
+    final base = fromFieldMap({
       for (final n in names) n: raw[n] is num ? (raw[n] as num).toDouble() : null,
     });
+    final extras = {
+      for (final e in raw.entries)
+        if (!names.contains(e.key)) e.key.toString(): e.value,
+    };
+    if (extras.isEmpty) return base;
+    return base.withExtras(Map.unmodifiable(extras));
   }
+
+  /// A copy carrying [extras] (used by the tolerant reader).
+  ActivitySummary withExtras(Map<String, dynamic> extras) =>
+      ActivitySummary(
+        distanceM: distanceM,
+        ascentM: ascentM,
+        descentM: descentM,
+        avgHrBpm: avgHrBpm,
+        maxHrBpm: maxHrBpm,
+        avgSpeedMps: avgSpeedMps,
+        avgCadence: avgCadence,
+        avgPowerW: avgPowerW,
+        normalizedPowerW: normalizedPowerW,
+        activeEnergyKcal: activeEnergyKcal,
+        steps: steps,
+        strokeCount: strokeCount,
+        poolLengthM: poolLengthM,
+        lapCount: lapCount,
+        avgSwolf: avgSwolf,
+        extras: extras,
+      );
 }

@@ -136,12 +136,18 @@ jest.mock("firebase-admin", () => {
         update: (ref: any, data: any) => {
           pending.push({ op: "update", path: ref.path, data });
         },
+        // S02 fence write (`activity_account_state/{uid}`) uses tx.set; the
+        // fence is not part of the booking/sweep assertions, so it is not
+        // recorded in `txOps`.
+        set: (_ref: any, _data: any) => undefined,
         delete: (ref: any) => {
           pending.push({ op: "delete", path: ref.path });
         },
       };
       const result = await fn(tx);
-      await txCommit();
+      // The S02 fence transaction writes only via `set` (no pending ops); it is
+      // not a booking commit, so it must not count as one.
+      if (pending.length > 0) await txCommit();
       for (const p of pending) {
         txOps.push(p);
         const [col, id] = p.path.split("/");

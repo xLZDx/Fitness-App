@@ -132,26 +132,38 @@ describe("CONDITIONAL cells", () => {
     });
   });
 
-  describe("debug_sessions", () => {
-    test("CONDITIONAL cell debug_sessions/create: a correctly-shaped, self-stamped session is accepted", async () => {
-      await assertSucceeds(
-        setDoc(doc(asAlice(), "debug_sessions/s1"), {
-          identity: { sha: "abc" },
-          droppedCount: 0,
-          events: [{ m: "hi" }],
-          uid: ALICE,
-        }),
-      );
-      // Same shape, wrong uid stamp -- the field-ownership clause this cell
-      // exists to prove, not a generic "malformed document" failure.
+  // S02-09: debug_sessions create is closed to clients (policy cell is NONE
+  // now), so the former CONDITIONAL cell test for it was removed; the refusal is
+  // asserted by R22 in s02_activity_golden_rules.test.ts and by the generic sweep.
+
+  describe("activities", () => {
+    const ACT = "act_" + "ab".repeat(20);
+    const activityBody = (over: Record<string, unknown> = {}) => ({
+      schema: 2,
+      sport: "running",
+      startUtc: Timestamp.fromDate(new Date("2026-03-01T10:00:00Z")),
+      endUtc: Timestamp.fromDate(new Date("2026-03-01T11:00:00Z")),
+      rev: 1,
+      distanceM: 10000,
+      ...over,
+    });
+
+    test("CONDITIONAL cell activities/create: an allowlisted summary is accepted, a geometry key or unknown key is refused", async () => {
       await assertFails(
-        setDoc(doc(asAlice(), "debug_sessions/s2"), {
-          identity: { sha: "abc" },
-          droppedCount: 0,
-          events: [{ m: "hi" }],
-          uid: BOB,
-        }),
+        setDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), activityBody({ polyline: "encoded" })),
       );
+      await assertFails(
+        setDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), activityBody({ somethingNew: 1 })),
+      );
+      await assertSucceeds(setDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), activityBody()));
+    });
+
+    test("CONDITIONAL cell activities/update: a higher rev with an allowlisted summary is accepted, a geometry key or a rev that does not increase is refused", async () => {
+      await seedAsAdmin(`users/${ALICE}/activities/${ACT}`, activityBody({ rev: 3 }));
+      await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), { rev: 4, polyline: "x" }));
+      await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), { rev: 3, distanceM: 1 }));
+      await assertFails(updateDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), { rev: 2, distanceM: 1 }));
+      await assertSucceeds(updateDoc(doc(asAlice(), `users/${ALICE}/activities/${ACT}`), { rev: 4, distanceM: 10500 }));
     });
   });
 

@@ -451,6 +451,57 @@ export const QUOTAS = {
   barcodeLookup: 120,
   /** Food searches that may spend the shared upstream budget (D-64). */
   foodSearch: 150,
+  /**
+   * S02 unified activity (design 5.4): settings and consent changes per user
+   * per day. Starting limit, unmeasured. A pure consent WITHDRAWAL is not
+   * charged against it (design 9.1: an erasure-side action is never rate-limited).
+   */
+  activitySettingsSet: 20,
+  /**
+   * S02 `deleteActivity` (design 5.4): single-activity deletes per user per day.
+   * Starting limit, unmeasured. The bulk "delete all my cloud streams" action
+   * gets its OWN quota (`activityDeleteAll`, S02-06b) so erasure is never
+   * stopped by this ceiling.
+   * Remediation E2: raised from 100 to 1000. This is privacy-erasure capacity,
+   * not an abuse limit: an offline client queues one delete call per activity
+   * and must be able to drain a large backlog in one day (the client pushes at
+   * most 1024 per pass and backs off on `resource-exhausted`).
+   */
+  activityDelete: 1000,
+  /**
+   * S02 `createActivityStreamUpload` (design 5.4): upload intents per user per
+   * day. Starting limit, unmeasured.
+   */
+  activityStreamUpload: 30,
+  /**
+   * S02 `commitActivityStream` (design 5.4): commits per user per day. Starting
+   * limit, unmeasured; higher than the upload limit because a commit is retried
+   * after a transient failure.
+   */
+  activityStreamCommit: 60,
+  /**
+   * S02 `deleteAllActivityStreams` (design 5.4, 9.1): bulk "delete my cloud
+   * streams" jobs STARTED per user per day. Its OWN quota, independent of the
+   * `activityDelete` ceiling, so an erasure path is never rate-limited by the
+   * per-activity limit. Starting limit, unmeasured.
+   */
+  activityDeleteAll: 10,
+  /**
+   * S02 `getActivityStreamDownloadUrls` (design 5.4, 7): download-link requests
+   * per user per day (each call covers up to 20 activities). Starting limit,
+   * unmeasured.
+   */
+  activityDownloadUrls: 60,
+  /**
+   * S02 `sendDebugTelemetry` (design 5.4, 8.1): telemetry calls per user per
+   * day. Starting limit, unmeasured.
+   */
+  debugTelemetrySend: 200,
+  /**
+   * S02 `sendDebugTelemetry` (design 8.1): telemetry EVENTS per user per day
+   * (each call is charged its event count). Starting limit, unmeasured.
+   */
+  debugTelemetryEvents: 5000,
 } as const;
 
 /**
@@ -475,6 +526,20 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "parseNutritionLabel",
   "barcodeLookup",
   "foodSearch",
+  // S02 activity settings (design 5.4): the log must not record who changed GPS-stream consent.
+  "activitySettingsSet",
+  // S02 activity delete (design 5.4): the log must not record which user deleted GPS activities.
+  "activityDelete",
+  // S02 stream upload and commit (design 5.4): the log must not record who uploads GPS streams.
+  "activityStreamUpload",
+  "activityStreamCommit",
+  // S02 bulk stream delete (design 5.4): the log must not record who erased GPS streams.
+  "activityDeleteAll",
+  // S02 stream download links (design 5.4): the log must not record who fetched GPS streams.
+  "activityDownloadUrls",
+  // S02 debug telemetry (design 8.1): the log must not record who sends telemetry.
+  "debugTelemetrySend",
+  "debugTelemetryEvents",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",

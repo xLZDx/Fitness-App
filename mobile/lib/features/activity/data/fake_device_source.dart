@@ -76,6 +76,22 @@ class FakeDeviceSource implements DeviceSource {
         [for (final s in _liveScript) if (kinds.contains(s.kind)) s],
       );
 
+  /// What [healthStatus] reports; tests set it.
+  SourceHealth health = SourceHealth.ok;
+  int deleteCachedCalls = 0;
+
+  @override
+  Future<SourceHealth> healthStatus() async => health;
+
+  @override
+  Future<void> deleteCached() async {
+    deleteCachedCalls++;
+  }
+
+  @override
+  Stream<LiveSample> streamDuringWorkout(Set<StreamKind> kinds) =>
+      live(kinds);
+
   @override
   Future<void> disconnect({bool deleteImported = false}) async {
     disconnectCalls++;

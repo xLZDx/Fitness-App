@@ -14,7 +14,22 @@ class SourceRecord {
     this.externalId,
     this.fieldsContributed = const [],
     this.rawRef,
+    this.extras = const {},
   });
+
+  /// Unknown JSON keys, kept so a round trip loses nothing (S02 design 3.3).
+  final Map<String, dynamic> extras;
+
+  static const Set<String> _knownKeys = {
+    'sourceId',
+    'sourceKind',
+    'importedAt',
+    'deviceModel',
+    'appPackage',
+    'externalId',
+    'fieldsContributed',
+    'rawRef',
+  };
 
   final String sourceId;
   final SourceKind sourceKind;
@@ -43,9 +58,11 @@ class SourceRecord {
         externalId: externalId,
         fieldsContributed: fields,
         rawRef: rawRef,
+        extras: extras,
       );
 
   Map<String, dynamic> toJson() => {
+        ...extras,
         'sourceId': sourceId,
         'sourceKind': sourceKind.name,
         'importedAt': importedAt.toUtc().toIso8601String(),
@@ -76,6 +93,10 @@ class SourceRecord {
           ? [for (final f in fields) if (f is String) f]
           : const [],
       rawRef: s(raw['rawRef']),
+      extras: {
+        for (final e in raw.entries)
+          if (!_knownKeys.contains(e.key)) e.key.toString(): e.value,
+      },
     );
   }
 }

@@ -44,7 +44,22 @@ class Lap {
     this.avgHrBpm,
     this.strokeCount,
     this.strokeType,
+    this.extras = const {},
   });
+
+  /// Unknown JSON keys, kept so a round trip loses nothing (S02 design 3.3).
+  final Map<String, dynamic> extras;
+
+  static const Set<String> _knownKeys = {
+    'index',
+    'kind',
+    'startOffsetS',
+    'durationS',
+    'distanceM',
+    'avgHrBpm',
+    'strokeCount',
+    'strokeType',
+  };
 
   final int index;
   final LapKind kind;
@@ -56,6 +71,7 @@ class Lap {
   final StrokeType? strokeType;
 
   Map<String, dynamic> toJson() => {
+        ...extras,
         'index': index,
         'kind': kind.name,
         'startOffsetS': startOffsetS,
@@ -66,14 +82,15 @@ class Lap {
         if (strokeType != null) 'strokeType': strokeType!.name,
       };
 
-  /// Tolerant read; unknown keys are ignored. Null when index or timing are
-  /// unreadable.
+  /// Tolerant read; unknown keys are kept in [extras]. Null when index or
+  /// timing are unreadable.
   static Lap? tryFromJson(Object? raw) {
     if (raw is! Map) return null;
     final index = raw['index'];
     final start = raw['startOffsetS'];
     final dur = raw['durationS'];
     if (index is! num || start is! num || dur is! num) return null;
+    if (!index.isFinite || !start.isFinite || !dur.isFinite) return null;
     double? d(Object? v) => v is num ? v.toDouble() : null;
     final strokes = raw['strokeCount'];
     return Lap(
@@ -83,8 +100,12 @@ class Lap {
       durationS: dur.toDouble(),
       distanceM: d(raw['distanceM']),
       avgHrBpm: d(raw['avgHrBpm']),
-      strokeCount: strokes is num ? strokes.toInt() : null,
+      strokeCount: strokes is num && strokes.isFinite ? strokes.toInt() : null,
       strokeType: StrokeType.parse(raw['strokeType']),
+      extras: {
+        for (final e in raw.entries)
+          if (!_knownKeys.contains(e.key)) e.key.toString(): e.value,
+      },
     );
   }
 }

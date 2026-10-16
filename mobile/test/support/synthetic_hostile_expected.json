@@ -1,0 +1,57 @@
+{
+  "comment": "Hand-written expected NORMALISED state of the named hostile records (plan 2.4, U40). Never produced by the code under test.",
+  "H-1": {
+    "sport": "running", "schema": 2, "readOnly": false,
+    "streams": ["heartRate"], "diagnostics": ["streamDropped:gps"],
+    "topExtras": [], "unknownSport": null,
+    "summaryExtras": [], "lapExtras": [], "sourceExtras": []
+  },
+  "H-2a": {
+    "sport": "cycling", "schema": 3, "readOnly": true,
+    "streams": [], "diagnostics": [],
+    "topExtras": ["futureTopLevel"], "unknownSport": null,
+    "summaryExtras": ["aiCoachScore"], "lapExtras": ["lapFuture"], "sourceExtras": ["sourceFuture"]
+  },
+  "H-2b": {
+    "sport": "cycling", "schema": 3, "readOnly": true,
+    "streams": [], "diagnostics": [],
+    "topExtras": ["futureTopLevel"], "unknownSport": null,
+    "summaryExtras": ["aiCoachScore"], "lapExtras": ["lapFuture"], "sourceExtras": ["sourceFuture"]
+  },
+  "H-3a": {
+    "sport": "other", "schema": 2, "readOnly": false,
+    "streams": ["gps", "heartRate"], "diagnostics": [],
+    "topExtras": ["unknownSport"], "unknownSport": "futureSport7",
+    "summaryExtras": [], "lapExtras": [], "sourceExtras": []
+  },
+  "H-3b": {
+    "sport": "other", "schema": 2, "readOnly": false,
+    "streams": ["gps", "heartRate"], "diagnostics": [],
+    "topExtras": ["unknownSport"], "unknownSport": "kiteSurfing",
+    "summaryExtras": [], "lapExtras": [], "sourceExtras": []
+  },
+  "H-3c": {
+    "sport": "other", "schema": 2, "readOnly": false,
+    "streams": ["gps", "heartRate"], "diagnostics": [],
+    "topExtras": ["unknownSport"], "unknownSport": "Yoga",
+    "summaryExtras": [], "lapExtras": [], "sourceExtras": []
+  },
+  "H-3d": {
+    "sport": "other", "schema": 2, "readOnly": false,
+    "streams": ["gps", "heartRate"], "diagnostics": [],
+    "topExtras": ["unknownSport"], "unknownSport": "ultra-trail",
+    "summaryExtras": [], "lapExtras": [], "sourceExtras": []
+  },
+  "H-4": {
+    "sport": "running", "schema": 2, "readOnly": false,
+    "streams": ["gps", "heartRate"], "diagnostics": [],
+    "topExtras": ["sessionExtra"], "unknownSport": null,
+    "summaryExtras": ["summaryExtra"], "lapExtras": ["lapExtra"], "sourceExtras": ["sourceExtra"]
+  },
+  "H-6": {
+    "sport": "cycling", "schema": 99, "readOnly": true,
+    "streams": [], "diagnostics": [],
+    "topExtras": ["futureTopLevel", "unknownAtNinetyNine"], "unknownSport": null,
+    "summaryExtras": ["aiCoachScore"], "lapExtras": ["lapFuture"], "sourceExtras": ["sourceFuture"]
+  }
+}
