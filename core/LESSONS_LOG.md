@@ -218,3 +218,7 @@ Facts: G1 and G5 production code met every oracle on the first compiled run (+17
 ## 2026-10-16 - S02 test epic 13a: G2 G3 G4 republish, raw-uid reset, wipe marker
 Kind: SHORTCOMING.
 Facts: G2 to G4 production code met all oracles; three first-run failures were my own test oracle (wipeForUid opens the scope once to delete it). Root cause: the notes said 'no directory created' without distinguishing the wipe's own open. Layer: notes author missed it; the first compiled run caught it. Rule next time: assert what the guarded call adds relative to the state after the wipe.
+
+## 2026-10-16 - S02 test epic 13a: auth-flip end-to-end
+Kind: SUCCESS.
+Facts: the real-journal auth flip e2e passed on the first run (+2). Why it worked: the G1 tie is checked at pass start and before each call, so the promise holds at the real boundary. Layer: no defect.

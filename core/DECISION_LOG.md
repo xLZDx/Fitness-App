@@ -57569,3 +57569,7 @@ Decision: 17 tests prove the journal-auth tie yields zero backend and pusher cal
 ## 2026-10-16 - Commit: S02 test epic 13a G2 G3 G4 republish, raw-uid reset, wipe marker
 
 Decision: 21 tests cover the live presenter without a tap, the wiring publish after every bind completion, the raw-uid reset, the unbound-branch wipe marker and the deleting-account skip. Evidence: core/changes/2026-10-16-s02-test-epic13a-g2-g4-republish-wiring.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a auth-flip end-to-end
+
+Decision: an end-to-end test over the real file journal proves that during an auth flip nothing of A reaches B's cloud and no local file changes. Evidence: core/changes/2026-10-16-s02-test-epic13a-auth-flip-e2e.md.
