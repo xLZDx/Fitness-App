@@ -56979,3 +56979,7 @@ Decision: The export reuses the existing paged path for activities and stream in
 ## 2026-10-16 - Commit: S02-07: getActivityStreamDownloadUrls callable and quota
 
 Decision: The download callable is fence-aware and read-only in one transaction, signs 15-minute V4 GET links only for stored rows whose object path lies under the owner and activity prefix, answers deleted, tombstoned, missing and foreign ids with the same not_found, has its own redacted activityDownloadUrls quota, and logs only outcome slugs and counts. Evidence: core/changes/2026-10-16-s02-07-download-urls.md.
+
+## 2026-10-16 - Commit: S02-07: Dart GPX 1.1 encoder
+
+Decision: GpxEncoder is a pure function in activity/data returning a typed document or no_geometry; the owner export is the full series with optional heart rate, the shared export trims the route ends by routeTrimMeters and carries no heart rate, and indoor or fully trimmed sessions never produce a file. Evidence: core/changes/2026-10-16-s02-07-gpx-encoder.md.
