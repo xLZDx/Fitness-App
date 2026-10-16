@@ -263,3 +263,11 @@ Facts: the external gate (round 12) found that AccountScopedConsentStore kept on
 Root cause: the original consent wiring was designed for a single account; the earlier internal reviews were scoped to the remediation diff, so the consent path was never in scope; the epic tests never interleaved two accounts through the consent path.
 Layers: author (design), reviewers (scope), tests (no interleaving) missed it; the external gate caught it.
 Rule next time: after a defect class is found, sweep the whole surface by class (every async chain that reads or writes per-account state) and add a mid-flight account switch test to every async chain.
+
+## 2026-10-16 - S02 uploader trusted a uid-less consent flag
+
+Kind: FAILURE (same root cause as the consent store entry of the same day).
+Facts: the uploader read isGranted without asking whose consent it was, did not stop for an account deletion in progress, and marked journal entries without re-checking the epoch or the scoped journal binding. Evidence: core/changes/2026-10-16-s02-remediation-h-a-uploader.md.
+Root cause: per-account state was consumed as if global; the consent sweep was scoped to the remediation diff.
+Layers: author and diff-scoped reviewers missed it; class sweeps after the round-12 REJECT caught it.
+Rule next time: every read of per-account state names the account it was read for, and an async chain re-checks that account after each await before a side effect.

@@ -57586,3 +57586,7 @@ Decision: the S02 code-gate report pair, the SDLC state and the retrospective dr
 ## 2026-10-16 - Commit: S02 remediation H-A consent store and settings client bound to the account
 
 Decision: the consent store and the settings client carry the uid their state belongs to; a stale sign-in cannot overwrite a newer account, load/grant/withdraw refuse to act for another account, a write with no account throws, and the delete-request guard is per account. Stored consent is never deleted on account change. Evidence: core/changes/2026-10-16-s02-remediation-h-a-consent-store-and-settings-client.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A uploader requires consent of its own account
+
+Decision: the uploader uploads only when the consent view belongs to the uid the run is bound to, stops when that account is being deleted, and marks a journal entry only if the epoch and the scoped journal binding are unchanged. Evidence: core/changes/2026-10-16-s02-remediation-h-a-uploader.md.

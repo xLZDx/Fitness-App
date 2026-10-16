@@ -38,6 +38,7 @@ import '../data/activity_stream_payload.dart';
 import 'activity_journal.dart';
 import 'journal_errors.dart';
 import 'journal_models.dart';
+import 'uid_scoped_activity_journal.dart';
 
 /// At most this many attempts per run (design 5.2 item 4).
 const int kStreamUploadMaxAttempts = 5;
@@ -134,7 +135,9 @@ class ActivityStreamUploader {
     DateTime Function()? now,
     StreamUploadDelay? delay,
     String? Function()? currentUid,
+    String? Function()? accountBeingDeleted,
   })  : _currentUid = currentUid,
+        _accountBeingDeleted = accountBeingDeleted,
         _journal = journal,
         _callables = callables,
         _consent = consent,
@@ -156,6 +159,12 @@ class ActivityStreamUploader {
   /// supplier returns another uid or null. When null the uploader is unbound.
   final String? Function()? _currentUid;
 
+  /// Supplies the uid whose account deletion is in progress (null = none). A
+  /// run bound to that uid stops before its next network step: otherwise a
+  /// create/PUT/commit could re-create cloud data after the server deleted the
+  /// account.
+  final String? Function()? _accountBeingDeleted;
+
   Future<void>? _runInFlight;
   final Map<String, Future<StreamUploadOutcome>> _entryInFlight = {};
 
@@ -163,7 +172,22 @@ class ActivityStreamUploader {
   bool _uidOk(String? bound) {
     final supplier = _currentUid;
     if (supplier == null) return true;
-    return bound != null && supplier() == bound;
+    if (bound == null || supplier() != bound) return false;
+    if (_accountBeingDeleted?.call() == bound) return false;
+    return true;
+  }
+
+  /// True when the journal is not account-scoped, the uploader is unbound, or
+  /// the scoped journal is bound to [bound] right now (an A to B to A switch
+  /// within one run must not mark the entry of another journal scope).
+  bool _journalBoundTo(String? bound) {
+    if (_currentUid == null) return true;
+    switch (_journal) {
+      case final AccountScopedJournal scoped:
+        return scoped.boundUid == bound;
+      default:
+        return true;
+    }
   }
 
   bool _cancelled = false;
@@ -191,7 +215,14 @@ class ActivityStreamUploader {
   /// Lifts [cancelQueued] (consent granted again).
   void resume() => _cancelled = false;
 
-  bool get _mayUpload => _flags.cloudSync && _consent.isGranted && !_cancelled;
+  /// Flag on, not cancelled and consent granted FOR the account the run is
+  /// bound to: consent of another or an unknown uid never allows an upload (an
+  /// uploader without a uid supplier is unbound and checks the grant only).
+  bool _mayUpload(String? bound) =>
+      _flags.cloudSync &&
+      !_cancelled &&
+      _consent.isGranted &&
+      (_currentUid == null || _consent.consentUid == bound);
 
   /// Uploads every `pending` or `upload_failed` entry once. An id that failed
   /// in this instance is not retried (next app start retries it).
@@ -212,12 +243,12 @@ class ActivityStreamUploader {
   }
 
   Future<void> _runPending() async {
-    if (!_mayUpload) return;
     final bound = _currentUid?.call();
+    if (!_mayUpload(bound)) return;
     if (!_uidOk(bound)) return;
     final entries = await _journal.list();
     for (final e in entries) {
-      if (!_mayUpload || !_uidOk(bound)) return;
+      if (!_mayUpload(bound) || !_uidOk(bound)) return;
       if (e.state.tombstone || e.streamLost) continue;
       // The stream object needs the cloud summary first (the create callable
       // refuses without it): only entries the summary sync finished
@@ -258,7 +289,7 @@ class ActivityStreamUploader {
 
   Future<StreamUploadOutcome> _uploadEntry(String id, String? bound) async {
     final epoch = _epoch;
-    if (!_mayUpload) return StreamUploadOutcome.skipped;
+    if (!_mayUpload(bound)) return StreamUploadOutcome.skipped;
     if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
     final JournalEntry? entry;
     try {
@@ -286,7 +317,7 @@ class ActivityStreamUploader {
 
     for (var attempt = 1; attempt <= kStreamUploadMaxAttempts; attempt++) {
       if (_cancelled || !_uidOk(bound)) return StreamUploadOutcome.cancelled;
-      if (!_mayUpload) return StreamUploadOutcome.skipped;
+      if (!_mayUpload(bound)) return StreamUploadOutcome.skipped;
       try {
         final created = await _callables.create(
             activityId: id, bytes: bytes.length, contentSha256: sha);
@@ -304,7 +335,11 @@ class ActivityStreamUploader {
           await _callables.commit(activityId: id, uploadId: created.uploadId!);
         }
         // Nothing is marked for an account that is no longer signed in.
-        if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
+        // A cancel, an account change or an A to B to A switch during this
+        // upload must not mark the entry of another journal scope.
+        if (!_uidOk(bound) || epoch != _epoch || !_journalBoundTo(bound)) {
+          return StreamUploadOutcome.cancelled;
+        }
         // The stream's own marker; the summary `synced` state is not touched.
         await _journal.markStreamUploaded(id,
             expectedGeneration: entry.generation);
@@ -322,7 +357,9 @@ class ActivityStreamUploader {
       await _delay(wait);
       if (_now().difference(startedAt) >= kStreamUploadBudget) break;
     }
-    if (!_uidOk(bound) || epoch != _epoch) return StreamUploadOutcome.cancelled;
+    if (!_uidOk(bound) || epoch != _epoch || !_journalBoundTo(bound)) {
+      return StreamUploadOutcome.cancelled;
+    }
     _failedThisStart.add(id);
     // Never overwrite a summary conflict with the upload failure.
     if (entry.state.syncState != JournalSyncState.syncConflict) {
