@@ -57247,3 +57247,7 @@ Decision: Bulk-delete jobs are ordered in memory by last attempt time over a bou
 ## 2026-10-16 - Commit: S02 remediation A: commit, download and delete hardening
 
 Decision: An already-due expiry at commit transaction 2 stores nothing; an unset bucket with a stream row is a failure for delete, never a silent no-op; the commit callable gets explicit 1GiB memory and concurrency 4.
+
+## 2026-10-16 - Commit: S02 test epic 7a: E02 account wipe and consent cache fix
+
+Decision: The two real app-flow wipe tests are skipped with an explicit NOT WIRED marker instead of being weakened, because no production code calls the journal wipe; the missing wiring is recorded in the epic 7 findings. The activity consent cache prefix is added to the per-account device wipe.

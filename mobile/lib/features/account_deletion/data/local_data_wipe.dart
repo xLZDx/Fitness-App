@@ -213,6 +213,9 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     'nutrition.',
     'food_diary.',
     'weight.',
+    // S02: the per-account cloud-streams consent cache
+    // (`activity.cloudStreamsConsent.<uid>`).
+    'activity.',
   ];
 
   static bool _isPerUidFeatureKey(String key, String uid) =>
