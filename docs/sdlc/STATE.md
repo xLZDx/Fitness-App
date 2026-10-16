@@ -1,6 +1,6 @@
 # SDLC state: Phase 2 program (sprints S00, S01, S02)
 
-Source of phase truth for the Phase 2 line. Updated 2026-10-16. Head confirmed with git when written: branch `phase2/s01-contracts`, base `phase2/main` at `89927444`. The earlier Body Scan sprint state (PR #5, merged as `5137ccda`) is history; its acceptance and release phases (9, 10) remain open there and need the operator-owned gates it lists.
+Source of phase truth for the Phase 2 line. Updated 2026-10-16. Head confirmed with git when written: branch `phase2/s02-unified-activity`, base `phase2/main` at `5bb61f15` (S01 merged). The earlier Body Scan sprint state (PR #5, merged as `5137ccda`) is history; its acceptance and release phases (9, 10) remain open there and need the operator-owned gates it lists.
 
 ## S00: split and migration (merged)
 
@@ -36,7 +36,7 @@ Current phase: closed. PR #9 merged into `phase2/main` as `5bb61f15` after GPT-P
 | 7 Verify | n/a | no tests in this sprint |
 | 8 Gate | done | PR #9 merged (`5bb61f15`) |
 | 9 Accept + release | partial | operator answered D-16, D-17, D-6, D-7 on 2026-10-16 (recorded in contract section 9); approval of the contract as a whole is not stated, requirement labels stay PROPOSED |
-| 10 Report + retro | not started | S01 sprint report missing |
+| 10 Report + retro | done | gate closure report pair `reports/2026-10-16-s01-gate-closure.ru.html` and `.html`; no separate retrospective (documentation sprint) |
 
 Operator decisions recorded 2026-10-16: D-16 GPS in the cloud with a user-set expiry and heart rate on the phone only; D-17 friends by mutual accept allowed, public sharing not allowed for minors, age self-declared (adult-minor friend edges stay refused, default E1); D-6 open source tiles; D-7 open source tracks and maps. Still open: the first-release region (before S07), D-3, D-10.
 

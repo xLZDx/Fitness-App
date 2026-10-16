@@ -56779,3 +56779,7 @@ Decision: the operator answered the four open S01 decisions in chat (GPS cloud w
 ## 2026-10-16 - Commit: S01 gate closure report
 
 Decision: the closed S01 gate is reported as a Russian and English HTML pair in reports/. Two older reports without the provenance block are not part of this work and are left unchanged. Evidence: core/changes/2026-10-16-s01-gate-closure-report.md.
+
+## 2026-10-16 - Commit: SDLC state header refresh
+
+Decision: STATE.md names the current branch and base, and links the S01 report; no separate S01 retrospective is written for a documentation-only sprint. Evidence: core/changes/2026-10-16-s02-state-header-and-s01-report-link.md.
