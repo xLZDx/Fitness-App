@@ -57433,3 +57433,7 @@ Decision: local deletions are pushed in continuation rounds (cap 128 rounds of 8
 ## 2026-10-16 - Commit: S02 remediation E1 (b) wiring and owner marker removal
 
 Decision: the app binds the journal of the signed-in uid through an always-on listener, cloud sync fails closed on a failed bind, and the owner marker mechanism is removed. Evidence: core/changes/2026-10-16-s02-remediation-e1-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation E2, erasure quota
+
+Decision: the per-user daily `activityDelete` quota is 1000 (was 100) because it is privacy-erasure capacity for queued offline deletions, not an abuse limit. Evidence: core/changes/2026-10-16-s02-remediation-e2-server-docs.md.

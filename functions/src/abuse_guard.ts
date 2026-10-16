@@ -462,8 +462,12 @@ export const QUOTAS = {
    * Starting limit, unmeasured. The bulk "delete all my cloud streams" action
    * gets its OWN quota (`activityDeleteAll`, S02-06b) so erasure is never
    * stopped by this ceiling.
+   * Remediation E2: raised from 100 to 1000. This is privacy-erasure capacity,
+   * not an abuse limit: an offline client queues one delete call per activity
+   * and must be able to drain a large backlog in one day (the client pushes at
+   * most 1024 per pass and backs off on `resource-exhausted`).
    */
-  activityDelete: 100,
+  activityDelete: 1000,
   /**
    * S02 `createActivityStreamUpload` (design 5.4): upload intents per user per
    * day. Starting limit, unmeasured.
