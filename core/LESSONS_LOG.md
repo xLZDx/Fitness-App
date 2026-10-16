@@ -630,3 +630,10 @@ Facts: GPT-PM returned MODIFY on head 5302915e with 1 MAJOR and 2 MINOR. The MAJ
 Root cause: the contract gave a per-element minimum width and a per-situation column count in separate places and never wrote the check number of cards x minimum width + gaps against the available width for each size row; both internal reviewers re-checked the rail and pane arithmetic they had been told about but not this older rule, which came from revision 2.
 Layers: author missed it; product-ux-reviewer and a11y-architect missed it; the GPT-PM gate caught it before any code existed.
 Rule next time: for every layout rule of the form "N items in a row" or "minimum size X", the contract writes the fit check with numbers for each size row it applies to; reviewers get the instruction to re-derive every such check, including text inherited from an earlier revision, not only the ones that changed.
+
+## 2026-10-17 - Commit: docs: record the S03-D documentation gate approval and its report
+
+Kind: SUCCESS.
+Facts: the S03-D documentation gate closed in two rounds: round 1 on 5302915e returned MODIFY (1 MAJOR, 2 MINOR); every item was verified against the contract text before it was fixed (the MAJOR was a real contradiction), all items were fixed in one batch, and round 2 on 45b9184b returned APPROVE with 0 BLOCKER and 0 MAJOR. Evidence: GPT-PM replies of request ids 9bdd45d1 and 6e9e542e, core/changes/2026-10-17-s03d-gate-round-1-fixes.md.
+Why it worked: two independent internal reviews before the gate removed most defects (4 and 3 MAJOR findings, overlapping, fixed first), the scope note told the reviewer exactly what changed, and the fix was one batch that rechecked the arithmetic by hand.
+Rule next time: keep the order internal reviews, one batch of fixes, external gate, one batch of fixes, verification round; and tell reviewers to recompute inherited rules (see the entry for the gate fixes).
