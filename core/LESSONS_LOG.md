@@ -415,3 +415,9 @@ Kind: SHORTCOMING.
 Facts: My first widget control (real repository, loaded conflict, pumped sheet) hung the fake-async binding for minutes with no timeout firing; I moved the control to the presenter. Cause not investigated. Evidence: core/changes/2026-10-16-s02-test-epic15-i1-display-tie.md.
 Root cause: unknown; real file and crypto futures started inside the fake zone. Layer that missed it: my test design; caught by the first run.
 Rule next time: run setup and reads of real journals under runAsync or in plain tests, and wrap a first widget run in an outer timeout.
+
+## 2026-10-16 - test(s02): epic 15 I2 consent-contract tests
+
+Kind: SUCCESS.
+Facts: Remediation I2 production code met every I2 oracle on the first compiled run (9 of 9). The only slip was mine: a listener exception is reported to the zone of the container, so the test creates the container inside a guarded zone. Evidence: core/changes/2026-10-16-s02-test-epic15-i2-consent-contract.md.
+Rule next time: create the container inside the zone that is meant to receive listener errors.

@@ -57682,3 +57682,7 @@ Decision: stale tests are updated to the intended remediation I contract (bound 
 ## 2026-10-16 - Commit: test(s02): epic 15 I1 display-tie tests
 
 Decision: the I1 guard is proved at three layers (repository read, presenter, pumped sheet) with a positive control each; candidates are not seeded because the guard sits before the journal read. Evidence: core/changes/2026-10-16-s02-test-epic15-i1-display-tie.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 I2 consent-contract tests
+
+Decision: the I2 contract is proved at the client level and through the real startup closure; the unguarded `onAccountChanged` call is accepted because consent is unbound before it (the order is the guarantee), and the test pins that order. Evidence: core/changes/2026-10-16-s02-test-epic15-i2-consent-contract.md.
