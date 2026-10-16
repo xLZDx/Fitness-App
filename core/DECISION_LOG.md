@@ -56971,3 +56971,7 @@ Decision: A 5-minute reconciler repairs pending uploads only when the promoted o
 ## 2026-10-16 - Commit: S02-06b: deleteAllActivityStreams bulk job
 
 Decision: The seventh callable is a resumable job whose state (job id, cursor, pending flag) lives on the settings document; each call deletes at most 50 rows object-first, is fence- and Auth-checked in both its transactions, uses its own activityDeleteAll quota charged only when a job starts, and unfinished jobs are continued by the reconciler. Evidence: core/changes/2026-10-16-s02-06b-delete-all-streams.md.
+
+## 2026-10-16 - Commit: S02-07: account export sections for unified activity
+
+Decision: The export reuses the existing paged path for activities and stream index rows (first response capped at MAX_ROWS and named in truncated, continuation by cursor), exposes stream rows through an allow-list with no object path or samples, adds the activity settings document and an always-present note that GPS is delivered by short-lived links and heart rate stays on the device. Evidence: core/changes/2026-10-16-s02-07-export-sections.md.
