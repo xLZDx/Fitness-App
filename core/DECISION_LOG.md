@@ -57175,3 +57175,7 @@ Decision: Plan F18 (lengthening resurrects) is wrong; the design says lengthenin
 ## 2026-10-16 - Commit: S02 test epic 6b: sweeps, late sweep, reconciler, bulk delete and the real deleteAccount flow (S02-06b)
 
 Decision: Design formula for fence removal wins over plan cell F95(a); the late sweep after an aborted deletion is an open risk recorded in the epic 6b findings and pinned by a test that documents current behaviour.
+
+## 2026-10-16 - Commit: S02 test epic 6b: export, download URLs, log hygiene and telemetry callable and schema (S02-07, S02-09)
+
+Decision: The 16 KiB batch boundary is proven on the sanitiser gate (a valid batch cannot be that large); every other telemetry and download assertion follows the plan.
