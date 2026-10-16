@@ -939,7 +939,9 @@ service cloud.firestore {
     }
     function actLabelsOk(d) {
       return (!('primarySourceId' in d)
-              || (d.primarySourceId is string && d.primarySourceId.size() <= 64))
+              || (d.primarySourceId is string
+                  && d.primarySourceId.matches('^[A-Za-z0-9._:-]{1,64}$')
+                  && !d.primarySourceId.matches('.*[0-9][.][0-9][0-9]+.*')))
           && (!('primarySourceKind' in d)
               || d.primarySourceKind in ['platformHealth', 'bleSensor',
                    'vendorCloud', 'companionApp', 'fileImport'])

@@ -43,9 +43,9 @@ Read through `functions/src/activity_streams/flags.ts` only, per call. Unset (or
 
 `storage.rules` stays the single deny-all for the DEFAULT bucket; this private bucket is not governed by Firebase rules and is reachable only through V4 signed URLs and the Admin SDK. Any `allow` for `streams/` or `quarantine/` in `storage.rules` is a defect.
 
-## 5. Tombstone TTL policy (operator step, RELEASE PREREQUISITE)
+## 5. Tombstone TTL policy (deployed with the indexes, RELEASE PREREQUISITE)
 
-The repository does not create Firestore TTL policies for this feature. Without this policy the delete markers in `users/{uid}/activity_tombstones` grow without bound. Create it in the console (Firestore, TTL) or with:
+The TTL policy on `activity_tombstones.expireAt` is declared as a `fieldOverrides` entry with `ttl: true` in `firestore.indexes.json` (same style as `accountDeletionRetries` and `nutrition_cache`) and is created when the indexes are deployed. Without it the delete markers in `users/{uid}/activity_tombstones` grow without bound. Confirm after the deploy; if the deploy did not apply it, create it in the console (Firestore, TTL) or with:
 
 ```
 gcloud firestore fields ttls update expireAt --collection-group=activity_tombstones --enable-ttl --project=<project>

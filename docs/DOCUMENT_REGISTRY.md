@@ -283,9 +283,9 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
 | `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1513 |
 | `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
-| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 152794 |
-| `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 4888 |
-| `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 4397 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 155106 |
+| `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 5898 |
+| `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6324 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3144 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4305 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4714 |
@@ -299,7 +299,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
 | `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 6308 |
-| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13130 |
+| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13362 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |

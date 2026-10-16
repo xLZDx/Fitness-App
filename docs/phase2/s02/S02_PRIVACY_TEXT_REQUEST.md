@@ -17,6 +17,8 @@ Before the client flag `ACTIVITY_CLOUD_STREAMS` is turned on and before `ACTIVIT
 7. Phase 1 telemetry content change. Debug-build diagnostics (`debug_sessions`) no longer carry free-text log messages or the free-form build identity; they carry a fixed set of event types, levels and counters only, validated on the server. This is a reduction of collected data and may need a sentence in the diagnostics paragraph; if privacy text says that debug logs include messages or build details, it is now inaccurate.
 8. No deduplication promise. The text and the app copy must not claim that activities from several sources (phone recording, health platform, sensors, vendor clouds) are matched or de-duplicated, except that re-syncing the same recording does not create a copy (design 9).
 
+9. Summary sync (remediation A9, wording PENDING operator approval). When summary sync is on, scalar activity summaries (sport, times, duration, distance, power, cadence, steps and calories, including steps and active calories sourced from Health Connect or Apple Health) sync to the account, with no separate toggle. The existing Health Connect paragraph must therefore not say the readings never leave the phone without this exception. A draft paragraph "Activity summaries in your account" and the amended exception sentence are in `public/privacy.html`; they are DRAFT text that remains PENDING operator approval, are not final wording, and have no Russian counterpart yet (the page's Russian section must be updated when the wording is approved). The existing privacy-text test expectations (F42) must be updated by the test agent.
+
 ## Existing lines found stale (not changed by S02 code)
 
 `public/privacy.html` lines 77, 91, 95 and 100 (matrix section 4): no mention of location or GPS; Cloud Storage named only for scan photos; "kept while the account exists" and "every document is erased" statements that do not mention stream objects, expiry or the late clean-up. These need the edit above when the flag is enabled.
@@ -27,5 +29,7 @@ Before the client flag `ACTIVITY_CLOUD_STREAMS` is turned on and before `ACTIVIT
 - Default expiry and whether "never" is offered (design 12.3 items 1 and 9).
 - Soft-delete window (runbook section 1).
 - Tombstone retention (400 days proposed).
+- Approve statement 9 (summary sync disclosure; open until approved).
+- Soft-delete window disclosure (SEC3, operator-owned; accepted as open item, see design section 17).
 
 Until these are answered the cloud flag stays OFF; device-only behaviour needs no new text.

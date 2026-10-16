@@ -57251,3 +57251,7 @@ Decision: An already-due expiry at commit transaction 2 stores nothing; an unset
 ## 2026-10-16 - Commit: S02 test epic 7a: E02 account wipe and consent cache fix
 
 Decision: The two real app-flow wipe tests are skipped with an explicit NOT WIRED marker instead of being weakened, because no production code calls the journal wipe; the missing wiring is recorded in the epic 7 findings. The activity consent cache prefix is added to the per-account device wipe.
+
+## 2026-10-16 - Commit: S02 remediation A: settings, rules, TTL, privacy and docs
+
+Decision: The tombstone TTL is declared in firestore.indexes.json instead of being an operator-only step; the summary-sync privacy paragraph is drafted but stays pending operator approval; purge scale, tombstone read cost, export deviation, cursor restart and soft-delete disclosure are recorded as accepted risk or backlog in design section 17.

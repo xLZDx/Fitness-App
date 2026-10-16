@@ -156,6 +156,17 @@ export async function applyActivityCloudSettings(
           acceptedAt: ts(plan.grantedAtMs),
           withdrawnAt: admin.firestore.FieldValue.delete(),
         };
+        if (hasActiveDeleteJob(current)) {
+          // A13: a new GRANT cancels a running bulk stream-delete job, otherwise the job would
+          // keep erasing streams uploaded under the NEW consent. Rows already erased stay erased.
+          const del = admin.firestore.FieldValue.delete();
+          patch.streamDeletePending = del;
+          patch.streamDeleteJobId = del;
+          patch.streamDeleteCursor = del;
+          patch.streamDeleteStartedAt = del;
+          patch.streamDeleteAttemptAt = del;
+          patch.streamDeleteAttempts = del;
+        }
       } else if (plan.withdrawnAtMs !== undefined) {
         patch.cloudStreams = { withdrawnAt: ts(plan.withdrawnAtMs) };
       }
@@ -213,6 +224,32 @@ export async function handleSetActivityCloudSettings(
   }
   // Only granting needs the feature: withdrawal and retention must always work.
   if (req.cloudStreamsGranted === true) assertFeatureEnabled(activityStreamCloudEnabled());
+
+  if (isWithdrawalOnly(req)) {
+    // A11: a withdrawal-only call is unmetered, so a no-op repeat must not cost a transaction
+    // and an Auth lookup. One plain read decides: nothing to change and no job to start means
+    // the answer is the current state, with no write and no fence or Auth work.
+    try {
+      const snap = await deps.firestore().doc(activitySettingsPath(uid)).get();
+      const current = snap.exists ? (snap.data() as Record<string, unknown>) : undefined;
+      const plan = planSettingsChange(current, req, deps.nowMs());
+      if (!plan.changed && !(plan.startStreamDelete && !hasActiveDeleteJob(current))) {
+        log("info", { outcome: "unchanged", withdrew: false, latencyMs: deps.nowMs() - started });
+        return {
+          changed: false,
+          settingsGeneration: plan.settingsGeneration,
+          streamRetentionDays: plan.streamRetentionDays,
+          consent: plan.consent,
+          recomputePending: plan.recomputePending,
+          streamDeleteStarted: false,
+          serverNowMs: deps.nowMs(),
+        };
+      }
+    } catch (e) {
+      log("error", { outcome: "settings_failed", errorCode: errorCodeOf(e) });
+      throw toHttpsError("settings_failed");
+    }
+  }
 
   const charged = !isWithdrawalOnly(req);
   if (charged) {
