@@ -57618,3 +57618,7 @@ Decision: the H3 decision entry above landed in the sibling H-B commit because t
 ## 2026-10-16 - Commit: S02 remediation H-A test notes
 
 Decision: the H-A test notes list 19 interleaving oracles and every stale fake or older assertion the new consent, uploader and wiring contracts break, so the test agent updates them in one pass. Evidence: core/changes/2026-10-16-s02-remediation-h-a-test-notes.md.
+
+## 2026-10-16 - Commit: test(s02): H5 deletion-in-progress flag stops the sync pass (epic 14b)
+
+Decision: The deletion-flag tests (10 tests) assert the flag raised during listTombstoneIds, a tombstone push and a summary write; a pass that starts under the flag; the retry timer; and the account-deleting log line without a uid. One production line added: a mid-flight skip after the tombstone listing is now logged like the start-of-pass skip. Evidence: core/changes/2026-10-16-s02-test-epic14b-deletion-flag.md.

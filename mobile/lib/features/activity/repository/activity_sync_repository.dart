@@ -672,7 +672,10 @@ class ActivitySyncRepository {
           // unknown, never as deletion.
         }
         // A listing answered while the account changed belongs to nobody.
-        if (!_mayCall(p)) return out;
+        if (!_mayCall(p)) {
+          _logSkip('syncAll', p);
+          return out;
+        }
         // A failed tombstone listing is itself a reason for a backed-off retry.
         _TombstoneRun run;
         if (!tombsKnown) {

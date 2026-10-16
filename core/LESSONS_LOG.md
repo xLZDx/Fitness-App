@@ -316,3 +316,9 @@ Kind: SUCCESS.
 Facts: following the earlier lesson, the notes list older assertions by grepping the tests for the changed behaviour (write before sign-in, once-per-instance delete, resume order, uploader with an in-memory client). Evidence: core/changes/2026-10-16-s02-remediation-h-a-test-notes.md.
 Why it worked: the earlier retrospective rule was applied before the brief, not after the runs.
 Rule next time: keep grepping tests for the old behaviour whenever a contract changes.
+
+## 2026-10-16 - Mid-flight skip after the tombstone listing was not logged
+
+Kind: SHORTCOMING.
+Facts: The H5 notes require the account-deleting skip to be logged, but syncAll returned silently when the identity went stale after listTombstoneIds; only the start-of-pass skip logged. Evidence: core/changes/2026-10-16-s02-test-epic14b-deletion-flag.md.
+Root cause: the author added the log to the start check only. Layers: author and reviewers missed it; the epic 14b oracle (log line after a mid-flight flag) caught it. Rule next time: every early return of a pass either logs a reason word or is documented as silent.
