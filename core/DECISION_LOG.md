@@ -57377,3 +57377,11 @@ Decision: a second client define ACTIVITY_LOCAL_JOURNAL (default OFF) opens the 
 ## 2026-10-16 - Commit: S02 remediation D rules mirror parity
 
 Decision: the hand-written Dart mirror of the primarySourceId rule now uses the stream sourceId pattern plus the coordinate-like denial, matching firestore.rules (A12). Evidence: core/changes/2026-10-16-s02-remediation-d-rules-mirror.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b uploader account binding tests
+
+Decision: FL5 uploader behaviour (uid flip at five points, single-flight) is pinned by activity_stream_upload_account_binding_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-uploader-account-binding.md.
+
+## 2026-10-16 - Commit: S02 test epic 10a conflict view state tests
+
+Decision: FL1 and the presenter half of FL2 are covered by tests over the real repository with scripted failing collaborators (backend readSummary, journal list). Evidence: core/changes/2026-10-16-s02-test-epic10a-conflict-view-state.md.

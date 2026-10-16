@@ -227,8 +227,12 @@ class StreamUploadWorld {
     return w;
   }
 
-  ActivityStreamUploader makeUploader({CloudStreamsConsentView? consentView}) =>
+  ActivityStreamUploader makeUploader({
+    CloudStreamsConsentView? consentView,
+    String? Function()? currentUid,
+  }) =>
       ActivityStreamUploader(
+        currentUid: currentUid,
         journal: h.journal,
         callables: cloud,
         consent: consentView ?? consent,
