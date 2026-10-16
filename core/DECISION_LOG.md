@@ -57023,3 +57023,7 @@ Decision: The journal gains updateRecord, which commits a changed session map an
 ## 2026-10-16 - Commit: S02-12: sync orchestration and resolution operations
 
 Decision: ActivitySyncRepository uploads with an optimistic rev, reads tombstone then server on a denial, merges three-way once and otherwise leaves sync_conflict; user choices and candidate resolutions persist their change (overrides, explicit values, adjusted baseSummary) in one generation before any write, so they are durable and idempotent; derived metadata keys are device-owned and cannot conflict
+
+## 2026-10-16 - Commit: S02-12: sync-conflict presenter
+
+Decision: The presenter is a Riverpod Notifier whose entry lists come only from the repository state stream, so a conflict or candidate disappears only after its resolution is stored; each action is guarded against double submission and the presenter exposes no delete
