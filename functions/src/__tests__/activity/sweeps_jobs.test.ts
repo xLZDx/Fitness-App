@@ -229,14 +229,15 @@ describe("F95/F80 fence removal timing table (injected clock, one minute either 
     expect(await at(T + 69 * MIN)).toBe(true);
     expect(await at(T + 71 * MIN)).toBe(false);
   });
-  test("(c2) the Auth user still exists: nothing is swept, the job stays armed, the fence is never removed", async () => {
+  test("(c2) the Auth user still exists AND a deletion intent record exists: nothing is swept, the job stays armed, the fence is never removed (A1: counted as stuck)", async () => {
     await seedFence();
+    store.set(`accountDeletionRetries/${UID}`, { attempts: 1 });
     setNow(LATE_AT);
     await runActivityLateSweep(lateDeps());
     setNow(LATE_AT + 10 * DAY);
     const r = await runActivityLateSweep(lateDeps());
     expect(store.has(FENCE)).toBe(true);
-    expect(r.skippedLive).toBe(1);
+    expect(r).toMatchObject({ skippedLive: 1, clearedLive: 0, stuck: 1 });
     expect(r.swept).toBe(0);
     expect(store.get(FENCE)!.lateSweepDone).toBeUndefined();
     expect(store.get(FENCE)!.authDeletedAt).toBeUndefined();
@@ -273,10 +274,11 @@ describe("REGRESSION: the late sweep never touches a LIVE account (aborted delet
     seedUserActivityDocs();
     w.bucket.put(streamPath(UID, ACT, "up_1"), Buffer.from("precious gps"));
     const docsBefore = [...store.keys()].filter((k) => k.startsWith("users/")).sort();
-    for (const at of [LATE_AT, LATE_AT + HOUR, LATE_AT + 3 * DAY]) {
+    // Every run is inside the 24 h heartbeat window (A1), so the fence is kept and the job skips.
+    for (const at of [LATE_AT, LATE_AT + HOUR, T0 + 23 * HOUR]) {
       setNow(at);
       const r = await runActivityLateSweep(lateDeps());
-      expect(r).toMatchObject({ skippedLive: 1, swept: 0, removed: 0, failures: 0 });
+      expect(r).toMatchObject({ skippedLive: 1, swept: 0, removed: 0, failures: 0, clearedLive: 0 });
     }
     expect(w.auth.users.has(UID)).toBe(true);
     expect(w.bucket.keys()).toEqual([streamPath(UID, ACT, "up_1")]);

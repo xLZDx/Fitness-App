@@ -59,11 +59,29 @@ describe("F20 deleteActivity order", () => {
     expect(store.has(SUMMARY)).toBe(true);
     expect(w.bucket.deleteFilesCalls).toEqual([]);
   });
-  test("erasure is not behind the feature flag: with the bucket unset the object step is a no-op and the rest completes", async () => {
+  test("A10: erasure is not behind the feature flag: with the bucket unset and NO stream row the object step is a no-op and the rest completes", async () => {
     w.bucketOn = false;
+    store.delete(ROW);
     expect((await del()).deleted).toBe(true);
     expect(store.has(SUMMARY)).toBe(false);
     expect(w.bucket.deleteFilesCalls).toEqual([]);
+  });
+  test("A10: with the bucket unset and a stream row (stored or pending) the delete fails delete_failed, keeps the row and the summary, the tombstone stays", async () => {
+    for (const state of ["stored", "pending"]) {
+      store.delete(TOMB);
+      store.set(ROW, { ...store.get(ROW), state });
+      w.bucketOn = false;
+      await expectHttpsError(del(), "internal", "delete_failed");
+      expect(store.has(ROW)).toBe(true);
+      expect(store.get(ROW)!.state).toBe(state);
+      expect(store.has(SUMMARY)).toBe(true);
+      expect(store.has(TOMB)).toBe(true);
+      expect(w.bucket.deleteFilesCalls).toEqual([]);
+    }
+    w.bucketOn = true; // the bucket is back: a rerun completes the cascade
+    expect((await del()).deleted).toBe(true);
+    expect(store.has(ROW)).toBe(false);
+    expect(store.has(SUMMARY)).toBe(false);
   });
 });
 
@@ -283,11 +301,16 @@ describe("fence.ts writeActivityAccountFence (design 6.1 step 1)", () => {
     expect(store.get(path)!.fenceAt.toMillis()).toBe(T0);
     expect(store.get(path)!.lateSweepAt.toMillis()).toBe(T0 + LATE_SWEEP_DELAY_MS);
     expect(LATE_SWEEP_DELAY_MS).toBe(15 * MIN);
-    const n = writes.filter((x) => x.path === path).length;
+    expect(store.get(path)!.touchedAt.toMillis()).toBe(T0); // A1: new document, touchedAt = fenceAt
     setNow(T0 + HOUR_MS);
     expect(await writeActivityAccountFence(w.deps, UID_B)).toBe(false);
     expect(store.get(path)!.fenceAt.toMillis()).toBe(T0);
-    expect(writes.filter((x) => x.path === path).length).toBe(n);
+    expect(store.get(path)!.lateSweepAt.toMillis()).toBe(T0 + LATE_SWEEP_DELAY_MS);
+    expect(store.get(path)!.touchedAt.toMillis()).toBe(T0 + HOUR_MS); // A1: only the heartbeat moves
+    setNow(T0 + 2 * HOUR_MS);
+    await writeActivityAccountFence(w.deps, UID_B);
+    expect(store.get(path)!.touchedAt.toMillis()).toBe(T0 + 2 * HOUR_MS); // every call
+    expect(store.get(path)!.fenceAt.toMillis()).toBe(T0);
   });
   test("a Firestore failure surfaces (deleteAccount must abort before sweeping)", async () => {
     fx.failOn = (op, path) => (op === "commit" && path.includes("activity_account_state") ? firestoreError("x", 14) : undefined);
