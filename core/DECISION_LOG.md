@@ -57345,3 +57345,7 @@ Decision: Epic 8a closes green: 26 suites and 744 tests of the activity director
 ## 2026-10-16 - Commit: S02 test epic 9a: final run evidence
 
 Decision: the epic 9a findings record the complete 14-file run at head 62ab9f9e (222 tests green).
+
+## 2026-10-16 - Commit: S02 test epic 8b: findings and stale expectations
+
+Decision: two expectations left stale by epic 6b were updated to the audited reality (account_export residue lines, activity_account_state path {docId}); no product change.

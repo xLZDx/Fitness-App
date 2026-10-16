@@ -264,7 +264,7 @@ describe("R30 rules-text and policy assertions for activity_account_state", () =
     };
     const rows = policy.collections["activity_account_state"]?.clientAccess ?? [];
     expect(rows).toHaveLength(1);
-    expect(rows[0].path).toBe("/activity_account_state/{uid}");
+    expect(rows[0].path).toBe("/activity_account_state/{docId}"); // epic 6b: the access checker discovers {docId} for a collection with no rules block
     expect(rows[0].access).toEqual({ read: "NONE", create: "NONE", update: "NONE", delete: "NONE" });
   });
 });
