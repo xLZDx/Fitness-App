@@ -57259,3 +57259,7 @@ Decision: The tombstone TTL is declared in firestore.indexes.json instead of bei
 ## 2026-10-16 - Commit: S02 test epic 7a: final run and findings
 
 Decision: Epic 7a closes with 148 passed and 2 skipped (NOT WIRED) tests; the journal wipe wiring and the emulator half of E05 remain open.
+
+## 2026-10-16 - Commit: S02 remediation B1: recovery keeps committed generations on I/O errors
+
+Decision: Recovery distinguishes a missing or invalid COMMIT marker (uncommitted, deleted) from an I/O error (every generation of the activity kept, diagnostic `unreadable:<id>`, retried at the next start).

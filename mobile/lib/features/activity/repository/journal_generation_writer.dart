@@ -197,13 +197,43 @@ class JournalGenerationWriter {
             utf8.encode(lines.map((l) => '${jsonEncode(l)}\n').join())),
       );
 
-  /// Reads a COMMIT marker; null when missing or unparsable.
-  Future<CommitMarker?> readCommit(String id, int seq) async {
+  /// Reads a whole file. Returns null ONLY when the file genuinely does not
+  /// exist; any other read failure (I/O error, locked handle) throws
+  /// [JournalUnreadable] so callers never mistake "cannot read now" for
+  /// "absent" (a committed generation must survive a transient error).
+  Future<Uint8List?> readIfPresent(String path) async {
     try {
-      return CommitMarker.tryDecode(
-          await fs.readBytes('${paths.genDir(id, seq)}/$kCommitFileName'));
-    } catch (_) {
-      return null;
+      return await fs.readBytes(path);
+    } catch (e) {
+      var present = true;
+      try {
+        present = await fs.exists(path);
+      } catch (_) {
+        // Existence unknown: treat as present, i.e. an I/O error.
+      }
+      if (!present) return null;
+      throw JournalUnreadable(path, e);
     }
   }
+
+  /// Reads a COMMIT marker; null when missing or unparsable (marker invalid).
+  /// Throws [JournalUnreadable] on any other I/O error.
+  Future<CommitMarker?> readCommit(String id, int seq) async {
+    final bytes =
+        await readIfPresent('${paths.genDir(id, seq)}/$kCommitFileName');
+    if (bytes == null) return null;
+    return CommitMarker.tryDecode(bytes);
+  }
+}
+
+/// A file exists (or may exist) but could not be read because of an I/O error.
+/// Distinct from "not found" and from "content invalid".
+class JournalUnreadable implements Exception {
+  const JournalUnreadable(this.path, this.cause);
+
+  final String path;
+  final Object cause;
+
+  @override
+  String toString() => 'JournalUnreadable: $path ($cause)';
 }

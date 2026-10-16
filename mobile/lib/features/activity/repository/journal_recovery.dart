@@ -46,6 +46,10 @@ class RecoveryResult {
   final JournalRecoveryReport report = JournalRecoveryReport();
   final Map<String, RecoveredEntry> entries = {};
 
+  /// Ids whose `streams.bin` could not be read because of an I/O error: a
+  /// transient state, never persisted as streamLost.
+  final Set<String> streamsUnavailable = {};
+
   /// Highest sequence number seen anywhere (records, directories, index).
   int maxSeq = 0;
 }
@@ -114,13 +118,10 @@ class JournalRecoveryPass {
   Future<RecoveredEntry?> _validate(String id, int seq) async {
     final commit = await writer.readCommit(id, seq);
     if (commit == null || commit.seq != seq) return null;
-    final Uint8List recordBytes;
-    try {
-      recordBytes =
-          await fs.readBytes('${paths.genDir(id, seq)}/$kRecordFileName');
-    } catch (_) {
-      return null;
-    }
+    // Throws JournalUnreadable on an I/O error (never treated as "absent").
+    final recordBytes = await writer
+        .readIfPresent('${paths.genDir(id, seq)}/$kRecordFileName');
+    if (recordBytes == null) return null;
     if (sha256Hex(recordBytes) != commit.recordSha256) return null;
     final record = JournalRecord.tryDecode(recordBytes);
     if (record == null || record.seq != seq || record.id != id) return null;
@@ -142,10 +143,18 @@ class JournalRecoveryPass {
     final valid = <int, RecoveredEntry>{};
     RecoveredEntry? selected;
     for (final g in gens) {
-      final v = await _validate(id, g);
-      if (v != null) {
-        valid[g] = v;
-        selected ??= v;
+      try {
+        final v = await _validate(id, g);
+        if (v != null) {
+          valid[g] = v;
+          selected ??= v;
+        }
+      } on JournalUnreadable {
+        // An I/O error is not evidence of an uncommitted generation: keep
+        // EVERY generation of this activity untouched and retry at the next
+        // start. The activity is neither recovered nor reported absent.
+        report.diagnostics.add('unreadable:$id');
+        return;
       }
     }
 
@@ -168,20 +177,32 @@ class JournalRecoveryPass {
     }
 
     // Stream check: only the streams checksum may differ for a valid entry.
+    // A missing file or a checksum mismatch is persisted loss (DQ-30); an I/O
+    // error is only a transient "unavailable now" (never persisted).
     var streamLost = false;
+    var unavailable = false;
     try {
-      final bytes = await fs.readBytes(
+      final bytes = await writer.readIfPresent(
           '${paths.genDir(id, selected.seq)}/$kStreamsFileName');
-      streamLost = sha256Hex(bytes) != selected.commit.streamsSha256 ||
+      streamLost = bytes == null ||
+          sha256Hex(bytes) != selected.commit.streamsSha256 ||
           selected.record.streamHash != selected.commit.streamsSha256;
-    } catch (_) {
-      streamLost = true;
+    } on JournalUnreadable {
+      unavailable = true;
+      result.streamsUnavailable.add(id);
+      report.diagnostics.add('streamsUnreadable:$id');
     }
     final entry =
         RecoveredEntry(selected.seq, selected.record, selected.commit, streamLost);
     result.entries[id] = entry;
     report.selectedGenerations[id] = entry.seq;
     if (streamLost) report.streamLost.add(id);
+
+    // Streams not verifiable right now: keep older generations as a fallback.
+    if (unavailable) {
+      await _repairCurrent(id, entry, report);
+      return;
+    }
 
     // Older committed generations.
     for (final g in gens) {
@@ -199,6 +220,11 @@ class JournalRecoveryPass {
       }
     }
 
+    await _repairCurrent(id, entry, report);
+  }
+
+  Future<void> _repairCurrent(
+      String id, RecoveredEntry entry, JournalRecoveryReport report) async {
     final current = await writer.readCurrent(id);
     if (current != entry.seq) {
       try {
