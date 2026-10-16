@@ -58,7 +58,7 @@ class JournalReadOnlyException extends JournalException {
 
 /// The activity id is not a safe single path segment.
 class JournalInvalidIdException extends JournalException {
-  const JournalInvalidIdException(String id)
+  JournalInvalidIdException(String id)
       : super('invalid activity id: ${id.length > 80 ? id.substring(0, 80) : id}');
 }
 

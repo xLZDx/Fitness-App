@@ -57087,3 +57087,7 @@ Decision: The golden file format is chosen by the test author because the plan n
 ## 2026-10-16 - Commit: S02 test epic 1: summaryOverrides projection tests (U41) and findings
 
 Decision: Plan G17 is followed (candidate stays); G32 session-level version strings differ from the plan and are recorded, not changed.
+
+## 2026-10-16 - Commit: S02 test epic 2: journal round trip, replay, corruption, ordering and write-order tests (I01, I06, I18, I19, I23)
+
+Decision: The fault-injection seam is an in-memory file system plus a logging wrapper over any seam; JournalInvalidIdException loses its const (did not compile).
