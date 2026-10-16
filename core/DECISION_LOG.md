@@ -56983,3 +56983,7 @@ Decision: The download callable is fence-aware and read-only in one transaction,
 ## 2026-10-16 - Commit: S02-07: Dart GPX 1.1 encoder
 
 Decision: GpxEncoder is a pure function in activity/data returning a typed document or no_geometry; the owner export is the full series with optional heart rate, the shared export trims the route ends by routeTrimMeters and carries no heart rate, and indoor or fully trimmed sessions never produce a file. Evidence: core/changes/2026-10-16-s02-07-gpx-encoder.md.
+
+## 2026-10-16 - Commit: S02-07: Dart FIT encoder
+
+Decision: FitEncoder is a pure function in activity/data producing a header-CRC and file-CRC protected FIT file with file_id, record, lap and session messages, fixed definitions with invalid-value fill, a GPS-first record timeline, and a public fitCrc16 so the test decoder can be proven able to fail. Evidence: core/changes/2026-10-16-s02-07-fit-encoder.md.
