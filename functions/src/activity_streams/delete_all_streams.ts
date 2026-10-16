@@ -46,6 +46,7 @@ import {
   deleteActivityObjects,
   type DeleteActivityDeps,
 } from "./delete_activity";
+import { ExpectedUidError, verifyExpectedUid } from "./expected_uid";
 import { checkAccountFence } from "./fence";
 import { isActivityId } from "./paths";
 import type { ReconcileDeps, ReconcileExtraPass } from "./reconcile";
@@ -89,10 +90,11 @@ export interface DeleteAllResult {
   serverNowMs: number;
 }
 
-type RefusalCode = "account_deleting" | "account_deleted" | "quota_exceeded" | "delete_failed";
+type RefusalCode = "account_deleting" | "account_deleted" | "quota_exceeded" | "delete_failed" | "invalid_request";
 type HttpsCode = ConstructorParameters<typeof HttpsError>[0];
 
 const HTTPS_CODE: Record<RefusalCode, HttpsCode> = {
+  invalid_request: "invalid-argument",
   account_deleting: "failed-precondition",
   account_deleted: "unauthenticated",
   quota_exceeded: "resource-exhausted",
@@ -252,11 +254,27 @@ export async function handleDeleteAllActivityStreams(
   deps: DeleteAllDeps,
   uid: string,
   signInProvider: string | undefined,
+  data: unknown,
   limits: DeleteAllLimits = DEFAULT_DELETE_ALL_LIMITS,
 ): Promise<DeleteAllResult> {
   const started = deps.nowMs();
   if (signInProvider === "anonymous") {
     throw new HttpsError("permission-denied", "anonymous_not_allowed");
+  }
+  // Invocation-bound identity (S02 design 17 item 25): right after the gates, before any read, quota
+  // charge or write. The body must be exactly `{ expectedUid }`: nothing else is allowed.
+  let rest: unknown;
+  try {
+    rest = verifyExpectedUid(uid, data);
+  } catch (e) {
+    if (e instanceof ExpectedUidError && e.code === "account_changed") {
+      log("warn", { outcome: "account_changed" });
+      throw new HttpsError("failed-precondition", "account_changed");
+    }
+    throw toHttpsError("invalid_request");
+  }
+  if (typeof rest !== "object" || rest === null || Array.isArray(rest) || Object.keys(rest).length > 0) {
+    throw toHttpsError("invalid_request");
   }
 
   // Only the call that STARTS a job is charged (own quota, never the activityDelete ceiling).
@@ -360,10 +378,11 @@ export const bulkDeleteContinuationPass: ReconcileExtraPass = async (
 export const deleteAllActivityStreams = onCall(RARE, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "sign_in_required");
   noteAppCheck(request, "deleteAllActivityStreams");
-  // The request body is deliberately ignored: no client value reaches a path or a query.
+  // The body is exactly `{ expectedUid }` (checked in the handler); no client value reaches a path or a query.
   return handleDeleteAllActivityStreams(
     defaultDeleteAllDeps,
     request.auth.uid,
     request.auth.token?.firebase?.sign_in_provider,
+    request.data,
   );
 });

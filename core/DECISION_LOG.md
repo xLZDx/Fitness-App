@@ -57719,3 +57719,7 @@ Decision: New `functions/src/__tests__/activity/expected_uid.test.ts` (unit test
 ## 2026-10-16 - Commit: docs(s02): record the epic 16a server test findings
 
 Decision: New `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` with the section "16a server": changes, new tests, exact commands and result lines, findings and limits. Evidence: core/changes/2026-10-16-s02-test16a-3-findings.md; Documentation only; the results quoted are from the runs described in the document.
+
+## 2026-10-16 - Commit: fix(s02): bind the remaining activity callables to the initiating account (remediation J3a)
+
+Decision: `getActivityStreamDownloadUrls` and `deleteAllActivityStreams` now require `expectedUid` and verify it right after the auth and anonymous gates, before the parse, any quota charge, read or write (same helper and error pair as the four J1 callables). `deleteAllActivityStreams` no longer ignores its body: after the key is stripped it must be an empty object, else `invalid_request` (smallest strict check; the handler never parsed a body). `handleDeleteAllActivityStreams` takes a required `data` argument before `limits`. `sendDebugTelemetry` stays unchanged (accepted limit). The accepted limits and the backlog of the class sweep are recorded in design item 25. Evidence: core/changes/2026-10-16-s02-remediation-j3a-server-more-callables.md; NOT RUN (no test, analysis or build executed); test agents must update the existing jest support and add tests as listed in the J3 section of docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md.

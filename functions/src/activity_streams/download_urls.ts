@@ -25,6 +25,7 @@ import { RARE } from "../scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_guard";
 import { assertFeatureEnabled } from "../feature_flags";
 import { activityStreamBucket, type StreamBucket } from "./bucket";
+import { ExpectedUidError, verifyExpectedUid } from "./expected_uid";
 import { activityTombstoned, checkAccountFence, defaultFenceDeps, type FenceDeps } from "./fence";
 import { activityStreamRowPath, activityStreamsPrefix, activitySummaryPath, isActivityId } from "./paths";
 import { activitySettingsPath, effectiveStreamRetentionDays, type StreamRetentionDays } from "./settings";
@@ -221,9 +222,20 @@ export async function handleGetActivityStreamDownloadUrls(
   if (signInProvider === "anonymous") {
     throw new HttpsError("permission-denied", "anonymous_not_allowed");
   }
+  // Invocation-bound identity (S02 design 17 item 25): before the parse, the quota charge and any read.
+  let bound: unknown;
+  try {
+    bound = verifyExpectedUid(uid, data);
+  } catch (e) {
+    if (e instanceof ExpectedUidError && e.code === "account_changed") {
+      log("warn", { outcome: "account_changed" });
+      throw new HttpsError("failed-precondition", "account_changed");
+    }
+    throw toHttpsError("invalid_request");
+  }
   let ids: string[];
   try {
-    ids = parseDownloadRequest(data);
+    ids = parseDownloadRequest(bound);
   } catch {
     throw toHttpsError("invalid_request");
   }

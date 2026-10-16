@@ -499,3 +499,11 @@ Facts: findings document for epic 16a server written from the actual run output,
 Why it worked: results were quoted verbatim and the unverified parts were listed.
 Layer: tests.
 Rule next time: quote result lines verbatim and say what was not run.
+
+## 2026-10-16 - Commit: fix(s02): bind the remaining activity callables to the initiating account (remediation J3a)
+
+Kind: SHORTCOMING.
+Facts: the J1 fix bound four callables to the initiating account but left two callables of the same class (getActivityStreamDownloadUrls, deleteAllActivityStreams) unbound, because the J1 brief named four. Three independent class-sweep reviews found them. Evidence: core/changes/2026-10-16-s02-remediation-j3a-server-more-callables.md.
+Root cause: the fix was scoped from a list of names instead of the whole class; design item 25 even recorded the two as "outside this item".
+Layer: author and the J1 brief missed it; the class-sweep reviewers caught it.
+Rule next time: when binding or hardening a class, enumerate ALL members of the class first (every onCall export) and add a structural test that fails when a new member lacks the guard.

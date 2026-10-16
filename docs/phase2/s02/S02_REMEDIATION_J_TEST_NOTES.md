@@ -132,3 +132,34 @@ For EACH of grant, withdraw, deleteCloudStreamsNow, uploader create, uploader co
 ### Accepted limits
 - The account can still flip after the server accepted the request but before the client applies the result: the existing post-call re-check throws and nothing is written for B; the server wrote only the initiating account's own consent or data, so this is not a data leak. A and the client cache can then differ until the next `load()`.
 - `withdraw` keeps the local-first order: if the account changes after the local flip, the initiating account stays locally withdrawn but the server is not told (privacy-conservative; the user can withdraw again as that account).
+
+## J3 (class sweep follow-up)
+
+Status: NOT RUN. No test, analysis or build was executed. This section supersedes the J1 statement that the download and delete-all callables are out of scope.
+
+### SERVER (J3a)
+
+Files: `functions/src/activity_streams/download_urls.ts`, `functions/src/activity_streams/delete_all_streams.ts`.
+
+Signature change: `handleDeleteAllActivityStreams(deps, uid, signInProvider, data, limits = DEFAULT_DELETE_ALL_LIMITS)`. The new 4th parameter `data: unknown` is REQUIRED and sits BEFORE `limits` (a caller that passed `limits` as the 4th argument must now pass it 5th). `handleGetActivityStreamDownloadUrls(deps, uid, signInProvider, data)` keeps its signature.
+
+Order of checks, `handleGetActivityStreamDownloadUrls`: (1) onCall wrapper: no `request.auth` -> `unauthenticated`/`sign_in_required`, then `noteAppCheck`; (2) anonymous gate (`permission-denied`/`anonymous_not_allowed`); (3) `verifyExpectedUid(uid, data)`: mismatch -> `HttpsError("failed-precondition", "account_changed")` with log outcome `account_changed` (warn, no uid); missing or malformed key -> `invalid-argument`/`invalid_request`; (4) the unchanged strict `parseDownloadRequest` on the stripped copy (an unknown extra key is still `invalid_request`; non-object data is returned unchanged by the helper and refused by the parser); (5) bucket check, quota charge, fenced transaction, signing as before.
+
+Order of checks, `handleDeleteAllActivityStreams`: (1) onCall wrapper as above; (2) anonymous gate; (3) `verifyExpectedUid(uid, data)` with the same two failures; the helper's other failure mode (missing/malformed key) maps to `invalid-argument`/`invalid_request` (new `invalid_request` entry in the handler's refusal map); (4) the stripped body must be an empty plain object: any extra key, an array, null, a primitive or undefined -> `invalid-argument`/`invalid_request` (the smallest strict check; the handler never parsed a body before); (5) settings read, quota charge (only when starting a job), bulk page as before. Mismatch therefore causes no settings read, no quota usage document, no delete and no Storage call.
+
+Existing jest support that MUST change:
+- `functions/src/__tests__/activity/support/seven.ts`: entry `getActivityStreamDownloadUrls` (line ~69: `handleGetActivityStreamDownloadUrls(w.deps, uid, p, d)`) and entry `deleteAllActivityStreams` (line ~74: `handleDeleteAllActivityStreams(w.deps, uid, p)` currently ignores `d`; it must now pass a 4th argument, the body). In BOTH entries add `expectedUid: uid` when `d` is a plain object that does not carry the key; for `deleteAllActivityStreams` the body becomes `{ expectedUid: uid }` (also when the table passes an empty or undefined `d`). The J1 note that these two entries must NOT get the key is obsolete. Keep the ability to pass an explicit `expectedUid` and non-object data.
+- Direct calls of `handleGetActivityStreamDownloadUrls` that pass `{ activityIds }` and now need `expectedUid`: `account_flow.test.ts:315` (uid `UID`), `export_downloads_telemetry.test.ts:29` (helper `dl`, explicit `uid` argument: send `expectedUid` equal to THAT uid).
+- Direct calls of `handleDeleteAllActivityStreams(w.deps, UID, "password")` with no body (now `invalid_request`): `remediation_a_reconcile.test.ts:136, 145, 170`; `settings_consent.test.ts:200, 221`. Pass `{ expectedUid: UID }` as the 4th argument.
+- `sweeps_jobs.test.ts:490` (`handleDeleteAllActivityStreams(w.deps, UID, "password", lim(o))`) and `:566` (`"anonymous", lim()`): `lim(...)` was the 4th argument and must move to the 5th; insert `{ expectedUid: UID }` as the 4th (for the anonymous case any body works, the gate is first).
+- Tests that reach the two handlers only through `SEVEN` (fixed by the `seven.ts` change): `callable_hardening.test.ts` (`by(name)`, the quota loop ~144, the log-sentinel cases, line ~232 loop), `delete_fence.test.ts:174`, `remediation_a_expiry.test.ts:139`, `scaling.test.ts` (reads deployed options only; unaffected).
+- Run `Grep` for `deleteAllActivityStreams|getActivityStreamDownloadUrls|handleDeleteAll|handleGetActivityStream` under `functions/src/__tests__` to catch any call this list missed; the list comes from reading, not from a run.
+
+New tests required (a new file, e.g. `functions/src/__tests__/activity/expected_uid_more_callables.test.ts`), for EACH of the two handlers:
+- mismatch: exactly `failed-precondition` / `account_changed`; no quota usage document (`usageOf(UID, quotaAction)` is 0), no read of the settings document or the fence (assert the read/write log is unchanged), no Storage call; log outcome `account_changed`, no uid in any log field.
+- mismatch wins over an invalid request (download: `activityIds` malformed; delete-all: an extra key) and over an exhausted quota.
+- missing key, non-string key, empty string, 129 characters -> `invalid-argument`/`invalid_request`, no charge, no read, no write.
+- matching key -> the existing success path (download returns results; delete-all returns `done`/`more`).
+- strict bodies: download `{ activityIds, expectedUid: UID, extra: 1 }` -> `invalid_request`; delete-all `{ expectedUid: UID, extra: 1 }`, `null`, `undefined`, `[]`, a string -> `invalid_request` with no charge.
+- anonymous caller with a MISMATCHING key still gets `permission-denied`/`anonymous_not_allowed`.
+- STRUCTURAL test: scan `functions/src/activity_streams/*.ts`, find every exported `onCall(` handler (`export const <name> = onCall(`), and fail when any handler other than `sendDebugTelemetry` does not call `verifyExpectedUid` (directly or via the `handle...` function it calls) before its first `await`. A practical form: for each such handler, resolve the `handle...` function it returns and assert the text of that function contains `verifyExpectedUid(` and that its index is smaller than the index of the first `await` in the function body; assert the exempt list is exactly `["sendDebugTelemetry"]`.
