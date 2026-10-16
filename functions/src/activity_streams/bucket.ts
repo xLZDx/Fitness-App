@@ -37,7 +37,7 @@ export interface StreamBucket {
   /** `generation` pins every later read of the handle to that object version. */
   file(path: string, options?: { generation?: string | number }): StreamFile;
   /** Deletes every object under `prefix`; an empty prefix is a no-op. */
-  deleteFiles(options: { prefix: string }): Promise<unknown>;
+  deleteFiles(options: { prefix: string; force?: boolean }): Promise<unknown>;
 }
 
 /** Produces the bucket for a name; the default uses the Admin SDK. */

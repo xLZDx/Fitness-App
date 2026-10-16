@@ -56955,3 +56955,7 @@ Decision: One daily scheduled function first advances the recompute (20 users, b
 ## 2026-10-16 - Commit: S02-05b: purge and recompute indexes
 
 Decision: The purge query gets a composite collection-group index (state, expiresAt) and the recompute discovery gets a single-field collection-group override on recomputePending; no settingsGeneration index is added because the final pass needs none. Evidence: core/changes/2026-10-16-s02-05b-indexes.md.
+
+## 2026-10-16 - Commit: S02-06b: activity object sweep in sweepAccountData
+
+Decision: sweepAccountData runs the Body Scan sweep and the new activity sweep as independent cleanups (both prefixes of the activity bucket attempted, failures aggregated into one bare code, a single failure rethrown unchanged) so both deleteAccount calls and the reconciler retry sweep both buckets. Evidence: core/changes/2026-10-16-s02-06b-sweep.md.

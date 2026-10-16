@@ -52,6 +52,7 @@ import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { bodyScanBucketName } from "./body_scan/flags";
 import { defaultFenceDeps, writeActivityAccountFence } from "./activity_streams/fence";
+import { runIndependentCleanups, sweepActivityStreamObjects } from "./activity_streams/sweep";
 import { INTERACTIVE, RARE, WEBHOOK, RUNTIME_SA } from "./scaling";
 import {
   noteAppCheck,
@@ -2371,8 +2372,12 @@ async function sweepBookings(uid: string): Promise<void> {
  * Covers `users/{uid}` (recursive), the two other uid-keyed top-level
  * collections (`donor_wall`, `coach_listings`), the three collections that
  * only MENTION the uid (see `sweepSharedRecords`), and the user's objects in the
- * private body-scan bucket (see `sweepBodyScanObjects`), which runs LAST so a
- * storage failure never leaves Firestore data behind.
+ * private body-scan bucket (see `sweepBodyScanObjects`) and in the private
+ * activity stream bucket (see `sweepActivityStreamObjects`, S02 design 6.1).
+ * The storage sweeps run LAST so a storage failure never leaves Firestore data
+ * behind. They are attempted INDEPENDENTLY: a failure of one never prevents the
+ * attempt of the other, the failures become ONE bare code, and the durable
+ * retry (`reconcileAccountDeletions`) completes whatever was left.
  */
 async function sweepAccountData(uid: string): Promise<void> {
   await Promise.all([
@@ -2381,7 +2386,10 @@ async function sweepAccountData(uid: string): Promise<void> {
     db.recursiveDelete(db.collection("coach_listings").doc(uid)),
   ]);
   await sweepSharedRecords(uid);
-  await sweepBodyScanObjects(uid);
+  await runIndependentCleanups([
+    () => sweepBodyScanObjects(uid),
+    () => sweepActivityStreamObjects(uid),
+  ]);
 }
 
 const BODY_SCAN_SWEEP_SKIPPED = "body_scan_storage_sweep_skipped_unconfigured";
