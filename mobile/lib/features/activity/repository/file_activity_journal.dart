@@ -301,6 +301,57 @@ class FileActivityJournal implements ActivityJournal {
   }
 
   @override
+  Future<JournalEntry?> updateRecord(
+    String id,
+    ActivitySession session, {
+    JournalSyncState? syncState,
+    int? expectedGeneration,
+    int? baseRev,
+    Map<String, Object?>? baseSummary,
+  }) {
+    _checkId(id);
+    return _mutex.run(() async {
+      _ensureStarted();
+      final prev = _meta[id];
+      if (prev == null || prev.record.state.tombstone) return null;
+      if (expectedGeneration != null && expectedGeneration != prev.seq) {
+        return null;
+      }
+      final schema = prev.record.session['schema'];
+      if (session.isReadOnly || (schema is num && schema > kActivitySchema)) {
+        throw JournalReadOnlyException(id);
+      }
+      final sessionMap = session.toJson()..remove('streams');
+      final old = prev.record.state;
+      final next = old.copyWith(
+        syncState: syncState ?? old.syncState,
+        baseRev: baseRev ?? old.baseRev,
+        baseSummary: baseSummary ?? old.baseSummary,
+      );
+      final entry = JournalEntry(
+        session: session,
+        state: old,
+        generation: prev.seq,
+        streamsLoaded: false,
+      );
+      if (jsonEncode(sessionMap) == jsonEncode(prev.record.session) &&
+          next.syncState == old.syncState &&
+          next.baseRev == old.baseRev &&
+          jsonEncode(next.baseSummary) == jsonEncode(old.baseSummary)) {
+        return entry;
+      }
+      final meta = await _commitStateOnly(id, prev, next, 'put',
+          sessionMap: sessionMap);
+      return JournalEntry(
+        session: session,
+        state: meta.record.state,
+        generation: meta.seq,
+        streamsLoaded: false,
+      );
+    });
+  }
+
+  @override
   Future<bool> markSynced(
     String id, {
     int? expectedGeneration,
@@ -315,7 +366,8 @@ class FileActivityJournal implements ActivityJournal {
   /// A new generation with the same session map and the same `streams.bin`
   /// bytes and a changed state (unknown keys of a newer schema survive).
   Future<_Meta> _commitStateOnly(
-      String id, _Meta prev, JournalState state, String op) async {
+      String id, _Meta prev, JournalState state, String op,
+      {Map<String, dynamic>? sessionMap}) async {
     final Uint8List streams;
     try {
       streams = await _fs.readBytes(
@@ -323,7 +375,7 @@ class FileActivityJournal implements ActivityJournal {
     } on FileSystemException catch (e) {
       throw JournalIoException('cannot read current streams', cause: e);
     }
-    return _commit(id, prev.record.session, state, streams, op);
+    return _commit(id, sessionMap ?? prev.record.session, state, streams, op);
   }
 
   /// Steps of design 10: new generation, COMMIT (the commit point), then the

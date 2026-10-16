@@ -57015,3 +57015,7 @@ Decision: A native recording id is activityIdFor(sourceId app, externalId record
 ## 2026-10-16 - Commit: S02-10: A-1..A-3 interfaces
 
 Decision: Quarantine is a pure raw-text validation stage with hard limits and reason codes, the source cursor is a tolerant value record where corruption means no cursor, and DeviceSource gains healthStatus, deleteCached and an optional workout stream with no write-back; none of this claims cross-source dedup. Record: core/changes/2026-10-16-s02-10-interfaces-a1-a3.md
+
+## 2026-10-16 - Commit: S02-12: sync foundations
+
+Decision: The journal gains updateRecord, which commits a changed session map and sync state as one generation reusing the existing streams bytes, so overrides, explicit values, candidates and conflict state change atomically even for a streamLost entry; the cloud is reached only through a small backend seam whose denial is a typed exception never read as deletion, and baseSummary is stored with ISO timestamp strings

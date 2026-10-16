@@ -51,6 +51,25 @@ abstract class ActivityJournal {
     Map<String, Object?>? baseSummary,
   });
 
+  /// Replaces the session map and the sync bookkeeping of an entry in ONE new
+  /// generation while keeping the `streams.bin` bytes of the current one (so
+  /// it also works for a `streamLost` entry and never needs the streams). Used
+  /// by the sync layer for overrides, explicit edits and conflict resolution
+  /// (design 3.2). [session] must come from this entry (read or list); its
+  /// streams are ignored. When [expectedGeneration] is given and the entry
+  /// moved on, nothing is written and null is returned; null is also returned
+  /// for an unknown or deleted id. An identical replacement is a no-op that
+  /// returns the current entry. Throws [JournalReadOnlyException] for a
+  /// newer-schema record.
+  Future<JournalEntry?> updateRecord(
+    String id,
+    ActivitySession session, {
+    JournalSyncState? syncState,
+    int? expectedGeneration,
+    int? baseRev,
+    Map<String, Object?>? baseSummary,
+  });
+
   /// `synced` marker; call only after the commit callable returned success.
   Future<bool> markSynced(
     String id, {
