@@ -157,3 +157,6 @@ Facts: after `wipeForUid(bound uid)` the journal is unbound, so `bindUid(null)` 
 Root cause: the implementer compiled and ran nothing and tested the refusal state machine only on the paths it imagined; stale oracles were not searched when the contract changed.
 Layers: F2 author and the independent reviewers missed it; found by the epic 12b test written from the notes.
 Rule next time: test every state-clearing event from every reachable state, including the state where the clearing event looks like a no-op.
+
+## 2026-10-16 - S02 test epic 12b (2): binding retry tests
+Kind: SUCCESS. The binding provider, written without a compiler, met every F2 note on the first run (14 of 14), because the retry state is one generation counter plus one timer slot; a fake timer factory with forced stale callbacks made the cancel guarantees falsifiable. Architecture/import guard tests (data/-layer graph, backup rules) pass: they scan only feature `data/` directories, and `core/wiring` already imports account-deletion state like body_scan and food_diary do, so no import fix was needed (layer that missed it: none; the implementer simply did not check).
