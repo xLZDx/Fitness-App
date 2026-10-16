@@ -56831,3 +56831,7 @@ Decision: a summary override is bound to the input revision of its own field ins
 ## 2026-10-16 - Commit: S02 design and test plan revision 7
 
 Decision: summary override invalidation is driven by digests of ten classified input classes against an authoritative field matrix that is a superset by rule, and the tests compare the production constant with an independent golden fixture instead of reading the constant itself. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-7.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 8
+
+Decision: the lifecycle of a merged summary override is decided by observable values (recomputed value versus the value at merge time and the adopted value), not by a classification of inputs; the matrix design was withdrawn after two review findings that no matrix could fix. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-8.md.
