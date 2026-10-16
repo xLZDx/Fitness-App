@@ -322,3 +322,9 @@ Rule next time: keep grepping tests for the old behaviour whenever a contract ch
 Kind: SHORTCOMING.
 Facts: The H5 notes require the account-deleting skip to be logged, but syncAll returned silently when the identity went stale after listTombstoneIds; only the start-of-pass skip logged. Evidence: core/changes/2026-10-16-s02-test-epic14b-deletion-flag.md.
 Root cause: the author added the log to the start check only. Layers: author and reviewers missed it; the epic 14b oracle (log line after a mid-flight flag) caught it. Rule next time: every early return of a pass either logs a reason word or is documented as silent.
+
+## 2026-10-16 - H6 presenter and sheet compiled and met every oracle
+
+Kind: SUCCESS.
+Facts: The remediation H presenter, uid provider and sheet changes compiled unchanged and passed 7 new tests on the first run; the older presenter and sheet tests also passed (+28). Evidence: core/changes/2026-10-16-s02-test-epic14b-presenter-sheet.md.
+Why it worked: the guards are small and the H-B notes named the stale tests exactly. Limit: the tests use the real container and a fake auth stream, so the real FirebaseAuth stream timing is not covered.

@@ -57622,3 +57622,7 @@ Decision: the H-A test notes list 19 interleaving oracles and every stale fake o
 ## 2026-10-16 - Commit: test(s02): H5 deletion-in-progress flag stops the sync pass (epic 14b)
 
 Decision: The deletion-flag tests (10 tests) assert the flag raised during listTombstoneIds, a tombstone push and a summary write; a pass that starts under the flag; the retry timer; and the account-deleting log line without a uid. One production line added: a mid-flight skip after the tombstone listing is now logged like the start-of-pass skip. Evidence: core/changes/2026-10-16-s02-test-epic14b-deletion-flag.md.
+
+## 2026-10-16 - Commit: test(s02): H6 presenter reset per uid and sheet card rule (epic 14b)
+
+Decision: Presenter and sheet tests (3 + 4) assert the first frame of a new uid is loading with no conflicts, busy keys or failure flag, a stale action of A does not touch B, a refresh error clears the list, equal-uid re-emission does not reset, and the sheet draws cards only for a loaded, non-failed state (positive control included). Evidence: core/changes/2026-10-16-s02-test-epic14b-presenter-sheet.md.

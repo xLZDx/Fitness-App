@@ -75,8 +75,13 @@ class RecBackend implements ActivitySummaryBackend {
     final g = readGate;
     readGate = null;
     if (g != null) await g.pass();
+    final e = readError;
+    if (e != null) throw e;
     return r;
   }
+
+  /// Thrown by every `readSummary` after its gate (null = no error).
+  Object? readError;
 
   @override
   Future<void> writeSummary(String id, Map<String, Object> summary,
