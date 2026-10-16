@@ -412,10 +412,13 @@ void main() {
       expect(w.storage.values.containsKey(keyOf('B')), isFalse);
       expect(File('${w.rootOf('B')}/quarantine/b.json').existsSync(), isFalse);
       expect(w.storage.values.containsKey(keyOf('A')), isTrue);
-      expect(await j().bindUid('B'), isTrue);
-      expect(await ids(), isEmpty);
+      // Remediation F2: the wiped uid cannot be re-bound by a re-emission.
+      expect(await j().bindUid('B'), isFalse);
       expect(await j().bindUid('A'), isTrue);
       expect(await ids(), [idFor(1)]);
+      // Another uid ended the refusal: a later genuine sign-in of B is clean.
+      expect(await j().bindUid('B'), isTrue);
+      expect(await ids(), isEmpty);
     });
 
     test('wipeForUid with an empty uid is refused', () async {

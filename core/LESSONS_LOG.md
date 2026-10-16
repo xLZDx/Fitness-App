@@ -150,3 +150,10 @@ Rule next time: a retry budget needs a reset condition and a last-resort slow pa
 
 ## 2026-10-16 - Remediation F1 documentation (4/4)
 Kind: SUCCESS. The test notes name an oracle per finding (switch account mid-pass with a blocked backend, authUid mismatch, unbound, retry budget) and the stale fakes up front, applying the lessons of the earlier stale-fake failure.
+
+## 2026-10-16 - S02 test epic 12b (1): refusal of a wiped uid never ended
+Kind: FAILURE.
+Facts: after `wipeForUid(bound uid)` the journal is unbound, so `bindUid(null)` returned at the "already unbound" early exit before `_wipedUid` was cleared and only binding another uid ended the refusal; the F2 notes say `bindUid(null)` clears it (core/changes/2026-10-16-s02-test-epic12b-wipe-rebind.md). Also the epic 11a test and the wipe wiring fake still encoded the pre-F2 contract.
+Root cause: the implementer compiled and ran nothing and tested the refusal state machine only on the paths it imagined; stale oracles were not searched when the contract changed.
+Layers: F2 author and the independent reviewers missed it; found by the epic 12b test written from the notes.
+Rule next time: test every state-clearing event from every reachable state, including the state where the clearing event looks like a no-op.

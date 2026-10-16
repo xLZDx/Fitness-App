@@ -50,6 +50,13 @@ class _Scoped extends Fake implements ActivityJournal, AccountScopedJournal {
 
   @override
   Future<bool> bindUid(String? uid) => inner.bindUid(uid);
+
+  // Remediation F2 added these to AccountScopedJournal; a Fake throws on them.
+  @override
+  String? get boundUid => inner.boundUid;
+
+  @override
+  bool get isBound => inner.isBound;
 }
 
 /// A plain (NOT account-scoped) journal: counts and optionally fails `wipe()`.
@@ -130,6 +137,9 @@ void main() {
   }
 
   Future<List<String>> idsOf(String uid) async {
+    // A wipe of the bound uid refuses its re-bind (remediation F2); a sign-out
+    // (unbind) ends the refusal, as in the real flow, before the next sign-in.
+    await w.journal.bindUid(null);
     expect(await w.journal.bindUid(uid), isTrue);
     return [for (final e in await w.journal.list()) e.id]..sort();
   }

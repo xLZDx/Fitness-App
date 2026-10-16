@@ -101,6 +101,9 @@ class UidScopedActivityJournal
           await _unbind();
           return false;
         }
+        // An explicit unbind ends the wiped-uid refusal even when nothing is
+        // bound (a wipe of the bound uid already left the journal unbound).
+        if (uid == null) _wipedUid = null;
         if (uid == _boundUid && (uid == null || _bound != null)) return true;
         // A different uid or an explicit unbind ends the wiped-uid refusal.
         _wipedUid = null;

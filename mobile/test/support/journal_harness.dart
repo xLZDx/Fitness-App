@@ -39,6 +39,7 @@ class FakeClock {
 class FakeJournalSecureStorage implements JournalSecureStorage {
   final Map<String, String> values = {};
   bool failReads = false;
+  bool failDeletes = false;
   int reads = 0;
   int writes = 0;
   int deletes = 0;
@@ -59,6 +60,7 @@ class FakeJournalSecureStorage implements JournalSecureStorage {
   @override
   Future<void> delete(String key) async {
     deletes++;
+    if (failDeletes) throw StateError('secure storage delete failed');
     values.remove(key);
   }
 }

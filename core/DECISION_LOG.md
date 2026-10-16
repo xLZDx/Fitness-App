@@ -57517,3 +57517,7 @@ Decision: after six backed-off attempts one 60-minute fallback timer remains whi
 ## 2026-10-16 - Commit: S02 remediation F1 (4/4) design item 23 and F1 test notes
 
 Decision: remediation F1 is recorded in design 17 item 23 with the accepted/backlog list (anonymous sign-out data stays on disk until the S03 export offer; pending-deletions UI is S03). Evidence: core/changes/2026-10-16-s02-remediation-f1-docs.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (1) no rebind after wipe and key-delete failure
+
+Decision: `bindUid(null)` ends the wiped-uid refusal even when the journal is already unbound (smallest production fix); the epic 11a oracle that a wiped uid re-binds at once is superseded by the F2 contract. Evidence: core/changes/2026-10-16-s02-test-epic12b-wipe-rebind.md.
