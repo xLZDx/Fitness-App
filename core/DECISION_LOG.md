@@ -57219,3 +57219,7 @@ Decision: The fake server refuses a commit without a complete PUT of that upload
 ## 2026-10-16 - Commit: S02 test epic 7b: client stream upload tests (I15, I16, I17)
 
 Decision: The real sequence summary sync then upload is pinned; HR is checked in stream, lap and field-name form with a positive control.
+
+## 2026-10-16 - Commit: S02 test epic 7b: client retry policy tests (I27)
+
+Decision: I27 restart wording is implemented as never resume, always a new upload; design 5.2 item 4 jitter and resume text is stale.
