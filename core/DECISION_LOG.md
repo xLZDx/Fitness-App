@@ -57067,3 +57067,7 @@ Decision: The runbook records that the activity functions run as the default run
 ## 2026-10-16 - Commit: S02-08: privacy text request
 
 Decision: The privacy wording is requested as content statements only and needs operator approval; public/privacy.html is not edited by this story and the cloud flag stays OFF until it is.
+
+## 2026-10-16 - Commit: S02-08: design corrections and implementation notes
+
+Decision: The design now states the fence write position after the Stripe cancel and token revoke (authDeletedAt at Step 3b) and carries a section 17 listing the build deviations from the change records; settled text elsewhere is untouched.
