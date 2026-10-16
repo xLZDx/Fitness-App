@@ -457,6 +457,13 @@ export const QUOTAS = {
    * charged against it (design 9.1: an erasure-side action is never rate-limited).
    */
   activitySettingsSet: 20,
+  /**
+   * S02 `deleteActivity` (design 5.4): single-activity deletes per user per day.
+   * Starting limit, unmeasured. The bulk "delete all my cloud streams" action
+   * gets its OWN quota (`activityDeleteAll`, S02-06b) so erasure is never
+   * stopped by this ceiling.
+   */
+  activityDelete: 100,
 } as const;
 
 /**
@@ -483,6 +490,8 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "foodSearch",
   // S02 activity settings (design 5.4): the log must not record who changed GPS-stream consent.
   "activitySettingsSet",
+  // S02 activity delete (design 5.4): the log must not record which user deleted GPS activities.
+  "activityDelete",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",

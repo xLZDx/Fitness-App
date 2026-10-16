@@ -3008,6 +3008,7 @@ export { purgeExpiredBodyScanPhotos, sweepLateBodyScanUploads } from "./body_sca
 // Unified activity cloud settings and consent (S02-05a, design 5.3/9.1). Server-written
 // settings document; granting consent answers `feature-disabled` until ACTIVITY_STREAM_BUCKET is set.
 export { setActivityCloudSettings } from "./activity_streams/set_settings";
+export { deleteActivity } from "./activity_streams/delete_activity";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until

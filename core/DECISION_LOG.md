@@ -56923,3 +56923,7 @@ Decision: Consent and retention are written only by one fenced transaction (sett
 ## 2026-10-16 - Commit: S02-06a: shared fence helper and deleteAccount fence write
 
 Decision: All activity callables read the delete fence, the deletion-retries marker and Auth existence through one helper that fails closed on a transient Auth error; deleteAccount writes the fence after the Stripe cancel and before the first sweep (a failed cancel must not fence a live account). Evidence: core/changes/2026-10-16-s02-06a-fence-helper.md.
+
+## 2026-10-16 - Commit: S02-06a: deleteActivity callable
+
+Decision: deleteActivity writes the 400-day tombstone first inside the fenced transaction, then removes both object prefixes (404 is success, failures aggregate to one bare code), then the stream index row, then the summary last; it is idempotent, not behind the feature flag, and has its own redacted quota activityDelete. Evidence: core/changes/2026-10-16-s02-06a-delete-activity.md.
