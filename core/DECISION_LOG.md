@@ -57051,3 +57051,7 @@ Decision: The offer is a boolean cloudStreams.deleteExisting inside the existing
 ## 2026-10-16 - Commit: S02 glue: coordinate-like string denial in the Dart payload builder
 
 Decision: The client conforms to the server validator instead of loosening it: strings failing the pattern or the shared coordinate-like denial are dropped (record dropped when a required string cannot be valid) and importedAt is cut to whole seconds because a fractional second itself matches the denial and would make every provenance record, and so every upload, be rejected
+
+## 2026-10-16 - Commit: S02-08: lifecycle policy rows
+
+Decision: Six policy rows (activities, activity_streams, activity_settings BOTH; activity_tombstones DELETE because S02-07 does not export tombstones; activity_account_state and activity_reconcile_state EXEMPT server-only) plus an informational storageObjects section for the streams/ and quarantine/ prefixes; test agents must use the named conditionalRefs test strings.
