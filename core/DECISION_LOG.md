@@ -57147,3 +57147,7 @@ Decision: R32/R34 follow the design (rev strictly greater on update, resent equa
 ## 2026-10-16 - Commit: S02 test epic 5: golden seam, policy cells, debug_sessions, Storage rules, client constants
 
 Decision: The two debug_sessions expectations that assumed client create are updated to the S02-09 rule; the flush of 500 entries is asserted as single-summary backend calls (the client sends no multi-summary batch today).
+
+## 2026-10-16 - Commit: S02 test epic 5: findings and final epic run
+
+Decision: Epic 5 closes with 908 emulator tests green (8 suites) and one production rules fix (expression budget); the emulator access-call limit for activity batches is 19 summaries (fence lookup counted once), production unconfirmed.
