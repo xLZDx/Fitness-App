@@ -282,6 +282,8 @@ final activityConsentStoreProvider =
 final activityCloudSettingsClientProvider =
     Provider<ActivityCloudSettingsClient>((ref) => ActivityCloudSettingsClient(
           call: cloudFunctionsSettingsCall(),
+          // Remediation J2: the live account the callable will run as.
+          currentUid: () => FirebaseAuth.instance.currentUser?.uid,
           store: ref.watch(activityConsentStoreProvider),
         ));
 

@@ -29,6 +29,7 @@ import '../data/summary_fields.dart';
 import '../data/summary_overrides.dart';
 import '../data/summary_projection.dart';
 import '../data/summary_three_way_merge.dart';
+import 'activity_cloud_settings_client.dart' show ConsentAccountChangedException;
 import 'activity_journal.dart';
 import 'journal_errors.dart';
 import 'activity_summary_backend.dart';
@@ -81,7 +82,8 @@ class _ConflictDetail {
 /// Pushes one local delete to the server (the `deleteActivity` callable writes
 /// the tombstone first, then removes streams and the summary; idempotent).
 /// Throws on failure; the sync layer retries at the next pass.
-typedef ActivityTombstonePusher = Future<void> Function(String activityId);
+typedef ActivityTombstonePusher = Future<void> Function(
+    String activityId, String? expectedUid);
 
 /// Creates the retry timer (injectable so tests need no real waiting).
 typedef TombstoneRetryTimerFactory = Timer Function(
@@ -793,12 +795,16 @@ class ActivitySyncRepository {
         if (!_mayCall(p)) return aborted;
         pushed++;
         try {
-          await push(id);
+          await push(id, p.authUid);
           if (!_alive(p)) return aborted;
           _confirmedTombstones.add(id);
           _failedTombstones.remove(id);
         } catch (e) {
           if (!_alive(p)) return aborted;
+          // Remediation J2: the account changed under the call (server refusal
+          // or a missing uid). Same as `_mayCall` returning false: the pass
+          // stops, the tombstone stays pending, no failure bookkeeping.
+          if (e is ConsentAccountChangedException) return aborted;
           // Offline or refused: owed, retried later. The error code is kept so
           // a refusal is distinguishable from being offline.
           anyFailed = true;

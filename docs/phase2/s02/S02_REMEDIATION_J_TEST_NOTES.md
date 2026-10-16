@@ -75,4 +75,60 @@ Out of J1 scope (documented, not changed): `getActivityStreamDownloadUrls`, `del
 
 ## CLIENT section (J2)
 
-(empty; to be filled by the J2 agent)
+Status: CLIENT half (J2) implemented, NOT RUN (no test, analyze or build was executed). Test agent: FIRST get `mobile/` compiling (the fakes and call sites listed below), THEN write the new tests.
+
+### Changed signatures (old -> new)
+
+All under `mobile/lib/features/activity/repository/` unless stated.
+- `ActivityCloudSettingsClient({required call, store})` -> `ActivityCloudSettingsClient({required call, required String? Function() currentUid, store})` (`activity_cloud_settings_client.dart`). New getter `bool get authMatchesAccount` (`store.boundUid != null && currentUid() == store.boundUid`). `_requireUid(uid)` now also requires `currentUid() == uid` and a non-null uid.
+- `grant()` / `withdraw({deleteExisting})`: start check (store unbound OR live auth uid != bound uid -> `ConsentAccountChangedException`, before any state change or set insertion); request map gains `'expectedUid': uid`; a synchronous `_requireUid(uid)` sits immediately before the `_call(...)` expression; the existing post-call `_requireUid` now includes the auth check. In `withdraw` the local flip and persist still come first; if the account changes after the flip the call is NOT sent and the initiating account stays locally withdrawn.
+- `cloudFunctionsSettingsCall`: maps `FirebaseFunctionsException(code: 'failed-precondition', message: 'account_changed')` to `ConsentAccountChangedException` (other failures are rethrown unchanged). New public helper `bool isAccountChangedRefusal(FirebaseFunctionsException e)`.
+- `ActivityConsentWithdrawal.deleteCloudStreamsNow`: refuses (throws `ConsentAccountChangedException`, no `_deleteRequested` key) when `accountUid == null` OR `!authMatchesAccount`.
+- `ActivityStreamCallableClient.create({activityId, bytes, contentSha256})` -> adds `required String? expectedUid`; `commit({activityId, uploadId})` -> adds `required String? expectedUid` (`activity_stream_uploader.dart`).
+- `CloudFunctionsActivityStreamClient.create/commit`: put `expectedUid` into the payload; a null `expectedUid` throws `ConsentAccountChangedException` BEFORE any network call; the server pair maps to `ConsentAccountChangedException` (`_rethrow`).
+- `ActivityStreamUploader`: passes the pass `bound` uid as `expectedUid` (null for an unbound test configuration); `on ConsentAccountChangedException` returns `StreamUploadOutcome.cancelled` (no retry counter, nothing marked, no quarantine, no failure state, no `_failedThisStart` entry).
+- `ActivityTombstonePusher` typedef (`activity_sync_repository.dart`): `Future<void> Function(String activityId)` -> `Future<void> Function(String activityId, String? expectedUid)`. The repository calls `push(id, p.authUid)` (the value `_mayCall(p)` just checked). `ConsentAccountChangedException` from the pusher ends the pass like `_mayCall == false` (returns the aborted run; no `_failedTombstones`, no `_lastTombstonePushError`, no confirmation, tombstone stays pending). There is exactly one call site (`_pushLocalTombstones`); `activity_sync_resolution.dart` does not call the pusher.
+- `CloudFunctionsActivityTombstonePusher.push(String activityId)` -> `push(String activityId, String? expectedUid)` (`cloud_functions_activity_tombstone_pusher.dart`): sends `expectedUid`, throws `ConsentAccountChangedException` before the network call when null, maps the server pair.
+- Wiring (`mobile/lib/core/wiring/activity_wiring.dart`): settings client gets `currentUid: () => FirebaseAuth.instance.currentUser?.uid`. The tombstone pusher tear-off `CloudFunctionsActivityTombstonePusher().push` and `CloudFunctionsActivityStreamClient()` need no wiring change.
+- Firestore summary backend (`firestore_activity_summary_backend.dart`): NOT changed. It addresses documents by `users/{uid}/...` using the uid it resolves per operation, and `firestore.rules` enforces `request.auth.uid == uid` on those paths (33 `request.auth.uid` uses), so a mismatch is refused by the rules; no callable, no `expectedUid`.
+
+### Existing test code that no longer compiles or changes behavior (mobile/test)
+
+Constructors without `currentUid:` (must add `currentUid: () => <live uid source>`; most tests should wire it to the same source as the store bound uid so existing scenarios keep their meaning):
+- `mobile/test/features/activity/e2e/s02_consent_switch_e2e_test.dart` (~126)
+- `mobile/test/features/activity/repository/activity_consent_withdrawal_test.dart` (~28, ~93)
+- `mobile/test/features/activity/repository/activity_consent_unbound_test.dart` (~98, ~131, ~150, ~199)
+- `mobile/test/features/activity/repository/activity_consent_switch_wiring_test.dart` (~367)
+- `mobile/test/features/activity/repository/activity_consent_account_binding_test.dart` (~193, ~241, ~302, ~359, ~410)
+- `mobile/test/features/activity/repository/activity_stream_upload_test.dart` (~160)
+
+Fakes of `ActivityStreamCallableClient` (add `expectedUid` to `create` and `commit`; record it):
+- `mobile/test/support/stream_upload_world.dart` (`FakeStreamCloud`, ~59)
+- `mobile/test/features/activity/repository/activity_consent_account_binding_test.dart` (`FakeStreamCloudStub`, ~584)
+
+Tombstone pusher closures/fakes (typedef now takes two positional arguments, e.g. `(id, expectedUid) async {...}`):
+- `mobile/test/support/two_device_world.dart` (`ActivityTombstonePusher? pusher`, ~265-271)
+- `mobile/test/features/activity/e2e/s02_auth_flip_e2e_test.dart` (~103), `s02_pass_account_switch_e2e_test.dart` (~124)
+- `mobile/test/features/activity/repository/activity_sync_deletion_flag_test.dart` (~58), `activity_sync_corrupt_summary_test.dart` (~337), `activity_sync_auth_tie_test.dart` (~131), `activity_tombstone_continuation_test.dart` (~169), `activity_sync_pass_identity_test.dart` (~277)
+
+Callers of `cloudFunctionsSettingsCall`, `CloudFunctionsActivityStreamClient`, `CloudFunctionsActivityTombstonePusher` exist only in `mobile/lib/core/wiring/activity_wiring.dart` (no test constructs them today).
+
+Existing assertions whose behavior changes:
+- Any grant/withdraw/deleteCloudStreamsNow test where the store `boundUid` is set but the live auth source returns another uid (or null) now expects `ConsentAccountChangedException` and ZERO server calls where it previously succeeded. Tests that moved only `store.boundUid` to simulate an account switch must also move the live uid source if the call is expected to proceed; tests that expect a refusal on a store-uid switch still pass.
+- Request-map assertions on the settings call (exact map equality) now include `'expectedUid'`.
+- Tests that count `unpersistedWithdrawals`/state after a refused withdraw: the refusal now happens before the flip, so no state change at all.
+- Tombstone tests that expect a thrown pusher error to count as a failure still hold for generic errors; only `ConsentAccountChangedException` is special.
+
+### New behaviors that need tests
+
+For EACH of grant, withdraw, deleteCloudStreamsNow, uploader create, uploader commit, tombstone push:
+- (a) Deterministic A to B flip: the live-uid supplier returns A for the first N reads and B afterwards (N chosen so the flip lands between the start check and the pre-call check, and again between the pre-call check and the post-call check). Run with DIFFERENT and with IDENTICAL prior consent values for A and B. Assert ZERO server mutation for B (the fake server records calls; none carries B's uid), the call is not sent when the flip lands before the pre-call check, no consent state change for B, no `_deleteRequested` key, no uploaded marker, no quarantine, no failure counter, no confirmed tombstone.
+- (b) The request carries `expectedUid` equal to the initiating account (settings map, create/commit payload via the fake, tombstone second argument = `pass.authUid`).
+- (c) A server refusal `FirebaseFunctionsException(code: 'failed-precondition', message: 'account_changed')` is not a generic failure: settings -> `ConsentAccountChangedException` (no `_unpersistedWithdrawals` change for another uid; `deleteCloudStreamsNow` removes its key); uploader -> outcome `cancelled`, no retry, nothing marked; tombstone -> pass stops, tombstone pending, not in `_failedTombstones`. Also the negative: `failed-precondition` with message `account_deleting` is NOT mapped (stays a generic refusal).
+- (d) The real clients refuse a null `expectedUid` before any network call: `CloudFunctionsActivityStreamClient.create/commit` and `CloudFunctionsActivityTombstonePusher.push` (inject a `FirebaseFunctions` fake or assert no callable is created) throw `ConsentAccountChangedException`.
+- Start refusals: store unbound; store bound A while live auth is null; store bound A while live auth is B; `authMatchesAccount` truth table.
+- Unbound uploader (no `currentUid`): passes `expectedUid == null` to the fake and still uploads.
+
+### Accepted limits
+- The account can still flip after the server accepted the request but before the client applies the result: the existing post-call re-check throws and nothing is written for B; the server wrote only the initiating account's own consent or data, so this is not a data leak. A and the client cache can then differ until the next `load()`.
+- `withdraw` keeps the local-first order: if the account changes after the local flip, the initiating account stays locally withdrawn but the server is not told (privacy-conservative; the user can withdraw again as that account).

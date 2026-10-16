@@ -459,3 +459,11 @@ Facts: GPT-PM round 13 found that ActivityCloudSettingsClient grant and withdraw
 Root cause: the round 12 class sweep inventoried per-account state and async chains but never asked whether the identity travels WITH each outbound call that is authenticated only by ambient credentials.
 Layers: missed by the H and I implementers, by the sweep brief, and by tests that moved the store bound uid instead of the live auth source; caught by the external gate.
 Rule next time: any outbound call authenticated by ambient credentials carries the initiating identity in the request and the receiver verifies it before any side effect.
+
+## 2026-10-16 - Commit: fix(s02): bind client activity calls to the initiating account (remediation J2)
+
+Kind: SUCCESS (with an open verification debt).
+Facts: the Dart half of the invocation-bound identity: settings client with a live-uid supplier and pre-call checks, expectedUid on the stream callables and the tombstone pusher, the server pair mapped to the existing account-changed outcome. Evidence: core/changes/2026-10-16-s02-remediation-j2-client-expected-uid.md. Nothing was run; tests of mobile/test do not compile until the fakes are updated (listed in the test notes).
+Why it worked: the server contract (J1) was fixed first with an exact error pair, so the client mapping compares the message and does not depend on guesses; one shared helper maps the pair in all three real clients.
+Layer: author only so far; test agents and reviewers pending.
+Rule next time: change a shared seam signature together with a written list of every fake and call site, so the test agent starts from a known compile-break list.

@@ -85,12 +85,27 @@ typedef ActivityCloudSettingsCall = Future<Map<String, Object?>> Function(
 ActivityCloudSettingsCall cloudFunctionsSettingsCall({FirebaseFunctions? functions}) {
   return (request) async {
     final fns = functions ?? functionsForRegion;
-    final res = await fns
-        .httpsCallable('setActivityCloudSettings')
-        .call<Map<Object?, Object?>>(request);
-    return {for (final e in res.data.entries) '${e.key}': e.value};
+    try {
+      final res = await fns
+          .httpsCallable('setActivityCloudSettings')
+          .call<Map<Object?, Object?>>(request);
+      return {for (final e in res.data.entries) '${e.key}': e.value};
+    } on FirebaseFunctionsException catch (e) {
+      // Remediation J2: the server saw another account than `expectedUid`.
+      if (isAccountChangedRefusal(e)) {
+        throw const ConsentAccountChangedException();
+      }
+      rethrow;
+    }
   };
 }
+
+/// True when [e] is the server's account-changed refusal (remediation J1):
+/// `failed-precondition` with the message `account_changed`. The message is the
+/// discriminator, because `failed-precondition` also carries other refusals
+/// (for example `account_deleting`).
+bool isAccountChangedRefusal(FirebaseFunctionsException e) =>
+    e.code == 'failed-precondition' && e.message == 'account_changed';
 
 /// Thrown when the signed-in account changed while a consent operation was
 /// running: nothing was recorded for the new account.
@@ -103,11 +118,16 @@ class ConsentAccountChangedException implements Exception {
 class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   ActivityCloudSettingsClient({
     required ActivityCloudSettingsCall call,
+    required String? Function() currentUid,
     CloudStreamsConsentStore? store,
   })  : _call = call,
+        _currentUid = currentUid,
         _store = store ?? InMemoryCloudStreamsConsentStore();
 
   final ActivityCloudSettingsCall _call;
+
+  /// The live authenticated uid (the account the Firebase callable will run as).
+  final String? Function() _currentUid;
   final CloudStreamsConsentStore _store;
   CloudStreamsConsent _state = CloudStreamsConsent.unknown;
   String? _consentUid;
@@ -143,8 +163,27 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
     _consentUid = null;
   }
 
+  /// True when the store is bound and the live authenticated uid is the bound
+  /// uid: the only state in which a consent-changing callable may be sent.
+  bool get authMatchesAccount {
+    final bound = _store.boundUid;
+    return bound != null && _currentUid() == bound;
+  }
+
+  /// Throws unless the store is still bound to [uid] AND the live authenticated
+  /// uid is [uid] (both are read synchronously, no await inside).
   void _requireUid(String? uid) {
-    if (_store.boundUid != uid) throw const ConsentAccountChangedException();
+    if (uid == null || _store.boundUid != uid || _currentUid() != uid) {
+      throw const ConsentAccountChangedException();
+    }
+  }
+
+  /// The uid an operation may start for; throws when the store is unbound or
+  /// the live authenticated uid differs from the bound one.
+  String _startUid() {
+    final uid = _store.boundUid;
+    _requireUid(uid);
+    return uid!;
   }
 
   /// Loads the cached state of the store's current account (call after the
@@ -167,12 +206,19 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   /// and the value was persisted, and only while the account is the one the
   /// call started for; otherwise [ConsentAccountChangedException] is thrown and
   /// nothing is written for the other account.
+  ///
+  /// Remediation J2: the request carries `expectedUid` (the initiating account)
+  /// and the server refuses it when the authenticated account differs. The
+  /// start check and the pre-call check both require the store uid AND the live
+  /// authenticated uid to equal the initiating uid.
   Future<void> grant() async {
-    // Remediation I2: an unbound store cannot persist, so nothing may reach the
-    // server (it would hold a state the client threw about).
-    if (_store.boundUid == null) throw const ConsentAccountChangedException();
-    final uid = _store.boundUid;
+    // Remediation I2/J2: an unbound store, or an authenticated account other
+    // than the bound one, cannot be served: nothing may reach the server.
+    final uid = _startUid();
+    // Synchronously before the call expression (no await in between).
+    _requireUid(uid);
     await _call({
+      'expectedUid': uid,
       'cloudStreams': {'granted': true, 'version': kCloudStreamsConsentVersion},
     });
     _requireUid(uid);
@@ -190,10 +236,15 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   /// meanwhile the server call is NOT sent (it would hit the other account) and
   /// [ConsentAccountChangedException] is thrown. [deleteExisting] asks the
   /// server to start the bulk stream deletion.
+  ///
+  /// Remediation J2: refused before any state change when the store is unbound
+  /// or the live authenticated uid is not the bound uid. The request carries
+  /// `expectedUid`. When the account changes after the local flip, the call is
+  /// not sent; the local withdrawn state of the initiating account stays (the
+  /// privacy-conservative outcome: uploads for it stay stopped).
   Future<void> withdraw({bool deleteExisting = false}) async {
-    // Remediation I2: refuse before any state change, set insertion or call.
-    if (_store.boundUid == null) throw const ConsentAccountChangedException();
-    final uid = _store.boundUid;
+    // Remediation I2/J2: refuse before any state change, set insertion or call.
+    final uid = _startUid();
     _version++;
     _state = CloudStreamsConsent.withdrawn;
     _consentUid = uid;
@@ -207,8 +258,10 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
       persistError = e;
       persistStack = s;
     }
+    // Synchronously before the call expression (no await in between).
     _requireUid(uid);
     await _call({
+      'expectedUid': uid,
       'cloudStreams': {
         'granted': false,
         'version': kCloudStreamsConsentVersion,
@@ -256,8 +309,9 @@ class ActivityConsentWithdrawal {
   /// the start; the settings client refuses (throws) when it changed meanwhile.
   /// Summaries and local data stay.
   Future<void> deleteCloudStreamsNow() async {
-    // Remediation I2: an unbound store never records a "requested" key.
-    if (_settings.accountUid == null) {
+    // Remediation I2/J2: an unbound store, or a live authenticated uid other
+    // than the bound one, never records a "requested" key.
+    if (_settings.accountUid == null || !_settings.authMatchesAccount) {
       throw const ConsentAccountChangedException();
     }
     final uid = _settings.accountUid;

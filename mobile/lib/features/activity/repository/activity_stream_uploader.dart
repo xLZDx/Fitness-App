@@ -35,6 +35,8 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import '../../../core/config/activity_flags.dart';
 import '../../../core/firebase/functions_region.dart';
 import '../data/activity_stream_payload.dart';
+import 'activity_cloud_settings_client.dart'
+    show ConsentAccountChangedException, isAccountChangedRefusal;
 import 'activity_journal.dart';
 import 'journal_errors.dart';
 import 'journal_models.dart';
@@ -99,16 +101,27 @@ class CreateUploadResult {
 }
 
 /// Callable seam for create and commit.
+///
+/// Remediation J2: [expectedUid] is the account the call is made for; the real
+/// client sends it as `expectedUid` and the server refuses a different
+/// authenticated account. The real client throws
+/// [ConsentAccountChangedException] (before any network call) when it is null.
 abstract class ActivityStreamCallableClient {
   Future<CreateUploadResult> create({
     required String activityId,
     required int bytes,
     required String contentSha256,
+    required String? expectedUid,
   });
 
-  /// Throws [StreamUploadRefused] / [StreamUploadTransient]; returns normally
-  /// for `stored` and `already_stored`.
-  Future<void> commit({required String activityId, required String uploadId});
+  /// Throws [StreamUploadRefused] / [StreamUploadTransient] /
+  /// [ConsentAccountChangedException]; returns normally for `stored` and
+  /// `already_stored`.
+  Future<void> commit({
+    required String activityId,
+    required String uploadId,
+    required String? expectedUid,
+  });
 }
 
 /// PUT seam: returns the HTTP status code; throws on transport failure.
@@ -320,7 +333,10 @@ class ActivityStreamUploader {
       if (!_mayUpload(bound)) return StreamUploadOutcome.skipped;
       try {
         final created = await _callables.create(
-            activityId: id, bytes: bytes.length, contentSha256: sha);
+            activityId: id,
+            bytes: bytes.length,
+            contentSha256: sha,
+            expectedUid: bound);
         if (!created.alreadyStored) {
           if (_cancelled || !_uidOk(bound)) {
             return StreamUploadOutcome.cancelled;
@@ -332,7 +348,8 @@ class ActivityStreamUploader {
           if (_cancelled || !_uidOk(bound)) {
             return StreamUploadOutcome.cancelled;
           }
-          await _callables.commit(activityId: id, uploadId: created.uploadId!);
+          await _callables.commit(
+              activityId: id, uploadId: created.uploadId!, expectedUid: bound);
         }
         // Nothing is marked for an account that is no longer signed in.
         // A cancel, an account change or an A to B to A switch during this
@@ -344,6 +361,11 @@ class ActivityStreamUploader {
         await _journal.markStreamUploaded(id,
             expectedGeneration: entry.generation);
         return StreamUploadOutcome.uploaded;
+      } on ConsentAccountChangedException {
+        // Remediation J2: the call was bound to an account that is no longer
+        // the authenticated one. Same as a cancelled pass: no retry, nothing
+        // marked, no quarantine, no failure state.
+        return StreamUploadOutcome.cancelled;
       } on StreamUploadRefused {
         return StreamUploadOutcome.refused;
       } on StreamUploadTransient {
@@ -407,6 +429,9 @@ class CloudFunctionsActivityStreamClient implements ActivityStreamCallableClient
   };
 
   Never _rethrow(FirebaseFunctionsException e) {
+    // Remediation J2: `failed-precondition` / `account_changed` is not a
+    // refusal of the stream; the account changed under the call.
+    if (isAccountChangedRefusal(e)) throw const ConsentAccountChangedException();
     if (_transientCodes.contains(e.code)) throw const StreamUploadTransient();
     throw StreamUploadRefused(e.message ?? e.code);
   }
@@ -416,11 +441,15 @@ class CloudFunctionsActivityStreamClient implements ActivityStreamCallableClient
     required String activityId,
     required int bytes,
     required String contentSha256,
+    required String? expectedUid,
   }) async {
+    // Fail closed before any network call: no account, no request.
+    if (expectedUid == null) throw const ConsentAccountChangedException();
     try {
       final res = await _functions
           .httpsCallable('createActivityStreamUpload')
           .call<Map<Object?, Object?>>({
+        'expectedUid': expectedUid,
         'activityId': activityId,
         'bytes': bytes,
         'contentSha256': contentSha256,
@@ -449,11 +478,18 @@ class CloudFunctionsActivityStreamClient implements ActivityStreamCallableClient
   }
 
   @override
-  Future<void> commit({required String activityId, required String uploadId}) async {
+  Future<void> commit({
+    required String activityId,
+    required String uploadId,
+    required String? expectedUid,
+  }) async {
+    // Fail closed before any network call: no account, no request.
+    if (expectedUid == null) throw const ConsentAccountChangedException();
     try {
       await _functions
           .httpsCallable('commitActivityStream')
           .call<Map<Object?, Object?>>({
+        'expectedUid': expectedUid,
         'activityId': activityId,
         'uploadId': uploadId,
       });
