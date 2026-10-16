@@ -153,3 +153,84 @@ describe("storage.rules source", () => {
     expect(code).toContain("match /b/{bucket}/o");
   });
 });
+
+// ---------------------------------------------------------------------------
+// S02 test epic 5 (plan ids S01-S03): the private activity-stream bucket is NOT
+// governed by Storage rules; the DEFAULT bucket stays deny-all for the stream
+// object shapes too (design 5, option (b)). Every refusal is paired with the
+// Admin-equivalent write/read that succeeds.
+// ---------------------------------------------------------------------------
+describe("S02 activity stream paths in the default bucket", () => {
+  const STREAM_PATHS = [
+    `streams/${OWNER}/act_${"a".repeat(40)}/v1.json.gz`,
+    `quarantine/${OWNER}/act_${"a".repeat(40)}/upload-1`,
+  ];
+  const WHO = [
+    ["the owner", asOwner],
+    ["another signed-in user", asOther],
+    ["the canary identity", asCanary],
+    ["an anonymous caller", anonymous],
+  ] as const;
+
+  describe.each(WHO)("%s", (_who, ctx) => {
+    test.each(STREAM_PATHS)("S01: read, metadata, write, list and delete of %s are refused and the object survives", async (path) => {
+      await assertSucceeds(seed(path)); // control: the Admin-equivalent write works
+      await assertFails(getBytes(ref(ctx(), path)));
+      await assertFails(getMetadata(ref(ctx(), path)));
+      await assertFails(uploadBytes(ref(ctx(), path), new Uint8Array([7, 7]), { contentType: "application/gzip" }));
+      await assertFails(listAll(ref(ctx(), path.slice(0, path.lastIndexOf("/")))));
+      await assertFails(deleteObject(ref(ctx(), path)));
+      await env.withSecurityRulesDisabled(async (c) => {
+        const bytes = await getBytes(ref(c.storage(), path));
+        expect(Array.from(new Uint8Array(bytes))).toEqual(Array.from(BYTES)); // original bytes untouched
+      });
+    });
+  });
+
+  test("S02: the owner cannot create an object under quarantine/ (a signed URL is the only write path) and nothing is left behind", async () => {
+    // A path no other test seeds: clearStorage does not remove objects between tests of this emulator.
+    const path = `quarantine/${OWNER}/act_${"b".repeat(40)}/upload-fresh`;
+    await assertFails(uploadBytes(ref(asOwner(), path), BYTES, { contentType: "application/gzip" }));
+    await assertFails(uploadBytes(ref(asOwner(), `quarantine/${OTHER}/x/y`), BYTES));
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      // Rules are disabled, so an empty listing can only mean the denied uploads left nothing behind.
+      const listing = await listAll(ref(ctx.storage(), path.slice(0, path.lastIndexOf("/"))));
+      expect(listing.items).toHaveLength(0);
+    });
+    await assertSucceeds(seed(path));
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const listing = await listAll(ref(ctx.storage(), path.slice(0, path.lastIndexOf("/"))));
+      expect(listing.items).toHaveLength(1); // the listing is a real instrument: it sees the seeded object
+    }); // control: the path itself is writable by the server
+  });
+});
+
+describe("S03 storage.rules loosening guard for the S02 stream prefixes", () => {
+  const source = readFileSync(resolve(__dirname, "../../../storage.rules"), "utf8");
+  const stripComments = (s: string) => s.split(/\r?\n/).filter((l) => !l.trim().startsWith("//")).join("\n");
+  const lint = (text: string): string[] => {
+    const code = stripComments(text);
+    const out: string[] = [];
+    const allows = (code.match(/allow\s+[^;]+;/g) ?? []).map((a) => a.replace(/\s+/g, " "));
+    if (allows.length !== 1 || allows[0] !== "allow read, write: if false;") out.push(`allows: ${JSON.stringify(allows)}`);
+    if (/streams\/|quarantine\//.test(code)) out.push("streams/ or quarantine/ named in a rule");
+    if (/request\.auth|firestore\.(get|exists)/.test(code)) out.push("a condition reads auth or firestore");
+    return out;
+  };
+
+  test("the real storage.rules has exactly the single deny-all and names no stream prefix in code", () => {
+    expect(lint(source)).toEqual([]);
+  });
+
+  test("the lint detects an added allow for streams/ and an added allow for quarantine/ (mutated copies)", () => {
+    const withStreams = source.replace(
+      "match /{allPaths=**} {",
+      "match /streams/{uid}/{rest=**} { allow read: if request.auth.uid == uid; }\n    match /{allPaths=**} {",
+    );
+    expect(withStreams).not.toBe(source);
+    expect(lint(withStreams).length).toBeGreaterThan(0);
+    const withQuarantine = source.replace("allow read, write: if false;", "allow read, write: if false;\n    allow create: if true;");
+    expect(withQuarantine).not.toBe(source);
+    expect(lint(withQuarantine).length).toBeGreaterThan(0);
+  });
+});

@@ -57143,3 +57143,7 @@ Decision: Epic 4 closes with 127 tests green and no production change; I15-I17, 
 ## 2026-10-16 - Commit: S02 test epic 5: activity rules emulator tests and rules expression-budget fix
 
 Decision: R32/R34 follow the design (rev strictly greater on update, resent equal rev refused); the activity helper functions bind `d.get(k, default)` with `let` because a document with all 32 allowlisted keys exceeded the 1000-expression budget.
+
+## 2026-10-16 - Commit: S02 test epic 5: golden seam, policy cells, debug_sessions, Storage rules, client constants
+
+Decision: The two debug_sessions expectations that assumed client create are updated to the S02-09 rule; the flush of 500 entries is asserted as single-summary backend calls (the client sends no multi-summary batch today).
