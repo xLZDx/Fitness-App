@@ -340,3 +340,9 @@ Why it worked: each test blocks the exact await with a Gate and switches the acc
 Kind: SHORTCOMING.
 Facts: The "never compiled" H-A production code compiled as is. Five _Settings fakes threw UnimplementedError for reset() and four older tests broke on the new contract (e.g. +13 -1 resume test, +0 -7 uploader tests where consent was uid-agnostic). The notes listed the fakes but not that tests flipping the uploader uid also need consent that follows it. Evidence: core/changes/2026-10-16-s02-test-epic14a-stale-fakes.md.
 Root cause: the uploader test fixtures assumed uid-agnostic consent. Layer that missed it: H-A authors (notes incomplete). Caught by: first compiled runs of the test layer. Rule next time: when a view gains a uid, grep every fixture that varies the uid supplier.
+
+## 2026-10-16 - H8 wipe and export guards met every oracle at the first compiled run
+
+Kind: SUCCESS.
+Facts: All 12 tests passed on the first run; positive controls cover the no-switch wipe, declined prompt, empty journal and plain journal. Evidence: core/changes/2026-10-16-s02-test-epic14b-wipe-export.md.
+Why it worked: the guards compare a captured uid with the bound uid at each await, which a hook that switches the bound uid inside the awaited call exercises directly. Limit: no production caller exists yet, so the tests exercise the hooks, not a UI.

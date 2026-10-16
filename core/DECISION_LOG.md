@@ -57634,3 +57634,7 @@ Decision: Eleven repository tests assert a tap queued under A behind a blocked s
 ## 2026-10-16 - Commit: test(s02): update stale fakes and older assertions for remediation H-A (epic 14a)
 
 Decision: FakeConsent gets consentUid (fixed or following the uploader uid), five _Settings fakes get reset(), and four older assertions change to the new contract (write before sign-in throws, resume after sync, resume failure logged in the upload step, consent follows a flipped uid). Evidence: core/changes/2026-10-16-s02-test-epic14a-stale-fakes.md.
+
+## 2026-10-16 - Commit: test(s02): H8 sign-out wipe and local export bound to the account (epic 14b)
+
+Decision: Twelve tests assert onSignOut wipes exactly the uid captured before the prompt (wipeForUid), aborts with false and wipes nothing when the bound uid changes during the assessment or the prompt, keeps wipe() for a plain journal; exportAll returns one ActivityExportAccountChanged on a uid change after the listing or at any read, and a normal export keeps the full GPX route and FIT bytes of one account only. Evidence: core/changes/2026-10-16-s02-test-epic14b-wipe-export.md.
