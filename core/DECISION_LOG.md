@@ -56807,3 +56807,7 @@ Decision: the delete fence and late job live in a top-level server-only collecti
 ## 2026-10-16 - Commit: S02 test plan revision 3
 
 Decision: Firebase Auth uids are treated as never re-issued (the fence document is removed one hour after the late job); a commit with an already-due expiry is refused so an expiry purge cannot be undone by a pending re-upload. Test plan: 212 planned tests. Evidence: core/changes/2026-10-16-s02-test-plan-revision-3.md.
+
+## 2026-10-16 - Commit: S02 documentation phase report
+
+Decision: PM Bridge mode was turned on through its normal tool after the direct review path reported that no orchestrator was active; no break-glass flag was used. The S02 documentation phase is reported as a Russian and English HTML pair. Evidence: core/changes/2026-10-16-s02-documentation-phase-report.md.

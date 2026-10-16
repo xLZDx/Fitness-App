@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprint S02: documentation phase</title>
+<style>
+  :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,sans-serif; line-height:1.55; padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+  .wrap { max-width:820px; margin:0 auto; padding-block:32px 72px; }
+  h1 { font-size:30px; line-height:1.2; margin:0 0 10px; text-wrap:balance; }
+  h2 { font-size:20px; margin:32px 0 10px; }
+  .lede { color:var(--text-2); font-size:16px; max-width:64ch; margin:0 0 8px; }
+  .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { border-left:4px solid var(--accent); } .warn { border-left:4px solid var(--warn); }
+  .tablewrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border:1px solid var(--border); font-size:14px; }
+  th { background:var(--accent-soft); }
+  code { font-family:Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="lede">Fitness App, Phase 2</p>
+  <h1>Sprint S02, documentation phase: internal reviews of the design and test plan</h1>
+  <p class="lede">Unified activity model: storage of workouts and GPS streams, retention, deletion, export and the server-side debug telemetry guarantee. No code yet. The documents passed two rounds of internal review (architecture, reliability, security) and now await the external GPT-PM review on commit <code>e6650c21</code>.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ e6650c21</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>What exists</h2>
+<div class="box ok"><ul>
+  <li><b>S02 design</b> (<code>docs/phase2/s02/S02_DESIGN.md</code>, revision 3, 15 sections): data model, access rules, stream storage, retention, account deletion, export, telemetry, sprint stories with dependencies.</li>
+  <li><b>Test plan</b> (<code>S02_TEST_PLAN.md</code>, revision 3): 212 planned tests (38 Dart unit, 37 integration, 35 Firestore rules, 3 Storage rules, 94 functions with fakes, 5 end to end) and a story to test map.</li>
+  <li><b>Code map</b> of the current state (<code>S02_CODE_MAP.md</code>).</li>
+  <li>The operator answers on GPS and heart-rate retention, age and maps are recorded in the privacy contract.</li>
+</ul></div>
+
+<h2>What the internal reviews found</h2>
+<div class="tablewrap"><table>
+  <tr><th>Round</th><th>Result</th><th>Main findings in plain words</th></tr>
+  <tr><td>1 (architect, reliability, security)</td><td>24 findings, all accepted</td><td>A deleted activity could come back from another device. An upload finishing after account erasure brought GPS data back. Expiry could outrun the user's setting. Heart rate was guarded by a strip list instead of a closed schema. The only device copy was lost on sign-out.</td></tr>
+  <tr><td>2 (closing check)</td><td>21 findings, all applied in revision 3</td><td>My revision counter could wipe live data because a permission error was read as a deletion. The delete fence did not match the real account deletion flow. Two parallel commits could overwrite each other. Expiry recompute could not find users. Firestore rules limit for batched writes.</td></tr>
+</table></div>
+<p class="lede">Decisions taken: a server tombstone (TTL 400 days), the delete fence in a separate server-only collection, a permission error never wipes data without a tombstone, write batches of at most 10, a seventh hardened callable for bulk stream deletion.</p>
+
+<h2>Next</h2>
+<div class="box warn"><ul>
+  <li>The GPT-PM review of the S02 documents is running; after APPROVE implementation starts with separate agents for code and tests.</li>
+  <li>Still open (design section 12.3): the batched-write access-call limit (10 chosen, 20 reported), Firestore index contents, the sport type table, and three operator answers: what else may go to the cloud besides GPS, whether "never" retention is offered, the default expiry (2 years proposed).</li>
+  <li>Outside the repository the operator must create the tombstone TTL policy in the Firebase console before release.</li>
+</ul></div>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
