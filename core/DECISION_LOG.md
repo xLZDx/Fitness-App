@@ -57397,3 +57397,7 @@ Decision: FL5 wiring and FL6 closure guard are pinned by activity_wiring_account
 ## 2026-10-16 - Commit: S02 test epic 10b flag matrix tests
 
 Decision: the ActivityFlags truth table and the wiring flag matrix (OFF, localJournal only, cloudSync, both) are pinned by tests under mobile/test/features/activity/config. Evidence: core/changes/2026-10-16-s02-test-epic10b-flag-matrix.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b primarySourceId parity table
+
+Decision: the Dart rules mirror, schema.ts sourceId pattern and firestore.rules actLabelsOk are pinned to one value table. Evidence: core/changes/2026-10-16-s02-test-epic10b-source-id-parity.md.
