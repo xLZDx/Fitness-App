@@ -3046,6 +3046,8 @@ export { reconcileActivityStreams } from "./activity_streams/reconcile";
 export { deleteAllActivityStreams } from "./activity_streams/delete_all_streams";
 // Short-lived V4 GET links for the owner's stored streams (S02-07, design 7/7.1); own quota activityDownloadUrls.
 export { getActivityStreamDownloadUrls } from "./activity_streams/download_urls";
+// Sanitising debug-telemetry callable (S02-09, design 8/8.1): the only writer of debug_sessions; closed schema.
+export { sendDebugTelemetry } from "./activity_streams/telemetry";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until

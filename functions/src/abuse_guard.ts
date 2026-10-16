@@ -488,6 +488,16 @@ export const QUOTAS = {
    * unmeasured.
    */
   activityDownloadUrls: 60,
+  /**
+   * S02 `sendDebugTelemetry` (design 5.4, 8.1): telemetry calls per user per
+   * day. Starting limit, unmeasured.
+   */
+  debugTelemetrySend: 200,
+  /**
+   * S02 `sendDebugTelemetry` (design 8.1): telemetry EVENTS per user per day
+   * (each call is charged its event count). Starting limit, unmeasured.
+   */
+  debugTelemetryEvents: 5000,
 } as const;
 
 /**
@@ -523,6 +533,9 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "activityDeleteAll",
   // S02 stream download links (design 5.4): the log must not record who fetched GPS streams.
   "activityDownloadUrls",
+  // S02 debug telemetry (design 8.1): the log must not record who sends telemetry.
+  "debugTelemetrySend",
+  "debugTelemetryEvents",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",

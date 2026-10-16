@@ -56991,3 +56991,7 @@ Decision: FitEncoder is a pure function in activity/data producing a header-CRC 
 ## 2026-10-16 - Commit: S02-07: local export hook over the activity journal
 
 Decision: The device export reads the journal and returns typed results (file, no_geometry, not found, stream lost) with a safe file name, using only the pure encoders and the session JSON; it writes no files and has no UI, and a streamLost entry is refused for GPX and FIT rather than exported empty. Evidence: core/changes/2026-10-16-s02-07-local-export-hook.md.
+
+## 2026-10-16 - Commit: S02-09: sanitising debug-telemetry callable
+
+Decision: sendDebugTelemetry is the only writer of debug_sessions; a closed schema (enumerated strings, integer counters capped at 255, flat events, 100 events and 16 KiB per call) rejects the whole batch with a bare code, identity is derived from the sign-in provider, uid and receivedAt are server-set, the account fence is read in the write transaction, droppedCount is emitted as a metric and not stored, and two redacted quotas (200 calls, 5000 events per day) apply. Evidence: core/changes/2026-10-16-s02-09-telemetry-callable.md.
