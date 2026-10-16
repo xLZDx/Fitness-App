@@ -57437,3 +57437,7 @@ Decision: the app binds the journal of the signed-in uid through an always-on li
 ## 2026-10-16 - Commit: S02 remediation E2, erasure quota
 
 Decision: the per-user daily `activityDelete` quota is 1000 (was 100) because it is privacy-erasure capacity for queued offline deletions, not an abuse limit. Evidence: core/changes/2026-10-16-s02-remediation-e2-server-docs.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (c) wipe decorator and design docs
+
+Decision: account deletion wipes exactly the deleted uid journal scope; design section 17 item 22 records account-scoped journals (sign-out and switch never wipe). Evidence: core/changes/2026-10-16-s02-remediation-e1-wipe-docs.md.

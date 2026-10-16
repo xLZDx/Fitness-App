@@ -106,7 +106,10 @@ abstract class ActivitySignOutHooks {
   Future<bool> confirmWipe(SignOutAssessment assessment);
 }
 
-/// The wipe rules in one place.
+/// The wipe rules in one place. They act on the journal bound at call time
+/// (account-scoped journals). Sign-out itself never wipes: the app does not call
+/// [onSignOut] yet (the sign-out export offer is S03), so sign-out keeps all
+/// data on disk.
 class ActivityWipeCoordinator {
   ActivityWipeCoordinator(this._journal);
 
