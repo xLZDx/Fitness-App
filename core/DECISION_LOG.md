@@ -56867,3 +56867,7 @@ Decision: schema 2 adds the A-5 strings and record state to ActivitySession, the
 ## 2026-10-16 - Commit: S02-01 cloud summary, projection and three-way merge
 
 Decision: the summary is built only from the effective projection of the record by pure functions, and merge, override and candidate resolution are pure so they can be tested without Firestore. Evidence: core/changes/2026-10-16-s02-01-cloud-summary-and-projection.md.
+
+## 2026-10-16 - Commit: S02-01 stream payload and sport-to-model table
+
+Decision: the stream payload is built by a closed-schema copy that hard-denies heart rate, and strength is the only sport owned by the workout model; every other sport and unknown names belong to the activity model. Evidence: core/changes/2026-10-16-s02-01-stream-payload-and-sport-model.md.

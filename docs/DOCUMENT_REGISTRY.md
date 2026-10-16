@@ -281,6 +281,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
+| `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1513 |
 | `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
 | `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 145896 |
 | `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328694 |
