@@ -57389,3 +57389,7 @@ Decision: FL1 and the presenter half of FL2 are covered by tests over the real r
 ## 2026-10-16 - Commit: S02 test epic 10a sheet states and entry card fix
 
 Decision: the sync entry card stays visible when the conflict view failed to load, so the retry action is reachable (defect D10a-1 found by the new widget test); the sheet states are covered by widget tests. Evidence: core/changes/2026-10-16-s02-test-epic10a-sheet-states-and-card.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b wiring account-switch tests
+
+Decision: FL5 wiring and FL6 closure guard are pinned by activity_wiring_account_switch_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-wiring-account-switch.md.
