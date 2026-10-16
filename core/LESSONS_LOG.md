@@ -427,3 +427,27 @@ Rule next time: create the container inside the zone that is meant to receive li
 Kind: SUCCESS.
 Facts: Whole activity directory +1410 and the second set +120 green after 27 stale tests and one log regression were fixed; production remediation I otherwise met every oracle. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md.
 Why it worked: running the whole directory once first gave the complete stale list instead of guessing from the notes.
+
+## 2026-10-16 - S02 external gate round 12: consent cache shared by all accounts
+
+Kind: FAILURE (coordinator briefs and reviewer scoping), caught by the external gate.
+Facts: GPT-PM round 12 on 10288e57 accepted the three round-11 findings as resolved and rejected for one MAJOR: AccountScopedConsentStore kept one mutable store for all accounts and the startup chain did not re-verify the account after its awaits, so B's GPS data could be uploaded on A's consent (activity_wiring.dart). I verified it against the source before acting. Evidence: reply stored in the scratchpad as s02_code_review_r12.json; remediation H and I.
+Root cause: my briefs to the independent reviewers limited them to the diff of the remediation, and the consent path was not in that diff; the original consent wiring was designed for one account; the epic tests never interleaved two accounts through the consent path.
+Layers: original author of the consent wiring, my reviewer briefs (scope), epic 7 to 13 tests; the external gate caught it.
+Rule next time: when a defect class is found (state not bound to the account, stale async completion), sweep the WHOLE surface by class with independent reviewers, not the diff, before resubmitting; and bind per-account state as early as it can be bound.
+
+## 2026-10-16 - S02 class sweep by three independent reviewers
+
+Kind: SUCCESS.
+Facts: after the round-12 rejection three reviewers (security, reliability, Flutter) enumerated every per-account state item and async chain in the activity surface and found the consent defect plus real siblings that no earlier review or test had found: sync and uploads continuing during account deletion, grant and withdraw applying to the wrong account, a once-per-instance deletion flag shared by accounts, the conflict sheet drawing the previous account's cards, a tap queued under A running under B, cache fills after a switch, an unbound sign-out wipe and export. All were fixed in remediation H with interleaving tests.
+Why it worked: the brief asked for an inventory table (item, identity captured, re-checked after each await) before findings, so the reviewers could not skip an item.
+Layers: caught what the diff-scoped reviews and the epic tests missed.
+Rule next time: for any account-scope or concurrency defect class, require an inventory table from the reviewers before findings.
+
+## 2026-10-16 - S02 verification reviews of remediation H and I found two more gaps in the fixes
+
+Kind: SHORTCOMING.
+Facts: the verification review of H found that the display path (refreshState and the sheet) did not tie the journal uid to the auth uid although G1 had tied the pass, and that the consent store was bound only inside the sync-start chain, so grant and withdraw on an unbound store sent the server call and then threw. Both were fixed in I. One reviewer also claimed that account deletion in flight was not covered; I checked firestore.rules (the fence at activity_account_state) and recorded it as closed by the server, not a defect.
+Root cause: a guard was added to one path and the sibling path reading the same identity pair was not grepped; per-account state was bound behind unrelated steps.
+Layers: the H implementer and the epic 14 tests missed it; the second verification round caught it.
+Rule next time: when a guard is added, grep every sibling path that reads the same identity pair; verify a reviewer claim against the primary source before acting (it can be right or already covered).

@@ -57690,3 +57690,8 @@ Decision: the I2 contract is proved at the client level and through the real sta
 ## 2026-10-16 - Commit: docs(s02): epic 15 final runs and findings
 
 Decision: epic 15 closes green on head 866a05b3; findings recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-test-epic15-final-run.md.
+
+
+## 2026-10-16 - Commit: S02 documents after external gate round 12, remediation H and I
+
+Decision: GPT-PM round 12 on 10288e57 returned REJECT with one MAJOR (consent cache shared by all accounts) and accepted the three round-11 findings as resolved. The finding was verified against the source, a class sweep by three independent reviewers added siblings, remediation H and I fixed them with tests (epics 14 and 15 per the test agents), and the report pair, state and lessons are updated for round 13. Accepted limits are in design section 17 item 24. Evidence: server, rules and indexes unchanged since their last runs (empty git diff --stat for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since cf1a4eb5); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-documents-after-round-12.md.

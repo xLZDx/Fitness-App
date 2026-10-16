@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sprint S02: remediation after rejection, re-review</title>
+<title>Sprint S02: remediation after two rejections, round 13</title>
 <style>
   :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
@@ -28,7 +28,7 @@
 <header>
   <p class="lede">Fitness App, Phase 2</p>
   <h1>Sprint S02: remediation after the external rejection, submitted for re-review</h1>
-  <p class="lede">Unified activity model: storage of workouts and GPS streams on the phone and in the cloud, retention, deletion, export and the server-side debug telemetry guarantee. The final code review rejected the previous version with three MAJOR findings. They are fixed, a second independent review found and closed defects in the fixes themselves, and the tests are green as reported by the test agents. Next step: re-review by the external reviewer on the exact head. Nothing has been pushed to GitHub.</p>
+  <p class="lede">Unified activity model: storage of workouts and GPS streams on the phone and in the cloud, retention, deletion, export and the server-side debug telemetry guarantee. The external code review rejected the version twice: round 11 with three MAJOR findings, round 12 with one (the cloud-upload consent cache was shared by all accounts). All are fixed together with their siblings found by a sweep of the whole surface, internal independent reviews found and closed defects in the fixes themselves, and the tests are green as reported by the test agents. Next step: round 13 by the external reviewer on the exact head. Nothing has been pushed to GitHub.</p>
 </header>
 
 <!-- report-conform:begin -->
@@ -56,7 +56,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ c9f8e3fc</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s02-unified-activity @ a6bb09d3</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -68,9 +68,9 @@
 
 <h2>Outcome</h2>
 <div class="box ok"><ul>
-  <li><b>What happened.</b> The external final code review (GPT-PM, round 11) rejected the previous version: three MAJOR findings, no BLOCKER. I verified each against the source; all three were valid. They are remediated.</li>
-  <li><b>Tests.</b> The tests were written and run by the test agents, not by me. As reported by them: Dart (phone), the whole activity directory, 1304 tests, and a separate set on account deletion, architecture, backup rules and health rules, 120 tests. Server: 791 tests. Database rules (emulator): 953 tests. No failures and no skips. The server code, rules and indexes did not change after their runs (checked with a git diff).</li>
-  <li><b>Second independent review.</b> Four specialists reviewed the new code, then three more verified the fixes. They found defects in the fixes themselves (below). All were fixed and covered by tests.</li>
+  <li><b>What happened.</b> The external reviewer (GPT-PM) reviewed the code twice. Round 11 rejected the version with three MAJOR findings (no BLOCKER). I verified each against the source; all three were valid and are remediated. Round 12 accepted all three as resolved and found one new MAJOR: the cloud-upload consent cache was shared by all accounts. I verified it against the source as well; it was valid and is remediated.</li>
+  <li><b>Tests.</b> The tests were written and run by the test agents, not by me. As reported by them: Dart (phone), the whole activity directory, 1410 tests, and a separate set on account deletion, architecture, backup rules and health rules, 120 tests. Server: 791 tests, plus 315 tests in five suites that had not been run since the deletion limit changed. Database rules (emulator): 953 tests, run on an earlier version. No failures and no skips. The server code, rules and indexes did not change after their runs (checked with a git diff).</li>
+  <li><b>Internal independent reviews.</b> Three rounds: four specialists on the new code, three on the fixes, then after the round-12 rejection three specialists hunted the same defect class (state not bound to the account) across the whole surface, not only the changed lines, followed by two more verification reviews of the fixes. They found defects in the fixes themselves (below). All were fixed and covered by tests.</li>
   <li><b>Nothing is pushed to GitHub.</b> The push and the single sprint PR are possible only after approval by the external reviewer on the exact head.</li>
 </ul></div>
 
@@ -93,6 +93,8 @@
   <tr><td>A wiped account could come back as an empty scope with a new key on a repeated sign-in event.</td><td>Leftovers of a deleted account on the device.</td><td>Re-binding a wiped account is refused until sign-out or another account.</td></tr>
   <tr><td>The encryption key could remain after a wipe that reported success.</td><td>A false "device is clean".</td><td>A failed key delete now fails the wipe, the pending marker stays and the next launch retries.</td></tr>
   <tr><td>The stream uploader state survived an account switch.</td><td>The new account's upload could fail to start in that app run.</td><td>The state is reset on account change.</td></tr>
+  <tr><td>One cloud-upload consent cache shared by all accounts (external reviewer, round 12). Account A's startup chain, after a long sync, wrote A's consent when B was already current.</td><td>B's GPS data could be uploaded on A's consent. The server checks consent separately, so the reviewer did not establish unauthorized server storage, but the on-phone rule "consent belongs to the same account" was broken.</td><td>Consent is bound to the account: the store knows whose uid it holds, an obsolete sign-in cannot overwrite state, uploading requires the consent account to equal the upload account, the startup chain re-verifies the account after every step, and the consent store is bound at the very start. Stored consent of every account is kept.</td></tr>
+  <tr><td>Siblings of that defect found by a sweep of the whole surface: grant and withdraw applied their result to the wrong account, the "delete cloud streams requested" flag was shared by everyone, a tap queued under A ran under B, the conflict screen showed the previous account's cards, sync and uploads ran during account deletion, the sign-out wipe and the export were not bound to the account.</td><td>Showing or acting on another account's data, a silent refusal for the second account, a false "deleted".</td><td>Everything is bound to the account and covered by tests with deterministic interleavings. The window while the server deletes the account is closed by the fence in the database rules (verified in <code>firestore.rules</code>).</td></tr>
   <tr><td>The new code contained a compile error: a type check did not behave as assumed. The app did not build.</td><td>The app does not build.</td><td>Fixed. The first test run found it, not the reviewers and not the implementer.</td></tr>
 </table></div>
 
@@ -100,6 +102,7 @@
 <div class="box"><ul>
   <li>I decided to wipe the journal on an account switch, checked only the leak risk between accounts and not what is lost. I also told two reviewers not to re-check that code, and they approved it. Only the external reviewer caught it.</li>
   <li>The fix of that decision had defects of its own that the first tests did not look for: they tested an account switch between operations, not in the middle of a running one. The second independent review found that.</li>
+  <li>I did not put the consent cache under review because I limited the reviewers to the changed code. A defect of the same class lived next door and only the external reviewer found it. Now, after a defect class is found, I sweep the whole surface for it, not just the diff.</li>
   <li>The project now keeps a lessons log, <code>core/LESSONS_LOG.md</code>, with an entry in every commit, including my own mistakes. The sprint retrospective is built from it.</li>
 </ul></div>
 
@@ -110,16 +113,18 @@
   <li><b>Steps outside the repository before enabling:</b> create the bucket, grant IAM, set alerts, decide the soft-delete window, a dedicated service account and the retention of deletion records (400 days proposed).</li>
   <li><b>Release condition.</b> Before cloud streams are enabled in a production build or GPS recording ships, the heavy work (compression, hashing) must move off the UI isolate.</li>
   <li><b>For the next sprint (S03).</b> Whether to open the local activity journal in the default build regardless of the cloud flag. Recommended: yes, otherwise the dashboard cannot show recorded workouts.</li>
-  <li><b>Accepted limits, not defects.</b> (1) Device data of an anonymous account stays after sign-out: wiping it would repeat the rejected data loss, so it is handled with the sign-out export offer in S03. (2) The user-facing "N deletions not yet synced" notice belongs to the S03 screens, the state for it already exists. (3) After a failed journal bind, sync resumes at the next sign-in event or restart; nothing is lost and nothing leaks.</li>
+  <li><b>Accepted limits, not defects.</b> (1) Device data of an anonymous account stays after sign-out: wiping it would repeat the rejected data loss, so it is handled with the sign-out export offer in S03. (2) The user-facing "N deletions not yet synced" notice belongs to the S03 screens, the state for it already exists. (3) After a failed journal bind, sync resumes at the next sign-in event or restart; nothing is lost and nothing leaks. (4) A tap during an account switch does nothing; the next refresh shows the new account. (5) The export does not notice an A, B, A switch within one read (no caller yet). (6) If the sign-out wipe fails after wiping, that account is not re-bound until sign-out or another account. (7) One widget control in the tests hung for no known reason and was replaced by a presenter test.</li>
 </ul></div>
 
 <h2>Next</h2>
 <div class="box"><ul>
-  <li>Re-review by the external reviewer on the exact head (round 12): verification of the fixes and one broad sweep of the new code. After approval: push the branch and open one PR for the sprint.</li>
+  <li>Re-review by the external reviewer on the exact head (round 13): verification of the consent fix and all its siblings, plus one broad sweep of the new code. After approval: push the branch and open one PR for the sprint.</li>
   <li>If the reviewer finds a MAJOR defect, I fix the full set in one batch and submit again.</li>
 </ul></div>
 
 </div>
+
+
 
 
 
