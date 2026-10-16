@@ -163,3 +163,10 @@ Kind: SUCCESS. The binding provider, written without a compiler, met every F2 no
 
 ## 2026-10-16 - S02 test epic 12b (3): uploader account-switch tests
 Kind: SUCCESS. The uploader reset (slot, per-id map, failed ids, epoch) held for all seven oracles. Test-side slip (mine): a fake whose fault hook runs before the blocking hook never blocked, so the first version of the old-epoch test proved nothing; rule: assert the precondition (the call is really blocked) before the action.
+
+## 2026-10-16 - S02 test epic 12a (1): pass identity, caches, unbound, retry tests
+Kind: SHORTCOMING (stale oracle) and SUCCESS.
+Facts: the E2 test "60 s, 2, 4, 8, 15, 15 min then no seventh attempt" failed on the first compile-and-run of F1 (expected 6 timers, got 7) because the F1 fallback timer changed the contract and the implementers ran nothing (core/changes/2026-10-16-s02-test-epic12a-pass-identity.md). The F1 production code itself compiled and met all 33 new oracles on the first run.
+Root cause: the contract changed in F1 and the old assertion was listed in the notes but nobody ran it. Layers: F1 author and reviewers missed the stale assertion; the epic 12a run caught it.
+Own slip (mine): to stop a hung test run I killed every dart.exe process on the machine, which can also kill the parallel agent's runs; rule next time: stop only the process tree I started (use `timeout` and `--timeout` on the run itself).
+Rule next time: when a contract changes, run the tests that encode the old contract in the same commit.

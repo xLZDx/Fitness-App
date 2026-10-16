@@ -526,8 +526,14 @@ void main() {
       await until(() => r.calls.length == before + 1, 'sixth pass');
       await r.repo.syncAll(); // serialised; a manual pass after the budget
       await r.repo.syncAll();
-      expect(r.timers.list, hasLength(6), reason: 'no seventh attempt');
-      expect(r.timers.active, isEmpty);
+      // Remediation F1 (design 17 item 23): after the six scheduled attempts
+      // exactly ONE slow fallback timer keeps the owed deletions alive.
+      expect(r.timers.list, hasLength(7),
+          reason: 'six scheduled attempts plus one fallback timer');
+      expect(r.timers.list.last.delay, kTombstoneFallbackDelay);
+      expect(r.timers.list.last.delay, const Duration(minutes: 60));
+      expect(r.timers.active, hasLength(1),
+          reason: 'only the fallback timer is pending');
       expect(r.timers.overlaps, 0, reason: 'never two timers at once');
     });
 
