@@ -190,8 +190,9 @@ void main() {
     await emit(user('B'));
     await settle();
     expect(client.isGranted, isFalse, reason: 'B has no consent of its own');
-    expect(store.boundUid, isNull,
-        reason: 'A\'s chain has not reached the consent step');
+    expect(store.boundUid, 'B',
+        reason: 'A signed in before its sync (remediation I2), then the '
+            'account change unbound it and B bound its own consent');
     expect(cloud.log, isEmpty);
 
     backend.firstListGate!.complete(); // A's obsolete continuation resumes

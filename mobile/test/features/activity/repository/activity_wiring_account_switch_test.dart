@@ -283,8 +283,8 @@ void main() {
       expect(w.journal.boundUid, 'B');
     });
 
-    test('the bind fails: no resume, no syncAll, no run, no settings, A\'s '
-        'data kept', () async {
+    test('the bind fails: no resume, no syncAll, no run; the consent is still '
+        'loaded (remediation I2); A\'s data kept', () async {
       await w.journal.bindUid('A');
       await w.journal.put(journalSession(idFor(1), seed: 1));
       await w.journal.bindUid(null);
@@ -297,7 +297,8 @@ void main() {
       await settle();
       expect(events.where((e) => e.startsWith('resume')), isEmpty);
       expect(runs(), 0);
-      expect(count('load'), 0);
+      expect(count('signIn:B'), 1, reason: 'consent is bound before the bind');
+      expect(count('load'), 1);
       expect(backend.calls, isEmpty, reason: 'no syncAll');
       expect(await w.snapshot('A'), a);
       expect(w.journal.boundUid, isNull);
@@ -314,7 +315,8 @@ void main() {
       await emit(user('B'));
       await until(() => logs.any((l) => l.contains('journal bind failed')));
       await settle();
-      expect(events, ['cancel'], reason: 'cancelled, and never resumed');
+      expect(events, ['cancel', 'signIn:B', 'load'],
+          reason: 'cancelled, B consent loaded (I2), and never resumed');
     });
 
     test('the uid changed to null while the bind ran: no resume, no sync, no '
@@ -330,7 +332,7 @@ void main() {
       await settle();
       expect(events.where((e) => e.startsWith('resume')), isEmpty);
       expect(runs(), 0);
-      expect(count('load'), 0);
+      expect(count('load'), 1, reason: 'B consent loaded before the bind (I2)');
       expect(backend.calls, isEmpty);
       expect(count('cancel'), 1);
     });
@@ -393,14 +395,18 @@ void main() {
       expect(logs.any((l) => l.contains('start sync failed')), isTrue);
     });
 
-    test('settings.load throws: logged, nothing escapes, no run', () async {
+    test('settings.load throws (remediation I2): logged, nothing escapes, the '
+        'bind and the sync still run; the real uploader gates on the unknown '
+        'consent', () async {
       settings.loadError = StateError('offline');
       final c = container();
       c.read(activityCloudSyncWiringProvider);
       await emit(user('B'));
-      await until(
-          () => logs.any((l) => l.contains('start stream upload failed')));
-      expect(runs(), 0);
+      await until(() => runs() == 1);
+      expect(logs.any((l) => l.contains('consent load failed (StateError)')),
+          isTrue);
+      expect(w.journal.boundUid, 'B');
+      expect(backend.count('listTombstoneIds'), 1, reason: 'syncAll ran');
     });
 
     test('the journal cannot be opened: fails closed with a log line, '

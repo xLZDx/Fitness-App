@@ -177,8 +177,9 @@ void main() {
       c.read(activityCloudSyncWiringProvider);
     }
 
-    test('16a A held in syncAll, B signs in: A never signs in, loads, resumes '
-        'or runs; B runs once', () async {
+    test('16a A held in syncAll, B signs in: A signed in and loaded BEFORE the '
+        'sync (remediation I2) but never resumes or runs; B runs once',
+        () async {
       build();
       repo.gates[1] = Completer<void>();
       await emit(user('A'));
@@ -187,9 +188,10 @@ void main() {
       await until(() => count('run') == 1, 'B run');
       repo.gates[1]!.complete();
       await settle();
-      expect(events.where((e) => e.startsWith('signIn')), ['signIn:B']);
-      expect(count('load'), 1);
-      expect(count('resume'), 1);
+      expect(events.where((e) => e.startsWith('signIn')),
+          ['signIn:A', 'signIn:B']);
+      expect(count('load'), 2, reason: 'A before its sync, B for itself');
+      expect(count('resume'), 1, reason: 'only B resumes');
       expect(count('run'), 1);
     });
 
@@ -223,8 +225,8 @@ void main() {
       expect(count('run'), 1);
     });
 
-    test('16d A held in the journal bind: A never syncs or signs in',
-        () async {
+    test('16d A held in the journal bind: A signed in before the bind but '
+        'never syncs, resumes or runs', () async {
       build();
       w.gate = Completer<void>();
       final gate = w.gate!;
@@ -236,26 +238,32 @@ void main() {
       await until(() => count('run') == 1, 'B run');
       await settle();
       expect(count('sync'), 1, reason: 'only B syncs');
-      expect(events.where((e) => e.startsWith('signIn')), ['signIn:B']);
+      expect(events.where((e) => e.startsWith('signIn')),
+          ['signIn:A', 'signIn:B']);
       expect(count('run'), 1);
     });
 
-    test('17 order: bind, sync, signIn, load, resume, run', () async {
+    test('17 order (remediation I2): signIn, load, bind, sync, resume, run',
+        () async {
       build();
       await emit(user('A'));
       await until(() => count('run') == 1);
-      expect(events, ['sync', 'signIn:A', 'load', 'resume', 'run']);
+      expect(events, ['signIn:A', 'load', 'sync', 'resume', 'run']);
       expect(w.journal.boundUid, 'A', reason: 'bound before the sync');
     });
 
-    test('17b a load that throws: no resume, no run, logged', () async {
+    test('17b a load that throws (remediation I2): logged, the bind and the '
+        'sync still run; the real uploader gates on the unknown consent',
+        () async {
       build();
       settings.loadError = StateError('offline');
       await emit(user('A'));
-      await until(
-          () => logs.any((l) => l.contains('start stream upload failed')));
-      expect(count('resume'), 0);
-      expect(count('run'), 0);
+      await until(() => count('run') == 1);
+      expect(logs.any((l) => l.contains('consent load failed (StateError)')),
+          isTrue);
+      expect(count('sync'), 1, reason: 'the sync no longer waits for consent');
+      expect(w.journal.boundUid, 'A');
+      expect(events.indexOf('sync'), greaterThan(events.indexOf('load')));
     });
 
     test('18 raw uid change or sign-out: signOut + reset once each before the '
@@ -319,8 +327,11 @@ void main() {
       expect(count('cancel'), 1);
       repo.gates[1]!.complete();
       await settle();
-      expect(events.where((e) => e.startsWith('signIn')), isEmpty);
-      expect(count('load'), 0);
+      // Remediation I2: A signed in and loaded BEFORE the held sync; the
+      // released start does nothing further.
+      expect(events.where((e) => e.startsWith('signIn')), ['signIn:A']);
+      expect(count('load'), 1);
+      expect(count('resume'), 0);
       expect(count('run'), 0);
     });
 
@@ -432,7 +443,7 @@ void main() {
       await until(() => prefs.calls == 1, 'A store opening');
       forgetPrefs();
       await emit(user('B'));
-      await until(() => store.boundUid == 'B' && count('sync') == 2, 'B chain');
+      await until(() => store.boundUid == 'B' && count('sync') == 1, 'B chain');
       await settle();
       gate.complete();
       await settle();

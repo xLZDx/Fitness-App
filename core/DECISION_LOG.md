@@ -57674,3 +57674,7 @@ Decision: `grant`, `withdraw` and `deleteCloudStreamsNow` throw `ConsentAccountC
 ## 2026-10-16 - Commit: docs(s02): remediation I accepted limits and test notes
 
 Decision: Design item 24 records four accepted limits honestly (server closes the account-deletion window, a tap during a transition is a no-op, exportAll cannot see an A to B to A switch inside one read, a failed sign-out after wipeForUid leaves the journal unbound) and the H test notes gain heading I with oracles for I1 and I2 and the stale-fake list. Evidence: core/changes/2026-10-16-s02-remediation-i-docs.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 stale assertions after remediation I
+
+Decision: stale tests are updated to the intended remediation I contract (bound in-memory store; start order signIn, load, bind, sync, resume; a consent load failure no longer blocks bind and sync), and the wiring keeps the `account is being deleted; sync not started` log by logging it in the new early `current()` check. Evidence: core/changes/2026-10-16-s02-test-epic15-stale-assertions.md.

@@ -408,8 +408,8 @@ void main() {
       expect(backend.count('listTombstoneIds'), 1);
     });
 
-    test('the bind fails: no sync, no upload, no resume, no settings, no '
-        'consent; nothing wiped', () async {
+    test('the bind fails: no sync, no upload, no resume; the consent is still '
+        'bound and loaded (remediation I2); nothing wiped', () async {
       await putFor('A', 1);
       await w.journal.bindUid(null);
       final a = await w.snapshot('A');
@@ -423,8 +423,8 @@ void main() {
       expect(backend.calls, isEmpty, reason: 'no syncAll');
       expect(uploader.runs, 0);
       expect(uploader.boundAtResume, isEmpty);
-      expect(settings.loads, 0);
-      expect(consent.signIns, isEmpty);
+      expect(settings.loads, 1);
+      expect(consent.signIns, ['B']);
       expect(await w.snapshot('A'), a);
     });
   });

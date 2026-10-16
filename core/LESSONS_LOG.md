@@ -401,3 +401,10 @@ Rule next time: bind per-account state as early as it can be bound, and make eve
 
 Kind: NEUTRAL.
 Facts: Documentation of four accepted limits and the I1/I2 test oracles; the old design sentence about the bind gap was narrowed because I1 changed it. Evidence: core/changes/2026-10-16-s02-remediation-i-docs.md.
+
+## 2026-10-16 - test(s02): epic 15 stale assertions after remediation I
+
+Kind: FAILURE.
+Facts: Remediation I compiled unchanged but 27 existing tests failed on the first whole-directory run (12 in the withdrawal test and 2 in the stream upload test on an unbound in-memory store, 13 on the old start order or on "consent failure blocks bind and sync"). One production regression: the early `current()` check made the `account is being deleted; sync not started` log unreachable (republish test G4). Evidence: core/changes/2026-10-16-s02-test-epic15-stale-assertions.md.
+Root cause: the implementer compiled and ran nothing, and the H test notes listed the stale files incompletely (the e2e consent test, the journal wipe wiring bind-failure case and the FL6 load-throws case were missing; the log regression was not foreseen). Layers that missed it: author, notes; caught by the epic 15 baseline run.
+Rule next time: after a contract change run the whole affected directory once before writing the notes, and when a new early return is added in front of a branch, grep the logs and tests that observed that branch.

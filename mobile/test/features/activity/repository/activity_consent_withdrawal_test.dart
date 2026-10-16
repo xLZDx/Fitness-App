@@ -23,8 +23,9 @@ void main() {
   setUp(() async {
     w = await StreamUploadWorld.open();
     settings = FakeSettingsServer();
-    store = InMemoryCloudStreamsConsentStore();
-    client = ActivityCloudSettingsClient(call: settings.call, store: store);
+    // Remediation I2: the store must be bound to an account to persist.
+    store = InMemoryCloudStreamsConsentStore(boundUid: 'uid');
+    client =ActivityCloudSettingsClient(call: settings.call, store: store);
     w.uploader = w.makeUploader(consentView: client);
     withdrawal = ActivityConsentWithdrawal(settings: client, uploader: w.uploader);
     await client.grant();

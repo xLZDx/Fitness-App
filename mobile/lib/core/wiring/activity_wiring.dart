@@ -386,7 +386,14 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         ref.read(accountBeingDeletedUidProvider) != myUid;
     unawaited(() async {
       try {
-        if (!current()) return;
+        if (!current()) {
+          // Keep the observable skip log of the deletion-in-progress case (the
+          // check below used to be the only place that logged it).
+          if (ref.read(accountBeingDeletedUidProvider) == myUid) {
+            debugPrint('activity: account is being deleted; sync not started');
+          }
+          return;
+        }
         // Remediation I2: the consent of this account depends neither on the
         // journal nor on the sync, so it is bound and loaded first. A failing
         // journal bind or a long syncAll no longer leaves the store unbound.

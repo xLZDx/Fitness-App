@@ -154,7 +154,8 @@ void main() {
     Future<void> setUpClient({CloudStreamsConsent stored = CloudStreamsConsent.unknown}) async {
       w = await StreamUploadWorld.open(flagOn: true, granted: true);
       settings = FakeSettingsServer();
-      store = InMemoryCloudStreamsConsentStore();
+      // Remediation I2: an unbound store makes grant/withdraw throw.
+      store = InMemoryCloudStreamsConsentStore(boundUid: 'uid');
       await store.write(stored);
       client = ActivityCloudSettingsClient(call: settings.call, store: store);
       w.uploader = w.makeUploader(consentView: client);
