@@ -56843,3 +56843,7 @@ Decision: explicit user edits, passive changes and automatic recalculations are 
 ## 2026-10-16 - Commit: S02 design and test plan revision 10
 
 Decision: explicit user edits are stored in the record and applied by the summary projection, and version reconciliation of overrides is a mandatory atomic step that runs first, so neither a restart nor a version-only upgrade can change how the next edit is classified. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-10.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 11
+
+Decision: an explicit user value is deliberately authoritative until the user reconsiders it, newer source data is surfaced as a candidate instead of being hidden or applied, and the edit history is a bounded ring separate from the canonical value map with a saturating cloud counter. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-11.md.
