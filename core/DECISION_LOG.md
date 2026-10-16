@@ -57369,3 +57369,7 @@ Decision: the FL1/FL2 production code lands with test notes in docs/phase2/s02/S
 ## 2026-10-16 - Commit: S02 remediation C uploader account safety (FL5, FL6)
 
 Decision: stream upload runs are single-flight and bound to the uid they started with (checked before every network step and journal mark); the auth listener cancels on account change and resumes only after the new journal claim; the wiring closure is guarded. Evidence: core/changes/2026-10-16-s02-remediation-c-uploader-account-safety.md.
+
+## 2026-10-16 - Commit: S02 remediation D independent local journal flag
+
+Decision: a second client define ACTIVITY_LOCAL_JOURNAL (default OFF) opens the device journal without any network path; ActivityFlags.journalEnabled (localJournal or cloudSync) decides whether a journal exists, while every Firestore, sync, tombstone, conflict and upload object stays gated by cloudSync alone. Evidence: core/changes/2026-10-16-s02-remediation-d-local-journal-flag.md.

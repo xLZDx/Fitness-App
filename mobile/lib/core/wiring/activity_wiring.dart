@@ -1,8 +1,9 @@
 /// App-root wiring of the unified-activity cloud path (S02 design 3.2, 6.2,
-/// 12.1). Everything here is behind [ActivityFlags.cloudSync]
-/// (`ACTIVITY_CLOUD_STREAMS`, default OFF): with the flag off no journal is
-/// opened, no provider is overridden, nothing syncs and the app behaves as it
-/// did before S02.
+/// 12.1). The journal is behind [ActivityFlags.journalEnabled]
+/// (`ACTIVITY_LOCAL_JOURNAL` or `ACTIVITY_CLOUD_STREAMS`, default OFF); every
+/// network or Firestore object is behind [ActivityFlags.cloudSync] alone. With
+/// both flags off no journal is opened, no provider is overridden, nothing
+/// syncs and the app behaves as it did before S02.
 library;
 
 import 'dart:async' show unawaited;
@@ -26,13 +27,13 @@ import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/state/auth_providers.dart';
 import '../config/activity_flags.dart';
 
-/// Opens and recovers the local journal when the flag is on; null when off or
-/// when opening fails (the app must still start; the cloud path then stays
-/// inactive).
+/// Opens and recovers the local journal when a journal flag is on; null when
+/// both are off or when opening fails (the app must still start; the cloud path
+/// then stays inactive).
 Future<ActivityJournal?> openActivityJournal({
   ActivityFlags flags = ActivityFlags.compileTime,
 }) async {
-  if (!flags.cloudSync) return null;
+  if (!flags.journalEnabled) return null;
   try {
     final journal = await FileActivityJournal.openDefault();
     await journal.start();
@@ -44,7 +45,7 @@ Future<ActivityJournal?> openActivityJournal({
 }
 
 /// The account-deletion device wipe extended with the journal wipe (design 6.2,
-/// 7). With no journal open (flag off) [inner] is returned unchanged, so the
+/// 7). With no journal open (both flags off) [inner] is returned unchanged, so the
 /// behaviour is exactly the pre-S02 one.
 LocalDataWipe activityAwareLocalDataWipe(
   LocalDataWipe inner,
@@ -59,28 +60,30 @@ LocalDataWipe activityAwareLocalDataWipe(
   );
 }
 
-/// Provider overrides for the root `ProviderScope`. Empty unless the flag is on
-/// and a journal was opened.
+/// Provider overrides for the root `ProviderScope`. Empty unless a journal flag
+/// is on and a journal was opened. The sync repository (Firestore backend,
+/// tombstone pusher) is only constructed with [ActivityFlags.cloudSync].
 List<Override> activityRootOverrides({
   ActivityFlags flags = ActivityFlags.compileTime,
   ActivityJournal? journal,
 }) {
-  if (!flags.cloudSync || journal == null) return const [];
+  if (!flags.journalEnabled || journal == null) return const [];
   return [
     activityJournalProvider.overrideWithValue(journal),
-    activitySyncRepositoryProvider.overrideWith((ref) {
-      final repo = ActivitySyncRepository(
-        journal: journal,
-        backend: FirestoreActivitySummaryBackend(),
-        tombstonePusher: CloudFunctionsActivityTombstonePusher().push,
-      );
-      ref.onDispose(repo.dispose);
-      return repo;
-    }),
+    if (flags.cloudSync)
+      activitySyncRepositoryProvider.overrideWith((ref) {
+        final repo = ActivitySyncRepository(
+          journal: journal,
+          backend: FirestoreActivitySummaryBackend(),
+          tombstonePusher: CloudFunctionsActivityTombstonePusher().push,
+        );
+        ref.onDispose(repo.dispose);
+        return repo;
+      }),
   ];
 }
 
-/// The opened journal (only overridden when the flag is on).
+/// The opened journal (only overridden when a journal flag is on).
 final activityJournalProvider = Provider<ActivityJournal?>((_) => null);
 
 /// Owner uid record of the device-wide journal (cross-account guard).

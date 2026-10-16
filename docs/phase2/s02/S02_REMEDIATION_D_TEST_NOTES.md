@@ -1,0 +1,6 @@
+# S02 remediation D: test notes
+
+- ActivityFlags: `localJournal` defaults to false; `journalEnabled` is true for localJournal-only, cloudSync-only and both, false only when both are off; `==`, `hashCode` and `toString` distinguish all four combinations; `compileTime` reads `ACTIVITY_LOCAL_JOURNAL` and `ACTIVITY_CLOUD_STREAMS` independently.
+- Wiring, both flags off: `openActivityJournal` returns null, `activityRootOverrides` is empty, `activityAwareLocalDataWipe` returns the inner wipe unchanged, the uploader and withdrawal providers are null and the start-up sync wiring does nothing (identical to today).
+- Wiring, localJournal only: `openActivityJournal` opens the journal; `activityRootOverrides` contains only the journal override (no `activitySyncRepositoryProvider` override, so no FirestoreActivitySummaryBackend, sync repository, tombstone pusher or uploader is constructed); the uploader and withdrawal providers stay null; the wipe wraps the inner wipe; reading `activitySyncRepositoryProvider` is never needed and the conflict entry card stays hidden.
+- Wiring, cloudSync only (and both on): the journal still opens, the journal and sync repository overrides are both present, the uploader and start-up sync run as before remediation C.
