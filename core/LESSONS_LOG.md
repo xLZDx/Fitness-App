@@ -408,3 +408,10 @@ Kind: FAILURE.
 Facts: Remediation I compiled unchanged but 27 existing tests failed on the first whole-directory run (12 in the withdrawal test and 2 in the stream upload test on an unbound in-memory store, 13 on the old start order or on "consent failure blocks bind and sync"). One production regression: the early `current()` check made the `account is being deleted; sync not started` log unreachable (republish test G4). Evidence: core/changes/2026-10-16-s02-test-epic15-stale-assertions.md.
 Root cause: the implementer compiled and ran nothing, and the H test notes listed the stale files incompletely (the e2e consent test, the journal wipe wiring bind-failure case and the FL6 load-throws case were missing; the log regression was not foreseen). Layers that missed it: author, notes; caught by the epic 15 baseline run.
 Rule next time: after a contract change run the whole affected directory once before writing the notes, and when a new early return is added in front of a branch, grep the logs and tests that observed that branch.
+
+## 2026-10-16 - test(s02): epic 15 I1 display-tie tests
+
+Kind: SHORTCOMING.
+Facts: My first widget control (real repository, loaded conflict, pumped sheet) hung the fake-async binding for minutes with no timeout firing; I moved the control to the presenter. Cause not investigated. Evidence: core/changes/2026-10-16-s02-test-epic15-i1-display-tie.md.
+Root cause: unknown; real file and crypto futures started inside the fake zone. Layer that missed it: my test design; caught by the first run.
+Rule next time: run setup and reads of real journals under runAsync or in plain tests, and wrap a first widget run in an outer timeout.

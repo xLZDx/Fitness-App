@@ -57678,3 +57678,7 @@ Decision: Design item 24 records four accepted limits honestly (server closes th
 ## 2026-10-16 - Commit: test(s02): epic 15 stale assertions after remediation I
 
 Decision: stale tests are updated to the intended remediation I contract (bound in-memory store; start order signIn, load, bind, sync, resume; a consent load failure no longer blocks bind and sync), and the wiring keeps the `account is being deleted; sync not started` log by logging it in the new early `current()` check. Evidence: core/changes/2026-10-16-s02-test-epic15-stale-assertions.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 I1 display-tie tests
+
+Decision: the I1 guard is proved at three layers (repository read, presenter, pumped sheet) with a positive control each; candidates are not seeded because the guard sits before the journal read. Evidence: core/changes/2026-10-16-s02-test-epic15-i1-display-tie.md.
