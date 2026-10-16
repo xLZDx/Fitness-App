@@ -10,6 +10,7 @@ import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../activity/widgets/activity_sync_entry_card.dart';
 import '../body_scan/widgets/body_scan_entry_card.dart';
 import '../nutrition_plan/widgets/nutrition_entry_card.dart';
 import '../progress_photos/data/photo_timeline.dart';
@@ -51,6 +52,7 @@ class ProgressPage extends ConsumerWidget {
           // a redesign is not a reason to stop showing real history.
           const _HeadlineStats(),
           const SizedBox(height: 16),
+          const ActivitySyncEntryCard(),
           const BodyScanEntryCard(),
           const SizedBox(height: 12),
           const NutritionEntryCard(),

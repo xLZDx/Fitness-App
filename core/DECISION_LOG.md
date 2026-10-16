@@ -57035,3 +57035,7 @@ Decision: The choice sheet renders summary fields only with the two conflict act
 ## 2026-10-16 - Commit: S02 glue: Firestore summary backend and cloud-sync flag
 
 Decision: The Firestore adapter maps only permission-denied on a write to SummaryWriteDenied and every other failure (including a missing or anonymous sign-in) to SummaryBackendUnavailable, reads from the server source so a cache hit is never taken for server state, and batches at most 8 writes; the cloud path hangs on one compile-time flag ACTIVITY_CLOUD_STREAMS, default OFF, as design 12.1 prescribes
+
+## 2026-10-16 - Commit: S02 glue: app wiring, start-up sync and conflict entry point
+
+Decision: All runtime wiring (journal open, provider override, start-up syncAll with retryConflicts, Progress-page entry card for the conflict sheet) hangs on ACTIVITY_CLOUD_STREAMS; with it off nothing is opened or overridden and the card never reads the presenter; the entry point is a Progress-page card next to the body scan card and reuses the sheet title string instead of adding l10n keys
