@@ -56963,3 +56963,7 @@ Decision: sweepAccountData runs the Body Scan sweep and the new activity sweep a
 ## 2026-10-16 - Commit: S02-06b: late sweep job and fence lifetime
 
 Decision: The fence document written at deleteAccount Step 1c is the durable late job; a scheduled run sweeps both prefixes and ends with a final recursive delete of the activity collections (all parts attempted independently, done only after full success) and removes the fence at max(lateSweepDone+1h, authDeletedAt+70min) via compare-and-delete, deriving authDeletedAt from Auth absence when it was never recorded and never removing while the Auth user exists. Evidence: core/changes/2026-10-16-s02-06b-late-sweep.md.
+
+## 2026-10-16 - Commit: S02-06b: orphan reconciler
+
+Decision: A 5-minute reconciler repairs pending uploads only when the promoted object hash equals the intendedStoredSha256 recorded before promotion and the repair transaction (selectPromotedObject) re-checks fence, tombstone, summary and consent; otherwise it deletes the upload own objects. It also removes stored rows without summary, marks stored rows with a missing object deleted, and deletes unreferenced objects older than the upload TTL, using persisted cursors in a server-only state document. Evidence: core/changes/2026-10-16-s02-06b-reconciler.md.

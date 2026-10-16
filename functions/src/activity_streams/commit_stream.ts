@@ -90,12 +90,12 @@ export function parseCommitRequest(data: unknown): CommitRequest {
 }
 
 /** The pending upload id of a row: the re-upload marker first, else a never-stored row's own id. */
-function currentUploadId(row: RowData): string | undefined {
+export function currentUploadId(row: RowData): string | undefined {
   return strOf(row.pendingUploadId) ?? (row.state === "pending" ? strOf(row.uploadId) : undefined);
 }
 
 /** The client hash the pending upload must match (design 5.2: the idempotency key). */
-function expectedHashOf(row: RowData): string | undefined {
+export function expectedHashOf(row: RowData): string | undefined {
   return strOf(row.pendingUploadId) !== undefined
     ? strOf(row.pendingContentSha256)
     : strOf(row.contentSha256);

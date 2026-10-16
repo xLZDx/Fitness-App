@@ -40,6 +40,31 @@ export interface StreamBucket {
   deleteFiles(options: { prefix: string; force?: boolean }): Promise<unknown>;
 }
 
+/** An object returned by a prefix listing (reconciler, S02-06b). */
+export interface ListedStreamFile {
+  name: string;
+  /** Raw GCS metadata; only `timeCreated` (RFC 3339) is read. */
+  metadata?: { timeCreated?: string };
+  delete(options?: { ignoreNotFound?: boolean }): Promise<unknown>;
+}
+
+/** A bucket that can also list a prefix (the real Admin SDK bucket can; the reconciler needs it). */
+export interface StreamListingBucket extends StreamBucket {
+  getFiles(options: {
+    prefix: string;
+    autoPaginate: false;
+    maxResults: number;
+    startOffset?: string;
+  }): Promise<[ListedStreamFile[], ...unknown[]]>;
+}
+
+/** The configured stream bucket as a listing bucket, or `undefined` when the feature is off. */
+export function activityStreamListingBucket(
+  factory: StreamBucketFactory = defaultFactory,
+): StreamListingBucket | undefined {
+  return activityStreamBucket(factory) as StreamListingBucket | undefined;
+}
+
 /** Produces the bucket for a name; the default uses the Admin SDK. */
 export type StreamBucketFactory = (name: string) => StreamBucket;
 

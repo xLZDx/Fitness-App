@@ -3040,6 +3040,8 @@ export { commitActivityStream } from "./activity_streams/commit_stream";
 export { purgeExpiredActivityStreams } from "./activity_streams/purge";
 // Late sweep of the account-deletion fence job (S02-06b, design 6.1): every 5 minutes.
 export { sweepLateActivityStreams } from "./activity_streams/late_sweep";
+// Orphan reconciler (S02-06b, design 5.2/6): pending rows, stored rows, stray objects; every 5 minutes.
+export { reconcileActivityStreams } from "./activity_streams/reconcile";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until
