@@ -57549,3 +57549,7 @@ Decision: a sync pass on an account-scoped journal with an auth supplier is vali
 ## 2026-10-16 - Commit: S02 remediation G2 republish on account or binding change, G5 skip logging
 
 Decision: `onAccountChanged()` and the new `onJournalBindingChanged()` publish the state (unbound reaches the stream as `JournalUnbound`); the binding provider and the cloud sync wiring call it after every `bindUid` completion only with `cloudSync` on and while not disposed; skipped passes log a reason word, never a uid. Evidence: core/changes/2026-10-16-s02-remediation-g-republish-and-skip-log.md.
+
+## 2026-10-16 - Commit: S02 remediation G3 raw-uid account change, G4 wipe marker and deleting-account skip
+
+Decision: the account-change reset in the cloud sync listener is keyed on the raw uid (anonymous included); `wipeForUid` records the wiped uid in both branches; the sync wiring and the binding provider share one `_bindableUid` helper that excludes the account being deleted. Evidence: core/changes/2026-10-16-s02-remediation-g-raw-uid-and-wipe-marker.md.

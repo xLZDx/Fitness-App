@@ -194,3 +194,10 @@ Facts: `onAccountChanged()` cleared caches but never published and nothing publi
 Root cause: F1 treated "state changed" as something the next sync pass would announce; a failed bind never starts a pass.
 Layers: the author and the F implementers missed it; the first review round missed it; the Flutter reviewer of the second round caught it.
 Rule next time: every transition that invalidates displayed state must publish itself, not rely on a later pass; test with a live subscriber and no user action.
+
+## 2026-10-16 - S02 remediation G3/G4: raw-uid change and wipe marker
+Kind: SHORTCOMING.
+Facts: the cloud sync listener keyed the account-change reset on the filtered sync uid (null for anonymous users), so anonymous X to real user B kept stale caches; `wipeForUid` set its marker only for a bound scope; the sync wiring did not skip the account being deleted (core/changes/2026-10-16-s02-remediation-g-raw-uid-and-wipe-marker.md).
+Root cause: the same rule (which uid may be bound or reset) was written twice with different filters instead of once.
+Layers: the author missed it; the F tests and first review round missed it; the second review round caught it.
+Rule next time: one helper per identity rule, used by every wiring; a reset keyed on identity uses the raw identity, not a filtered one.

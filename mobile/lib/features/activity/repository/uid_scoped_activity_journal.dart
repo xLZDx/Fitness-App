@@ -129,10 +129,11 @@ class UidScopedActivityJournal
   @override
   Future<void> wipeForUid(String uid) => _mutex.run(() async {
         if (uid.isEmpty) throw const JournalUnbound();
+        // Remembered in BOTH branches and even when the wipe fails: the marker
+        // retries the wipe and nothing, not even an already queued
+        // `bindUid(uid)`, may re-create the scope or its key afterwards.
+        _wipedUid = uid;
         if (uid == _boundUid && _bound != null) {
-          // Remembered even when the wipe fails: the marker retries the wipe
-          // and nothing may re-create the scope in between.
-          _wipedUid = uid;
           final current = _bound!;
           try {
             await current.wipe();

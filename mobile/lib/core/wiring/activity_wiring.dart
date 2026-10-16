@@ -110,12 +110,8 @@ final activityJournalBindingProvider = Provider<void>((ref) {
 
   // The uid this wiring may bind right now: null when no user, an empty uid or
   // the account whose deletion is in progress (never re-create its scope).
-  String? bindableUid() {
-    final uid = ref.read(authUserProvider).valueOrNull?.uid;
-    if (uid == null || uid.isEmpty) return null;
-    if (uid == ref.read(accountBeingDeletedUidProvider)) return null;
-    return uid;
-  }
+  String? bindableUid() =>
+      _bindableUid(ref, ref.read(authUserProvider).valueOrNull?.uid);
 
   Future<void> attempt(String? uid, int myGeneration, int retryIndex) async {
     var bound = false;
@@ -150,12 +146,20 @@ final activityJournalBindingProvider = Provider<void>((ref) {
     generation++;
     pending?.cancel();
     pending = null;
-    final uid = next.value?.uid;
-    final deleting = ref.read(accountBeingDeletedUidProvider);
-    final target = (uid == null || uid.isEmpty || uid == deleting) ? null : uid;
+    final target = _bindableUid(ref, next.value?.uid);
     unawaited(attempt(target, generation, 0));
   }, fireImmediately: true);
 });
+
+/// The uid a wiring may bind right now: null for no user, an empty uid or the
+/// account whose deletion is in progress (its scope is never re-created). The
+/// single place of this rule, shared by the binding provider and the cloud
+/// sync wiring.
+String? _bindableUid(Ref ref, String? uid) {
+  if (uid == null || uid.isEmpty) return null;
+  if (uid == ref.read(accountBeingDeletedUidProvider)) return null;
+  return uid;
+}
 
 /// Tells the sync repository that the journal binding changed so a live
 /// conflict presenter republishes (remediation G2). Only with `cloudSync` (the
@@ -265,7 +269,12 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
     final nextUid = _syncUid(user);
     // The signed-in account changed or went away: stop the previous account's
     // queued and in-flight uploads before anything else happens.
-    if (previousUid != null && previousUid != nextUid) {
+    // Decided on the RAW uid (anonymous users included): an anonymous user X
+    // replaced by a real user B must also drop X's caches and queued uploads.
+    final previousRaw = previous?.valueOrNull?.uid;
+    if (previousRaw != null &&
+        previousRaw.isNotEmpty &&
+        previousRaw != user?.uid) {
       ref.read(activitySyncRepositoryProvider).onAccountChanged();
       ref.read(activityStreamUploaderProvider)?.cancelQueued();
     }
@@ -281,6 +290,12 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         // journals: ownership is the location). Fail closed: no sync and no
         // upload unless the bind succeeded. Nothing is ever wiped here.
         if (journal case final AccountScopedJournal scoped) {
+          // The account whose deletion is in progress is never re-bound (same
+          // rule as the binding provider).
+          if (_bindableUid(ref, nextUid) == null) {
+            debugPrint('activity: account is being deleted; sync not started');
+            return;
+          }
           var bound = false;
           try {
             bound = await scoped.bindUid(nextUid);
