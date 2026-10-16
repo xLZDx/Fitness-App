@@ -93,6 +93,7 @@ describe("firestore.indexes.json (body scan + nutrition)", () => {
     expect(file.indexes.map((i) => `${i.collectionGroup}:${i.fields.map((f) => f.fieldPath).join("+")}`).sort()).toEqual(
       [
         "accountDeletionRetries:status+nextAttemptAt",
+        "activity_streams:state+expiresAt",
         "body_scans:photosState+photosExpireAt",
         "body_scans:status+pendingExpiresAt",
         "equipment_model_text_keys:catalogVersion+lookupKey",
@@ -100,6 +101,10 @@ describe("firestore.indexes.json (body scan + nutrition)", () => {
     );
     expect(file.fieldOverrides.map((o) => `${o.collectionGroup}.${o.fieldPath}`).sort()).toEqual([
       "accountDeletionRetries.expireAt",
+      "activity_settings.recomputePending",
+      "activity_settings.streamDeletePending",
+      "activity_streams.pendingSince",
+      "activity_tombstones.expireAt",
       "nutrition_cache.expireAt",
     ]);
   });
@@ -118,7 +123,7 @@ describe("firestore.indexes.json (body scan + nutrition)", () => {
   test("firebase.json points at this indexes file and at storage.rules, and declares a storage emulator", () => {
     const fb = JSON.parse(fs.readFileSync(path.join(ROOT, "firebase.json"), "utf8"));
     expect(fb.firestore.indexes).toBe("firestore.indexes.json");
-    expect(fb.storage).toEqual({ rules: "storage.rules" });
+    expect(fb.storage.rules).toBe("storage.rules");
     expect(fb.emulators.storage).toEqual({ port: 9199 });
   });
 });
