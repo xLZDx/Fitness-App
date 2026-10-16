@@ -9,8 +9,11 @@ import 'dart:async' show unawaited;
 
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/activity/repository/activity_journal.dart';
+import '../../features/activity/repository/activity_cloud_settings_client.dart';
+import '../../features/activity/repository/activity_stream_uploader.dart';
 import '../../features/activity/repository/activity_sync_repository.dart';
 import '../../features/activity/repository/cloud_functions_activity_tombstone_pusher.dart';
 import '../../features/activity/repository/file_activity_journal.dart';
@@ -61,6 +64,61 @@ List<Override> activityRootOverrides({
 /// The opened journal (only overridden when the flag is on).
 final activityJournalProvider = Provider<ActivityJournal?>((_) => null);
 
+/// Consent cache scoped to the signed-in account. Unknown (so: no upload)
+/// until [signIn] has run.
+class AccountScopedConsentStore implements CloudStreamsConsentStore {
+  CloudStreamsConsentStore? _inner;
+
+  Future<void> signIn(String uid) async {
+    _inner = SharedPrefsCloudStreamsConsentStore(
+        await SharedPreferences.getInstance(), uid);
+  }
+
+  @override
+  Future<CloudStreamsConsent> read() async =>
+      await _inner?.read() ?? CloudStreamsConsent.unknown;
+
+  @override
+  Future<void> write(CloudStreamsConsent value) async =>
+      _inner?.write(value);
+}
+
+final activityConsentStoreProvider =
+    Provider<AccountScopedConsentStore>((_) => AccountScopedConsentStore());
+
+/// Consent cache plus the `setActivityCloudSettings` call.
+final activityCloudSettingsClientProvider =
+    Provider<ActivityCloudSettingsClient>((ref) => ActivityCloudSettingsClient(
+          call: cloudFunctionsSettingsCall(),
+          store: ref.watch(activityConsentStoreProvider),
+        ));
+
+/// The stream uploader; null unless the flag is on and a journal is open
+/// (default OFF = no uploader exists).
+final activityStreamUploaderProvider = Provider<ActivityStreamUploader?>((ref) {
+  if (!ref.watch(activityFlagsProvider).cloudSync) return null;
+  final journal = ref.watch(activityJournalProvider);
+  if (journal == null) return null;
+  return ActivityStreamUploader(
+    journal: journal,
+    callables: CloudFunctionsActivityStreamClient(),
+    consent: ref.watch(activityCloudSettingsClientProvider),
+    put: httpClientPutSender,
+    flags: ref.watch(activityFlagsProvider),
+  );
+});
+
+/// Consent-withdrawal presenter for the settings screen; null when off.
+final activityConsentWithdrawalProvider =
+    Provider<ActivityConsentWithdrawal?>((ref) {
+  final uploader = ref.watch(activityStreamUploaderProvider);
+  if (uploader == null) return null;
+  return ActivityConsentWithdrawal(
+    settings: ref.watch(activityCloudSettingsClientProvider),
+    uploader: uploader,
+  );
+});
+
 /// Keep-alive wiring: watch it once from the app root widget. Runs one sync
 /// pass (`syncAll(retryConflicts: true)`) per signed-in non-guest account at
 /// app start. Never throws and never blocks the UI.
@@ -72,11 +130,23 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
     if (user == null || user.uid.isEmpty) return;
     if (user.provider == AuthProvider.anonymous) return;
     if (previous?.valueOrNull?.uid == user.uid) return;
-    unawaited(ref
-        .read(activitySyncRepositoryProvider)
-        .syncAll(retryConflicts: true)
-        .then<void>((_) {}, onError: (Object e) {
-      debugPrint('activity: start sync failed (${e.runtimeType})');
-    }));
+    final uploader = ref.read(activityStreamUploaderProvider);
+    final settings = ref.read(activityCloudSettingsClientProvider);
+    final consentStore = ref.read(activityConsentStoreProvider);
+    unawaited(() async {
+      try {
+        await ref.read(activitySyncRepositoryProvider).syncAll(retryConflicts: true);
+      } catch (e) {
+        debugPrint('activity: start sync failed (${e.runtimeType})');
+      }
+      // Stream upload: one run per app start, only with consent known granted.
+      try {
+        await consentStore.signIn(user.uid);
+        await settings.load();
+        await uploader?.runPending();
+      } catch (e) {
+        debugPrint('activity: start stream upload failed (${e.runtimeType})');
+      }
+    }());
   }, fireImmediately: true);
 });

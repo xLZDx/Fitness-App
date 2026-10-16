@@ -57203,3 +57203,7 @@ Decision: Stream upload reuses the journal sync state (markSynced after commit, 
 ## 2026-10-16 - Commit: S02 client cloud settings client and consent-withdrawal flow
 
 Decision: Withdrawal flips the local consent cache before the network call and cancels queued uploads first; the bulk-delete offer is a separate method that sends deleteExisting once, and the client does not itself continue the resumable job (the reconciler does).
+
+## 2026-10-16 - Commit: S02 client upload wiring behind the flag
+
+Decision: Uploader and withdrawal providers exist only when ACTIVITY_CLOUD_STREAMS is on; one upload run per app start after the summary sync, with consent read from a per-account cache that is unknown (no upload) until loaded.
