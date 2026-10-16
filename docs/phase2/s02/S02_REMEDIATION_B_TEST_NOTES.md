@@ -8,6 +8,8 @@
 - SF2: key store `loadKey` throws once; `read(id)` returns streamsLoaded false; then `updateSyncState(id, synced)`; with the key restored the next `read(id)` has streamLost false and streamsLoaded true (the metadata edit did not persist streamLost). Real key loss (`loadKey` returns null) still persists streamLost in a new generation.
 - SF2: `streams.bin` read throws a non-notfound I/O error (file exists): `read` returns streamsLoaded false, nothing persisted as streamLost, the next read after the fault is removed loads the streams; a missing `streams.bin` or checksum mismatch is still stream-lost and persisted by the next metadata edit.
 - SF2: recovery with an I/O error on `streams.bin` of the selected generation: entry recovered with streamLost false, `report.streamLost` does not contain the id, `report.diagnostics` contains `streamsUnreadable:<id>`, older committed generations are kept; `streamLostCount` stays 0.
+- SF3: `read(id)` with `record.json` or COMMIT `readBytes` throwing a non-notfound I/O error (file exists) throws `JournalIoException`, `list()` still contains the entry, and a following `put` still sees the previous entry (baseRev/baseSummary kept); after the fault is removed `read` succeeds.
+- SF3: `read(id)` with a deleted COMMIT, deleted `record.json` or a record whose hash differs from the marker returns null and drops the entry from `list()`.
 
 ## B2
 

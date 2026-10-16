@@ -57268,6 +57268,10 @@ Decision: Recovery distinguishes a missing or invalid COMMIT marker (uncommitted
 
 Decision: The journal keeps a persisted-lost set and a separate transient-unavailable set; only the persisted-lost set may write streamLost into a new generation, so a key store or read error is retried instead of hiding intact streams. Stream-lost counts and the sign-out assessment use the persisted-lost set only. A fully verified read clears both sets for the id.
 
+## 2026-10-16 - Commit: S02 remediation B1: read keeps the cache entry on I/O errors
+
+Decision: The journal read drops a cached entry only on a verified mismatch (marker or record missing, or hash different); an I/O error keeps the entry and surfaces JournalIoException so the caller can retry.
+
 ## 2026-10-16 - Commit: S02 remediation B2: journal wipe wiring and owner guard
 
 Decision: Account deletion wipes the activity journal through a decorator around the device wipe (one object for the normal and the relaunch path); the device-wide journal records an owner uid and is wiped before sync when another uid signs in (fail closed). The sign-out export offer stays S03 scope.

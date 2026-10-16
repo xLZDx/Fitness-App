@@ -510,22 +510,28 @@ class FileActivityJournal implements ActivityJournal {
       final dir = _paths.genDir(id, meta.seq);
 
       // Re-verify the record against its COMMIT marker.
+      // The cache entry is dropped ONLY on a verified mismatch (marker or record
+      // missing, or hash different). An I/O error keeps the entry and surfaces
+      // a JournalIoException so the caller can retry.
       final JournalRecord record;
+      final Uint8List? bytes;
+      final CommitMarker? commit;
       try {
-        final commit = await _writer.readCommit(id, meta.seq);
-        final bytes = await _fs.readBytes('$dir/$kRecordFileName');
-        final parsed = JournalRecord.tryDecode(bytes);
-        if (commit == null ||
-            parsed == null ||
-            sha256Hex(bytes) != commit.recordSha256) {
-          _meta.remove(id);
-          return null;
-        }
-        record = parsed;
-      } on FileSystemException {
+        commit = await _writer.readCommit(id, meta.seq);
+        bytes = await _writer.readIfPresent('$dir/$kRecordFileName');
+      } on JournalUnreadable catch (e) {
+        throw JournalIoException('cannot read journal entry $id',
+            cause: e.cause);
+      }
+      final parsed = bytes == null ? null : JournalRecord.tryDecode(bytes);
+      if (commit == null ||
+          bytes == null ||
+          parsed == null ||
+          sha256Hex(bytes) != commit.recordSha256) {
         _meta.remove(id);
         return null;
       }
+      record = parsed;
       final base = _summaryEntryOf(record, meta.seq);
       if (base == null) return null;
       if (record.state.streamLost) {
@@ -541,9 +547,7 @@ class FileActivityJournal implements ActivityJournal {
         _unavailableIds.add(id);
         return _lostEntry(base);
       }
-      final commit = await _readCommitOrThrow(id, meta.seq);
       if (streamsBytes == null ||
-          commit == null ||
           record.streamHash != commit.streamsSha256 ||
           sha256Hex(streamsBytes) != commit.streamsSha256) {
         // Damaged streams of a committed generation: derived, not persisted.
@@ -596,16 +600,6 @@ class FileActivityJournal implements ActivityJournal {
         streamsLoaded: true,
       );
     });
-  }
-
-  /// COMMIT marker of a cached generation; an I/O error surfaces as a typed
-  /// journal error (the cache entry is kept).
-  Future<CommitMarker?> _readCommitOrThrow(String id, int seq) async {
-    try {
-      return await _writer.readCommit(id, seq);
-    } on JournalUnreadable catch (e) {
-      throw JournalIoException('cannot read journal entry $id', cause: e.cause);
-    }
   }
 
   JournalEntry? _summaryEntryOf(JournalRecord r, int seq) {
