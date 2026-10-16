@@ -56927,3 +56927,7 @@ Decision: All activity callables read the delete fence, the deletion-retries mar
 ## 2026-10-16 - Commit: S02-06a: deleteActivity callable
 
 Decision: deleteActivity writes the 400-day tombstone first inside the fenced transaction, then removes both object prefixes (404 is success, failures aggregate to one bare code), then the stream index row, then the summary last; it is idempotent, not behind the feature flag, and has its own redacted quota activityDelete. Evidence: core/changes/2026-10-16-s02-06a-delete-activity.md.
+
+## 2026-10-16 - Commit: S02-06a: mobile permission-denied decision
+
+Decision: With no sync layer yet, the rule "permission-denied is not deletion" is a pure function that deletes local data only when the tombstone read succeeded and found a document, and keeps data as sync_conflict on absence or a failed read. Evidence: core/changes/2026-10-16-s02-06a-mobile-denial-decision.md.
