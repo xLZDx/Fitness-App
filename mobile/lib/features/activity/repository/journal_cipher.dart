@@ -86,7 +86,8 @@ abstract class JournalKeyProvider {
   /// the store is unreadable.
   Future<Uint8List> loadOrCreateKey();
 
-  /// Deletes the key (wipe, account deletion). Best effort.
+  /// Deletes the key (wipe, account deletion). Throws when the platform store
+  /// fails, so the wipe fails and is retried; deleting an absent key succeeds.
   Future<void> forget();
 }
 
@@ -165,11 +166,9 @@ class SecureStorageJournalKeyProvider implements JournalKeyProvider {
   @override
   Future<void> forget() async {
     _cached = null;
-    try {
-      await _storage.delete(keyNameInUse);
-    } catch (_) {
-      // Best effort: the data it protected is deleted first.
-    }
+    // A keystore failure propagates: the wipe must not report success while the
+    // key remains. Deleting an absent key is a no-op, so a retry is idempotent.
+    await _storage.delete(keyNameInUse);
   }
 }
 

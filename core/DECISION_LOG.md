@@ -57485,3 +57485,11 @@ Decision: epic 11a findings and the complete run are recorded in the epic 11 fin
 ## 2026-10-16 - Commit: S02 remediation F2 (1/4) no rebind after wipe
 
 Decision: `UidScopedActivityJournal` remembers the uid it wiped while bound and refuses to bind it (fail closed) until another uid or null is bound; `AccountScopedJournal` exposes `boundUid` and `isBound`. Evidence: core/changes/2026-10-16-s02-remediation-f2-no-rebind.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (2/4) key deletion failure surfaces
+
+Decision: `forget()` propagates secure-storage failures so the wipe is reported incomplete and retried from the marker. Evidence: core/changes/2026-10-16-s02-remediation-f2-key-delete.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (1/4) sync pass identity and pinning
+
+Decision: every serialized sync operation carries a pass identity (account epoch, bound journal uid, auth uid) and re-checks it before every journal write and, synchronously, before every backend or tombstone-pusher call; a stale pass stops with `pending`. Evidence: core/changes/2026-10-16-s02-remediation-f1-pass-identity.md.

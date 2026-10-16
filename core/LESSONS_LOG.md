@@ -100,3 +100,17 @@ Facts: after account deletion wiped the bound uid, a same-uid auth re-emission c
 Root cause: E1 treated the wipe as a one-shot event and did not model "this uid is gone" as state; auth streams re-emit the same uid.
 Layers: the author of E1 and the epic 11a tests missed it (no test re-emitted the same uid after a wipe); the independent reviewers caught it.
 Rule next time: for any destructive account event, test the same-uid re-emission that follows it.
+
+## 2026-10-16 - S02 remediation F2 (2/4): key deletion failure fails the wipe
+Kind: FAILURE.
+Facts: `SecureStorageJournalKeyProvider.forget()` swallowed a delete failure ("Best effort") and the wipe awaited it, so account deletion could report success with the key still in secure storage (core/changes/2026-10-16-s02-remediation-f2-key-delete.md).
+Root cause: a best-effort comment written for a close path was reused on the one path where failure must be visible.
+Layers: the author of E1 and the epic 11a tests missed it (no test made the keystore delete throw); the independent reliability and silent-failure reviewers caught it.
+Rule next time: on a wipe path every step either succeeds or surfaces; best effort is only for close and dispose.
+
+## 2026-10-16 - Sync pass identity and pinning (remediation F1, 1/4)
+Kind: FAILURE.
+Facts: a `syncAll` pass of account A in flight at an account switch kept acting on account B: `epoch` was captured but checked only inside the tombstone phase, so `_journal.list()` returned B's entries and A's server tombstone ids (deterministic ids) deleted B's local copies; `_syncLocked` could write under B's Firebase uid (see core/changes/2026-10-16-s02-remediation-f1-pass-identity.md).
+Root cause: the E2 author pinned only the tombstone phase; the account-scoped journal facade of E1 made every later call in the pass resolve against whichever account is bound now.
+Layers: the E2 author missed it; the epic 11a/11b tests never switched account mid-pass; four independent reviewers caught it.
+Rule next time: every async pass that touches per-account state carries a pass identity and re-checks it before every side effect, and each long-running operation gets a switch-account-mid-flight test.
