@@ -56911,3 +56911,7 @@ Decision: The server rejects (never strips) unknown keys at every depth, allows 
 ## 2026-10-16 - Commit: S02-04a: stream bucket setting, path builders, bucket seam, runbook
 
 Decision: Streams use a dedicated private bucket named by ACTIVITY_STREAM_BUCKET (treated as unset when equal to the Body Scan bucket), storage.rules stays the single deny-all, and callables reach the bucket only through an injectable seam and validated-id path builders. Evidence: core/changes/2026-10-16-s02-04a-bucket-and-paths.md.
+
+## 2026-10-16 - Commit: S02-05a: activity settings model
+
+Decision: Settings validation and the change planner are pure functions; retention is a closed set (90, 365, 730 days, or null while the OPEN "never" question defaults to offered) with a single named default constant of 730 days marked OPEN-DEFAULT, and the generation increments once per effective change only. Evidence: core/changes/2026-10-16-s02-05a-settings-model.md.
