@@ -57263,3 +57263,15 @@ Decision: Epic 7a closes with 148 passed and 2 skipped (NOT WIRED) tests; the jo
 ## 2026-10-16 - Commit: S02 remediation B1: recovery keeps committed generations on I/O errors
 
 Decision: Recovery distinguishes a missing or invalid COMMIT marker (uncommitted, deleted) from an I/O error (every generation of the activity kept, diagnostic `unreadable:<id>`, retried at the next start).
+
+## 2026-10-16 - Commit: S02 remediation B1: transient stream failures are not persisted as lost
+
+Decision: The journal keeps a persisted-lost set and a separate transient-unavailable set; only the persisted-lost set may write streamLost into a new generation, so a key store or read error is retried instead of hiding intact streams.
+
+## 2026-10-16 - Commit: S02 remediation B2: journal wipe wiring and owner guard
+
+Decision: Account deletion wipes the activity journal through a decorator around the device wipe (one object for the normal and the relaunch path); the device-wide journal records an owner uid and is wiped before sync when another uid signs in (fail closed). The sign-out export offer stays S03 scope.
+
+## 2026-10-16 - Commit: S02 test epic 8a: abandoned fence, usage cleanup and unset bucket
+
+Decision: The late-sweep contract of remediation A1, A5 and A10 is pinned by new jest tests whose oracles come from the remediation notes; the old skipped-live tests were updated to the 24 h window.

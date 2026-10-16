@@ -598,7 +598,8 @@ Future<void> main() async {
         // A1 — the on-device half of the same operation. Real implementation
         // only here: the default provider records instead of deleting, so a
         // widget test can never wipe the host machine's documents directory.
-        localDataWipeProvider.overrideWith((_) => DeviceLocalDataWipe()),
+        localDataWipeProvider.overrideWith((_) =>
+            activityAwareLocalDataWipe(DeviceLocalDataWipe(), activityJournal)),
         pendingWipeMarkerProvider.overrideWith((_) => PrefsPendingWipeMarker()),
 
         // Nurture moments + notifications.

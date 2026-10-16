@@ -11,7 +11,10 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/account_deletion/data/local_data_wipe.dart';
+import '../../features/activity/repository/activity_aware_local_data_wipe.dart';
 import '../../features/activity/repository/activity_journal.dart';
+import '../../features/activity/repository/activity_journal_owner.dart';
 import '../../features/activity/repository/activity_cloud_settings_client.dart';
 import '../../features/activity/repository/activity_stream_uploader.dart';
 import '../../features/activity/repository/activity_sync_repository.dart';
@@ -40,6 +43,22 @@ Future<ActivityJournal?> openActivityJournal({
   }
 }
 
+/// The account-deletion device wipe extended with the journal wipe (design 6.2,
+/// 7). With no journal open (flag off) [inner] is returned unchanged, so the
+/// behaviour is exactly the pre-S02 one.
+LocalDataWipe activityAwareLocalDataWipe(
+  LocalDataWipe inner,
+  ActivityJournal? journal, {
+  ActivityJournalOwnerStore? ownerStore,
+}) {
+  if (journal == null) return inner;
+  return ActivityAwareLocalDataWipe(
+    inner: inner,
+    journal: journal,
+    ownerStore: ownerStore ?? PrefsActivityJournalOwnerStore(),
+  );
+}
+
 /// Provider overrides for the root `ProviderScope`. Empty unless the flag is on
 /// and a journal was opened.
 List<Override> activityRootOverrides({
@@ -63,6 +82,10 @@ List<Override> activityRootOverrides({
 
 /// The opened journal (only overridden when the flag is on).
 final activityJournalProvider = Provider<ActivityJournal?>((_) => null);
+
+/// Owner uid record of the device-wide journal (cross-account guard).
+final activityJournalOwnerStoreProvider = Provider<ActivityJournalOwnerStore>(
+    (_) => PrefsActivityJournalOwnerStore());
 
 /// Consent cache scoped to the signed-in account. Unknown (so: no upload)
 /// until [signIn] has run.
@@ -133,7 +156,17 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
     final uploader = ref.read(activityStreamUploaderProvider);
     final settings = ref.read(activityCloudSettingsClientProvider);
     final consentStore = ref.read(activityConsentStoreProvider);
+    final journal = ref.read(activityJournalProvider)!;
+    final ownerStore = ref.read(activityJournalOwnerStoreProvider);
     unawaited(() async {
+      // The journal is device-wide: when it belongs to another account it is
+      // wiped first (design 17: the sign-out export offer is S03). Fail closed:
+      // no sync and no upload unless this uid owns the journal.
+      if (!await claimActivityJournal(
+          journal: journal, store: ownerStore, uid: user.uid)) {
+        debugPrint('activity: journal owner check failed; sync not started');
+        return;
+      }
       try {
         await ref.read(activitySyncRepositoryProvider).syncAll(retryConflicts: true);
       } catch (e) {
