@@ -26,10 +26,20 @@ class SyncConflictViewState {
     this.sync = ActivitySyncState.empty,
     this.busy = const {},
     this.lastFailed = false,
+    this.loaded = false,
+    this.loadFailed = false,
   });
 
   /// The latest state from the repository stream.
   final ActivitySyncState sync;
+
+  /// True once the repository stream has emitted a real state. Until then the
+  /// default (empty) [sync] must not be shown as "everything is in sync".
+  final bool loaded;
+
+  /// The repository stream reported an error and no newer state arrived since;
+  /// the sheet shows an error state with a retry action.
+  final bool loadFailed;
 
   /// Keys of the actions in flight (a second tap on the same one is ignored).
   final Set<String> busy;
@@ -45,23 +55,54 @@ class SyncConflictViewState {
     ActivitySyncState? sync,
     Set<String>? busy,
     bool? lastFailed,
+    bool? loaded,
+    bool? loadFailed,
   }) =>
       SyncConflictViewState(
         sync: sync ?? this.sync,
         busy: busy ?? this.busy,
         lastFailed: lastFailed ?? this.lastFailed,
+        loaded: loaded ?? this.loaded,
+        loadFailed: loadFailed ?? this.loadFailed,
       );
 }
 
 class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
+  StreamSubscription<ActivitySyncState>? _sub;
+  bool _disposed = false;
+
   @override
   SyncConflictViewState build() {
-    final repo = ref.watch(activitySyncRepositoryProvider);
-    final sub = repo.watch().listen((s) {
-      state = state.copyWith(sync: s);
+    _disposed = false;
+    ref.watch(activitySyncRepositoryProvider); // rebuild if the repo changes
+    ref.onDispose(() {
+      _disposed = true;
+      _sub?.cancel();
+      _sub = null;
     });
-    ref.onDispose(sub.cancel);
+    _subscribe();
     return const SyncConflictViewState();
+  }
+
+  void _subscribe() {
+    final repo = ref.read(activitySyncRepositoryProvider);
+    _sub = repo.watch().listen((s) {
+      if (_disposed) return;
+      state = state.copyWith(sync: s, loaded: true, loadFailed: false);
+    }, onError: (Object _) {
+      // A failed read must not leave the sheet in a false "all in sync" state.
+      if (_disposed) return;
+      state = state.copyWith(loadFailed: true);
+    });
+  }
+
+  /// Re-subscribes to the repository stream after a failed load.
+  void retry() {
+    if (_disposed) return;
+    _sub?.cancel();
+    _sub = null;
+    state = state.copyWith(loaded: false, loadFailed: false);
+    _subscribe();
   }
 
   static String conflictKey(String id) => 'conflict/$id';

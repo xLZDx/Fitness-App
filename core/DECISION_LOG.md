@@ -57361,3 +57361,7 @@ Decision: design 5.2 item 4 is corrected to the plan and the built uploader (no 
 ## 2026-10-16 - Commit: S02 remediation C conflict view (FL1, FL2)
 
 Decision: watch() reports refresh failures on the stream, _conflictView treats any non-read backend error as cloudKnown:false, and the conflict sheet has loading, error and retry states instead of a false "in sync" text. Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
+
+## 2026-10-16 - Commit: S02 remediation C conflict view code and test notes (FL1, FL2)
+
+Decision: the FL1/FL2 production code lands with test notes in docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md; FL3, FL4 and FL7 stay as decided (skip, release gate, keep). Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.

@@ -137,6 +137,10 @@ class ActivitySyncRepository {
         c.onCancel = sub.cancel;
         unawaited(refreshState().then((s) {
           if (!c.isClosed) c.add(s);
+        }, onError: (Object e, StackTrace st) {
+          // A failed refresh (journal I/O) is reported on the stream, never as
+          // an uncaught async error and never as a silent empty state.
+          if (!c.isClosed) c.addError(e, st);
         }));
       });
 
@@ -216,6 +220,16 @@ class ActivitySyncRepository {
       } on SummaryCorrupt {
         // Not cached: the cloud document is unreadable, so the conflict stays
         // visible with no cloud values to compare.
+        return SyncConflict(
+          id: e.id,
+          sport: s.sport,
+          startUtc: s.startUtc,
+          fields: const [],
+          cloudKnown: false,
+        );
+      } catch (_) {
+        // Any other backend failure (e.g. permission-denied) is "cloud not
+        // known": the conflict stays reachable. Not cached.
         return SyncConflict(
           id: e.id,
           sport: s.sport,

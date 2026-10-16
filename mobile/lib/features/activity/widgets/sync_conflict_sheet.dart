@@ -99,7 +99,25 @@ class SyncConflictSheet extends ConsumerWidget {
                       theme.textTheme.bodyMedium?.copyWith(color: hud.danger)),
             ],
             const SizedBox(height: 12),
-            if (!view.hasItems)
+            if (view.loadFailed) ...[
+              Text(l10n.activitySyncCloudUnavailable,
+                  key: const Key('activitySync.error'),
+                  style:
+                      theme.textTheme.bodyMedium?.copyWith(color: hud.danger)),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const Key('activitySync.retry'),
+                  onPressed: presenter.retry,
+                  child: Text(l10n.commonRetry),
+                ),
+              ),
+            ] else if (!view.loaded)
+              const Center(
+                  key: Key('activitySync.loading'),
+                  child: CircularProgressIndicator())
+            else if (!view.hasItems)
               Text(l10n.activitySyncEmpty,
                   key: const Key('activitySync.empty'),
                   style: theme.textTheme.bodyMedium
