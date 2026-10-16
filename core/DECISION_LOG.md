@@ -57349,3 +57349,7 @@ Decision: the epic 9a findings record the complete 14-file run at head 62ab9f9e 
 ## 2026-10-16 - Commit: S02 test epic 8b: findings and stale expectations
 
 Decision: two expectations left stale by epic 6b were updated to the audited reality (account_export residue lines, activity_account_state path {docId}); no product change.
+
+## 2026-10-16 - Commit: S03-D UI design contract draft and S02 SDLC state
+
+Decision: the S03-D UI design contract (revision 2, after product-ux and accessibility review) is committed as a DRAFT prepared in parallel with the S02 verification phase (development rule 7). It records open operator decisions (U-1 shell option, U-2 tablet, D-9 monetisation, OD-9 open the local journal in the default build) and is not approved. docs/sdlc/STATE.md moves S02 to phase 7 Verify. Evidence: core/changes/2026-10-16-s03d-ui-design-contract-draft.md.
