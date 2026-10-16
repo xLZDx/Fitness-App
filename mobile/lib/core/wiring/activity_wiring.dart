@@ -84,14 +84,19 @@ final activityJournalProvider = Provider<ActivityJournal?>((_) => null);
 /// itself never wipes (the sign-out export offer is S03).
 final activityJournalBindingProvider = Provider<void>((ref) {
   if (!ref.watch(activityFlagsProvider).journalEnabled) return;
-  final journal = ref.watch(activityJournalProvider);
-  if (journal is! AccountScopedJournal) return;
+  final AccountScopedJournal scoped;
+  switch (ref.watch(activityJournalProvider)) {
+    case final AccountScopedJournal s:
+      scoped = s;
+    default:
+      return;
+  }
   ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
     if (!next.hasValue) return;
     final uid = next.value?.uid;
     unawaited(() async {
       try {
-        await journal.bindUid(uid == null || uid.isEmpty ? null : uid);
+        await scoped.bindUid(uid == null || uid.isEmpty ? null : uid);
       } catch (e) {
         debugPrint('activity: journal bind failed (${e.runtimeType})');
       }
@@ -176,6 +181,7 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
     // The signed-in account changed or went away: stop the previous account's
     // queued and in-flight uploads before anything else happens.
     if (previousUid != null && previousUid != nextUid) {
+      ref.read(activitySyncRepositoryProvider).onAccountChanged();
       ref.read(activityStreamUploaderProvider)?.cancelQueued();
     }
     if (user == null || nextUid == null) return;
@@ -189,8 +195,8 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         // The journal of this uid must be bound first (account-scoped
         // journals: ownership is the location). Fail closed: no sync and no
         // upload unless the bind succeeded. Nothing is ever wiped here.
-        if (journal is AccountScopedJournal &&
-            !await journal.bindUid(nextUid)) {
+        if (journal case final AccountScopedJournal scoped
+            when !await scoped.bindUid(nextUid)) {
           debugPrint('activity: journal bind failed; sync not started');
           return;
         }

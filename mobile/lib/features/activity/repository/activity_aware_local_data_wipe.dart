@@ -47,8 +47,8 @@ class ActivityAwareLocalDataWipe implements LocalDataWipe {
         // whoever is bound now, and never another uid's scope (a relaunch with
         // a pending wipe while a different account is bound is safe). A plain
         // journal (not account-scoped) is wiped as a whole.
-        if (journal is AccountScopedJournal) {
-          await journal.wipeForUid(uid);
+        if (journal case final AccountScopedJournal scoped) {
+          await scoped.wipeForUid(uid);
         } else {
           await ActivityWipeCoordinator(journal).onAccountDeleted();
         }

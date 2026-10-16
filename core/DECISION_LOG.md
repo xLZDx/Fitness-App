@@ -57461,3 +57461,7 @@ Decision: the pinned `activityDelete` limit is 1000 in four server test files an
 ## 2026-10-16 - Commit: S02 test epic 11a (b) wiring and decorator tests, compile fix
 
 Decision: the wipe-wiring and account-switch tests run the real scoped journal over real files; type promotion to AccountScopedJournal is replaced by pattern matching. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (b) code commit
+
+Decision: the pattern-match compile fix and the rewritten wiring tests are committed together; the log entries above travelled in the previous parallel commit. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
