@@ -353,12 +353,22 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
     if (previousRaw != null &&
         previousRaw.isNotEmpty &&
         previousRaw != user?.uid) {
+      // Remediation I2: the consent cache and state belonged to the previous
+      // account: unbind them FIRST, each step isolated, so an exception in
+      // [onAccountChanged] can never leave the previous account's consent
+      // bound. Stored consent of any account is NOT deleted.
+      try {
+        consentStore.signOut();
+      } catch (e) {
+        debugPrint('activity: consent unbind failed (${e.runtimeType})');
+      }
+      try {
+        settings.reset();
+      } catch (e) {
+        debugPrint('activity: consent reset failed (${e.runtimeType})');
+      }
       ref.read(activitySyncRepositoryProvider).onAccountChanged();
       ref.read(activityStreamUploaderProvider)?.cancelQueued();
-      // The consent cache and state belonged to the previous account: unbind
-      // them. Stored consent of any account is NOT deleted.
-      consentStore.signOut();
-      settings.reset();
     }
     if (user == null || nextUid == null) return;
     if (previousUid == nextUid) return;
@@ -376,6 +386,18 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         ref.read(accountBeingDeletedUidProvider) != myUid;
     unawaited(() async {
       try {
+        if (!current()) return;
+        // Remediation I2: the consent of this account depends neither on the
+        // journal nor on the sync, so it is bound and loaded first. A failing
+        // journal bind or a long syncAll no longer leaves the store unbound.
+        try {
+          await consentStore.signIn(myUid);
+          if (!current()) return;
+          await settings.load();
+        } catch (e) {
+          debugPrint('activity: consent load failed (${e.runtimeType})');
+        }
+        if (!current()) return;
         // The journal of this uid must be bound first (account-scoped
         // journals: ownership is the location). Fail closed: no sync and no
         // upload unless the bind succeeded. Nothing is ever wiped here.
@@ -409,12 +431,9 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         }
         if (!current()) return;
         // Stream upload: one run per app start, only with consent known granted.
-        // Each step re-verifies that this start is still the current one.
+        // The consent was loaded at the start of this closure; `current()` was
+        // just re-verified, directly before the resume.
         try {
-          await consentStore.signIn(myUid);
-          if (!current()) return;
-          await settings.load();
-          if (!current()) return;
           // Uploads were cancelled when the previous account went away; they
           // resume only now that THIS account's consent is loaded and verified.
           uploader?.resume();

@@ -168,6 +168,9 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   /// call started for; otherwise [ConsentAccountChangedException] is thrown and
   /// nothing is written for the other account.
   Future<void> grant() async {
+    // Remediation I2: an unbound store cannot persist, so nothing may reach the
+    // server (it would hold a state the client threw about).
+    if (_store.boundUid == null) throw const ConsentAccountChangedException();
     final uid = _store.boundUid;
     await _call({
       'cloudStreams': {'granted': true, 'version': kCloudStreamsConsentVersion},
@@ -188,6 +191,8 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   /// [ConsentAccountChangedException] is thrown. [deleteExisting] asks the
   /// server to start the bulk stream deletion.
   Future<void> withdraw({bool deleteExisting = false}) async {
+    // Remediation I2: refuse before any state change, set insertion or call.
+    if (_store.boundUid == null) throw const ConsentAccountChangedException();
     final uid = _store.boundUid;
     _version++;
     _state = CloudStreamsConsent.withdrawn;
@@ -251,6 +256,10 @@ class ActivityConsentWithdrawal {
   /// the start; the settings client refuses (throws) when it changed meanwhile.
   /// Summaries and local data stay.
   Future<void> deleteCloudStreamsNow() async {
+    // Remediation I2: an unbound store never records a "requested" key.
+    if (_settings.accountUid == null) {
+      throw const ConsentAccountChangedException();
+    }
     final uid = _settings.accountUid;
     if (_deleteRequested.contains(uid)) return;
     _deleteRequested.add(uid);

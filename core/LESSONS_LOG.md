@@ -389,3 +389,10 @@ Kind: FAILURE.
 Facts: The state read path (`refreshState`) compared the journal uid and the auth uid only for movement during the read, never for agreement, so in the account-flip gap A's cards could be emitted under B, although remediation G1 had already tied sync passes to the auth uid. Evidence: core/changes/2026-10-16-s02-remediation-i-display-tie.md.
 Root cause: the author of remediation H did not tie the display path to the auth uid although G1 had tied the pass; the guard was added to one path and its sibling path reading the same identity pair was not searched. Layers that missed it: author, epic 14 tests (no test exercised the display gap), first verification review; caught by the second verification review round (reliability).
 Rule next time: when a guard is added to one path, grep for every sibling path that reads the same identity pair (here `_beginPass` vs `_viewStamp`) and give each the same guard or an explicit reason.
+
+## 2026-10-16 - fix(s02): consent contract with an unbound store and early consent bind (remediation I2)
+
+Kind: FAILURE.
+Facts: With an unbound consent store the settings client sent the server call and only then failed on the store write, leaving the server and client disagreeing and a null key in `_unpersistedWithdrawals`; the store was bound only after the journal bind and the whole `syncAll`, so the unbound window was long. Evidence: core/changes/2026-10-16-s02-remediation-i-consent-contract.md.
+Root cause: the author of H bound the consent store behind unrelated steps and checked the uid only by equality, so null equalled null. Layers that missed it: author, epic 14 tests (none exercised an unbound store), first verification review; caught by the second verification review round (security).
+Rule next time: bind per-account state as early as it can be bound, and make every mutator refuse before any side effect when its owner is unknown.

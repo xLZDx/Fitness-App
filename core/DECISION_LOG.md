@@ -57666,3 +57666,7 @@ Decision: Final complete run for sprint S02 on head cf1a4eb5 is recorded: flutte
 ## 2026-10-16 - Commit: fix(s02): tie state reads to the auth uid (remediation I1)
 
 Decision: `ActivitySyncRepository.refreshState` applies the same journal/auth tie as a pass (new private `_viewTied`, also inside `_viewCurrent`): with a scoped journal and an auth supplier, a read whose journal uid differs from the signed-in uid is logged as a skip (reason word, no uid), retried up to 3 times, then ends in `JournalUnbound`. Plain journals and a null supplier keep the old behaviour. Evidence: core/changes/2026-10-16-s02-remediation-i-display-tie.md.
+
+## 2026-10-16 - Commit: fix(s02): consent contract with an unbound store and early consent bind (remediation I2)
+
+Decision: `grant`, `withdraw` and `deleteCloudStreamsNow` throw `ConsentAccountChangedException` before any state change or server call when the consent store is unbound; the startup closure binds the consent store and loads the settings before the journal bind and `syncAll` (consent does not depend on either), keeps `resume` after the final `current()` check, and the account-change block unbinds consent first, each step in its own try/catch. Evidence: core/changes/2026-10-16-s02-remediation-i-consent-contract.md.
