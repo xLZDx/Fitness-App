@@ -597,3 +597,11 @@ Facts: after the S02 gate the operator asked two basic questions that the plan d
 Root cause: the roadmap states sprints and defaults but has no one-page picture of what is released when, on which platforms and in how many apps; the privacy text is a generated file and I did not check for that before editing.
 Layers: author (me); no reviewer or gate asks for a release and platform picture.
 Rule next time: put the release picture (apps, platforms, form factors, release lines) on the first page of the roadmap and ask it as an operator decision at sprint zero; before hand-editing a file under public/ or core/, grep scripts/ for "generated" and for the file name.
+
+## 2026-10-16 - Commit: test: rename a fake uid sentinel that the secret scanner flags
+
+Kind: SHORTCOMING (mine, author).
+Facts: after the S02 merge the full-history secret scan (gitleaks) went red with one finding. The only candidate is a unit test of the activity journal that declared a constant whose name contained the word "secret" and whose value was a made-up user-id marker ending in 7f3a91 (added in commit 2791285a, line 264 there). It is a made-up user-id marker, not a credential, but the variable name contains "secret" and the value has entropy 3.85, which matches the generic key rule. Evidence: core/changes/2026-10-16-gitleaks-false-positive-sentinel.md.
+Root cause: I named a fake value after what it protects instead of what it is, and the scan is not run before a push (CI is not run locally by operator decision), so the first sign was a red job on the merged PR. Because the scan covers the whole history, a rename alone cannot clear it; the old commit needs an ignore entry.
+Layers: author (me) introduced it; tests and reviewers could not see it (the test is correct); only the CI secret scan caught it.
+Rule next time: never put secret, token, key, password or credential in the name of a test variable or value that is only a fake; call it sentinel or marker. The fingerprint added here is inferred (rule id and line are not from a scanner run), so the next secrets job is the only proof; check its output first.
