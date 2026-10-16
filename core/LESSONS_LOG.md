@@ -555,3 +555,11 @@ Facts: 33 new tests passed on the first run; the repository directory ran 749 te
 Why it worked: the guard points of the client are synchronous read counts, so a supplier answering A for N reads flips the account at an exact point; the J notes gave the read order.
 Layers: tests pinned the behavior; red-before-fix was not observed (no mutation runs by rule).
 Rule next time: count the live-uid reads of a client path once in the test header and parametrize the flip point over them.
+
+## 2026-10-16 - Commit: test(s02): uploader, tombstone, presenter and real client tests for remediation J2/J3b (epic 16c, 1/2)
+
+Kind: SHORTCOMING (author, caught by the first run).
+Facts: the first run had a compile error (FirebaseFunctionsException message is non-null) and one wrong expectation of mine: I expected the retry budget to persist after a clean pass, but a clean pass resets it; both were test bugs, no product defect. 42 tests passed after the fix.
+Root cause: I did not read the reset rule in the sync pass before writing the budget assertion.
+Layers: author missed it; the first run caught it.
+Rule next time: read the reset and bookkeeping rules of a counter before asserting its value across passes.

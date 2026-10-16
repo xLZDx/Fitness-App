@@ -57747,3 +57747,7 @@ Decision: keep the old client scenarios by wiring the settings client's live uid
 ## 2026-10-16 - Commit: test(s02): settings client tests for remediation J2/J3b and findings 16b (epic 16b, 2/3)
 
 Decision: test the A to B flip with a read-counting live-uid supplier at every guard point of grant, withdraw and deleteCloudStreamsNow, and test the server-refusal mapping through a faked FirebaseFunctions so the real mapping code runs.
+
+## 2026-10-16 - Commit: test(s02): uploader, tombstone, presenter and real client tests for remediation J2/J3b (epic 16c, 1/2)
+
+Decision: test the uploader flip with explicit flip points (before create, during the PUT, during commit) plus a sweep over flip points 0..8, test the tombstone refusal through the injectable retry timer and the retry order, and fake FirebaseFunctions for the real clients; the presenter null-uid test uses control rows so a blind observer cannot pass.
