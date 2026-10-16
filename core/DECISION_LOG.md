@@ -57327,3 +57327,11 @@ Decision: the B1 tests add an additive read-failure mode (failReadWhen, failRead
 ## 2026-10-16 - Commit: S02 test epic 9a: read-failure callers fix and tests
 
 Decision: a local read I/O failure is retryable per entry; callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.
+
+## 2026-10-16 - Commit: S02 test epic 8a: withdrawal no-op, grant cancels delete job, recompute termination (A11, A13, A16)
+
+Decision: Remediation A11, A13 and A16 are pinned with spies on the transaction and Auth seams and with end-state checks.
+
+## 2026-10-16 - Commit: S02 test epic 9b: findings section
+
+Decision: Epic 9b evidence is recorded in S02_TEST_FINDINGS_EPIC9.md; no production defect was found in remediation B2 client code.
