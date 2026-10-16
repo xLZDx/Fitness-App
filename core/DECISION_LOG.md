@@ -57231,3 +57231,11 @@ Decision: Epic 7b closes with 198 tests green in the final run and one productio
 ## 2026-10-16 - Commit: S02 remediation A: abandoned fence of a live account
 
 Decision: The fence carries a heartbeat refreshed by every deleteAccount attempt; the late sweep clears a live account fence only by compare-and-delete after 24 h without heartbeat and without a deletion intent record, and never erases data while Auth exists.
+
+## 2026-10-16 - Commit: S02 test epic 7a: E01 100-session round trip
+
+Decision: The merge oracle is the count and the plan quotas because merged sessions differ from the corpus valid set in 14 records; cloud distance is compared with a 10 percent tolerance because it is the effective projection; the post-sync record is compared with the three version-stamp keys neutralised.
+
+## 2026-10-16 - Commit: S02 test epic 7b: findings and last test file
+
+Decision: The withdrawal tests and the epic 7 findings file are recorded; the epic 7b decision entry above was swept into commit 73820a0e by a concurrent session.
