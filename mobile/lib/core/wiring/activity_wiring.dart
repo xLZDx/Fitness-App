@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/activity/repository/activity_journal.dart';
 import '../../features/activity/repository/activity_sync_repository.dart';
+import '../../features/activity/repository/cloud_functions_activity_tombstone_pusher.dart';
 import '../../features/activity/repository/file_activity_journal.dart';
 import '../../features/activity/repository/firestore_activity_summary_backend.dart';
 import '../../features/activity/state/sync_conflict_presenter.dart';
@@ -49,6 +50,7 @@ List<Override> activityRootOverrides({
       final repo = ActivitySyncRepository(
         journal: journal,
         backend: FirestoreActivitySummaryBackend(),
+        tombstonePusher: CloudFunctionsActivityTombstonePusher().push,
       );
       ref.onDispose(repo.dispose);
       return repo;

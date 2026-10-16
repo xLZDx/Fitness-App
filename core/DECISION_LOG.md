@@ -57039,3 +57039,7 @@ Decision: The Firestore adapter maps only permission-denied on a write to Summar
 ## 2026-10-16 - Commit: S02 glue: app wiring, start-up sync and conflict entry point
 
 Decision: All runtime wiring (journal open, provider override, start-up syncAll with retryConflicts, Progress-page entry card for the conflict sheet) hangs on ACTIVITY_CLOUD_STREAMS; with it off nothing is opened or overridden and the card never reads the presenter; the entry point is a Progress-page card next to the body scan card and reuses the sheet title string instead of adding l10n keys
+
+## 2026-10-16 - Commit: S02 glue: push local tombstones to the server
+
+Decision: The tombstone push is an optional injected function on the sync repository (not a new method on the backend seam, so existing fakes keep compiling); it pushes only ids missing from a successfully read server tombstone list, at most 8 per pass, which keeps the delete quota untouched by repeated passes and never pushes when the server state is unknown

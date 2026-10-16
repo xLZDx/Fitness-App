@@ -73,19 +73,27 @@ class _ConflictDetail {
   final List<String> fields;
 }
 
+/// Pushes one local delete to the server (the `deleteActivity` callable writes
+/// the tombstone first, then removes streams and the summary; idempotent).
+/// Throws on failure; the sync layer retries at the next pass.
+typedef ActivityTombstonePusher = Future<void> Function(String activityId);
+
 class ActivitySyncRepository {
   ActivitySyncRepository({
     required ActivityJournal journal,
     required ActivitySummaryBackend backend,
+    ActivityTombstonePusher? tombstonePusher,
     DateTime Function()? clock,
     CalcVersions Function()? versionsInForce,
   })  : _journal = journal,
         _backend = backend,
+        _pushTombstone = tombstonePusher,
         _clock = clock ?? DateTime.now,
         _versions = versionsInForce ?? (() => CalcVersions.current);
 
   final ActivityJournal _journal;
   final ActivitySummaryBackend _backend;
+  final ActivityTombstonePusher? _pushTombstone;
   final DateTime Function() _clock;
   final CalcVersions Function() _versions;
 
@@ -327,11 +335,14 @@ class ActivitySyncRepository {
       _ops.run(() async {
         final out = <String, SyncOutcome>{};
         var tombs = <String>{};
+        var tombsKnown = false;
         try {
           tombs = await _backend.listTombstoneIds();
+          tombsKnown = true;
         } on SummaryBackendUnavailable {
           // unknown is never deletion
         }
+        if (tombsKnown) await _pushLocalTombstones(tombs);
         for (final e in await _journal.list()) {
           if (tombs.contains(e.id)) {
             await _journal.delete(e.id);
@@ -348,6 +359,28 @@ class ActivitySyncRepository {
         _publish();
         return out;
       });
+
+  /// Pushes local deletes the server does not know yet (no server tombstone in
+  /// [serverTombs]) through the tombstone pusher, so another device removes
+  /// its copy (design 6.2). At most [kMaxSummaryBatch] per pass; a failure
+  /// leaves the local tombstone in place and the push is retried at the next
+  /// pass. Ids the server already tombstones are skipped, which keeps the
+  /// daily delete quota untouched by repeated passes.
+  Future<void> _pushLocalTombstones(Set<String> serverTombs) async {
+    final push = _pushTombstone;
+    if (push == null) return;
+    var pushed = 0;
+    for (final t in await _journal.listTombstones()) {
+      if (serverTombs.contains(t.id)) continue;
+      if (pushed >= kMaxSummaryBatch) break;
+      pushed++;
+      try {
+        await push(t.id);
+      } catch (_) {
+        // Offline or refused: owed, retried at the next pass.
+      }
+    }
+  }
 
   /// Syncs at most [kMaxSummaryBatch] entries; a larger request is refused
   /// before anything is touched (design 6.2). A refusal is never read as
