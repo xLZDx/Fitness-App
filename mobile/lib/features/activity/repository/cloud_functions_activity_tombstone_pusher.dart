@@ -14,7 +14,7 @@ library;
 import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../core/firebase/functions_region.dart';
-import 'activity_cloud_settings_client.dart'
+import 'account_changed.dart'
     show ConsentAccountChangedException, isAccountChangedRefusal;
 
 class CloudFunctionsActivityTombstonePusher {

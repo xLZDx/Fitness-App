@@ -35,7 +35,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import '../../../core/config/activity_flags.dart';
 import '../../../core/firebase/functions_region.dart';
 import '../data/activity_stream_payload.dart';
-import 'activity_cloud_settings_client.dart'
+import 'account_changed.dart'
     show ConsentAccountChangedException, isAccountChangedRefusal;
 import 'activity_journal.dart';
 import 'journal_errors.dart';

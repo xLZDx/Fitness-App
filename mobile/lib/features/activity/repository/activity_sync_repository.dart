@@ -29,7 +29,7 @@ import '../data/summary_fields.dart';
 import '../data/summary_overrides.dart';
 import '../data/summary_projection.dart';
 import '../data/summary_three_way_merge.dart';
-import 'activity_cloud_settings_client.dart' show ConsentAccountChangedException;
+import 'account_changed.dart' show ConsentAccountChangedException;
 import 'activity_journal.dart';
 import 'journal_errors.dart';
 import 'activity_summary_backend.dart';

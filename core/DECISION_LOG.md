@@ -57703,3 +57703,7 @@ Decision: GPT-PM round 13 on the head after remediation H and I returned REJECT 
 ## 2026-10-16 - Commit: fix(s02): bind client activity calls to the initiating account (remediation J2)
 
 Decision: the Dart half of remediation J. The settings client takes a required live-uid supplier and refuses grant, withdraw and delete-now unless the store uid equals the live uid (start, immediately before the call, after the call); the stream callables and the tombstone pusher send the uid captured for the pass as expectedUid and the real clients fail closed on null; the server pair failed-precondition / account_changed (message compared) maps to the existing account-changed outcome (cancelled uploader pass, stopped sync pass). Accepted limits are in design section 17 item 25. Evidence: core/changes/2026-10-16-s02-remediation-j2-client-expected-uid.md; verification not run (test agent pending).
+
+## 2026-10-16 - Commit: refactor(s02): move the account-changed outcome to its own file (remediation J2)
+
+Decision: ConsentAccountChangedException and isAccountChangedRefusal move from activity_cloud_settings_client.dart to a new account_changed.dart; the settings client re-exports both so existing importers keep working, and the uploader, the sync repository and the tombstone pusher import the new file. No behavior change; it removes an import cycle created by remediation J2. Evidence: core/changes/2026-10-16-s02-remediation-j2b-account-changed-file.md; verification not run (test agents pending).

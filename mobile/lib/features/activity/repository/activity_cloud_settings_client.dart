@@ -19,7 +19,11 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/firebase/functions_region.dart';
+import 'account_changed.dart';
 import 'activity_stream_uploader.dart';
+
+// Existing importers keep reaching the exception through this library.
+export 'account_changed.dart' show ConsentAccountChangedException, isAccountChangedRefusal;
 
 /// Must equal `CLOUD_STREAMS_CONSENT_VERSION` of the server (`settings.ts`).
 const int kCloudStreamsConsentVersion = 1;
@@ -98,21 +102,6 @@ ActivityCloudSettingsCall cloudFunctionsSettingsCall({FirebaseFunctions? functio
       rethrow;
     }
   };
-}
-
-/// True when [e] is the server's account-changed refusal (remediation J1):
-/// `failed-precondition` with the message `account_changed`. The message is the
-/// discriminator, because `failed-precondition` also carries other refusals
-/// (for example `account_deleting`).
-bool isAccountChangedRefusal(FirebaseFunctionsException e) =>
-    e.code == 'failed-precondition' && e.message == 'account_changed';
-
-/// Thrown when the signed-in account changed while a consent operation was
-/// running: nothing was recorded for the new account.
-class ConsentAccountChangedException implements Exception {
-  const ConsentAccountChangedException();
-  @override
-  String toString() => 'ConsentAccountChangedException';
 }
 
 class ActivityCloudSettingsClient implements CloudStreamsConsentView {

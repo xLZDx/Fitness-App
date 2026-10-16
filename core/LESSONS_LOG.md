@@ -467,3 +467,11 @@ Facts: the Dart half of the invocation-bound identity: settings client with a li
 Why it worked: the server contract (J1) was fixed first with an exact error pair, so the client mapping compares the message and does not depend on guesses; one shared helper maps the pair in all three real clients.
 Layer: author only so far; test agents and reviewers pending.
 Rule next time: change a shared seam signature together with a written list of every fake and call site, so the test agent starts from a known compile-break list.
+
+## 2026-10-16 - Commit: refactor(s02): move the account-changed outcome to its own file (remediation J2)
+
+Kind: SHORTCOMING (caught by the coordinator's diff review before any test run).
+Facts: the J2 implementer imported the settings client library into the stream uploader, the sync repository and the tombstone pusher only to reach the account-changed exception, while the settings client already imports the uploader. That made an import cycle between two repository libraries. The existing import-graph test guards only the data directories, so no test would have flagged it. Evidence: core/changes/2026-10-16-s02-remediation-j2b-account-changed-file.md.
+Root cause: the brief named the exception but not where a shared type should live; the implementer took the shortest import.
+Layers: the implementer and the brief; the coordinator's review of the diff caught it; no automated check covers repository libraries.
+Rule next time: when a brief adds a type used by several libraries, name the file that owns it; review the import direction of every new import in a diff.
