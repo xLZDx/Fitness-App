@@ -128,7 +128,14 @@ List<String> rulesViolations(ActivityRulesShape rules, Map<String, Object?> summ
     out.add('primarySourceKind=$kind unknown');
   }
   final id = summary['primarySourceId'];
-  if (id != null && (id is! String || id.length > 64)) out.add('primarySourceId bad');
+  // Mirrors firestore.rules actLabelsOk: the stream sourceId pattern
+  // (functions/src/activity_streams/schema.ts) plus the coordinate-like denial.
+  if (id != null &&
+      (id is! String ||
+          !RegExp(r'^[A-Za-z0-9._:-]{1,64}$').hasMatch(id) ||
+          RegExp(r'[0-9][.][0-9][0-9]+').hasMatch(id))) {
+    out.add('primarySourceId bad');
+  }
   final route = summary['hasRoute'];
   if (route != null && route is! bool) out.add('hasRoute not bool');
   final sport = summary['sport'];
