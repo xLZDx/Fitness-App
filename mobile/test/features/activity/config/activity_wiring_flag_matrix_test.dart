@@ -19,7 +19,6 @@ import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart'
 import 'package:fitness_app/features/activity/repository/activity_aware_local_data_wipe.dart';
 import 'package:fitness_app/features/activity/repository/activity_cloud_settings_client.dart';
 import 'package:fitness_app/features/activity/repository/activity_journal.dart';
-import 'package:fitness_app/features/activity/repository/activity_journal_owner.dart';
 import 'package:fitness_app/features/activity/repository/activity_sync_repository.dart';
 import 'package:fitness_app/features/activity/state/sync_conflict_presenter.dart';
 import 'package:fitness_app/features/activity/widgets/activity_sync_entry_card.dart';
@@ -35,6 +34,8 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../../../support/fake_summary_backend.dart';
 import '../../../support/journal_harness.dart';
+import '../../../support/scoped_journal_world.dart';
+import 'package:fitness_app/features/activity/repository/uid_scoped_activity_journal.dart';
 
 class _Paths extends Fake
     with MockPlatformInterfaceMixin
@@ -49,22 +50,6 @@ class _Paths extends Fake
 class _Inner implements LocalDataWipe {
   @override
   Future<void> wipe(String uid) async {}
-}
-
-class _OwnerStore implements ActivityJournalOwnerStore {
-  String? uid;
-  final List<String> writes = [];
-
-  @override
-  Future<String?> read() async => uid;
-  @override
-  Future<void> write(String value) async {
-    writes.add(value);
-    uid = value;
-  }
-
-  @override
-  Future<void> clear() async => uid = null;
 }
 
 class _Settings extends Fake implements ActivityCloudSettingsClient {
@@ -142,9 +127,13 @@ void main() {
   });
 
   group('localJournal ON only: journal without any network object', () {
-    test('openActivityJournal opens a journal', () async {
+    test('openActivityJournal returns an UNBOUND scoped journal and does no '
+        'I/O', () async {
       final j = await openActivityJournal(flags: _local);
-      expect(j, isNotNull, reason: 'logs: $logs');
+      expect(j, isA<UidScopedActivityJournal>(), reason: 'logs: $logs');
+      expect((j! as UidScopedActivityJournal).boundUid, isNull);
+      expect(tmp.listSync(), isEmpty, reason: 'nothing created on disk');
+      expect(await j.list(), isEmpty);
     });
 
     test('overrides contain only the journal override', () {
@@ -164,8 +153,7 @@ void main() {
     });
 
     test('the wipe is wrapped', () {
-      final w = activityAwareLocalDataWipe(_Inner(), h.journal,
-          ownerStore: _OwnerStore());
+      final w = activityAwareLocalDataWipe(_Inner(), h.journal);
       expect(w, isA<ActivityAwareLocalDataWipe>());
     });
 
@@ -202,9 +190,11 @@ void main() {
     group(entry.key, () {
       final flags = entry.value;
 
-      test('openActivityJournal opens a journal', () async {
-        expect(await openActivityJournal(flags: flags), isNotNull,
-            reason: 'logs: $logs');
+      test('openActivityJournal returns an unbound scoped journal', () async {
+        final j = await openActivityJournal(flags: flags);
+        expect(j, isA<UidScopedActivityJournal>(), reason: 'logs: $logs');
+        expect((j! as UidScopedActivityJournal).boundUid, isNull);
+        expect(tmp.listSync(), isEmpty);
       });
 
       test('overrides contain the journal AND the sync repository', () {
@@ -214,8 +204,7 @@ void main() {
 
       test('the wipe is wrapped', () {
         expect(
-            activityAwareLocalDataWipe(_Inner(), h.journal,
-                ownerStore: _OwnerStore()),
+            activityAwareLocalDataWipe(_Inner(), h.journal),
             isA<ActivityAwareLocalDataWipe>());
       });
 
@@ -233,47 +222,61 @@ void main() {
   }
 
   group('start-up sync wiring per flag combination', () {
-    Future<(_OwnerStore, FakeSummaryBackend, _Settings)> signIn(
-        ActivityFlags flags) async {
-      final owner = _OwnerStore();
+    Future<(ScopedJournalWorld, FakeSummaryBackend, _Settings)> signIn(
+        ActivityFlags flags,
+        {bool binding = false}) async {
+      final w = await ScopedJournalWorld.create();
+      addTearDown(w.dispose);
       final backend = FakeSummaryBackend();
       final settings = _Settings();
       final auth = StreamController<AuthUser?>();
       addTearDown(() => unawaited(auth.close()));
-      final repo = ActivitySyncRepository(journal: h.journal, backend: backend);
+      final repo =
+          ActivitySyncRepository(journal: w.journal, backend: backend);
       addTearDown(repo.dispose);
       final c = ProviderContainer(overrides: [
         activityFlagsProvider.overrideWithValue(flags),
-        activityJournalProvider.overrideWithValue(h.journal),
-        activityJournalOwnerStoreProvider.overrideWithValue(owner),
+        activityJournalProvider.overrideWithValue(w.journal),
         activitySyncRepositoryProvider.overrideWithValue(repo),
         activityCloudSettingsClientProvider.overrideWithValue(settings),
         activityConsentStoreProvider.overrideWithValue(_Consent()),
         authUserProvider.overrideWith((ref) => auth.stream),
       ]);
       addTearDown(c.dispose);
+      if (binding) c.read(activityJournalBindingProvider);
       c.read(activityCloudSyncWiringProvider);
       auth.add(const AuthUser(
           uid: 'U', displayName: 'U', provider: AuthProvider.google));
-      for (var i = 0; i < 200; i++) {
-        await Future<void>.delayed(Duration.zero);
+      for (var i = 0; i < 40; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
       }
-      return (owner, backend, settings);
+      return (w, backend, settings);
     }
 
     for (final flags in [_off, _local]) {
-      test('$flags: the start sync is a no-op', () async {
-        final (owner, backend, settings) = await signIn(flags);
-        expect(owner.writes, isEmpty, reason: 'no claim');
+      test('$flags: the start sync wiring is a no-op (nothing bound)',
+          () async {
+        final (w, backend, settings) = await signIn(flags);
+        expect(w.opened, isEmpty, reason: 'no bind');
+        expect(w.journal.boundUid, isNull);
         expect(backend.calls, isEmpty, reason: 'no syncAll');
         expect(settings.loads, 0);
       });
     }
 
+    test('localJournal ON only WITH the binding listener: U is bound, still '
+        'no network call', () async {
+      final (w, backend, settings) = await signIn(_local, binding: true);
+      expect(w.journal.boundUid, 'U');
+      expect(backend.calls, isEmpty);
+      expect(settings.loads, 0);
+    });
+
     for (final flags in [_cloud, _both]) {
-      test('$flags: the start sync claims the journal and syncs', () async {
-        final (owner, backend, settings) = await signIn(flags);
-        expect(owner.writes, ['U']);
+      test('$flags: the start sync binds the uid and syncs', () async {
+        final (w, backend, settings) = await signIn(flags);
+        expect(w.journal.boundUid, 'U');
+        expect(w.opened, [activityJournalScopeId('U')]);
         expect(backend.count('listTombstoneIds'), 1);
         expect(settings.loads, 1);
       });

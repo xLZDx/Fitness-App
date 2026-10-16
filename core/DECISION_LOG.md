@@ -57465,3 +57465,7 @@ Decision: the wipe-wiring and account-switch tests run the real scoped journal o
 ## 2026-10-16 - Commit: S02 test epic 11a (b) code commit
 
 Decision: the pattern-match compile fix and the rewritten wiring tests are committed together; the log entries above travelled in the previous parallel commit. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (c) flag matrix and account wipe e2e
+
+Decision: the flag matrix and the account-wipe e2e run on the real scoped journal; no owner-marker symbol remains under mobile/. Evidence: core/changes/2026-10-16-s02-test-epic11a-flag-matrix-e2e.md.

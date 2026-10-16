@@ -21,7 +21,6 @@ import 'dart:io';
 import 'package:fitness_app/core/notifications/mock_notification_service.dart';
 import 'package:fitness_app/core/notifications/notification_providers.dart';
 import 'package:fitness_app/core/wiring/activity_wiring.dart';
-import 'package:fitness_app/features/activity/repository/activity_journal_owner.dart';
 import 'package:fitness_app/features/account_deletion/data/account_deletion_service.dart';
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
 import 'package:fitness_app/features/account_deletion/state/account_deletion_providers.dart';
@@ -41,6 +40,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/journal_fault_fs.dart';
 import '../../../support/journal_harness.dart';
+import '../../../support/scoped_journal_world.dart';
+import 'package:fitness_app/features/activity/repository/uid_scoped_activity_journal.dart';
 import '../../../support/two_device_world.dart';
 
 /// True when no activity data remains in journal, sources or quarantine. The
@@ -340,15 +341,15 @@ void main() {
     LocalDataWipe wipeImpl() => activityAwareLocalDataWipe(
         DeviceLocalDataWipe(
             prefs: prefs, documentsDir: docs, forgetPhotoKey: (_) async {}),
-        h.journal,
-        ownerStore: InMemoryActivityJournalOwnerStore());
+        h.journal);
 
-    ProviderContainer container(PendingWipeMarker marker, _AuthRepo auth) {
+    ProviderContainer container(PendingWipeMarker marker, _AuthRepo auth,
+        {LocalDataWipe? wipe}) {
       final c = ProviderContainer(overrides: [
         accountDeletionServiceProvider
             .overrideWithValue(MockAccountDeletionService()),
         // The composition of main.dart: the real device wipe.
-        localDataWipeProvider.overrideWithValue(wipeImpl()),
+        localDataWipeProvider.overrideWithValue(wipe ?? wipeImpl()),
         pendingWipeMarkerProvider.overrideWithValue(marker),
         authRepositoryProvider.overrideWithValue(auth),
         notificationServiceProvider.overrideWithValue(MockNotificationService()),
@@ -393,6 +394,60 @@ void main() {
       expect(storage.values, isEmpty);
       expect(prefs.containsKey('activity.cloudStreamsConsent.A'), isFalse,
           reason: 'the inner prefs wipe ran as well');
+    });
+
+    test('account-scoped journal: deleting account A empties the scope of A and '
+        'key only; the sessions and key of B survive (E1)', () async {
+      final w = await ScopedJournalWorld.create();
+      addTearDown(w.dispose);
+      expect(await w.journal.bindUid('A'), isTrue);
+      await w.journal.put(journalSession(idFor(1), seed: 1));
+      await w.writeSide('A', 'sources/a.json', '{}');
+      expect(await w.journal.bindUid('B'), isTrue);
+      await w.journal.put(journalSession(idFor(2), seed: 2));
+      final b = await w.snapshot('B');
+      final wipe = activityAwareLocalDataWipe(
+          DeviceLocalDataWipe(
+              prefs: prefs, documentsDir: docs, forgetPhotoKey: (_) async {}),
+          w.journal);
+      final c = container(InMemoryPendingWipeMarker(), _AuthRepo('A'),
+          wipe: wipe);
+      await c.read(accountDeletionActionProvider.notifier).deleteAccount();
+      expect(c.read(accountDeletionActionProvider).hasError, isFalse);
+
+      String key(String u) =>
+          '${SecureStorageJournalKeyProvider.keyName}.${activityJournalScopeId(u)}';
+      expect(w.storage.values.containsKey(key('A')), isFalse);
+      expect(w.storage.values.containsKey(key('B')), isTrue);
+      expect(await w.snapshot('B'), b, reason: 'B byte-identical');
+      expect(w.journal.boundUid, 'B');
+      expect([for (final e in await w.journal.list()) e.id], [idFor(2)]);
+      expect(await w.journal.bindUid('A'), isTrue);
+      expect(await w.journal.list(), isEmpty);
+    });
+
+    test('killed after the server confirmed, B signed in on relaunch: only '
+        'the scope of A is wiped', () async {
+      final w = await ScopedJournalWorld.create();
+      addTearDown(w.dispose);
+      await w.journal.bindUid('A');
+      await w.journal.put(journalSession(idFor(1), seed: 1));
+      await w.journal.bindUid('B');
+      await w.journal.put(journalSession(idFor(2), seed: 2));
+      final marker = InMemoryPendingWipeMarker();
+      await marker.add('A');
+      final wiped = await finishInterruptedWipe(
+          marker: marker,
+          wipe: activityAwareLocalDataWipe(
+              DeviceLocalDataWipe(
+                  prefs: prefs, documentsDir: docs, forgetPhotoKey: (_) async {}),
+              w.journal),
+          signedInUid: 'B');
+      expect(wiped, isTrue);
+      expect(await marker.read(), isEmpty);
+      expect([for (final e in await w.journal.list()) e.id], [idFor(2)]);
+      await w.journal.bindUid('A');
+      expect(await w.journal.list(), isEmpty);
     });
   });
 }

@@ -81,3 +81,6 @@ Facts: `journal is AccountScopedJournal` does not promote an `ActivityJournal` t
 Root cause: E1 was committed without ever being compiled (no checks until all coding was done).
 Layers: author and the review rounds missed it; the first test compile caught it.
 Rule next time: a remediation touching a type contract gets one compile of its own test files before it is handed to review.
+
+## 2026-10-16 - Flag matrix and account wipe e2e on scoped journals (test epic 11a, part c)
+Kind: SUCCESS, with one test-side slip: a scripted edit lost the escaping of apostrophes in Dart string literals (compile error, caught by the first run); use Write/Edit for source with quotes.
