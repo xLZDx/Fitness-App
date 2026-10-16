@@ -70,8 +70,8 @@ typedef ActivityCloudSettingsCall = Future<Map<String, Object?>> Function(
 
 /// Default seam over the Firebase callable.
 ActivityCloudSettingsCall cloudFunctionsSettingsCall({FirebaseFunctions? functions}) {
-  final fns = functions ?? functionsForRegion;
   return (request) async {
+    final fns = functions ?? functionsForRegion;
     final res = await fns
         .httpsCallable('setActivityCloudSettings')
         .call<Map<Object?, Object?>>(request);

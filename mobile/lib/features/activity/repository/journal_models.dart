@@ -44,6 +44,7 @@ class JournalState {
     this.baseSummary,
     this.streamLost = false,
     this.streamsPlainHash,
+    this.streamUploadedHash,
   });
 
   final bool tombstone;
@@ -62,6 +63,17 @@ class JournalState {
   /// no-op without decrypting.
   final String? streamsPlainHash;
 
+  /// The [streamsPlainHash] whose private stream object the cloud has stored
+  /// (set only after the commit callable succeeded). Separate from
+  /// [syncState], which the SUMMARY sync owns: a summary sync that marked the
+  /// entry `synced` must not hide a stream that was never uploaded, and a
+  /// stream upload must not hide an unsynced summary.
+  final String? streamUploadedHash;
+
+  /// True when the current streams are not yet in the cloud.
+  bool get streamUploadPending =>
+      streamsPlainHash != null && streamUploadedHash != streamsPlainHash;
+
   bool get synced => syncState == JournalSyncState.synced;
 
   JournalState copyWith({
@@ -71,6 +83,7 @@ class JournalState {
     Object? baseSummary = _keep,
     bool? streamLost,
     Object? streamsPlainHash = _keep,
+    Object? streamUploadedHash = _keep,
   }) =>
       JournalState(
         tombstone: tombstone ?? this.tombstone,
@@ -83,6 +96,9 @@ class JournalState {
         streamsPlainHash: identical(streamsPlainHash, _keep)
             ? this.streamsPlainHash
             : streamsPlainHash as String?,
+        streamUploadedHash: identical(streamUploadedHash, _keep)
+            ? this.streamUploadedHash
+            : streamUploadedHash as String?,
       );
 
   static const Object _keep = Object();
@@ -95,6 +111,7 @@ class JournalState {
         if (baseSummary != null) 'baseSummary': baseSummary,
         'streamLost': streamLost,
         if (streamsPlainHash != null) 'streamsPlainHash': streamsPlainHash,
+        if (streamUploadedHash != null) 'streamUploadedHash': streamUploadedHash,
       };
 
   static JournalState fromJson(Object? raw) {
@@ -115,6 +132,9 @@ class JournalState {
       streamLost: raw['streamLost'] == true,
       streamsPlainHash:
           raw['streamsPlainHash'] is String ? raw['streamsPlainHash'] as String : null,
+      streamUploadedHash: raw['streamUploadedHash'] is String
+          ? raw['streamUploadedHash'] as String
+          : null,
     );
   }
 }

@@ -292,11 +292,13 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC5.md` | S02 test epic 5: findings (plan versus design versus rules) | 5834 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6A.md` | S02 test findings, epic 6a: functions stream upload, settings, tombstone and delete | 3791 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6B.md` | S02 test findings, epic 6b: retention, deletion sweeps, export, telemetry, lifecycle policy, story-map lint | 8031 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 4632 |
 | `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328694 |
+| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 75586 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
 | `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 6308 |
-| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 11728 |
+| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 12897 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |

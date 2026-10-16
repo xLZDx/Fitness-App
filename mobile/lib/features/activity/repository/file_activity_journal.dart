@@ -363,6 +363,26 @@ class FileActivityJournal implements ActivityJournal {
           baseRev: baseRev,
           baseSummary: baseSummary);
 
+  @override
+  Future<bool> markStreamUploaded(String id, {int? expectedGeneration}) {
+    _checkId(id);
+    return _mutex.run(() async {
+      _ensureStarted();
+      final prev = _meta[id];
+      if (prev == null || prev.record.state.tombstone) return false;
+      if (expectedGeneration != null && expectedGeneration != prev.seq) {
+        return false;
+      }
+      final old = prev.record.state;
+      final hash = old.streamsPlainHash;
+      if (hash == null) return false;
+      if (old.streamUploadedHash == hash) return true;
+      await _commitStateOnly(
+          id, prev, old.copyWith(streamUploadedHash: hash), 'synced');
+      return true;
+    });
+  }
+
   /// A new generation with the same session map and the same `streams.bin`
   /// bytes and a changed state (unknown keys of a newer schema survive).
   Future<_Meta> _commitStateOnly(

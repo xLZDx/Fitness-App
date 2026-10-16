@@ -5,8 +5,9 @@
 /// hard-denied inside [ActivityStreamPayload.fromSession]), gzip it, hash the
 /// gzip bytes (`contentSha256`, the bytes the server hashes after reading the
 /// quarantine object), `createActivityStreamUpload`, HTTP PUT to the signed URL,
-/// `commitActivityStream`, then the journal `synced` marker (only after the
-/// commit succeeded).
+/// `commitActivityStream`, then the journal's own stream marker
+/// (`markStreamUploaded`, only after the commit succeeded; the summary `synced`
+/// state belongs to the summary sync and is never written on success).
 ///
 /// Retry policy (design 5.2 item 4, as pinned by I27): at most
 /// [kStreamUploadMaxAttempts] attempts per run; deterministic exponential delays
@@ -163,10 +164,16 @@ class ActivityStreamUploader {
     for (final e in entries) {
       if (!_mayUpload) return;
       if (e.state.tombstone || e.streamLost) continue;
+      // The stream object needs the cloud summary first (the create callable
+      // refuses without it): only entries the summary sync finished
+      // (`synced`) or that an earlier upload run failed (`upload_failed`) are
+      // candidates; `streamUploadPending` is the stream's own marker, so a
+      // summary sync that already wrote `synced` does not hide the stream.
       final s = e.state.syncState;
-      if (s != JournalSyncState.pending && s != JournalSyncState.uploadFailed) {
+      if (s != JournalSyncState.synced && s != JournalSyncState.uploadFailed) {
         continue;
       }
+      if (!e.state.streamUploadPending) continue;
       if (_failedThisStart.contains(e.id)) continue;
       try {
         await uploadEntry(e.id);
@@ -184,7 +191,8 @@ class ActivityStreamUploader {
     if (entry == null ||
         entry.state.tombstone ||
         entry.streamLost ||
-        !entry.streamsLoaded) {
+        !entry.streamsLoaded ||
+        !entry.state.streamUploadPending) {
       return StreamUploadOutcome.skipped;
     }
     final payload = ActivityStreamPayload.fromSession(entry.session);
@@ -212,7 +220,9 @@ class ActivityStreamUploader {
           if (_cancelled) return StreamUploadOutcome.cancelled;
           await _callables.commit(activityId: id, uploadId: created.uploadId!);
         }
-        await _journal.markSynced(id, expectedGeneration: entry.generation);
+        // The stream's own marker; the summary `synced` state is not touched.
+        await _journal.markStreamUploaded(id,
+            expectedGeneration: entry.generation);
         return StreamUploadOutcome.uploaded;
       } on StreamUploadRefused {
         return StreamUploadOutcome.refused;
@@ -228,8 +238,11 @@ class ActivityStreamUploader {
       if (_now().difference(startedAt) >= kStreamUploadBudget) break;
     }
     _failedThisStart.add(id);
-    await _journal.updateSyncState(id, JournalSyncState.uploadFailed,
-        expectedGeneration: entry.generation);
+    // Never overwrite a summary conflict with the upload failure.
+    if (entry.state.syncState != JournalSyncState.syncConflict) {
+      await _journal.updateSyncState(id, JournalSyncState.uploadFailed,
+          expectedGeneration: entry.generation);
+    }
     return StreamUploadOutcome.failed;
   }
 }
@@ -256,9 +269,12 @@ Future<int> httpClientPutSender(
 /// and `aborted` are transient, everything else is a refusal.
 class CloudFunctionsActivityStreamClient implements ActivityStreamCallableClient {
   CloudFunctionsActivityStreamClient({FirebaseFunctions? functions})
-      : _functions = functions ?? functionsForRegion;
+      : _injected = functions;
 
-  final FirebaseFunctions _functions;
+  // Resolved at the first call, not at construction: building the provider
+  // graph must not need an initialised Firebase app.
+  final FirebaseFunctions? _injected;
+  FirebaseFunctions get _functions => _injected ?? functionsForRegion;
 
   static const _transientCodes = {
     'unavailable',

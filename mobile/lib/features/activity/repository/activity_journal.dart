@@ -78,6 +78,12 @@ abstract class ActivityJournal {
     Map<String, Object?>? baseSummary,
   });
 
+  /// Records that the cloud holds the entry's CURRENT streams (call only after
+  /// the commit callable returned success). Touches neither the sync state nor
+  /// the summary bookkeeping. False for an unknown, deleted or stream-less
+  /// entry, or when [expectedGeneration] no longer matches.
+  Future<bool> markStreamUploaded(String id, {int? expectedGeneration});
+
   /// Counts for the sign-out decision.
   Future<SignOutAssessment> assessSignOut();
 

@@ -57207,3 +57207,7 @@ Decision: Withdrawal flips the local consent cache before the network call and c
 ## 2026-10-16 - Commit: S02 client upload wiring behind the flag
 
 Decision: Uploader and withdrawal providers exist only when ACTIVITY_CLOUD_STREAMS is on; one upload run per app start after the summary sync, with consent read from a per-account cache that is unknown (no upload) until loaded.
+
+## 2026-10-16 - Commit: S02 test epic 7b: dedicated stream-upload marker in the journal
+
+Decision: The stream upload has its own journal marker (streamUploadedHash); the synced state belongs to the summary sync only, because a summary-synced entry was never uploaded.
