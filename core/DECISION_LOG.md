@@ -57063,3 +57063,7 @@ Decision: The matrix rows C1, C2, C8, debug sessions and the section 3 sweep map
 ## 2026-10-16 - Commit: S02-08: bucket runbook
 
 Decision: The runbook records that the activity functions run as the default runtime identity (no dedicated service account exists in code), leaves a dedicated identity and the soft-delete window as open operator decisions, and makes the tombstone TTL policy and the telemetry deploy order explicit release steps.
+
+## 2026-10-16 - Commit: S02-08: privacy text request
+
+Decision: The privacy wording is requested as content statements only and needs operator approval; public/privacy.html is not edited by this story and the cloud flag stays OFF until it is.
