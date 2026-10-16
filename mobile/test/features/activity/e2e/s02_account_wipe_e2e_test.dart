@@ -10,17 +10,18 @@
 //  2. The Dart half of E05 (runs): a queued offline summary put replayed against
 //     the account-deletion fence is refused, never read as deletion, keeps the
 //     local data until the wipe removes it.
-//  3. The REAL APP FLOW (NOT WIRED, skipped, see S02_TEST_FINDINGS_EPIC7.md):
-//     `AccountDeletionAction` and the pending-wipe relaunch must empty the
-//     journal. Nothing in `mobile/lib` calls `ActivityWipeCoordinator` or
-//     `ActivityJournal.wipe`, so these tests fail today. Run them with
-//     `--dart-define=S02_E02_WIRED=true` to see the failure; the skip is
-//     owned by the sprint lead, dated 2026-10-16, and goes away when the
-//     wiring lands.
+//  3. The REAL APP FLOW: `AccountDeletionAction` and the pending-wipe relaunch
+//     must empty the journal. The wipe object is built exactly as `main.dart`
+//     builds it (`activityAwareLocalDataWipe` around `DeviceLocalDataWipe`).
+//     These two tests were skipped as NOT WIRED in epic 7a (see
+//     S02_TEST_FINDINGS_EPIC7.md); the wiring landed in remediation B2 and the
+//     skip is gone.
 import 'dart:io';
 
 import 'package:fitness_app/core/notifications/mock_notification_service.dart';
 import 'package:fitness_app/core/notifications/notification_providers.dart';
+import 'package:fitness_app/core/wiring/activity_wiring.dart';
+import 'package:fitness_app/features/activity/repository/activity_journal_owner.dart';
 import 'package:fitness_app/features/account_deletion/data/account_deletion_service.dart';
 import 'package:fitness_app/features/account_deletion/data/local_data_wipe.dart';
 import 'package:fitness_app/features/account_deletion/state/account_deletion_providers.dart';
@@ -41,11 +42,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../support/journal_fault_fs.dart';
 import '../../../support/journal_harness.dart';
 import '../../../support/two_device_world.dart';
-
-const bool _wired = bool.fromEnvironment('S02_E02_WIRED');
-const String _notWired = 'NOT WIRED (owner: sprint lead, 2026-10-16): no code in '
-    'mobile/lib calls ActivityWipeCoordinator or ActivityJournal.wipe; see '
-    'docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md';
 
 /// True when no activity data remains in journal, sources or quarantine. The
 /// EMPTY `index.jsonl` written by the start-up recovery pass is not data.
@@ -316,7 +312,7 @@ void main() {
     });
   });
 
-  group('3. real app flow (journal wiring NOT WIRED)', () {
+  group('3. real app flow (journal wipe wired through the decorator)', () {
     late Directory docs;
     late SharedPreferences prefs;
     late JournalHarness h;
@@ -339,8 +335,13 @@ void main() {
       addTearDown(h.dispose);
     });
 
-    DeviceLocalDataWipe wipeImpl() => DeviceLocalDataWipe(
-        prefs: prefs, documentsDir: docs, forgetPhotoKey: (_) async {});
+    // Called after `h.restart()` where a restart happens, so the decorator
+    // always wraps the CURRENT journal instance.
+    LocalDataWipe wipeImpl() => activityAwareLocalDataWipe(
+        DeviceLocalDataWipe(
+            prefs: prefs, documentsDir: docs, forgetPhotoKey: (_) async {}),
+        h.journal,
+        ownerStore: InMemoryActivityJournalOwnerStore());
 
     ProviderContainer container(PendingWipeMarker marker, _AuthRepo auth) {
       final c = ProviderContainer(overrides: [
@@ -373,7 +374,10 @@ void main() {
       expect(c.read(accountDeletionActionProvider).hasError, isFalse);
       expect(await noDataLeft(h), isTrue, reason: 'journal after deletion');
       expect(storage.values, isEmpty, reason: 'journal key after deletion');
-    }, skip: _wired ? false : _notWired);
+      expect(prefs.containsKey('activity.cloudStreamsConsent.A'), isFalse,
+          reason: 'the inner prefs wipe ran as well');
+      expect(prefs.containsKey('activity.cloudStreamsConsent.B'), isTrue);
+    });
 
     test('killed after the server confirmed: the next launch finishes the '
         'wipe including the journal', () async {
@@ -387,6 +391,8 @@ void main() {
       expect(await marker.read(), isEmpty);
       expect(await noDataLeft(h), isTrue, reason: 'journal after relaunch');
       expect(storage.values, isEmpty);
-    }, skip: _wired ? false : _notWired);
+      expect(prefs.containsKey('activity.cloudStreamsConsent.A'), isFalse,
+          reason: 'the inner prefs wipe ran as well');
+    });
   });
 }

@@ -57283,3 +57283,7 @@ Decision: The late-sweep contract of remediation A1, A5 and A10 is pinned by new
 ## 2026-10-16 - Commit: S02 remediation B2: corrupt cloud summary and tombstone push error
 
 Decision: A cloud summary that is read but cannot be parsed is a distinct SummaryCorrupt result shown as a visible sync conflict instead of an offline retry; the last tombstone push error code is kept and printed through debugPrint, the existing diagnostics path of the sync layer.
+
+## 2026-10-16 - Commit: S02 test epic 9b: account wipe e2e un-skipped
+
+Decision: The two NOT WIRED account wipe tests run against the real decorator composition of main.dart (activityAwareLocalDataWipe around DeviceLocalDataWipe with an in-memory owner store); the epic 7a quarantine entries are closed.
