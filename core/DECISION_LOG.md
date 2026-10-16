@@ -57127,3 +57127,7 @@ Decision: Epic 3 closes with 170 tests green; plan/design contradictions and fou
 ## 2026-10-16 - Commit: S02 test epic 4: two-device fake server, rev convergence, tombstone sync, override convergence
 
 Decision: Two devices are two journal directories over one rule-enforcing fake server (rev, immutability, shape, clamp, tombstone, fence); a device can only adopt a server-only change of a field it holds a value for (otherwise sync_conflict, design rule 3).
+
+## 2026-10-16 - Commit: S02 test epic 4: override value rule, explicit edit, recalculation and source candidates
+
+Decision: Override lifecycle tests assert record.json on disk, the rule-enforcing fake write log and restart/lost-ack replay; a version bump necessarily writes the merged formulaVersion string (plan G9/G32 "zero writes" is read as "no write of the stale distance").
