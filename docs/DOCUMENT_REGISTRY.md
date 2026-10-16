@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 17365 |
+| `core/LESSONS_LOG.md` | Lessons log | 17650 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -284,14 +284,14 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
 | `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1513 |
 | `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
-| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 163711 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 166756 |
 | `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 5898 |
 | `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6324 |
 | `docs/phase2/s02/S02_REMEDIATION_B_TEST_NOTES.md` | S02 remediation B: test notes | 4680 |
 | `docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md` | S02 remediation C: test notes (client findings) | 2000 |
 | `docs/phase2/s02/S02_REMEDIATION_D_TEST_NOTES.md` | S02 remediation D: test notes | 1702 |
 | `docs/phase2/s02/S02_REMEDIATION_E_TEST_NOTES.md` | S02 remediation E test notes | 4935 |
-| `docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md` | S02 remediation F: test notes | 4594 |
+| `docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md` | S02 remediation F: test notes | 11214 |
 | `docs/phase2/s02/S02_SPRINT_REPORT_AND_RETRO.md` | S02 sprint report and retrospective (living draft) | 3362 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3144 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 6259 |

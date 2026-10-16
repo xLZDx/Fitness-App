@@ -147,3 +147,6 @@ Facts: the six-attempt retry budget was never reset, so after about 44 minutes o
 Root cause: E2 designed the budget per app start and covered only the push-failure path, not listing/journal failures or a long outage.
 Layers: E2 author and tests missed it; reliability and silent-failure reviewers caught it.
 Rule next time: a retry budget needs a reset condition and a last-resort slow path, and each error path of a phase gets a scheduling test.
+
+## 2026-10-16 - Remediation F1 documentation (4/4)
+Kind: SUCCESS. The test notes name an oracle per finding (switch account mid-pass with a blocked backend, authUid mismatch, unbound, retry budget) and the stale fakes up front, applying the lessons of the earlier stale-fake failure.

@@ -57513,3 +57513,7 @@ Decision: an unbound scoped journal is a visible failure (state stream error, `u
 ## 2026-10-16 - Commit: S02 remediation F1 (3/4) tombstone retry budget and fallback timer
 
 Decision: after six backed-off attempts one 60-minute fallback timer remains while deletions are owed; a clean pass resets the budget and the last error; phase exceptions schedule a retry; `requestTombstoneSync()` is the entry point for callers that create a local deletion. Evidence: core/changes/2026-10-16-s02-remediation-f1-tombstone-retry.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (4/4) design item 23 and F1 test notes
+
+Decision: remediation F1 is recorded in design 17 item 23 with the accepted/backlog list (anonymous sign-out data stays on disk until the S03 export offer; pending-deletions UI is S03). Evidence: core/changes/2026-10-16-s02-remediation-f1-docs.md.

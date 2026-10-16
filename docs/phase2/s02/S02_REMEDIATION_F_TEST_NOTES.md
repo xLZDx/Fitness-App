@@ -47,3 +47,50 @@ Override `activityBindRetryTimerFactoryProvider` with a fake that records `(dela
 - Any test that stubbed `JournalSecureStorage.delete` to throw and expected `wipe()` to succeed.
 - Tests that rely on `cancelQueued()` leaving the single-flight state intact (search `cancelQueued` in `mobile/test`).
 - Tests that read the binding provider with a journal fake whose `bindUid` result was ignored (search `activityJournalBindingProvider` in `mobile/test`).
+
+## F1
+
+Nothing in F1 was compiled or run by the author. Each test must fail if the guarded behaviour were broken. Use a real `UidScopedActivityJournal` over temp directories (or a scripted `AccountScopedJournal`) and a backend whose calls can be blocked on a completer.
+
+### Item A: pass identity
+
+- Switch mid-pass, tombstone phase: journals A and B both hold activity X (same id). A's backend `listTombstoneIds` returns {X}. Block `listTombstoneIds`, `bindUid(B)` + `onAccountChanged()`, release. Assert: B's entry X still exists, B has no tombstone for X, the `syncAll` result has no `deletedLocal`. Breaking the loop check deletes X in B.
+- Switch mid-pass, entry phase: block `writeSummary` for an unsynced X in A; switch to B (same X unsynced); release. Assert: no `writeSummary` call after the switch, B's X is not `synced` (`markSynced` not called on B), no `delete` on B's journal, outcome `pending`.
+- Switch while `list()` / `read()` is awaited (a journal wrapper that gates the read): the result is not used, nothing is written.
+- `authUid` mismatch: construct with `authUid: () => uid` where the closure value changes from A to B after the pass starts; assert `writeSummary`, `readSummary`, `tombstoneExists`, `listTombstoneIds` and the pusher are NOT called once it returns B (count calls), and the outcome is `pending`. With `authUid` returning null at start no backend call is made at all. With `authUid` null (tests) behaviour is unchanged.
+- Tombstone push: pusher blocked for id 1 of 2 owed; switch; release; the pusher is not called for id 2 and the confirmed set of B is not polluted (B's own pass pushes id 2 if owed in B).
+- Conflict paths: `resolveConflict`, `resolveCandidate`, `applyExplicitEdit` with the switch while `readSummary` is blocked: no `updateRecord` on B, outcome `pending`.
+- Plain (non-scoped) journal: all existing tests unchanged (the journal-uid check is skipped).
+
+### Item B: caches
+
+- Two accounts with a conflicting X: `refreshState` for A fills the conflict cache (backend read count 1); `onAccountChanged` + bind B with a conflicting X; `refreshState` reads the backend again (count 2) and shows B's cloud values, not A's.
+- `syncAll(retryConflicts: true)` for A retries the conflict once; after `onAccountChanged` the same call for B retries B's conflict (without clearing the retry marks it is skipped).
+- A `readSummary` completing after the switch is not cached.
+
+### Item C: unbound visibility
+
+- Scoped journal never bound: `refreshState()` throws `JournalUnbound`; `watch()` emits an error; `SyncConflictPresenter` ends with `loadFailed == true`, `loaded == false`, and `retry()` re-subscribes (after a later bind and retry: `loaded == true`, `loadFailed == false`). Breaking the check yields an empty loaded state.
+- `syncAll()` returns an empty map and the backend call count is 0; `syncEntry(id)` returns `pending` (not `notFound` / `synced`); `syncBatch([a, b])` returns `pending` for both; the backend is untouched.
+- `resolveConflict`, `resolveCandidate`, `applyExplicitEdit` return `unavailable`; the presenter then shows `lastFailed == true` (never false). `saveSession` throws `JournalUnbound`.
+- A failed bind (factory throws) behaves the same as never bound.
+
+### Item D: tombstone retry
+
+- Counter reset: three failed passes (attempts 3), then a clean pass; the next failure schedules the FIRST delay again (60 s), not the fourth.
+- Fallback timer: after six scheduled attempts all failing, a further failed pass schedules exactly one timer of `kTombstoneFallbackDelay` (60 minutes); firing it runs a pass; at no moment are two timers active; when a pass ends clean no timer remains; `dispose`, `cancelTombstoneRetry` and `onAccountChanged` cancel it. This replaces any old assertion "no timer after six attempts".
+- Exception in the tombstone phase: `listTombstones()` throws `JournalIoException` (and a variant where the pusher throws a missing-uid error): `syncAll` does not throw, a retry timer is scheduled, `lastTombstonePushError` holds the code, the state is published.
+- Epoch re-check: block `listTombstones()` inside the pending-count read (second call), call `onAccountChanged()`, release: no timer is created and the attempt counter stays 0 (the next failure after a re-bind schedules the first delay).
+- Error code: `listTombstoneIds` throws `SummaryBackendUnavailable`: `lastTombstonePushError == 'unavailable'` and a retry timer exists; a following fully clean pass sets it to null and `refreshState().lastTombstonePushError` is null.
+- `requestTombstoneSync()`: two calls in a row never run two passes concurrently (record entry and exit of `listTombstoneIds`); an unexpected backend exception does not escape the call; it does not retry conflicts; after `dispose` it does nothing.
+
+### Stale fakes and tests to review
+
+Changed contracts: `ActivitySyncRepository` (new optional constructor parameter `authUid`, new method `requestTombstoneSync`, `refreshState` may throw `JournalUnbound`) and `AccountScopedJournal` (F2 adds `boundUid` / `isBound`).
+
+- `mobile/test/features/activity/repository/activity_journal_wipe_wiring_test.dart` `_Scoped extends Fake implements ActivityJournal, AccountScopedJournal`: must implement `boundUid` and `isBound` (a `Fake` throws on the getter F1 now reads in every sync operation).
+- `mobile/test/features/activity/state/sync_conflict_view_errors_test.dart` `_FlakyJournal implements ActivityJournal` (noSuchMethod): not an `AccountScopedJournal`, so the unbound check is skipped; verify, no change expected. `_SlowRepo extends ActivitySyncRepository` (same file) and `mobile/test/features/activity/widgets/sync_conflict_sheet_states_test.dart` `_NoJournalRepo extends ActivitySyncRepository`: constructors unchanged (new parameter optional); check they still override `watch` / `refreshState` consistently.
+- `mobile/test/features/activity/repository/activity_wiring_account_switch_test.dart` `_ThrowingSyncRepo extends Fake implements ActivitySyncRepository`: wiring does not call `requestTombstoneSync`; no change expected.
+- Existing tests using a real `ActivitySyncRepository` over an UNBOUND `UidScopedActivityJournal` (search `UidScopedActivityJournal` and `bindUid` in `mobile/test`): they previously got an empty state and now get `JournalUnbound`.
+- `mobile/test/features/activity/repository/activity_tombstone_continuation_test.dart`: assertions about the retry budget (no further timer, counter) must follow the fallback timer and the reset on a clean pass.
+- Backend fakes (`FakeSummaryBackend`, `DeviceBackend`, `_Backend` in the continuation test) implement an unchanged interface.
