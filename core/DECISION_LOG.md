@@ -57307,3 +57307,7 @@ Decision: The B2 wipe decorator, the owner skip, claimActivityJournal and the sy
 ## 2026-10-16 - Commit: S02 test epic 8a: commit expiry race and download expiry (A7)
 
 Decision: Remediation A7 is pinned at the callable, transaction and reconciler layers and for the download answer.
+
+## 2026-10-16 - Commit: S02 test epic 9b: corrupt cloud summary and tombstone push error tests
+
+Decision: SummaryCorrupt versus SummaryBackendUnavailable (backend over a fake Firestore) and the visible sync_conflict outcome without a retry loop are pinned by tests; lastTombstonePushError is pinned as the last failed push (not cleared by a later success, per its getter doc).
