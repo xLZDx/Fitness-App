@@ -327,6 +327,14 @@ ActivitySession _mergeCluster(
     schema: primary.schema,
     mergeNotes: notes.toList()..sort(),
     extras: primary.extras,
+    formulaVersion: primary.formulaVersion,
+    metricDefinitionVersion: primary.metricDefinitionVersion,
+    thresholdPolicyVersion: primary.thresholdPolicyVersion,
+    sourceTermsSnapshot: primary.sourceTermsSnapshot,
+    explicitValues: primary.explicitValues,
+    summaryOverrides: primary.summaryOverrides,
+    userEditCount: primary.userEditCount,
+    editHistory: primary.editHistory,
   );
 }
 
@@ -486,5 +494,13 @@ ActivitySession _join(ActivitySession a, ActivitySession b) {
     schema: a.schema,
     mergeNotes: ([...{...a.mergeNotes, ...b.mergeNotes, 'joinedSplit'}]..sort()),
     extras: a.extras,
+    formulaVersion: a.formulaVersion,
+    metricDefinitionVersion: a.metricDefinitionVersion,
+    thresholdPolicyVersion: a.thresholdPolicyVersion,
+    sourceTermsSnapshot: a.sourceTermsSnapshot,
+    explicitValues: a.explicitValues,
+    summaryOverrides: a.summaryOverrides,
+    userEditCount: a.userEditCount,
+    editHistory: a.editHistory,
   );
 }

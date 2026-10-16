@@ -56859,3 +56859,7 @@ Decision: the S02 documentation gate is closed on GPT-PM APPROVE for head 9c68ca
 ## 2026-10-16 - Commit: S02-01 model building blocks
 
 Decision: the cloud-summary allowlist and bounds live in one Dart constant file, sub-models keep unknown keys in extras, and explicit values and cloud overrides are plain data classes with tolerant readers. Evidence: core/changes/2026-10-16-s02-01-model-building-blocks.md.
+
+## 2026-10-16 - Commit: S02-01 schema 2 session and migration chain
+
+Decision: schema 2 adds the A-5 strings and record state to ActivitySession, the migration chain is total and returns newer-schema records untouched, and the design edit ring is a new editHistory field because the merger depends on the existing userEdits map. Evidence: core/changes/2026-10-16-s02-01-schema2-and-migration.md.
