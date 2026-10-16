@@ -57707,3 +57707,7 @@ Decision: the Dart half of remediation J. The settings client takes a required l
 ## 2026-10-16 - Commit: refactor(s02): move the account-changed outcome to its own file (remediation J2)
 
 Decision: ConsentAccountChangedException and isAccountChangedRefusal move from activity_cloud_settings_client.dart to a new account_changed.dart; the settings client re-exports both so existing importers keep working, and the uploader, the sync repository and the tombstone pusher import the new file. No behavior change; it removes an import cycle created by remediation J2. Evidence: core/changes/2026-10-16-s02-remediation-j2b-account-changed-file.md; verification not run (test agents pending).
+
+## 2026-10-16 - Commit: test(s02): send expectedUid from the activity test support (epic 16a)
+
+Decision: `functions/src/__tests__/activity/support/flow.ts` gains `withUid(data, uid)` (adds `expectedUid: uid` to a plain object that lacks the key; non-object data and an explicit key pass through). `create`, `commit` and the four J1 entries of the SEVEN table in `support/seven.ts` use it. The three other SEVEN entries are unchanged. Evidence: core/changes/2026-10-16-s02-test16a-1-central-fixes.md; Run after the fix: `npx jest src/__tests__/activity` gave 25 of 26 suites passing (744 of 745 tests); the one failure (a 32 MiB validator test hitting the 5 s timeout) is unrelated to the change and passed when run alone. The red state before the fix was not observed.

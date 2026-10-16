@@ -12,7 +12,7 @@ import { handleGetActivityStreamDownloadUrls } from "../../../activity_streams/d
 import { handleSetActivityCloudSettings } from "../../../activity_streams/set_settings";
 import { handleSendDebugTelemetry } from "../../../activity_streams/telemetry";
 import { ACT, ACT_2, UID, store, type World } from "./fakes";
-import { fullUpload } from "./flow";
+import { fullUpload, withUid } from "./flow";
 
 export interface SevenEntry {
   name: string;
@@ -46,22 +46,22 @@ export const TELEMETRY_OK = { events: [{ type: "log", level: "info", component: 
 export const SEVEN: SevenEntry[] = [
   {
     name: "createActivityStreamUpload", quotaAction: "activityStreamUpload", limit: 30,
-    call: (w, d, uid = UID, p = "password") => handleCreateActivityStreamUpload(w.deps, uid, p, d),
+    call: (w, d, uid = UID, p = "password") => handleCreateActivityStreamUpload(w.deps, uid, p, withUid(d, uid)),
     ok: (c) => ({ activityId: ACT, bytes: c.bytes, contentSha256: c.sha }),
   },
   {
     name: "commitActivityStream", quotaAction: "activityStreamCommit", limit: 60,
-    call: (w, d, uid = UID, p = "password") => handleCommitActivityStream(w.deps, uid, p, d),
+    call: (w, d, uid = UID, p = "password") => handleCommitActivityStream(w.deps, uid, p, withUid(d, uid)),
     ok: (c) => ({ activityId: ACT, uploadId: c.uploadId }),
   },
   {
     name: "deleteActivity", quotaAction: "activityDelete", limit: 1000,
-    call: (w, d, uid = UID, p = "password") => handleDeleteActivity(w.deps, uid, p, d),
+    call: (w, d, uid = UID, p = "password") => handleDeleteActivity(w.deps, uid, p, withUid(d, uid)),
     ok: () => ({ activityId: ACT_2 }),
   },
   {
     name: "setActivityCloudSettings", quotaAction: "activitySettingsSet", limit: 20,
-    call: (w, d, uid = UID, p = "password") => handleSetActivityCloudSettings(w.deps, uid, p, d),
+    call: (w, d, uid = UID, p = "password") => handleSetActivityCloudSettings(w.deps, uid, p, withUid(d, uid)),
     ok: () => ({ streamRetentionDays: 730 }),
   },
   {

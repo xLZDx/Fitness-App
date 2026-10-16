@@ -475,3 +475,11 @@ Facts: the J2 implementer imported the settings client library into the stream u
 Root cause: the brief named the exception but not where a shared type should live; the implementer took the shortest import.
 Layers: the implementer and the brief; the coordinator's review of the diff caught it; no automated check covers repository libraries.
 Rule next time: when a brief adds a type used by several libraries, name the file that owns it; review the import direction of every new import in a diff.
+
+## 2026-10-16 - Commit: test(s02): send expectedUid from the activity test support (epic 16a)
+
+Kind: SUCCESS.
+Facts: the two support files were the only places where the existing activity tests reach the four handlers; adding the key there kept 744 of 745 activity tests green with no per-test edits. The one red test was a 5 s timeout of a 32 MiB validator test under parallel load; it passed alone. Evidence: core/changes/2026-10-16-s02-test16a-1-central-fixes.md.
+Why it worked: the J1 test notes listed the central fix points from the call graph before any run. The red state before the fix was not observed (the fix was applied before the first run), so the claim that these tests would have failed rests on the notes, not on a measurement.
+Layer: tests (author).
+Rule next time: when a seam gains a required request key, fix the shared request builders first and keep an explicit-key escape hatch for negative tests.
