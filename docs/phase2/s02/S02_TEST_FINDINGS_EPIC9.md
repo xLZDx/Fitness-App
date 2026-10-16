@@ -33,3 +33,25 @@ Summary line: `01:04 +222: All tests passed!`
 No mutation runs (operator decision). The `activity_sync_corrupt_summary_test.dart` and the owner-guard, wipe and e2e suites belong to other agents and were not run here. `flutter analyze` was not run.
 
 <!-- Epic 9b appends its own section below. -->
+
+## Epic 9b: remediation B2 client tests (journal wipe wiring, owner guard, corrupt summary, tombstone push error)
+
+Files: `mobile/test/features/activity/e2e/s02_account_wipe_e2e_test.dart` (two NOT WIRED tests un-skipped, the `S02_E02_WIRED` define removed; `wipeImpl()` is built through `activityAwareLocalDataWipe` with an in-memory owner store), `mobile/test/features/activity/repository/activity_journal_wipe_wiring_test.dart` (24 tests), `mobile/test/features/activity/repository/activity_sync_corrupt_summary_test.dart` (14 tests, includes a hand-written fake Firestore for `FirestoreActivitySummaryBackend`).
+
+### Defects found
+
+- Production defects: none. The B2 code compiled on the first run (the generic `_read<R, T>` is fine) and all new tests passed on the first run. No production file was edited. Evidence strength: the tests were not run against deliberately broken code (no mutation runs, operator decision); each assertion names an observable that a regression would change (order of `wipe` then `write:B`, `remaining` list, backend call log empty, marker kept).
+- Quarantine: the two epic 7a NOT WIRED entries are closed (tests run and pass). No new quarantine.
+
+### Plan versus code (notes, not defects)
+
+- The task text says a later success clears `lastTombstonePushError`. The getter doc (and the code) say it holds the last failed push and is null only when none failed in this process; nothing clears it. The test pins the documented behaviour. If a clear-on-success is wanted, it is a product decision plus a one-line change in `_pushLocalTombstones`.
+- `fromFirestoreSummary` never throws on a wrong field TYPE (it only converts `Timestamp`), so at the backend a corrupt document is detected only when the snapshot itself cannot be decoded (`data()` throws). A wrong-typed value inside a readable map reaches the sync layer; that path is not covered here.
+- A non-`LocalWipeIncomplete` inner error combined with a journal wipe failure is reported as `LocalWipeIncomplete(['activity_journal'])` and the inner error type is lost (not pinned).
+- Not covered: real Firestore, `main.dart` composition itself (the e2e builds the same composition by hand), the auth-failure-at-launch and sign-out wiring (S03 scope).
+
+### Run (from `mobile/`, head before the findings commit `62ab9f9e`)
+
+Command: `flutter test test/features/activity/repository/activity_journal_wipe_wiring_test.dart test/features/activity/repository/activity_sync_corrupt_summary_test.dart test/features/activity/e2e test/features/account_deletion`
+
+Summary line: `02:22 +156: All tests passed!` (24 + 14 new, the e2e directory including the 11-test wipe file with no skips, and the account_deletion directory).
