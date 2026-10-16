@@ -57239,3 +57239,7 @@ Decision: The merge oracle is the count and the plan quotas because merged sessi
 ## 2026-10-16 - Commit: S02 test epic 7b: findings and last test file
 
 Decision: The withdrawal tests and the epic 7 findings file are recorded; the epic 7b decision entry above was swept into commit 73820a0e by a concurrent session.
+
+## 2026-10-16 - Commit: S02 remediation A: reconciler deadline and bulk-delete fairness
+
+Decision: Bulk-delete jobs are ordered in memory by last attempt time over a bounded batch of 200 instead of adding a composite index, and every attempt is stamped before it runs.

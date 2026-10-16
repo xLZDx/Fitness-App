@@ -124,6 +124,12 @@ export interface ReconcileRunResult {
   bucketConfigured: boolean;
   /** Bulk-delete jobs advanced in this run (filled by the bulk-delete continuation, if present). */
   bulkDeleteAdvanced: number;
+  /** Age in millis of the oldest unfinished bulk-delete job (signal), 0 when none (A3). */
+  oldestBulkDeleteAgeMs: number;
+  /** Rows or objects the reconciler had to skip without acting (bad object path, bad timestamp, failed cleanup; A15). */
+  silentSkips: number;
+  /** Age in millis of the oldest object-scan cycle seen in this run (signal; A15). */
+  oldestScanCycleAgeMs: number;
 }
 
 export function newReconcileResult(): ReconcileRunResult {
@@ -141,6 +147,9 @@ export function newReconcileResult(): ReconcileRunResult {
     budgetExhausted: false,
     bucketConfigured: true,
     bulkDeleteAdvanced: 0,
+    oldestBulkDeleteAgeMs: 0,
+    silentSkips: 0,
+    oldestScanCycleAgeMs: 0,
   };
 }
 
@@ -192,6 +201,7 @@ export async function reconcilePendingRow(
   bucket: StreamListingBucket,
   uid: string,
   activityId: string,
+  result?: ReconcileRunResult,
 ): Promise<PendingOutcome> {
   const fs = deps.firestore();
   const rowSnap = await fs.doc(activityStreamRowPath(uid, activityId)).get();
@@ -224,7 +234,11 @@ export async function reconcilePendingRow(
         });
         if (selected.alreadySelected) return "kept";
         if (selected.previousPath !== undefined && selected.previousPath !== promotedPath) {
-          await deleteObject(bucket, selected.previousPath).catch(() => undefined);
+          await deleteObject(bucket, selected.previousPath).catch((err) => {
+            // The repair itself succeeded; the previous object is retried by the object pass (A15).
+            if (result !== undefined) result.silentSkips += 1;
+            log("warn", { outcome: "previous-object-delete-failed", errorCode: errorCodeOf(err) });
+          });
         }
         return "repaired";
       } catch (e) {
@@ -234,7 +248,16 @@ export async function reconcilePendingRow(
     }
   }
 
-  // Abort: remove only THIS upload's own objects, then the pending marker.
+  // Abort: remove only THIS upload's own objects, then the pending marker. The row was read
+  // before the download and the hashing; a commit that started meanwhile (another upload id, or
+  // a different intended hash recorded before its promotion) must not lose its objects (A4).
+  const unchanged = await fs.runTransaction(async (tx) => {
+    const cur = await tx.get(fs.doc(activityStreamRowPath(uid, activityId)));
+    if (!cur.exists) return false;
+    const curRow = cur.data() as RowData;
+    return currentUploadId(curRow) === uploadId && strOf(curRow.intendedStoredSha256) === intended;
+  });
+  if (!unchanged) return "kept";
   await deleteObject(bucket, promotedPath);
   await deleteObject(bucket, quarantineObjectPath(uid, activityId, uploadId));
   await clearPendingUpload(deps, uid, req);
@@ -278,7 +301,7 @@ async function pendingPass(
       const ids = parseStreamRowPath(doc.ref.path);
       if (ids === undefined) continue;
       try {
-        const outcome = await reconcilePendingRow(deps, bucket, ids.uid, ids.activityId);
+        const outcome = await reconcilePendingRow(deps, bucket, ids.uid, ids.activityId, result);
         if (outcome === "repaired") result.pendingRepaired += 1;
         else if (outcome === "aborted") result.pendingAborted += 1;
         else result.pendingKept += 1;
@@ -320,7 +343,12 @@ async function checkStoredRow(
   }
 
   const objectPath = strOf(row.objectPath);
-  if (objectPath === undefined || !objectPath.startsWith(activityStreamsPrefix(uid, activityId))) return;
+  if (objectPath === undefined || !objectPath.startsWith(activityStreamsPrefix(uid, activityId))) {
+    // A stored row that points nowhere valid cannot be checked: count it instead of skipping silently (A15).
+    result.silentSkips += 1;
+    log("warn", { outcome: "stored-row-bad-object-path" });
+    return;
+  }
   let missing = false;
   try {
     await bucket.file(objectPath).getMetadata();
@@ -429,6 +457,10 @@ async function objectPass(
   let startOffset = stored !== undefined && stored.startsWith(`${kind}/`) ? stored : undefined;
   let lastName: string | undefined;
   let more = false;
+  // Scan-cycle progress signal (A15): when this cycle began, kept while the cursor walks on.
+  const cycleField = `${field}CycleStartedAt`;
+  const storedCycle = cursors[cycleField];
+  const cycleStartMs = startOffset !== undefined && typeof storedCycle === "number" ? storedCycle : deps.nowMs();
 
   for (let p = 0; p < limits.objectPagesPerRun; p++) {
     const [files, next] = await bucket.getFiles({
@@ -450,7 +482,11 @@ async function objectPass(
         continue;
       }
       const createdMs = Date.parse(file.metadata?.timeCreated ?? "");
-      if (!Number.isFinite(createdMs)) continue;
+      if (!Number.isFinite(createdMs)) {
+        result.silentSkips += 1; // unparseable timeCreated: the object can never age out (A15)
+        log("warn", { outcome: "object-bad-time-created" });
+        continue;
+      }
       const ageMs = deps.nowMs() - createdMs;
       if (kind === "quarantine") result.oldestQuarantineAgeMs = Math.max(result.oldestQuarantineAgeMs, ageMs);
       if (ageMs < ORPHAN_MIN_AGE_MS) continue;
@@ -470,11 +506,21 @@ async function objectPass(
     if (!more) break;
     startOffset = lastName;
   }
-  await writeCursors(fs, { [field]: more && lastName !== undefined ? lastName : admin.firestore.FieldValue.delete() });
+  const continues = more && lastName !== undefined;
+  result.oldestScanCycleAgeMs = Math.max(result.oldestScanCycleAgeMs, deps.nowMs() - cycleStartMs);
+  await writeCursors(fs, {
+    [field]: continues ? lastName : admin.firestore.FieldValue.delete(),
+    [cycleField]: continues ? cycleStartMs : admin.firestore.FieldValue.delete(),
+  });
 }
 
 /** Extra passes appended by later pieces of the story (the bulk-delete continuation). */
-export type ReconcileExtraPass = (deps: ReconcileDeps, result: ReconcileRunResult) => Promise<void>;
+export type ReconcileExtraPass = (
+  deps: ReconcileDeps,
+  result: ReconcileRunResult,
+  /** Run deadline; a pass must stop starting work near it so `run-complete` is always logged (A2). */
+  deadlineMs?: number,
+) => Promise<void>;
 
 /** One reconciler run; exported so the schedule handler and the tests share it. */
 export async function runActivityReconcile(
@@ -496,7 +542,7 @@ export async function runActivityReconcile(
     ["stored-rows", () => storedRowPass(deps, limits, bucket, deadlineMs, result)],
     ["streams-objects", () => objectPass(deps, limits, bucket, "streams", deadlineMs, result)],
     ["quarantine-objects", () => objectPass(deps, limits, bucket, "quarantine", deadlineMs, result)],
-    ...extraPasses.map((p): [string, () => Promise<void>] => ["extra", () => p(deps, result)]),
+    ...extraPasses.map((p): [string, () => Promise<void>] => ["extra", () => p(deps, result, deadlineMs)]),
   ];
   for (const [name, run] of passes) {
     try {
@@ -520,6 +566,9 @@ export async function runActivityReconcile(
     oldestQuarantineAgeMs: result.oldestQuarantineAgeMs,
     failures: result.failures,
     bulkDeleteAdvanced: result.bulkDeleteAdvanced,
+    oldestBulkDeleteAgeMs: result.oldestBulkDeleteAgeMs,
+    silentSkips: result.silentSkips,
+    oldestScanCycleAgeMs: result.oldestScanCycleAgeMs,
     budgetExhausted: result.budgetExhausted,
   });
   return result;

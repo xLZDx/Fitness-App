@@ -51,7 +51,7 @@ import { isActivityId } from "./paths";
 import type { ReconcileDeps, ReconcileExtraPass } from "./reconcile";
 import { parseSettingsPath } from "./retention";
 import { activitySettingsPath } from "./settings";
-import { errorCodeOf, strOf, type RowData } from "./upload_common";
+import { errorCodeOf, strOf, timestampMs, type RowData } from "./upload_common";
 
 /** The quota action of this callable (design 5.4); also listed in `REDACTED_QUOTA_ACTIONS`. */
 export const DELETE_ALL_QUOTA_ACTION = "activityDeleteAll";
@@ -77,6 +77,10 @@ export interface DeleteAllLimits {
 }
 
 export const DEFAULT_DELETE_ALL_LIMITS: DeleteAllLimits = { page: 50, budgetMs: 40 * 1000 };
+
+/** Pending jobs read per reconciler run and users advanced per run (A3). */
+const BULK_BATCH = 200;
+const BULK_USERS_PER_RUN = 20;
 
 export interface DeleteAllResult {
   status: "more" | "done";
@@ -136,6 +140,9 @@ async function beginJob(
         streamDeleteJobId: deps.newJobId(),
         streamDeletePending: true,
         streamDeleteCursor: admin.firestore.FieldValue.delete(),
+        streamDeleteStartedAt: admin.firestore.Timestamp.fromMillis(deps.nowMs()),
+        streamDeleteAttemptAt: admin.firestore.FieldValue.delete(),
+        streamDeleteAttempts: admin.firestore.FieldValue.delete(),
       },
       { merge: true },
     );
@@ -157,7 +164,18 @@ async function finishPage(
     const fence = await checkAccountFence(tx, deps, uid);
     if (fence !== "clear") throw new DeleteRefusal(fence);
     if (done) {
-      tx.set(ref, { streamDeleteJobId: del, streamDeletePending: del, streamDeleteCursor: del }, { merge: true });
+      tx.set(
+        ref,
+        {
+          streamDeleteJobId: del,
+          streamDeletePending: del,
+          streamDeleteCursor: del,
+          streamDeleteStartedAt: del,
+          streamDeleteAttemptAt: del,
+          streamDeleteAttempts: del,
+        },
+        { merge: true },
+      );
     } else if (cursor !== undefined) {
       tx.set(ref, { streamDeleteCursor: cursor }, { merge: true });
     }
@@ -187,6 +205,7 @@ export async function runBulkDeletePage(
   const page = await query.get();
 
   let deleted = 0;
+  let unrecognised = 0;
   let lastId: string | undefined;
   let failed = false;
   let budgetStopped = false;
@@ -196,7 +215,17 @@ export async function runBulkDeletePage(
       break;
     }
     if (!isActivityId(doc.id)) {
-      lastId = doc.id; // not a row this feature wrote; never build a path from it
+      // Not a row this feature wrote and no object path can be built from it: delete the row
+      // itself (so the job can really end) and count it (A14).
+      try {
+        await doc.ref.delete();
+      } catch (e) {
+        failed = true;
+        log("warn", { outcome: "row-failed", errorCode: errorCodeOf(e) });
+        break;
+      }
+      unrecognised += 1;
+      lastId = doc.id;
       continue;
     }
     try {
@@ -213,6 +242,7 @@ export async function runBulkDeletePage(
 
   const done = !failed && !budgetStopped && page.docs.length < limits.page;
   await finishPage(deps, uid, done, lastId);
+  if (unrecognised > 0) log("warn", { outcome: "unrecognised-rows-deleted", unrecognised });
   if (failed) throw new DeleteRefusal("delete_failed");
   return { status: done ? "done" : "more", deleted, serverNowMs: deps.nowMs() };
 }
@@ -273,19 +303,51 @@ export async function handleDeleteAllActivityStreams(
 export const bulkDeleteContinuationPass: ReconcileExtraPass = async (
   deps: ReconcileDeps,
   result,
+  deadlineMs = Number.POSITIVE_INFINITY,
 ) => {
   const bulkDeps: DeleteAllDeps = { ...deps, newJobId: defaultDeleteAllDeps.newJobId };
+  // No ordering index exists: read a bounded batch of pending jobs and order it in memory, so the
+  // job attempted longest ago goes first and a permanently failing or fenced job cannot block the
+  // others (A3). More than the batch pending at once is itself a backlog the age signal shows.
   const snap = await deps
     .firestore()
     .collectionGroup("activity_settings")
     .where("streamDeletePending", "==", true)
-    .limit(20)
+    .limit(BULK_BATCH)
     .get();
-  for (const doc of snap.docs) {
+  const nowMs = deps.nowMs();
+  const jobs = snap.docs
+    .map((doc) => {
+      const data = doc.data() as RowData;
+      return { doc, attemptMs: timestampMs(data.streamDeleteAttemptAt) ?? 0, startedMs: timestampMs(data.streamDeleteStartedAt) };
+    })
+    .sort((a, b) => a.attemptMs - b.attemptMs);
+  for (const job of jobs) {
+    if (job.startedMs !== undefined) {
+      result.oldestBulkDeleteAgeMs = Math.max(result.oldestBulkDeleteAgeMs, nowMs - job.startedMs);
+    }
+  }
+  let handled = 0;
+  for (const { doc } of jobs) {
+    if (handled >= BULK_USERS_PER_RUN) break;
+    // Reserve the tail of the run so `run-complete` is always logged (A2).
+    const remainingMs = deadlineMs - deps.nowMs();
+    if (remainingMs <= 0) {
+      result.budgetExhausted = true;
+      break;
+    }
     const uid = parseSettingsPath(doc.ref.path);
     if (uid === undefined) continue;
+    handled += 1;
     try {
-      const r = await runBulkDeletePage(bulkDeps, uid, DEFAULT_DELETE_ALL_LIMITS, "continue");
+      // Stamp the attempt FIRST (update fails when the document is gone): whatever happens next,
+      // this job moves to the back of the line.
+      await doc.ref.update({
+        streamDeleteAttemptAt: admin.firestore.Timestamp.fromMillis(deps.nowMs()),
+        streamDeleteAttempts: admin.firestore.FieldValue.increment(1),
+      });
+      const limits = { ...DEFAULT_DELETE_ALL_LIMITS, budgetMs: Math.min(DEFAULT_DELETE_ALL_LIMITS.budgetMs, remainingMs) };
+      const r = await runBulkDeletePage(bulkDeps, uid, limits, "continue");
       if (r !== null) result.bulkDeleteAdvanced += 1;
     } catch (e) {
       if (e instanceof DeleteRefusal && (e.code === "account_deleting" || e.code === "account_deleted")) continue;
