@@ -82,7 +82,8 @@ Document id must match `^act_[0-9a-f]{40}$` (sha1 hex, FACT from `activityIdFor`
 | `hasRoute` | bool (a flag only, no coordinates) | GPS stream present locally |
 | `formulaVersion`, `metricDefinitionVersion`, `thresholdPolicyVersion` | string <= 32 | A-5 |
 | `sourceTermsSnapshot` | string <= 64, a terms-version id or hash, never the terms text | A-5 |
-| `updatedAt` | timestamp | client clock; a HINT only, never used for ordering or conflict resolution (PROPOSED, DQ-5). Ordering uses the server `receivedAt` (set by the commit callable on the stream index row and by `setActivityCloudSettings`) and the monotonic local counter of section 10. Rules do NOT force `updatedAt == request.time`, because queued offline writes would then fail on replay (the Body Scan consent pattern, FACT lines 570-582, is not copied here). OPEN: whether the summary document also carries a server-stamped field; without it, summary ordering relies on the local counter only |
+| `rev` | int 1..1000000 | monotonic revision, incremented by the client on every change of the summary; rules (section 4) require `rev` to be strictly greater than the stored value on update and equal to 1 on create, so a replayed older write is refused and ordering needs no server clock (PROPOSED, DQ-5). A replay after a delete is stopped by the tombstone (6.2), not by `rev` |
+| `updatedAt` | timestamp | client clock; a HINT only, never used for ordering or conflict resolution (PROPOSED, DQ-5). Ordering uses the server `receivedAt` (set by the commit callable on the stream index row and by `setActivityCloudSettings`) and the monotonic local counter of section 10. Rules do NOT force `updatedAt == request.time`, because queued offline writes would then fail on replay (the Body Scan consent pattern, FACT lines 570-582, is not copied here). Resolved (PROPOSED, lead decision on the open DQ-5 conflict): the summary carries a client-incremented integer `rev` (see the row above) that rules require to strictly increase on every update, so ordering needs no server stamp on the summary |
 
 Immutability (PROPOSED, DQ-15): `startUtc` and `sport` are immutable after creation because they feed the deterministic id (`sourceId|start:<epoch ms>`); a user correction goes into `userEdits` (device-only), never into these two fields. Rules enforce that an update leaves `startUtc` and `sport` unchanged (section 4).
 
@@ -153,7 +154,8 @@ Rules edits in `firestore.rules`:
 function activitySummaryOk(id, d) {
   return id.matches('^act_[0-9a-f]{40}$')
       && d.keys().hasOnly([ ...allowlist from table 3.2... ])
-      && d.keys().hasAll(['schema','sport','startUtc','endUtc'])
+      && d.keys().hasAll(['schema','sport','startUtc','endUtc','rev'])
+      && d.rev is int && numberIn(d.rev, 1, 1000000)
       && schemaOk(d) && d.schema is int && numberIn(d.schema, 1, 1000)
       && d.sport is string && d.sport.matches('^[a-z][A-Za-z0-9]{0,31}$')
       && d.startUtc is timestamp && d.endUtc is timestamp && d.endUtc >= d.startUtc
@@ -170,8 +172,11 @@ match /users/{uid}/activities/{activityId} {
                         // DQ-15: startUtc and sport are immutable after creation (applies to update only;
                         // written as two separate allow clauses in the real file)
                         && (request.method == 'create'
-                            || (request.resource.data.startUtc == resource.data.startUtc
-                                && request.resource.data.sport == resource.data.sport));
+                            ? request.resource.data.rev == 1
+                            : (request.resource.data.startUtc == resource.data.startUtc
+                               && request.resource.data.sport == resource.data.sport
+                               // DQ-5: strictly increasing revision, replayed older writes are refused
+                               && request.resource.data.rev > resource.data.rev));
   allow delete: if false;
 }
 match /users/{uid}/activity_streams/{id} { allow read: if isOrdinaryUser() && request.auth.uid == uid; allow write: if false; }
@@ -499,7 +504,7 @@ The test plan `docs/phase2/s02/S02_TEST_PLAN.md` raised 15 design questions (DQ-
 | DQ-2 | Which stream kinds may go to the cloud? | Only `gps`, `altitude`, `speed`; cadence, power, stroke rate, temperature stay device-only. OPERATOR ANSWER NEEDED | 3.1, 5.1, 9, 12.3 |
 | DQ-3 | What does GPX export do for a session with no GPS? | Typed result `no_geometry`; FIT and summary export still allowed | 7 |
 | DQ-4 | How is the "exclusion in both wildcard clauses" floor tested, given reads cannot be negative-tested? | Rules-text lint (names in read AND write clause) plus emulator write tests | 4, 12.1 |
-| DQ-5 | Which clock orders updates? | Server `receivedAt` plus a monotonic local counter; client `updatedAt` is a hint; rules do not force `request.time` (offline replay) | 3.2, 10 |
+| DQ-5 | Which clock orders updates? | Client-incremented monotonic `rev` on the summary, enforced strictly increasing by rules (replayed older writes refused); server `receivedAt` on stream index rows and settings; client `updatedAt` is a hint; rules do not force `request.time` (offline replay) | 3.2, 10 |
 | DQ-6 | What about HR relabelled as an allowed kind or smuggled in a counter? | Accepted, documented residual risk; mitigated by closed schemas, small ranges, sentinel tests | 5.1a, 8.1 |
 | DQ-7 | Which retention options exist? | 90 days, 1 year, 2 years (default), never; "never" flagged. OPERATOR ANSWER NEEDED (default value and "never") | 5.3, 12.3 |
 | DQ-8 | When is the telemetry schema fixed? | Closed schema (event types, counters, ranges) defined before code and reviewed by security | 8.1 |

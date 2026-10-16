@@ -56795,3 +56795,7 @@ Decision: the S02 design draft recommends a dedicated private bucket with signed
 ## 2026-10-16 - Commit: S02 design revision 2
 
 Decision: the S02 design applies all 24 internal review findings (tombstone with TTL instead of callable-only summary writes to keep offline-first; four permanent rules exclusions; closed server schema for streams; expiry derived at purge time) and answers the 15 test-plan questions as proposals; three questions stay with the operator (cloud stream kinds beyond GPS, "never" retention, default expiry). Evidence: core/changes/2026-10-16-s02-design-revision-2.md.
+
+## 2026-10-16 - Commit: S02 test plan and summary revision counter
+
+Decision: summary ordering uses a client-incremented rev enforced strictly increasing by rules instead of a server stamp, because the summary is an offline client write; resurrection after delete is stopped by the tombstone. Test plan: 181 planned tests, 5 more for rev. Evidence: core/changes/2026-10-16-s02-test-plan-and-rev.md.
