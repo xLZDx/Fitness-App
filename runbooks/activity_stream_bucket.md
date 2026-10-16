@@ -69,6 +69,8 @@ Also required before release and also external: the two collection-group indexes
 - `deleteAccount` writes the top-level server-only document `activity_account_state/{uid}` after the Stripe cancel and token revocation and immediately before the first sweep (a failed cancel never leaves a live account fenced). From then on all seven activity callables refuse and the summary rules refuse client writes; the document survives `recursiveDelete(users/{uid})`. `authDeletedAt` is recorded after the Auth deletion (Step 3b, non-fatal).
 - `sweepLateActivityStreams` (every 5 minutes) sweeps `streams/<uid>/` and `quarantine/<uid>/`, does a final recursive delete of the user's activity collections, sets `lateSweepDone`, and removes the fence document at `max(lateSweepDone + 1 h, authDeletedAt + 70 min)`. It never removes the fence while the Auth user still exists (stuck state is reported).
 - A fence document that stays more than one hour past `lateSweepAt` with `lateSweepDone` unset is a stuck job: check the `activity_late_sweep_event` log entries for the bare `lastErrorCode`, fix the cause (usually bucket IAM) and the next run completes it; every cleanup is idempotent.
+- Aborted deletion of a LIVE account: the fence document carries a heartbeat `touchedAt` that every `deleteAccount` attempt refreshes. If the Auth user still exists, no `accountDeletionRetries/{uid}` record exists and `touchedAt` is older than 24 h, the late sweep deletes only the fence document (compare-and-delete on the same `touchedAt`; log slug `fence_cleared_live_account`, counter `clearedLive`) so the user can sync again. It NEVER erases data while the Auth user exists. If the intent record exists the job is NOT cleared and is counted as `stuck`: the operator procedure is to check the `accountDeletionRetries` row and the `deleteAccount` / `reconcileAccountDeletions` logs, let the reconciler finish the deletion, and only if the user abandoned the deletion remove that retry record by hand (operator-only), after which the next late-sweep run clears the fence.
+- A bucket that is unset while `users/{uid}/activity_streams` rows still exist makes the late sweep fail with bare code `bucket_unset` (error-level log `bucket-unset-with-stream-rows`, counted as a failure; no row or fence is removed). Restore `ACTIVITY_STREAM_BUCKET`; the next run completes.
 - Do not delete `activity_account_state` documents by hand: until they are gone the rules and callables refuse writes for that uid, and removing one early lets a still-valid token replay a write.
 
 ## 8. Signals and alerts (design 6.3)
@@ -86,7 +88,8 @@ Every scheduled job writes ONE structured Cloud Logging entry per run (including
 | Fence and tombstone refusals | callable events | informational; spike |
 | Telemetry rejections, quota refusals, dropped counter | `debug_telemetry_event`, `debug_telemetry_dropped` | spike against the baseline |
 | Missing composite index (`FAILED_PRECONDITION`) | `activity_purge_event` | any |
-| Stuck fence or late job | `activity_late_sweep_event` | stuck count > 0 |
+| Stuck fence or late job (includes a skipped-live job older than 24 h whose deletion intent record still exists) | `activity_late_sweep_event` | stuck count > 0 |
+| Abandoned fence of a live account cleared | `activity_late_sweep_event` (`fence_cleared_live_account`, `clearedLive`) | informational; spike |
 
 Forced-failure check per row: see design 6.3 and test F71. The alert policies are applied by the operator from this table; nothing here has been applied.
 

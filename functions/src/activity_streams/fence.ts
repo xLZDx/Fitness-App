@@ -88,9 +88,13 @@ export const LATE_SWEEP_DELAY_MS = (10 + 5) * 60 * 1000;
 
 /**
  * Writes `activity_account_state/{uid}` (design 6.1 step 1). Idempotent: when the
- * document already exists the EARLIEST `fenceAt` and `lateSweepAt` are kept and
- * nothing is rewritten. Admin SDK only (no client rule). Throws on a Firestore
- * failure; `deleteAccount` must then abort before it sweeps anything.
+ * document already exists the EARLIEST `fenceAt` and `lateSweepAt` are kept; only
+ * the heartbeat `touchedAt` is refreshed. EVERY call (so every retried
+ * `deleteAccount`) refreshes `touchedAt`: the late sweep clears the fence of a
+ * live account only when `touchedAt` is older than 24 h and unchanged (design
+ * 6.1, A1), so a deletion that is being retried can never lose its fence.
+ * Admin SDK only (no client rule). Throws on a Firestore failure;
+ * `deleteAccount` must then abort before it sweeps anything.
  * Returns `true` when this call created the document.
  */
 export async function writeActivityAccountFence(
@@ -101,11 +105,16 @@ export async function writeActivityAccountFence(
   const ref = fs.doc(activityAccountStatePath(uid));
   return fs.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (snap.exists) return false;
     const nowMs = deps.nowMs();
+    const touchedAt = admin.firestore.Timestamp.fromMillis(nowMs);
+    if (snap.exists) {
+      tx.set(ref, { touchedAt }, { merge: true });
+      return false;
+    }
     tx.set(ref, {
       fenceAt: admin.firestore.Timestamp.fromMillis(nowMs),
       lateSweepAt: admin.firestore.Timestamp.fromMillis(nowMs + LATE_SWEEP_DELAY_MS),
+      touchedAt,
     });
     return true;
   });

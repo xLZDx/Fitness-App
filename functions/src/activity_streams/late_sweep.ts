@@ -14,6 +14,10 @@
  * `lateSweepAt` is due:
  *  0. (not yet done) while the Auth user still EXISTS (an aborted deletion) NOTHING is erased and
  *     the job stays armed (`skippedLive`); a failing Auth lookup fails closed the same way.
+ *     An ABANDONED fence (A1: `touchedAt`, written by every `writeActivityAccountFence` call, older
+ *     than 24 h, no `accountDeletionRetries` record) is cleared by a compare-and-delete on the same
+ *     `touchedAt` (slug `fence_cleared_live_account`); with the intent record present the job is
+ *     counted as `stuck` instead. The fence of a live account is cleared, its data never erased.
  *  1. (not yet done, Auth user gone) sweeps `streams/<uid>/` and `quarantine/<uid>/` AND ends with
  *     the FINAL recursive delete of the activity collections of the user
  *     (`activities`, `activity_streams`, `activity_settings`,
@@ -41,7 +45,12 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { activityStreamBucket, type StreamBucket } from "./bucket";
-import { activityAccountStatePath, defaultFenceDeps, type FenceDeps } from "./fence";
+import {
+  accountDeletionRetriesPath,
+  activityAccountStatePath,
+  defaultFenceDeps,
+  type FenceDeps,
+} from "./fence";
 import { UID_PATTERN } from "./paths";
 import { sweepActivityStreamObjects } from "./sweep";
 import { errorCodeOf, timestampMs, type RowData } from "./upload_common";
@@ -67,7 +76,16 @@ export const ACTIVITY_USER_COLLECTIONS: readonly string[] = [
   "activity_streams",
   "activity_settings",
   "activity_tombstones",
+  // Quota counters (abuse_guard.ts) that a call racing the deletion can recreate after the
+  // first recursive delete (A5).
+  "usage",
 ];
+
+/** A live account's fence whose heartbeat is older than this and that has no deletion intent is abandoned (A1). */
+export const LIVE_FENCE_STALE_MS = 24 * HOUR_MS;
+
+/** Log/counter slug emitted when an abandoned fence of a live account is cleared (A1). */
+export const LIVE_FENCE_CLEARED_SLUG = "fence_cleared_live_account";
 
 /** Injectable collaborators of the job and of the `authDeletedAt` write. */
 export interface LateSweepDeps extends FenceDeps {
@@ -150,6 +168,8 @@ export interface LateSweepRunResult {
   queryFailed: boolean;
   /** Not-yet-done jobs skipped because the Auth user still EXISTS (aborted deletion; nothing was erased). */
   skippedLive: number;
+  /** Fences of live accounts cleared as abandoned (slug `fence_cleared_live_account`; nothing was erased). */
+  clearedLive: number;
 }
 
 function newResult(): LateSweepRunResult {
@@ -166,11 +186,21 @@ function newResult(): LateSweepRunResult {
     budgetExhausted: false,
     queryFailed: false,
     skippedLive: 0,
+    clearedLive: 0,
   };
 }
 
 function log(level: "info" | "warn" | "error", fields: Record<string, string | number | boolean>): void {
   logger[level](ACTIVITY_LATE_SWEEP_EVENT, { operation: "sweepLateActivityStreams", ...fields });
+}
+
+/** One collection of [ACTIVITY_USER_COLLECTIONS] under the user (the only dynamic collection path of this file). */
+function userActivityCollection(
+  fs: FirebaseFirestore.Firestore,
+  uid: string,
+  name: string,
+): FirebaseFirestore.CollectionReference {
+  return fs.collection(`users/${uid}/${name}`);
 }
 
 /** Attempts the final recursive delete of every activity collection; returns the failures (never throws). */
@@ -181,7 +211,7 @@ async function finalRecursiveDelete(
   const failures: unknown[] = [];
   for (const name of ACTIVITY_USER_COLLECTIONS) {
     try {
-      await fs.recursiveDelete(fs.collection(`users/${uid}/${name}`));
+      await fs.recursiveDelete(userActivityCollection(fs, uid, name));
     } catch (e) {
       failures.push(e);
     }
@@ -198,6 +228,16 @@ export async function runLateSweepParts(
   deps: LateSweepDeps,
   uid: string,
 ): Promise<string | undefined> {
+  if (deps.bucket() === undefined) {
+    // A10: an unset bucket is a legitimate no-op only when no stream row can point at an object.
+    // A stored or pending row means objects may exist that this sweep cannot reach: fail loudly,
+    // keep every row (the final recursive delete is skipped) and stay armed.
+    const rows = await userActivityCollection(deps.firestore(), uid, "activity_streams").limit(1).get();
+    if (!rows.empty) {
+      log("error", { outcome: "bucket-unset-with-stream-rows" });
+      return "bucket_unset";
+    }
+  }
   const failures: unknown[] = [];
   try {
     await sweepActivityStreamObjects(uid, { bucket: () => deps.bucket() });
@@ -273,6 +313,67 @@ async function removeFence(
   });
 }
 
+/**
+ * Compare-and-delete of the fence of a LIVE account whose deletion was aborted
+ * (design 6.1, A1). Deletes the document only when it still exists, carries the
+ * very `touchedAt` this run read (a retried `deleteAccount` refreshes it, so a
+ * deletion in progress can never lose its fence) and no
+ * `accountDeletionRetries/{uid}` record exists. NEVER erases any data.
+ */
+async function clearLiveFence(
+  deps: LateSweepDeps,
+  uid: string,
+  touchedMs: number,
+): Promise<"cleared" | "intent" | "changed"> {
+  const fs = deps.firestore();
+  const ref = fs.doc(activityAccountStatePath(uid));
+  return fs.runTransaction(async (tx) => {
+    const [snap, retries] = await Promise.all([
+      tx.get(ref),
+      tx.get(fs.doc(accountDeletionRetriesPath(uid))),
+    ]);
+    if (!snap.exists) return "changed";
+    if (retries.exists) return "intent";
+    const data = snap.data() as RowData | undefined;
+    if (timestampMs(data?.lateSweepDone) !== undefined) return "changed";
+    if (heartbeatMs(data) !== touchedMs) return "changed";
+    tx.delete(ref);
+    return "cleared";
+  });
+}
+
+/** The heartbeat of a fence document; documents written before `touchedAt` existed fall back to `fenceAt`. */
+function heartbeatMs(data: RowData | undefined): number | undefined {
+  return timestampMs(data?.touchedAt) ?? timestampMs(data?.fenceAt);
+}
+
+/** A live account's job: clear a stale abandoned fence, or count it as stuck. Erases nothing. */
+async function handleLiveAccount(
+  deps: LateSweepDeps,
+  uid: string,
+  data: RowData,
+  result: LateSweepRunResult,
+): Promise<void> {
+  result.skippedLive += 1;
+  const touchedMs = heartbeatMs(data);
+  const ageMs = touchedMs === undefined ? 0 : deps.nowMs() - touchedMs;
+  if (touchedMs !== undefined && ageMs > LIVE_FENCE_STALE_MS) {
+    const outcome = await clearLiveFence(deps, uid, touchedMs);
+    if (outcome === "cleared") {
+      result.clearedLive += 1;
+      log("warn", { outcome: LIVE_FENCE_CLEARED_SLUG });
+      return;
+    }
+    if (outcome === "intent") {
+      // The durable deletion intent still drives the deletion: not abandoned, but overdue.
+      result.stuck += 1;
+      result.oldestStuckAgeMs = Math.max(result.oldestStuckAgeMs, ageMs);
+    }
+  }
+  result.waiting += 1;
+  log("warn", { outcome: "skipped-live-account" });
+}
+
 /** One due document; updates [result]. Never throws (failures are counted). */
 async function processJob(
   deps: LateSweepDeps,
@@ -286,11 +387,10 @@ async function processJob(
       // The destructive part must never touch a LIVE account: an aborted deletion leaves the
       // fence but the user (and their data) still exist. A failing Auth read throws and is
       // counted as a failure by the catch below (fail closed, nothing erased). The job stays
-      // armed: the deletion intent keeps driving the account deletion, and the next run re-checks.
+      // armed while a deletion may still be retried; an abandoned fence (no deletion intent,
+      // heartbeat older than 24 h) is cleared WITHOUT erasing anything (A1).
       if (await deps.authUserExists(uid)) {
-        result.skippedLive += 1;
-        result.waiting += 1;
-        log("warn", { outcome: "skipped-live-account" });
+        await handleLiveAccount(deps, uid, data, result);
         return;
       }
       const code = await runLateSweepParts(deps, uid);
@@ -394,6 +494,7 @@ export async function runActivityLateSweep(
     oldestStuckAgeMs: result.oldestStuckAgeMs,
     invalid: result.invalid,
     skippedLive: result.skippedLive,
+    clearedLive: result.clearedLive,
     budgetExhausted: result.budgetExhausted,
   });
   return result;

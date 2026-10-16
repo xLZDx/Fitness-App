@@ -57223,3 +57223,11 @@ Decision: The real sequence summary sync then upload is pinned; HR is checked in
 ## 2026-10-16 - Commit: S02 test epic 7b: client retry policy tests (I27)
 
 Decision: I27 restart wording is implemented as never resume, always a new upload; design 5.2 item 4 jitter and resume text is stale.
+
+## 2026-10-16 - Commit: S02 test epic 7b: consent withdrawal tests (I28) and findings
+
+Decision: Epic 7b closes with 198 tests green in the final run and one production defect fixed (stream marker); a grant path that calls uploader resume is open.
+
+## 2026-10-16 - Commit: S02 remediation A: abandoned fence of a live account
+
+Decision: The fence carries a heartbeat refreshed by every deleteAccount attempt; the late sweep clears a live account fence only by compare-and-delete after 24 h without heartbeat and without a deletion intent record, and never erases data while Auth exists.
