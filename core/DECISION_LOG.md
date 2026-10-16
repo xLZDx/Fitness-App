@@ -56959,3 +56959,7 @@ Decision: The purge query gets a composite collection-group index (state, expire
 ## 2026-10-16 - Commit: S02-06b: activity object sweep in sweepAccountData
 
 Decision: sweepAccountData runs the Body Scan sweep and the new activity sweep as independent cleanups (both prefixes of the activity bucket attempted, failures aggregated into one bare code, a single failure rethrown unchanged) so both deleteAccount calls and the reconciler retry sweep both buckets. Evidence: core/changes/2026-10-16-s02-06b-sweep.md.
+
+## 2026-10-16 - Commit: S02-06b: late sweep job and fence lifetime
+
+Decision: The fence document written at deleteAccount Step 1c is the durable late job; a scheduled run sweeps both prefixes and ends with a final recursive delete of the activity collections (all parts attempted independently, done only after full success) and removes the fence at max(lateSweepDone+1h, authDeletedAt+70min) via compare-and-delete, deriving authDeletedAt from Auth absence when it was never recorded and never removing while the Auth user exists. Evidence: core/changes/2026-10-16-s02-06b-late-sweep.md.

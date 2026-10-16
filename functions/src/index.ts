@@ -52,6 +52,7 @@ import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
 import { bodyScanBucketName } from "./body_scan/flags";
 import { defaultFenceDeps, writeActivityAccountFence } from "./activity_streams/fence";
+import { defaultLateSweepDeps, recordAuthDeletedAt } from "./activity_streams/late_sweep";
 import { runIndependentCleanups, sweepActivityStreamObjects } from "./activity_streams/sweep";
 import { INTERACTIVE, RARE, WEBHOOK, RUNTIME_SA } from "./scaling";
 import {
@@ -938,6 +939,7 @@ const WEBHOOK_EVENT_FOR_DELETED_ACCOUNT = "webhook_event_for_deleted_account";
 const WEBHOOK_BOOKING_ID_MISSING = "webhook_booking_confirm_missing_booking_id";
 const WEBHOOK_BOOKING_DOC_MISSING = "webhook_booking_confirm_booking_doc_missing";
 const DELETE_ACCOUNT_REVOKE_TOKENS_FAILED = "delete_account_revoke_tokens_failed";
+const DELETE_ACCOUNT_AUTH_DELETED_AT_FAILED = "delete_account_auth_deleted_at_failed";
 // The alertable account-deletion events (DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
 // ACCOUNT_DELETION_RECONCILE_EXHAUSTED, ACCOUNT_DELETION_RECONCILE_RUN_FAILED)
 // are imported from ./monitoring/log_signals, the source of truth the alert
@@ -2736,6 +2738,20 @@ export const deleteAccount = onCall(
       }
     }
 
+    // Step 3b — S02 design 6.1 step 3: record `authDeletedAt` on the activity
+    // fence document (the earliest value is kept). Non-fatal: if this write is
+    // lost, the late sweep derives the value from Auth user absence at its first
+    // run and uses that later, safe time.
+    try {
+      await recordAuthDeletedAt(defaultLateSweepDeps, uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_AUTH_DELETED_AT_FAILED, {
+        event: DELETE_ACCOUNT_AUTH_DELETED_AT_FAILED,
+        uid,
+        err,
+      });
+    }
+
     // Step 4 — final idempotent sweep, AFTER the Auth user is gone. Cancelling
     // Stripe makes Stripe emit `customer.subscription.deleted`; a webhook
     // handler that passed its Auth-existence guard between the Step 2 wipe and
@@ -3022,6 +3038,8 @@ export { createActivityStreamUpload } from "./activity_streams/create_upload";
 export { commitActivityStream } from "./activity_streams/commit_stream";
 // Cloud stream retention (S02-05b, design 5.3): daily purge of due streams plus the recompute continuation.
 export { purgeExpiredActivityStreams } from "./activity_streams/purge";
+// Late sweep of the account-deletion fence job (S02-06b, design 6.1): every 5 minutes.
+export { sweepLateActivityStreams } from "./activity_streams/late_sweep";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until
