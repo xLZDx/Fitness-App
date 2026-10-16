@@ -56891,3 +56891,7 @@ Decision: A mutation writes a new generation directory and the COMMIT marker ren
 ## 2026-10-16 - Commit: S02-02: recovery pass
 
 Decision: Recovery selects the highest generation with a valid COMMIT, deletes everything uncommitted, and treats CURRENT and the index as rebuildable caches. Evidence: core/changes/2026-10-16-s02-02-recovery-pass.md.
+
+## 2026-10-16 - Commit: S02-02: journal repository API, tombstone, sync state, wipe and sign-out hooks
+
+Decision: The journal serialises every operation through one mutex, acknowledges only after the COMMIT rename, keeps tombstone and synced state inside record.json, and exposes sign-out and export as interfaces. Evidence: core/changes/2026-10-16-s02-02-journal-api.md.
