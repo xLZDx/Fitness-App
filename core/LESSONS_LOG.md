@@ -255,3 +255,11 @@ Rule next time: when a contract changes, grep the tests for the old behaviour an
 
 Kind: SHORTCOMING (tooling).
 Facts: the decision-references hook treated a parenthesised word such as "(s02)" in a quoted commit subject as an unexplained decision reference and blocked several replies; the quote line was changed to commit hashes only. Rule next time: quote hashes, not commit subjects, in evidence lines.
+
+## 2026-10-16 - S02 consent path assumed a single account (round-12 MAJOR)
+
+Kind: FAILURE.
+Facts: the external gate (round 12) found that AccountScopedConsentStore kept one mutable store for all accounts and the startup closure had no uid re-check after syncAll, so a delayed sign-in of account A could overwrite B and B could upload under A consent. Evidence: core/changes/2026-10-16-s02-remediation-h-a-consent-store-and-settings-client.md.
+Root cause: the original consent wiring was designed for a single account; the earlier internal reviews were scoped to the remediation diff, so the consent path was never in scope; the epic tests never interleaved two accounts through the consent path.
+Layers: author (design), reviewers (scope), tests (no interleaving) missed it; the external gate caught it.
+Rule next time: after a defect class is found, sweep the whole surface by class (every async chain that reads or writes per-account state) and add a mid-flight account switch test to every async chain.

@@ -192,22 +192,75 @@ final activityBindRetryTimerFactoryProvider =
         (_) => (delay, callback) => Timer(delay, callback));
 
 /// Consent cache scoped to the signed-in account. Unknown (so: no upload)
-/// until [signIn] has run.
+/// until [signIn] has run. It holds ONE account at a time; [boundUid] is the
+/// uid its cached consent belongs to. Every [signIn] and [signOut] starts a new
+/// generation: a [signIn] that finishes after a newer [signIn] or [signOut]
+/// does nothing. No stored consent key is ever deleted here.
 class AccountScopedConsentStore implements CloudStreamsConsentStore {
   CloudStreamsConsentStore? _inner;
+  String? _boundUid;
+  int _generation = 0;
 
-  Future<void> signIn(String uid) async {
-    _inner = SharedPrefsCloudStreamsConsentStore(
-        await SharedPreferences.getInstance(), uid);
+  /// Completes (never with an error) when the current generation's store is
+  /// open, so a read or write issued meanwhile waits instead of being dropped.
+  Future<void> _ready = Future<void>.value();
+
+  @override
+  String? get boundUid => _boundUid;
+
+  /// Binds the store to [uid]. [boundUid] is [uid] at once; reads and writes
+  /// wait for the preferences to open. Completes without effect when a newer
+  /// [signIn] or [signOut] happened meanwhile.
+  Future<void> signIn(String uid) {
+    final myGeneration = ++_generation;
+    _inner = null;
+    _boundUid = uid;
+    final opening = _open(uid, myGeneration);
+    _ready = opening.then<void>((_) {}, onError: (Object _) {});
+    return opening;
+  }
+
+  Future<void> _open(String uid, int myGeneration) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (myGeneration != _generation) return;
+      _inner = SharedPrefsCloudStreamsConsentStore(prefs, uid);
+    } catch (_) {
+      if (myGeneration == _generation) _boundUid = null;
+      rethrow;
+    }
+  }
+
+  /// Unbinds the store (account change or sign-out) and invalidates any
+  /// in-flight [signIn]. Stored consent of every account stays untouched.
+  void signOut() {
+    _generation++;
+    _inner = null;
+    _boundUid = null;
+    _ready = Future<void>.value();
   }
 
   @override
-  Future<CloudStreamsConsent> read() async =>
-      await _inner?.read() ?? CloudStreamsConsent.unknown;
+  Future<CloudStreamsConsent> read() async {
+    final myGeneration = _generation;
+    await _ready;
+    if (myGeneration != _generation) return CloudStreamsConsent.unknown;
+    return await _inner?.read() ?? CloudStreamsConsent.unknown;
+  }
 
+  /// Persists [value] for the bound account. Throws [StateError] when no
+  /// account is bound (or it changed while waiting): a write is never dropped
+  /// silently.
   @override
-  Future<void> write(CloudStreamsConsent value) async =>
-      _inner?.write(value);
+  Future<void> write(CloudStreamsConsent value) async {
+    final myGeneration = _generation;
+    await _ready;
+    final inner = _inner;
+    if (myGeneration != _generation || inner == null) {
+      throw StateError('consent store is not bound to an account');
+    }
+    await inner.write(value);
+  }
 }
 
 final activityConsentStoreProvider =

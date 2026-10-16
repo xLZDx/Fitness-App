@@ -29,11 +29,20 @@ enum CloudStreamsConsent { unknown, granted, withdrawn }
 /// Persistence of the cached consent (per account is the caller's job: pass a
 /// store scoped to the signed-in uid).
 abstract class CloudStreamsConsentStore {
+  /// The uid the cached consent of this store belongs to; null when the store
+  /// is not (yet) bound to an account.
+  String? get boundUid;
+
   Future<CloudStreamsConsent> read();
   Future<void> write(CloudStreamsConsent value);
 }
 
 class InMemoryCloudStreamsConsentStore implements CloudStreamsConsentStore {
+  InMemoryCloudStreamsConsentStore({this.boundUid});
+
+  @override
+  String? boundUid;
+
   CloudStreamsConsent _value = CloudStreamsConsent.unknown;
   @override
   Future<CloudStreamsConsent> read() async => _value;
@@ -44,10 +53,14 @@ class InMemoryCloudStreamsConsentStore implements CloudStreamsConsentStore {
 /// Keeps the cached consent in `SharedPreferences`, one key per account.
 class SharedPrefsCloudStreamsConsentStore implements CloudStreamsConsentStore {
   SharedPrefsCloudStreamsConsentStore(this._prefs, String uid)
-      : _key = 'activity.cloudStreamsConsent.$uid';
+      : boundUid = uid,
+        _key = 'activity.cloudStreamsConsent.$uid';
 
   final SharedPreferences _prefs;
   final String _key;
+
+  @override
+  final String? boundUid;
 
   @override
   Future<CloudStreamsConsent> read() async {
@@ -79,6 +92,14 @@ ActivityCloudSettingsCall cloudFunctionsSettingsCall({FirebaseFunctions? functio
   };
 }
 
+/// Thrown when the signed-in account changed while a consent operation was
+/// running: nothing was recorded for the new account.
+class ConsentAccountChangedException implements Exception {
+  const ConsentAccountChangedException();
+  @override
+  String toString() => 'ConsentAccountChangedException';
+}
+
 class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   ActivityCloudSettingsClient({
     required ActivityCloudSettingsCall call,
@@ -89,28 +110,99 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   final ActivityCloudSettingsCall _call;
   final CloudStreamsConsentStore _store;
   CloudStreamsConsent _state = CloudStreamsConsent.unknown;
+  String? _consentUid;
+
+  /// Bumped by every state change, [reset] and [load]; a [load] whose version
+  /// is no longer current discards its result (it must never overwrite a newer
+  /// grant or withdraw, nor another account's state).
+  int _version = 0;
+
+  /// Uids whose withdrawal is applied in memory but could not be persisted: a
+  /// later [load] must not resurrect the stale stored `granted` for them.
+  final Set<String?> _unpersistedWithdrawals = {};
 
   CloudStreamsConsent get state => _state;
 
+  /// The uid the in-memory state belongs to; null while unknown.
   @override
-  bool get isGranted => _state == CloudStreamsConsent.granted;
+  String? get consentUid => _consentUid;
 
-  /// Loads the cached state (call once at start).
-  Future<void> load() async => _state = await _store.read();
+  /// The uid of the account the consent store is bound to right now.
+  String? get accountUid => _store.boundUid;
 
-  /// Records consent. The cache flips to granted only after the server accepted.
+  /// Granted only when the state belongs to the store's current account.
+  @override
+  bool get isGranted =>
+      _state == CloudStreamsConsent.granted && _consentUid == _store.boundUid;
+
+  /// Forgets the in-memory state (account change): consent is unknown and
+  /// belongs to no uid. Stored consent of any account is NOT deleted.
+  void reset() {
+    _version++;
+    _state = CloudStreamsConsent.unknown;
+    _consentUid = null;
+  }
+
+  void _requireUid(String? uid) {
+    if (_store.boundUid != uid) throw const ConsentAccountChangedException();
+  }
+
+  /// Loads the cached state of the store's current account (call after the
+  /// store is bound). The result is applied only when no newer state change
+  /// happened and the store is still bound to the same uid.
+  Future<void> load() async {
+    final uid = _store.boundUid;
+    final myVersion = ++_version;
+    var value = await _store.read();
+    if (myVersion != _version || _store.boundUid != uid) return;
+    if (_unpersistedWithdrawals.contains(uid) &&
+        value != CloudStreamsConsent.withdrawn) {
+      value = CloudStreamsConsent.withdrawn;
+    }
+    _state = value;
+    _consentUid = uid;
+  }
+
+  /// Records consent. The cache flips to granted only after the server accepted
+  /// and the value was persisted, and only while the account is the one the
+  /// call started for; otherwise [ConsentAccountChangedException] is thrown and
+  /// nothing is written for the other account.
   Future<void> grant() async {
+    final uid = _store.boundUid;
     await _call({
       'cloudStreams': {'granted': true, 'version': kCloudStreamsConsentVersion},
     });
-    await _setState(CloudStreamsConsent.granted);
+    _requireUid(uid);
+    await _store.write(CloudStreamsConsent.granted);
+    _requireUid(uid);
+    _version++;
+    _state = CloudStreamsConsent.granted;
+    _consentUid = uid;
+    _unpersistedWithdrawals.remove(uid);
   }
 
   /// Withdraws consent. The local cache flips FIRST, so uploads stop even when
   /// the call fails (a failed call is rethrown; calling again is idempotent).
-  /// [deleteExisting] asks the server to start the bulk stream deletion.
+  /// The withdrawal is persisted before this returns. When the account changed
+  /// meanwhile the server call is NOT sent (it would hit the other account) and
+  /// [ConsentAccountChangedException] is thrown. [deleteExisting] asks the
+  /// server to start the bulk stream deletion.
   Future<void> withdraw({bool deleteExisting = false}) async {
-    await _setState(CloudStreamsConsent.withdrawn);
+    final uid = _store.boundUid;
+    _version++;
+    _state = CloudStreamsConsent.withdrawn;
+    _consentUid = uid;
+    _unpersistedWithdrawals.add(uid);
+    Object? persistError;
+    StackTrace? persistStack;
+    try {
+      await _store.write(CloudStreamsConsent.withdrawn);
+      _unpersistedWithdrawals.remove(uid);
+    } catch (e, s) {
+      persistError = e;
+      persistStack = s;
+    }
+    _requireUid(uid);
     await _call({
       'cloudStreams': {
         'granted': false,
@@ -118,11 +210,9 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
         if (deleteExisting) 'deleteExisting': true,
       },
     });
-  }
-
-  Future<void> _setState(CloudStreamsConsent v) async {
-    _state = v;
-    await _store.write(v);
+    if (persistError != null) {
+      Error.throwWithStackTrace(persistError, persistStack!);
+    }
   }
 }
 
@@ -142,7 +232,10 @@ class ActivityConsentWithdrawal {
 
   final ActivityCloudSettingsClient _settings;
   final ActivityStreamUploader _uploader;
-  bool _deleteRequested = false;
+
+  /// Accounts for which the bulk deletion was requested (once per account: a
+  /// request of account A never swallows the request of account B).
+  final Set<String?> _deleteRequested = {};
 
   /// Stops queued uploads immediately, records the withdrawal and returns the
   /// offer. Local journal data and summaries are not touched.
@@ -153,17 +246,20 @@ class ActivityConsentWithdrawal {
   }
 
   /// The user chose "delete my cloud streams now". Calls
-  /// `setActivityCloudSettings` with `deleteExisting` exactly once per instance;
-  /// further calls are no-ops. Summaries and local data stay.
+  /// `setActivityCloudSettings` with `deleteExisting` exactly once per account;
+  /// further calls for the same account are no-ops. The account is captured at
+  /// the start; the settings client refuses (throws) when it changed meanwhile.
+  /// Summaries and local data stay.
   Future<void> deleteCloudStreamsNow() async {
-    if (_deleteRequested) return;
-    _deleteRequested = true;
+    final uid = _settings.accountUid;
+    if (_deleteRequested.contains(uid)) return;
+    _deleteRequested.add(uid);
     try {
       await _settings.withdraw(deleteExisting: true);
     } catch (_) {
       // Let the user try again after a failure: only a call the server may
       // have seen counts as "once".
-      _deleteRequested = false;
+      _deleteRequested.remove(uid);
       rethrow;
     }
   }

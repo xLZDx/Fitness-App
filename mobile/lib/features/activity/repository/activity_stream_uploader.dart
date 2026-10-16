@@ -57,6 +57,10 @@ const int kMaxCompressedStreamBytes = 5 * 1024 * 1024;
 /// client). Unknown or missing is `false`.
 abstract class CloudStreamsConsentView {
   bool get isGranted;
+
+  /// The uid the consent state belongs to; null when unknown. The uploader
+  /// uploads only when this equals the uid its run is bound to.
+  String? get consentUid;
 }
 
 /// A server refusal with a bare code (never retried, except none).

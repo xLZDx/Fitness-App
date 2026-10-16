@@ -57582,3 +57582,7 @@ Decision: the I07 gzip-header assertion on random ciphertext is limited to the s
 ## 2026-10-16 - Commit: S02 documents after remediation E, F and G (report pair, state, lessons)
 
 Decision: the S02 code-gate report pair, the SDLC state and the retrospective draft are updated to the situation after the round-11 REJECT: three MAJOR findings remediated (E1, E2), a second independent review round fixed in F and G, test epics 11 to 13 green per the test agents, resubmission as round 12. Evidence: server, rules and indexes are unchanged since their last runs (git diff --stat empty for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since ac9b252f, and for the rules paths since 479b7342); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md. Accepted limits are recorded in design section 17 item 23 and in the report. Evidence: core/changes/2026-10-16-s02-documents-after-remediation.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A consent store and settings client bound to the account
+
+Decision: the consent store and the settings client carry the uid their state belongs to; a stale sign-in cannot overwrite a newer account, load/grant/withdraw refuse to act for another account, a write with no account throws, and the delete-request guard is per account. Stored consent is never deleted on account change. Evidence: core/changes/2026-10-16-s02-remediation-h-a-consent-store-and-settings-client.md.
