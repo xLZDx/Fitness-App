@@ -26,7 +26,7 @@ Directory `mobile/`, head before this commit `43459c7b` plus the working tree of
 flutter test test/features/activity/repository/journal_io_error_remediation_test.dart test/features/activity/repository/journal_read_failure_callers_test.dart test/features/activity/repository/file_activity_journal_test.dart test/features/activity/repository/file_activity_journal_order_test.dart test/features/activity/repository/file_activity_journal_generation_test.dart test/features/activity/repository/file_activity_journal_commit_cases_test.dart test/features/activity/repository/file_activity_journal_recovery_test.dart test/features/activity/repository/file_activity_journal_fault_test.dart test/features/activity/repository/file_activity_journal_crash_test.dart test/features/activity/repository/file_activity_journal_encryption_test.dart test/features/activity/repository/file_activity_journal_overrides_test.dart test/features/activity/repository/activity_stream_upload_test.dart test/features/activity/repository/activity_stream_upload_retry_test.dart test/features/activity/repository/activity_sync_test.dart
 ```
 
-Summary line: `01:04 +222: All tests passed!`
+Summary line (final run at head `62ab9f9e`, same command): `02:06 +222: All tests passed!`
 
 ### Not covered
 

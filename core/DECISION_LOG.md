@@ -57341,3 +57341,7 @@ Evidence: epic 9b run 02:22 +156 all passed; details in S02_TEST_FINDINGS_EPIC9.
 ## 2026-10-16 - Commit: S02 test epic 8a: findings and final run
 
 Decision: Epic 8a closes green: 26 suites and 744 tests of the activity directory pass.
+
+## 2026-10-16 - Commit: S02 test epic 9a: final run evidence
+
+Decision: the epic 9a findings record the complete 14-file run at head 62ab9f9e (222 tests green).
