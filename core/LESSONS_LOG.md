@@ -303,3 +303,9 @@ Facts: onSignOut asked the user and then wiped the journal bound at that moment;
 Root cause: the author of these hooks did not scope them to the account; reviews were scoped to the remediation diff, so latent callers were never in scope.
 Layers: author and reviewers missed it; the class sweep caught it.
 Rule next time: an interface that will gain a caller later is reviewed for account binding now, not when the caller lands.
+
+## 2026-10-16 - H-B documents written with the code
+
+Kind: SUCCESS.
+Facts: the test notes name the oracle for each guard and the stale fakes in the same batch as the code. Evidence: core/changes/2026-10-16-s02-remediation-h-b-docs.md.
+Why it worked: oracles written from the findings, each tied to a guard whose removal must fail it.

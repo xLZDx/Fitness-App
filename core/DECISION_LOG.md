@@ -57606,3 +57606,7 @@ Decision: every asynchronous step of the app-start sync and upload re-verifies t
 ## 2026-10-16 - Commit: S02 remediation H-B wipe coordinator and export bound to the account
 
 Decision: onSignOut wipes the uid captured before the prompts (wipeForUid) and aborts on a change; exportAll aborts the whole export with ActivityExportAccountChanged when the bound uid changes, and keeps reading each entry by id because the listing has no streams. Evidence: core/changes/2026-10-16-s02-remediation-h-b-wipe-and-export.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B design item 24 and test notes
+
+Decision: design section 17 item 24 records remediation H; the H-B test notes list the oracles and stale fakes. Evidence: core/changes/2026-10-16-s02-remediation-h-b-docs.md.
