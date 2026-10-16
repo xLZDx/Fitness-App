@@ -119,6 +119,7 @@ export interface FakeObject {
   content: Buffer;
   contentType: string;
   generation: number;
+  createdMs: number;
 }
 
 export type BucketHook = (phase: "before" | "after", op: string, path: string) => Promise<void> | void;
@@ -138,7 +139,7 @@ export class FakeBucket implements StreamListingBucket {
 
   put(path: string, content: Buffer, contentType = "application/gzip"): number {
     const generation = this.nextGeneration++;
-    this.objects.set(path, { content: Buffer.from(content), contentType, generation });
+    this.objects.set(path, { content: Buffer.from(content), contentType, generation, createdMs: Date.now() });
     return generation;
   }
   keys(prefix = ""): string[] {
@@ -215,8 +216,18 @@ export class FakeBucket implements StreamListingBucket {
     return [];
   }
 
-  async getFiles(): Promise<any> {
-    throw new Error("fake bucket: getFiles is not modelled in epic 6a");
+  async getFiles(opts: { prefix: string; maxResults?: number; startOffset?: string }): Promise<any> {
+    await this.step("before", "getFiles", opts.prefix);
+    const names = this.keys(opts.prefix).filter((n) => !opts.startOffset || n >= opts.startOffset);
+    const size = opts.maxResults ?? 1000;
+    const slice = names.slice(0, size);
+    const self = this;
+    const files = slice.map((n) => ({
+      name: n,
+      metadata: { timeCreated: new Date(self.objects.get(n)!.createdMs).toISOString() },
+      delete: (o?: { ignoreNotFound?: boolean }) => self.file(n).delete(o),
+    }));
+    return [files, names.length > size ? { next: true } : null];
   }
 }
 

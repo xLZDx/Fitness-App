@@ -57167,3 +57167,7 @@ Decision: A concurrent duplicate commit of the same upload id returns already_st
 ## 2026-10-16 - Commit: S02 test epic 6a: settings, consent, delete, fence, pinned quota set, findings
 
 Decision: Epic 6a closes with 669 tests green and two small production fixes; the scaling export registry lists the ten S02 exports and treats the three S02 scheduled jobs as single-flight.
+
+## 2026-10-16 - Commit: S02 test epic 6b: retention, recompute, purge and index limits (S02-05b)
+
+Decision: Plan F18 (lengthening resurrects) is wrong; the design says lengthening does not resurrect an expired row. The shared Firestore fake now models index limits and null/type range exclusion so the purge and recompute queries are checked against the real index file.
