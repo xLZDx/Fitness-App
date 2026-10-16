@@ -57530,6 +57530,10 @@ Decision: the bind retry schedule and the deleting-account skip are pinned by te
 
 Decision: the single-flight and failed-id reset of the uploader on `cancelQueued()` are pinned by blocked-completer tests, including the old-epoch failure case; no production change. Evidence: core/changes/2026-10-16-s02-test-epic12b-uploader-switch.md.
 
+## 2026-10-16 - Commit: S02 test epic 12b (4) wipe and rebind e2e, complete runs, findings
+
+Decision: the throwing-close wipe test failure is a test defect (lazy key), the assertion is kept; the import of the deleting-uid provider into core/wiring needs no change (guards scan data/ only). Evidence: core/changes/2026-10-16-s02-test-epic12b-e2e-and-findings.md.
+
 ## 2026-10-16 - Commit: S02 test epic 12a (1) pass identity, caches, unbound, retry tests
 
 Decision: the F1 contract (pass identity, cache reset, unbound visibility, fallback timer) is pinned at the repository seam with a real scoped journal and a blocking backend; the E2 "no seventh attempt" assertion is replaced by "six attempts plus one 60-minute fallback timer" per design 17 item 23. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-pass-identity.md.

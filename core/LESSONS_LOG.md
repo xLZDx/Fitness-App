@@ -164,6 +164,9 @@ Kind: SUCCESS. The binding provider, written without a compiler, met every F2 no
 ## 2026-10-16 - S02 test epic 12b (3): uploader account-switch tests
 Kind: SUCCESS. The uploader reset (slot, per-id map, failed ids, epoch) held for all seven oracles. Test-side slip (mine): a fake whose fault hook runs before the blocking hook never blocked, so the first version of the old-epoch test proved nothing; rule: assert the precondition (the call is really blocked) before the action.
 
+## 2026-10-16 - S02 test epic 12b (4): wipe and rebind e2e
+Kind: SHORTCOMING (mine). My throwing-close wipe test assumed `bindUid` creates the key; the journal creates it lazily, so the test failed at its own precondition. I classified it from the code and the notes as a test defect and fixed the precondition, not the assertion. Layer: author of the test (me) missed it; the run caught it. The end-to-end journey (delete A, re-emit A, B signs in) passed on the first run after the earlier production fix. Rule: when a precondition check fails, read what the production code really guarantees before choosing test or production.
+
 ## 2026-10-16 - S02 test epic 12a (1): pass identity, caches, unbound, retry tests
 Kind: SHORTCOMING (stale oracle) and SUCCESS.
 Facts: the E2 test "60 s, 2, 4, 8, 15, 15 min then no seventh attempt" failed on the first compile-and-run of F1 (expected 6 timers, got 7) because the F1 fallback timer changed the contract and the implementers ran nothing (core/changes/2026-10-16-s02-test-epic12a-pass-identity.md). The F1 production code itself compiled and met all 33 new oracles on the first run.
