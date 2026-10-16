@@ -6,13 +6,16 @@
 /// syncs and the app behaves as it did before S02.
 library;
 
-import 'dart:async' show unawaited;
+import 'dart:async' show Timer, unawaited;
 
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/account_deletion/data/local_data_wipe.dart';
+import '../../features/account_deletion/state/account_deletion_providers.dart'
+    show accountBeingDeletedUidProvider;
 import '../../features/activity/repository/activity_aware_local_data_wipe.dart';
 import '../../features/activity/repository/activity_journal.dart';
 import '../../features/activity/repository/activity_cloud_settings_client.dart';
@@ -66,6 +69,7 @@ List<Override> activityRootOverrides({
           journal: journal,
           backend: FirestoreActivitySummaryBackend(),
           tombstonePusher: CloudFunctionsActivityTombstonePusher().push,
+          authUid: () => FirebaseAuth.instance.currentUser?.uid,
         );
         ref.onDispose(repo.dispose);
         return repo;
@@ -91,18 +95,79 @@ final activityJournalBindingProvider = Provider<void>((ref) {
     default:
       return;
   }
+  final timerFactory = ref.read(activityBindRetryTimerFactoryProvider);
+  // At most one pending retry; every new auth value (or disposal) bumps
+  // [generation], which cancels the pending retry and invalidates running ones.
+  Timer? pending;
+  var generation = 0;
+  ref.onDispose(() {
+    generation++;
+    pending?.cancel();
+    pending = null;
+  });
+
+  // The uid this wiring may bind right now: null when no user, an empty uid or
+  // the account whose deletion is in progress (never re-create its scope).
+  String? bindableUid() {
+    final uid = ref.read(authUserProvider).valueOrNull?.uid;
+    if (uid == null || uid.isEmpty) return null;
+    if (uid == ref.read(accountBeingDeletedUidProvider)) return null;
+    return uid;
+  }
+
+  Future<void> attempt(String? uid, int myGeneration, int retryIndex) async {
+    var bound = false;
+    try {
+      bound = await scoped.bindUid(uid);
+    } catch (e) {
+      debugPrint('activity: journal bind failed (${e.runtimeType})');
+    }
+    // Unbinding (null) and a successful bind are final. A failed bind of a uid
+    // would otherwise leave the journal unbound for the whole session.
+    if (bound || uid == null) return;
+    if (myGeneration != generation) return;
+    if (retryIndex >= kActivityBindRetryDelays.length) {
+      debugPrint('activity: journal bind gave up after $retryIndex retries');
+      return;
+    }
+    pending?.cancel();
+    pending = timerFactory(kActivityBindRetryDelays[retryIndex], () {
+      pending = null;
+      if (myGeneration != generation) return;
+      // Retry only while the same account is still the one to bind.
+      if (bindableUid() != uid) return;
+      unawaited(attempt(uid, myGeneration, retryIndex + 1));
+    });
+  }
+
   ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
     if (!next.hasValue) return;
+    generation++;
+    pending?.cancel();
+    pending = null;
     final uid = next.value?.uid;
-    unawaited(() async {
-      try {
-        await scoped.bindUid(uid == null || uid.isEmpty ? null : uid);
-      } catch (e) {
-        debugPrint('activity: journal bind failed (${e.runtimeType})');
-      }
-    }());
+    final deleting = ref.read(accountBeingDeletedUidProvider);
+    final target = (uid == null || uid.isEmpty || uid == deleting) ? null : uid;
+    unawaited(attempt(target, generation, 0));
   }, fireImmediately: true);
 });
+
+/// Delays before the 1st..5th retry of a failed journal bind (at most 5).
+const List<Duration> kActivityBindRetryDelays = [
+  Duration(seconds: 5),
+  Duration(seconds: 15),
+  Duration(seconds: 60),
+  Duration(minutes: 5),
+  Duration(minutes: 5),
+];
+
+/// Creates the timer of a bind retry; tests override it with a fake.
+typedef ActivityBindRetryTimerFactory = Timer Function(
+    Duration delay, void Function() callback);
+
+final activityBindRetryTimerFactoryProvider =
+    Provider<ActivityBindRetryTimerFactory>(
+        (_) => (delay, callback) => Timer(delay, callback));
 
 /// Consent cache scoped to the signed-in account. Unknown (so: no upload)
 /// until [signIn] has run.

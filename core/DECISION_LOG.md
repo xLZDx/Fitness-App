@@ -57497,3 +57497,7 @@ Decision: every serialized sync operation carries a pass identity (account epoch
 ## 2026-10-16 - Commit: S02 remediation F2 (4/4) uploader state reset on account change
 
 Decision: `cancelQueued()` drops the uploader single-flight state and failed ids and bumps an epoch; slot cleanup is identity-guarded. Evidence: core/changes/2026-10-16-s02-remediation-f2-uploader-switch.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (3/4) binding retry, deleting skip, authUid
+
+Decision: the journal binding retries a failed bind with bounded backoff through an injectable timer factory, never binds the account being deleted, and the sync repository receives an authUid supplier. Evidence: core/changes/2026-10-16-s02-remediation-f2-binding.md.

@@ -121,3 +121,10 @@ Facts: `_runInFlight`, `_entryInFlight` and `_failedThisStart` of the stream upl
 Root cause: the same class as the E2 retry-timer defect: in-memory state next to an account-scoped store was not reset on the account change; the lesson from epic 11b was applied to the sync repository only, not searched across the other components.
 Layers: the author of E1 and the epic 11a tests missed it (no test switched accounts through the uploader); the independent Flutter reviewer caught it.
 Rule next time: after fixing one account-scoped state defect, grep every in-memory field of every component wired to the same auth stream.
+
+## 2026-10-16 - S02 remediation F2 (3/4): journal binding retry and deleting-account skip
+Kind: FAILURE.
+Facts: the binding provider discarded the bool of `bindUid`, so one transient secure-storage error left the journal unbound for the whole session, and it did not consult `accountBeingDeletedUidProvider` (core/changes/2026-10-16-s02-remediation-f2-binding.md).
+Root cause: a fail-closed API (returns false) was wired as fire-and-forget; nobody owned the retry.
+Layers: the author of E1 and the epic 11a wiring tests missed it (the fake never failed a bind); the independent reliability and silent-failure reviewers caught it.
+Rule next time: every fail-closed result must have a consumer that retries or surfaces it; test the failing first call.
