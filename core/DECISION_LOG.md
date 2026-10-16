@@ -57337,3 +57337,7 @@ Decision: Remediation A11, A13 and A16 are pinned with spies on the transaction 
 Decision: Epic 9b evidence is recorded in S02_TEST_FINDINGS_EPIC9.md; no production defect was found in remediation B2 client code.
 
 Evidence: epic 9b run 02:22 +156 all passed; details in S02_TEST_FINDINGS_EPIC9.md.
+
+## 2026-10-16 - Commit: S02 test epic 8a: findings and final run
+
+Decision: Epic 8a closes green: 26 suites and 744 tests of the activity directory pass.
