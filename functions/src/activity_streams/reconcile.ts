@@ -233,6 +233,12 @@ export async function reconcilePendingRow(
           contentSha256,
         });
         if (selected.alreadySelected) return "kept";
+        if (selected.expired === true) {
+          // Already due: the marker is cleared; remove this upload's objects (A7).
+          await deleteObject(bucket, promotedPath);
+          await deleteObject(bucket, quarantineObjectPath(uid, activityId, uploadId));
+          return "aborted";
+        }
         if (selected.previousPath !== undefined && selected.previousPath !== promotedPath) {
           await deleteObject(bucket, selected.previousPath).catch((err) => {
             // The repair itself succeeded; the previous object is retried by the object pass (A15).
@@ -579,7 +585,7 @@ export const reconcileActivityStreams = onSchedule(
     schedule: "every 5 minutes",
     region: "europe-west1",
     timeoutSeconds: 300,
-    memory: "256MiB",
+    memory: "1GiB",
     maxInstances: 1,
     concurrency: 1,
   },

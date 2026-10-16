@@ -17,6 +17,7 @@ import {
   MAX_COMPRESSION_RATIO,
   MAX_DECOMPRESSED_BYTES,
   MAX_DECOMPRESS_MS,
+  MAX_SAMPLES_PER_STREAM,
   CLOUD_STREAM_KINDS,
   type CloudStreamKind,
 } from "./schema";
@@ -82,6 +83,20 @@ export const defaultGunzipChunks: GunzipChunks = (compressed) => {
   return gunzip as unknown as AsyncIterable<Buffer>;
 };
 
+/** Most separators a valid payload can hold: samples per stream x 8 values per sample x kinds. */
+const MAX_SEPARATORS = MAX_SAMPLES_PER_STREAM * 8 * CLOUD_STREAM_KINDS.length;
+
+function countCommas(bytes: Buffer): number {
+  let n = 0;
+  let i = bytes.indexOf(0x2c);
+  while (i !== -1) {
+    n += 1;
+    if (n > MAX_SEPARATORS) return n;
+    i = bytes.indexOf(0x2c, i + 1);
+  }
+  return n;
+}
+
 class ByteReject extends Error {
   constructor(readonly code: UploadRejectCode) {
     super(code);
@@ -143,6 +158,10 @@ export async function validateUploadedStream(
     }
 
     const json = await inflateBounded(compressed, opts);
+    // Cheap element-count bound BEFORE the parse (A8): 32 MiB of `1,` would otherwise build a
+    // 16M-element array. Separators are counted on the raw bytes; the bound is far above any
+    // legitimate payload and the exact limits are still enforced by the schema.
+    if (countCommas(json) > MAX_SEPARATORS) return reject("too_many");
     let parsed: unknown;
     try {
       // `fatal: true` rejects invalid UTF-8 instead of replacing it.

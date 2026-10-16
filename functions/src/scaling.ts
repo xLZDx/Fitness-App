@@ -313,6 +313,20 @@ export const RARE: Capped<CallableOptions> = {
 };
 
 /**
+ * `commitActivityStream` (S02, A8): it downloads a quarantine object of up to 5 MiB, inflates
+ * it to at most 32 MiB and parses the JSON, so the 256 MiB default is too tight for several
+ * concurrent commits. Explicit memory and a low per-instance concurrency keep the worst case
+ * (concurrency x ~100 MiB of parse structures) well under the limit.
+ */
+export const ACTIVITY_COMMIT: Capped<CallableOptions> = {
+  region: REGION,
+  maxInstances: 5,
+  memory: "1GiB",
+  concurrency: 4,
+  enforceAppCheck: APP_CHECK_ENFORCED,
+};
+
+/**
  * The four G1 AI callables: coach advice, exercise generation, equipment
  * recognition, machine description.
  *

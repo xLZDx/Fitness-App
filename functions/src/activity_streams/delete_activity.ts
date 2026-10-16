@@ -136,7 +136,16 @@ export async function deleteActivityObjects(
   activityId: string,
 ): Promise<void> {
   const bucket = deps.bucket();
-  if (bucket === undefined) return;
+  if (bucket === undefined) {
+    // An unset bucket is a no-op only when no stream row exists (A10). A stored or pending row
+    // means objects may exist that cannot be reached: fail, keep the row, and say so loudly.
+    const row = await deps.firestore().doc(activityStreamRowPath(uid, activityId)).get();
+    if (row.exists) {
+      log("error", { outcome: "bucket_unset_with_stream_row" });
+      throw new DeleteRefusal("delete_failed");
+    }
+    return;
+  }
   const prefixes = [activityStreamsPrefix(uid, activityId), activityQuarantinePrefix(uid, activityId)];
   let failed = false;
   for (const prefix of prefixes) {

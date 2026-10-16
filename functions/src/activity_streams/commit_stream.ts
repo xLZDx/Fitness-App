@@ -34,7 +34,7 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { RARE } from "../scaling";
+import { ACTIVITY_COMMIT } from "../scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_guard";
 import { assertFeatureEnabled } from "../feature_flags";
 import { MAX_COMPRESSED_BYTES, STREAM_PAYLOAD_SCHEMA } from "./schema";
@@ -200,6 +200,8 @@ interface Selected {
   alreadySelected: boolean;
   previousPath?: string;
   expiresAtMs: number | null;
+  /** `true` when the derived expiry was already due: nothing was stored, the pending marker is cleared. */
+  expired?: boolean;
 }
 
 /** Transaction 2: selects the promoted path in ONE write (design 5.2 item 2d). */
@@ -222,8 +224,22 @@ export async function selectPromotedObject(
     if (currentUploadId(row) !== req.uploadId) throw new UploadRefusal("superseded");
 
     const nowMs = deps.nowMs();
+    if (isExpiryDue(ctx.startUtcMs, ctx.retentionDays, nowMs)) {
+      // The expiry fell due between T1 and T2 (A7): never store an already-due object. Clear the
+      // pending marker exactly like T1 and let the caller delete the promoted object.
+      if (row.state === "pending") {
+        tx.delete(rowRef);
+      } else {
+        tx.update(rowRef, {
+          pendingUploadId: admin.firestore.FieldValue.delete(),
+          pendingContentSha256: admin.firestore.FieldValue.delete(),
+          pendingSince: admin.firestore.FieldValue.delete(),
+        });
+      }
+      return { alreadySelected: false, expiresAtMs: null, expired: true };
+    }
     const expiresAtMs = derivedExpiryMs(ctx.startUtcMs, ctx.retentionDays, nowMs);
-    const ts = (ms: number) => admin.firestore.Timestamp.fromMillis(ms);
+    const ts =(ms: number) => admin.firestore.Timestamp.fromMillis(ms);
     const del = admin.firestore.FieldValue.delete();
     const previousPath = row.state === "stored" ? strOf(row.objectPath) : undefined;
     tx.set(
@@ -366,6 +382,9 @@ export async function applyCommitActivityStream(
       contentSha256: validated.contentSha256,
     });
 
+    // The catch below deletes both of this commit's objects; the marker is already cleared.
+    if (selected.expired === true) throw new UploadRefusal("expired");
+
     await deleteQuietly(bucket, quarantinePath, "quarantine_cleanup_failed");
     if (selected.previousPath !== undefined && selected.previousPath !== promotedPath) {
       // After T2 only: a failure leaves an orphan the reconciler removes.
@@ -452,7 +471,7 @@ export async function handleCommitActivityStream(
   }
 }
 
-export const commitActivityStream = onCall(RARE, async (request) => {
+export const commitActivityStream = onCall(ACTIVITY_COMMIT, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "sign_in_required");
   noteAppCheck(request, "commitActivityStream");
   return handleCommitActivityStream(

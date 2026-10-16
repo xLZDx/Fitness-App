@@ -57243,3 +57243,7 @@ Decision: The withdrawal tests and the epic 7 findings file are recorded; the ep
 ## 2026-10-16 - Commit: S02 remediation A: reconciler deadline and bulk-delete fairness
 
 Decision: Bulk-delete jobs are ordered in memory by last attempt time over a bounded batch of 200 instead of adding a composite index, and every attempt is stamped before it runs.
+
+## 2026-10-16 - Commit: S02 remediation A: commit, download and delete hardening
+
+Decision: An already-due expiry at commit transaction 2 stores nothing; an unset bucket with a stream row is a failure for delete, never a silent no-op; the commit callable gets explicit 1GiB memory and concurrency 4.

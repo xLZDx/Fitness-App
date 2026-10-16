@@ -26,7 +26,9 @@ import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_g
 import { assertFeatureEnabled } from "../feature_flags";
 import { activityStreamBucket, type StreamBucket } from "./bucket";
 import { activityTombstoned, checkAccountFence, defaultFenceDeps, type FenceDeps } from "./fence";
-import { activityStreamRowPath, activityStreamsPrefix, isActivityId } from "./paths";
+import { activityStreamRowPath, activityStreamsPrefix, activitySummaryPath, isActivityId } from "./paths";
+import { activitySettingsPath, effectiveStreamRetentionDays, type StreamRetentionDays } from "./settings";
+import { isExpiryDue, timestampMs, type RowData } from "./upload_common";
 
 /** The quota action of this callable (design 5.4); also listed in `REDACTED_QUOTA_ACTIONS`. */
 export const DOWNLOAD_QUOTA_ACTION = "activityDownloadUrls";
@@ -119,11 +121,15 @@ export function classifyRow(
   activityId: string,
   tombstoned: boolean,
   row: Record<string, unknown> | undefined,
+  expiry?: { startUtcMs: number; retentionDays: StreamRetentionDays; nowMs: number },
 ): Plan {
   const notFound: Plan = { activityId, kind: "unavailable", code: "not_found" };
   if (tombstoned || row === undefined) return notFound;
   switch (row.state) {
     case "stored": {
+      if (expiry !== undefined && isExpiryDue(expiry.startUtcMs, expiry.retentionDays, expiry.nowMs)) {
+        return { activityId, kind: "unavailable", code: "expired" };
+      }
       const path = row.objectPath;
       const prefix = activityStreamsPrefix(uid, activityId);
       if (typeof path !== "string" || !path.startsWith(prefix) || path.length === prefix.length) {
@@ -154,15 +160,33 @@ export async function planDownloads(
     if (fence !== "clear") throw new DownloadRefusal(fence);
     return Promise.all(
       activityIds.map(async (activityId): Promise<Plan> => {
-        const [tombstoned, rowSnap] = await Promise.all([
+        const [tombstoned, rowSnap, summarySnap, settingsSnap] = await Promise.all([
           activityTombstoned(tx, deps, uid, activityId),
           tx.get(fs.doc(activityStreamRowPath(uid, activityId))),
+          tx.get(fs.doc(activitySummaryPath(uid, activityId))),
+          tx.get(fs.doc(activitySettingsPath(uid))),
         ]);
+        // A stored row whose DERIVED expiry is already due is expired even if the purge has not
+        // run yet (A7); the same arithmetic as the upload and commit callables.
+        const startUtcMs = summarySnap.exists
+          ? timestampMs((summarySnap.data() as RowData | undefined)?.startUtc)
+          : undefined;
+        const expiry =
+          startUtcMs === undefined
+            ? undefined
+            : {
+                startUtcMs,
+                retentionDays: effectiveStreamRetentionDays(
+                  settingsSnap.exists ? (settingsSnap.data() as RowData) : undefined,
+                ),
+                nowMs: deps.nowMs(),
+              };
         return classifyRow(
           uid,
           activityId,
           tombstoned,
           rowSnap.exists ? (rowSnap.data() as Record<string, unknown>) : undefined,
+          expiry,
         );
       }),
     );
