@@ -57421,3 +57421,7 @@ Decision: the complete rules set (9 suites, 953 tests) is green on head 479b7342
 ## 2026-10-16 - Commit: S02 code gate submission
 
 Decision: S02 enters phase 8 Gate; the report pair and the SDLC state are committed before the GPT-PM review so the approved head stays final. Evidence: core/changes/2026-10-16-s02-code-gate-submission.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (a) account-scoped journal class
+
+Decision: replace the device-wide journal plus owner marker by account-scoped journals (ownership is the location); this commit adds the scoped journal class and the per-scope key name. Evidence: core/changes/2026-10-16-s02-remediation-e1-scoped-journal.md.

@@ -116,12 +116,18 @@ class PlatformJournalSecureStorage implements JournalSecureStorage {
 }
 
 class SecureStorageJournalKeyProvider implements JournalKeyProvider {
-  SecureStorageJournalKeyProvider({JournalSecureStorage? storage})
-      : _storage = storage ?? const PlatformJournalSecureStorage();
+  /// [scopeId] (the account scope of an account-scoped journal) is appended to
+  /// the key name so each account's journal has its own key. Null keeps the
+  /// original single key name.
+  SecureStorageJournalKeyProvider({JournalSecureStorage? storage, String? scopeId})
+      : _storage = storage ?? const PlatformJournalSecureStorage(),
+        keyNameInUse = scopeId == null ? keyName : '$keyName.$scopeId';
 
-  /// One key per install: the journal is wiped on sign-out, so it never holds
-  /// two accounts.
+  /// Base key name. Without a scope there is one key per install.
   static const String keyName = 'activity_journal.key.v1';
+
+  /// The secure-storage key name this instance reads and writes.
+  final String keyNameInUse;
 
   final JournalSecureStorage _storage;
   Uint8List? _cached;
@@ -140,7 +146,7 @@ class SecureStorageJournalKeyProvider implements JournalKeyProvider {
   Future<Uint8List?> loadKey() async {
     final cached = _cached;
     if (cached != null) return cached;
-    final key = _decode(await _storage.read(keyName));
+    final key = _decode(await _storage.read(keyNameInUse));
     _cached = key;
     return key;
   }
@@ -151,7 +157,7 @@ class SecureStorageJournalKeyProvider implements JournalKeyProvider {
     if (existing != null) return existing;
     final rng = math.Random.secure();
     final fresh = Uint8List.fromList(List<int>.generate(32, (_) => rng.nextInt(256)));
-    await _storage.write(keyName, base64Encode(fresh));
+    await _storage.write(keyNameInUse,base64Encode(fresh));
     _cached = fresh;
     return fresh;
   }
@@ -160,7 +166,7 @@ class SecureStorageJournalKeyProvider implements JournalKeyProvider {
   Future<void> forget() async {
     _cached = null;
     try {
-      await _storage.delete(keyName);
+      await _storage.delete(keyNameInUse);
     } catch (_) {
       // Best effort: the data it protected is deleted first.
     }

@@ -43,6 +43,13 @@ class JournalKeyUnavailable extends JournalWriteFailure {
   const JournalKeyUnavailable(super.message, {super.cause, super.pending});
 }
 
+/// No account-scoped journal is bound (nobody signed in, or the bind failed):
+/// the write is refused so it can never land in another account's journal.
+class JournalUnbound extends JournalWriteFailure {
+  const JournalUnbound()
+      : super('no account journal is bound; write refused');
+}
+
 /// The id was deleted (tombstone) and a put for it was refused: delete wins
 /// (design 6.2).
 class JournalTombstonedException extends JournalException {
