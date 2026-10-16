@@ -57187,3 +57187,7 @@ Decision: Plan F39 expects activity_tombstones classified BOTH; the policy row r
 ## 2026-10-16 - Commit: S02 test epic 6b: story-map completeness lint F96 with mutated-copy proofs (S02-11)
 
 Decision: The blocking-criterion check uses the GPS-PRIV ids of plan section 7; named MAJOR/BLOCKER tokens of design sections 6.1, 6.2 and 10 are not machine-mapped and are recorded as not covered.
+
+## 2026-10-16 - Commit: S02 test epic 6b: findings and final epic run
+
+Decision: Epic 6b closes with 178 tests green and three small production fixes (policy path and audited call sites of the access checker, privacy paragraph); the late sweep erasing a live account's activity data after an aborted deletion is recorded as an open risk, not changed.
