@@ -57099,3 +57099,7 @@ Decision: Crash expectations follow the design (older generation removed after a
 ## 2026-10-16 - Commit: S02 test epic 2: crash, encryption, backup, wipe, ownership and overrides tests (I02-I04, I07-I10, I22, I24, I25, I29, I35, I36, I45)
 
 Decision: Backup exclusion test expects the real seven entries per section; read() treats a stream hash mismatch against the COMMIT marker as stream-lost.
+
+## 2026-10-16 - Commit: S02 test epic 2: I05 synced marker and replay convergence, epic 2 findings
+
+Decision: A replay with an unknown base marks synced when the merged summary equals the server, instead of writing the same content with a higher rev.

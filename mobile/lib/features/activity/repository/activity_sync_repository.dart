@@ -493,7 +493,7 @@ class ActivitySyncRepository {
       );
     }
     final merged = a.summary!;
-    if (base != null && summariesEqual(merged, server)) {
+    if (summariesEqual(merged, server)) {
       // Local equals the server on every field (lost acknowledgement, or a
       // resolution that changed nothing): no write, no spurious rev bump.
       return _markStored(current, _clean(server), summaryRev(server));
