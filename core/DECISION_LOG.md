@@ -56799,3 +56799,7 @@ Decision: the S02 design applies all 24 internal review findings (tombstone with
 ## 2026-10-16 - Commit: S02 test plan and summary revision counter
 
 Decision: summary ordering uses a client-incremented rev enforced strictly increasing by rules instead of a server stamp, because the summary is an offline client write; resurrection after delete is stopped by the tombstone. Test plan: 181 planned tests, 5 more for rev. Evidence: core/changes/2026-10-16-s02-test-plan-and-rev.md.
+
+## 2026-10-16 - Commit: S02 design revision 3
+
+Decision: the delete fence and late job live in a top-level server-only collection written before the first deletion sweep (the Body Scan precedent); a permission-denied on a summary write never deletes local data without a tombstone; summary batches are capped at 10; bulk stream deletion is a seventh hardened callable. Evidence: core/changes/2026-10-16-s02-design-revision-3.md.
