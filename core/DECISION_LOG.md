@@ -56875,3 +56875,7 @@ Decision: the stream payload is built by a closed-schema copy that hard-denies h
 ## 2026-10-16 - Commit: S02-02: file-system seam, layout constants and backup exclusion
 
 Decision: The journal talks to storage only through an injectable file-system seam without a directory fsync, and one constant list of directories drives both Android backup XML files, the checker and the iOS marker interface. Evidence: core/changes/2026-10-16-s02-02-fs-seam-layout-backup.md.
+
+## 2026-10-16 - Commit: S02-02: stream cipher and secure-storage key provider
+
+Decision: Streams are encrypted with AES-256-GCM under a secure-storage key that is never re-minted when the store is merely unreadable. Evidence: core/changes/2026-10-16-s02-02-cipher-and-key.md.
