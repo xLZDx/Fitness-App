@@ -523,3 +523,11 @@ Facts: the structural scan makes the J1 shortcoming (a guard added to a named li
 Root cause: logger mock accumulates across tests, so a "not logged" assertion needs a mockClear first; the notes were derived from reading, so a Grep pass is still needed.
 Layer: tests (author) caught both.
 Rule next time: clear the logger mock before asserting the absence of a log line; always Grep for assertions that encode the old behavior, not only for call sites.
+
+## 2026-10-16 - Commit: docs(s02): findings of test epic 16a2 server (J3a)
+
+Kind: FAILURE (implementation, caught by tests).
+Facts: J3a moved a line-pinned allowlist target in delete_all_streams.ts from line 201 to 203; three policy tests are red. Evidence: S02_TEST_FINDINGS_EPIC16.md, section 16a2 server, finding 1.
+Root cause: the checker pins allowlist entries to line numbers and the J3a author did not run or search for the pin when inserting lines above it.
+Layer: author missed it; the broader policy suites caught it.
+Rule next time: after inserting lines in a file named in scripts/ci/check_data_access_policy.js, update the pinned line in the same commit (Grep the file name there).

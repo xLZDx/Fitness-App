@@ -57731,3 +57731,7 @@ Decision: five client fixes from the class sweep: an unbound consent store is ne
 ## 2026-10-16 - Commit: test(s02): server tests for remediation J3a (epic 16a2, 1/2)
 
 Decision: fix the existing server tests for the new expectedUid requirement and the deleteAll body argument, and add expected_uid_more_callables.test.ts with a structural scan of every onCall handler. Evidence: core/changes/2026-10-16-s02-test16a2-1-server-tests-j3a.md; focused run 7 suites / 321 tests passed.
+
+## 2026-10-16 - Commit: docs(s02): findings of test epic 16a2 server (J3a)
+
+Decision: record the 16a2 results; the line-pinned allowlist entry for delete_all_streams.ts in scripts/ci/check_data_access_policy.js (201 -> 203) is handed back to the implementer, not changed by the test agent. Evidence: core/changes/2026-10-16-s02-test16a2-2-findings.md.

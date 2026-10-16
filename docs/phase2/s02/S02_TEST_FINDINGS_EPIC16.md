@@ -34,3 +34,34 @@ A file `src/__tests__/callable_hardening.test.ts` does not exist; the one that e
 - No mutation run (not permitted); each assertion is justified by what it observes, not by a broken-code run.
 - Not run: the whole repository suite, lint, typecheck, build, CI, the rules emulator. `getActivityStreamDownloadUrls`, `deleteAllActivityStreams` and telemetry are out of J1 scope and are not tested for the key.
 - The client half (16b) is not part of this section.
+
+## 16a2 server (J3a)
+
+Head under test: a3530664 on top of 7f15f7db (J3a product change is 01b9223c). Author: Claude Sonnet 5.5 (test agent).
+
+### What was changed (existing tests)
+- `support/seven.ts`: `getActivityStreamDownloadUrls` uses `withUid`; `deleteAllActivityStreams` passes its body as the 4th argument (`{ expectedUid: uid }` when the table body is undefined, otherwise `withUid(d, uid)`).
+- Call sites: `account_flow.test.ts`, `export_downloads_telemetry.test.ts` (key equals the helper's own `uid` argument), `remediation_a_reconcile.test.ts` (3), `settings_consent.test.ts` (2), `sweeps_jobs.test.ts` (2; `lim(...)` moved to the 5th argument).
+- Found by the extra Grep, not in the notes: `callable_hardening.test.ts` asserted that `deleteAllActivityStreams` ignores a client body (`{ activityId: "../x", uid }` -> `done`). That would now be wrong; it asserts `invalid-argument / invalid_request` and keeps a control that `{}` still returns `done`.
+
+### What was written
+`functions/src/__tests__/activity/expected_uid_more_callables.test.ts` (43 tests), for both handlers: mismatch is `failed-precondition / account_changed` with no `firestore()` seam call (no read), no write, no timeline entry, no storage or auth call, no quota document, warn log with outcome `account_changed` and no uid or activity id; case-different key; mismatch beats an invalid body (with a control that the same body is `invalid_request` under the right key) and an exhausted quota (with a control that the right key gives `quota_exceeded`); anonymous gate first with a mismatching key (no `account_changed` log); missing, null, number, object, empty and 129-character key; non-object data (null, undefined, array, string, number); matching key succeeds and charges once; download with a bad id; deleteAll with an extra key or client path fields; real `onCall` wrapper (`unauthenticated`, and mismatch through `.run`). Structural scan `scanHandlers`: all seven exported `onCall` handlers are found, exactly `sendDebugTelemetry` (exempt, with reason) lacks `verifyExpectedUid(` before its first `await`; five synthetic-source self-checks prove the scan fails for an await-first handler, a missing call, an unresolved handle function and a verification that lives in a different function.
+
+### Commands and verbatim results (run from `functions/`)
+| Command | Result |
+|---|---|
+| `npx jest src/__tests__/activity/expected_uid_more_callables.test.ts src/__tests__/activity/callable_hardening.test.ts src/__tests__/activity/account_flow.test.ts src/__tests__/activity/export_downloads_telemetry.test.ts src/__tests__/activity/remediation_a_reconcile.test.ts src/__tests__/activity/settings_consent.test.ts src/__tests__/activity/sweeps_jobs.test.ts` (final) | `Test Suites: 7 passed, 7 total` / `Tests:       321 passed, 321 total` |
+| `npx jest src/__tests__/activity src/__tests__/abuse_guard.test.ts` | `Test Suites: 2 failed, 28 passed, 30 total` / `Tests:       3 failed, 919 passed, 922 total` |
+| `npx jest src/__tests__/activity/remediation_a_validate_bound.test.ts` (alone) | `Tests:       6 passed, 6 total` |
+| `npx jest src/__tests__/s02_remediation_a_policy.test.ts src/__tests__/scaling.test.ts src/__tests__/delete_account.test.ts src/__tests__/account_deletion_reconcile.test.ts src/__tests__/firestore_indexes_body_scan.test.ts` | `Test Suites: 1 failed, 4 passed, 5 total` / `Tests:       2 failed, 313 passed, 315 total` |
+
+### Findings
+1. DEFECT (J3a product-side leftover, not a test problem): the data-access policy checker `scripts/ci/check_data_access_policy.js` pins the allowlist entry for `functions/src/activity_streams/delete_all_streams.ts` to line 201. The J3a edit moved that `.collection(\`users/${uid}/activity_streams\`)` call to line 203, so the checker now reports `functions/src/activity_streams/delete_all_streams.ts:203` as a sixth violation. Three tests fail because of it: `s02_remediation_a_policy.test.ts` ("the repository run reports exactly the five pre-S02 violations" and "the unmutated copy gives the same five violations") and `activity/lifecycle_policy.test.ts` ("the access policy checker reports nothing about any S02 file"). I did not edit the checker (not a test file). Required change: set `line: 203` in that allowlist entry (line 250 of the checker); acceptance: the three tests above go green. Not re-run after a fix because I did not make it.
+2. Load-sensitive timeout, known flake: `remediation_a_validate_bound.test.ts` (32 MiB filler and the comma filler) failed in the parallel run and passed alone (`6 passed`). No timeout was changed.
+3. The J3 notes list of stale call sites was complete for call sites; the stale assertion in `callable_hardening.test.ts` was not listed.
+4. Two of my own first-run test bugs (unused variable; log assertion without `mockClear`) were fixed in the test; no product defect behind them.
+
+### Not covered
+- The red state of the changed existing tests before the fix was not observed (edits were applied before the first run).
+- No mutation run (not permitted); assertions are justified by what they observe. `sendDebugTelemetry` is exempt and untested for the key by design.
+- Not run: the whole repository suite, lint, typecheck, build, CI, the rules emulator. The client half (J3b) is not part of this section.
