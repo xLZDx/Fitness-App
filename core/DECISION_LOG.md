@@ -57541,3 +57541,7 @@ Decision: the F1 contract (pass identity, cache reset, unbound visibility, fallb
 ## 2026-10-16 - Commit: S02 test epic 12a (2) account-switch pass e2e, complete run, findings
 
 Decision: the epic 9 oracle that a later success never clears `lastTombstonePushError` is superseded by F1 (a clean pass clears it); the account-switch promise for running passes is pinned end to end including the cloud side. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-e2e-and-run.md.
+
+## 2026-10-16 - Commit: S02 remediation G1 journal uid tied to auth uid
+
+Decision: a sync pass on an account-scoped journal with an auth supplier is valid only when the bound journal uid equals the signed-in uid exactly at the start (`_beginPass`, otherwise a dead pass that does nothing) and again right before every backend or pusher call (`_mayCall`); plain journals and a null supplier are unchanged; a null auth uid stays fail-closed. Evidence: core/changes/2026-10-16-s02-remediation-g-journal-auth-tie.md.

@@ -180,3 +180,10 @@ Facts: `activity_sync_corrupt_summary_test.dart` SF9 still expected the tombston
 Root cause: the F1 notes listed stale fakes by search of constructors, not tests asserting `lastTombstonePushError` semantics. Layers: F1 authors and note writer missed it; the epic 12a directory run caught it.
 Success: the account-switch e2e (3 tests) passed on the first run, so the pass-identity guards hold end to end.
 Rule next time: when a getter's semantics change, grep all tests that read it and run them in the same commit.
+
+## 2026-10-16 - S02 remediation G1: journal uid tied to auth uid
+Kind: FAILURE.
+Facts: a pass starting between `FirebaseAuth.currentUser` flipping to B and the journal rebinding had journal uid A and auth uid B; `_beginPass` and `_mayCall` checked each against its own start value only, so A's summaries and tombstones could be written to B's cloud (core/changes/2026-10-16-s02-remediation-g-journal-auth-tie.md).
+Root cause: the author of F1 and F2 tied the pass to the epoch and the journal uid, and separately to the auth uid, but never to each other.
+Layers: the author missed it; the 12a tests never started a pass with journal and auth disagreeing; the first round of four independent reviewers and the F implementers missed it; the second independent review round (reliability and security reviewers, independently) caught it.
+Rule next time: when two sources of identity exist, tie them to each other at pass start and re-check the tie before each side effect, and test the disagreement case.

@@ -94,3 +94,16 @@ Changed contracts: `ActivitySyncRepository` (new optional constructor parameter 
 - Existing tests using a real `ActivitySyncRepository` over an UNBOUND `UidScopedActivityJournal` (search `UidScopedActivityJournal` and `bindUid` in `mobile/test`): they previously got an empty state and now get `JournalUnbound`.
 - `mobile/test/features/activity/repository/activity_tombstone_continuation_test.dart`: assertions about the retry budget (no further timer, counter) must follow the fallback timer and the reset on a clean pass.
 - Backend fakes (`FakeSummaryBackend`, `DeviceBackend`, `_Backend` in the continuation test) implement an unchanged interface.
+
+## G
+
+Nothing in G was compiled or run by the author. Each assertion below must fail if the named guard were removed. Use a real `UidScopedActivityJournal` over temp directories, a recording backend and pusher (call counters), and an `authUid` closure the test can flip.
+
+### G1: journal uid and auth uid must agree (`activity_sync_repository.dart`, `_beginPass`, `_mayCall`)
+
+- Journal bound to A, `authUid` returns B (the gap between `FirebaseAuth.currentUser` and the journal rebind), A holds an unsynced entry X and a local tombstone T: `syncEntry(X)` returns `pending`; `syncAll()` returns an empty map; `syncBatch([X])` returns `pending`; `resolveConflict`, `resolveCandidate` and `applyExplicitEdit` return `pending` (not `unavailable`, not `synced`); `saveSession` returns `pending` and the journal `put` count stays 0. In every case the backend call count (`readSummary`, `writeSummary`, `tombstoneExists`, `listTombstoneIds`) and the pusher call count are exactly 0. Removing the start-of-pass tie yields one `listTombstoneIds`/`writeSummary` for B's cloud.
+- The same with the retry timer: schedule a retry under A (failing pusher), flip `authUid` to B without `onAccountChanged`, fire the fake timer: zero backend and pusher calls.
+- Auth flips between calls: journal bound to A, `authUid` A at the start; `listTombstoneIds` returns and then `authUid` flips to B before the pusher is called for owed tombstone T: the pusher is NOT called (`_mayCall` re-check), `syncAll` returns without `deletedLocal`. Variant: the flip happens while `writeSummary` is blocked for the first of two entries: the second entry gets no backend call.
+- Case sensitivity: journal bound to `Abc`, `authUid` returns `abc`: zero backend calls (exact comparison).
+- `authUid` returns null at the start with a scoped bound journal: zero backend calls (fail closed, unchanged). Unbound scoped journal: unchanged (`syncAll` empty, `syncEntry` pending, resolution operations `unavailable`).
+- Agreeing uids (A and A) with a scoped journal: the existing happy-path tests still pass (sync writes, tombstones pushed). Plain (non-scoped) journal, any `authUid`, and a scoped journal with a null `authUid` supplier: behaviour unchanged (the whole existing pass-identity suite).

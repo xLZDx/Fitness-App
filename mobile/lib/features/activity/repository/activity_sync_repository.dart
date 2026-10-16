@@ -190,7 +190,27 @@ class ActivitySyncRepository {
     return null;
   }
 
-  _Pass _beginPass() => _Pass(_epoch, _boundJournalUid(), _authUid?.call());
+  /// True when the journal is account-scoped AND an auth uid supplier exists:
+  /// only then the journal uid and the signed-in uid must agree (remediation
+  /// G1). Plain journals and a null supplier keep the old behaviour.
+  bool get _tiesJournalToAuth =>
+      _authUid != null && _journal is AccountScopedJournal;
+
+  /// Starts a pass. For a scoped journal with an auth supplier the pass is valid
+  /// only if the journal is bound and its uid equals the signed-in uid exactly
+  /// (case-sensitive): `FirebaseAuth.currentUser` flips before the journal
+  /// rebinds, and a pass of that gap would write A's data to B's cloud. A
+  /// disagreeing or fail-closed pass gets the dead epoch -1 (never equal to
+  /// [_epoch]), so every later [_alive] / [_mayCall] check refuses it.
+  _Pass _beginPass() {
+    final journalUid = _boundJournalUid();
+    final authUid = _authUid?.call();
+    if (_tiesJournalToAuth &&
+        (journalUid == null || authUid == null || journalUid != authUid)) {
+      return _Pass(-1, journalUid, authUid);
+    }
+    return _Pass(_epoch, journalUid, authUid);
+  }
 
   /// Runs [body] serialized, under a fresh pass identity.
   Future<T> _serial<T>(Future<T> Function() body) => _ops.run(() async {
@@ -216,7 +236,11 @@ class ActivitySyncRepository {
     final f = _authUid;
     if (f == null) return true;
     final started = p.authUid;
-    return started != null && f() == started;
+    final now = f();
+    if (started == null || now != started) return false;
+    // Scoped journal: the signed-in uid must also still be the journal's uid.
+    if (_journal is AccountScopedJournal) return now == p.journalUid;
+    return true;
   }
 
   final TombstoneRetryTimerFactory _timerFactory;
