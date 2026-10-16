@@ -57055,3 +57055,7 @@ Decision: The client conforms to the server validator instead of loosening it: s
 ## 2026-10-16 - Commit: S02-08: lifecycle policy rows
 
 Decision: Six policy rows (activities, activity_streams, activity_settings BOTH; activity_tombstones DELETE because S02-07 does not export tombstones; activity_account_state and activity_reconcile_state EXEMPT server-only) plus an informational storageObjects section for the streams/ and quarantine/ prefixes; test agents must use the named conditionalRefs test strings.
+
+## 2026-10-16 - Commit: S02-08: lifecycle matrix
+
+Decision: The matrix rows C1, C2, C8, debug sessions and the section 3 sweep map now state the implemented S02 behaviour; the default expiry, the never option and C2 independence stay marked as open operator decisions.
