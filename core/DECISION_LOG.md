@@ -57481,3 +57481,7 @@ Decision: the complete epic 11b runs are green after the stale journal fake forw
 ## 2026-10-16 - Commit: S02 test epic 11a (e) findings
 
 Decision: epic 11a findings and the complete run are recorded in the epic 11 findings file. Evidence: core/changes/2026-10-16-s02-test-epic11a-findings.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (1/4) no rebind after wipe
+
+Decision: `UidScopedActivityJournal` remembers the uid it wiped while bound and refuses to bind it (fail closed) until another uid or null is bound; `AccountScopedJournal` exposes `boundUid` and `isBound`. Evidence: core/changes/2026-10-16-s02-remediation-f2-no-rebind.md.

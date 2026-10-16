@@ -93,3 +93,10 @@ FAILURE: `refreshState()` began to call `journal.listTombstones()` in E2 and the
 
 ## 2026-10-16 - Epic 11a closed
 SUCCESS: complete run green (660 tests); the only production defect of E1 was the compile error caught by the first test compile.
+
+## 2026-10-16 - S02 remediation F2 (1/4): no rebind of a wiped account
+Kind: FAILURE.
+Facts: after account deletion wiped the bound uid, a same-uid auth re-emission called `bindUid` again and re-created the deleted account scope and key (security and Flutter reviewers, core/changes/2026-10-16-s02-remediation-f2-no-rebind.md).
+Root cause: E1 treated the wipe as a one-shot event and did not model "this uid is gone" as state; auth streams re-emit the same uid.
+Layers: the author of E1 and the epic 11a tests missed it (no test re-emitted the same uid after a wipe); the independent reviewers caught it.
+Rule next time: for any destructive account event, test the same-uid re-emission that follows it.

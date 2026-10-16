@@ -25,6 +25,12 @@ abstract class AccountScopedJournal {
   /// for the same uid. False = fail closed: nothing is bound.
   Future<bool> bindUid(String? uid);
 
+  /// The uid currently bound, null while unbound.
+  String? get boundUid;
+
+  /// True while a journal is bound (a started journal of [boundUid]).
+  bool get isBound;
+
   /// Wipes the journal scope of [uid] whether or not it is bound.
   Future<void> wipeForUid(String uid);
 }
@@ -60,8 +66,16 @@ class UidScopedActivityJournal
   ActivityJournal? _bound;
   String? _boundUid;
 
-  /// The uid currently bound, null while unbound.
+  /// The uid whose scope was wiped while it was the bound one (account
+  /// deletion). [bindUid] refuses it until another uid (or null) is bound, so a
+  /// same-uid auth re-emission cannot re-create the deleted account's scope.
+  String? _wipedUid;
+
+  @override
   String? get boundUid => _boundUid;
+
+  @override
+  bool get isBound => _bound != null;
 
   Future<void> _unbind() async {
     final current = _bound;
@@ -82,7 +96,14 @@ class UidScopedActivityJournal
           await _unbind();
           return false;
         }
+        if (uid != null && uid == _wipedUid) {
+          // Fail closed: this account was deleted; create no directory, no key.
+          await _unbind();
+          return false;
+        }
         if (uid == _boundUid && (uid == null || _bound != null)) return true;
+        // A different uid or an explicit unbind ends the wiped-uid refusal.
+        _wipedUid = null;
         await _unbind();
         if (uid == null) return true;
         ActivityJournal? opened;
@@ -106,6 +127,9 @@ class UidScopedActivityJournal
   Future<void> wipeForUid(String uid) => _mutex.run(() async {
         if (uid.isEmpty) throw const JournalUnbound();
         if (uid == _boundUid && _bound != null) {
+          // Remembered even when the wipe fails: the marker retries the wipe
+          // and nothing may re-create the scope in between.
+          _wipedUid = uid;
           final current = _bound!;
           try {
             await current.wipe();
