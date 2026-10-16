@@ -57183,3 +57183,7 @@ Decision: The 16 KiB batch boundary is proven on the sanitiser gate (a valid bat
 ## 2026-10-16 - Commit: S02 test epic 6b: lifecycle policy checkers, indexes, privacy text and ops log metrics (S02-08)
 
 Decision: Plan F39 expects activity_tombstones classified BOTH; the policy row records the decision not to export tombstones (DELETE) and the test pins that. The five pre-S02 access checker violations stay out of S02 scope and are pinned.
+
+## 2026-10-16 - Commit: S02 test epic 6b: story-map completeness lint F96 with mutated-copy proofs (S02-11)
+
+Decision: The blocking-criterion check uses the GPS-PRIV ids of plan section 7; named MAJOR/BLOCKER tokens of design sections 6.1, 6.2 and 10 are not machine-mapped and are recorded as not covered.
