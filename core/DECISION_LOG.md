@@ -57441,3 +57441,7 @@ Decision: the per-user daily `activityDelete` quota is 1000 (was 100) because it
 ## 2026-10-16 - Commit: S02 remediation E1 (c) wipe decorator and design docs
 
 Decision: account deletion wipes exactly the deleted uid journal scope; design section 17 item 22 records account-scoped journals (sign-out and switch never wipe). Evidence: core/changes/2026-10-16-s02-remediation-e1-wipe-docs.md.
+
+## 2026-10-16 - Commit: lessons log and S02 retrospective draft
+
+Decision: the program keeps core/LESSONS_LOG.md from now on, one entry per commit that carries a lesson (operator global rule 2026-10-16); the S02 retrospective is a living draft built from it. Evidence: core/changes/2026-10-16-lessons-log-and-s02-retro.md.
