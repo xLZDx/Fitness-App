@@ -1,4 +1,4 @@
-# SDLC state: Phase 2 program (sprints S00, S01)
+# SDLC state: Phase 2 program (sprints S00, S01, S02)
 
 Source of phase truth for the Phase 2 line. Updated 2026-10-16. Head confirmed with git when written: branch `phase2/s01-contracts`, base `phase2/main` at `89927444`. The earlier Body Scan sprint state (PR #5, merged as `5137ccda`) is history; its acceptance and release phases (9, 10) remain open there and need the operator-owned gates it lists.
 
@@ -21,26 +21,30 @@ Current phase: closed (all ten phases done or not applicable). PR #7 (`db01888f`
 
 Open items recorded in `docs/phase2/split/BACKEND_SEPARATION.md` (before the first Phase 2 cloud deploy): production project number hardcoded in the kill-switch secret path of `functions/src/abuse_guard.ts`; candidate dotenv content not verified by the guard; separate production deploy credentials or protected CI (operator-owned); Blaze billing for the Phase 2 project (operator-owned; billing account project quota exceeded).
 
-## S01: contracts and UI baseline (documentation only)
+## S01: contracts and UI baseline (documentation only, merged)
 
-Current phase: 5 Doc review. Entry criteria of the next phase (8 Gate): internal consensus closed, GPT-PM review of the document set, then the operator decisions listed below.
+Current phase: closed. PR #9 merged into `phase2/main` as `5bb61f15` after GPT-PM APPROVE on the exact head `d16a5b65` (round 4; rounds 1 to 3 returned MODIFY: stale Storage baseline after PR #5, debug telemetry guarantee, stale Body Scan and account-deletion statements; the cause was fixed by a full citation re-verification against the PR #5 tree).
 
 | # | Phase | Status | Artifacts |
 |---|---|---|---|
 | 1 Discovery | done | requirements drawn from the roadmap and the Phase 2 plan |
 | 2 Backlog | done | S01 row of the roadmap |
 | 3 Design | done | `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` (98 requirements, all PROPOSED), `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` |
-| 4 Docs + test plan | done | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md`, `docs/phase2/s01/UI0_BASELINE_AUDIT.md`, `UI0_BASELINE_AUDIT_ADDENDUM.md` and `UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` (PR #5 screens); acceptance criteria are inside the contract (rules and sweep tests for later sprints) |
-| 5 Doc review | in progress | security review rounds 1 to 4 closed (last verdict ALL CLOSED); product-ux and accessibility review of UI-0 done; GPT-PM round 1 on head `36f15d63` returned MODIFY with two MAJOR (stale Storage baseline after PR #5; debug telemetry guarantee not enforceable by rules), fixed in the next commit, verification round pending |
+| 4 Docs + test plan | done | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md`, `UI0_BASELINE_AUDIT.md`, `UI0_BASELINE_AUDIT_ADDENDUM.md`, `UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md`; acceptance criteria are inside the contract |
+| 5 Doc review | done | security review rounds 1 to 4 closed; product-ux and accessibility review of UI-0; GPT-PM four rounds, APPROVE on `d16a5b65` |
 | 6 Build | n/a | no code in this sprint |
 | 7 Verify | n/a | no tests in this sprint |
-| 8 Gate | not started | GPT-PM APPROVE on the exact head, then one push and one PR |
-| 9 Accept + release | not started | operator approval of the contract and decisions |
-| 10 Report + retro | not started | |
+| 8 Gate | done | PR #9 merged (`5bb61f15`) |
+| 9 Accept + release | partial | operator answered D-16, D-17, D-6, D-7 on 2026-10-16 (recorded in contract section 9); approval of the contract as a whole is not stated, requirement labels stay PROPOSED |
+| 10 Report + retro | not started | S01 sprint report missing |
 
-Operator decisions required at acceptance (each stays open until answered): retention of GPS and heart-rate streams (D-16); minors, sharing and public routes (D-17); map tiles source (D-6); route data source and launch region (D-7).
+Operator decisions recorded 2026-10-16: D-16 GPS in the cloud with a user-set expiry and heart rate on the phone only; D-17 friends by mutual accept allowed, public sharing not allowed for minors, age self-declared (adult-minor friend edges stay refused, default E1); D-6 open source tiles; D-7 open source tracks and maps. Still open: the first-release region (before S07), D-3, D-10.
 
-Agents and models actually run in S01 (all Sonnet 5.5): technical-writer (contract and matrix), general-purpose (rights study), code-explorer (UI-0 audit, addendum, Body Scan delta), security-reviewer (rounds 1 to 4), product-ux-reviewer (UI-0 review).
+Agents and models actually run in S01 (all Sonnet 5.5): technical-writer (contract, matrix, citation re-verification), general-purpose (rights study), code-explorer (UI-0 audit, addendum, Body Scan delta), security-reviewer (rounds 1 to 4), product-ux-reviewer (UI-0 review).
 Agents and models actually run in S00: implementation-engineer, tdd-guide (Sonnet 5.5); security-reviewer, silent-failure-hunter (Sonnet 5.5, medium); reviews through GPT-PM (PM Bridge).
 
-Next role to launch: GPT-PM review of the S01 document set on the exact head (base `origin/phase2/main`).
+## S02: unified activity (E1)
+
+Current phase: 3 Design (started 2026-10-16 on branch `phase2/s02-unified-activity` from `5bb61f15`). Entry decisions D-16 and D-17 are answered. Sprint scope is the S02 row of `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md`; GPS-specific requirements stay with S04 onwards, S02 covers the activity model, persistence, retention, deletion, export and the debug telemetry server guarantee (GPS-PRIV-050 and 098) that must exist before any GPS code.
+
+Next role to launch: code-architect (read-only map of the current activity model), then technical-writer (S02 design) and functional-test-reviewer (acceptance to test map).

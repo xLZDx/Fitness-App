@@ -2,7 +2,7 @@
 
 Status: DRAFT for GPT-PM review and operator approval. Date: 2026-10-15. Branch: `phase2/s01-contracts`.
 Companion document: `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` (one row per data class).
-No code is changed by this document. No decision is taken here: D-16 and D-17 are written as options in section 9.
+No code is changed by this document. D-16 and D-17 were answered by the operator on 2026-10-16 (section 9, subsection 'Operator decisions recorded'); the option tables below are kept as the record of what was offered.
 
 ## 0. How to read this document
 
@@ -224,6 +224,17 @@ Roadmap context (FACT): default if not decided "Under-18 and unknown age: no pub
 | D. Age source (independent choice combined with A, B or C) | D1: keep birth year, self-declared, copied to a server-held field at onboarding. D2: collect full birth date and verify server-side where available. D3: require a parent or guardian consent flow for 16-17. | D1 is cheapest and can be falsified by the user, so unknown or inconsistent age must stay in the blocked group. D2 improves the 17/18 boundary and needs a new personal-data field and privacy text. D3 adds legal and support load and may need counsel. |
 
 Recommended default (PROPOSED, not a decision): option A with age source D1 and "unknown means blocked", because it equals the register default, needs no new personal data, and still allows private recording and friends-only sharing between mutually accepted users; revisit D2 before public beta (G-C). Because the age signal under D1 is self-declared, S09 treats the minor rule as a risk-reducing control, not proof of age; the privacy text must not promise age verification.
+
+### Operator decisions recorded (2026-10-16, in chat; the PR #9 contract was approved by GPT-PM for merge, the operator answered the open decisions afterwards)
+
+| Decision | Operator answer (as given) | Binding interpretation for S02 and later | Still open inside this decision |
+|---|---|---|---|
+| D-16 retention | GPS in the cloud with a user-set expiry, heart rate on the phone only (option D with GPS as in option C) | GPS streams are stored as private objects per activity; the user chooses an automatic expiry (for example 90 days, 1 year, 2 years, never); heart-rate streams stay on the device and never reach the cloud (cloud holds at most non-sensitive summary fields chosen in the S02 design); the privacy text must change before release | The default expiry value shown to the user (proposal: 2 years, shown and changeable); the retention clock (activity date is the proposal); whether derived geometry C2 follows the stream setting (proposal: yes) |
+| D-17 minors and sharing | Friends by mutual accept are allowed, public sharing is not allowed for minors; age is stated by the user (option A with age source D1) | Unknown age behaves as private only; adults and known minors cannot become friends (binding default E1 stays until the operator says otherwise); the age signal is self-declared, so the minor rule is a risk-reducing control and the privacy text must not promise age verification | Sub-options E (adult-to-minor edges), F (enforcing the minimum age 16) and G (edge at the 18 boundary) keep their proposed defaults: E1, F1 as today, G re-evaluate; the operator may change them at the S09 design |
+| D-6 map tiles | Open source | Self-hosted vector tiles built from OpenStreetMap data (PMTiles with MapLibre), as recommended in the rights study; no tile request goes to a third-party service | Legal re-read of the ODbL and attribution terms at the original sources; hosting location and cost (S07) |
+| D-7 route data | Open source tracks and maps | Own users' tracks plus OpenStreetMap-derived routing and points of interest, as recommended in the rights study | The first-release region is NOT named yet and must be chosen before S07 starts; the legal re-read above applies here too |
+
+Not touched by this answer: the requirement labels stay PROPOSED until the operator approves the contract as a whole; decisions D-3 (name of the master branch) and D-10 (legal status of the third-party app dossier) are still unanswered; Blaze billing, separate production deploy credentials and remote branch deletion remain operator-owned.
 
 ## 10. Security-rules requirements as testable acceptance criteria
 

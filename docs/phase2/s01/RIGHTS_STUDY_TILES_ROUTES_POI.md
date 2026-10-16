@@ -1,7 +1,7 @@
 # Rights study: map tiles, route data, routing, POI, elevation, user routes
 
 Sprint S01, part (b). Study only: no code, no account was opened, no provider was contacted.
-Date of the study: 2026-10-15. Decisions D-6 (map tile provider and licence) and D-7 (route data sources and first-release region) stay OPEN for the operator; this document only recommends.
+Date of the study: 2026-10-15. Decisions D-6 (map tile provider and licence) and D-7 (route data sources and first-release region): on 2026-10-16 the operator answered 'open source' for both, which matches the recommendation of section 9 (self-hosted OpenStreetMap-derived tiles; own tracks plus OpenStreetMap-derived routing and points of interest). The first-release region is still not named. The legal re-read of the original provider pages remains required.
 This is an engineering summary of provider pages, not legal advice. Section 11 lists the questions for counsel.
 
 ## 0. Method and evidence grades
@@ -146,7 +146,7 @@ This is a design recommendation for the terms of use, not a quoted provider rule
 | Elevation: Copernicus DEM | UNKNOWN (policy open) | Open with credit (land service page) | Copernicus wording | Free | Applicability to DEM unverified | A (partial) |
 | Third-party route catalogues | UNKNOWN | Not reviewed | n/a | n/a | Treat as prohibited | none |
 
-## 9. Recommendation (D-6, D-7 remain open for the operator)
+## 9. Recommendation (D-6, D-7: operator answered 'open source' on 2026-10-16; region still open)
 
 ### D-6 (map tile provider and licence): recommend self-hosted tiles
 

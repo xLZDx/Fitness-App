@@ -56771,3 +56771,7 @@ Decision: every statement about Storage, account deletion and Body Scan code in 
 ## 2026-10-16 - Commit: S01 fixes for GPT-PM round 3
 
 Decision: all file and line citations and "absent" claims in the S01 contract and lifecycle matrix were re-verified against the PR #5 tree in one sweep (the documents were drafted before PR #5); the existing Storage rules test and the server read of the client-writable birth year are recorded as facts. Evidence: core/changes/2026-10-16-s01-gptpm-round3-fixes.md.
+
+## 2026-10-16 - Commit: operator decisions D-16, D-17, D-6, D-7 recorded and S02 started
+
+Decision: the operator answered the four open S01 decisions in chat (GPS cloud with user-set expiry and heart rate device-only; friends by mutual accept, no public sharing for minors, self-declared age; open source tiles; open source tracks and maps). The interpretation and the points still open (default expiry, retention clock, region) are written into the contract section 9; the first-release region must be named before S07. Evidence: core/changes/2026-10-16-s02-operator-decisions-and-state.md.
