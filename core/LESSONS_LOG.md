@@ -210,3 +210,7 @@ Why it worked: a secondary mechanism that already had its one fix round is accep
 ## 2026-10-16 - S02 test epic 13a: stale oracles and fakes after remediation G
 Kind: FAILURE.
 Facts: first compiled whole-directory run +1260 -4, all stale oracles (see docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md). Root cause: the G stale-test search listed fakes, not assertions about wipe then bind. Layers: G authors and reviewers missed it; the first compiled run caught it. Rule next time: grep for the changed call sequence (wipeForUid then bindUid) in all tests, not only the named files.
+
+## 2026-10-16 - S02 test epic 13a: G1 auth tie and G5 skip logs
+Kind: SUCCESS.
+Facts: G1 and G5 production code met every oracle on the first compiled run (+17). Why it worked: oracles came from the notes and the promise; the only error was a missing import in the test. Layer: none missed a production defect.

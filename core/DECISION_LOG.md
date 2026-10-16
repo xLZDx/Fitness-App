@@ -57561,3 +57561,7 @@ Decision: two items are accepted unchanged and recorded in design 17 item 23 (no
 ## 2026-10-16 - Commit: S02 test epic 13a stale oracles and fakes after remediation G
 
 Decision: four tests that expected bindUid to succeed after wipeForUid of an unbound uid now expect the G4 refusal until bindUid(null); _ThrowingSyncRepo records onJournalBindingChanged. Evidence: core/changes/2026-10-16-s02-test-epic13a-stale-oracles.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a G1 auth tie and G5 skip logs
+
+Decision: 17 tests prove the journal-auth tie yields zero backend and pusher calls on a uid disagreement, and that skipped passes log a reason word without a uid. Evidence: core/changes/2026-10-16-s02-test-epic13a-g1-g5-auth-tie.md.
