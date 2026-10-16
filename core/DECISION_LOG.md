@@ -57159,3 +57159,7 @@ Decision: The existing body_scan Firestore double is reused unchanged (it alread
 ## 2026-10-16 - Commit: S02 test epic 6a: S02-04a validator, schema pin, canonical, decompression limits
 
 Decision: Inclusive coordinate bounds and ratio-20-accepted follow the design (plan rows F03/F50 are wrong); the encoding error is classified by name so it works across realms.
+
+## 2026-10-16 - Commit: S02 test epic 6a: S02-04b create/commit state machine and callable hardening
+
+Decision: A concurrent duplicate commit of the same upload id returns already_stored (production fix in writeIntendedHash); over a stored row a create keeps state=stored (design), not pending (plan text).

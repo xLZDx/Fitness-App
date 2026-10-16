@@ -225,7 +225,7 @@ export class FakeBucket implements StreamListingBucket {
 export interface World {
   bucket: FakeBucket;
   auth: FakeAuth;
-  deps: UploadDeps;
+  deps: UploadDeps & { newJobId(): string; newSessionId(): string };
   /** Set to `null` to model the feature off. */
   bucketOn: boolean;
   uploadIdCounter: number;
@@ -241,7 +241,7 @@ export function createWorld(): World {
     auth: new FakeAuth(),
     bucketOn: true,
     uploadIdCounter: 0,
-    deps: undefined as unknown as UploadDeps,
+    deps: undefined as unknown as World["deps"],
   };
   w.auth.users.add(UID).add(UID_B);
   w.deps = {
@@ -250,6 +250,8 @@ export function createWorld(): World {
     nowMs: () => Date.now(),
     bucket: () => (w.bucketOn ? w.bucket : undefined),
     newUploadId: () => uploadIdN(++w.uploadIdCounter),
+    newJobId: () => `job_${(++w.uploadIdCounter).toString(16).padStart(32, "0")}`,
+    newSessionId: () => `dbg_${(++w.uploadIdCounter).toString(16).padStart(32, "0")}`,
   };
   return w;
 }

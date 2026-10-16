@@ -180,15 +180,18 @@ export async function writeIntendedHash(
   uid: string,
   req: CommitRequest,
   intendedStoredSha256: string,
-): Promise<void> {
+): Promise<boolean> {
   const fs = deps.firestore();
   const rowRef = fs.doc(activityStreamRowPath(uid, req.activityId));
-  await fs.runTransaction(async (tx) => {
+  return fs.runTransaction(async (tx): Promise<boolean> => {
     const ctx = await readUploadContext(tx, deps, uid, req.activityId);
+    // A concurrent commit of the SAME upload id already finished: nothing to promote (F47).
+    if (alreadyStoredBy(ctx.row, req.uploadId)) return false;
     if (ctx.row === undefined || currentUploadId(ctx.row) !== req.uploadId) {
       throw new UploadRefusal("superseded");
     }
     tx.update(rowRef, { intendedStoredSha256 });
+    return true;
   });
 }
 
@@ -342,7 +345,14 @@ export async function applyCommitActivityStream(
       throw new UploadRefusal(validated.code);
     }
 
-    await writeIntendedHash(deps, uid, req, validated.storedSha256);
+    if (!(await writeIntendedHash(deps, uid, req, validated.storedSha256))) {
+      return {
+        status: "already_stored",
+        bytes: validated.storedBytes.length,
+        kinds: validated.kinds,
+        serverNowMs: deps.nowMs(),
+      };
+    }
     await bucket.file(promotedPath).save(validated.storedBytes, {
       contentType: STREAM_CONTENT_TYPE,
       resumable: false,
