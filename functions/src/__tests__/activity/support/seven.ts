@@ -66,12 +66,12 @@ export const SEVEN: SevenEntry[] = [
   },
   {
     name: "getActivityStreamDownloadUrls", quotaAction: "activityDownloadUrls", limit: 60,
-    call: (w, d, uid = UID, p = "password") => handleGetActivityStreamDownloadUrls(w.deps, uid, p, d),
+    call: (w, d, uid = UID, p = "password") => handleGetActivityStreamDownloadUrls(w.deps, uid, p, withUid(d, uid)),
     ok: () => ({ activityIds: [ACT] }),
   },
   {
     name: "deleteAllActivityStreams", quotaAction: "activityDeleteAll", limit: 10,
-    call: (w, _d, uid = UID, p = "password") => handleDeleteAllActivityStreams(w.deps, uid, p),
+    call: (w, d, uid = UID, p = "password") => handleDeleteAllActivityStreams(w.deps, uid, p, d === undefined ? { expectedUid: uid } : withUid(d, uid)),
     ok: () => ({}),
   },
   {

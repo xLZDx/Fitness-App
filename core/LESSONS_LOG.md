@@ -515,3 +515,11 @@ Facts: three independent reviewers found the same withdrawal-durability gap on t
 Root cause: a whole-surface sweep was given to too few reviewers, and partial reports were not required.
 Layer: reviewers (coverage) and the brief author missed the unread files; the independent overlap caught the main defect.
 Rule next time: split a whole-surface sweep over more reviewers or per area, and require a partial report with an explicit list of files not read.
+
+## 2026-10-16 - Commit: test(s02): server tests for remediation J3a (epic 16a2, 1/2)
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: the structural scan makes the J1 shortcoming (a guard added to a named list of handlers) mechanical; the first run failed only on my own test bugs (an unused variable, and a log assertion that ignored the log accumulating across tests). The J3 notes list of stale call sites was complete (Grep found one more stale assertion in callable_hardening.test.ts: "deleteAll ignores the body"). Evidence: core/changes/2026-10-16-s02-test16a2-1-server-tests-j3a.md.
+Root cause: logger mock accumulates across tests, so a "not logged" assertion needs a mockClear first; the notes were derived from reading, so a Grep pass is still needed.
+Layer: tests (author) caught both.
+Rule next time: clear the logger mock before asserting the absence of a log line; always Grep for assertions that encode the old behavior, not only for call sites.

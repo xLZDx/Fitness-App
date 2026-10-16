@@ -197,7 +197,7 @@ describe("F68 consent withdrawal", () => {
     expect(r.streamDeleteStarted).toBe(true);
     expect(settingsOf(UID)).toMatchObject({ streamDeletePending: true });
     expect(settingsOf(UID).streamDeleteJobId).toMatch(/^job_/);
-    const res = await handleDeleteAllActivityStreams(w.deps, UID, "password");
+    const res = await handleDeleteAllActivityStreams(w.deps, UID, "password", { expectedUid: UID });
     expect(res).toMatchObject({ status: "done", deleted: 2 });
     expect(w.bucket.keys(`streams/${UID}/`)).toEqual([]);
     expect(rowOf(UID, ACT)).toBeUndefined();
@@ -218,7 +218,7 @@ describe("F68 consent withdrawal", () => {
 });
 
 describe("F82 activityDeleteAll has its own quota", () => {
-  const all = () => handleDeleteAllActivityStreams(w.deps, UID, "password");
+  const all = () => handleDeleteAllActivityStreams(w.deps, UID, "password", { expectedUid: UID });
   test("the 10th start of a day is accepted, the 11th is a bare quota code with no side effect, the next day resets", async () => {
     for (let i = 0; i < 10; i++) expect((await all()).status).toBe("done");
     expect(usageOf(UID, "activityDeleteAll")).toBe(10);

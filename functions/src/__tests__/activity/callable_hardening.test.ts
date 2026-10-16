@@ -130,10 +130,11 @@ describe("F60 shared input validation", () => {
     expect(w.bucket.signed.at(-1)!.path.startsWith(`streams/${UID}/${ACT}/`)).toBe(true);
     expect(dl.results[0].status).toBe("ok");
   });
-  test("settings: unknown keys are refused, never ignored; deleteAll ignores the body; telemetry refuses an unknown top-level key", async () => {
+  test("settings: unknown keys are refused, never ignored; deleteAll refuses a client body (J3a); telemetry refuses an unknown top-level key", async () => {
     await expectHttpsError(by("setActivityCloudSettings").call(w, { streamRetentionDays: 90, uid: UID_B }), "invalid-argument", "invalid_request");
     await expectHttpsError(by("sendDebugTelemetry").call(w, { events: [], uid: UID_B }), "invalid-argument", "invalid_batch");
-    expect((await by("deleteAllActivityStreams").call(w, { activityId: "../x", uid: UID_B })).status).toBe("done");
+    await expectHttpsError(by("deleteAllActivityStreams").call(w, { activityId: "../x", uid: UID_B }), "invalid-argument", "invalid_request");
+    expect((await by("deleteAllActivityStreams").call(w, {})).status).toBe("done");
   });
 });
 

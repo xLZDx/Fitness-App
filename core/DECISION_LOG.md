@@ -57727,3 +57727,7 @@ Decision: `getActivityStreamDownloadUrls` and `deleteAllActivityStreams` now req
 ## 2026-10-16 - Commit: fix(s02): class sweep findings in the client activity calls (remediation J3b)
 
 Decision: five client fixes from the class sweep: an unbound consent store is never granted and load() ignores it (B1); a refused withdrawal no longer cancels the uploader and a successful one re-arms the delete offer (B2); a transient account-changed tombstone push (pass still alive) schedules the normal backed-off retry with no failure bookkeeping (B3); the conflict presenter does nothing when the tap-time uid is null (B4); the uploader never reads a scoped journal bound to another account (B5). The accepted limits and backlog are in design item 25. Evidence: core/changes/2026-10-16-s02-remediation-j3b-client-class-sweep.md; NOT RUN (no test, analysis or build executed); test impact in docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md, section CLIENT (J3b, Dart).
+
+## 2026-10-16 - Commit: test(s02): server tests for remediation J3a (epic 16a2, 1/2)
+
+Decision: fix the existing server tests for the new expectedUid requirement and the deleteAll body argument, and add expected_uid_more_callables.test.ts with a structural scan of every onCall handler. Evidence: core/changes/2026-10-16-s02-test16a2-1-server-tests-j3a.md; focused run 7 suites / 321 tests passed.

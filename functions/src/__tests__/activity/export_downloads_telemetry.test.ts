@@ -26,7 +26,7 @@ import { SEVEN } from "./support/seven";
 let w: World;
 const actId = (n: number): string => `act_${n.toString(16).padStart(40, "0")}`;
 const exp = (data: unknown = {}, uid = UID): Promise<any> => (exportAccountData as any).run(callReq(data, uid));
-const dl = (ids: unknown, uid = UID, provider = "password") => handleGetActivityStreamDownloadUrls(w.deps, uid, provider, { activityIds: ids });
+const dl = (ids: unknown, uid = UID, provider = "password") => handleGetActivityStreamDownloadUrls(w.deps, uid, provider, { activityIds: ids, expectedUid: uid });
 
 beforeEach(() => {
   resetAll();

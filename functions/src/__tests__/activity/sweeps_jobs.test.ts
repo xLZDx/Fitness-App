@@ -487,7 +487,7 @@ describe("F54 commit racing deleteActivity", () => {
 describe("F81 deleteAllActivityStreams resumable job", () => {
   const SETTINGS = `users/${UID}/activity_settings/main`;
   const lim = (o: Partial<DeleteAllLimits> = {}): DeleteAllLimits => ({ ...DEFAULT_DELETE_ALL_LIMITS, budgetMs: 1e9, ...o });
-  const call = (o: Partial<DeleteAllLimits> = {}) => handleDeleteAllActivityStreams(w.deps, UID, "password", lim(o));
+  const call = (o: Partial<DeleteAllLimits> = {}) => handleDeleteAllActivityStreams(w.deps, UID, "password", { expectedUid: UID }, lim(o));
   function seedMany(n: number): void {
     store.set(SETTINGS, { cloudStreams: { version: 1, acceptedAt: ts(T0) }, settingsGeneration: 1, streamRetentionDays: 730 });
     for (let i = 1; i <= n; i++) {
@@ -563,7 +563,7 @@ describe("F81 deleteAllActivityStreams resumable job", () => {
   });
   test("an anonymous caller is refused", async () => {
     seedMany(1);
-    await expect(handleDeleteAllActivityStreams(w.deps, UID, "anonymous", lim())).rejects.toMatchObject({ code: "permission-denied" });
+    await expect(handleDeleteAllActivityStreams(w.deps, UID, "anonymous", { expectedUid: UID }, lim())).rejects.toMatchObject({ code: "permission-denied" });
   });
 });
 

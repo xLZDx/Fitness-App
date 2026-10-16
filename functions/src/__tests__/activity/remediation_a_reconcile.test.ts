@@ -133,7 +133,7 @@ describe("A3 bulk-delete fairness, stamps and age signal", () => {
     store.set(SET(UID), { ...settingsOf(UID), streamDeleteAttemptAt: ts(T0 - DAY), streamDeleteAttempts: 4 });
     store.set(`users/${UID}/activity_streams/${ACT}`, { state: "stored" });
     w.bucket.failOn = (op) => (op === "deleteFiles" ? Object.assign(new Error("x"), { code: 500 }) : null);
-    await expect(handleDeleteAllActivityStreams(w.deps, UID, "password")).rejects.toMatchObject({ message: "delete_failed" });
+    await expect(handleDeleteAllActivityStreams(w.deps, UID, "password", { expectedUid: UID })).rejects.toMatchObject({ message: "delete_failed" });
     expect(settingsOf(UID).streamDeleteStartedAt.toMillis()).toBe(T0);
     expect(settingsOf(UID).streamDeleteAttemptAt).toBeUndefined();
     expect(settingsOf(UID).streamDeleteAttempts).toBeUndefined();
@@ -142,7 +142,7 @@ describe("A3 bulk-delete fairness, stamps and age signal", () => {
     setNow(T0 + MIN);
     // a stamp from the reconciler, then the job completes
     store.set(SET(UID), { ...settingsOf(UID), streamDeleteAttemptAt: ts(T0), streamDeleteAttempts: 1 });
-    expect((await handleDeleteAllActivityStreams(w.deps, UID, "password")).status).toBe("done");
+    expect((await handleDeleteAllActivityStreams(w.deps, UID, "password", { expectedUid: UID })).status).toBe("done");
     for (const f of ["streamDeleteStartedAt", "streamDeleteAttemptAt", "streamDeleteAttempts", "streamDeleteJobId", "streamDeletePending"]) {
       expect(settingsOf(UID)[f]).toBeUndefined();
     }
@@ -167,7 +167,7 @@ describe("A14 a non-activity row id under activity_streams", () => {
     store.set(`users/${UID}/activity_streams/weird id!`, { state: "stored" });
     store.set(`users/${UID}/activity_streams/not_an_activity`, { state: "pending" });
     w.bucket.deleteFilesCalls.length = 0;
-    const res = await handleDeleteAllActivityStreams(w.deps, UID, "password");
+    const res = await handleDeleteAllActivityStreams(w.deps, UID, "password", { expectedUid: UID });
     expect(res.status).toBe("done");
     expect(res.deleted).toBe(1); // only the recognised row is counted
     expect([...store.keys()].filter((k) => k.includes("/activity_streams/"))).toEqual([]);

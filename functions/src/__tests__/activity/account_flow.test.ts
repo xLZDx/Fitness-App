@@ -312,7 +312,7 @@ describe("E05 deletion races end to end (functions part)", () => {
 describe("E03 stream lifecycle", () => {
   test("upload, commit, download URL, shorten retention, purge, delete activity, account sweep", async () => {
     seedReady();
-    const dl = () => handleGetActivityStreamDownloadUrls(w.deps, UID, "password", { activityIds: [ACT] });
+    const dl = () => handleGetActivityStreamDownloadUrls(w.deps, UID, "password", { activityIds: [ACT], expectedUid: UID });
     const f = await fullUpload(w);
     expect(rowOf(UID, ACT).state).toBe("stored");
     const url1 = await dl();
