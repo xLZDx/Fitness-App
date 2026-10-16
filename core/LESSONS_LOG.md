@@ -334,3 +334,9 @@ Why it worked: the guards are small and the H-B notes named the stale tests exac
 Kind: SUCCESS.
 Facts: All 11 tests passed on the first run, with a positive control for each guard (matching expectedUid resolves; no switch serves the cloud values). Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-state.md.
 Why it worked: each test blocks the exact await with a Gate and switches the account there, so the guard is the only thing between the stale result and B. Limit: the window between a passing _alive check and the delegated journal write is not closed (accepted limit).
+
+## 2026-10-16 - Remediation H-A compiled unchanged; stale fakes were the only breakage
+
+Kind: SHORTCOMING.
+Facts: The "never compiled" H-A production code compiled as is. Five _Settings fakes threw UnimplementedError for reset() and four older tests broke on the new contract (e.g. +13 -1 resume test, +0 -7 uploader tests where consent was uid-agnostic). The notes listed the fakes but not that tests flipping the uploader uid also need consent that follows it. Evidence: core/changes/2026-10-16-s02-test-epic14a-stale-fakes.md.
+Root cause: the uploader test fixtures assumed uid-agnostic consent. Layer that missed it: H-A authors (notes incomplete). Caught by: first compiled runs of the test layer. Rule next time: when a view gains a uid, grep every fixture that varies the uid supplier.

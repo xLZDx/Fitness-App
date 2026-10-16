@@ -24,6 +24,9 @@ void main() {
   setUp(() async {
     w = await StreamUploadWorld.open();
     uid = 'A';
+    // Consent follows the signed-in uid here; the consent binding itself is
+    // covered by the consent-uid tests.
+    w.consent.followUid = () => uid;
     uploader = w.makeUploader(currentUid: () => uid);
     await w.h.journal.put(journalSession(id, seed: 1));
     await w.summarySync();

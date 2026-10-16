@@ -230,11 +230,14 @@ void main() {
       w = await StreamUploadWorld.open();
     });
 
-    test('before sign-in the scoped store is unknown and drops writes', () async {
+    test('before sign-in the scoped store is unknown and a write THROWS '
+        '(never dropped silently, remediation H)', () async {
       SharedPreferences.setMockInitialValues({});
       final scoped = AccountScopedConsentStore();
-      await scoped.write(CloudStreamsConsent.granted);
+      await expectLater(
+          scoped.write(CloudStreamsConsent.granted), throwsStateError);
       expect(await scoped.read(), CloudStreamsConsent.unknown);
+      expect(scoped.boundUid, isNull);
       w = await StreamUploadWorld.open();
     });
   });

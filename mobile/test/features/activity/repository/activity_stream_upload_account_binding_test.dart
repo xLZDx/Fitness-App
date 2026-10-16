@@ -89,6 +89,9 @@ void main() {
     w = await StreamUploadWorld.open();
     spy = _SpyJournal(w.h.journal);
     uid = 'A';
+    // These tests flip the signed-in uid; consent follows it (remediation H
+    // needs consentUid == the run's uid). Consent binding has its own tests.
+    w.consent.followUid = () => uid;
     await seedSynced(id);
   });
 

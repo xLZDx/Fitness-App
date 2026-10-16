@@ -113,6 +113,10 @@ class _Uploader extends Fake implements ActivityStreamUploader {
 
 class _Settings extends Fake implements ActivityCloudSettingsClient {
   int loads = 0;
+  int resets = 0;
+
+  @override
+  void reset() => resets++;
 
   @override
   Future<void> load() async => loads++;

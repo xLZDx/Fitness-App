@@ -166,8 +166,19 @@ class FakeStreamCloud implements ActivityStreamCallableClient {
 }
 
 class FakeConsent implements CloudStreamsConsentView {
-  FakeConsent(this.granted);
+  FakeConsent(this.granted, {this.fixedConsentUid = 'uid'});
   bool granted;
+
+  /// The uid the consent belongs to when [followUid] is not set.
+  String? fixedConsentUid;
+
+  /// When set, the consent always belongs to whoever this supplier answers
+  /// (tests that flip the uploader's uid mid-run and are not about consent).
+  String? Function()? followUid;
+
+  @override
+  String? get consentUid => followUid != null ? followUid!() : fixedConsentUid;
+  set consentUid(String? value) => fixedConsentUid = value;
   @override
   bool get isGranted => granted;
 }

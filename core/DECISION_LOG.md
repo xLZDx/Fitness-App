@@ -57630,3 +57630,7 @@ Decision: Presenter and sheet tests (3 + 4) assert the first frame of a new uid 
 ## 2026-10-16 - Commit: test(s02): H6 queued tap expectedUid and H7 cache and view guards (epic 14b)
 
 Decision: Eleven repository tests assert a tap queued under A behind a blocked syncAll leaves B's same-id entry byte-identical with outcome pending for resolveConflict and resolveCandidate, the direct expectedUid call, the conflict cache is not filled by a stale updateSyncState or readSummary, and refreshState discards a result across a switch (B's state, JournalUnbound, or three attempts then JournalUnbound). Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-state.md.
+
+## 2026-10-16 - Commit: test(s02): update stale fakes and older assertions for remediation H-A (epic 14a)
+
+Decision: FakeConsent gets consentUid (fixed or following the uploader uid), five _Settings fakes get reset(), and four older assertions change to the new contract (write before sign-in throws, resume after sync, resume failure logged in the upload step, consent follows a flipped uid). Evidence: core/changes/2026-10-16-s02-test-epic14a-stale-fakes.md.

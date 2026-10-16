@@ -56,6 +56,10 @@ class _Settings extends Fake implements ActivityCloudSettingsClient {
   _Settings(this.events);
   final List<String> events;
   Object? loadError;
+  int resets = 0;
+
+  @override
+  void reset() => resets++;
 
   @override
   Future<void> load() async {
@@ -369,10 +373,15 @@ void main() {
       final c = container();
       c.read(activityCloudSyncWiringProvider);
       await emit(user('B'));
-      await until(() => logs.any((l) => l.contains('start wiring failed')));
+      // Remediation H: resume runs inside the stream-upload step, so the
+      // failure is logged there (the outer defensive catch is not reached).
+      await until(
+          () => logs.any((l) => l.contains('start stream upload failed')));
       expect(logs.any((l) => l.contains('StateError')), isTrue);
       expect(runs(), 0);
-      expect(backend.calls, isEmpty);
+      // The summary sync now runs BEFORE the resume (remediation H): it read
+      // the tombstone list but wrote nothing.
+      expect(backend.calls, ['listTombstoneIds']);
     });
 
     test('syncAll throws: logged, the stream upload still runs', () async {

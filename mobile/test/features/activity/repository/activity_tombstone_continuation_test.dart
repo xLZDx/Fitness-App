@@ -225,6 +225,9 @@ const _slow = Timeout(Duration(minutes: 5));
 
 class _Settings extends Fake implements ActivityCloudSettingsClient {
   @override
+  void reset() {}
+
+  @override
   Future<void> load() async {}
 }
 

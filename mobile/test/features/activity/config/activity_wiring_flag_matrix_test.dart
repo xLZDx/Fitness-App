@@ -55,6 +55,8 @@ class _Inner implements LocalDataWipe {
 class _Settings extends Fake implements ActivityCloudSettingsClient {
   int loads = 0;
   @override
+  void reset() {}
+  @override
   Future<void> load() async => loads++;
 }
 
