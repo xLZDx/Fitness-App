@@ -56907,3 +56907,7 @@ Decision: The summary rules use one allowlist identical to summary_fields.dart, 
 ## 2026-10-16 - Commit: S02-04a: closed-schema stream validator, canonical serialiser, SHA-256 helpers
 
 Decision: The server rejects (never strips) unknown keys at every depth, allows only gps, altitude and speed, re-serialises the parsed structure into a deterministic canonical gzip and returns separate contentSha256 and storedSha256; the string patterns are PROPOSED and carry an extra coordinate-like denial pending security review. Evidence: core/changes/2026-10-16-s02-04a-validator-and-schemas.md.
+
+## 2026-10-16 - Commit: S02-04a: stream bucket setting, path builders, bucket seam, runbook
+
+Decision: Streams use a dedicated private bucket named by ACTIVITY_STREAM_BUCKET (treated as unset when equal to the Body Scan bucket), storage.rules stays the single deny-all, and callables reach the bucket only through an injectable seam and validated-id path builders. Evidence: core/changes/2026-10-16-s02-04a-bucket-and-paths.md.
