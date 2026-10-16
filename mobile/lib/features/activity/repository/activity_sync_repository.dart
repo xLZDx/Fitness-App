@@ -243,6 +243,23 @@ class ActivitySyncRepository {
     return true;
   }
 
+  /// Why [p] may not run: a reason word only, never a uid (remediation G5).
+  String _skipReason(_Pass p) {
+    if (_journalUnbound) return 'journal-unbound';
+    if (_tiesJournalToAuth) {
+      if (p.authUid == null) return 'auth-null';
+      if (p.journalUid != p.authUid) return 'journal-auth-mismatch';
+    }
+    if (p.epoch != _epoch) return 'pass-identity';
+    return 'auth-changed';
+  }
+
+  /// Logs that a pass (or its remainder) did nothing, so a skipped sync is
+  /// observable. Reason word only; no uid, no id.
+  void _logSkip(String op, _Pass p) {
+    debugPrint('activity: $op skipped (${_skipReason(p)})');
+  }
+
   final TombstoneRetryTimerFactory _timerFactory;
   final Set<String> _confirmedTombstones = {};
   final Set<String> _failedTombstones = {};
@@ -565,8 +582,14 @@ class ActivitySyncRepository {
         var tombs = <String>{};
         var tombsKnown = false;
         // Nothing is bound: no backend call, no outcomes (not "all synced").
-        if (_journalUnbound) return out;
-        if (!_mayCall(p)) return out;
+        if (_journalUnbound) {
+          _logSkip('syncAll', p);
+          return out;
+        }
+        if (!_mayCall(p)) {
+          _logSkip('syncAll', p);
+          return out;
+        }
         try {
           tombs = await _backend.listTombstoneIds();
           tombsKnown = true;
@@ -783,6 +806,25 @@ class ActivitySyncRepository {
     // marks must not leak into account B.
     _conflictCache.clear();
     _conflictTried.clear();
+    // A live subscriber (the conflict presenter) must not keep showing the
+    // previous account's conflicts: publish now. An unbound journal reaches the
+    // stream as [JournalUnbound]. Never throws.
+    onJournalBindingChanged();
+  }
+
+  /// The journal binding changed (a bind finished with success, failure or an
+  /// exception, or an unbind): publish the current state to every subscriber.
+  /// An unbound journal reaches the stream as [JournalUnbound], so a live
+  /// presenter shows its failed state without a tap. A bind that failed never
+  /// runs [syncAll], so nothing else would publish. No-op after [dispose];
+  /// never throws.
+  void onJournalBindingChanged() {
+    if (_disposed) return;
+    try {
+      _publish();
+    } catch (e) {
+      debugPrint('activity: publish after binding change failed (${e.runtimeType})');
+    }
   }
 
   /// Syncs at most [kMaxSummaryBatch] entries; a larger request is refused
@@ -802,9 +844,15 @@ class ActivitySyncRepository {
   Future<SyncOutcome> _syncLocked(String id, {_Server? known}) async {
     // An unbound journal reads as empty: that is "cannot sync now", never
     // success and never notFound; no backend call is made.
-    if (_journalUnbound) return SyncOutcome.pending;
     final p = _pass;
-    if (!_alive(p)) return SyncOutcome.pending;
+    if (_journalUnbound) {
+      _logSkip('syncEntry', p);
+      return SyncOutcome.pending;
+    }
+    if (!_alive(p)) {
+      _logSkip('syncEntry', p);
+      return SyncOutcome.pending;
+    }
     JournalEntry? entry;
     try {
       entry = await _journal.read(id);

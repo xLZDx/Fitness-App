@@ -187,3 +187,10 @@ Facts: a pass starting between `FirebaseAuth.currentUser` flipping to B and the 
 Root cause: the author of F1 and F2 tied the pass to the epoch and the journal uid, and separately to the auth uid, but never to each other.
 Layers: the author missed it; the 12a tests never started a pass with journal and auth disagreeing; the first round of four independent reviewers and the F implementers missed it; the second independent review round (reliability and security reviewers, independently) caught it.
 Rule next time: when two sources of identity exist, tie them to each other at pass start and re-check the tie before each side effect, and test the disagreement case.
+
+## 2026-10-16 - S02 remediation G2/G5: republish on account or binding change
+Kind: FAILURE.
+Facts: `onAccountChanged()` cleared caches but never published and nothing published after a bind or unbind, so the live conflict presenter kept the previous account's conflicts and never got `loadFailed` after a failed bind (core/changes/2026-10-16-s02-remediation-g-republish-and-skip-log.md).
+Root cause: F1 treated "state changed" as something the next sync pass would announce; a failed bind never starts a pass.
+Layers: the author and the F implementers missed it; the first review round missed it; the Flutter reviewer of the second round caught it.
+Rule next time: every transition that invalidates displayed state must publish itself, not rely on a later pass; test with a live subscriber and no user action.

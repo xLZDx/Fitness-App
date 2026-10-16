@@ -57545,3 +57545,7 @@ Decision: the epic 9 oracle that a later success never clears `lastTombstonePush
 ## 2026-10-16 - Commit: S02 remediation G1 journal uid tied to auth uid
 
 Decision: a sync pass on an account-scoped journal with an auth supplier is valid only when the bound journal uid equals the signed-in uid exactly at the start (`_beginPass`, otherwise a dead pass that does nothing) and again right before every backend or pusher call (`_mayCall`); plain journals and a null supplier are unchanged; a null auth uid stays fail-closed. Evidence: core/changes/2026-10-16-s02-remediation-g-journal-auth-tie.md.
+
+## 2026-10-16 - Commit: S02 remediation G2 republish on account or binding change, G5 skip logging
+
+Decision: `onAccountChanged()` and the new `onJournalBindingChanged()` publish the state (unbound reaches the stream as `JournalUnbound`); the binding provider and the cloud sync wiring call it after every `bindUid` completion only with `cloudSync` on and while not disposed; skipped passes log a reason word, never a uid. Evidence: core/changes/2026-10-16-s02-remediation-g-republish-and-skip-log.md.

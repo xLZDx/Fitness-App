@@ -100,7 +100,9 @@ final activityJournalBindingProvider = Provider<void>((ref) {
   // [generation], which cancels the pending retry and invalidates running ones.
   Timer? pending;
   var generation = 0;
+  var disposed = false;
   ref.onDispose(() {
+    disposed = true;
     generation++;
     pending?.cancel();
     pending = null;
@@ -122,6 +124,9 @@ final activityJournalBindingProvider = Provider<void>((ref) {
     } catch (e) {
       debugPrint('activity: journal bind failed (${e.runtimeType})');
     }
+    // Every completion (success, false, exception) changes what a live
+    // subscriber must show: publish the binding change.
+    if (!disposed) _publishBindingChange(ref);
     // Unbinding (null) and a successful bind are final. A failed bind of a uid
     // would otherwise leave the journal unbound for the whole session.
     if (bound || uid == null) return;
@@ -151,6 +156,19 @@ final activityJournalBindingProvider = Provider<void>((ref) {
     unawaited(attempt(target, generation, 0));
   }, fireImmediately: true);
 });
+
+/// Tells the sync repository that the journal binding changed so a live
+/// conflict presenter republishes (remediation G2). Only with `cloudSync` (the
+/// repository provider exists only then); never throws. Callers check that
+/// their own provider has not been disposed.
+void _publishBindingChange(Ref ref) {
+  try {
+    if (!ref.read(activityFlagsProvider).cloudSync) return;
+    ref.read(activitySyncRepositoryProvider).onJournalBindingChanged();
+  } catch (e) {
+    debugPrint('activity: binding change not published (${e.runtimeType})');
+  }
+}
 
 /// Delays before the 1st..5th retry of a failed journal bind (at most 5).
 const List<Duration> kActivityBindRetryDelays = [
@@ -239,6 +257,8 @@ final activityConsentWithdrawalProvider =
 final activityCloudSyncWiringProvider = Provider<void>((ref) {
   if (!ref.watch(activityFlagsProvider).cloudSync) return;
   if (ref.watch(activityJournalProvider) == null) return;
+  var disposed = false;
+  ref.onDispose(() => disposed = true);
   ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
     final user = next.valueOrNull;
     final previousUid = _syncUid(previous?.valueOrNull);
@@ -260,10 +280,18 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
         // The journal of this uid must be bound first (account-scoped
         // journals: ownership is the location). Fail closed: no sync and no
         // upload unless the bind succeeded. Nothing is ever wiped here.
-        if (journal case final AccountScopedJournal scoped
-            when !await scoped.bindUid(nextUid)) {
-          debugPrint('activity: journal bind failed; sync not started');
-          return;
+        if (journal case final AccountScopedJournal scoped) {
+          var bound = false;
+          try {
+            bound = await scoped.bindUid(nextUid);
+          } finally {
+            // Success, false or exception: a live subscriber must republish.
+            if (!disposed) _publishBindingChange(ref);
+          }
+          if (!bound) {
+            debugPrint('activity: journal bind failed; sync not started');
+            return;
+          }
         }
         // The account may have changed while the bind ran: do nothing more.
         if (_syncUid(ref.read(authUserProvider).valueOrNull) != nextUid) return;
