@@ -128,6 +128,10 @@ class JournalHarness {
   late FileActivityJournal journal;
   final List<(String, int)> acks = [];
 
+  /// Read-failure predicate installed on every new fault file system BEFORE
+  /// the recovery pass of [open] (additive; null = no read fault).
+  bool Function(String path)? failReadsOnOpen;
+
   /// Operations of the last start/recovery pass.
   List<FsOp> recoveryLog = const [];
 
@@ -140,8 +144,9 @@ class JournalHarness {
   Future<JournalRecoveryReport> open({
     DateTime Function()? clockOverride,
   }) async {
-    fs = FaultInjectingJournalFileSystem(delegate);
-    journal = FileActivityJournal(
+    fs = FaultInjectingJournalFileSystem(delegate)
+      ..failReadWhen = failReadsOnOpen;
+    journal =FileActivityJournal(
       rootPath: root,
       fileSystem: fs,
       keyProvider: keys,

@@ -57319,3 +57319,7 @@ Decision: SF1, SF2 and SF3 are pinned by tests whose oracles are the B1 test not
 ## 2026-10-16 - Commit: S02 test epic 8a: validator separator bound (A8)
 
 Decision: Remediation A8 validator bound is pinned with a JSON.parse spy; the scaling profile pin belongs to epic 8b.
+
+## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation tests (B1 SF1-SF3)
+
+Decision: the B1 tests add an additive read-failure mode (failReadWhen, failReadsOnOpen) to the shared fault file system and harness instead of a new fake; B1 production code needed no change.

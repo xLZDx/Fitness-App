@@ -352,9 +352,19 @@ class FaultInjectingJournalFileSystem implements JournalFileSystem {
   /// read-back, bit rot between write and verify).
   Uint8List Function(String path, Uint8List bytes)? onRead;
 
+  /// Optional read-failure mode (additive): while this returns true for a
+  /// path, [readBytes] of an EXISTING file throws a non-not-found
+  /// [FileSystemException] (I/O error, errno 5); `exists` keeps answering true.
+  /// Set to null to remove the fault. Missing files still fail as not found.
+  bool Function(String path)? failReadWhen;
+
   @override
   Future<Uint8List> readBytes(String path) => _op(FsOpKind.readBytes, path, () async {
         final b = await inner.readBytes(path);
+        if (failReadWhen?.call(path) ?? false) {
+          throw FileSystemException('injected read I/O failure', path,
+              const OSError('Input/output error', 5));
+        }
         final hook = onRead;
         return hook == null ? b : hook(path, b);
       });
