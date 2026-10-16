@@ -54,6 +54,10 @@ class _FlakyJournal implements ActivityJournal {
     return inner.list();
   }
 
+  /// `refreshState()` also counts the unconfirmed local tombstones (E2).
+  @override
+  Future<List<JournalEntry>> listTombstones() => inner.listTombstones();
+
   @override
   dynamic noSuchMethod(Invocation i) => throw UnimplementedError('${i.memberName}');
 }

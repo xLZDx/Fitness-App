@@ -87,3 +87,6 @@ Kind: SUCCESS, with one test-side slip: a scripted edit lost the escaping of apo
 
 ## 2026-10-16 - Account-switch promise test (test epic 11a, part d)
 SUCCESS: the user-level promise from the incident now has a test that fails if a switch deletes or adopts data; layer that was missing: user-level e2e, the earlier tests asserted the marker mechanics rather than the promise.
+
+## 2026-10-16 - Stale journal fake after the E2 state change (test epic 11b)
+FAILURE: `refreshState()` began to call `journal.listTombstones()` in E2 and the epic 10a fake `_FlakyJournal` (noSuchMethod throws) was not updated, so 4 existing state tests failed with `UnimplementedError`. Root cause: a production method gained a new journal dependency while hand-written fakes that throw on unknown calls were not searched. Layers: the E2 author did not grep fakes of the interface; reviewers did not either; the complete epic run caught it. Rule next time: when a method gains a call on an interface, grep every fake of that interface (especially noSuchMethod fakes) in the same commit.

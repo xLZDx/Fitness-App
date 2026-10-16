@@ -57473,3 +57473,7 @@ Decision: the flag matrix and the account-wipe e2e run on the real scoped journa
 ## 2026-10-16 - Commit: S02 test epic 11a (d) account-switch promise e2e
 
 Decision: the promise "signing in as someone else never destroys my data" is pinned by an end-to-end test over the real file journal. Evidence: core/changes/2026-10-16-s02-test-epic11a-promise-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b findings and stale fake fix
+
+Decision: the complete epic 11b runs are green after the stale journal fake forwards `listTombstones()`; the epic findings file records defects, commands and remaining limits. Evidence: core/changes/2026-10-16-s02-test-epic11b-findings-and-fake-fix.md.
