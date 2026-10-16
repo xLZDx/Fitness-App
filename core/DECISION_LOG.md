@@ -57323,3 +57323,7 @@ Decision: Remediation A8 validator bound is pinned with a JSON.parse spy; the sc
 ## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation tests (B1 SF1-SF3)
 
 Decision: the B1 tests add an additive read-failure mode (failReadWhen, failReadsOnOpen) to the shared fault file system and harness instead of a new fake; B1 production code needed no change.
+
+## 2026-10-16 - Commit: S02 test epic 9a: read-failure callers fix and tests
+
+Decision: a local read I/O failure is retryable per entry; callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.

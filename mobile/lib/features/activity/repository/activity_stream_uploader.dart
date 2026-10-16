@@ -36,6 +36,7 @@ import '../../../core/config/activity_flags.dart';
 import '../../../core/firebase/functions_region.dart';
 import '../data/activity_stream_payload.dart';
 import 'activity_journal.dart';
+import 'journal_errors.dart';
 import 'journal_models.dart';
 
 /// At most this many attempts per run (design 5.2 item 4).
@@ -187,7 +188,13 @@ class ActivityStreamUploader {
   /// the library comment).
   Future<StreamUploadOutcome> uploadEntry(String id) async {
     if (!_mayUpload) return StreamUploadOutcome.skipped;
-    final entry = await _journal.read(id);
+    final JournalEntry? entry;
+    try {
+      entry = await _journal.read(id);
+    } on JournalIoException {
+      // Local read I/O error: the entry stays pending, retried at a later start.
+      return StreamUploadOutcome.failed;
+    }
     if (entry == null ||
         entry.state.tombstone ||
         entry.streamLost ||

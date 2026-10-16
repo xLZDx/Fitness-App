@@ -30,6 +30,7 @@ import '../data/summary_overrides.dart';
 import '../data/summary_projection.dart';
 import '../data/summary_three_way_merge.dart';
 import 'activity_journal.dart';
+import 'journal_errors.dart';
 import 'activity_summary_backend.dart';
 import 'journal_models.dart';
 import 'summary_codec.dart';
@@ -435,7 +436,13 @@ class ActivitySyncRepository {
   }
 
   Future<SyncOutcome> _syncLocked(String id, {_Server? known}) async {
-    var entry = await _journal.read(id);
+    JournalEntry? entry;
+    try {
+      entry = await _journal.read(id);
+    } on JournalIoException {
+      // Local read I/O error: nothing changed, retried at the next pass.
+      return SyncOutcome.pending;
+    }
     if (entry == null) return SyncOutcome.notFound;
     if (entry.session.isReadOnly) return SyncOutcome.readOnly;
     final reconciled = await _reconciled(entry);
@@ -615,7 +622,14 @@ class ActivitySyncRepository {
   /// values, overrides, edit counter and history) of the stored entry, is put
   /// as ONE generation and synced.
   Future<SyncOutcome> saveSession(ActivitySession incoming) => _ops.run(() async {
-        final prev = await _journal.read(incoming.id);
+        final JournalEntry? prev;
+        try {
+          prev = await _journal.read(incoming.id);
+        } on JournalIoException {
+          // The stored entry (overrides, edits) cannot be read right now: do
+          // not overwrite it blindly; nothing is changed, retry later.
+          return SyncOutcome.pending;
+        }
         var next = incoming;
         JournalSyncState? keep;
         if (prev != null) {

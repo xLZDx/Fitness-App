@@ -15,6 +15,7 @@ import '../data/activity_session.dart';
 import '../data/fit_encoder.dart';
 import '../data/gpx_encoder.dart';
 import 'activity_journal.dart';
+import 'journal_errors.dart';
 import 'journal_models.dart';
 
 enum ActivityExportFormat {
@@ -60,6 +61,12 @@ class ActivityExportNotFound extends ActivityExportResult {
   const ActivityExportNotFound(super.activityId);
 }
 
+/// The entry exists but could not be read because of a local I/O error; the
+/// export can be retried (nothing was changed or dropped).
+class ActivityExportUnavailable extends ActivityExportResult {
+  const ActivityExportUnavailable(super.activityId);
+}
+
 /// The record is readable but its streams were lost (key loss); only the JSON
 /// summary record can be exported, GPX and FIT would silently lack data.
 class ActivityExportStreamLost extends ActivityExportResult {
@@ -89,7 +96,13 @@ class JournalActivityLocalExport implements ActivityLocalExport {
     String activityId,
     ActivityExportFormat format,
   ) async {
-    final JournalEntry? entry = await _journal.read(activityId);
+    final JournalEntry? entry;
+    try {
+      entry = await _journal.read(activityId);
+    } on JournalIoException {
+      // A read I/O error is transient: the entry still exists, retry later.
+      return ActivityExportUnavailable(activityId);
+    }
     if (entry == null) return ActivityExportNotFound(activityId);
     return encodeEntry(entry, format);
   }

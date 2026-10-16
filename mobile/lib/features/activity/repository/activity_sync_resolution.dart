@@ -22,7 +22,12 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   /// [SyncOutcome.alreadyResolved].
   Future<SyncOutcome> resolveConflict(String id, ConflictChoice choice) =>
       _ops.run(() async {
-        final read = await _journal.read(id);
+        final JournalEntry? read;
+        try {
+          read = await _journal.read(id);
+        } on JournalIoException {
+          return SyncOutcome.pending; // local read I/O error: retry later
+        }
         if (read == null) return SyncOutcome.notFound;
         if (read.session.isReadOnly) return SyncOutcome.readOnly;
         if (read.state.syncState != JournalSyncState.syncConflict) {
@@ -115,7 +120,12 @@ extension ActivitySyncResolution on ActivitySyncRepository {
     CandidateChoice choice,
   ) =>
       _ops.run(() async {
-        final entry = await _journal.read(id);
+        final JournalEntry? entry;
+        try {
+          entry = await _journal.read(id);
+        } on JournalIoException {
+          return SyncOutcome.pending; // local read I/O error: retry later
+        }
         if (entry == null) return SyncOutcome.notFound;
         if (entry.session.isReadOnly) return SyncOutcome.readOnly;
         final session =
@@ -177,7 +187,12 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   Future<SyncOutcome> applyExplicitEdit(
           String id, Map<String, double> edits) =>
       _ops.run(() async {
-        final entry = await _journal.read(id);
+        final JournalEntry? entry;
+        try {
+          entry = await _journal.read(id);
+        } on JournalIoException {
+          return SyncOutcome.pending; // local read I/O error: retry later
+        }
         if (entry == null) return SyncOutcome.notFound;
         if (entry.session.isReadOnly) return SyncOutcome.readOnly;
         final session =
