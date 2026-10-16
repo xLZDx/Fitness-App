@@ -57501,3 +57501,7 @@ Decision: `cancelQueued()` drops the uploader single-flight state and failed ids
 ## 2026-10-16 - Commit: S02 remediation F2 (3/4) binding retry, deleting skip, authUid
 
 Decision: the journal binding retries a failed bind with bounded backoff through an injectable timer factory, never binds the account being deleted, and the sync repository receives an authUid supplier. Evidence: core/changes/2026-10-16-s02-remediation-f2-binding.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 test notes
+
+Decision: F2 test oracles recorded in docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md. Evidence: core/changes/2026-10-16-s02-remediation-f2-test-notes.md.

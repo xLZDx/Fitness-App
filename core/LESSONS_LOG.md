@@ -128,3 +128,8 @@ Facts: the binding provider discarded the bool of `bindUid`, so one transient se
 Root cause: a fail-closed API (returns false) was wired as fire-and-forget; nobody owned the retry.
 Layers: the author of E1 and the epic 11a wiring tests missed it (the fake never failed a bind); the independent reliability and silent-failure reviewers caught it.
 Rule next time: every fail-closed result must have a consumer that retries or surfaces it; test the failing first call.
+
+## 2026-10-16 - S02 remediation F2 test notes
+Kind: NEUTRAL.
+Facts: the F2 test oracles and the stale-fake list are written down before any test exists (core/changes/2026-10-16-s02-remediation-f2-test-notes.md).
+Rule applied: list every implementer of a changed interface in the same commit series (lesson of the stale journal fake).
