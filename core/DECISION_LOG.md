@@ -57019,3 +57019,7 @@ Decision: Quarantine is a pure raw-text validation stage with hard limits and re
 ## 2026-10-16 - Commit: S02-12: sync foundations
 
 Decision: The journal gains updateRecord, which commits a changed session map and sync state as one generation reusing the existing streams bytes, so overrides, explicit values, candidates and conflict state change atomically even for a streamLost entry; the cloud is reached only through a small backend seam whose denial is a typed exception never read as deletion, and baseSummary is stored with ISO timestamp strings
+
+## 2026-10-16 - Commit: S02-12: sync orchestration and resolution operations
+
+Decision: ActivitySyncRepository uploads with an optimistic rev, reads tombstone then server on a denial, merges three-way once and otherwise leaves sync_conflict; user choices and candidate resolutions persist their change (overrides, explicit values, adjusted baseSummary) in one generation before any write, so they are durable and idempotent; derived metadata keys are device-owned and cannot conflict
