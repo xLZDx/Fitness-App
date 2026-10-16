@@ -165,9 +165,24 @@ class ActivityStreamUploader {
   bool _cancelled = false;
   final Set<String> _failedThisStart = {};
 
+  /// Incremented by [cancelQueued]; a run that started in an older epoch never
+  /// records a failure in the current one.
+  int _epoch = 0;
+
   /// Stops every queued entry and every in-flight run before its next network
-  /// step (consent withdrawal, design 9.1).
-  void cancelQueued() => _cancelled = true;
+  /// step (consent withdrawal, design 9.1, and account change). The single-flight
+  /// state and the failed-id set belong to the account that was current, so they
+  /// are dropped here: after an account switch [runPending] starts a fresh run
+  /// for the new account, and the old account's in-flight run still ends as
+  /// cancelled (its uid re-checks stay) without clearing or writing anything of
+  /// the new account's.
+  void cancelQueued() {
+    _cancelled = true;
+    _epoch++;
+    _runInFlight = null;
+    _entryInFlight.clear();
+    _failedThisStart.clear();
+  }
 
   /// Lifts [cancelQueued] (consent granted again).
   void resume() => _cancelled = false;
@@ -182,7 +197,12 @@ class ActivityStreamUploader {
   Future<void> runPending() {
     final running = _runInFlight;
     if (running != null) return running;
-    final run = _runPending().whenComplete(() => _runInFlight = null);
+    late final Future<void> run;
+    run = _runPending().whenComplete(() {
+      // Only the run that owns the slot may free it (a run of a cancelled
+      // account must not free the next account's run).
+      if (identical(_runInFlight, run)) _runInFlight = null;
+    });
     _runInFlight = run;
     return run;
   }
@@ -224,14 +244,16 @@ class ActivityStreamUploader {
     final running = _entryInFlight[id];
     if (running != null) return running;
     final bound = boundUid ?? _currentUid?.call();
-    final run = _uploadEntry(id, bound).whenComplete(() {
-      _entryInFlight.remove(id);
+    late final Future<StreamUploadOutcome> run;
+    run = _uploadEntry(id, bound).whenComplete(() {
+      if (identical(_entryInFlight[id], run)) _entryInFlight.remove(id);
     });
     _entryInFlight[id] = run;
     return run;
   }
 
   Future<StreamUploadOutcome> _uploadEntry(String id, String? bound) async {
+    final epoch = _epoch;
     if (!_mayUpload) return StreamUploadOutcome.skipped;
     if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
     final JournalEntry? entry;
@@ -296,7 +318,7 @@ class ActivityStreamUploader {
       await _delay(wait);
       if (_now().difference(startedAt) >= kStreamUploadBudget) break;
     }
-    if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
+    if (!_uidOk(bound) || epoch != _epoch) return StreamUploadOutcome.cancelled;
     _failedThisStart.add(id);
     // Never overwrite a summary conflict with the upload failure.
     if (entry.state.syncState != JournalSyncState.syncConflict) {

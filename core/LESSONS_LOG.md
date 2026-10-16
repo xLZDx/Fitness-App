@@ -114,3 +114,10 @@ Facts: a `syncAll` pass of account A in flight at an account switch kept acting 
 Root cause: the E2 author pinned only the tombstone phase; the account-scoped journal facade of E1 made every later call in the pass resolve against whichever account is bound now.
 Layers: the E2 author missed it; the epic 11a/11b tests never switched account mid-pass; four independent reviewers caught it.
 Rule next time: every async pass that touches per-account state carries a pass identity and re-checks it before every side effect, and each long-running operation gets a switch-account-mid-flight test.
+
+## 2026-10-16 - S02 remediation F2 (4/4): uploader single-flight state across an account switch
+Kind: FAILURE.
+Facts: `_runInFlight`, `_entryInFlight` and `_failedThisStart` of the stream uploader survived A to B, so `runPending()` returned A cancelled future and B got no upload run in that app start (core/changes/2026-10-16-s02-remediation-f2-uploader-switch.md).
+Root cause: the same class as the E2 retry-timer defect: in-memory state next to an account-scoped store was not reset on the account change; the lesson from epic 11b was applied to the sync repository only, not searched across the other components.
+Layers: the author of E1 and the epic 11a tests missed it (no test switched accounts through the uploader); the independent Flutter reviewer caught it.
+Rule next time: after fixing one account-scoped state defect, grep every in-memory field of every component wired to the same auth stream.

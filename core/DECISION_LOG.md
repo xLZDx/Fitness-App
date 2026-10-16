@@ -57493,3 +57493,7 @@ Decision: `forget()` propagates secure-storage failures so the wipe is reported 
 ## 2026-10-16 - Commit: S02 remediation F1 (1/4) sync pass identity and pinning
 
 Decision: every serialized sync operation carries a pass identity (account epoch, bound journal uid, auth uid) and re-checks it before every journal write and, synchronously, before every backend or tombstone-pusher call; a stale pass stops with `pending`. Evidence: core/changes/2026-10-16-s02-remediation-f1-pass-identity.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (4/4) uploader state reset on account change
+
+Decision: `cancelQueued()` drops the uploader single-flight state and failed ids and bumps an epoch; slot cleanup is identity-guarded. Evidence: core/changes/2026-10-16-s02-remediation-f2-uploader-switch.md.
