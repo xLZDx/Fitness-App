@@ -56855,3 +56855,7 @@ Decision: resolving a recalculation or source candidate is a single atomic opera
 ## 2026-10-16 - Commit: S02 documentation phase closed
 
 Decision: the S02 documentation gate is closed on GPT-PM APPROVE for head 9c68cab8 (verification round 10); implementation of S02 starts. Evidence: core/changes/2026-10-16-s02-documentation-phase-closed.md.
+
+## 2026-10-16 - Commit: S02-01 model building blocks
+
+Decision: the cloud-summary allowlist and bounds live in one Dart constant file, sub-models keep unknown keys in extras, and explicit values and cloud overrides are plain data classes with tolerant readers. Evidence: core/changes/2026-10-16-s02-01-model-building-blocks.md.
