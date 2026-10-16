@@ -57291,3 +57291,7 @@ Decision: The two NOT WIRED account wipe tests run against the real decorator co
 ## 2026-10-16 - Commit: S02 test epic 8b: rules and TTL checker
 
 Decision: primarySourceId rule behaviour is pinned on the emulator against the stream sourceId pattern plus the coordinate-like denial; a new script check_ttl_overrides.js fails when a required TTL fieldOverride is missing from firestore.indexes.json.
+
+## 2026-10-16 - Commit: S02 test epic 8b: policy, privacy and scaling tests
+
+Decision: the privacy draft, the tombstone TTL text, the five-entry late-sweep list, the pre-S02 access-checker violations and the ACTIVITY_COMMIT and reconciler memory profiles are pinned by tests whose oracles come from the remediation notes; the Russian privacy section stays untested until its wording is approved.

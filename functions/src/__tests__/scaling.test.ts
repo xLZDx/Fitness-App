@@ -47,7 +47,7 @@ jest.mock("firebase-functions/logger", () => ({
 
 import * as index from "../index";
 import { clipUrl, clipUrls } from "../video_urls";
-import { AI_METERED, BODY_SCAN, FOOD_LOOKUP, INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
+import { ACTIVITY_COMMIT, AI_METERED, BODY_SCAN, FOOD_LOOKUP, INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
 import { noteAppCheck } from "../abuse_guard";
 
 /** `__endpoint` is internal to firebase-functions and untyped for consumers. */
@@ -216,6 +216,8 @@ describe("scaling ceilings", () => {
       "purgeExpiredActivityStreams",
       "sweepLateActivityStreams",
       "reconcileActivityStreams",
+      // S02 remediation A8: the commit callable runs on ACTIVITY_COMMIT (concurrency 4).
+      "commitActivityStream",
     ];
     // The food AI callables ride AI_METERED, which sets an explicit concurrency.
     explicitConcurrency.push("analyzeMealPhoto", "parseNutritionLabel");
@@ -234,6 +236,31 @@ describe("scaling ceilings", () => {
     // edit that quietly raises it back toward the default fails here first.
     expect(AI_METERED.concurrency).toBe(10);
     expect(AI_METERED.maxInstances * Number(AI_METERED.concurrency)).toBeLessThan(200);
+  });
+
+  test("S02 A8: commitActivityStream deploys on ACTIVITY_COMMIT: 1GiB, concurrency 4, maxInstances 5, one region", () => {
+    expect(ACTIVITY_COMMIT.memory).toBe("1GiB");
+    expect(ACTIVITY_COMMIT.concurrency).toBe(4);
+    expect(ACTIVITY_COMMIT.maxInstances).toBe(5);
+    const ep = endpointOf(index.commitActivityStream);
+    expect(ep.availableMemoryMb).toBe(1024);
+    expect(ep.concurrency).toBe(4);
+    expect(ep.maxInstances).toBe(5);
+    expect(ep.region).toEqual(["europe-west1"]);
+  });
+
+  test("S02 A8: the other activity callables keep the default 256 MiB (only the commit callable was raised)", () => {
+    for (const n of ["setActivityCloudSettings", "deleteActivity", "createActivityStreamUpload", "deleteAllActivityStreams", "getActivityStreamDownloadUrls"]) {
+      const mem = endpointOf(ENTRYPOINTS[n]).availableMemoryMb;
+      expect(typeof mem === "number" ? mem : 256).toBeLessThanOrEqual(256);
+    }
+  });
+
+  test("S02 A8: the stream reconciler has 1GiB and stays single-flight", () => {
+    const ep = endpointOf(index.reconcileActivityStreams);
+    expect(ep.availableMemoryMb).toBe(1024);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
   });
 
   test("the production canary is genuinely single-flight: maxInstances 1 AND concurrency 1", () => {
