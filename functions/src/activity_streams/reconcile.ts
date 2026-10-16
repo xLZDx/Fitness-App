@@ -39,6 +39,7 @@ import { gunzipSync } from "zlib";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { activityStreamListingBucket, type StreamListingBucket } from "./bucket";
 import { clearPendingUpload, currentUploadId, expectedHashOf, selectPromotedObject } from "./commit_stream";
+import { bulkDeleteContinuationPass } from "./delete_all_streams";
 import { sha256Equal, sha256Hex } from "./hash";
 import {
   ACTIVITY_ID_PATTERN,
@@ -479,7 +480,7 @@ export type ReconcileExtraPass = (deps: ReconcileDeps, result: ReconcileRunResul
 export async function runActivityReconcile(
   deps: ReconcileDeps = defaultReconcileDeps,
   limits: ReconcileLimits = DEFAULT_RECONCILE_LIMITS,
-  extraPasses: readonly ReconcileExtraPass[] = [],
+  extraPasses: readonly ReconcileExtraPass[] = [bulkDeleteContinuationPass],
 ): Promise<ReconcileRunResult> {
   const result = newReconcileResult();
   const startMs = deps.nowMs();

@@ -475,6 +475,13 @@ export const QUOTAS = {
    * after a transient failure.
    */
   activityStreamCommit: 60,
+  /**
+   * S02 `deleteAllActivityStreams` (design 5.4, 9.1): bulk "delete my cloud
+   * streams" jobs STARTED per user per day. Its OWN quota, independent of the
+   * `activityDelete` ceiling, so an erasure path is never rate-limited by the
+   * per-activity limit. Starting limit, unmeasured.
+   */
+  activityDeleteAll: 10,
 } as const;
 
 /**
@@ -506,6 +513,8 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   // S02 stream upload and commit (design 5.4): the log must not record who uploads GPS streams.
   "activityStreamUpload",
   "activityStreamCommit",
+  // S02 bulk stream delete (design 5.4): the log must not record who erased GPS streams.
+  "activityDeleteAll",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",

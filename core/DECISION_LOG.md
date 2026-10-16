@@ -56967,3 +56967,7 @@ Decision: The fence document written at deleteAccount Step 1c is the durable lat
 ## 2026-10-16 - Commit: S02-06b: orphan reconciler
 
 Decision: A 5-minute reconciler repairs pending uploads only when the promoted object hash equals the intendedStoredSha256 recorded before promotion and the repair transaction (selectPromotedObject) re-checks fence, tombstone, summary and consent; otherwise it deletes the upload own objects. It also removes stored rows without summary, marks stored rows with a missing object deleted, and deletes unreferenced objects older than the upload TTL, using persisted cursors in a server-only state document. Evidence: core/changes/2026-10-16-s02-06b-reconciler.md.
+
+## 2026-10-16 - Commit: S02-06b: deleteAllActivityStreams bulk job
+
+Decision: The seventh callable is a resumable job whose state (job id, cursor, pending flag) lives on the settings document; each call deletes at most 50 rows object-first, is fence- and Auth-checked in both its transactions, uses its own activityDeleteAll quota charged only when a job starts, and unfinished jobs are continued by the reconciler. Evidence: core/changes/2026-10-16-s02-06b-delete-all-streams.md.

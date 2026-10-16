@@ -3042,6 +3042,8 @@ export { purgeExpiredActivityStreams } from "./activity_streams/purge";
 export { sweepLateActivityStreams } from "./activity_streams/late_sweep";
 // Orphan reconciler (S02-06b, design 5.2/6): pending rows, stored rows, stray objects; every 5 minutes.
 export { reconcileActivityStreams } from "./activity_streams/reconcile";
+// Seventh callable (S02-06b, design 5.4/9.1): resumable bulk "delete my cloud streams"; own quota activityDeleteAll.
+export { deleteAllActivityStreams } from "./activity_streams/delete_all_streams";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until

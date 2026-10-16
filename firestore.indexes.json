@@ -61,6 +61,15 @@
       ]
     },
     {
+      "collectionGroup": "activity_settings",
+      "fieldPath": "streamDeletePending",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "activity_streams",
       "fieldPath": "pendingSince",
       "indexes": [
