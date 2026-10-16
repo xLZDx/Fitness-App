@@ -57477,3 +57477,7 @@ Decision: the promise "signing in as someone else never destroys my data" is pin
 ## 2026-10-16 - Commit: S02 test epic 11b findings and stale fake fix
 
 Decision: the complete epic 11b runs are green after the stale journal fake forwards `listTombstones()`; the epic findings file records defects, commands and remaining limits. Evidence: core/changes/2026-10-16-s02-test-epic11b-findings-and-fake-fix.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (e) findings
+
+Decision: epic 11a findings and the complete run are recorded in the epic 11 findings file. Evidence: core/changes/2026-10-16-s02-test-epic11a-findings.md.

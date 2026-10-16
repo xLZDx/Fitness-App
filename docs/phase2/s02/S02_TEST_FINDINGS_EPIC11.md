@@ -30,3 +30,25 @@ First run: `Test Suites: 1 failed, 26 passed, 27 total` / `Tests: 1 failed, 790 
 - `lastTombstonePushError` is sticky after a later success (documented as "last failed in this process"); not changed.
 - Real Firebase quota behaviour (`resource-exhausted` from the live callable) is not exercised; the fake raises the same code.
 - Not run: `flutter analyze`, full suite, mutation runs (by instruction).
+
+## Epic 11a: account-scoped journal (remediation E1)
+
+### Files
+- New: `mobile/test/support/scoped_journal_world.dart`, `mobile/test/features/activity/repository/uid_scoped_activity_journal_test.dart` (22 tests), `mobile/test/features/activity/e2e/s02_account_switch_promise_e2e_test.dart` (2 tests).
+- Rewritten (removed owner-marker symbols): `activity_journal_wipe_wiring_test.dart`, `activity_wiring_account_switch_test.dart`, `activity_wiring_flag_matrix_test.dart`, `s02_account_wipe_e2e_test.dart` (plus two new scoped-journal wipe tests). No reference to `claimActivityJournal`, `ActivityJournalOwnerStore`, `activityJournalOwnerStoreProvider`, `activity_journal_owner` or `ownerStore` remains under `mobile/` (grep).
+- Commits: cbdbfd6b (a), fa2942d2 (b), 16b39eea (c), 33e380b4 (d).
+
+### Defects found
+1. Production, compile error (fixed, smallest change): `journal is AccountScopedJournal` does not promote an `ActivityJournal` to the unrelated interface in Dart, so `bindUid`/`wipeForUid` were undefined in `activity_wiring.dart` (two places) and `activity_aware_local_data_wipe.dart`; replaced by pattern matching (`case final AccountScopedJournal scoped`).
+2. No behavioural defect found in `UidScopedActivityJournal` itself: A to B to A persistence, unbound refusal, bind races, fail-closed bind, hashed names, scope-limited wipes all held on the first compiled run.
+3. Test-side slips (fixed): record equality over a list (use a string fingerprint), a gate completer consumed by the first open, real disk I/O needing real-time waits instead of zero-delay loops, apostrophes lost by a scripted edit.
+
+### Run (complete set)
+From `D:\Repo\Fitness_App_Phase2_s01\mobile`:
+`flutter test test/features/activity/repository test/features/activity/config test/features/activity/e2e test/features/account_deletion`
+Result: `03:37 +660: All tests passed!` (includes agent 11b's files in the repository directory).
+
+### What remains
+- A mid-bind account change relies on the always-on binding listener to unbind after a slow bind (the sync wiring alone leaves the late bind in place); covered by the combined-provider test, not by the sync wiring alone.
+- Real `flutter_secure_storage` and OS-level directory restore are not exercised (fake store; copied-directory case simulated on disk).
+- Not run: `flutter analyze`, full suite, mutation runs (by instruction).
