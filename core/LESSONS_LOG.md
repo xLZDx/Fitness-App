@@ -271,3 +271,11 @@ Facts: the uploader read isGranted without asking whose consent it was, did not 
 Root cause: per-account state was consumed as if global; the consent sweep was scoped to the remediation diff.
 Layers: author and diff-scoped reviewers missed it; class sweeps after the round-12 REJECT caught it.
 Rule next time: every read of per-account state names the account it was read for, and an async chain re-checks that account after each await before a side effect.
+
+## 2026-10-16 - S02 conflict surface assumed a single account (class sweep after round 12)
+
+Kind: FAILURE.
+Facts: the sync repository filled its conflict cache and assembled its state across awaits without re-checking the account, and a pass could run while the account deletion completed; the conflict presenter and the local export were not scoped to the account, and my own batch G republished the state but left the sheet drawing the old cards. Evidence: core/changes/2026-10-16-s02-remediation-h-b-deletion-and-cache-fills.md and the following H-B change records.
+Root cause: the author of the presenter and export did not scope them to the account; earlier reviews were scoped to the remediation diff; the third-round class sweep found it.
+Layers: author, tests (no first frame of the new account asserted), reviewers (diff scope) missed it; the class sweep caught it.
+Rule next time: sweep a defect class across the whole surface and test the first frame of the new account.

@@ -20,11 +20,22 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   /// generation, state still `sync_conflict`); `synced` follows only after the
   /// summary is stored on the server. A repeated call returns
   /// [SyncOutcome.alreadyResolved].
-  Future<SyncOutcome> resolveConflict(String id, ConflictChoice choice) =>
+  ///
+  /// [expectedUid] is the uid the user acted under (captured at tap time). A
+  /// tap queued behind a long operation must not resolve the entry of another
+  /// account that has the same deterministic id: when the uid of the pass that
+  /// runs differs, nothing is read or written and [SyncOutcome.pending] is
+  /// returned (remediation H6).
+  Future<SyncOutcome> resolveConflict(String id, ConflictChoice choice,
+          {String? expectedUid}) =>
       _serial(() async {
         final p = _pass;
         // Unbound journal: a visible failure, never "not found"/success.
         if (_journalUnbound) return SyncOutcome.unavailable;
+        if (_uidMismatch(p, expectedUid)) {
+          debugPrint('activity: resolveConflict skipped (uid-changed)');
+          return SyncOutcome.pending;
+        }
         final JournalEntry? read;
         try {
           read = await _journal.read(id);
@@ -120,16 +131,22 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   /// server still holds the base, kept in `sync_conflict` when it changed
   /// again. Returns [SyncOutcome.alreadyResolved] when no candidate exists
   /// (idempotent after a restart or a replayed call). Throws [ArgumentError]
-  /// for a choice that is not offered.
+  /// for a choice that is not offered. [expectedUid] works as in
+  /// [resolveConflict].
   Future<SyncOutcome> resolveCandidate(
     String id,
     String field,
-    CandidateChoice choice,
-  ) =>
+    CandidateChoice choice, {
+    String? expectedUid,
+  }) =>
       _serial(() async {
         final p = _pass;
         // Unbound journal: a visible failure, never "not found"/success.
         if (_journalUnbound) return SyncOutcome.unavailable;
+        if (_uidMismatch(p, expectedUid)) {
+          debugPrint('activity: resolveCandidate skipped (uid-changed)');
+          return SyncOutcome.pending;
+        }
         final JournalEntry? entry;
         try {
           entry = await _journal.read(id);

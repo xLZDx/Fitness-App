@@ -155,13 +155,15 @@ class ActivitySyncRepository {
     CalcVersions Function()? versionsInForce,
     TombstoneRetryTimerFactory? retryTimerFactory,
     String? Function()? authUid,
+    String? Function()? accountBeingDeleted,
   })  : _journal = journal,
         _backend = backend,
         _pushTombstone = tombstonePusher,
         _timerFactory = retryTimerFactory ?? Timer.new,
         _clock = clock ?? DateTime.now,
         _versions = versionsInForce ?? (() => CalcVersions.current),
-        _authUid = authUid;
+        _authUid = authUid,
+        _accountBeingDeleted = accountBeingDeleted;
 
   final ActivityJournal _journal;
   final ActivitySummaryBackend _backend;
@@ -172,6 +174,33 @@ class ActivitySyncRepository {
   /// The signed-in uid as the backend would resolve it (null function = no
   /// check, used by tests). Read synchronously right before each backend call.
   final String? Function()? _authUid;
+
+  /// The uid whose account deletion is in progress, or null (null function =
+  /// never). While it equals the uid of a pass, that pass neither calls the
+  /// backend nor writes the journal (remediation H5): the server-side deletion
+  /// may complete at any moment and the Firestore rules would still accept the
+  /// token, which would re-create data of a deleted account.
+  final String? Function()? _accountBeingDeleted;
+
+  /// True when [p] belongs to the account whose deletion is in progress.
+  /// Read synchronously, right where the decision is taken.
+  bool _deleting(_Pass p) {
+    final f = _accountBeingDeleted;
+    if (f == null) return false;
+    final d = f();
+    if (d == null) return false;
+    return d == p.journalUid || d == p.authUid;
+  }
+
+  /// True when [expectedUid] (the uid captured at tap time) differs from the
+  /// uid of the pass that is about to act (remediation H6). A null
+  /// [expectedUid] means "no expectation".
+  bool _uidMismatch(_Pass p, String? expectedUid) {
+    if (expectedUid == null) return false;
+    final j = p.journalUid;
+    final a = p.authUid;
+    return (j != null && j != expectedUid) || (a != null && a != expectedUid);
+  }
 
   /// Identity of the operation now running inside [_ops] (operations are
   /// serialized, so one field is exact).
@@ -205,6 +234,9 @@ class ActivitySyncRepository {
   _Pass _beginPass() {
     final journalUid = _boundJournalUid();
     final authUid = _authUid?.call();
+    if (_deleting(_Pass(_epoch, journalUid, authUid))) {
+      return _Pass(-1, journalUid, authUid);
+    }
     if (_tiesJournalToAuth &&
         (journalUid == null || authUid == null || journalUid != authUid)) {
       return _Pass(-1, journalUid, authUid);
@@ -223,6 +255,7 @@ class ActivitySyncRepository {
   /// synchronously before every journal write.
   bool _alive(_Pass p) {
     if (p.epoch != _epoch) return false;
+    if (_deleting(p)) return false;
     if (_journal case final AccountScopedJournal s) {
       return p.journalUid != null && s.isBound && s.boundUid == p.journalUid;
     }
@@ -245,6 +278,7 @@ class ActivitySyncRepository {
 
   /// Why [p] may not run: a reason word only, never a uid (remediation G5).
   String _skipReason(_Pass p) {
+    if (_deleting(p)) return 'account-deleting';
     if (_journalUnbound) return 'journal-unbound';
     if (_tiesJournalToAuth) {
       if (p.authUid == null) return 'auth-null';
@@ -319,27 +353,54 @@ class ActivitySyncRepository {
   /// reads as empty, which must never be shown as "everything is in sync".
   Future<ActivitySyncState> refreshState() =>
       _stateLock.run(() async {
-        if (_journalUnbound) throw const JournalUnbound();
-        final entries = await _journal.list();
-        final conflicts = <SyncConflict>[];
-        final candidates = <SyncCandidate>[];
-        for (final e in entries) {
-          var session = e.session;
-          if (!session.isReadOnly) {
-            session = SummaryProjection.reconcile(session, inForce: _versions());
+        // Remediation H7: a result assembled while the account changed
+        // (epoch or bound uid moved) mixes two accounts and is discarded; the
+        // read is repeated under the new identity, at most [attempts] times.
+        const attempts = 3;
+        for (var attempt = 0; attempt < attempts; attempt++) {
+          if (_journalUnbound) throw const JournalUnbound();
+          final stamp = _viewStamp();
+          final entries = await _journal.list();
+          final conflicts = <SyncConflict>[];
+          final candidates = <SyncCandidate>[];
+          for (final e in entries) {
+            if (!_viewCurrent(stamp)) break;
+            var session = e.session;
+            if (!session.isReadOnly) {
+              session =
+                  SummaryProjection.reconcile(session, inForce: _versions());
+            }
+            if (e.state.syncState == JournalSyncState.syncConflict) {
+              conflicts.add(await _conflictView(e, session, stamp));
+            }
+            candidates.addAll(_candidatesOf(e.id, session));
           }
-          if (e.state.syncState == JournalSyncState.syncConflict) {
-            conflicts.add(await _conflictView(e, session));
-          }
-          candidates.addAll(_candidatesOf(e.id, session));
+          if (!_viewCurrent(stamp)) continue;
+          final pending = await _pendingTombstoneCount();
+          if (!_viewCurrent(stamp)) continue;
+          return ActivitySyncState(
+            conflicts: conflicts,
+            candidates: candidates,
+            pendingTombstones: pending,
+            lastTombstonePushError: _lastTombstonePushError,
+          );
         }
-        return ActivitySyncState(
-          conflicts: conflicts,
-          candidates: candidates,
-          pendingTombstones: await _pendingTombstoneCount(),
-          lastTombstonePushError: _lastTombstonePushError,
-        );
+        // The account kept changing: report "no usable state now"; the change
+        // itself publishes a fresh state to every subscriber.
+        throw const JournalUnbound();
       });
+
+  /// Identity of one state read (not a serialized operation): epoch, bound
+  /// journal uid and signed-in uid at the moment the read started.
+  _Pass _viewStamp() => _Pass(_epoch, _boundJournalUid(), _authUid?.call());
+
+  /// True while the account a state read started under is still the current
+  /// one (same epoch, same bound uid, same signed-in uid, no deletion).
+  bool _viewCurrent(_Pass stamp) {
+    if (!_alive(stamp)) return false;
+    final f = _authUid;
+    return f == null || f() == stamp.authUid;
+  }
 
   void _publish() {
     if (_changes.isClosed || !_changes.hasListener) return;
@@ -390,16 +451,27 @@ class ActivitySyncRepository {
     return out;
   }
 
-  Future<SyncConflict> _conflictView(JournalEntry e, ActivitySession s) async {
+  Future<SyncConflict> _conflictView(
+      JournalEntry e, ActivitySession s, _Pass stamp) async {
     var detail = _conflictCache[e.id];
     if (detail == null) {
-      final epoch = _epoch;
       try {
+        // No backend read for an identity that is no longer (or never was)
+        // consistent: the conflict then shows with no cloud values.
+        if (!_mayCall(stamp)) {
+          return SyncConflict(
+            id: e.id,
+            sport: s.sport,
+            startUtc: s.startUtc,
+            fields: const [],
+            cloudKnown: false,
+          );
+        }
         final server = await _backend.readSummary(e.id);
         detail = _detailFor(e, s, server);
         // A read that finished after an account change is not cached: the
-        // cache belongs to the account of the epoch it was read under.
-        if (epoch == _epoch) _conflictCache[e.id] = detail;
+        // cache belongs to the account the read started under.
+        if (_viewCurrent(stamp)) _conflictCache[e.id] = detail;
       } on SummaryBackendUnavailable {
         return SyncConflict(
           id: e.id,
@@ -1034,9 +1106,13 @@ class ActivitySyncRepository {
 
   Future<SyncOutcome> _markConflict(
       JournalEntry entry, Map<String, Object?>? server, List<String> fields) async {
-    if (!_alive(_pass)) return SyncOutcome.pending;
+    final p = _pass;
+    if (!_alive(p)) return SyncOutcome.pending;
     await _journal.updateSyncState(entry.id, JournalSyncState.syncConflict,
         expectedGeneration: entry.generation);
+    // The await may have spanned an account change: a cache fill of account A
+    // would be served to account B (ids are deterministic). Remediation H7.
+    if (!_alive(p)) return SyncOutcome.pending;
     if (server != null) {
       _conflictCache[entry.id] = _ConflictDetail(server, fields);
     } else {

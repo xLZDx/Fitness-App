@@ -57590,3 +57590,7 @@ Decision: the consent store and the settings client carry the uid their state be
 ## 2026-10-16 - Commit: S02 remediation H-A uploader requires consent of its own account
 
 Decision: the uploader uploads only when the consent view belongs to the uid the run is bound to, stops when that account is being deleted, and marks a journal entry only if the epoch and the scoped journal binding are unchanged. Evidence: core/changes/2026-10-16-s02-remediation-h-a-uploader.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B deletion in progress and conflict cache fills
+
+Decision: a sync pass or tombstone retry of the account whose deletion is in progress does nothing (optional accountBeingDeleted supplier, dead pass identity, skip reason account-deleting); the conflict cache is filled and the state read is kept only if the account identity is unchanged after the await. Evidence: core/changes/2026-10-16-s02-remediation-h-b-deletion-and-cache-fills.md.
