@@ -57111,3 +57111,7 @@ Decision: The quarantine duplicate-key test compares decoded keys (an escape-spe
 ## 2026-10-16 - Commit: S02 test epic 3: telemetry sink buffer, schema parity, redaction (U25, U26, U34, U35, I14)
 
 Decision: The debug telemetry sink gets the 500-event / 64 KiB oldest-dropped buffer and a non-blocking send (design 8.1); redact() also masks coordinates, geohashes, heart-rate readings and labelled places.
+
+## 2026-10-16 - Commit: S02 test epic 3: merger operation-count budget, consent matrix, copy lint (U21, U22, U24, U33, U36)
+
+Decision: The merger budget keeps the design ceilings and adds frozen calibrated count ceilings (1000 and 6000; measured 300 and 2000).
