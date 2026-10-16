@@ -57686,3 +57686,7 @@ Decision: the I1 guard is proved at three layers (repository read, presenter, pu
 ## 2026-10-16 - Commit: test(s02): epic 15 I2 consent-contract tests
 
 Decision: the I2 contract is proved at the client level and through the real startup closure; the unguarded `onAccountChanged` call is accepted because consent is unbound before it (the order is the guarantee), and the test pins that order. Evidence: core/changes/2026-10-16-s02-test-epic15-i2-consent-contract.md.
+
+## 2026-10-16 - Commit: docs(s02): epic 15 final runs and findings
+
+Decision: epic 15 closes green on head 866a05b3; findings recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-test-epic15-final-run.md.

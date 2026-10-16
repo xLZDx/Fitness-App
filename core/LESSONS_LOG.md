@@ -421,3 +421,9 @@ Rule next time: run setup and reads of real journals under runAsync or in plain 
 Kind: SUCCESS.
 Facts: Remediation I2 production code met every I2 oracle on the first compiled run (9 of 9). The only slip was mine: a listener exception is reported to the zone of the container, so the test creates the container inside a guarded zone. Evidence: core/changes/2026-10-16-s02-test-epic15-i2-consent-contract.md.
 Rule next time: create the container inside the zone that is meant to receive listener errors.
+
+## 2026-10-16 - docs(s02): epic 15 final runs and findings
+
+Kind: SUCCESS.
+Facts: Whole activity directory +1410 and the second set +120 green after 27 stale tests and one log regression were fixed; production remediation I otherwise met every oracle. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md.
+Why it worked: running the whole directory once first gave the complete stale list instead of guessing from the notes.
