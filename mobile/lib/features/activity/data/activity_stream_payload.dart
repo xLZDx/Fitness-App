@@ -140,6 +140,13 @@ class ActivityStreamPayload {
   static bool _isCleanString(Object? v, RegExp pattern) =>
       v is String && pattern.hasMatch(v) && !kCoordinateLike.hasMatch(v);
 
+  /// A field name that points at heart rate (`heartRate`, `hr`, `avgHrBpm`):
+  /// even the NAME of a contributed heart-rate field stays on the device.
+  static bool _isHeartRateName(String f) {
+    return f.toLowerCase().contains('heart') ||
+        RegExp(r'(?:^|[a-z0-9])(?:hr|Hr|HR)(?:[A-Z]|$)').hasMatch(f);
+  }
+
   /// `importedAt` in the server form: UTC ISO-8601 to whole seconds. A
   /// fractional second such as `00.123` would itself match the coordinate-like
   /// denial, so it is cut; an unparseable value yields null.
@@ -190,7 +197,10 @@ class ActivityStreamPayload {
     final fields = out['fieldsContributed'];
     out['fieldsContributed'] = [
       for (final f in (fields is List ? fields : const []))
-        if (f is String && _isCleanString(f, kFieldContributedPattern)) f,
+        if (f is String &&
+            _isCleanString(f, kFieldContributedPattern) &&
+            !_isHeartRateName(f))
+          f,
     ].take(kMaxFieldsContributed).toList();
     return out;
   }
