@@ -57043,3 +57043,7 @@ Decision: All runtime wiring (journal open, provider override, start-up syncAll 
 ## 2026-10-16 - Commit: S02 glue: push local tombstones to the server
 
 Decision: The tombstone push is an optional injected function on the sync repository (not a new method on the backend seam, so existing fakes keep compiling); it pushes only ids missing from a successfully read server tombstone list, at most 8 per pass, which keeps the delete quota untouched by repeated passes and never pushes when the server state is unknown
+
+## 2026-10-16 - Commit: S02 glue: consent withdrawal can start the bulk stream-delete job
+
+Decision: The offer is a boolean cloudStreams.deleteExisting inside the existing closed request (accepted only with granted=false), the job fields are written in the settings transaction itself so withdrawal and job start are atomic, a running job is never replaced, and the option also works for a later offer after an earlier withdrawal without bumping the settings generation

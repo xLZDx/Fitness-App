@@ -118,6 +118,12 @@ export interface SettingsRequest {
   streamRetentionDays?: StreamRetentionDays;
   /** Present when the caller grants (`true`) or withdraws (`false`) cloud-stream consent. */
   cloudStreamsGranted?: boolean;
+  /**
+   * Present (true) only together with a withdrawal (`granted: false`): the user took the
+   * offer to also delete the existing cloud streams, so the call starts the bulk
+   * stream-delete job (design 9.1). Summaries are kept.
+   */
+  deleteExistingStreams?: boolean;
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
@@ -129,7 +135,11 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  * are refused, never ignored. Request shape:
  *
  *   { streamRetentionDays?: 90 | 365 | 730 | null,
- *     cloudStreams?: { granted: boolean, version: number } }
+ *     cloudStreams?: { granted: boolean, version: number, deleteExisting?: boolean } }
+ *
+ * `deleteExisting: true` is accepted only with `granted: false` (design 9.1: the
+ * withdrawal itself starts the bulk delete job when the user chose the offer).
+ * `deleteExisting: false` is the same as omitting it.
  *
  * `cloudStreams.version` must equal `CLOUD_STREAMS_CONSENT_VERSION`: a client
  * that showed an older consent text cannot grant consent to the current one.
@@ -152,10 +162,18 @@ export function parseSettingsRequest(data: unknown): SettingsRequest {
     const c = data.cloudStreams;
     if (!isPlainObject(c)) throw new SettingsRequestError("invalid_consent");
     for (const key of Object.keys(c)) {
-      if (key !== "granted" && key !== "version") throw new SettingsRequestError("invalid_consent");
+      if (key !== "granted" && key !== "version" && key !== "deleteExisting") {
+        throw new SettingsRequestError("invalid_consent");
+      }
     }
     if (typeof c.granted !== "boolean" || c.version !== CLOUD_STREAMS_CONSENT_VERSION) {
       throw new SettingsRequestError("invalid_consent");
+    }
+    if ("deleteExisting" in c) {
+      if (typeof c.deleteExisting !== "boolean") throw new SettingsRequestError("invalid_consent");
+      // Deleting streams while granting consent makes no sense: refuse, never ignore.
+      if (c.deleteExisting && c.granted) throw new SettingsRequestError("invalid_consent");
+      if (c.deleteExisting) out.deleteExistingStreams = true;
     }
     out.cloudStreamsGranted = c.granted;
   }
@@ -194,6 +212,13 @@ export interface SettingsPlan {
   retentionChanged: boolean;
   /** True when a withdrawal was recorded by this call (design 9.1). */
   withdrew: boolean;
+  /**
+   * True when the request asked to delete the existing streams and consent is not
+   * granted after the call. The callable starts the bulk job unless one is already
+   * active (it never replaces a running job). Independent of `changed`: a user who
+   * withdrew earlier may take the offer later.
+   */
+  startStreamDelete: boolean;
 }
 
 /**
@@ -251,5 +276,6 @@ export function planSettingsChange(
     withdrawnAtMs,
     retentionChanged,
     withdrew: withdrawnAtMs !== undefined,
+    startStreamDelete: req.deleteExistingStreams === true && consentAfter !== "granted",
   };
 }

@@ -15,9 +15,12 @@
  * Consent withdrawal (design 9.1, as far as this story owns it): records
  * `cloudStreams.withdrawnAt` and increments `settingsGeneration`. The refusal
  * of later uploads (`consent_withdrawn`) is done by the upload and commit
- * callables of S02-04b through `cloudStreamsConsentState`; the optional bulk
- * "delete my cloud streams" job is the seventh callable of S02-06b and the
- * reconciler abort of `pending` rows belongs to S02-06a/b.
+ * callables of S02-04b through `cloudStreamsConsentState`. The optional bulk
+ * "delete my cloud streams" job runs in the seventh callable of S02-06b; this
+ * callable STARTS it when the request carries `cloudStreams.deleteExisting: true`
+ * with a withdrawal (job fields `streamDeleteJobId`, `streamDeletePending`,
+ * `streamDeleteCursor`, written in the same transaction; a running job is kept).
+ * The reconciler abort of `pending` rows belongs to S02-06a/b.
  *
  * Logging (GPS-PRIV-094): closed outcome slugs and counts only, never a uid.
  */
@@ -29,6 +32,7 @@ import { QUOTAS, enforceDailyQuota, noteAppCheck, refundQuota } from "../abuse_g
 import { assertFeatureEnabled } from "../feature_flags";
 import { activityStreamCloudEnabled } from "./flags";
 import { checkAccountFence, defaultFenceDeps, type FenceDeps } from "./fence";
+import { defaultDeleteAllDeps, hasActiveDeleteJob } from "./delete_all_streams";
 import {
   CLOUD_STREAMS_CONSENT_VERSION,
   SettingsRequestError,
@@ -84,11 +88,13 @@ export interface SettingsResult {
   streamRetentionDays: StreamRetentionDays;
   consent: CloudStreamsConsentState;
   recomputePending: boolean;
+  /** `true` when this call started the bulk stream-delete job (design 9.1); the client then calls `deleteAllActivityStreams` until `done`. */
+  streamDeleteStarted: boolean;
   serverNowMs: number;
 }
 
-/** Injectable collaborators of the transaction (the shared fence seam, `fence.ts`). */
-export type SettingsDeps = FenceDeps;
+/** Injectable collaborators of the transaction (the shared fence seam, `fence.ts`, plus an optional job-id source). */
+export type SettingsDeps = FenceDeps & { newJobId?(): string };
 
 export const defaultSettingsDeps: SettingsDeps = defaultFenceDeps;
 
@@ -115,6 +121,22 @@ export async function applyActivityCloudSettings(
     const nowMs = deps.nowMs();
     const current = settingsSnap.exists ? (settingsSnap.data() as Record<string, unknown>) : undefined;
     const plan = planSettingsChange(current, req, nowMs);
+
+    // Design 9.1: the withdrawal starts the bulk stream-delete job when the user took the
+    // offer. A running job is never replaced; the job fields are the ones
+    // `deleteAllActivityStreams` reads (job id, pending flag, cursor).
+    const startJob = plan.startStreamDelete && !hasActiveDeleteJob(current);
+    if (startJob) {
+      tx.set(
+        settingsRef,
+        {
+          streamDeleteJobId: (deps.newJobId ?? defaultDeleteAllDeps.newJobId)(),
+          streamDeletePending: true,
+          streamDeleteCursor: admin.firestore.FieldValue.delete(),
+        },
+        { merge: true },
+      );
+    }
 
     if (plan.changed) {
       const ts = (ms: number) => admin.firestore.Timestamp.fromMillis(ms);
@@ -146,6 +168,7 @@ export async function applyActivityCloudSettings(
       streamRetentionDays: plan.streamRetentionDays,
       consent: plan.consent,
       recomputePending: plan.recomputePending,
+      streamDeleteStarted: startJob,
       serverNowMs: nowMs,
     };
   });
