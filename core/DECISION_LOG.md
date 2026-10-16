@@ -56895,3 +56895,7 @@ Decision: Recovery selects the highest generation with a valid COMMIT, deletes e
 ## 2026-10-16 - Commit: S02-02: journal repository API, tombstone, sync state, wipe and sign-out hooks
 
 Decision: The journal serialises every operation through one mutex, acknowledges only after the COMMIT rename, keeps tombstone and synced state inside record.json, and exposes sign-out and export as interfaces. Evidence: core/changes/2026-10-16-s02-02-journal-api.md.
+
+## 2026-10-16 - Commit: S02-03: owner wildcard exclusions
+
+Decision: The four activity collections are excluded from both the read and the write clause of the owner wildcard as a permanent floor, before their dedicated blocks exist. Evidence: core/changes/2026-10-16-s02-03-owner-wildcard-exclusions.md.
