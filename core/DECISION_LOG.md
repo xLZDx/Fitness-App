@@ -57047,3 +57047,7 @@ Decision: The tombstone push is an optional injected function on the sync reposi
 ## 2026-10-16 - Commit: S02 glue: consent withdrawal can start the bulk stream-delete job
 
 Decision: The offer is a boolean cloudStreams.deleteExisting inside the existing closed request (accepted only with granted=false), the job fields are written in the settings transaction itself so withdrawal and job start are atomic, a running job is never replaced, and the option also works for a later offer after an earlier withdrawal without bumping the settings generation
+
+## 2026-10-16 - Commit: S02 glue: coordinate-like string denial in the Dart payload builder
+
+Decision: The client conforms to the server validator instead of loosening it: strings failing the pattern or the shared coordinate-like denial are dropped (record dropped when a required string cannot be valid) and importedAt is cut to whole seconds because a fractional second itself matches the denial and would make every provenance record, and so every upload, be rejected
