@@ -85,22 +85,15 @@
     },
     "debug_sessions": {
       "classification": "BOTH",
-      "reason": "Top-level, client-created (DEBUG builds only) with a uid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"debug_sessions\", \"uid\", uid, ...)`, capped at MAX_ROWS.",
+      "reason": "Top-level, written only by the sanitising callable sendDebugTelemetry (Admin SDK; clients cannot create, S02-09) with a uid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"debug_sessions\", \"uid\", uid, ...)`, capped at MAX_ROWS.",
       "clientAccess": [
         {
           "path": "/debug_sessions/{sessionId}",
           "access": {
             "read": "NONE",
-            "create": "CONDITIONAL",
+            "create": "NONE",
             "update": "NONE",
             "delete": "NONE"
-          },
-          "conditionalRefs": {
-            "create": {
-              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
-              "testName": "CONDITIONAL cell debug_sessions/create: a correctly-shaped, self-stamped session is accepted",
-              "operation": "create"
-            }
           }
         }
       ]

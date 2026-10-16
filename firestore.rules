@@ -382,16 +382,17 @@ service cloud.firestore {
     // 1 MB string inside `identity` still passes. What it removes is the
     // ability to store arbitrary keys and unbounded arrays, which is the part
     // that made this an open-ended dump.
+    //
+    // S02-09 (GPS-PRIV-050 / 098): clients can no longer create debug sessions.
+    // The only writer is the sanitising callable `sendDebugTelemetry` (Admin SDK,
+    // bypasses rules), whose closed schema guarantees that no coordinate, geohash,
+    // heart-rate value or place name is stored. This `create: false` is a
+    // SEPARATELY REVERTIBLE deploy step (design 8.1: callable first, client switch
+    // second, this rule last) and is not part of the permanent activity rules
+    // floor (design 12.1).
     match /debug_sessions/{sessionId} {
       allow read: if false;
-      allow create: if isOrdinaryUser()
-                    && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.keys().hasOnly(
-                         ['identity', 'droppedCount', 'events',
-                          'uid', 'receivedAt'])
-                    && request.resource.data.keys().hasAll(['uid', 'events'])
-                    && request.resource.data.events is list
-                    && request.resource.data.events.size() <= 500;
+      allow create: if false;
       allow update, delete: if false;
     }
 

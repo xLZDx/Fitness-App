@@ -56995,3 +56995,7 @@ Decision: The device export reads the journal and returns typed results (file, n
 ## 2026-10-16 - Commit: S02-09: sanitising debug-telemetry callable
 
 Decision: sendDebugTelemetry is the only writer of debug_sessions; a closed schema (enumerated strings, integer counters capped at 255, flat events, 100 events and 16 KiB per call) rejects the whole batch with a bare code, identity is derived from the sign-in provider, uid and receivedAt are server-set, the account fence is read in the write transaction, droppedCount is emitted as a metric and not stored, and two redacted quotas (200 calls, 5000 events per day) apply. Evidence: core/changes/2026-10-16-s02-09-telemetry-callable.md.
+
+## 2026-10-16 - Commit: S02-09: debug_sessions rules create false
+
+Decision: Clients can no longer create debug_sessions documents; the sanitising callable is the only writer, and the rule change is the last, separately revertible step of the deploy order (callable, client switch, rule), outside the permanent activity rules floor. The data lifecycle policy cell for create is NONE. Evidence: core/changes/2026-10-16-s02-09-rules-create-false.md.
