@@ -47,4 +47,6 @@ Agents and models actually run in S00: implementation-engineer, tdd-guide (Sonne
 
 Current phase: 3 Design (started 2026-10-16 on branch `phase2/s02-unified-activity` from `5bb61f15`). Entry decisions D-16 and D-17 are answered. Sprint scope is the S02 row of `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md`; GPS-specific requirements stay with S04 onwards, S02 covers the activity model, persistence, retention, deletion, export and the debug telemetry server guarantee (GPS-PRIV-050 and 098) that must exist before any GPS code.
 
-Next role to launch: code-architect (read-only map of the current activity model), then technical-writer (S02 design) and functional-test-reviewer (acceptance to test map).
+Artifacts: `docs/phase2/s02/S02_CODE_MAP.md` (done, code-explorer); `docs/phase2/s02/S02_DESIGN.md` (technical-writer, in progress).
+
+Next role to launch: architect and security-reviewer (design review), then functional-test-reviewer (acceptance to test map), then GPT-PM.

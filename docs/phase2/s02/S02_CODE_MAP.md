@@ -1,0 +1,19 @@
+# S02 code map: how activities and workouts are modelled and persisted today
+
+Status: input for the S02 design, produced by a read-only `code-explorer` agent (Sonnet 5.5) on 2026-10-16 at base `5bb61f15`. The agent stopped at its step limit, so the sheet is partial; labels are the agent's own (FACT read in code, INFERENCE, UNKNOWN). The S02 design author re-verifies every claim it relies on. Unknowns resolved afterwards: P2-006 and P2-007 are defined in `core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md` lines 158-159; `mobile/lib/main.dart` overrides `healthServiceProvider` with `PlatformHealthService` (line 434-435) and `writeWorkout` has no caller in `mobile/lib`.
+
+
+Key facts (FACT from the agent, to be re-verified by the S02 design author):
+- Pure-Dart ActivitySession + merger already exist in mobile/lib/features/activity/data (no persistence, no Firestore, no UI): model with provenance (SourceRecord), userEdits, privacy, schema=1, tolerant tryFromJson, SampleStream (8 StreamKind incl. heartRate, gps), order-independent merge(), DeviceSource interface (no adapter). Architecture guards forbid UI/persistence/sibling imports inside activity/data, so a Firestore repository must live outside it.
+- Workouts persisted today: WorkoutSession (sets, no HR/GPS/source/schema), legacy WorkoutLogEntry via asLogEntries(), ScheduledSession; Firestore users/{uid}/workout_sessions, workout_logs, scheduled_sessions, stats/*; FirestoreWorkoutSessionRepository upsert by id, 4 s timeout swallowed, batched clear (400).
+- Health: HealthSnapshot daily aggregates only; PlatformHealthService (health pkg v11) reads steps/active energy/resting HR/sleep/HRV, writes WORKOUT only; no session/HR/GPS series read; writeWorkout has no caller in lib (unverified in main.dart).
+- No local DB (shared_preferences, path_provider, secure storage, encrypt only); no schema version/migration; only per-document `schema` int checked loosely in firestore.rules:535-537. File-store patterns: photo_store.dart (AES-GCM), offline_video_cache.dart.
+- Rules: owner wildcard (firestore.rules:73-109) covers any new `activities` collection with no shape check; exclusions listed in read (74-90) and write (91-108) clauses; Body Scan blocks (554-625) are the pattern (server-authored, schemaOk, numberIn, key allowlist). debug_sessions 367-378.
+- storage.rules deny-all default bucket; Body Scan private bucket via V4 signed URLs (body_scan/create.ts:191); sweepBodyScanObjects (index.ts:2405-2423) error contract; account_export.ts sub()/one() helpers (460-467), MAX_ROWS 2000, 8 MiB budget with fitToByteBudget; scripts/ci/data_lifecycle_policy.json needs `activities` rows (matrix section 5 requires it in the same PR).
+- Tests: activity_models_test (ACT-01..04), activity_merger_test (ACT-05..13); workout tests; delete_account/reconcile tests; no fixture corpus of real-shaped sessions for the "100 sessions" target.
+- Debug telemetry: redact() has no coordinate/HR rule; sink writes debug_sessions directly from the client; rules check top-level keys and events.size()<=500 only; GPS-PRIV-098 fix (callable or per-event docs) scheduled in S02.
+- No GPX/FIT/TCX code. rawRef implies a per-source original store that nothing implements.
+
+Top design risks: (1) a new activities collection is client-writable by default; summary must be strictly scalar and ActivitySession.toJson must split into summary doc + stream object; (2) streams need a new private bucket/prefix, a delete step following sweepBodyScanObjects contract, separate export delivery with short-lived signed URLs (GPS-PRIV-052/094), flag default device-only; (3) no local DB/schema/migration, a third workout model beside WorkoutSession and WorkoutLogEntry, and the 098 telemetry fix is easy to lose inside S02.
+
+Unknown: definitions of P2-006/P2-007 (only the E1 table row, roadmap line 193); main.dart wiring of health service.
