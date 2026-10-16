@@ -120,7 +120,7 @@ class JournalHarness {
   final MemoryJournalFileSystem? mem;
   final String root;
   final FakeClock clock;
-  final JournalKeyProvider keys;
+  JournalKeyProvider keys;
   final Duration orphanMaxAge;
   final int quarantineMaxCount;
 

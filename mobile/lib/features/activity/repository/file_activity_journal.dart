@@ -512,6 +512,7 @@ class FileActivityJournal implements ActivityJournal {
       final commit = await _writer.readCommit(id, meta.seq);
       if (streamsBytes == null ||
           commit == null ||
+          record.streamHash != commit.streamsSha256 ||
           sha256Hex(streamsBytes) != commit.streamsSha256) {
         // Damaged streams of a committed generation: derived, not persisted.
         _lostIds.add(id);

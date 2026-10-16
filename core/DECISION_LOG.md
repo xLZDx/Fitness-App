@@ -57095,3 +57095,7 @@ Decision: The fault-injection seam is an in-memory file system plus a logging wr
 ## 2026-10-16 - Commit: S02 test epic 2: crash matrix, commit cases A-D and recovery tests (I20, I21, I40, I41, I46-I49, I54, I55)
 
 Decision: Crash expectations follow the design (older generation removed after a verified read or at recovery); a missing streams.bin no longer blocks metadata edits of a stream-lost entry.
+
+## 2026-10-16 - Commit: S02 test epic 2: crash, encryption, backup, wipe, ownership and overrides tests (I02-I04, I07-I10, I22, I24, I25, I29, I35, I36, I45)
+
+Decision: Backup exclusion test expects the real seven entries per section; read() treats a stream hash mismatch against the COMMIT marker as stream-lost.
