@@ -57295,3 +57295,7 @@ Decision: primarySourceId rule behaviour is pinned on the emulator against the s
 ## 2026-10-16 - Commit: S02 test epic 8b: policy, privacy and scaling tests
 
 Decision: the privacy draft, the tombstone TTL text, the five-entry late-sweep list, the pre-S02 access-checker violations and the ACTIVITY_COMMIT and reconciler memory profiles are pinned by tests whose oracles come from the remediation notes; the Russian privacy section stays untested until its wording is approved.
+
+## 2026-10-16 - Commit: S02 test epic 8a: reconciler deadline, bulk-delete fairness, silent skips (A2, A3, A4, A14, A15)
+
+Decision: Remediation A2, A3, A4, A14 and A15 are pinned by jest tests with fakes; the notes name the cycle fields shorthand while the code uses streamsCursorCycleStartedAt and quarantineCursorCycleStartedAt, the tests assert the code names.
