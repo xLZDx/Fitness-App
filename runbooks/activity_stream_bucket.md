@@ -82,7 +82,7 @@ Every scheduled job writes ONE structured Cloud Logging entry per run (including
 | Sweep / late sweep failures by bare code | `activity_late_sweep_event`, `activity_reconcile_event`, account deletion events | any failure on 2 consecutive runs; any `accountDeletionRetries` row older than 1 day |
 | Purge failures, capped rows, oldest overdue age | `activity_purge_event` | overdue > 2 days; any capped row |
 | Recompute backlog count and age | `activity_purge_event` | age > 1 h |
-| Validator rejections by code (`hr_kind`, `unknown_key`, `bomb`, `bad_sha`, `generation_changed`) | `activity_commit_event` | spike against the daily baseline |
+| Validator rejections by code (`forbidden_kind`, `unknown_key`, `bomb`, `sha_mismatch`, `generation_changed`) | `activity_commit_event` | spike against the daily baseline |
 | Fence and tombstone refusals | callable events | informational; spike |
 | Telemetry rejections, quota refusals, dropped counter | `debug_telemetry_event`, `debug_telemetry_dropped` | spike against the baseline |
 | Missing composite index (`FAILED_PRECONDITION`) | `activity_purge_event` | any |

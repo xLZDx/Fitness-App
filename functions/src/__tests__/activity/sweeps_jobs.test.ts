@@ -14,10 +14,10 @@ import { runActivityReconcile, type ReconcileDeps } from "../../activity_streams
 import { ACTIVITY_SWEEP_SKIPPED, runIndependentCleanups, sweepActivityStreamObjects } from "../../activity_streams/sweep";
 import {
   ACT, ACT_2, DAY, HOUR, MIN, T0, UID, UID_B, createWorld, firestoreInstance, loggedText, quarantinePath,
-  releaseClock, resetAll, rowOf, seedReady, seedSummary, setNow, store, streamPath, ts, uploadIdN, usageOf, useClock, writes,
+  releaseClock, resetAll, rowOf, seedReady, seedSummary, setNow, store, streamPath, ts, uploadIdN, usageOf, useClock, validPayload, writes,
   type World,
 } from "./support/fakes";
-import { commit, create, outcome, stage } from "./support/flow";
+import { commit, outcome, stage } from "./support/flow";
 import { SEVEN } from "./support/seven";
 
 let w: World;
@@ -144,6 +144,7 @@ describe("F55/F58 late sweep job", () => {
   });
   test("a job stuck more than one hour is counted and the log carries no uid", async () => {
     await seedFence();
+    w.auth.users.delete(UID);
     w.bucket.failOn = (op) => (op === "deleteFiles" ? bareErr(500) : null);
     setNow(LATE_AT + 2 * HOUR);
     const r = await runActivityLateSweep(lateDeps());
@@ -228,14 +229,16 @@ describe("F95/F80 fence removal timing table (injected clock, one minute either 
     expect(await at(T + 69 * MIN)).toBe(true);
     expect(await at(T + 71 * MIN)).toBe(false);
   });
-  test("(c2) the Auth user still exists: the fence is never removed and the job reports the stuck state", async () => {
+  test("(c2) the Auth user still exists: nothing is swept, the job stays armed, the fence is never removed", async () => {
     await seedFence();
     setNow(LATE_AT);
     await runActivityLateSweep(lateDeps());
     setNow(LATE_AT + 10 * DAY);
     const r = await runActivityLateSweep(lateDeps());
     expect(store.has(FENCE)).toBe(true);
-    expect(r.authPresent).toBe(1);
+    expect(r.skippedLive).toBe(1);
+    expect(r.swept).toBe(0);
+    expect(store.get(FENCE)!.lateSweepDone).toBeUndefined();
     expect(store.get(FENCE)!.authDeletedAt).toBeUndefined();
   });
   test("(d) a retry of Step 1 keeps the earliest fenceAt; (e) the removal job run twice is idempotent", async () => {
@@ -264,21 +267,53 @@ describe("F95/F80 fence removal timing table (injected clock, one minute either 
   });
 });
 
-describe("OPEN RISK (documents current behaviour): the late sweep after an ABORTED account deletion", () => {
-  test("a fence left by an aborted deletion makes the late job erase a LIVE user's activity data and objects; the fence then never goes away", async () => {
+describe("REGRESSION: the late sweep never touches a LIVE account (aborted deletion)", () => {
+  test("a fence left by an aborted deletion: the job skips, the live user's objects and documents survive, the job stays armed and logs a bare slug", async () => {
     await seedFence(); // Step 1c ran, then the deletion aborted: the Auth user still exists
     seedUserActivityDocs();
     w.bucket.put(streamPath(UID, ACT, "up_1"), Buffer.from("precious gps"));
+    const docsBefore = [...store.keys()].filter((k) => k.startsWith("users/")).sort();
+    for (const at of [LATE_AT, LATE_AT + HOUR, LATE_AT + 3 * DAY]) {
+      setNow(at);
+      const r = await runActivityLateSweep(lateDeps());
+      expect(r).toMatchObject({ skippedLive: 1, swept: 0, removed: 0, failures: 0 });
+    }
+    expect(w.auth.users.has(UID)).toBe(true);
+    expect(w.bucket.keys()).toEqual([streamPath(UID, ACT, "up_1")]);
+    expect(w.bucket.deleteFilesCalls).toEqual([]);
+    expect([...store.keys()].filter((k) => k.startsWith("users/")).sort()).toEqual(docsBefore);
+    expect(store.get(FENCE)!.lateSweepDone).toBeUndefined();
+    expect(loggedText(logger)).toContain("skipped-live-account");
+    expect(loggedText(logger)).not.toContain(UID);
+  });
+  test("the same job proceeds as soon as the deletion really completes (Auth user gone)", async () => {
+    await seedFence();
+    seedUserActivityDocs();
+    w.bucket.put(streamPath(UID, ACT, "up_1"), Buffer.from("gps"));
+    setNow(LATE_AT);
+    await runActivityLateSweep(lateDeps());
+    expect(w.bucket.keys()).toHaveLength(1);
+    w.auth.users.delete(UID);
+    setNow(LATE_AT + 5 * MIN);
+    const r = await runActivityLateSweep(lateDeps());
+    expect(r.swept).toBe(1);
+    expect(w.bucket.keys()).toEqual([]);
+    expect([...store.keys()].filter((k) => k.includes("/activit"))).toEqual([]);
+    expect(store.get(FENCE)!.lateSweepDone).toBeDefined();
+  });
+  test("a failing Auth lookup fails closed: nothing is erased, the failure is counted", async () => {
+    await seedFence();
+    seedUserActivityDocs();
+    w.bucket.put(streamPath(UID, ACT, "up_1"), Buffer.from("gps"));
+    w.auth.users.delete(UID);
+    w.auth.lookupError = Object.assign(new Error("auth down"), { code: "auth/internal-error" });
     setNow(LATE_AT);
     const r = await runActivityLateSweep(lateDeps());
-    expect(w.auth.users.has(UID)).toBe(true);
-    expect(r.swept).toBe(1);
-    expect(w.bucket.keys()).toEqual([]); // the live user's GPS object is gone
-    expect(store.has(`users/${UID}/activities/${ACT}`)).toBe(false); // so is the summary
-    expect(store.has(`users/${UID}/profile/main`)).toBe(true); // the rest of the account is intact
-    expect(store.has(FENCE)).toBe(true); // callables stay refused for ever
-    expect(r.authPresent).toBe(1);
-    await expect(create(w, { activityId: ACT, bytes: 10, contentSha256: "a".repeat(64) })).rejects.toMatchObject({ message: "account_deleting" });
+    expect(r.failures).toBe(1);
+    expect(r.swept).toBe(0);
+    expect(w.bucket.keys()).toHaveLength(1);
+    expect(store.has(`users/${UID}/activities/${ACT}`)).toBe(true);
+    expect(store.get(FENCE)!.lateSweepDone).toBeUndefined();
   });
 });
 
@@ -527,5 +562,89 @@ describe("F81 deleteAllActivityStreams resumable job", () => {
   test("an anonymous caller is refused", async () => {
     seedMany(1);
     await expect(handleDeleteAllActivityStreams(w.deps, UID, "anonymous", lim())).rejects.toMatchObject({ code: "permission-denied" });
+  });
+});
+
+describe("F72 withdrawn consent (design 9.1: pending rows are aborted by the reconciler; plan F72 says not aborted, a plan error)", () => {
+  const withdrawCall = () => SEVEN.find((e) => e.name === "setActivityCloudSettings")!.call(w, { cloudStreams: { granted: false, version: 1 } });
+  test("a pending upload of a user who withdrew consent is aborted and its objects deleted", async () => {
+    seedReady();
+    await stage(w);
+    await withdrawCall();
+    setNow(T0 + 61 * MIN);
+    const r = await runActivityReconcile(recDeps(), undefined, []);
+    expect(r.pendingAborted).toBe(1);
+    expect(w.bucket.keys(`quarantine/${UID}/`)).toEqual([]);
+    expect(rowOf(UID, ACT)).toBeUndefined();
+  });
+  test("an interrupted GOOD upload is also aborted once consent is withdrawn (nothing is stored after withdrawal)", async () => {
+    const { promoted } = await interruptedCommit();
+    await withdrawCall();
+    setNow(T0 + 61 * MIN);
+    const r = await runActivityReconcile(recDeps(), undefined, []);
+    expect(r.pendingRepaired).toBe(0);
+    expect(w.bucket.objects.has(promoted)).toBe(false);
+  });
+});
+
+describe("F54 third interleaving: tombstone written, object delete failing", () => {
+  const del = () => SEVEN.find((e) => e.name === "deleteActivity")!.call(w, { activityId: ACT });
+  test("the delete reports a bare failure, the tombstone already blocks any commit, and the retry of deleteActivity finishes (no per-activity late job by design F20)", async () => {
+    seedReady();
+    const s = await stage(w);
+    expect(await outcome(commit(w, { activityId: ACT, uploadId: s.uploadId }))).toBe("OK");
+    const other = validPayload();
+    other.kinds.speed.values = [9, 9.5];
+    const s2 = await stage(w, other);
+    w.bucket.failOn = (op) => (op === "deleteFiles" ? bareErr(500) : null);
+    await expect(del()).rejects.toMatchObject({ code: "internal" });
+    expect(store.has(`users/${UID}/activity_tombstones/${ACT}`)).toBe(true);
+    expect(w.bucket.keys(`streams/${UID}/`)).toHaveLength(1);
+    expect(await outcome(commit(w, { activityId: ACT, uploadId: s2.uploadId }))).not.toBe("OK");
+    expect([...store.keys()].filter((k) => k.startsWith("activity_late"))).toEqual([]);
+    w.bucket.failOn = null;
+    await del();
+    expect(w.bucket.keys()).toEqual([]);
+    expect(rowOf(UID, ACT)).toBeUndefined();
+  });
+});
+
+describe("F81 consent withdrawal and the bulk job (deleteExisting)", () => {
+  const SETTINGS = `users/${UID}/activity_settings/main`;
+  const withdraw = (extra: Record<string, unknown> = {}) =>
+    SEVEN.find((e) => e.name === "setActivityCloudSettings")!.call(w, { cloudStreams: { granted: false, version: 1, ...extra } });
+  async function seedStored(): Promise<void> {
+    seedReady();
+    const s = await stage(w);
+    await commit(w, { activityId: ACT, uploadId: s.uploadId });
+  }
+  test("a withdrawal that chose the offer starts the job; the scheduled reconciler deletes the streams and keeps the summary", async () => {
+    await seedStored();
+    await withdraw({ deleteExisting: true });
+    expect(store.get(SETTINGS)!.streamDeletePending).toBe(true);
+    expect(store.get(SETTINGS)!.streamDeleteJobId).toMatch(/^job_/);
+    expect(w.bucket.keys(`streams/${UID}/`)).toHaveLength(1);
+    const r = await runActivityReconcile(recDeps(), undefined);
+    expect(r.bulkDeleteAdvanced).toBe(1);
+    expect(w.bucket.keys()).toEqual([]);
+    expect(rowOf(UID, ACT)).toBeUndefined();
+    expect(store.has(`users/${UID}/activities/${ACT}`)).toBe(true);
+    expect(store.get(SETTINGS)!.streamDeletePending).toBeUndefined();
+  });
+  test("a withdrawal that did not choose it keeps the stored streams and starts no job", async () => {
+    await seedStored();
+    await withdraw();
+    expect(store.get(SETTINGS)!.streamDeletePending).toBeUndefined();
+    expect(store.get(SETTINGS)!.streamDeleteJobId).toBeUndefined();
+    const r = await runActivityReconcile(recDeps(), undefined);
+    expect(r.bulkDeleteAdvanced).toBe(0);
+    expect(w.bucket.keys(`streams/${UID}/`)).toHaveLength(1);
+  });
+  test("a running job is kept (same job id) when the withdrawal is repeated with the option", async () => {
+    await seedStored();
+    store.get(SETTINGS)!.streamDeleteJobId = "job_running";
+    store.get(SETTINGS)!.streamDeletePending = true;
+    await withdraw({ deleteExisting: true });
+    expect(store.get(SETTINGS)!.streamDeleteJobId).toBe("job_running");
   });
 });

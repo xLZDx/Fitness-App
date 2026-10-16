@@ -12,7 +12,9 @@
  *
  * `sweepLateActivityStreams` runs every 5 minutes and, for every document whose
  * `lateSweepAt` is due:
- *  1. (not yet done) sweeps `streams/<uid>/` and `quarantine/<uid>/` AND ends with
+ *  0. (not yet done) while the Auth user still EXISTS (an aborted deletion) NOTHING is erased and
+ *     the job stays armed (`skippedLive`); a failing Auth lookup fails closed the same way.
+ *  1. (not yet done, Auth user gone) sweeps `streams/<uid>/` and `quarantine/<uid>/` AND ends with
  *     the FINAL recursive delete of the activity collections of the user
  *     (`activities`, `activity_streams`, `activity_settings`,
  *     `activity_tombstones`). Every part is attempted independently; any failure
@@ -146,6 +148,8 @@ export interface LateSweepRunResult {
   budgetExhausted: boolean;
   /** `false` when a query failed (for example a missing index) and the pass stopped. */
   queryFailed: boolean;
+  /** Not-yet-done jobs skipped because the Auth user still EXISTS (aborted deletion; nothing was erased). */
+  skippedLive: number;
 }
 
 function newResult(): LateSweepRunResult {
@@ -161,6 +165,7 @@ function newResult(): LateSweepRunResult {
     invalid: 0,
     budgetExhausted: false,
     queryFailed: false,
+    skippedLive: 0,
   };
 }
 
@@ -278,6 +283,16 @@ async function processJob(
   try {
     let doneMs = timestampMs(data.lateSweepDone);
     if (doneMs === undefined) {
+      // The destructive part must never touch a LIVE account: an aborted deletion leaves the
+      // fence but the user (and their data) still exist. A failing Auth read throws and is
+      // counted as a failure by the catch below (fail closed, nothing erased). The job stays
+      // armed: the deletion intent keeps driving the account deletion, and the next run re-checks.
+      if (await deps.authUserExists(uid)) {
+        result.skippedLive += 1;
+        result.waiting += 1;
+        log("warn", { outcome: "skipped-live-account" });
+        return;
+      }
       const code = await runLateSweepParts(deps, uid);
       if (code !== undefined) {
         result.failures += 1;
@@ -378,6 +393,7 @@ export async function runActivityLateSweep(
     stuck: result.stuck,
     oldestStuckAgeMs: result.oldestStuckAgeMs,
     invalid: result.invalid,
+    skippedLive: result.skippedLive,
     budgetExhausted: result.budgetExhausted,
   });
   return result;

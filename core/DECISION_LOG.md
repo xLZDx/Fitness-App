@@ -57191,3 +57191,7 @@ Decision: The blocking-criterion check uses the GPS-PRIV ids of plan section 7; 
 ## 2026-10-16 - Commit: S02 test epic 6b: findings and final epic run
 
 Decision: Epic 6b closes with 178 tests green and three small production fixes (policy path and audited call sites of the access checker, privacy paragraph); the late sweep erasing a live account's activity data after an aborted deletion is recorded as an open risk, not changed.
+
+## 2026-10-16 - Commit: S02 test epic 6b: late sweep never erases a live account, F71 table, F72/F81/F54 gaps
+
+Decision: The late job never runs its destructive part while the Auth user exists; a fence left by an aborted deletion stays until the deletion completes (open question: deleteAccount does not remove its own fence on an abort before Step 3). Plan F72 and the F54 late-sweep wording are plan errors.

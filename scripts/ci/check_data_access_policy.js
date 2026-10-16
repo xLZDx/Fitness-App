@@ -253,7 +253,7 @@ const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/activity_streams/late_sweep.ts'),
-    line: 179,
+    line: 184,
     arg: '`users/${uid}/${name}`',
     reason: 'ACTIVITY_USER_COLLECTIONS literal list (activities, activity_streams, activity_settings, activity_tombstones), all declared. Verified 2026-10-16.',
   },
