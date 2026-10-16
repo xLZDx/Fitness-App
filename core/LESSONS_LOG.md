@@ -279,3 +279,11 @@ Facts: the sync repository filled its conflict cache and assembled its state acr
 Root cause: the author of the presenter and export did not scope them to the account; earlier reviews were scoped to the remediation diff; the third-round class sweep found it.
 Layers: author, tests (no first frame of the new account asserted), reviewers (diff scope) missed it; the class sweep caught it.
 Rule next time: sweep a defect class across the whole surface and test the first frame of the new account.
+
+## 2026-10-16 - Sheet kept drawing the old cards after batch G republished the state
+
+Kind: FAILURE.
+Facts: the conflict sheet drew view.conflicts and view.candidates after its loading/error/empty chain, so an error or first frame of a new account still showed the previous cards; the presenter had no uid dependency. Evidence: core/changes/2026-10-16-s02-remediation-h-b-presenter-and-sheet.md.
+Root cause: my own batch G republished the state but did not check what the sheet draws in the error state; no test looked at the first frame of the new account.
+Layers: author and tests missed it; the class sweep caught it.
+Rule next time: for every state-reset fix, assert what the widget draws in the first frame and in the error state.

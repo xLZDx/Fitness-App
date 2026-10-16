@@ -57594,3 +57594,7 @@ Decision: the uploader uploads only when the consent view belongs to the uid the
 ## 2026-10-16 - Commit: S02 remediation H-B deletion in progress and conflict cache fills
 
 Decision: a sync pass or tombstone retry of the account whose deletion is in progress does nothing (optional accountBeingDeleted supplier, dead pass identity, skip reason account-deleting); the conflict cache is filled and the state read is kept only if the account identity is unchanged after the await. Evidence: core/changes/2026-10-16-s02-remediation-h-b-deletion-and-cache-fills.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B conflict presenter and sheet per account
+
+Decision: the conflict presenter depends on the signed-in uid (syncConflictUidProvider) and is rebuilt on a uid change; actions carry the uid captured at tap time as expectedUid; the sheet draws cards only for a loaded, non-failed state. Evidence: core/changes/2026-10-16-s02-remediation-h-b-presenter-and-sheet.md.

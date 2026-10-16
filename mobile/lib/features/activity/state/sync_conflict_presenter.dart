@@ -11,6 +11,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/state/auth_providers.dart' show authUserProvider;
 import '../data/summary_projection.dart' show CandidateChoice;
 import '../repository/activity_sync_repository.dart';
 import '../repository/sync_models.dart';
@@ -67,14 +68,30 @@ class SyncConflictViewState {
       );
 }
 
+/// The signed-in uid the presenter state belongs to (remediation H6). The
+/// presenter is `keepAlive`: without this dependency it would carry the
+/// previous account's conflicts, busy keys and failure flag across a uid
+/// change. Tests override this provider.
+final syncConflictUidProvider = Provider<String?>(
+  (ref) => ref.watch(authUserProvider.select((a) => a.valueOrNull?.uid)),
+);
+
 class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
   StreamSubscription<ActivitySyncState>? _sub;
   bool _disposed = false;
 
+  /// Bumped by every [build]; an action that completes under an older value
+  /// belongs to a previous account and must not touch the new state.
+  int _generation = 0;
+
   @override
   SyncConflictViewState build() {
     _disposed = false;
+    _generation++;
     ref.watch(activitySyncRepositoryProvider); // rebuild if the repo changes
+    // A uid change rebuilds: the first frame of the new account is loading,
+    // with no conflicts, no busy keys and no failure flag.
+    ref.watch(syncConflictUidProvider);
     ref.onDispose(() {
       _disposed = true;
       _sub?.cancel();
@@ -90,9 +107,11 @@ class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
       if (_disposed) return;
       state = state.copyWith(sync: s, loaded: true, loadFailed: false);
     }, onError: (Object _) {
-      // A failed read must not leave the sheet in a false "all in sync" state.
+      // A failed read must not leave the sheet in a false "all in sync" state,
+      // and must not keep the previous list either: it is cleared.
       if (_disposed) return;
-      state = state.copyWith(loadFailed: true);
+      state = state.copyWith(
+          sync: ActivitySyncState.empty, loadFailed: true);
     });
   }
 
@@ -112,25 +131,36 @@ class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
 
   Future<void> keepCloud(String id) => _conflict(id, ConflictChoice.keepCloud);
 
+  /// The uid is captured at tap time and travels with the operation as
+  /// `expectedUid`: a tap made under account A and queued behind a long
+  /// operation must not resolve the entry of account B.
   Future<void> resolveCandidate(
     String id,
     String field,
     CandidateChoice choice,
-  ) =>
-      _run(
-        candidateKey(id, field),
-        () => ref
-            .read(activitySyncRepositoryProvider)
-            .resolveCandidate(id, field, choice),
-      );
+  ) {
+    final uid = ref.read(syncConflictUidProvider);
+    return _run(
+      candidateKey(id, field),
+      () => ref.read(activitySyncRepositoryProvider).resolveCandidate(
+          id, field, choice,
+          expectedUid: uid),
+    );
+  }
 
-  Future<void> _conflict(String id, ConflictChoice choice) => _run(
-        conflictKey(id),
-        () => ref.read(activitySyncRepositoryProvider).resolveConflict(id, choice),
-      );
+  Future<void> _conflict(String id, ConflictChoice choice) {
+    final uid = ref.read(syncConflictUidProvider);
+    return _run(
+      conflictKey(id),
+      () => ref
+          .read(activitySyncRepositoryProvider)
+          .resolveConflict(id, choice, expectedUid: uid),
+    );
+  }
 
   Future<void> _run(String key, Future<SyncOutcome> Function() action) async {
     if (state.busy.contains(key)) return;
+    final generation = _generation;
     state = state.copyWith(busy: {...state.busy, key}, lastFailed: false);
     var failed = false;
     try {
@@ -139,6 +169,9 @@ class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
     } catch (_) {
       failed = true;
     }
+    // The account changed (the state was rebuilt) or the presenter was
+    // disposed while the action ran: its result is not this state's business.
+    if (_disposed || generation != _generation) return;
     state = state.copyWith(
       busy: {...state.busy}..remove(key),
       lastFailed: failed,

@@ -121,23 +121,27 @@ class SyncConflictSheet extends ConsumerWidget {
               Text(l10n.activitySyncEmpty,
                   key: const Key('activitySync.empty'),
                   style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: hud.textPrimary)),
-            for (final c in view.conflicts)
-              _ConflictCard(
-                conflict: c,
-                busy: view.busy
-                    .contains(SyncConflictPresenter.conflictKey(c.id)),
-                onKeepDevice: () => presenter.keepDevice(c.id),
-                onKeepCloud: () => presenter.keepCloud(c.id),
-              ),
-            for (final c in view.candidates)
-              _CandidateCard(
-                candidate: c,
-                busy: view.busy
-                    .contains(SyncConflictPresenter.candidateKey(c.id, c.field)),
-                onChoice: (choice) =>
-                    presenter.resolveCandidate(c.id, c.field, choice),
-              ),
+                      ?.copyWith(color: hud.textPrimary))
+            else ...[
+              // Cards only for a loaded, non-failed state (remediation H6): an
+              // error or a first frame never shows the previous list.
+              for (final c in view.conflicts)
+                _ConflictCard(
+                  conflict: c,
+                  busy: view.busy
+                      .contains(SyncConflictPresenter.conflictKey(c.id)),
+                  onKeepDevice: () => presenter.keepDevice(c.id),
+                  onKeepCloud: () => presenter.keepCloud(c.id),
+                ),
+              for (final c in view.candidates)
+                _CandidateCard(
+                  candidate: c,
+                  busy: view.busy.contains(
+                      SyncConflictPresenter.candidateKey(c.id, c.field)),
+                  onChoice: (choice) =>
+                      presenter.resolveCandidate(c.id, c.field, choice),
+                ),
+            ],
           ],
         ),
       ),
