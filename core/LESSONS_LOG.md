@@ -133,3 +133,10 @@ Rule next time: every fail-closed result must have a consumer that retries or su
 Kind: NEUTRAL.
 Facts: the F2 test oracles and the stale-fake list are written down before any test exists (core/changes/2026-10-16-s02-remediation-f2-test-notes.md).
 Rule applied: list every implementer of a changed interface in the same commit series (lesson of the stale journal fake).
+
+## 2026-10-16 - Unbound visibility and cache reset (remediation F1, 2/4)
+Kind: FAILURE.
+Facts: an unbound or failed-bind scoped journal read as empty, so the conflict sheet showed loaded and in sync with zero pending deletions and `resolveConflict` returned `notFound`, shown as not failed; `onAccountChanged` left `_conflictCache` and `_conflictTried` of the previous account (see core/changes/2026-10-16-s02-remediation-f1-unbound-and-caches.md).
+Root cause: E1 made "no account" a normal empty journal; the consumers treated empty as a valid answer.
+Layers: the E1/E2 author missed it; tests had no unbound case; silent-failure, Flutter and reliability reviewers caught it.
+Rule next time: when a store can be absent, the absence is a distinct error state in every reader, and each reader gets an "absent" test.

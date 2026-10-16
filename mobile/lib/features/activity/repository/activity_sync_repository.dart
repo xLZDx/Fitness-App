@@ -258,7 +258,7 @@ class ActivitySyncRepository {
   /// first, then again after every change; an entry leaves the stream only
   /// once its resolution is stored.
   Stream<ActivitySyncState> watch() => Stream.multi((c) {
-        final sub = _changes.stream.listen(c.add);
+        final sub = _changes.stream.listen(c.add, onError: c.addError);
         c.onCancel = sub.cancel;
         unawaited(refreshState().then((s) {
           if (!c.isClosed) c.add(s);
@@ -269,8 +269,12 @@ class ActivitySyncRepository {
         }));
       });
 
+  /// The current state. Throws [JournalUnbound] while a scoped journal has no
+  /// account bound (nobody signed in, or the bind failed): an unbound journal
+  /// reads as empty, which must never be shown as "everything is in sync".
   Future<ActivitySyncState> refreshState() =>
       _stateLock.run(() async {
+        if (_journalUnbound) throw const JournalUnbound();
         final entries = await _journal.list();
         final conflicts = <SyncConflict>[];
         final candidates = <SyncCandidate>[];
@@ -296,7 +300,12 @@ class ActivitySyncRepository {
     if (_changes.isClosed || !_changes.hasListener) return;
     unawaited(refreshState().then((s) {
       if (!_changes.isClosed) _changes.add(s);
-    }, onError: (Object _) {}));
+    }, onError: (Object e) {
+      // An unbound journal is reported to the listeners (the sheet shows its
+      // error state); other refresh failures stay unreported here and surface
+      // on the next subscription.
+      if (e is JournalUnbound && !_changes.isClosed) _changes.addError(e);
+    }));
   }
 
   Future<void> dispose() {
@@ -339,10 +348,13 @@ class ActivitySyncRepository {
   Future<SyncConflict> _conflictView(JournalEntry e, ActivitySession s) async {
     var detail = _conflictCache[e.id];
     if (detail == null) {
+      final epoch = _epoch;
       try {
         final server = await _backend.readSummary(e.id);
         detail = _detailFor(e, s, server);
-        _conflictCache[e.id] = detail;
+        // A read that finished after an account change is not cached: the
+        // cache belongs to the account of the epoch it was read under.
+        if (epoch == _epoch) _conflictCache[e.id] = detail;
       } on SummaryBackendUnavailable {
         return SyncConflict(
           id: e.id,
@@ -524,6 +536,8 @@ class ActivitySyncRepository {
         final p = _pass;
         var tombs = <String>{};
         var tombsKnown = false;
+        // Nothing is bound: no backend call, no outcomes (not "all synced").
+        if (_journalUnbound) return out;
         if (!_mayCall(p)) return out;
         try {
           tombs = await _backend.listTombstoneIds();
@@ -683,6 +697,10 @@ class ActivitySyncRepository {
     _failedTombstones.clear();
     _retryAttempts = 0;
     _lastTombstonePushError = null;
+    // Cloud values read for account A and A's once-per-process conflict retry
+    // marks must not leak into account B.
+    _conflictCache.clear();
+    _conflictTried.clear();
   }
 
   /// Syncs at most [kMaxSummaryBatch] entries; a larger request is refused
@@ -700,6 +718,9 @@ class ActivitySyncRepository {
   }
 
   Future<SyncOutcome> _syncLocked(String id, {_Server? known}) async {
+    // An unbound journal reads as empty: that is "cannot sync now", never
+    // success and never notFound; no backend call is made.
+    if (_journalUnbound) return SyncOutcome.pending;
     final p = _pass;
     if (!_alive(p)) return SyncOutcome.pending;
     JournalEntry? entry;
@@ -910,6 +931,7 @@ class ActivitySyncRepository {
   /// as ONE generation and synced.
   Future<SyncOutcome> saveSession(ActivitySession incoming) => _serial(() async {
         final p = _pass;
+        if (_journalUnbound) throw const JournalUnbound();
         final JournalEntry? prev;
         try {
           prev = await _journal.read(incoming.id);

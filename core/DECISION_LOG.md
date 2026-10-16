@@ -57505,3 +57505,7 @@ Decision: the journal binding retries a failed bind with bounded backoff through
 ## 2026-10-16 - Commit: S02 remediation F2 test notes
 
 Decision: F2 test oracles recorded in docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md. Evidence: core/changes/2026-10-16-s02-remediation-f2-test-notes.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (2/4) account-change cache reset and unbound visibility
+
+Decision: an unbound scoped journal is a visible failure (state stream error, `unavailable` outcomes for resolutions, `pending` for syncs, no backend call), never an empty "in sync" state; the conflict caches belong to the account and are cleared on change. Evidence: core/changes/2026-10-16-s02-remediation-f1-unbound-and-caches.md.

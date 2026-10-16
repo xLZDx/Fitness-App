@@ -23,6 +23,8 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   Future<SyncOutcome> resolveConflict(String id, ConflictChoice choice) =>
       _serial(() async {
         final p = _pass;
+        // Unbound journal: a visible failure, never "not found"/success.
+        if (_journalUnbound) return SyncOutcome.unavailable;
         final JournalEntry? read;
         try {
           read = await _journal.read(id);
@@ -126,6 +128,8 @@ extension ActivitySyncResolution on ActivitySyncRepository {
   ) =>
       _serial(() async {
         final p = _pass;
+        // Unbound journal: a visible failure, never "not found"/success.
+        if (_journalUnbound) return SyncOutcome.unavailable;
         final JournalEntry? entry;
         try {
           entry = await _journal.read(id);
@@ -198,6 +202,8 @@ extension ActivitySyncResolution on ActivitySyncRepository {
           String id, Map<String, double> edits) =>
       _serial(() async {
         final p = _pass;
+        // Unbound journal: a visible failure, never "not found"/success.
+        if (_journalUnbound) return SyncOutcome.unavailable;
         final JournalEntry? entry;
         try {
           entry = await _journal.read(id);
