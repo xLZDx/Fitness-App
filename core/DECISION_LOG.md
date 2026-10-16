@@ -57211,3 +57211,7 @@ Decision: Uploader and withdrawal providers exist only when ACTIVITY_CLOUD_STREA
 ## 2026-10-16 - Commit: S02 test epic 7b: dedicated stream-upload marker in the journal
 
 Decision: The stream upload has its own journal marker (streamUploadedHash); the synced state belongs to the summary sync only, because a summary-synced entry was never uploaded.
+
+## 2026-10-16 - Commit: S02 test epic 7b: shared fakes for the client upload tests
+
+Decision: The fake server refuses a commit without a complete PUT of that upload id, so wrong client sequences fail.
