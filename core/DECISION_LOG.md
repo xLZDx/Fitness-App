@@ -56883,3 +56883,7 @@ Decision: Streams are encrypted with AES-256-GCM under a secure-storage key that
 ## 2026-10-16 - Commit: S02-02: journal value types
 
 Decision: record.json is an envelope of the raw session map and journal-owned state so tombstone and synced survive an index rebuild. Evidence: core/changes/2026-10-16-s02-02-journal-models.md.
+
+## 2026-10-16 - Commit: S02-02: generation writer with COMMIT marker
+
+Decision: A mutation writes a new generation directory and the COMMIT marker rename is the only commit point; CURRENT and the index are written after it and are caches. Evidence: core/changes/2026-10-16-s02-02-generation-writer.md.
