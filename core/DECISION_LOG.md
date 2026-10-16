@@ -56827,3 +56827,7 @@ Decision: the merged activity summary is kept as explicit per-field overrides in
 ## 2026-10-16 - Commit: S02 design and test plan revision 6
 
 Decision: a summary override is bound to the input revision of its own field instead of the general journal sequence, so metadata-only mutations cannot undo a merge; an uncommitted first journal generation is never shown as an activity. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-6.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 7
+
+Decision: summary override invalidation is driven by digests of ten classified input classes against an authoritative field matrix that is a superset by rule, and the tests compare the production constant with an independent golden fixture instead of reading the constant itself. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-7.md.
