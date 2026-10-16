@@ -264,8 +264,8 @@ Groups: **S00 ENTRY** (needed to start S00), **SPRINT ENTRY** (needed before the
 | D-18 | Nutrition database region | SPRINT ENTRY | S14 | food lookup go-live | Existing sources, flags OFF |
 | D-19 | Body-fat number: keep provisional with banner, or hide until a real model | GO-LIVE | S14 | BODY activation | Keep with banner |
 | D-20 | Sprint cadence and start date | SPRINT ENTRY | S00 | calendar | No fixed dates |
-| U-1 | Replace the Scan tab with a context-sensitive Record action | SPRINT ENTRY | S03-D approval | S03-D | Keep five tabs, Record as a shell action |
-| U-2 | Tablet and large layouts now or later | SPRINT ENTRY | S15-D | responsive scope (the tablet chooser in S03-D is a design-only variant, not built in S03, while U-2 is OPEN) | Phone first |
+| U-1 | Replace the Scan tab with a context-sensitive Record action | SPRINT ENTRY | S03-D approval | S03-D | Keep five tabs, Record as a shell action. **ANSWERED 2026-10-16: keep five tabs, Record as a button over the screen** |
+| U-2 | Tablet and large layouts now or later | SPRINT ENTRY | S15-D | responsive scope (the tablet chooser in S03-D is a design-only variant, not built in S03, while U-2 is OPEN) | Phone first. **ANSWERED 2026-10-16: NOW, and wider than tablets: the design covers Android phone, iPhone, iPad, Android tablet and MacBook, that is both the Android and the Apple families. The repository has only an `android` platform folder today (no ios, macos, web); whether and when iOS, iPadOS and macOS builds are created is a separate open question** |
 | U-3, U-5 | Photo policy; lime corner wedges in app or marketing only | SPRINT ENTRY | UI-M | visual asset contract | Licensed photography; wedges in marketing only |
 | U-4 | Voice and music licensing | SPRINT ENTRY | S13-D / S06-D audio | audio features | No licensed music |
 | U-6 | Final name and logo | GO-LIVE | S27 | brand assets | Working name |

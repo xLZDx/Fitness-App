@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 68409 |
+| `core/LESSONS_LOG.md` | Lessons log | 69978 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -273,7 +273,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
 | `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20755 |
 | `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12952 |
-| `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33265 |
+| `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33688 |
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
 | `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2456 |
 | `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 22469 |
@@ -314,10 +314,10 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC9.md` | S02 test findings, epic 9 | 6621 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7009 |
 | `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328832 |
-| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 88578 |
+| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 89617 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 8496 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 9177 |
 | `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13362 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |

@@ -589,3 +589,11 @@ SHORTCOMING 1 (mine): the first send of gate round 13 used the worktree folder a
 SHORTCOMING 2 (mine): the review and test agents have small turn limits; four of them stopped without a final report on the first run and had to be resumed (the J1 implementer left its work staged but uncommitted, and I reviewed and committed it myself). Rule: give agents narrower tasks, tell them to batch tool calls and to commit early, and expect to resume.
 Layers: caught by my own check of the reply, and by the resume handling.
 Rule next time: see the two rules above; for a gate resend, copy the previous command line exactly.
+
+## 2026-10-16 - Commit: docs: record operator answers after the S02 merge
+
+Kind: SHORTCOMING (mine, plan and communication), with one near-miss.
+Facts: after the S02 gate the operator asked two basic questions that the plan documents did not answer up front: whether Phase 1 is finished before Phase 2 and whether there will be two apps, and whether the design covers Android phone, iPhone, iPad, Android tablet and MacBook. The repository has only an `android` platform folder (no ios, macos or web), and the roadmap kept the tablet and large-screen layouts as an open question with a phone-only default, so the platform and form-factor scope had never been put to the operator as a decision. Near-miss: I edited `public/privacy.html` by hand and then saw from scripts/review/state_ledger.py that it is generated from the `legalPrivacyBody` key of app_en.arb and app_ru.arb; I reverted the edit before any commit. Evidence: core/changes/2026-10-16-s03d-record-operator-answers.md.
+Root cause: the roadmap states sprints and defaults but has no one-page picture of what is released when, on which platforms and in how many apps; the privacy text is a generated file and I did not check for that before editing.
+Layers: author (me); no reviewer or gate asks for a release and platform picture.
+Rule next time: put the release picture (apps, platforms, form factors, release lines) on the first page of the roadmap and ask it as an operator decision at sprint zero; before hand-editing a file under public/ or core/, grep scripts/ for "generated" and for the file name.
