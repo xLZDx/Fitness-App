@@ -88,7 +88,14 @@ class FileActivityJournal implements ActivityJournal {
   late final JournalGenerationWriter _writer;
   final JournalMutex _mutex = JournalMutex();
   final Map<String, _Meta> _meta = {};
+  /// Persisted-lost: checksum mismatch, key present but decryption fails, key
+  /// genuinely absent, or a stored streamLost flag. Only this set may feed
+  /// `_commitStateOnly` and the early return in `read`.
   final Set<String> _lostIds = {};
+
+  /// Transient-unavailable: key store threw or `streams.bin` hit an I/O error.
+  /// Never persisted; retried on the next read.
+  final Set<String> _unavailableIds = {};
   int _seq = 0;
   bool _started = false;
   bool _closed = false;
@@ -135,6 +142,9 @@ class FileActivityJournal implements ActivityJournal {
               for (final e in result.entries.entries)
                 if (e.value.record.state.streamLost) e.key,
             ]);
+          _unavailableIds
+            ..clear()
+            ..addAll(result.streamsUnavailable);
           for (final dir in [
             _paths.journalDir,
             _paths.sourcesDir,
@@ -523,13 +533,15 @@ class FileActivityJournal implements ActivityJournal {
         return base;
       }
 
+      // A missing file is persisted loss; an I/O error is transient.
       Uint8List? streamsBytes;
       try {
-        streamsBytes = await _fs.readBytes('$dir/$kStreamsFileName');
-      } on FileSystemException {
-        streamsBytes = null;
+        streamsBytes = await _writer.readIfPresent('$dir/$kStreamsFileName');
+      } on JournalUnreadable {
+        _unavailableIds.add(id);
+        return _lostEntry(base);
       }
-      final commit = await _writer.readCommit(id, meta.seq);
+      final commit = await _readCommitOrThrow(id, meta.seq);
       if (streamsBytes == null ||
           commit == null ||
           record.streamHash != commit.streamsSha256 ||
@@ -543,8 +555,8 @@ class FileActivityJournal implements ActivityJournal {
       try {
         key = await _keys.loadKey();
       } catch (_) {
-        // Transient failure: unavailable now, not recorded as lost.
-        _lostIds.add(id);
+        // Transient failure: unavailable now, never persisted as lost.
+        _unavailableIds.add(id);
         return _lostEntry(base);
       }
       List<dynamic>? streams;
@@ -574,6 +586,8 @@ class FileActivityJournal implements ActivityJournal {
 
       final session = ActivityMigration.read({...record.session, 'streams': streams});
       if (session == null) return null;
+      _lostIds.remove(id);
+      _unavailableIds.remove(id);
       await _pruneOlder(id, meta.seq);
       return JournalEntry(
         session: session,
@@ -582,6 +596,16 @@ class FileActivityJournal implements ActivityJournal {
         streamsLoaded: true,
       );
     });
+  }
+
+  /// COMMIT marker of a cached generation; an I/O error surfaces as a typed
+  /// journal error (the cache entry is kept).
+  Future<CommitMarker?> _readCommitOrThrow(String id, int seq) async {
+    try {
+      return await _writer.readCommit(id, seq);
+    } on JournalUnreadable catch (e) {
+      throw JournalIoException('cannot read journal entry $id', cause: e.cause);
+    }
   }
 
   JournalEntry? _summaryEntryOf(JournalRecord r, int seq) {
@@ -643,6 +667,7 @@ class FileActivityJournal implements ActivityJournal {
         }
         _meta.clear();
         _lostIds.clear();
+        _unavailableIds.clear();
         await _keys.forget();
       });
 }

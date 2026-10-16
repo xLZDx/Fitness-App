@@ -57266,7 +57266,7 @@ Decision: Recovery distinguishes a missing or invalid COMMIT marker (uncommitted
 
 ## 2026-10-16 - Commit: S02 remediation B1: transient stream failures are not persisted as lost
 
-Decision: The journal keeps a persisted-lost set and a separate transient-unavailable set; only the persisted-lost set may write streamLost into a new generation, so a key store or read error is retried instead of hiding intact streams. Stream-lost counts and the sign-out assessment use the persisted-lost set only.
+Decision: The journal keeps a persisted-lost set and a separate transient-unavailable set; only the persisted-lost set may write streamLost into a new generation, so a key store or read error is retried instead of hiding intact streams. Stream-lost counts and the sign-out assessment use the persisted-lost set only. A fully verified read clears both sets for the id.
 
 ## 2026-10-16 - Commit: S02 remediation B2: journal wipe wiring and owner guard
 
