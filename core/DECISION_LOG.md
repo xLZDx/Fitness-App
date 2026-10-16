@@ -57311,3 +57311,11 @@ Decision: Remediation A7 is pinned at the callable, transaction and reconciler l
 ## 2026-10-16 - Commit: S02 test epic 9b: corrupt cloud summary and tombstone push error tests
 
 Decision: SummaryCorrupt versus SummaryBackendUnavailable (backend over a fake Firestore) and the visible sync_conflict outcome without a retry loop are pinned by tests; lastTombstonePushError is pinned as the last failed push (not cleared by a later success, per its getter doc).
+
+## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation (B1) and read-failure callers
+
+Decision: SF1, SF2 and SF3 are pinned by tests whose oracles are the B1 test notes; a local read I/O failure is retryable per entry, so callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.
+
+## 2026-10-16 - Commit: S02 test epic 8a: validator separator bound (A8)
+
+Decision: Remediation A8 validator bound is pinned with a JSON.parse spy; the scaling profile pin belongs to epic 8b.
