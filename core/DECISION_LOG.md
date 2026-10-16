@@ -57031,3 +57031,7 @@ Decision: The presenter is a Riverpod Notifier whose entry lists come only from 
 ## 2026-10-16 - Commit: S02-12: sync-conflict choice sheet and strings
 
 Decision: The choice sheet renders summary fields only with the two conflict actions and the two or three candidate actions, has no delete action, opens at most once and updates in place; strings are added to both app_en.arb and app_ru.arb as neighbouring features do
+
+## 2026-10-16 - Commit: S02 glue: Firestore summary backend and cloud-sync flag
+
+Decision: The Firestore adapter maps only permission-denied on a write to SummaryWriteDenied and every other failure (including a missing or anonymous sign-in) to SummaryBackendUnavailable, reads from the server source so a cache hit is never taken for server state, and batches at most 8 writes; the cloud path hangs on one compile-time flag ACTIVITY_CLOUD_STREAMS, default OFF, as design 12.1 prescribes
