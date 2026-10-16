@@ -56819,3 +56819,7 @@ Decision: the Firestore rules themselves refuse client summary writes while an a
 ## 2026-10-16 - Commit: S02 test plan revision 4
 
 Decision: the test plan covers the rules-level deletion fence, the three-way merge, generation-directory journal recovery, a split valid and hostile corpus and a story-map lint; design section 11 is the single authoritative order and its test-id column equals the plan map. Evidence: core/changes/2026-10-16-s02-test-plan-revision-4.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 5
+
+Decision: the merged activity summary is kept as explicit per-field overrides in the local record so it survives recomputation and restart; a journal generation is committed by its COMMIT marker (not by the CURRENT pointer) and recovery never activates an uncommitted generation; a stream-only checksum mismatch is recovered as streamLost rather than rolled back. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-5.md.

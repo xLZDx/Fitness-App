@@ -45,8 +45,8 @@ Agents and models actually run in S00: implementation-engineer, tdd-guide (Sonne
 
 ## S02: unified activity (E1)
 
-Current phase: 3 Design (started 2026-10-16 on branch `phase2/s02-unified-activity` from `5bb61f15`). Entry decisions D-16 and D-17 are answered. Sprint scope is the S02 row of `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md`; GPS-specific requirements stay with S04 onwards, S02 covers the activity model, persistence, retention, deletion, export and the debug telemetry server guarantee (GPS-PRIV-050 and 098) that must exist before any GPS code.
+Current phase: 5 Doc review (design and test plan revision 5, GPT-PM round 2 findings remediated, round 3 verification pending; started 2026-10-16 on branch `phase2/s02-unified-activity` from `5bb61f15`). Entry decisions D-16 and D-17 are answered. Sprint scope is the S02 row of `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md`; GPS-specific requirements stay with S04 onwards, S02 covers the activity model, persistence, retention, deletion, export and the debug telemetry server guarantee (GPS-PRIV-050 and 098) that must exist before any GPS code.
 
-Artifacts: `docs/phase2/s02/S02_CODE_MAP.md` (done, code-explorer); `docs/phase2/s02/S02_DESIGN.md` (technical-writer, in progress).
+Artifacts: `docs/phase2/s02/S02_CODE_MAP.md` (done, code-explorer); `docs/phase2/s02/S02_DESIGN.md` revision 5 (technical-writer); `docs/phase2/s02/S02_TEST_PLAN.md` revision 5 (functional-test-reviewer, 231 planned tests); two internal review rounds and two GPT-PM rounds done.
 
-Next role to launch: architect and security-reviewer (design review), then functional-test-reviewer (acceptance to test map), then GPT-PM.
+Next role to launch: GPT-PM verification round 3 (only the summary-merge convergence and the commit-marker recovery fixes plus direct regressions); after APPROVE, implementation-engineer starts phase 6.
