@@ -67,7 +67,7 @@ import {
 } from "./shared";
 
 /** Documents per page of every pass. */
-const PAGE = 200;
+export const PAGE = 200;
 /** Objects per page of the unmatched-object listing. */
 const LIST_PAGE = 500;
 /** After this many failed purges of one document the job stops retrying it. */

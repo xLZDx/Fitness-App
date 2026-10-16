@@ -56943,3 +56943,7 @@ Decision: The commit reads the quarantine object once pinned to its generation, 
 ## 2026-10-16 - Commit: S02-04b: export upload callables
 
 Decision: Both upload callables are exported from index.ts; their quota names were registered with the create callable. Evidence: core/changes/2026-10-16-s02-04b-exports.md.
+
+## 2026-10-16 - Commit: S02-05b: pure retention and purge logic
+
+Decision: Expiry stays derived (summary startUtc clamped plus the current retention, never the stored hint) through the same helpers the upload callables use; the recompute gets half of the run budget so it cannot starve the purge, and non-stored rows are stamped with the current generation so the final pass can finish. Evidence: core/changes/2026-10-16-s02-05b-retention-logic.md.
