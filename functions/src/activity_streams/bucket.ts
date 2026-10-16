@@ -23,6 +23,14 @@ export interface StreamFile {
   download(): Promise<[Buffer, ...unknown[]]>;
   save(data: Buffer, options: { contentType: string; resumable?: boolean }): Promise<unknown>;
   delete(options?: { ignoreNotFound?: boolean }): Promise<unknown>;
+  /** V4 signed URL (S02-04b: the upload callable signs the quarantine PUT). */
+  getSignedUrl(config: {
+    version: "v4";
+    action: "write";
+    expires: number;
+    contentType: string;
+    extensionHeaders?: Record<string, string>;
+  }): Promise<[string, ...unknown[]]>;
 }
 
 export interface StreamBucket {

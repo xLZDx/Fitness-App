@@ -56931,3 +56931,7 @@ Decision: deleteActivity writes the 400-day tombstone first inside the fenced tr
 ## 2026-10-16 - Commit: S02-06a: mobile permission-denied decision
 
 Decision: With no sync layer yet, the rule "permission-denied is not deletion" is a pure function that deletes local data only when the tombstone read succeeded and found a document, and keeps data as sync_conflict on absence or a failed read. Evidence: core/changes/2026-10-16-s02-06a-mobile-denial-decision.md.
+
+## 2026-10-16 - Commit: S02-04b: createActivityStreamUpload callable
+
+Decision: The upload intent is decided in one fenced transaction (fence, tombstone, summary, consent, already-due expiry, 5 attempts per UTC day); a stored row keeps state stored and gains pending fields during a re-upload, and the signed PUT URL is minted only after that transaction commits. Evidence: core/changes/2026-10-16-s02-04b-create-upload.md.

@@ -464,6 +464,17 @@ export const QUOTAS = {
    * stopped by this ceiling.
    */
   activityDelete: 100,
+  /**
+   * S02 `createActivityStreamUpload` (design 5.4): upload intents per user per
+   * day. Starting limit, unmeasured.
+   */
+  activityStreamUpload: 30,
+  /**
+   * S02 `commitActivityStream` (design 5.4): commits per user per day. Starting
+   * limit, unmeasured; higher than the upload limit because a commit is retried
+   * after a transient failure.
+   */
+  activityStreamCommit: 60,
 } as const;
 
 /**
@@ -492,6 +503,9 @@ export const REDACTED_QUOTA_ACTIONS: ReadonlySet<string> = new Set([
   "activitySettingsSet",
   // S02 activity delete (design 5.4): the log must not record which user deleted GPS activities.
   "activityDelete",
+  // S02 stream upload and commit (design 5.4): the log must not record who uploads GPS streams.
+  "activityStreamUpload",
+  "activityStreamCommit",
   // The account export logs its own failures; neither action may name the uid (D-67).
   "accountExport",
   "accountExportPage",
