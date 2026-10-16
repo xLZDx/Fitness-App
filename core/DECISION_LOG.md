@@ -56879,3 +56879,7 @@ Decision: The journal talks to storage only through an injectable file-system se
 ## 2026-10-16 - Commit: S02-02: stream cipher and secure-storage key provider
 
 Decision: Streams are encrypted with AES-256-GCM under a secure-storage key that is never re-minted when the store is merely unreadable. Evidence: core/changes/2026-10-16-s02-02-cipher-and-key.md.
+
+## 2026-10-16 - Commit: S02-02: journal value types
+
+Decision: record.json is an envelope of the raw session map and journal-owned state so tombstone and synced survive an index rebuild. Evidence: core/changes/2026-10-16-s02-02-journal-models.md.
