@@ -57007,3 +57007,7 @@ Decision: The debug telemetry sink now sends closed-schema batches (level, compo
 ## 2026-10-16 - Commit: S02-10: merger performance restructuring
 
 Decision: The merger meets the operation-count budget by indexing echo detection by source id or app package and by clustering through a time-bucket window derived from the policy (start difference bound from minIou and the longest session), preserving the first-match cluster order; an optional onPairCompared seam counts comparisons and changes no result; sessions with a repeated id collapse to one with a deterministic tie-break. Record: core/changes/2026-10-16-s02-10-merger-perf.md
+
+## 2026-10-16 - Commit: S02-10: native-session id rule
+
+Decision: A native recording id is activityIdFor(sourceId app, externalId recording uuid) via nativeActivityId, with a matching provenance record, so replays and re-syncs share one id; this is the only dedup S02 promises and no cross-source matching is claimed; the journal upsert by id is reused unchanged. Record: core/changes/2026-10-16-s02-10-native-id-rule.md
