@@ -31,6 +31,14 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "pendingExpiresAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "activity_streams",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -41,6 +49,15 @@
       "indexes": [
         { "order": "ASCENDING", "queryScope": "COLLECTION" },
         { "order": "DESCENDING", "queryScope": "COLLECTION" }
+      ]
+    },
+    {
+      "collectionGroup": "activity_settings",
+      "fieldPath": "recomputePending",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
       ]
     },
     {

@@ -56951,3 +56951,7 @@ Decision: Expiry stays derived (summary startUtc clamped plus the current retent
 ## 2026-10-16 - Commit: S02-05b: purge function and recompute continuation
 
 Decision: One daily scheduled function first advances the recompute (20 users, bounded pages per user, generation-guarded cursor, final per-user pass before the flag clears) and then purges due streams by deleting the object before marking the row expired in the same re-reading transaction, retrying failures forever and signalling overdue age, capped rows, backlog and a missing index in one structured log entry. Evidence: core/changes/2026-10-16-s02-05b-purge-function.md.
+
+## 2026-10-16 - Commit: S02-05b: purge and recompute indexes
+
+Decision: The purge query gets a composite collection-group index (state, expiresAt) and the recompute discovery gets a single-field collection-group override on recomputePending; no settingsGeneration index is added because the final pass needs none. Evidence: core/changes/2026-10-16-s02-05b-indexes.md.
