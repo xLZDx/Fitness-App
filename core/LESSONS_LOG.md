@@ -160,3 +160,6 @@ Rule next time: test every state-clearing event from every reachable state, incl
 
 ## 2026-10-16 - S02 test epic 12b (2): binding retry tests
 Kind: SUCCESS. The binding provider, written without a compiler, met every F2 note on the first run (14 of 14), because the retry state is one generation counter plus one timer slot; a fake timer factory with forced stale callbacks made the cancel guarantees falsifiable. Architecture/import guard tests (data/-layer graph, backup rules) pass: they scan only feature `data/` directories, and `core/wiring` already imports account-deletion state like body_scan and food_diary do, so no import fix was needed (layer that missed it: none; the implementer simply did not check).
+
+## 2026-10-16 - S02 test epic 12b (3): uploader account-switch tests
+Kind: SUCCESS. The uploader reset (slot, per-id map, failed ids, epoch) held for all seven oracles. Test-side slip (mine): a fake whose fault hook runs before the blocking hook never blocked, so the first version of the old-epoch test proved nothing; rule: assert the precondition (the call is really blocked) before the action.

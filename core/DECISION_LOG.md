@@ -57525,3 +57525,7 @@ Decision: `bindUid(null)` ends the wiped-uid refusal even when the journal is al
 ## 2026-10-16 - Commit: S02 test epic 12b (2) binding retry tests
 
 Decision: the bind retry schedule and the deleting-account skip are pinned by tests with a fake timer; the `authUid` wiring check stays construction-level only and is not testable without a Firebase app (reported, no seam added). Evidence: core/changes/2026-10-16-s02-test-epic12b-binding-retry.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (3) uploader account-switch tests
+
+Decision: the single-flight and failed-id reset of the uploader on `cancelQueued()` are pinned by blocked-completer tests, including the old-epoch failure case; no production change. Evidence: core/changes/2026-10-16-s02-test-epic12b-uploader-switch.md.
