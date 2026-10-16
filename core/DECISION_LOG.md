@@ -56903,3 +56903,7 @@ Decision: The four activity collections are excluded from both the read and the 
 ## 2026-10-16 - Commit: S02-03: activity summary, stream, settings and tombstone blocks
 
 Decision: The summary rules use one allowlist identical to summary_fields.dart, require rev 1 on create and a strictly higher rev on update, keep startUtc and sport immutable, and check the tombstone and the account-deletion fence with two exists() lookups; the other three paths are owner-read, server-write. Evidence: core/changes/2026-10-16-s02-03-activity-blocks.md.
+
+## 2026-10-16 - Commit: S02-04a: closed-schema stream validator, canonical serialiser, SHA-256 helpers
+
+Decision: The server rejects (never strips) unknown keys at every depth, allows only gps, altitude and speed, re-serialises the parsed structure into a deterministic canonical gzip and returns separate contentSha256 and storedSha256; the string patterns are PROPOSED and carry an extra coordinate-like denial pending security review. Evidence: core/changes/2026-10-16-s02-04a-validator-and-schemas.md.
