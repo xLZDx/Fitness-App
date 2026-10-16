@@ -230,6 +230,8 @@ class SummaryProjection {
         atComputed: rc,
         atVersions: inForce ?? CalcVersions.current,
         atRev: serverRev,
+        // A recalculation candidate already offered stays resolvable (G17).
+        recalcCandidate: s.summaryOverrides[field]?.recalcCandidate,
       );
     }
     return s.copyWith(summaryOverrides: overrides);

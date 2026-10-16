@@ -57083,3 +57083,7 @@ Decision: Plan U08 is read literally: the string heartRate must not appear in th
 ## 2026-10-16 - Commit: S02 test epic 1: golden summaries and hostile normalised tests (U30, U40)
 
 Decision: The golden file format is chosen by the test author because the plan names the file but not its layout.
+
+## 2026-10-16 - Commit: S02 test epic 1: summaryOverrides projection tests (U41) and findings
+
+Decision: Plan G17 is followed (candidate stays); G32 session-level version strings differ from the plan and are recorded, not changed.
