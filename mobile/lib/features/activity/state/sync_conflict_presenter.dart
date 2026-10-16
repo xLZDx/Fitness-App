@@ -140,6 +140,8 @@ class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
     CandidateChoice choice,
   ) {
     final uid = ref.read(syncConflictUidProvider);
+    // Remediation J3 B4: no account at tap time, nothing to resolve.
+    if (uid == null) return Future<void>.value();
     return _run(
       candidateKey(id, field),
       () => ref.read(activitySyncRepositoryProvider).resolveCandidate(
@@ -150,6 +152,8 @@ class SyncConflictPresenter extends Notifier<SyncConflictViewState> {
 
   Future<void> _conflict(String id, ConflictChoice choice) {
     final uid = ref.read(syncConflictUidProvider);
+    // Remediation J3 B4: no account at tap time, nothing to resolve.
+    if (uid == null) return Future<void>.value();
     return _run(
       conflictKey(id),
       () => ref

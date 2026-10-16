@@ -801,10 +801,16 @@ class ActivitySyncRepository {
           _failedTombstones.remove(id);
         } catch (e) {
           if (!_alive(p)) return aborted;
-          // Remediation J2: the account changed under the call (server refusal
-          // or a missing uid). Same as `_mayCall` returning false: the pass
-          // stops, the tombstone stays pending, no failure bookkeeping.
-          if (e is ConsentAccountChangedException) return aborted;
+          // Remediation J2/J3 B3: the account changed under the call (server
+          // refusal or a missing uid) although this pass is still alive (a
+          // transient flip). The tombstone stays owed with NO failure
+          // bookkeeping (not in `_failedTombstones`, no `_lastTombstonePushError`),
+          // but the normal backed-off retry is scheduled instead of ending silently.
+          if (e is ConsentAccountChangedException) {
+            anyFailed = true;
+            code = 'account-changed';
+            break;
+          }
           // Offline or refused: owed, retried later. The error code is kept so
           // a refusal is distinguishable from being offline.
           anyFailed = true;

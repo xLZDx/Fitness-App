@@ -259,6 +259,8 @@ class ActivityStreamUploader {
     final bound = _currentUid?.call();
     if (!_mayUpload(bound)) return;
     if (!_uidOk(bound)) return;
+    // Remediation J3 B5: a scoped journal bound to another account is never read.
+    if (bound != null && !_journalBoundTo(bound)) return;
     final entries = await _journal.list();
     for (final e in entries) {
       if (!_mayUpload(bound) || !_uidOk(bound)) return;
@@ -304,6 +306,10 @@ class ActivityStreamUploader {
     final epoch = _epoch;
     if (!_mayUpload(bound)) return StreamUploadOutcome.skipped;
     if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
+    // Remediation J3 B5: tie the journal to the account BEFORE its first read.
+    if (bound != null && !_journalBoundTo(bound)) {
+      return StreamUploadOutcome.cancelled;
+    }
     final JournalEntry? entry;
     try {
       entry = await _journal.read(id);

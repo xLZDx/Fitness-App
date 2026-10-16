@@ -507,3 +507,11 @@ Facts: the J1 fix bound four callables to the initiating account but left two ca
 Root cause: the fix was scoped from a list of names instead of the whole class; design item 25 even recorded the two as "outside this item".
 Layer: author and the J1 brief missed it; the class-sweep reviewers caught it.
 Rule next time: when binding or hardening a class, enumerate ALL members of the class first (every onCall export) and add a structural test that fails when a new member lacks the guard.
+
+## 2026-10-16 - Commit: fix(s02): class sweep findings in the client activity calls (remediation J3b)
+
+Kind: SHORTCOMING and SUCCESS.
+Facts: three independent reviewers found the same withdrawal-durability gap on their own, which confirms it is real; the sweep with an inventory table worked and found the two unbound callables and five client gaps. But the reviewers hit turn limits and two surface files were never read by anyone. Evidence: core/changes/2026-10-16-s02-remediation-j3b-client-class-sweep.md.
+Root cause: a whole-surface sweep was given to too few reviewers, and partial reports were not required.
+Layer: reviewers (coverage) and the brief author missed the unread files; the independent overlap caught the main defect.
+Rule next time: split a whole-surface sweep over more reviewers or per area, and require a partial report with an explicit list of files not read.

@@ -139,10 +139,14 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
   /// The uid of the account the consent store is bound to right now.
   String? get accountUid => _store.boundUid;
 
-  /// Granted only when the state belongs to the store's current account.
+  /// Granted only when the state belongs to the store's current account. An
+  /// unbound store (null bound uid) never counts as granted, even when a
+  /// `granted` value is held (remediation J3 B1).
   @override
   bool get isGranted =>
-      _state == CloudStreamsConsent.granted && _consentUid == _store.boundUid;
+      _state == CloudStreamsConsent.granted &&
+      _consentUid != null &&
+      _consentUid == _store.boundUid;
 
   /// Forgets the in-memory state (account change): consent is unknown and
   /// belongs to no uid. Stored consent of any account is NOT deleted.
@@ -183,6 +187,9 @@ class ActivityCloudSettingsClient implements CloudStreamsConsentView {
     final myVersion = ++_version;
     var value = await _store.read();
     if (myVersion != _version || _store.boundUid != uid) return;
+    // Remediation J3 B1: an unbound store belongs to no account; whatever it
+    // returned is ignored (the state stays unknown, no uid).
+    if (uid == null) return;
     if (_unpersistedWithdrawals.contains(uid) &&
         value != CloudStreamsConsent.withdrawn) {
       value = CloudStreamsConsent.withdrawn;
@@ -284,17 +291,30 @@ class ActivityConsentWithdrawal {
   /// request of account A never swallows the request of account B).
   final Set<String?> _deleteRequested = {};
 
-  /// Stops queued uploads immediately, records the withdrawal and returns the
-  /// offer. Local journal data and summaries are not touched.
+  /// Records the withdrawal, stops queued uploads and returns the offer. Local
+  /// journal data and summaries are not touched.
+  ///
+  /// Remediation J3 B2: the account guard comes FIRST. A refused withdrawal
+  /// (no bound account, or the live account is not the bound one) throws
+  /// [ConsentAccountChangedException] and leaves the uploader untouched
+  /// (`cancelQueued` is not called). After the withdrawal succeeded the delete
+  /// offer is re-armed for that account: a later withdrawal after a re-grant may
+  /// request the deletion again.
   Future<ConsentWithdrawalResult> withdraw() async {
+    final uid = _settings.accountUid;
+    if (uid == null || !_settings.authMatchesAccount) {
+      throw const ConsentAccountChangedException();
+    }
     _uploader.cancelQueued();
     await _settings.withdraw();
+    _deleteRequested.remove(uid);
     return const ConsentWithdrawalResult(offerDeleteCloudStreams: true);
   }
 
   /// The user chose "delete my cloud streams now". Calls
-  /// `setActivityCloudSettings` with `deleteExisting` exactly once per account;
-  /// further calls for the same account are no-ops. The account is captured at
+  /// `setActivityCloudSettings` with `deleteExisting` exactly once per account
+  /// and per withdrawal (a new [withdraw] re-arms it); further calls within the
+  /// same withdrawal are no-ops. The account is captured at
   /// the start; the settings client refuses (throws) when it changed meanwhile.
   /// Summaries and local data stay.
   Future<void> deleteCloudStreamsNow() async {
