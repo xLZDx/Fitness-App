@@ -129,7 +129,9 @@ class ActivityStreamUploader {
     ActivityFlags flags = ActivityFlags.compileTime,
     DateTime Function()? now,
     StreamUploadDelay? delay,
-  })  : _journal = journal,
+    String? Function()? currentUid,
+  })  : _currentUid = currentUid,
+        _journal = journal,
         _callables = callables,
         _consent = consent,
         _put = put,
@@ -145,6 +147,21 @@ class ActivityStreamUploader {
   final DateTime Function() _now;
   final StreamUploadDelay _delay;
 
+  /// Supplies the signed-in uid. When set, every run is bound to the uid it
+  /// started with and aborts (no further call, nothing marked) once the
+  /// supplier returns another uid or null. When null the uploader is unbound.
+  final String? Function()? _currentUid;
+
+  Future<void>? _runInFlight;
+  final Map<String, Future<StreamUploadOutcome>> _entryInFlight = {};
+
+  /// True when a run bound to [bound] may continue.
+  bool _uidOk(String? bound) {
+    final supplier = _currentUid;
+    if (supplier == null) return true;
+    return bound != null && supplier() == bound;
+  }
+
   bool _cancelled = false;
   final Set<String> _failedThisStart = {};
 
@@ -159,11 +176,24 @@ class ActivityStreamUploader {
 
   /// Uploads every `pending` or `upload_failed` entry once. An id that failed
   /// in this instance is not retried (next app start retries it).
-  Future<void> runPending() async {
+  ///
+  /// Single-flight: a second call while a run is in flight returns that run's
+  /// future (it does not start another run).
+  Future<void> runPending() {
+    final running = _runInFlight;
+    if (running != null) return running;
+    final run = _runPending().whenComplete(() => _runInFlight = null);
+    _runInFlight = run;
+    return run;
+  }
+
+  Future<void> _runPending() async {
     if (!_mayUpload) return;
+    final bound = _currentUid?.call();
+    if (!_uidOk(bound)) return;
     final entries = await _journal.list();
     for (final e in entries) {
-      if (!_mayUpload) return;
+      if (!_mayUpload || !_uidOk(bound)) return;
       if (e.state.tombstone || e.streamLost) continue;
       // The stream object needs the cloud summary first (the create callable
       // refuses without it): only entries the summary sync finished
@@ -177,7 +207,7 @@ class ActivityStreamUploader {
       if (!e.state.streamUploadPending) continue;
       if (_failedThisStart.contains(e.id)) continue;
       try {
-        await uploadEntry(e.id);
+        await uploadEntry(e.id, boundUid: bound);
       } catch (err) {
         debugPrint('activity: stream upload errored (${err.runtimeType})');
       }
@@ -186,8 +216,24 @@ class ActivityStreamUploader {
 
   /// One run for one activity (attempts, delays and budget as documented in
   /// the library comment).
-  Future<StreamUploadOutcome> uploadEntry(String id) async {
+  ///
+  /// Single-flight per id: a concurrent call for the same id returns the
+  /// in-flight run. [boundUid] is the uid the run belongs to; when omitted the
+  /// current uid is captured at the start.
+  Future<StreamUploadOutcome> uploadEntry(String id, {String? boundUid}) {
+    final running = _entryInFlight[id];
+    if (running != null) return running;
+    final bound = boundUid ?? _currentUid?.call();
+    final run = _uploadEntry(id, bound).whenComplete(() {
+      _entryInFlight.remove(id);
+    });
+    _entryInFlight[id] = run;
+    return run;
+  }
+
+  Future<StreamUploadOutcome> _uploadEntry(String id, String? bound) async {
     if (!_mayUpload) return StreamUploadOutcome.skipped;
+    if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
     final JournalEntry? entry;
     try {
       entry = await _journal.read(id);
@@ -213,20 +259,26 @@ class ActivityStreamUploader {
     final startedAt = _now();
 
     for (var attempt = 1; attempt <= kStreamUploadMaxAttempts; attempt++) {
-      if (_cancelled) return StreamUploadOutcome.cancelled;
+      if (_cancelled || !_uidOk(bound)) return StreamUploadOutcome.cancelled;
       if (!_mayUpload) return StreamUploadOutcome.skipped;
       try {
         final created = await _callables.create(
             activityId: id, bytes: bytes.length, contentSha256: sha);
         if (!created.alreadyStored) {
-          if (_cancelled) return StreamUploadOutcome.cancelled;
+          if (_cancelled || !_uidOk(bound)) {
+            return StreamUploadOutcome.cancelled;
+          }
           final status = await _put(Uri.parse(created.url!), created.headers, bytes);
           if (status < 200 || status >= 300) {
             throw StreamUploadTransient('put_$status');
           }
-          if (_cancelled) return StreamUploadOutcome.cancelled;
+          if (_cancelled || !_uidOk(bound)) {
+            return StreamUploadOutcome.cancelled;
+          }
           await _callables.commit(activityId: id, uploadId: created.uploadId!);
         }
+        // Nothing is marked for an account that is no longer signed in.
+        if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
         // The stream's own marker; the summary `synced` state is not touched.
         await _journal.markStreamUploaded(id,
             expectedGeneration: entry.generation);
@@ -244,6 +296,7 @@ class ActivityStreamUploader {
       await _delay(wait);
       if (_now().difference(startedAt) >= kStreamUploadBudget) break;
     }
+    if (!_uidOk(bound)) return StreamUploadOutcome.cancelled;
     _failedThisStart.add(id);
     // Never overwrite a summary conflict with the upload failure.
     if (entry.state.syncState != JournalSyncState.syncConflict) {

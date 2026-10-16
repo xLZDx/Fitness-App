@@ -57365,3 +57365,7 @@ Decision: watch() reports refresh failures on the stream, _conflictView treats a
 ## 2026-10-16 - Commit: S02 remediation C conflict view code and test notes (FL1, FL2)
 
 Decision: the FL1/FL2 production code lands with test notes in docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md; FL3, FL4 and FL7 stay as decided (skip, release gate, keep). Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
+
+## 2026-10-16 - Commit: S02 remediation C uploader account safety (FL5, FL6)
+
+Decision: stream upload runs are single-flight and bound to the uid they started with (checked before every network step and journal mark); the auth listener cancels on account change and resumes only after the new journal claim; the wiring closure is guarded. Evidence: core/changes/2026-10-16-s02-remediation-c-uploader-account-safety.md.

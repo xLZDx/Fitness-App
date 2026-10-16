@@ -128,8 +128,17 @@ final activityStreamUploaderProvider = Provider<ActivityStreamUploader?>((ref) {
     consent: ref.watch(activityCloudSettingsClientProvider),
     put: httpClientPutSender,
     flags: ref.watch(activityFlagsProvider),
+    // Every run is bound to the account it started with (design 5.2 item 4).
+    currentUid: () => _syncUid(ref.read(authUserProvider).valueOrNull),
   );
 });
+
+/// The uid the cloud path works for: null for no user, an empty uid or a guest.
+String? _syncUid(AuthUser? user) {
+  if (user == null || user.uid.isEmpty) return null;
+  if (user.provider == AuthProvider.anonymous) return null;
+  return user.uid;
+}
 
 /// Consent-withdrawal presenter for the settings screen; null when off.
 final activityConsentWithdrawalProvider =
@@ -150,35 +159,53 @@ final activityCloudSyncWiringProvider = Provider<void>((ref) {
   if (ref.watch(activityJournalProvider) == null) return;
   ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
     final user = next.valueOrNull;
-    if (user == null || user.uid.isEmpty) return;
-    if (user.provider == AuthProvider.anonymous) return;
-    if (previous?.valueOrNull?.uid == user.uid) return;
+    final previousUid = _syncUid(previous?.valueOrNull);
+    final nextUid = _syncUid(user);
+    // The signed-in account changed or went away: stop the previous account's
+    // queued and in-flight uploads before anything else happens.
+    if (previousUid != null && previousUid != nextUid) {
+      ref.read(activityStreamUploaderProvider)?.cancelQueued();
+    }
+    if (user == null || nextUid == null) return;
+    if (previousUid == nextUid) return;
     final uploader = ref.read(activityStreamUploaderProvider);
     final settings = ref.read(activityCloudSettingsClientProvider);
     final consentStore = ref.read(activityConsentStoreProvider);
     final journal = ref.read(activityJournalProvider)!;
     final ownerStore = ref.read(activityJournalOwnerStoreProvider);
     unawaited(() async {
-      // The journal is device-wide: when it belongs to another account it is
-      // wiped first (design 17: the sign-out export offer is S03). Fail closed:
-      // no sync and no upload unless this uid owns the journal.
-      if (!await claimActivityJournal(
-          journal: journal, store: ownerStore, uid: user.uid)) {
-        debugPrint('activity: journal owner check failed; sync not started');
-        return;
-      }
       try {
-        await ref.read(activitySyncRepositoryProvider).syncAll(retryConflicts: true);
+        // The journal is device-wide: when it belongs to another account it is
+        // wiped first (design 17: the sign-out export offer is S03). Fail
+        // closed: no sync and no upload unless this uid owns the journal.
+        if (!await claimActivityJournal(
+            journal: journal, store: ownerStore, uid: user.uid)) {
+          debugPrint('activity: journal owner check failed; sync not started');
+          return;
+        }
+        // The account may have changed while the claim ran: do nothing more.
+        if (_syncUid(ref.read(authUserProvider).valueOrNull) != nextUid) return;
+        // Uploads were cancelled when the previous account went away; they
+        // resume only now that the new account owns the journal.
+        uploader?.resume();
+        try {
+          await ref
+              .read(activitySyncRepositoryProvider)
+              .syncAll(retryConflicts: true);
+        } catch (e) {
+          debugPrint('activity: start sync failed (${e.runtimeType})');
+        }
+        // Stream upload: one run per app start, only with consent known granted.
+        try {
+          await consentStore.signIn(user.uid);
+          await settings.load();
+          await uploader?.runPending();
+        } catch (e) {
+          debugPrint('activity: start stream upload failed (${e.runtimeType})');
+        }
       } catch (e) {
-        debugPrint('activity: start sync failed (${e.runtimeType})');
-      }
-      // Stream upload: one run per app start, only with consent known granted.
-      try {
-        await consentStore.signIn(user.uid);
-        await settings.load();
-        await uploader?.runPending();
-      } catch (e) {
-        debugPrint('activity: start stream upload failed (${e.runtimeType})');
+        // Defensive: this closure is unawaited, so nothing may escape it.
+        debugPrint('activity: start wiring failed (${e.runtimeType})');
       }
     }());
   }, fireImmediately: true);
