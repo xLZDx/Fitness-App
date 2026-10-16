@@ -199,7 +199,7 @@ class SampleStream {
     if (v is! List) return null;
     final out = <int>[];
     for (final e in v) {
-      if (e is! num) return null;
+      if (e is! num || !e.isFinite) return null;
       out.add(e.toInt());
     }
     return out;

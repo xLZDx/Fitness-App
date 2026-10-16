@@ -58,6 +58,10 @@ String activityIdFor({
   return 'act_${sha1.convert(utf8.encode(key))}';
 }
 
+/// `toInt` of a finite number; null for NaN, infinity and non-numbers (a
+/// tolerant reader must never throw).
+int? _finiteInt(Object? v) => v is num && v.isFinite ? v.toInt() : null;
+
 class ActivitySession {
   ActivitySession({
     required this.id,
@@ -337,9 +341,7 @@ class ActivitySession {
       sport: sport,
       startUtc: start,
       endUtc: end,
-      utcOffsetMinutes: raw['utcOffsetMinutes'] is num
-          ? (raw['utcOffsetMinutes'] as num).toInt()
-          : 0,
+      utcOffsetMinutes: _finiteInt(raw['utcOffsetMinutes']) ?? 0,
       movingTimeS:
           raw['movingTimeS'] is num ? (raw['movingTimeS'] as num).toDouble() : null,
       summary: ActivitySummary.fromJson(raw['summary']),
@@ -357,7 +359,7 @@ class ActivitySession {
           ? {for (final e in edits.entries) e.key.toString(): e.value}
           : const {},
       privacy: ActivityPrivacy.fromJson(raw['privacy']),
-      schema: raw['schema'] is num ? (raw['schema'] as num).toInt() : 1,
+      schema: _finiteInt(raw['schema']) ?? 1,
       mergeNotes: [
         for (final n
             in (raw['mergeNotes'] is List ? raw['mergeNotes'] as List : const []))
