@@ -57287,3 +57287,7 @@ Decision: A cloud summary that is read but cannot be parsed is a distinct Summar
 ## 2026-10-16 - Commit: S02 test epic 9b: account wipe e2e un-skipped
 
 Decision: The two NOT WIRED account wipe tests run against the real decorator composition of main.dart (activityAwareLocalDataWipe around DeviceLocalDataWipe with an in-memory owner store); the epic 7a quarantine entries are closed.
+
+## 2026-10-16 - Commit: S02 test epic 8b: rules and TTL checker
+
+Decision: primarySourceId rule behaviour is pinned on the emulator against the stream sourceId pattern plus the coordinate-like denial; a new script check_ttl_overrides.js fails when a required TTL fieldOverride is missing from firestore.indexes.json.
