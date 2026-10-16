@@ -124,7 +124,9 @@ void main() {
     prefs = installPrefs({consentKeyA: 'granted'});
     store = AccountScopedConsentStore();
     client = ActivityCloudSettingsClient(
-        call: FakeSettingsServer().call, store: store);
+        call: FakeSettingsServer().call,
+        currentUid: storeUid(store),
+        store: store);
 
     final repo = ActivitySyncRepository(
       journal: journal,

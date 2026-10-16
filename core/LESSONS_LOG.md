@@ -539,3 +539,11 @@ Facts: remediation J3a added an import and a guard block to functions/src/activi
 Root cause: the implementation brief did not say that implementers run no tests, so nobody grepped scripts/ci for the edited file name; an allowlist pinned to line numbers breaks on any unrelated edit above the pinned line.
 Layers: the J3a implementer and my brief missed it; the test agent caught it.
 Rule next time: before editing a server file, grep scripts/ci and the policy tests for its name; the briefs of implementers who run no tests must say so and list the pinned scripts to update. A line-pinned allowlist is fragile, but it is a secondary mechanism: update the line, do not redesign it.
+
+## 2026-10-16 - Commit: test(s02): Dart compile fixes for remediation J2/J3b (epic 16b, 1/3)
+
+Kind: SHORTCOMING (tests left stale by a signature change; found by the test agent).
+Facts: J2 added required parameters to the settings client, the stream client fake and the tombstone pusher typedef; the implementer ran no tests, so about 17 test files did not compile. After the compile fix the only red assertion was the presenter test of activity_sync_pass_identity_test.dart (group C), which tapped with no uid and expected a repository failure; J3 B4 makes that tap a no-op.
+Root cause: implementers run no tests by the sprint rules, so signature changes surface only in the test phase; the J test notes listed the files, which made the fix mechanical.
+Layers: the implementer could not catch it; the test agent caught it on the first grouped run.
+Rule next time: keep the stale-test list in the remediation notes (it worked); a test that depends on an ambient provider value (here the uid) should set it explicitly.

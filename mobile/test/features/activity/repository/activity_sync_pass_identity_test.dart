@@ -259,7 +259,7 @@ class _Rig {
     journal = _SpyJournal(w.factory);
   }
 
-  Future<void> push(String id) async {
+  Future<void> push(String id, String? expectedUid) async {
     pushes.add(id);
     await pushGate?.call(id);
     final e = pushFailure?.call(id);
@@ -742,8 +742,12 @@ void main() {
     test('presenter: loadFailed (never an empty loaded state), retry, then '
         'loaded after a bind; failed actions show lastFailed', () async {
       r.make();
-      final c = ProviderContainer(
-          overrides: [activitySyncRepositoryProvider.overrideWithValue(r.repo)]);
+      // Remediation J3 B4: a tap with no signed-in uid does nothing, so the
+      // failure path needs a uid (the unbound JOURNAL is what fails here).
+      final c = ProviderContainer(overrides: [
+        activitySyncRepositoryProvider.overrideWithValue(r.repo),
+        syncConflictUidProvider.overrideWithValue('A'),
+      ]);
       addTearDown(c.dispose);
       c.listen(syncConflictPresenterProvider, (_, __) {});
       await until(() => c.read(syncConflictPresenterProvider).loadFailed,

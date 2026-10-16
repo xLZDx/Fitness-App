@@ -28,8 +28,15 @@ class KilledMidUpload extends Error {
   String toString() => 'KilledMidUpload';
 }
 
+/// The live-uid supplier of a settings client that follows the consent store's
+/// bound uid (the old single-source meaning of the account in tests).
+String? Function() storeUid(CloudStreamsConsentStore store) =>
+    () => store.boundUid;
+
 class CreateCall {
-  CreateCall(this.n, this.activityId, this.bytes, this.sha, this.at);
+  CreateCall(this.n, this.activityId, this.bytes, this.sha, this.at,
+      [this.expectedUid]);
+  final String? expectedUid;
   final int n;
   final String activityId;
   final int bytes;
@@ -38,7 +45,8 @@ class CreateCall {
 }
 
 class CommitCall {
-  CommitCall(this.n, this.activityId, this.uploadId);
+  CommitCall(this.n, this.activityId, this.uploadId, [this.expectedUid]);
+  final String? expectedUid;
   final int n;
   final String activityId;
   final String uploadId;
@@ -102,10 +110,11 @@ class FakeStreamCloud implements ActivityStreamCallableClient {
     required String activityId,
     required int bytes,
     required String contentSha256,
+    required String? expectedUid,
   }) async {
     final n = creates.length + 1;
     log.add('create');
-    creates.add(CreateCall(n, activityId, bytes, contentSha256, clock.now));
+    creates.add(CreateCall(n, activityId, bytes, contentSha256, clock.now, expectedUid));
     clock.advance(createTakes);
     final fault = createFault?.call(n);
     if (fault != null) throw fault;
@@ -145,10 +154,11 @@ class FakeStreamCloud implements ActivityStreamCallableClient {
   Future<void> commit({
     required String activityId,
     required String uploadId,
+    required String? expectedUid,
   }) async {
     final n = commits.length + 1;
     log.add('commit');
-    commits.add(CommitCall(n, activityId, uploadId));
+    commits.add(CommitCall(n, activityId, uploadId, expectedUid));
     if (duringCommit != null) await duringCommit!(n, uploadId);
     final fault = commitFault?.call(n);
     if (fault != null) throw fault;

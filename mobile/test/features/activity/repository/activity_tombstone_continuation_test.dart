@@ -152,7 +152,7 @@ class _Rig {
     await journal.start();
   }
 
-  Future<void> push(String id) async {
+  Future<void> push(String id, String? expectedUid) async {
     events.add('P');
     calls.add(id);
     await beforePush?.call(id);
@@ -654,7 +654,7 @@ void main() {
         'pushed', () async {
       final id = await w.bothSynced();
       final pushed = <String>[];
-      w.b.pusher = (x) async {
+      w.b.pusher = (x, _) async {
         pushed.add(x);
         w.server.tombstones.add(x);
       };

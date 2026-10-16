@@ -350,7 +350,7 @@ void main() {
       await h.journal.delete(id);
       var calls = 0;
       var fail = true;
-      final repo = repoWith((_) async {
+      final repo = repoWith((_, __) async {
         calls++;
         if (fail) throw _Coded('permission-denied');
       });
@@ -377,7 +377,7 @@ void main() {
     test('a plain StateError is kept as its type name', () async {
       await h.journal.put(baseSession(id));
       await h.journal.delete(id);
-      final repo = repoWith((_) async => throw StateError('offline'));
+      final repo = repoWith((_, __) async => throw StateError('offline'));
       await repo.syncAll();
       expect(repo.lastTombstonePushError, 'StateError');
       expect(await h.journal.listTombstones(), hasLength(1));
@@ -387,7 +387,7 @@ void main() {
       await h.journal.put(baseSession(id));
       await h.journal.delete(id);
       final pushed = <String>[];
-      final repo = repoWith((t) async => pushed.add(t));
+      final repo = repoWith((t, _) async => pushed.add(t));
       await repo.syncAll();
       expect(pushed, [id]);
       expect(repo.lastTombstonePushError, isNull);

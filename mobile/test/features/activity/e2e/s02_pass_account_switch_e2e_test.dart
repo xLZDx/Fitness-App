@@ -121,7 +121,7 @@ class _World {
     repo = ActivitySyncRepository(
       journal: journal,
       backend: cloud,
-      tombstonePusher: (id) async {
+      tombstonePusher: (id, _) async {
         pushes.add((signedIn, id));
         await pushGate?.call(id);
       },

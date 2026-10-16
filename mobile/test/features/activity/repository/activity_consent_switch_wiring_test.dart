@@ -365,7 +365,9 @@ void main() {
       prefs = installPrefs(stored);
       store = AccountScopedConsentStore();
       client = ActivityCloudSettingsClient(
-          call: FakeSettingsServer().call, store: store);
+          call: FakeSettingsServer().call,
+          currentUid: storeUid(store),
+          store: store);
       repo = _Repo(events);
       late final ActivityStreamUploader uploader;
       c = ProviderContainer(overrides: [

@@ -157,7 +157,8 @@ void main() {
       // Remediation I2: an unbound store makes grant/withdraw throw.
       store = InMemoryCloudStreamsConsentStore(boundUid: 'uid');
       await store.write(stored);
-      client = ActivityCloudSettingsClient(call: settings.call, store: store);
+      client = ActivityCloudSettingsClient(
+          call: settings.call, currentUid: storeUid(store), store: store);
       w.uploader = w.makeUploader(consentView: client);
       await seedSynced(id);
     }

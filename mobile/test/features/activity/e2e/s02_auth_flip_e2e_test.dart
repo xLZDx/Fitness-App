@@ -100,7 +100,7 @@ void main() {
     repo = ActivitySyncRepository(
       journal: journal,
       backend: cloud,
-      tombstonePusher: (id) async {
+      tombstonePusher: (id, _) async {
         pushes.add('$signedIn:$id');
         throw StateError('offline'); // keeps a retry timer scheduled
       },

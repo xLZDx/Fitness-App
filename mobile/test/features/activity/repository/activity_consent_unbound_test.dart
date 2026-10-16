@@ -95,7 +95,8 @@ void main() {
         final store = stores()[entry.key]!();
         expect(store.boundUid, isNull);
         final client =
-            ActivityCloudSettingsClient(call: server.call, store: store);
+            ActivityCloudSettingsClient(
+              call: server.call, currentUid: storeUid(store), store: store);
 
         await expectLater(
             client.grant(), throwsA(isA<ConsentAccountChangedException>()));
@@ -128,7 +129,8 @@ void main() {
         'and a later call after the bind sends exactly once', () async {
       final store = InMemoryCloudStreamsConsentStore();
       final client =
-          ActivityCloudSettingsClient(call: server.call, store: store);
+          ActivityCloudSettingsClient(
+              call: server.call, currentUid: storeUid(store), store: store);
       final withdrawal =
           ActivityConsentWithdrawal(settings: client, uploader: _Uploader());
 
@@ -147,7 +149,8 @@ void main() {
     test('control: a bound store grants and withdraws as before', () async {
       final store = InMemoryCloudStreamsConsentStore(boundUid: 'A');
       final client =
-          ActivityCloudSettingsClient(call: server.call, store: store);
+          ActivityCloudSettingsClient(
+              call: server.call, currentUid: storeUid(store), store: store);
       await client.grant();
       expect(client.isGranted, isTrue);
       await client.withdraw();
@@ -196,7 +199,8 @@ void main() {
       prefs = installPrefs(stored);
       store = customStore ?? AccountScopedConsentStore();
       server = FakeSettingsServer();
-      client = ActivityCloudSettingsClient(call: server.call, store: store);
+      client = ActivityCloudSettingsClient(
+              call: server.call, currentUid: storeUid(store), store: store);
       repo = _Repo();
       late final ActivityStreamUploader uploader;
       c = ProviderContainer(overrides: [

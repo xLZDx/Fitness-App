@@ -31,7 +31,7 @@ void main() {
       'copy: B reconnects and ends with no summary, no local data, no '
       'accepted B write', () async {
     final id = await w.bothSynced();
-    w.a.pusher = (x) async {
+    w.a.pusher = (x, _) async {
       w.server.tombstones.add(x);
       w.server.docs.remove(x);
     };

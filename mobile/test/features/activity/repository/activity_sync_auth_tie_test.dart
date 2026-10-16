@@ -129,7 +129,7 @@ void main() {
         journal: journal,
         backend: backend,
         tombstonePusher: pusher
-            ? (id) async {
+            ? (id, _) async {
                 pushes.add(id);
                 final e = pushError;
                 if (e != null) throw e;

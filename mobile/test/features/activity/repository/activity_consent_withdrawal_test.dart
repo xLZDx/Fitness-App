@@ -25,7 +25,8 @@ void main() {
     settings = FakeSettingsServer();
     // Remediation I2: the store must be bound to an account to persist.
     store = InMemoryCloudStreamsConsentStore(boundUid: 'uid');
-    client =ActivityCloudSettingsClient(call: settings.call, store: store);
+    client = ActivityCloudSettingsClient(
+        call: settings.call, currentUid: storeUid(store), store: store);
     w.uploader = w.makeUploader(consentView: client);
     withdrawal = ActivityConsentWithdrawal(settings: client, uploader: w.uploader);
     await client.grant();
@@ -90,7 +91,8 @@ void main() {
     expect(w.cloud.log, isEmpty);
 
     await w.restartApp();
-    final reloaded = ActivityCloudSettingsClient(call: settings.call, store: store);
+    final reloaded = ActivityCloudSettingsClient(
+        call: settings.call, currentUid: storeUid(store), store: store);
     await reloaded.load();
     expect(reloaded.state, CloudStreamsConsent.withdrawn);
     final fresh = w.makeUploader(consentView: reloaded);

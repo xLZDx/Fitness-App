@@ -190,7 +190,8 @@ void main() {
     setUp(() {
       store = _ScriptedStore('A');
       server = FakeSettingsServer();
-      client = ActivityCloudSettingsClient(call: server.call, store: store);
+      client = ActivityCloudSettingsClient(
+          call: server.call, currentUid: storeUid(store), store: store);
     });
 
     test('5 delayed load of A finishing after B is current cannot overwrite B',
@@ -243,6 +244,7 @@ void main() {
           await gate.future;
           return const {'ok': true};
         },
+        currentUid: storeUid(store),
         store: store,
       );
       final g = slow.grant();
@@ -299,7 +301,8 @@ void main() {
       final prefs = installPrefs({_keyA: 'granted'});
       prefs.gateOnCall[1] = Completer<void>();
       final real = AccountScopedConsentStore();
-      final c = ActivityCloudSettingsClient(call: server.call, store: real);
+      final c = ActivityCloudSettingsClient(
+          call: server.call, currentUid: storeUid(real), store: real);
       final open = real.signIn('A');
       await pumpEventQueue();
       final w = c.withdraw();
@@ -356,7 +359,8 @@ void main() {
         () async {
       final prefs = installPrefs();
       final real = AccountScopedConsentStore();
-      final c = ActivityCloudSettingsClient(call: server.call, store: real);
+      final c = ActivityCloudSettingsClient(
+          call: server.call, currentUid: storeUid(real), store: real);
       await real.signIn('A');
       await c.grant();
       real.signOut();
@@ -408,7 +412,9 @@ void main() {
         });
         final store = AccountScopedConsentStore();
         final client = ActivityCloudSettingsClient(
-            call: FakeSettingsServer().call, store: store);
+            call: FakeSettingsServer().call,
+            currentUid: storeUid(store),
+            store: store);
         var uid = 'A';
         final u = w.makeUploader(consentView: client, currentUid: () => uid);
         await store.signIn('A');
@@ -586,9 +592,13 @@ class FakeStreamCloudStub implements ActivityStreamCallableClient {
   Future<CreateUploadResult> create(
           {required String activityId,
           required int bytes,
-          required String contentSha256}) =>
+          required String contentSha256,
+          required String? expectedUid}) =>
       throw StateError('unused');
   @override
-  Future<void> commit({required String activityId, required String uploadId}) =>
+  Future<void> commit(
+          {required String activityId,
+          required String uploadId,
+          required String? expectedUid}) =>
       throw StateError('unused');
 }

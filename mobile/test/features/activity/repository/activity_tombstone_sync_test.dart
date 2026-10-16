@@ -184,7 +184,7 @@ void main() {
       final id = await w.bothSynced();
       final pushed = <String>[];
       var online = false;
-      Future<void> push(String x) async {
+      Future<void> push(String x, String? expectedUid) async {
         pushed.add(x);
         if (!online) throw const SummaryBackendUnavailable('offline');
         w.server.tombstones.add(x);

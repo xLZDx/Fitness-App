@@ -57739,3 +57739,7 @@ Decision: record the 16a2 results; the line-pinned allowlist entry for delete_al
 ## 2026-10-16 - Commit: fix(s02): repin the data-access allowlist line for delete_all_streams
 
 Decision: the allowlist entry of scripts/ci/check_data_access_policy.js for functions/src/activity_streams/delete_all_streams.ts moves from line 201 to line 203, because remediation J3a shifted the pinned call by two lines. One-line change; no redesign of the line-pinned mechanism (secondary mechanism, one fix round). Evidence: core/changes/2026-10-16-s02-data-access-allowlist-repin.md; the three red tests are re-run by the test agents.
+
+## 2026-10-16 - Commit: test(s02): Dart compile fixes for remediation J2/J3b (epic 16b, 1/3)
+
+Decision: keep the old client scenarios by wiring the settings client's live uid to the consent store's bound uid through one helper, record expectedUid in the stream fake, and give every tombstone pusher closure the second argument; the one stale assertion found (presenter tap without a uid) gets an explicit uid override instead of a weaker check.
