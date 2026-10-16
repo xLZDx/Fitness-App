@@ -3012,6 +3012,8 @@ export { deleteActivity } from "./activity_streams/delete_activity";
 // Cloud stream upload state machine (S02-04b, design 5.2): quarantine, validate, promote.
 export { createActivityStreamUpload } from "./activity_streams/create_upload";
 export { commitActivityStream } from "./activity_streams/commit_stream";
+// Cloud stream retention (S02-05b, design 5.3): daily purge of due streams plus the recompute continuation.
+export { purgeExpiredActivityStreams } from "./activity_streams/purge";
 // Food scanning (C20, design s17). `analyzeMealPhoto` and `parseNutritionLabel` run on
 // AI_METERED / fn-ai-runtime and join the release-guard set (D-63); `lookupBarcode` and
 // `searchFoods` run on FOOD_LOOKUP / fn-data. All answer `feature-disabled` until

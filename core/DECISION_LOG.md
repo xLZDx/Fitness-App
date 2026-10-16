@@ -56947,3 +56947,7 @@ Decision: Both upload callables are exported from index.ts; their quota names we
 ## 2026-10-16 - Commit: S02-05b: pure retention and purge logic
 
 Decision: Expiry stays derived (summary startUtc clamped plus the current retention, never the stored hint) through the same helpers the upload callables use; the recompute gets half of the run budget so it cannot starve the purge, and non-stored rows are stamped with the current generation so the final pass can finish. Evidence: core/changes/2026-10-16-s02-05b-retention-logic.md.
+
+## 2026-10-16 - Commit: S02-05b: purge function and recompute continuation
+
+Decision: One daily scheduled function first advances the recompute (20 users, bounded pages per user, generation-guarded cursor, final per-user pass before the flag clears) and then purges due streams by deleting the object before marking the row expired in the same re-reading transaction, retrying failures forever and signalling overdue age, capped rows, backlog and a missing index in one structured log entry. Evidence: core/changes/2026-10-16-s02-05b-purge-function.md.
