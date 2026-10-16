@@ -57171,3 +57171,7 @@ Decision: Epic 6a closes with 669 tests green and two small production fixes; th
 ## 2026-10-16 - Commit: S02 test epic 6b: retention, recompute, purge and index limits (S02-05b)
 
 Decision: Plan F18 (lengthening resurrects) is wrong; the design says lengthening does not resurrect an expired row. The shared Firestore fake now models index limits and null/type range exclusion so the purge and recompute queries are checked against the real index file.
+
+## 2026-10-16 - Commit: S02 test epic 6b: sweeps, late sweep, reconciler, bulk delete and the real deleteAccount flow (S02-06b)
+
+Decision: Design formula for fence removal wins over plan cell F95(a); the late sweep after an aborted deletion is an open risk recorded in the epic 6b findings and pinned by a test that documents current behaviour.
