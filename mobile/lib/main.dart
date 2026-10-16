@@ -128,7 +128,8 @@ Future<void> _flushTelemetry() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
   if (uid == null) return;
   try {
-    await FirestoreDebugTelemetrySink(uid: uid).send(t.toJson());
+    // S02-09: sent through the sanitising callable; the server sets uid/time.
+    await CallableDebugTelemetrySink().send(t.toJson());
   } catch (e) {
     // Not debugPrint: that is captured back into the very log we failed to
     // send, which would grow the buffer on every retry.

@@ -56999,3 +56999,7 @@ Decision: sendDebugTelemetry is the only writer of debug_sessions; a closed sche
 ## 2026-10-16 - Commit: S02-09: debug_sessions rules create false
 
 Decision: Clients can no longer create debug_sessions documents; the sanitising callable is the only writer, and the rule change is the last, separately revertible step of the deploy order (callable, client switch, rule), outside the permanent activity rules floor. The data lifecycle policy cell for create is NONE. Evidence: core/changes/2026-10-16-s02-09-rules-create-false.md.
+
+## 2026-10-16 - Commit: S02-09: mobile debug-telemetry sink migration
+
+Decision: The debug telemetry sink now sends closed-schema batches (level, component enumeration, type, seq; no free text or build identity) through the sendDebugTelemetry callable, never throws, retries at most 3 times with doubling backoff and reports failed events as a capped droppedCount in the next batch; no extra offline buffer was added because the old writer had none. Evidence: core/changes/2026-10-16-s02-09-mobile-sink-migration.md.
