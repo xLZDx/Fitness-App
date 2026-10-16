@@ -57131,3 +57131,7 @@ Decision: Two devices are two journal directories over one rule-enforcing fake s
 ## 2026-10-16 - Commit: S02 test epic 4: override value rule, explicit edit, recalculation and source candidates
 
 Decision: Override lifecycle tests assert record.json on disk, the rule-enforcing fake write log and restart/lost-ack replay; a version bump necessarily writes the merged formulaVersion string (plan G9/G32 "zero writes" is read as "no write of the stale distance").
+
+## 2026-10-16 - Commit: S02 test epic 4: sync-conflict presenter and sheet, delete-wins end-to-end scenarios
+
+Decision: Widget tests of the sheet tap inside the real-async zone (the journal futures cannot progress in FakeAsync); layout stays NOT_RUN.
