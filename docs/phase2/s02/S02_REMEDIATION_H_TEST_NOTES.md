@@ -153,3 +153,77 @@ Nothing here was compiled or run by the author. Each oracle must fail if the nam
   `withdraw()` on a client whose store has no account (scoped store) now throws before returning.
 - Uploader tests that call `cancelQueued()` between commit and the journal mark and expect `uploaded` plus a marked
   entry: the outcome is now `cancelled` and the entry stays pending.
+
+## I: display path tied to the auth uid, consent bound early (remediation I)
+
+Nothing here was compiled or run by the author. Each oracle must fail if the named guard were removed.
+
+### I1: `refreshState` and the journal/auth tie
+
+1. Scoped journal bound to `uidA` holding one conflict entry and one candidate entry; repository built with
+   `authUid: () => 'uidB'`. Gated `list()` (Completer released by the test): `refreshState()` must never return a state
+   containing A's conflicts or candidates. Expected result: it throws `JournalUnbound` after three attempts, and
+   `journal.list()` is called zero times (the tie is checked before the read). The debug output contains
+   `refreshState skipped (journal-auth-mismatch)` and no uid.
+2. Same setup, but the supplier flips from `uidA` to `uidB` while `list()` is gated (journal still bound to A): after
+   release `refreshState` must not return A's cards (the `_viewCurrent` re-check after the read now fails on the tie
+   and on the supplier change). With the new guard removed from `_viewCurrent` only (the supplier compare alone would
+   also catch this one), keep case 3 as the discriminating case.
+3. Supplier returns `uidB` from the start, journal bound to `uidA`, and the supplier is NOT changed during the read:
+   only the tie in `_viewCurrent`/`_viewTied` rejects it. Assert `JournalUnbound`, not a loaded state.
+4. Recovery: journal rebinds to `uidB` between attempts 1 and 2 (the test rebinds inside a hook of the first skip or
+   through the gated `list()` of a second repository call): the next `refreshState` returns B's entries only.
+5. The sheet / presenter fed by `watch()` under case 1 never receives a loaded state with A's cards (it receives the
+   `JournalUnbound` error, i.e. the error state).
+6. Controls: a plain (non-scoped) journal with an `authUid` supplier, and a scoped journal with a null supplier, keep
+   the old behaviour (state is returned although the pair is not compared).
+
+### I2: consent contract with an unbound store, early consent bind
+
+7. `ActivityCloudSettingsClient` over a store whose `boundUid == null` (`InMemoryCloudStreamsConsentStore()` default or
+   an `AccountScopedConsentStore` before `signIn`): `grant()`, `withdraw()` and `withdraw(deleteExisting: true)` each
+   throw `ConsentAccountChangedException`; the `call` fake is invoked zero times; `state` stays `unknown`,
+   `consentUid` stays null; `_unpersistedWithdrawals` gains no entry (observable: bind the store to `uidA` afterwards,
+   `load()` reads the stored value and is not forced to `withdrawn`).
+8. `ActivityConsentWithdrawal.deleteCloudStreamsNow()` on an unbound client throws
+   `ConsentAccountChangedException`, `call` zero times, and a second call after the store is bound to `uidA` still
+   sends the request exactly once (no "requested" key was recorded for null).
+9. Startup closure with a journal whose `bindUid` fails (returns false or throws): `consentStore.boundUid == uidA`
+   and `settings.isGranted` is true when the stored value is granted; no sync, no resume.
+10. Startup closure with `syncAll` gated (pending): `settings.withdraw()` during the pending sync persists
+    (`SharedPreferences` holds `withdrawn`) and a later `settings.load()` returns `withdrawn`; before the change the
+    store was unbound and the withdraw threw.
+11. Account change A to B with a repository whose `onAccountChanged` throws: `consentStore.boundUid == null` and
+    `settings.consentUid == null` after the auth event (B's `signIn` is a separate later step and may be gated so the
+    null is observable), and `cancelQueued` is not required to run.
+12. Ordering: `consentStore.signIn` is called before `bindUid` and before `syncAll`; `uploader.resume()` is still
+    recorded only after the final successful `current()` and before `runPending`; an account change during
+    `settings.load()` means no bind, no sync, no resume.
+
+### Stale fakes and older assertions (grep of mobile/lib and mobile/test)
+
+- Classes implementing or extending what changed: `ActivityCloudSettingsClient` (no signature changed; the `Fake
+  implements` classes `_Settings` in `activity_wiring_flag_matrix_test.dart`, `activity_consent_switch_wiring_test.dart`,
+  `activity_journal_wipe_wiring_test.dart`, `activity_republish_wiring_test.dart`,
+  `activity_tombstone_continuation_test.dart`, `activity_wiring_account_switch_test.dart` need no change);
+  `AccountScopedConsentStore` subclasses `_Consent` in the same six files and in `activity_consent_switch_wiring_test.dart`
+  (no signature changed); `CloudStreamsConsentStore` implementers (`InMemoryCloudStreamsConsentStore`,
+  `SharedPrefsCloudStreamsConsentStore`, `_ScriptedStore` in `activity_consent_account_binding_test.dart`): no
+  signature changed. `ActivitySyncRepository` has no new public member; no fake needs a change.
+- Tests that expect `consentStore.signIn` / `settings.load` AFTER `syncAll` or after the journal bind (order lists
+  such as `['bind', 'sync', 'signIn', 'load', 'resume']`) in `activity_wiring_account_switch_test.dart`,
+  `activity_consent_switch_wiring_test.dart`, `activity_journal_wipe_wiring_test.dart`,
+  `activity_republish_wiring_test.dart` and `activity_tombstone_continuation_test.dart`: the order is now
+  `signIn`, `load`, `bind`, `sync`, `resume`. A test that gates `signIn` and expects the bind to proceed meanwhile is
+  now the opposite (the bind waits for `signIn` and `load`).
+- Tests that call `withdraw()`, `grant()` or `deleteCloudStreamsNow()` on an unbound store and expect a server call or
+  a `StateError` from the store write: `activity_consent_withdrawal_test.dart` (its `setUp` uses
+  `InMemoryCloudStreamsConsentStore()` with a null `boundUid`; use `InMemoryCloudStreamsConsentStore(boundUid:
+  'uid')`), `activity_stream_upload_test.dart` ~line 157 (same), and the cases in
+  `activity_consent_account_binding_test.dart` that withdraw while the real store is unbound (they now expect
+  `ConsentAccountChangedException` and zero calls).
+- Tests of `refreshState`/`watch` that use a scoped journal bound to one uid together with an `authUid` supplier
+  returning a different or null uid and expect a loaded state (grep `authUid:` in `activity_sync_repository*_test.dart`,
+  `activity_conflict_*` and the e2e directory): the state is now `JournalUnbound`.
+- Startup tests where `consentStore.signIn` throws and the test expects the bind and sync not to run: the failure is
+  now logged and the bind and sync still run (consent unknown, so no upload).

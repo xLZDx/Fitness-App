@@ -396,3 +396,8 @@ Kind: FAILURE.
 Facts: With an unbound consent store the settings client sent the server call and only then failed on the store write, leaving the server and client disagreeing and a null key in `_unpersistedWithdrawals`; the store was bound only after the journal bind and the whole `syncAll`, so the unbound window was long. Evidence: core/changes/2026-10-16-s02-remediation-i-consent-contract.md.
 Root cause: the author of H bound the consent store behind unrelated steps and checked the uid only by equality, so null equalled null. Layers that missed it: author, epic 14 tests (none exercised an unbound store), first verification review; caught by the second verification review round (security).
 Rule next time: bind per-account state as early as it can be bound, and make every mutator refuse before any side effect when its owner is unknown.
+
+## 2026-10-16 - docs(s02): remediation I accepted limits and test notes
+
+Kind: NEUTRAL.
+Facts: Documentation of four accepted limits and the I1/I2 test oracles; the old design sentence about the bind gap was narrowed because I1 changed it. Evidence: core/changes/2026-10-16-s02-remediation-i-docs.md.

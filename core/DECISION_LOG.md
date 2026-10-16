@@ -57670,3 +57670,7 @@ Decision: `ActivitySyncRepository.refreshState` applies the same journal/auth ti
 ## 2026-10-16 - Commit: fix(s02): consent contract with an unbound store and early consent bind (remediation I2)
 
 Decision: `grant`, `withdraw` and `deleteCloudStreamsNow` throw `ConsentAccountChangedException` before any state change or server call when the consent store is unbound; the startup closure binds the consent store and loads the settings before the journal bind and `syncAll` (consent does not depend on either), keeps `resume` after the final `current()` check, and the account-change block unbinds consent first, each step in its own try/catch. Evidence: core/changes/2026-10-16-s02-remediation-i-consent-contract.md.
+
+## 2026-10-16 - Commit: docs(s02): remediation I accepted limits and test notes
+
+Decision: Design item 24 records four accepted limits honestly (server closes the account-deletion window, a tap during a transition is a no-op, exportAll cannot see an A to B to A switch inside one read, a failed sign-out after wipeForUid leaves the journal unbound) and the H test notes gain heading I with oracles for I1 and I2 and the stale-fake list. Evidence: core/changes/2026-10-16-s02-remediation-i-docs.md.
