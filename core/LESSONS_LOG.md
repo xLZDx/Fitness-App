@@ -140,3 +140,10 @@ Facts: an unbound or failed-bind scoped journal read as empty, so the conflict s
 Root cause: E1 made "no account" a normal empty journal; the consumers treated empty as a valid answer.
 Layers: the E1/E2 author missed it; tests had no unbound case; silent-failure, Flutter and reliability reviewers caught it.
 Rule next time: when a store can be absent, the absence is a distinct error state in every reader, and each reader gets an "absent" test.
+
+## 2026-10-16 - Tombstone retry budget and fallback (remediation F1, 3/4)
+Kind: SHORTCOMING.
+Facts: the six-attempt retry budget was never reset, so after about 44 minutes offline no timer existed for the rest of the session; exceptions of the tombstone phase escaped before scheduling; `lastTombstonePushError` stayed null when the listing failed (see core/changes/2026-10-16-s02-remediation-f1-tombstone-retry.md).
+Root cause: E2 designed the budget per app start and covered only the push-failure path, not listing/journal failures or a long outage.
+Layers: E2 author and tests missed it; reliability and silent-failure reviewers caught it.
+Rule next time: a retry budget needs a reset condition and a last-resort slow path, and each error path of a phase gets a scheduling test.

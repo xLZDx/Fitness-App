@@ -104,6 +104,10 @@ const List<Duration> kTombstoneRetryDelays = [
   Duration(minutes: 15),
 ];
 
+/// Delay of the single fallback timer kept after [kMaxTombstoneRetries]
+/// scheduled attempts while tombstones are still owed.
+const Duration kTombstoneFallbackDelay = Duration(minutes: 60);
+
 /// `FirebaseException.code` of the server quota refusal.
 const String kQuotaExhaustedCode = 'resource-exhausted';
 
@@ -551,10 +555,30 @@ class ActivitySyncRepository {
         // A listing answered while the account changed belongs to nobody.
         if (!_mayCall(p)) return out;
         // A failed tombstone listing is itself a reason for a backed-off retry.
-        final run = tombsKnown
-            ? await _pushLocalTombstones(tombs, p)
-            : const _TombstoneRun(failureCode: 'unavailable');
+        _TombstoneRun run;
+        if (!tombsKnown) {
+          run = const _TombstoneRun(failureCode: 'unavailable');
+          if (_alive(p)) _lastTombstonePushError = 'unavailable';
+        } else {
+          try {
+            run = await _pushLocalTombstones(tombs, p);
+          } catch (e) {
+            // Journal I/O or a missing uid in the tombstone phase: the pass
+            // still publishes its state and a retry is scheduled.
+            final code = _errorCode(e);
+            debugPrint('activity: tombstone phase failed ($code)');
+            if (!_alive(p)) return out;
+            _lastTombstonePushError = code;
+            run = _TombstoneRun(failureCode: code);
+          }
+        }
         if (!_alive(p) || run.aborted) return out;
+        if (tombsKnown && !run.failed && !run.capped) {
+          // Fully clean: nothing is owed, so the backoff budget and the last
+          // error belong to a past problem.
+          _retryAttempts = 0;
+          _lastTombstonePushError = null;
+        }
         await _maybeScheduleRetry(run, p);
         if (!_alive(p)) return out;
         final listed = await _journal.list();
@@ -664,18 +688,52 @@ class ActivitySyncRepository {
     if (!_alive(p)) return;
     if (_disposed || _pushTombstone == null || _retryTimer != null) return;
     if (!run.failed && !run.capped) return;
-    if (_retryAttempts >= kMaxTombstoneRetries) return;
-    if (await _pendingTombstoneCount() == 0) return;
-    final delays = kTombstoneRetryDelays;
-    final delay = run.failureCode == kQuotaExhaustedCode
-        ? delays.last
-        : delays[_retryAttempts.clamp(0, delays.length - 1)];
-    _retryAttempts++;
+    int owed;
+    try {
+      owed = await _pendingTombstoneCount();
+    } catch (e) {
+      // The count cannot be read now: tombstones may be owed, so retry.
+      debugPrint('activity: pending tombstone count failed (${_errorCode(e)})');
+      owed = 1;
+    }
+    // The await above may have spanned an account change or a competing
+    // schedule: re-check before touching the budget or the timer.
+    if (!_alive(p) || _disposed || _retryTimer != null) return;
+    if (owed == 0) return;
+    final Duration delay;
+    if (_retryAttempts >= kMaxTombstoneRetries) {
+      // Budget spent: ONE slow fallback timer keeps the session from ending
+      // with owed deletions and no timer; it stops when nothing is owed.
+      delay = kTombstoneFallbackDelay;
+    } else {
+      final delays = kTombstoneRetryDelays;
+      delay = run.failureCode == kQuotaExhaustedCode
+          ? delays.last
+          : delays[_retryAttempts.clamp(0, delays.length - 1)];
+      _retryAttempts++;
+    }
     _retryTimer = _timerFactory(delay, () {
       _retryTimer = null;
       if (_disposed) return;
-      unawaited(syncAll().then((_) {}, onError: (Object _) {}));
+      unawaited(syncAll().then((_) {}, onError: (Object e) {
+        debugPrint('activity: scheduled tombstone retry failed (${e.runtimeType})');
+      }));
     });
+  }
+
+  /// Runs one normal serialized [syncAll] pass (no conflict retry) for callers
+  /// that created a local deletion or came back to the foreground, so owed
+  /// tombstones are pushed without waiting for the next start. Serialized
+  /// through the same queue as every other operation; a failure is logged,
+  /// never thrown to the caller. (S02 has no production local-delete caller;
+  /// the delete UI of S03 must call this.)
+  Future<void> requestTombstoneSync() async {
+    if (_disposed) return;
+    try {
+      await syncAll();
+    } catch (e) {
+      debugPrint('activity: tombstone sync request failed (${e.runtimeType})');
+    }
   }
 
   /// Cancels a scheduled tombstone retry.
