@@ -282,6 +282,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
 | `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 40247 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
 | `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 5433 |

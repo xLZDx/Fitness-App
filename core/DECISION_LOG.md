@@ -56787,3 +56787,7 @@ Decision: STATE.md names the current branch and base, and links the S01 report; 
 ## 2026-10-16 - Commit: S02 code map
 
 Decision: the explorer fact sheet is kept in the repository as the shared starting point of the S02 design; claims stay labelled as the agent reported them and are re-verified by the design author. Evidence: core/changes/2026-10-16-s02-code-map.md.
+
+## 2026-10-16 - Commit: S02 design draft
+
+Decision: the S02 design draft recommends a dedicated private bucket with signed URLs and scheduled purge, a sanitising callable for debug telemetry and a file journal locally; all remain PROPOSED until architecture and security review and GPT-PM. Evidence: core/changes/2026-10-16-s02-design-draft.md.
