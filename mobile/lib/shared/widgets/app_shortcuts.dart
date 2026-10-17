@@ -99,8 +99,10 @@ class _AppShortcutsState extends ConsumerState<AppShortcuts> {
     action(navContext, router);
   }
 
+  /// The TOPMOST route (a page pushed with `router.push` counts); `uri.path`
+  /// is only the base location of the match list and ignores pushed pages.
   static String _location(GoRouter router) =>
-      router.routerDelegate.currentConfiguration.uri.path;
+      router.routerDelegate.currentConfiguration.last.matchedLocation;
 
   static bool _isShellRoute(String path) =>
       kShellDestinations.any((ShellDestination d) => d.path == path);

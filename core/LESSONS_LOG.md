@@ -1001,3 +1001,11 @@ Root cause: the compensation was written against one test measurement (first arr
 Layer: author; tests passed because they exercised the first arrival only; reviewers caught it.
 Rule next time: a one-shot behaviour is triggered by a state transition observed outside the widget lifetime (listener on the provider), never by a flag in a widget that a lazy list can recreate; tests scroll the widget out of the cache extent and back.
 Also fixed: the mode of the previous account no longer shows on Progress, the Record sheet and the switcher while the new mode loads (one selected-mode provider); the stored mode is no longer overwritten after a flag rollback; failed mode writes and the Day-3 and refresh failures are logged with a fixed message; a retry timer that fires during account deletion is re-armed; Try again is disabled while an attempt runs; accessibility: wrapping button labels, session announcements skip rest-only changes, live regions for errors, announcement from the Record sheet, 48 dp targets, a visible Back on the Coming-later sheet.
+
+## 2026-10-17 - Commit: fix(shell): make the keyboard shortcuts see pages pushed over a tab
+
+Kind: FAILURE (defect in the shortcut layer written by lane L10, found by the step 5 test agent).
+Facts: the shortcut layer read the current location from the router configuration uri, which ignores pages opened with push. With Settings pushed over Progress, the Back shortcut jumped to Home instead of closing the page, and the tab shortcuts replaced the stack under the page. Two contract tests failed (the other 49 of the step 5 tests passed).
+Root cause: the author read the location from the configuration uri, which describes the matched stack root, not the topmost route (lane L10); the brief did not mention pushed pages above a tab.
+Layer: author; found by a test that pushes a page over a tab.
+Rule next time: any code that reads the current location is tested with a pushed page above a tab; use the matched location of the last route.
