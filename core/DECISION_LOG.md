@@ -58039,3 +58039,7 @@ Decision: after this commit the code gate is requested again from GPT-PM on the 
 ## 2026-10-17 - Commit: docs(s04): add the S04 requirements and Android platform study, the S03 sprint report, and close S03 in STATE
 
 Decision: the operator answered yes to merging PR 11 (merged as f605cf3e) and to starting S04 documentation. S04 documentation proceeds on branch phase2/s04-docs with the readiness-note defaults (Android only, consent rows built inside S04, cloud upload off, S04-D produced as a separate contract in this phase); every invented number is PROPOSED. Evidence: docs/phase2/s04/S04_REQUIREMENTS.md section 3, core/changes/2026-10-17-s04-docs-wave1.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 UI contract, design, stories and test plan with two review rounds, and the S03 operator report
+
+Decision: the operator ordered 'finish S04 and stop after the merge'. The S04 documentation set (requirements 58 items, platform study, 38 stories, UI contract revision 2 with about 105 AC ids, technical design, test plan with 783 committed rows) is committed on branch phase2/s04-docs after two review rounds; defaults Y1..Y11 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md apply until the operator overrides them. Next: GPT-PM documentation gate on the exact head, then one push, one PR and the merge; no S04 code is built in this work. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md, core/changes/2026-10-17-s04-docs-wave2.md.

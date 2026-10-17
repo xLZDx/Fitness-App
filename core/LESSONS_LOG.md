@@ -1155,3 +1155,11 @@ Kind: SUCCESS and SHORTCOMING.
 Facts: three documentation agents ran in parallel on separate files (requirements 51 items, platform study 169 lines, S03 report 157 lines). The S03 report records that no complete test run exists on the approved head 1e56d651, only targeted runs of the gate fixes.
 Shortcoming: the same evidence gap as S02 repeated (the complete run was on an earlier head than the approved one).
 Rule next time: after the last gate fix, schedule one complete run of all test sets on the exact head that goes to the gate.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 UI contract, design, stories and test plan with two review rounds, and the S03 operator report
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: four internal reviews (UX, accessibility, architecture, security) found 0 BLOCKER and about 45 MAJOR/MINOR items in the first S04 drafts; a verification round found the round 1 fixes had introduced 8 contract and 10 consistency MAJOR (contradicting timeouts of 5, 10 and 15 s, notification content, G-1 arithmetic, Keep semantics defined two ways, lane ownership collisions). Several authoring agents hit their turn limit without a report and were resumed.
+Root cause: four authors edited four documents in parallel from one findings list that left cross-document values (timeouts, set of automatic stops, notification content, Keep meaning) undecided until the second round.
+Missed by: authors and round 1 remediation; caught by the verification reviewers and the test-plan author, who listed 20 input conflicts.
+Rule next time: decide every cross-document constant (timeouts, sets, names) in the findings file BEFORE fan-out to authors, and give each author a turn-budget-friendly brief (grep, large edits, write the report first).
