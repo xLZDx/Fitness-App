@@ -1275,3 +1275,11 @@ Facts: GPT-PM returned MODIFY with 14 MAJOR on head d60cb979, mostly stale wordi
 Root cause: the internal consistency check was a partial grep over 7 invariants and stopped at its turn limit; the old wording of changed rules was not searched for in every file in the batch that changed it.
 Missed by: author, editing agents and the internal consistency reviewer; caught by the external gate.
 Rule next time: for every rule changed in a batch, the editing agent greps all documents for the old wording in the same batch and lists the hits; the consistency check must finish (run it in two smaller passes if it hits its turn limit) before the gate request.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round remediation
+
+Kind: FAILURE.
+Facts: the verification round found 4 MAJOR where the remediation of the previous round introduced new contracts (VOLATILE result, in-memory-first rest end, ui_confirmed, deletion-fence states) but older test rows FT-1025, FT-1037, FT-1002, FT-1175 and FT-1176 still asserted the replaced behaviour; see 08_GPTPM_GATE_ROUND1.md and the change record.
+Root cause: the previous batch grepped for old wording of the rules it knew it changed, not for the tests that assert the old behaviour of each new contract.
+Missed by: author and editing agents; caught by the external gate.
+Rule next time: when a contract is added or replaced, list every test row, story criterion and E2E step that mentions the affected command or state and re-derive its oracle in the same batch.

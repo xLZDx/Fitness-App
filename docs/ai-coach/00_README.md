@@ -2,7 +2,7 @@
 
 Status as of 2026-10-17: documentation program for sprint AI-COACH-00 only. Implementation, production deployment and user-data migration are NOT authorised. Branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints and changes none of them.
 
-Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is remediated in commit `0965349a`. Round 2 (four reviewers verifying the fixes; 23 new MAJOR, 0 BLOCKER) is remediated in the next commit; its findings are in `07_REVIEW_ROUND2.md`. The GPT-PM documentation gate round 1 returned MODIFY (14 MAJOR, 6 MINOR; `08_GPTPM_GATE_ROUND1.md`) and is remediated; a focused verification round follows. Gate state is recorded in `docs/sdlc/STATE.md` under the AI Coach section. Nothing in this package is approved until that section says so.
+Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is remediated in commit `0965349a`. Round 2 (four reviewers verifying the fixes; 23 new MAJOR, 0 BLOCKER) is remediated in the next commit; its findings are in `07_REVIEW_ROUND2.md`. The GPT-PM documentation gate round 1 returned MODIFY (14 MAJOR, 6 MINOR; `08_GPTPM_GATE_ROUND1.md`) and is remediated; the focused verification round returned MODIFY (4 MAJOR, 5 MINOR contradictions between new contracts and old test rows), remediated in the next commit; a second focused verification follows. Gate state is recorded in `docs/sdlc/STATE.md` under the AI Coach section. Nothing in this package is approved until that section says so.
 
 ## Reading order
 

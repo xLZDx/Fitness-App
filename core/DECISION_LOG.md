@@ -58097,3 +58097,7 @@ Decision: design revision 3 and requirements win over older wording in the backl
 ## 2026-10-17 - Commit: docs(ai-coach): GPT-PM gate round 1 remediation
 
 Decision: GPT-PM MODIFY findings F-01..F-14 and M-01..M-06 are applied as one batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md section E). Server-enforced epoch validation is required for AI-COACH-01 (callable fallback; a cooperative-only fence needs operator acceptance, OQ-31). Finish and abandon during a whole safety stop need a trusted on-screen two-step confirmation. Numeric defaults 3 export offers within 7 days and a limit of 5 unfinished sessions are PROPOSED for the operator. Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-round1-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round remediation
+
+Decision: `ui_confirmed` is a local UI confirmation capability, not an envelope source; a journal failure on a performed-fact command yields the typed VOLATILE result, not a failure; `rest_elapsed` is applied in memory first and its cue is deduplicated; deletion-fence tests assert the DETECTED/EXPORT_OFFERED/WIPE_PENDING/WIPED state machine; cooperative-only replica fence is a rejected mode except as a recorded operator exception (OQ-31). Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-verification-remediation.md.

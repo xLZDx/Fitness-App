@@ -74,7 +74,7 @@ Current phase: 9 Accept and 10 Report (S03 is merged: PR #11 into `phase2/main` 
 
 Updated 2026-10-17. Worktree `D:\Repo\Fitness_App_aicoach`, branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints (S00 to S04) and does not close or change any of them. Input: `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` (operator draft, translated). Status of the draft: design review pending; implementation and production are not authorized.
 
-Current phase: 8 Gate (GPT-PM documentation gate round 1 returned MODIFY on `d60cb979`; remediated; focused verification round next).
+Current phase: 8 Gate (GPT-PM documentation gate round 1 returned MODIFY on `d60cb979`; remediated; the focused verification round on `2a31a3f0` returned MODIFY again with four MAJOR test-versus-contract contradictions and five MINOR leftovers; remediated in the next commit; second focused verification next).
 
 | # | Phase | Status | Artifacts |
 |---|---|---|---|

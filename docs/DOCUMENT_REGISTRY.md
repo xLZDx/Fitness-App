@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 169912 |
+| `core/LESSONS_LOG.md` | Lessons log | 170775 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -269,15 +269,15 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
-| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 5379 |
-| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 86232 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 5533 |
+| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 86372 |
 | `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 8615 |
-| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 65795 |
-| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 119087 |
-| `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revisio | 30127 |
-| `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 147582 |
-| `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 213641 |
-| `docs/ai-coach/04b_E2E_AND_DEVICE_PLAN.md` | Live AI Coach - E2E and Device Acceptance Plan (SDLC phase 4b) | 291697 |
+| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 65834 |
+| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 119788 |
+| `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revisio | 30273 |
+| `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 147630 |
+| `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 215119 |
+| `docs/ai-coach/04b_E2E_AND_DEVICE_PLAN.md` | Live AI Coach - E2E and Device Acceptance Plan (SDLC phase 4b) | 291986 |
 | `docs/ai-coach/05_REVIEW_ROUND1.md` | AI Coach documentation: review round 1 findings | 26090 |
 | `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 28577 |
 | `docs/ai-coach/07_REVIEW_ROUND2.md` | AI Coach documentation: review round 2 (verification of round 1 fixes) | 14666 |
@@ -355,7 +355,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191253 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 15544 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 15721 |
 | `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13464 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
