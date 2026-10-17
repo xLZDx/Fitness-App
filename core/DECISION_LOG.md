@@ -58047,3 +58047,7 @@ Decision: the operator ordered 'finish S04 and stop after the merge'. The S04 do
 ## 2026-10-17 - Commit: docs(s04): fix the documentation gate findings on recovery phase, revocation sequence and sign-out retention
 
 Decision: decisions Z1..Z4 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 4 apply (defaults pending operator override): after a kill Resume enters acquiring for every origin; revocation seals the partial recording as a pending decision and Keep hands it off; ordinary sign-out hands off then deletes (strict GPS-PRIV-014) and the 30-day encrypted fallback applies only when the hand-off cannot complete, recorded as a PROPOSED clarification next to GPS-PRIV-014 and as an operator question; AC-D4-B-4 added to the plan. Evidence: core/changes/2026-10-17-s04-docs-gate-fix.md.
+
+## 2026-10-17 - Commit: docs(s04): make Keep and Delete of a pending recording mutually exclusive and complete the story AC map
+
+Decision: decision Z5 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 5 applies: a durable DECISION marker (KEEP or DELETE) is written atomically before any action and the first durable decision wins; Delete is not offered after Keep is durable and never removes the hand-off activity; Keep is refused after Delete is durable; recovery follows the marker. Z6: the story AC to test mapping is complete (147 story ACs, 109 contract ids and 58 requirement ids compared, no gaps). Evidence: core/changes/2026-10-17-s04-docs-z5-z6.md.

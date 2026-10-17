@@ -1171,3 +1171,11 @@ Facts: the GPT-PM documentation gate on 535ae9e4 returned MODIFY with 3 MAJOR an
 Root cause: round 1 and round 2 fixes were applied document by document; the recovery phase, the persistence moment and the S01 rule were not listed as cross-document constants (the same class as the timeouts of round 2), and the id comparison between contract and plan was done before the contract was final.
 Missed by: authors, two internal review rounds and the test-plan author; caught by the external gate.
 Rule next time: run a mechanical id and constant comparison (grep set comparison) AFTER the last edit of every document, and read the cited upstream rule (here GPS-PRIV-014) in its original file before writing an exception to it.
+
+## 2026-10-17 - Commit: docs(s04): make Keep and Delete of a pending recording mutually exclusive and complete the story AC map
+
+Kind: FAILURE.
+Facts: the GPT-PM verification round on 3054d6fe returned MODIFY with 1 MAJOR and 1 MINOR: after the gate fix, Keep (hand-off into the S02 repository) and Delete (ordered delete) of a sealed pending recording could both be started, so a crash or a double tap could create an activity and then delete it, or revive a deleted recording; four story acceptance criteria had no test plan mapping.
+Root cause: Z2 introduced two actions on one pending state without stating which decision is final, and the id comparison covered contract and requirement ids but not story acceptance criteria.
+Missed by: authors, the two internal review rounds and the gate-fix author; caught by the external verification round.
+Rule next time: when a fix adds a second action on a shared state, write the exclusion rule and the fault-injection points (before, during, after each durable step) in the same edit; extend the mechanical id comparison to every id family (here story AC ids).
