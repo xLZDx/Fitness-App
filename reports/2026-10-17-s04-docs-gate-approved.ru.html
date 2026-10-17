@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Документация S04 одобрена</title>
+<style>
+  :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --border:#dfe2da; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --border:#2c3122; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --border:#2c3122; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,sans-serif; line-height:1.55; padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+  .wrap { max-width:820px; margin:0 auto; padding-block:32px 72px; }
+  h1 { font-size:28px; line-height:1.2; margin:0 0 10px; }
+  h2 { font-size:20px; margin:28px 0 10px; }
+  .lede { color:var(--text-2); max-width:64ch; margin:0 0 8px; }
+  .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { border-left:4px solid var(--accent); } .warn { border-left:4px solid var(--warn); }
+  .tablewrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border:1px solid var(--border); font-size:14px; }
+  th { background:var(--accent-soft); }
+  code { font-family:Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="lede">Fitness App, фаза 2</p>
+  <h1>Документация спринта S04 одобрена и слита</h1>
+  <p class="lede">Внешний рецензент (GPT-PM) одобрил документы на состоянии <code>a94c42a5</code> с седьмого круга. PR №12 слит в <code>phase2/main</code> коммитом <code>14513a87</code>. Кода S04 в этом PR нет.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s04 @ 14513a87</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>Что сдано</h2>
+<div class="box ok">
+  <p>58 требований, 38 историй с распределением файлов по линиям работы, контракт интерфейса (109 критериев), технический дизайн, исследование платформы Android и план тестов (853 строки без условных, 887 с условными). Дизайн: запись маршрута без карты, журнал с восстановлением после убийства приложения, передача записи в журнал тренировок, правила разрешений и батареи.</p>
+</div>
+
+<h2>Как шла проверка</h2>
+<div class="tablewrap"><table>
+<tr><th>Этап</th><th>Результат</th></tr>
+<tr><td>Два внутренних круга (UX, доступность, архитектура, безопасность, проверочный)</td><td>0 блокирующих, исправления внесены пакетом</td></tr>
+<tr><td>Внешний рецензент, круги 1–6</td><td>«доработать» каждый раз: найдено и исправлено 18 замечаний (Z1–Z18), из них 11 существенных</td></tr>
+<tr><td>Внешний рецензент, круг 7 (<code>a94c42a5</code>)</td><td>одобрено, 0 блокирующих, 0 существенных</td></tr>
+</table></div>
+
+<h2>Что находил рецензент</h2>
+<div class="box warn">
+  <p>Главная тема: что происходит с записью, когда одновременно нажаты «Сохранить» и «Удалить», и при сбое посреди удаления. Итог: решение фиксируется один раз файлом, который создаётся строго «первым выигрывает»; запись вычищается одним атомарным переименованием папки; один замок защищает журнал от второго экземпляра, другой короткий замок координирует публикацию решения.</p>
+  <p>Причина большинства кругов: каждое исправление проверяло только названную ошибку, а не все пути жизненного цикла. Урок записан в <code>core/LESSONS_LOG.md</code>.</p>
+</div>
+
+<h2>Что не проверено и что осталось</h2>
+<div class="box warn">
+  <p>Ничего не запускалось: это документация. Две устаревшие фразы в шаге 6 раздела 4.3 дизайна рецензент счёл не блокирующими. Одновременно две сессии Claude вели один гейт и мешали друг другу; вторая остановлена, её дубли удалены.</p>
+  <p>Ваши решения: исключение к правилу GPS-PRIV-014 (30 дней в шифрованном виде, только если передача не удалась) одобрено; эталонный телефон для проверок — Samsung S8. Значения по умолчанию Y1–Y11 остаются в силе.</p>
+</div>
+
+<h2>Что дальше</h2>
+<div class="box ok">
+  <p>Начат код S04 на ветке <code>phase2/s04</code>: линия R1 (доступ к GPS и разрешения) и линия R3 (расчёты) идут параллельно. Тесты по эпикам напишут и прогонят тестовые агенты после кода.</p>
+</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

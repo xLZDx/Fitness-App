@@ -58073,3 +58073,7 @@ Decision: Z16 and Z17 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 9
 ## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
 
 Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup; DELETE stays on DECISION=DELETE, DISCARDING and the ordered 4.5 steps. Evidence: core/changes/2026-10-17-s04-docs-z18.md.
+
+## 2026-10-17 - Commit: docs(s04): add the operator report for the approved S04 documentation gate
+
+Decision: the operator approved the GPS-PRIV-014 sign-out exception (30-day encrypted fallback only if the hand-off fails) and named the Samsung S8 as the S04 reference phone; both are recorded in the report and will be written into the privacy contract and the device-lab document in the first S04 code commits. Evidence: core/changes/2026-10-17-s04-docs-report.md.

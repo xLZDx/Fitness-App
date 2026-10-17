@@ -1219,3 +1219,10 @@ Facts: GPT-PM round 6 on 838d1cdc returned MODIFY with 1 MAJOR: one sentence in 
 Root cause: a convenience sentence generalizing the KEEP fix to DELETE was added without checking 4.5; the author had the same stale-generalization habit as in earlier rounds.
 Missed by: authors and the design agent grep (it searched for the old rule, not for the new generalization); caught by the external gate.
 Rule next time: never extend a fix to a second path in passing; scope a new mechanism explicitly to the path it fixes.
+
+## 2026-10-17 - Commit: docs(s04): add the operator report for the approved S04 documentation gate
+
+Kind: SUCCESS.
+Facts: the operator report for the seven-round S04 documentation gate is written as a RU/EN pair and conformed; the Python launcher `py` resolved to a missing interpreter, the pinned C:\Python314 interpreter worked.
+Why it worked: the report reuses the S03 report structure and states what was not verified.
+Rule next time: run report_conform.py with the pinned interpreter, not `py -3`.
