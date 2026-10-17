@@ -781,3 +781,11 @@ Rule next time: the test agents prove the three facts that matter here: a new us
 Kind: NEUTRAL.
 Facts: the operator report of the S03 documentation gate (Russian for the operator, English as the durable record) was built from the draft written before the approval; the draft had to be corrected before publishing because two sentences ("code is not written yet", "nothing started") were already stale when the build had begun.
 Rule next time: a report draft that is written before a gate verdict is re-read against the repository state (git log) at the moment it is built, not only filled in at the placeholders.
+
+## 2026-10-17 - Commit: feat(activity): add the pure activity aggregates and the dashboard digest providers
+
+Kind: SHORTCOMING (coordinator brief) and SUCCESS (agent behaviour).
+Facts: the lane brief for run 3 gave the aggregates file the path `features/activity/state/`, while design 2.4 and the 9.2 ownership row say `features/activity/data/activity_aggregates.dart`; the agent followed the design and reported the conflict. The agent also found that the plan test DT-13-19 (an unmapped source kind is labelled 'Unknown source') cannot be written as planned: the label function switches exhaustively over `SourceKind`, so an unmapped kind does not compile, which protects better than a test but removes the test seam.
+Root cause: the brief was typed from memory instead of copying the path column of the ownership table (coordinator); the plan row for DT-13-19 assumed a runtime fallback (plan author).
+Layer: author (brief, plan); caught by the implementation agent.
+Rule next time: lane briefs quote the paths of the ownership table verbatim. The test agent of epic 13 decides DT-13-19 (exhaustive switch kept; test the parsed-unknown case if `SourceKind` has one) and records it in the findings file.

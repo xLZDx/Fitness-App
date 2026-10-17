@@ -30,21 +30,31 @@ class ProgressStats {
   );
 }
 
+/// Converts a UTC instant to the local wall-clock time of a zone. Tests inject
+/// it to exercise two offsets; production passes null (the device zone).
+typedef ZoneFn = DateTime Function(DateTime utc);
+
 /// Day-bucket for [t] — keyed in UTC so [Duration.inDays] math is immune to
 /// DST transitions while preserving the user's local-day notion of "today".
-DateTime _dayOf(DateTime t) {
-  final local = t.toLocal();
+/// Shared with the activity dashboards (S03-13); [zone] null = device zone.
+DateTime localDayOf(DateTime t, {ZoneFn? zone}) {
+  final local = zone == null ? t.toLocal() : zone(t.toUtc());
   return DateTime.utc(local.year, local.month, local.day);
 }
 
 /// Monday of the week that contains [t], expressed in UTC midnight so the
-/// difference in days between two week starts is always exactly 7.
-DateTime _weekStart(DateTime t) {
-  final d = _dayOf(t);
+/// difference in days between two week starts is always exactly 7. Shared with
+/// the activity dashboards (S03-13); [zone] null = device zone.
+DateTime mondayWeekStartOf(DateTime t, {ZoneFn? zone}) {
+  final d = localDayOf(t, zone: zone);
   // weekday: Monday = 1, Sunday = 7. The local→UTC conversion above already
   // happened, so .weekday on the UTC result is the user-local weekday.
   return d.subtract(Duration(days: d.weekday - 1));
 }
+
+DateTime _dayOf(DateTime t) => localDayOf(t);
+
+DateTime _weekStart(DateTime t) => mondayWeekStartOf(t);
 
 /// Progress numbers for a history [logs], newest first.
 ///

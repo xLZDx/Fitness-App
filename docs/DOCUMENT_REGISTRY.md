@@ -19,7 +19,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/CONVENTIONS.md` | Engineering conventions | 4241 |
 | `core/CURRENT_STATE.md` | Current state | 14555 |
 | `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md` | Current state: Body Scan + Nutrition Coach sprint | 8754 |
-| `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 14841 |
+| `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 15494 |
 | `core/DEBUGGING.md` | Dev observability — debug daemon | 8855 |
 | `core/DECISION_SELF_BOOKING.md` | Operator decision — should a coach be able to book themselves? | 11742 |
 | `core/DEPENDENCIES.md` | DEPENDENCIES | 1108 |
@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 101454 |
+| `core/LESSONS_LOG.md` | Lessons log | 102661 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -276,7 +276,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33688 |
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
 | `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2456 |
-| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 22469 |
+| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 24777 |
 | `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 84881 |
 | `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 25034 |
 | `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
