@@ -1079,3 +1079,11 @@ Facts: the Coming-later badge was clipped at text scale 2.0 after the wrap fix a
 Root cause: the first two rounds changed the layout without a measurement; the measurement showed the cause is the font size of a short fixed word in a narrow box.
 Layer: author and coordinator (guessed fixes); the step 6 measurement found the real cause.
 Rule next time: for a clipped fixed word, measure the word width at the target scale before choosing wrap, cap or clamp; stop after one fix round and measure.
+
+## 2026-10-17 - Commit: test(conformance): add the contract conformance matrix and the carried items record for S03
+
+Kind: SUCCESS with a cost.
+Facts: the step 6 test agent wrote 195 conformance tests (pages 136, shell 34, localisation 6, extras 19) over four window classes, text scale 1.0 and 2.0, English and Russian, and ran them green at head 711d811c: 177 passed, 18 skipped as carried, 0 failed. The matrix found six clipped or overflowing texts; two were S03's (the Coming-later badge on the chooser cards and in the switcher row) and took four fix rounds, the last one a measured decision (bound the badge text scale at 1.3); four are in base code and are carried with the base commits.
+Cost and cause: the first two fix rounds changed the layout without measuring the word width; the conformance run was scheduled after all lanes instead of right after the layout lanes.
+Rule next time: run the layout conformance matrix once after the first UI wave, and measure before choosing wrap, cap or clamp.
+Carried: the badge clamp deviates from the contract wording that status words follow the system scale; the contract should name this exception. The Colors.transparent exception in the raw colour scan is recorded in the findings file.
