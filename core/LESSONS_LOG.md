@@ -1049,3 +1049,9 @@ Kind: SUCCESS and SHORTCOMING.
 Facts: the step 3 test agent added tests for the review fixes (Coming-later Back closes without any write from the chooser and from the switcher, Open Train writes exactly one state and announces the mode change, the Record sheet lists no rows of the previous account while the new mode loads, five wrapped labels show in full at text scale 2.0 in ru on 360 dp) and ran the complete set: 103 passed, 0 failed at head 7888326b. Shortcoming: the agent waited a long time while the tree did not compile (the batch 8 error) and checked its new tests in a scratch copy instead; it reported the error clearly.
 Open and carried: the Record row flag inputs (minor finding, DT-11-1b pins the current behaviour); the Record sheet title still reads the mode state directly and can name the previous account's mode during an account switch (minor, fixed in a later batch).
 Rule next time: when the tree does not compile, the test agent reports it at once and stops instead of working in a scratch copy for a long time.
+
+## 2026-10-17 - Commit: fix(modes): read the selected mode for the Record sheet title
+
+Kind: SHORTCOMING (leftover of the selected-mode change, found by the step 3 test agent).
+Facts: after the selected-mode provider was introduced, the Record sheet route label still read the raw mode state and could name the previous account's mode while the new one loads. One line fixed; the diff was read by me before the commit this time.
+Rule next time: when a read path is replaced by a new provider, grep for every other reader of the old provider in the same batch.

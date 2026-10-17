@@ -57983,3 +57983,7 @@ Decision: step 5 tests and the findings file are committed after a green complet
 ## 2026-10-17 - Commit: test(modes): add tests for the Coming-later Back button, the Open Train announcement and wrapped labels
 
 Decision: step 3 additions are committed after a green complete run (103 of 103). While the mode loads, the Record sheet shows the neutral Train rows (selected mode or Train) rather than an empty list; this stays unless the operator wants otherwise. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md, core/changes/2026-10-17-s03-test-step-3-review-fixes.md.
+
+## 2026-10-17 - Commit: fix(modes): read the selected mode for the Record sheet title
+
+Decision: the Record sheet semantic title uses selectedModeProvider and the neutral Train name while the mode loads. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-12.md.

@@ -162,7 +162,7 @@ String _modeNameForTitle(BuildContext context) {
   try {
     final ProviderContainer c =
         ProviderScope.containerOf(context, listen: false);
-    return c.read(modeStateProvider).valueOrNull?.selectedMode.name ?? 'train';
+    return c.read(selectedModeProvider)?.name ?? 'train';
   } on StateError {
     return 'train';
   }

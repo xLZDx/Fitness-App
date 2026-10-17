@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 141697 |
+| `core/LESSONS_LOG.md` | Lessons log | 142258 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -319,6 +319,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7009 |
 | `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328832 |
 | `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 173094 |
+| `docs/phase2/s03/S03_CARRIED_ITEMS.md` | S03 carried items, deviations and accepted risks | 5290 |
 | `docs/phase2/s03/S03_CODE_MAP.md` | S03 code map | 33748 |
 | `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 194349 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 14466 |
