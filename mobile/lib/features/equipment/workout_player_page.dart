@@ -24,6 +24,9 @@ import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
+import '../auth/state/auth_providers.dart';
+import '../workouts/data/set_session.dart' show SetPhase;
+import '../workouts/state/active_session_status.dart';
 import '../workouts/state/rest_timer_providers.dart';
 import '../workouts/state/set_timer_providers.dart';
 import '../workouts/widgets/rest_timer.dart';
@@ -79,6 +82,23 @@ final _loggedEntryProvider =
 /// `save()`'s `doc(id).set(...)` lands back on the same document however many
 /// times the page is rebuilt.
 String daySessionId(String dayId) => 'day_$dayId';
+
+/// The route the dock strip returns to for this visit (S03-07). Built once per
+/// page from its own parameters; `scanId` is deliberately left out.
+String workoutPlayerDestination(String exerciseId, String? dayId) {
+  final base = '/workout/${Uri.encodeComponent(exerciseId)}';
+  return dayId == null ? base : '$base?day=${Uri.encodeQueryComponent(dayId)}';
+}
+
+/// Records who started the running session and where the strip leads (RV-4,
+/// F-11). Called at the moment a set or rest timer starts; the uid is never
+/// recomputed afterwards.
+void _captureSessionOwner(WidgetRef ref, String destination) {
+  ref.read(activeSessionOwnerProvider.notifier).capture(
+        uid: ref.read(authUserProvider).valueOrNull?.uid ?? '',
+        destination: destination,
+      );
+}
 
 /// The day's log as it currently stands: what this visit wrote, or what is
 /// already persisted when this visit has not written yet.
@@ -177,6 +197,19 @@ class WorkoutPlayerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // S03-07: the set timer is started inside `SetTimerCard` (not this file);
+    // its idle/done -> active transition is the start, observed here so the
+    // owner uid and destination are captured at that moment.
+    ref.listen<SetTimerState>(setTimerProvider, (previous, next) {
+      final wasActive = previous != null &&
+          previous.phase != SetPhase.idle &&
+          previous.phase != SetPhase.done;
+      final isActive =
+          next.phase != SetPhase.idle && next.phase != SetPhase.done;
+      if (isActive && !wasActive) {
+        _captureSessionOwner(ref, workoutPlayerDestination(exerciseId, dayId));
+      }
+    });
     final theme = Theme.of(context);
     final exercise = ref.watch(exerciseResolutionProvider(exerciseId));
     // P2.G4's in-workout identity surface (GPT-PM pre-commit review, this
@@ -377,12 +410,14 @@ class WorkoutPlayerPage extends ConsumerWidget {
                 const SizedBox(height: 20),
                 _MarkCompleteButton(
                   exercise: item,
+                  destination: workoutPlayerDestination(exerciseId, dayId),
                   sessionKey: _sessionKey,
                   inDay: dayId != null,
                 ),
                 const SizedBox(height: 12),
                 _AddExerciseButton(
                   entryExercise: item,
+                  destination: workoutPlayerDestination(exerciseId, dayId),
                   sessionKey: _sessionKey,
                   inDay: dayId != null,
                 ),
@@ -537,10 +572,14 @@ class _DayStripRow extends StatelessWidget {
 class _MarkCompleteButton extends ConsumerWidget {
   const _MarkCompleteButton({
     required this.exercise,
+    required this.destination,
     required this.sessionKey,
     required this.inDay,
   });
   final ExerciseItem exercise;
+
+  /// Route captured as the strip destination when the rest starts (S03-07).
+  final String destination;
 
   /// See [WorkoutPlayerPage._sessionKey] — the day inside a day, the exercise
   /// otherwise.
@@ -731,6 +770,7 @@ class _MarkCompleteButton extends ConsumerWidget {
       // ordering §17 asks for: Complete Set -> Persist Set -> Rest Timer. A
       // rest that started optimistically would count down over a set that
       // never got written.
+      _captureSessionOwner(ref, destination);
       ref
           .read(restTimerProvider.notifier)
           .start(Duration(seconds: _restSecondsFor(exercise)));
@@ -860,10 +900,14 @@ class _MarkCompleteButton extends ConsumerWidget {
 class _AddExerciseButton extends ConsumerWidget {
   const _AddExerciseButton({
     required this.entryExercise,
+    required this.destination,
     required this.sessionKey,
     required this.inDay,
   });
   final ExerciseItem entryExercise;
+
+  /// Route captured as the strip destination when the rest starts (S03-07).
+  final String destination;
 
   /// See [WorkoutPlayerPage._sessionKey]. Inside a day this is the day, so an
   /// exercise added by hand joins the day's session rather than opening a
@@ -972,6 +1016,7 @@ class _AddExerciseButton extends ConsumerWidget {
       ref.read(_loggedEntryProvider(sessionKey).notifier).state = updated;
       // Same ordering as _MarkCompleteButton: persist THEN rest, never the
       // reverse.
+      _captureSessionOwner(ref, destination);
       ref
           .read(restTimerProvider.notifier)
           .start(Duration(seconds: _restSecondsFor(picked)));

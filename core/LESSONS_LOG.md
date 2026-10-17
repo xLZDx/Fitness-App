@@ -796,3 +796,11 @@ Kind: SUCCESS.
 Facts: lane L5 wrote one route class that serves bottom sheet, popover and dialog, because a Flutter modal bottom sheet cannot turn into a popover while open and RV-9 requires live re-placement; the brief named three route types and the agent reported the deviation with its reason. The router is spliced once; the three stub pages live in `s03_routes.dart`, so later lanes replace their own page files and never edit the router. The first answer to the open availability question (a constant table) was replaced by the committed flags table read at router construction.
 Why it worked: the agent reported UNKNOWNs instead of inventing a provider, and the coordinator answered each one with a concrete instruction.
 Rule next time: the test agents prove the placement table (compact, medium, expanded), the depth counter reset on account change (late `closed` ignored) and the redirect of `/mode-questions/:mode` to Home with no write (DT-06-x, DT-09-6). Architect review checks the new import from `shared/widgets` to `features/auth`.
+
+## 2026-10-17 - Commit: feat(workouts): add the active session status, the dock widgets and the session owner capture
+
+Kind: SHORTCOMING (two gaps found while building) and SUCCESS (agent behaviour).
+Facts: lane L4b stopped at the 20-turn limit once and was resumed; it finished the interface files first as briefed. Two gaps surfaced: (1) no lane owned the ARB files, so the dock code uses generated getters that did not exist (`recordPill`, `strip*`, `rail*`); lane L13 was created for both ARB files; (2) the screen-reader announcements for session started, paused, resumed and ended (contract section 12, AC-A11Y-4) are not written because an unmounted strip cannot announce its own end.
+Root cause: the ownership table of design 9.2 covered code paths but not the two ARB files (coordinator design); the announcement host was not assigned to a lane.
+Layer: design author; caught by the implementation agent's report.
+Rule next time: when a design splits work into lanes, list shared resource files (ARB files, router, main.dart) as owned rows too. Carry-over: the persistent host (lane L4a shell) or the conformance fixes (lane L12) must write the announcements; the test agents keep AC-A11Y-4 as a failing-by-design finding until then.
