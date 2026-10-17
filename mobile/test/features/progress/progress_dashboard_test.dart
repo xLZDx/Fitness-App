@@ -15,8 +15,11 @@ import 'package:fitness_app/features/activity/state/activity_dashboard_providers
 import 'package:fitness_app/features/activity/widgets/activity_sync_entry_card.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/body_scan/widgets/body_scan_entry_card.dart';
+import 'package:fitness_app/features/modes/data/mode_models.dart';
+import 'package:fitness_app/features/modes/state/mode_providers.dart';
 import 'package:fitness_app/features/progress/progress_page.dart';
 import 'package:fitness_app/features/progress/widgets/progress_activity_widgets.dart';
+import 'package:fitness_app/shared/widgets/hud/hud_surface.dart';
 import 'package:fitness_app/shared/widgets/shell_layout.dart';
 import 'package:fitness_app/shared/widgets/window_size.dart';
 
@@ -63,6 +66,18 @@ JournalEntry runEntry(String id,
     entry(sess(id, start: at ?? kNow, dist: dist, time: time));
 
 Finder key(String k) => find.byKey(Key(k));
+
+class FakeModeN extends ModeNotifier {
+  FakeModeN(this.initial);
+  final ModeState initial;
+  @override
+  Future<ModeState> build() async => initial;
+
+  /// An account switch reload: loading, previous value kept.
+  void reloadKeepingPrevious() {
+    state = const AsyncLoading<ModeState>().copyWithPrevious(state);
+  }
+}
 
 void main() {
   group('AC-PR-1 notEnabled', () {
@@ -347,12 +362,13 @@ void main() {
     final j = FakeJournal([runEntry('r1')]);
     final g = Completer<List<JournalEntry>>();
     j.gateQueue.add(g);
-    await surface(t, 400, 1400);
+    await surface(t, 400, 1000);
     await t.pumpWidget(
         appHost(const ProgressPage(), overrides: dashOverrides(journal: j)));
     await settle(t);
     final s = t.state<ScrollableState>(find.byType(Scrollable).first);
-    s.position.jumpTo(100);
+    expect(s.position.maxScrollExtent, greaterThan(450));
+    s.position.jumpTo(400);
     await settle(t, 2);
     expect(find.byType(CircularProgressIndicator), findsNothing,
         reason: 'no skeleton');
@@ -361,7 +377,7 @@ void main() {
     await settle(t);
     // The offset is compensated by design (e35a3f66); the visible content is
     // what must not move.
-    expect(s.position.pixels, greaterThan(100));
+    expect(s.position.pixels, greaterThan(400));
     final yAfter = t.getTopLeft(find.text('Last 8 weeks')).dy;
     // The user-visible reading of "no jump": the content under the finger stays.
     expect(yAfter, closeTo(yBefore, 1.0),
@@ -506,5 +522,73 @@ void main() {
     await reenter();
     expect(j.listCalls, 2);
   });
-}
 
+  testWidgets('DT-14-10 loading to errorRetry at a non-zero offset: heading stays',
+      (t) async {
+    final j = FakeJournal();
+    final g = Completer<List<JournalEntry>>();
+    j.gateQueue.add(g);
+    await surface(t, 400, 1000);
+    await t.pumpWidget(
+        appHost(const ProgressPage(), overrides: dashOverrides(journal: j)));
+    await settle(t);
+    final s = t.state<ScrollableState>(find.byType(Scrollable).first);
+    expect(s.position.maxScrollExtent, greaterThan(450));
+    s.position.jumpTo(400);
+    await settle(t, 2);
+    final yBefore = t.getTopLeft(find.text('Last 8 weeks')).dy;
+    g.completeError(StateError('boom'));
+    await settle(t);
+    final yAfter = t.getTopLeft(find.text('Last 8 weeks')).dy;
+    s.position.jumpTo(0);
+    await settle(t, 3);
+    expect(key('progress.journalError'), findsOneWidget);
+    expect(yAfter, closeTo(yBefore, 1.0),
+        reason: 'the Sources slot stays in errorRetry, so no slot height may '
+            'be subtracted: shifted by ${yAfter - yBefore}');
+  });
+
+  testWidgets('DT-14-11 gaveUp: Try again is disabled while the attempt runs',
+      (t) async {
+    final j = ScopedFakeJournal();
+    final timers = FakeTimers();
+    await pumpProgress(t, dashOverrides(journal: j, timers: timers));
+    for (var i = 0; i < 5; i++) {
+      j.complete(false);
+      await settle(t, 2);
+      timers.all.last.fire();
+      await settle(t, 2);
+    }
+    j.complete(false);
+    await settle(t);
+    HudButton retry() => t.widget<HudButton>(key('progress.journalRetry'));
+    expect(retry().onPressed, isNotNull);
+    await t.tap(key('progress.journalRetry'));
+    await settle(t, 2);
+    expect(retry().onPressed, isNull, reason: 'busy while bindBusy');
+    j.complete(false);
+    await settle(t);
+    expect(retry().onPressed, isNotNull);
+  });
+
+  testWidgets('DT-14-12 account switch: no tile order of the previous mode',
+      (t) async {
+    final fake = FakeModeN(ModeState(
+        selectedMode: AppMode.ride, chooserStatus: ChooserStatus.resolved));
+    final j = FakeJournal([
+      runEntry('run1'),
+      entry(sess('ride1',
+          sport: SportType.cycling, start: kNow, dist: 1000, time: 60)),
+    ]);
+    await pumpProgress(t, [
+      ...dashOverrides(journal: j),
+      modeStateProvider.overrideWith(() => fake),
+    ], w: 800);
+    double dx(String k) => t.getTopLeft(key('progress.tile.$k')).dx;
+    expect(dx('ride'), lessThan(dx('run')), reason: 'RIDE lens puts ride first');
+    fake.reloadKeepingPrevious();
+    await settle(t);
+    expect(dx('run'), lessThan(dx('ride')),
+        reason: 'while the next mode loads the fixed order is used');
+  });
+}

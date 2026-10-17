@@ -1029,3 +1029,9 @@ Rule next time: the tests for a review fix are written by the test agent in the 
 Kind: SUCCESS.
 Facts: the step 2 test agent added tests for the review fixes (nothing is announced when only a rest timer runs, pause and resume still announce; the open-surface depth stays when the account changes and drops when the surface closes) and ran the complete set at head 7888326b: 134 new-set entries and 96 existing entries all pass, including back_navigation_test.dart, which had been blocked by the compile error of the previous batch.
 Rule next time: none new; the run after a fix batch is also the compile gate.
+
+## 2026-10-17 - Commit: test(dashboards): add tests for the scroll compensation, the error transition, Try again and the account switch
+
+Kind: SUCCESS.
+Facts: the step 4 test agent added tests for the review fixes (the Activity today card scrolled out of the cache extent and back keeps the offset, compensation only when the card lands above the viewport edge, Progress loading to error keeps a stable heading, Try again is disabled during a manual attempt, tile order does not use the previous account's mode) and changed two earlier tests to the new rule (compensate only above the viewport edge). The complete run at head 7888326b: 247 passed, 0 failed, 2 skipped in code.
+Rule next time: a test of a one-shot behaviour scrolls the widget away and back; that test is what the Flutter reviewer asked for and it did not exist before.

@@ -375,28 +375,46 @@ void main() {
     expect(key('home.modeIntro'), findsNothing);
   });
 
-  testWidgets('DT-12-2 the Activity today card does not move content below it',
-      (t) async {
-    final j = FakeJournal([today('r1')]);
-    final g = Completer<List<JournalEntry>>();
-    j.gateQueue.add(g);
-    await pumpHome(t, journal: j, w: 400, h: 1400);
-    final s = t.state<ScrollableState>(find.byType(Scrollable).first);
-    s.position.jumpTo(100);
-    await t.pump(const Duration(milliseconds: 60));
-    final before = t.getTopLeft(key('home.section.week')).dy;
-    g.complete([today('r1')]);
-    for (var i = 0; i < 4; i++) {
+  for (final c in [(450.0, true), (100.0, false)]) {
+    testWidgets(
+        'DT-12-2/offset${c.$1.toInt()} card ${c.$2 ? 'above' : 'inside'} the viewport edge',
+        (t) async {
+      final j = FakeJournal([today('r1')]);
+      final g = Completer<List<JournalEntry>>();
+      j.gateQueue.add(g);
+      await pumpHome(t, journal: j, w: 400, h: 900);
+      final s = t.state<ScrollableState>(find.byType(Scrollable).first);
+      expect(s.position.maxScrollExtent, greaterThan(c.$1 + 100));
+      s.position.jumpTo(c.$1);
       await t.pump(const Duration(milliseconds: 60));
-    }
-    expect(key('home.activityToday'), findsOneWidget);
-    // The offset is compensated by design (e35a3f66); the visible content is
-    // what must not move.
-    expect(s.position.pixels, greaterThan(100));
-    final after = t.getTopLeft(key('home.section.week')).dy;
-    expect(after, closeTo(before, 1.0),
-        reason: 'content below the card jumped by ${after - before}');
-  });
+      Finder anchor = key('home.section.recovery');
+      for (final n in ['recovery', 'quickScan', 'bodyScan']) {
+        final f = key('home.section.$n');
+        if (f.evaluate().isNotEmpty &&
+            t.getTopLeft(f).dy > 0 &&
+            t.getTopLeft(f).dy < 800) {
+          anchor = f;
+          break;
+        }
+      }
+      final before = t.getTopLeft(anchor).dy;
+      g.complete([today('r1')]);
+      for (var i = 0; i < 4; i++) {
+        await t.pump(const Duration(milliseconds: 60));
+      }
+      if (!c.$2) expect(key('home.activityToday'), findsOneWidget);
+      if (c.$2) {
+        // Arrival above the edge: compensated, the reading position holds.
+        expect(s.position.pixels, greaterThan(c.$1));
+        final after = t.getTopLeft(anchor).dy;
+        expect(after, closeTo(before, 1.0),
+            reason: 'content below the card jumped by ${after - before}');
+      } else {
+        // Arrival inside the viewport: no compensation (review rule).
+        expect(s.position.pixels, c.$1);
+      }
+    });
+  }
 
   testWidgets('DT-12-3 Choose a mode opens the chooser and resolves',
       (t) async {
@@ -426,5 +444,26 @@ void main() {
     final after = sectionOrder(t);
     expect(after.indexOf('bodyScan'), lessThan(after.indexOf('quickScan')));
     expect(key('home.modeChip'), findsOneWidget);
+  });
+
+  testWidgets('DT-12-5 card scrolled out of the cache extent and back: offset kept',
+      (t) async {
+    await pumpHome(t, journal: FakeJournal([today('r1')]), w: 400, h: 500);
+    expect(key('home.activityToday'), findsOneWidget);
+    final s = t.state<ScrollableState>(find.byType(Scrollable).first);
+    final far = s.position.maxScrollExtent;
+    expect(far, greaterThan(900), reason: 'Home is long enough to evict the card');
+    s.position.jumpTo(far);
+    await t.pump(const Duration(milliseconds: 60));
+    await t.pump(const Duration(milliseconds: 60));
+    expect(key('home.activityToday'), findsNothing,
+        reason: 'the card is out of the cache extent (unbuilt)');
+    s.position.jumpTo(80);
+    for (var i = 0; i < 4; i++) {
+      await t.pump(const Duration(milliseconds: 60));
+    }
+    expect(key('home.activityToday'), findsOneWidget);
+    expect(s.position.pixels, 80,
+        reason: 'rebuilding the card is not an arrival and must not compensate');
   });
 }

@@ -1,6 +1,15 @@
 # S03 test findings, step 4 (EP-3 and EP-4)
 
-## 0c. FINAL in-tree result (head 3bf9d24c, includes d0b3ad54)
+## 0d. LATEST in-tree result (head 7888326b, includes 9b42ef53 review fixes)
+
+One command from `mobile/` (`/d/flutter/bin/flutter` 3.27.1), same 15 files as 0c: `flutter test --timeout 60s` on the nine existing Home and Progress files plus my six files. Result: `+247 ~2: All tests passed!` (247 pass, 0 fail, 2 skipped: DT-16-3, DT-16-8).
+
+History: 9b42ef53 did not compile (`mode_switcher_sheet.dart:127`, undeclared `state`, fixed in 7888326b); my scratch-copy run on 9b42ef53 plus a one-line patch was used meanwhile.
+
+New tests (all PASS): DT-12-5 (Today card scrolled out of the cache extent and back, offset unchanged at 80); DT-12-2 split in two: offset 450 (card above the viewport edge: offset compensated and the section below holds within 1 dp) and offset 100 (card arrives inside the viewport: no compensation, offset stays 100); DT-14-10 (Progress loading to errorRetry at offset 400: the heading stays within 1 dp, so no Sources-slot height is subtracted when the slot stays); DT-14-11 (gaveUp: Try again is disabled during a manual attempt and enabled again after); DT-14-12 (account switch: with the mode state reloading the fixed tile order is used, not the previous account's RIDE order).
+Test measurement changes caused by the review rule "compensate only above the viewport edge": DT-12-2 and DT-14-2 now scroll to 450/400 so the inserted block starts above the edge (at offset 100 it is inside the view and by design is not compensated). No production defects found in this round.
+
+## 0c. earlier final in-tree result (head 3bf9d24c, includes d0b3ad54)
 
 One command from `mobile/` (flutter `/d/flutter/bin/flutter` 3.27.1): `flutter test --timeout 60s test/features/home_page_test.dart test/features/home/home_body_check_in_card_test.dart test/features/home/home_clock_test.dart test/features/home/home_dashboard_test.dart test/features/home/format_schedule_label_test.dart test/features/home/suggestion_builder_test.dart test/features/progress_page_test.dart test/features/progress/progress_charts_test.dart test/features/progress/progress_stats_test.dart test/features/home/home_mode_lens_test.dart test/features/activity/data/activity_aggregates_test.dart test/features/activity/state/activity_dashboard_providers_test.dart test/features/progress/progress_dashboard_test.dart test/features/modes/sources_panel_test.dart test/features/activity/sign_out_warning_test.dart`
 Result: `+242 ~2: All tests passed!` (242 pass, 0 fail, 2 skipped = DT-16-3 and DT-16-8). DT-14-2 alone: `+1: All tests passed!`. D1b is closed; D1 to D6 and C1 to C6 are all closed. Remaining NOT_RUN: DT-16-3, DT-16-8, DT-13-23, DT-14-8, AC-LS-5/offline, DT-13-19 as planned (see section 4 notes, still valid).

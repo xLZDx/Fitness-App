@@ -57971,3 +57971,7 @@ Decision: step 1 additions are committed after a green complete run (150 of 150)
 ## 2026-10-17 - Commit: test(shell): add tests for rest-only announcements and the surface depth on an account change
 
 Decision: step 2 additions are committed after a green complete run at head 7888326b. Rows that need an injectable destination list in the shell stay partial and are carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, core/changes/2026-10-17-s03-test-step-2-review-fixes.md.
+
+## 2026-10-17 - Commit: test(dashboards): add tests for the scroll compensation, the error transition, Try again and the account switch
+
+Decision: step 4 additions are committed after a green complete run at head 7888326b (247 passed, 0 failed, 2 skipped). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md, core/changes/2026-10-17-s03-test-step-4-review-fixes.md.
