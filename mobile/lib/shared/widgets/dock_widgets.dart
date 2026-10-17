@@ -335,7 +335,20 @@ class RailRecordSlot extends ConsumerWidget {
     final Widget body;
     if (status == null && ref.watch(activeSessionForeignOwnerProvider)) {
       // A session of another account: no Record control, same reserved height.
-      body = const ExcludeSemantics(child: SizedBox.shrink());
+      // The idle control is laid out invisibly so both states have the same size.
+      body = ExcludeSemantics(
+        child: ExcludeFocus(
+          child: IgnorePointer(
+            child: Visibility(
+              visible: false,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: _IdleRecord(onRecord: () {}, extended: extended),
+            ),
+          ),
+        ),
+      );
     } else if (status == null) {
       body = _IdleRecord(onRecord: onRecord, extended: extended);
     } else if (extended) {

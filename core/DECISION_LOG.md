@@ -58027,3 +58027,7 @@ Decision: the S03 code gate request goes to GPT-PM on the head that contains the
 ## 2026-10-17 - Commit: fix(shell): hide every Record entry point for a foreign session and order mode writes
 
 Decision: both GPT-PM MAJOR findings were verified against the code (dock_widgets.dart RailRecordSlot, app_shortcuts.dart _record, mode_providers.dart _write) and fixed in one batch; regression tests follow in the next commit; the code gate is re-requested on the new exact head. Evidence: core/changes/2026-10-17-s03-gate-fix-batch-19.md.
+
+## 2026-10-17 - Commit: fix(shell): keep the rail Record slot height when a foreign session hides the control
+
+Decision: the foreign-owner rail slot lays out the idle control invisibly (no semantics, focus or pointer) so both states have identical size; the test agent's failing test was kept red until this fix. Evidence: core/changes/2026-10-17-s03-gate-fix-batch-20.md.

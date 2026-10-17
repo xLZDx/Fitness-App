@@ -1133,3 +1133,11 @@ Facts: the GPT-PM code gate (MODIFY on 95a7ea04) found two MAJOR defects. (1) Th
 Root cause: batch 4-5 applied the foreign-owner rule to the dock only and I did not enumerate all Record entry points; the mode notifier awaited the store directly with no write queue.
 Missed by: author (me), the six internal reviews and the six test steps (tests asserted the dock and the pill, not the rail slot or the shortcut); caught by the GPT-PM gate.
 Rule next time: when a rule applies to a capability, list every entry point of that capability (dock, rail, shortcut, sheet opener) and test each one; any notifier that persists state needs an ordered write path.
+
+## 2026-10-17 - Commit: fix(shell): keep the rail Record slot height when a foreign session hides the control
+
+Kind: FAILURE.
+Facts: the regression test written for the first gate fix (20b39611) failed: in the compact rail the empty foreign-owner slot (64 dp) was shorter than the idle Record control, so the Progress destination moved up 16 dp when the account changed.
+Root cause: my fix replaced the control with a fixed empty box instead of keeping the control's real size.
+Missed by: author (me) and the reading review of the diff; caught by the new regression test of the test agent before the gate re-request.
+Rule next time: a hidden state of a control keeps the control's layout (Visibility with maintainSize), and a regression test checks neighbouring positions, not only the missing control.
