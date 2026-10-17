@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 163094 |
+| `core/LESSONS_LOG.md` | Lessons log | 167226 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -269,80 +269,91 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
+| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 62268 |
+| `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 8615 |
+| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 51457 |
+| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 2 (SDLC phase 3, Design) | 78297 |
+| `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 2) | 23987 |
+| `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 118779 |
+| `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 139844 |
+| `docs/ai-coach/04b_E2E_AND_DEVICE_PLAN.md` | Live AI Coach - E2E and Device Acceptance Plan (SDLC phase 4b) | 164304 |
+| `docs/ai-coach/05_REVIEW_ROUND1.md` | AI Coach documentation: review round 1 findings | 26090 |
+| `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 14317 |
+| `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
 | `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20755 |
 | `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12952 |
 | `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33688 |
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
-| `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2456 |
-| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 24777 |
-| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 85557 |
-| `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 25034 |
-| `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
-| `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
-| `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
-| `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1513 |
-| `docs/phase2/s02/S02_ACCEPTANCE.md` | S02 sprint acceptance record: unified activity | 15407 |
-| `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
-| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 183218 |
-| `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 6940 |
-| `docs/phase2/s02/S02_RELEASE_NOTES.md` | S02 release notes: Unified activity | 16105 |
-| `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6324 |
-| `docs/phase2/s02/S02_REMEDIATION_B_TEST_NOTES.md` | S02 remediation B: test notes | 4680 |
-| `docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md` | S02 remediation C: test notes (client findings) | 2000 |
-| `docs/phase2/s02/S02_REMEDIATION_D_TEST_NOTES.md` | S02 remediation D: test notes | 1702 |
-| `docs/phase2/s02/S02_REMEDIATION_E_TEST_NOTES.md` | S02 remediation E test notes | 4935 |
-| `docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md` | S02 remediation F: test notes | 20278 |
-| `docs/phase2/s02/S02_REMEDIATION_H_TEST_NOTES.md` | S02 remediation H: test notes | 19876 |
-| `docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md` | S02 remediation J: invocation-bound identity (test notes) | 29521 |
-| `docs/phase2/s02/S02_SPRINT_REPORT.md` | S02 sprint report and retrospective: unified activity (E1) | 18485 |
-| `docs/phase2/s02/S02_SPRINT_REPORT_AND_RETRO.md` | S02 sprint report and retrospective (living draft) | 7772 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3144 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 6259 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC11.md` | S02 test findings, epic 11 | 7903 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC12.md` | S02 test findings, epic 12 (remediation F) | 9593 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md` | S02 test findings, epic 13 (remediation G) | 4333 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md` | S02 test findings, epic 14 (remediation H) | 11302 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md` | S02 test findings, epic 15 (remediation I) | 5377 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` | S02 test findings: epic 16 (remediation J) | 19648 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC17.md` | S02 test findings: epic 17 ("never expire" retention is not offered) | 9310 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4305 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4714 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC4.md` | S02 test epic 4: findings (plan versus design versus code) | 5009 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC5.md` | S02 test epic 5: findings (plan versus design versus rules) | 5834 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6A.md` | S02 test findings, epic 6a: functions stream upload, settings, tombstone and delete | 3791 |
+| `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2478 |
+| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 24875 |
+| `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 85954 |
+| `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 25224 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27768 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27894 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14325 |
+| `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1532 |
+| `docs/phase2/s02/S02_ACCEPTANCE.md` | S02 sprint acceptance record: unified activity | 15519 |
+| `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3908 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 183978 |
+| `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 6979 |
+| `docs/phase2/s02/S02_RELEASE_NOTES.md` | S02 release notes: Unified activity | 16241 |
+| `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6344 |
+| `docs/phase2/s02/S02_REMEDIATION_B_TEST_NOTES.md` | S02 remediation B: test notes | 4705 |
+| `docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md` | S02 remediation C: test notes (client findings) | 2009 |
+| `docs/phase2/s02/S02_REMEDIATION_D_TEST_NOTES.md` | S02 remediation D: test notes | 1709 |
+| `docs/phase2/s02/S02_REMEDIATION_E_TEST_NOTES.md` | S02 remediation E test notes | 4971 |
+| `docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md` | S02 remediation F: test notes | 20425 |
+| `docs/phase2/s02/S02_REMEDIATION_H_TEST_NOTES.md` | S02 remediation H: test notes | 20105 |
+| `docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md` | S02 remediation J: invocation-bound identity (test notes) | 29707 |
+| `docs/phase2/s02/S02_SPRINT_REPORT.md` | S02 sprint report and retrospective: unified activity (E1) | 18639 |
+| `docs/phase2/s02/S02_SPRINT_REPORT_AND_RETRO.md` | S02 sprint report and retrospective (living draft) | 7813 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3170 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 6320 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC11.md` | S02 test findings, epic 11 | 7957 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC12.md` | S02 test findings, epic 12 (remediation F) | 9664 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md` | S02 test findings, epic 13 (remediation G) | 4379 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md` | S02 test findings, epic 14 (remediation H) | 11428 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md` | S02 test findings, epic 15 (remediation I) | 5416 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` | S02 test findings: epic 16 (remediation J) | 19787 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC17.md` | S02 test findings: epic 17 ("never expire" retention is not offered) | 9362 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4333 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4746 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC4.md` | S02 test epic 4: findings (plan versus design versus code) | 5046 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC5.md` | S02 test epic 5: findings (plan versus design versus rules) | 5876 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6A.md` | S02 test findings, epic 6a: functions stream upload, settings, tombstone and delete | 3829 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6B.md` | S02 test findings, epic 6b: retention, deletion sweeps, export, telemetry, lifecycle policy, story-map lint | 8031 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 11197 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC8.md` | S02 test findings, epic 8: remediation batch A | 6331 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC9.md` | S02 test findings, epic 9 | 6621 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7009 |
-| `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328832 |
-| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 173094 |
-| `docs/phase2/s03/S03_CARRIED_ITEMS.md` | S03 carried items, deviations and accepted risks | 7078 |
-| `docs/phase2/s03/S03_CODE_MAP.md` | S03 code map | 33748 |
-| `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 194349 |
-| `docs/phase2/s03/S03_SPRINT_REPORT.md` | S03 sprint report and retrospective: shell, mode chooser, dashboard skeleton (E2) | 21441 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 19733 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 11269 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC8.md` | S02 test findings, epic 8: remediation batch A | 6415 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC9.md` | S02 test findings, epic 9 | 6678 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7076 |
+| `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 329764 |
+| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 174205 |
+| `docs/phase2/s03/S03_CARRIED_ITEMS.md` | S03 carried items, deviations and accepted risks | 7137 |
+| `docs/phase2/s03/S03_CODE_MAP.md` | S03 code map | 34082 |
+| `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 195421 |
+| `docs/phase2/s03/S03_SPRINT_REPORT.md` | S03 sprint report and retrospective: shell, mode chooser, dashboard skeleton (E2) | 21598 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 19871 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md` | S03 test findings, step 3 (EP-2: S03-08 to S03-11) | 16460 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md` | S03 test findings, step 4 (EP-3 and EP-4) | 19364 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md` | S03 test findings: EP-5 foundations (step 2) | 10164 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md` | S03 test findings, epic 5B (S03-17 keyboard and pointer input) | 7153 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md` | S03 test findings, epic 5C (S03-18 conformance to the UI design contract) | 16769 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md` | S03 final test summary | 4908 |
-| `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 174368 |
-| `docs/phase2/s04/S04D_UI_DESIGN_CONTRACT.md` | S04-D UI design contract: GPS permission and recording-state contract | 139556 |
-| `docs/phase2/s04/S04_ANDROID_PLATFORM_STUDY.md` | S04 Android platform study (GPS recorder without a map) | 27999 |
-| `docs/phase2/s04/S04_DESIGN.md` | S04 Technical Design: GPS recorder without a map | 141568 |
-| `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21323 |
-| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 89665 |
-| `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 31591 |
-| `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 73623 |
-| `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 190077 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md` | S03 test findings: EP-5 foundations (step 2) | 10243 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md` | S03 test findings, epic 5B (S03-17 keyboard and pointer input) | 7226 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md` | S03 test findings, epic 5C (S03-18 conformance to the UI design contract) | 16934 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md` | S03 final test summary | 4965 |
+| `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 175217 |
+| `docs/phase2/s04/S04D_UI_DESIGN_CONTRACT.md` | S04-D UI design contract: GPS permission and recording-state contract | 140430 |
+| `docs/phase2/s04/S04_ANDROID_PLATFORM_STUDY.md` | S04 Android platform study (GPS recorder without a map) | 28168 |
+| `docs/phase2/s04/S04_DESIGN.md` | S04 Technical Design: GPS recorder without a map | 142328 |
+| `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21437 |
+| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 90227 |
+| `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 31706 |
+| `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 74138 |
+| `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191253 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 14013 |
-| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13362 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 15352 |
+| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13464 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |

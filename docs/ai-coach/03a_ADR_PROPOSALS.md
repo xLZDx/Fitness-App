@@ -1,4 +1,4 @@
-# Live AI Coach - ADR proposals ADR-001..ADR-010
+# Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 2)
 
 Status of every ADR in this file: PROPOSED. None is ACCEPTED. Listing an option in the draft (`TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` section 16) does not approve it (constraint C-04). Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Companion: `03_DESIGN.md` (section numbers below refer to it). Nothing here was tested or measured. UNKNOWN = the repository cannot answer; UNVERIFIED-EXTERNAL = depends on provider/OS/store behaviour not checked in this phase.
 
@@ -20,6 +20,8 @@ Options:
 Proposed decision: B with lane structure C; run a time-boxed Mode A spike using the measurement procedure in design section 8 (C1..C9). Choose Mode A for the dialogue lane only if latency, availability/terms, background survival and security pass and cost is within the operator budget. The command lane stays in both modes so workout control never depends on the model.
 
 Consequences: (+) reuses the existing callable pattern, no streaming infrastructure or temporary credentials needed for MVP; (+) NFR-01 for commands is met locally. (-) dialogue less natural; per-turn latency includes a request/response; STT quality and background behaviour on Android is a risk (see ADR-008). Reading NFR-01 as applying to the command lane needs operator confirmation (OQ-24).
+
+Revision 2: this ADR also decides the recogniser preference (on-device recognition preferred; the platform recogniser is disclosed in consent; "no raw audio persisted" is tested for app storage only) and Mode B listening default (tap-to-talk or headset-only until the gym trial).
 
 Evidence still needed: provider availability, price and data-use terms; measured P95 latency on Samsung Galaxy S23 over Wi-Fi and mobile data (N >= 100 per condition); recognition accuracy replayed at recorded gym noise and in a real gym; idle false-activation count; per-workout-hour cost; operator budget (OQ-05).
 
@@ -61,7 +63,7 @@ Consequences: (+) smallest new surface, tested pattern, no cross-user tool autho
 
 Evidence needed: callable latency for a conversational turn with thinking disabled (the existing advice callable documents a 25-31 s thinking-enabled ceiling, so settings must differ: measurement needed); cost per turn; App Check enforcement status for the new functions (`APP_CHECK_ENFORCED_AI` value not inspected); operator caps (OQ-05).
 
-Related decision candidate (not numbered in the draft): per-feature flag mechanism. Options: build-time define only; server callable `getFeatureFlags` over a server-only document with per-uid allow-list (proposed); Firebase Remote Config (not in `pubspec.yaml`; new dependency; fit UNKNOWN); client-readable Firestore document (needs rules). Default OFF on any failure. Evidence needed: operator choice (OQ-13).
+Related decision candidate (now ADR-012; revision 2 semantics: flags gate only new session starts, Secret Manager per-feature kill, Mode A credential locked to server-set prompt, tools and model, single use, revocable, budget re-checked on renewal; per-turn caps and a reservation lease with `expiresAt` and refund apply, numeric caps OPEN under OQ-05): per-feature flag mechanism. Options: build-time define only; server callable `getFeatureFlags` over a server-only document with per-uid allow-list (proposed); Firebase Remote Config (not in `pubspec.yaml`; new dependency; fit UNKNOWN); client-readable Firestore document (needs rules). Default OFF on any failure. Evidence needed: operator choice (OQ-13).
 
 ---
 
@@ -94,6 +96,8 @@ Options:
 - A. Append-only JSON-lines file per session with crc and flush per record, behind `CommandJournalStore`.
 - B. SQLite via a new dependency (transactional command+result).
 - C. Rely on the Firestore offline cache as the journal.
+
+Revision 2 amendments: no time-based deletion (a journal is removed only after local projection, metadata-observed server confirmation and tracked streak step; abandoned sessions only after the user deletes or exports); files are AES-GCM encrypted, excluded from Android backup, bounded and disk-preflighted, with a visible manual-only mode on storage failure; the projector uses a new observed write path with a durable `projected` marker; the sync driver is bounded with a "sync blocked" quarantine state; real-device kill-and-restart evidence is an exit criterion of AI-COACH-01 with SQLite as the named fallback.
 
 Proposed decision: A, behind an interface so B can replace it. A record contains command, result, new revision and events; acknowledgement means flushed; a torn trailing line is discarded. Three confirmation levels are kept apart: journal-committed, replica-queued, server-confirmed (snapshot without pending writes and not from cache). The old repository's `save()` future is never treated as confirmation.
 
@@ -186,10 +190,62 @@ Evidence needed: outage and budget-exhaustion E2E; user-facing messaging text re
 
 ---
 
+## ADR-011 Separate live collection, rules fence and single ownership
+
+Status: PROPOSED. Related: D3, D4, D17; AICR-021, 022, 042..047; design 4.2, 5.2, 7; review claims AR-1..7, SE-5, SE-7, RL-3.
+
+Context: Existing readers of `workout_sessions` miscount a `pending` document (`totals()` counts every document; `weeklyVolume` has no status filter, design 5.2). The wildcard rule allows any shape in unlisted collections. A live workout can be open on two devices, and an offline device can replay after account deletion. The activities rules show a `rev` fence and an account-deletion fence (`firestore.rules:985-1011`).
+
+Options:
+- A. Live state in `workout_sessions` as `pending`. Rejected: miscount risk, no owner field.
+- B. New collection `users/{uid}/live_workout_sessions` with sub-collections, carved out of the wildcard, a full copy of the activities pattern including the account fence and tombstone, an allowlist of non-health codes, and one owner (`ownerDeviceId` + `ownerEpoch`) immutable except through a takeover that increments the epoch.
+- C. Last-writer-wins merge across devices. Rejected: silent data loss.
+
+Proposed decision: B. One owner isolate on the owning device holds the Runtime and journal; a second device is read-only; takeover is explicit; the previous owner's unsynced journal is parked, never merged or deleted. Safety and screening codes never reach the replica.
+
+Consequences: (+) no change to existing readers, no migration, safe rollback (additive). (-) more rules code with call-budget risk (batch size derived from measurement); takeover UX; rules emulator tests required.
+
+Evidence still needed: rules-emulator tests (fence, tombstone, owner immutability, allowlist, replay after deletion); call-budget measurement; isolate-concurrency and takeover tests. Nothing was run.
+
+---
+
+## ADR-012 Feature flag mechanism
+
+Status: PROPOSED (OPEN on location, OQ-13; default stated). Related: D11; AICR-068, 069; design 12.
+
+Context: No client flag mechanism exists; `firebase_remote_config` is not in `pubspec.yaml`; only a global AI kill switch in Secret Manager exists (`abuse_guard.ts:312`).
+
+Options: A. Build-time define only. B. Server callable `getFeatureFlags` over a server-only document with a per-uid allow-list, plus a build switch. C. Remote Config (new dependency). D. Client-readable Firestore document (needs rules).
+
+Proposed decision: B. Flags gate only the START of new sessions; an unfinished session continues on an expired or unreachable flag cache. The global kill switch stops new turns and still allows `liveCoachEndSession`. Per-feature emergency kill uses the Secret Manager switch, not a Firestore document. Default OFF for new starts on any failure.
+
+Consequences: (+) the operator can disable voice or Mode A without disabling the manual runtime, and users never lose a session to a flag. (-) a server callable and a cache TTL to maintain; a stale cache can allow a new start until the server re-check refuses it.
+
+Evidence still needed: operator choice (OQ-13); a test for flag expiry mid-session; kill-switch test that `liveCoachEndSession` still works.
+
+---
+
+## ADR-013 Confirmation tiers C1 to C3 (formerly "L1 to L3" in the UI notes)
+
+Status: PROPOSED. Related: AICR-027, 042; design 4.3, 6.4.
+
+Context: Two different "L1 to L3" ladders existed: persistence levels (journal-committed, replica-queued, server-confirmed; design 6.4) and user-intent confirmation. The design referred to a nonexistent "10.4" for confirmation.
+
+Options: A. One ladder for both. Rejected: conflates storage with intent. B. Separate ladders, confirmation named C1 to C3. C. Confirm everything. Rejected: friction in a gym.
+
+Proposed decision: B. C1 no confirmation (reversible low-impact); C2 Saved card with Undo and a correction path (`correct_set`, `void_set`) after the 10 s window, confirm-first for implausible values; C3 deterministic read-back answered by the device (command-lane yes/no, screen or headset button) for `finish_workout`, `abandon_workout`, `replace_exercise`, out-of-band `record_set`. The model never evaluates a confirmation. The dispatch result is authoritative: "Saved" comes from an accepted result, "Not confirmed" only after reconciling against the journal head, and a late acknowledgement upgrades the card.
+
+Consequences: (+) clear contract for UI, voice and tests; false success is not spoken. (-) extra taps for C3 actions; the duplicate-suspect window value is unmeasured.
+
+Evidence still needed: gym-trial data for the window and for implausible-value thresholds; tests for double tap, late acknowledgement and spoken false success.
+
+---
+
 ## Additional decisions raised by the design (not in the draft list)
 
-These are candidates for ADR-011 and later, listed so they are not lost; none is proposed for acceptance here.
+Listed so they are not lost; none is proposed for acceptance here.
 - Two-lane voice (deterministic command lane plus dialogue lane): captured under ADR-001.
-- Separate live-session collection with rev fence and Firestore rules carve-out: captured under ADR-007 and design section 7 (rules edit not performed).
+- Separate live-session collection with rev fence, ownership and rules carve-out: ADR-011 (supersedes the earlier pointer to ADR-007 for the fence; ADR-007 still covers the `WorkoutSession` shape). Rules edit not performed.
+- Feature flag mechanism: ADR-012. Confirmation tiers: ADR-013.
 - Health-data exposure to the model (options A opaque, B coarse flags, C detailed): operator privacy decision OQ-19, design 9.2.
 - Mid-session symptom stop and its approver: OQ-20, design 9.3.

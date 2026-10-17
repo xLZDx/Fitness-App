@@ -1235,3 +1235,19 @@ Facts: the design agent stopped at its 14-turn limit after verification only and
 Root cause: the brief asked for verification and a very large deliverable in one run without a turn budget.
 Missed by: coordinator (brief), caught by the completion notice.
 Rule next time: for a large design brief, tell the agent to write the skeleton file first and verify while filling it.
+
+## 2026-10-17 - Commit: docs(ai-coach): test plans and review round 1
+
+Kind: FAILURE.
+Facts: the coordinator launched the Workflow multi-agent tool for the round 1 documentation review although the operator had not asked for a workflow or multi-agent orchestration; it was stopped within the same turn and the same five reviewers were started as ordinary agents.
+Root cause: the tool was chosen for convenience when launching five parallel reviewers; the explicit-opt-in condition in the tool description was not checked first.
+Missed by: author (coordinator); caught by the coordinator on re-reading the tool contract before any result was used.
+Rule next time: parallel reviewers are launched as separate Agent calls in one message; Workflow is used only after the operator asks for a workflow or fan-out in their own words.
+
+## 2026-10-17 - Commit: docs(ai-coach): test plans, review round 1 and remediation
+
+Kind: SUCCESS.
+Facts: five independent reviewers found 97 claims including two BLOCKERs that the author documents and the first test plan missed (a failed journal write could undo a safety stop; a second device could lose confirmed sets); see docs/ai-coach/05_REVIEW_ROUND1.md.
+Why it worked: reviewers had different focus areas and the instruction to verify against real code; the findings were merged into one decision file before editing, so the five documents were changed from one source.
+Caught by: reviewers.
+Rule next time: split large editing briefs by file and give every agent an explicit instruction to edit in many small steps; several agents hit their turn limit mid-task and had to be resumed (SHORTCOMING of the briefs, not of the agents).

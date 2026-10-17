@@ -58081,3 +58081,7 @@ Decision: the Live AI Coach (TDD-001) is documented as its own line on branch do
 ## 2026-10-17 - Commit: docs(ai-coach): design, ADR proposals and UI spec
 
 Decision: design keeps a live workout in a new live_workout_sessions collection with a revision fence and writes workout_sessions only on finish, because totals() and weeklyVolume count every workout_sessions document without a status filter. ADR-001 to 010 stay PROPOSED. Open operator questions OQ-03 to OQ-24 are listed in docs/ai-coach/03_DESIGN.md. Evidence: core/changes/2026-10-17-ai-coach-design.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): test plans, review round 1 and remediation
+
+Decision: the 97 round 1 review claims are applied as one batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md): safety stop is unconditional and never undone by a journal failure; a live session has one owner with an epoch; the journal is encrypted, backup-excluded and never time-deleted; the flag gates only new starts; a privacy-policy update and the Play data-safety form are prerequisites for any build that calls the live coach server functions. Questions that belong to the operator stay OPEN with defaults (cost cap, symptom list signer, voice mode and provider, consent text, device matrix, emergency number table). Evidence: core/changes/2026-10-17-ai-coach-review-round1-remediation.md.
