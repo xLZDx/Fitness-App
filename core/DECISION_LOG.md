@@ -58101,3 +58101,7 @@ Decision: GPT-PM MODIFY findings F-01..F-14 and M-01..M-06 are applied as one ba
 ## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round remediation
 
 Decision: `ui_confirmed` is a local UI confirmation capability, not an envelope source; a journal failure on a performed-fact command yields the typed VOLATILE result, not a failure; `rest_elapsed` is applied in memory first and its cue is deduplicated; deletion-fence tests assert the DETECTED/EXPORT_OFFERED/WIPE_PENDING/WIPED state machine; cooperative-only replica fence is a rejected mode except as a recorded operator exception (OQ-31). Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-verification-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round 2 remediation
+
+Decision: a successful deletion-fence export does not wipe at once: EXPORT_DONE then WIPE_PENDING, wipe at the next app start; the full-disk outcome is defined per command type; the UI confirmation is always `source=manual` plus the local capability. Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-verification2-remediation.md.

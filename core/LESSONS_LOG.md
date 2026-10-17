@@ -1283,3 +1283,11 @@ Facts: the verification round found 4 MAJOR where the remediation of the previou
 Root cause: the previous batch grepped for old wording of the rules it knew it changed, not for the tests that assert the old behaviour of each new contract.
 Missed by: author and editing agents; caught by the external gate.
 Rule next time: when a contract is added or replaced, list every test row, story criterion and E2E step that mentions the affected command or state and re-derive its oracle in the same batch.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round 2 remediation
+
+Kind: FAILURE.
+Facts: the previous remediation fixed the named rows but left sibling rows (FT-1133, FT-1020, FT-1104, FT-1191) and the successful-export branch of FT-1176 on the old contract; found by GPT-PM, see the change record.
+Root cause: rows were fixed by id from the finding, not by searching every row that asserts the same command, source or state.
+Missed by: author; caught by the external gate.
+Rule next time: for each fixed row, grep the contract keyword (command name, source value, state name, error code) across 04a and 04b and re-derive every hit in the same batch.
