@@ -4180,5 +4180,602 @@
         "type": "String"
       }
     }
+  },
+  "modeChooserTitle": "What do you want to do?",
+  "@modeChooserTitle": {
+    "description": "Title of the mode chooser screen."
+  },
+  "modeChooserSubtitle": "You can change this any time in two taps.",
+  "@modeChooserSubtitle": {
+    "description": "Subtitle of the mode chooser screen."
+  },
+  "modeTrainName": "Train",
+  "@modeTrainName": {
+    "description": "Name of the Train mode."
+  },
+  "modeRideName": "Ride",
+  "@modeRideName": {
+    "description": "Name of the Ride mode."
+  },
+  "modeExploreName": "Explore",
+  "@modeExploreName": {
+    "description": "Name of the Explore mode."
+  },
+  "modeBodyName": "Body",
+  "@modeBodyName": {
+    "description": "Name of the Body mode."
+  },
+  "modeTrainBlurb": "Gym, plans and technique",
+  "@modeTrainBlurb": {
+    "description": "Short card blurb of the Train mode."
+  },
+  "modeRideBlurb": "Routes and rides",
+  "@modeRideBlurb": {
+    "description": "Short card blurb of the Ride mode."
+  },
+  "modeExploreBlurb": "Walk, run and hike",
+  "@modeExploreBlurb": {
+    "description": "Short card blurb of the Explore mode."
+  },
+  "modeBodyBlurb": "Progress, food and weight",
+  "@modeBodyBlurb": {
+    "description": "Short card blurb of the Body mode."
+  },
+  "modeTrainDesc": "Follow your plan, scan equipment, and check your form.",
+  "@modeTrainDesc": {
+    "description": "Detail panel description of the Train mode."
+  },
+  "modeRideDesc": "Record rides and follow routes.",
+  "@modeRideDesc": {
+    "description": "Detail panel description of the Ride mode."
+  },
+  "modeExploreDesc": "Record walks, runs and hikes.",
+  "@modeExploreDesc": {
+    "description": "Detail panel description of the Explore mode."
+  },
+  "modeBodyDesc": "See your progress, log food and track weight. Estimates are shown as estimates.",
+  "@modeBodyDesc": {
+    "description": "Detail panel description of the Body mode."
+  },
+  "modeDetailIdle": "Pick a mode to see what it does",
+  "@modeDetailIdle": {
+    "description": "Detail panel text before any mode is picked."
+  },
+  "modeComingLater": "Coming later",
+  "@modeComingLater": {
+    "description": "Status chip for a mode that is not available yet."
+  },
+  "modeSelected": "Selected",
+  "@modeSelected": {
+    "description": "Status chip for the selected mode."
+  },
+  "modeContinue": "Continue",
+  "@modeContinue": {
+    "description": "Button that confirms the picked mode."
+  },
+  "modeDecideLater": "Decide later",
+  "@modeDecideLater": {
+    "description": "Button that skips the mode choice."
+  },
+  "modeSaveError": "We could not save your choice on this device. You can continue; we will ask again next time.",
+  "@modeSaveError": {
+    "description": "Error shown when the mode choice could not be stored."
+  },
+  "modeComingLaterSheetTitle": "{mode, select, ride{Ride is coming later} explore{Explore is coming later} other{Coming later}}",
+  "@modeComingLaterSheetTitle": {
+    "description": "Title of the coming-later sheet; mode is ride or explore.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "modeComingLaterSheetBody": "You cannot start this yet. Everything else works as before.",
+  "@modeComingLaterSheetBody": {
+    "description": "Body of the coming-later sheet."
+  },
+  "modeComingLaterSheetAction": "Choose Train for now",
+  "@modeComingLaterSheetAction": {
+    "description": "Action of the coming-later sheet."
+  },
+  "modeSwitcherTitle": "Choose a mode",
+  "@modeSwitcherTitle": {
+    "description": "Title of the mode switcher."
+  },
+  "modeSwitcherSeeAll": "See all modes",
+  "@modeSwitcherSeeAll": {
+    "description": "Link in the mode switcher that opens the chooser."
+  },
+  "modeSwitcherQuestions": "{n, plural, one{{n} quick question} other{{n} quick questions}}",
+  "@modeSwitcherQuestions": {
+    "description": "Count of per-mode questions shown in the mode switcher.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "modeSwitcherCurrent": "Current mode: {mode, select, train{Train} ride{Ride} explore{Explore} body{Body} other{Train}}",
+  "@modeSwitcherCurrent": {
+    "description": "Label of the current mode in the switcher; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "homeModeChipLabel": "Mode: {mode, select, train{Train} ride{Ride} explore{Explore} body{Body} other{Train}}. Change mode",
+  "@homeModeChipLabel": {
+    "description": "Accessible label of the mode chip on Home; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "modeSwitchSaveError": "We could not save this choice on this device.",
+  "@modeSwitchSaveError": {
+    "description": "Snackbar shown when a mode switch could not be stored."
+  },
+  "modeChangedAnnouncement": "Mode changed to {mode, select, train{Train} ride{Ride} explore{Explore} body{Body} other{Train}}",
+  "@modeChangedAnnouncement": {
+    "description": "Screen reader announcement after a mode change; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "modeQuestionTrainWhere": "Where do you train most?",
+  "@modeQuestionTrainWhere": {
+    "description": "Train mode question."
+  },
+  "modeQuestionTrainOptionGym": "Gym",
+  "@modeQuestionTrainOptionGym": {
+    "description": "Train question option."
+  },
+  "modeQuestionTrainOptionAtHome": "At home",
+  "@modeQuestionTrainOptionAtHome": {
+    "description": "Train question option."
+  },
+  "modeQuestionTrainOptionOutdoors": "Outdoors",
+  "@modeQuestionTrainOptionOutdoors": {
+    "description": "Train question option."
+  },
+  "modeQuestionTrainOptionYoga": "Yoga",
+  "@modeQuestionTrainOptionYoga": {
+    "description": "Train question option."
+  },
+  "modeQuestionBodyStart": "What do you want to start with?",
+  "@modeQuestionBodyStart": {
+    "description": "Body mode question."
+  },
+  "modeQuestionBodyOptionPhotos": "Progress photos",
+  "@modeQuestionBodyOptionPhotos": {
+    "description": "Body question option."
+  },
+  "modeQuestionBodyOptionFood": "Food diary",
+  "@modeQuestionBodyOptionFood": {
+    "description": "Body question option."
+  },
+  "modeQuestionBodyOptionWeight": "Weight trend",
+  "@modeQuestionBodyOptionWeight": {
+    "description": "Body question option."
+  },
+  "modeQuestionSkip": "Skip",
+  "@modeQuestionSkip": {
+    "description": "Skip button of a mode question."
+  },
+  "modeQuestionProgress": "Question {n} of {total}",
+  "@modeQuestionProgress": {
+    "description": "Progress label of the mode questions.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "modeQuestionWhatChanges": "{question, select, body{This sets which Body card comes first on Home and in Record.} other{This sets which cards come first on Home.}}",
+  "@modeQuestionWhatChanges": {
+    "description": "Explains what a mode question changes; question is train or body.",
+    "placeholders": {
+      "question": {
+        "type": "String"
+      }
+    }
+  },
+  "modeQuestionSaving": "Saving",
+  "@modeQuestionSaving": {
+    "description": "Shown while an answer is being saved."
+  },
+  "modeQuestionSaveError": "We could not save this. Try again or skip.",
+  "@modeQuestionSaveError": {
+    "description": "Error when an answer could not be saved."
+  },
+  "modeQuestionRetry": "Try again",
+  "@modeQuestionRetry": {
+    "description": "Retry button of a mode question."
+  },
+  "recordPill": "Record",
+  "@recordPill": {
+    "description": "Label of the Record pill in the dock."
+  },
+  "stripWorkout": "Workout in progress",
+  "@stripWorkout": {
+    "description": "Active session strip title."
+  },
+  "stripPaused": "Paused",
+  "@stripPaused": {
+    "description": "Active session strip state."
+  },
+  "stripResting": "Resting",
+  "@stripResting": {
+    "description": "Active session strip state."
+  },
+  "stripRestDone": "Rest finished",
+  "@stripRestDone": {
+    "description": "Active session strip state."
+  },
+  "stripResumeHint": "Tap to resume",
+  "@stripResumeHint": {
+    "description": "Accessibility hint of the active session strip."
+  },
+  "stripModeLabel": "{mode, select, ride{Ride} explore{Explore} body{Body} other{Train}}",
+  "@stripModeLabel": {
+    "description": "Mode name of the active session; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "stripSpokenMinutes": "{minutes, plural, one{{minutes} minute} other{{minutes} minutes}}",
+  "@stripSpokenMinutes": {
+    "description": "Spoken form of the minutes left, for screen readers.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "railStateRunning": "Active",
+  "@railStateRunning": {
+    "description": "Rail state word while the session runs."
+  },
+  "railStatePaused": "Paused",
+  "@railStatePaused": {
+    "description": "Rail state word while paused."
+  },
+  "railStateResting": "Rest",
+  "@railStateResting": {
+    "description": "Rail state word while resting."
+  },
+  "railStateRestDone": "Done",
+  "@railStateRestDone": {
+    "description": "Rail state word when the rest is finished."
+  },
+  "railMinutes": "{minutes} min",
+  "@railMinutes": {
+    "description": "Short minutes label on the rail.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "navMainLabel": "Main navigation",
+  "@navMainLabel": {
+    "description": "Accessibility label of the main navigation container."
+  },
+  "shellBack": "Back",
+  "@shellBack": {
+    "description": "Label of the shell back button."
+  },
+  "recordSheetTitle": "{mode, select, body{Record: Body} train{Record: Train} other{Record}}",
+  "@recordSheetTitle": {
+    "description": "Title of the Record sheet; mode is train or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "recordTrainScan": "Scan equipment",
+  "@recordTrainScan": {
+    "description": "Record sheet row."
+  },
+  "recordTrainToday": "Today's workout",
+  "@recordTrainToday": {
+    "description": "Record sheet row."
+  },
+  "recordTrainChoose": "Choose a workout",
+  "@recordTrainChoose": {
+    "description": "Record sheet row."
+  },
+  "recordTrainForm": "Check my form",
+  "@recordTrainForm": {
+    "description": "Record sheet row."
+  },
+  "recordBodyScan": "Body scan",
+  "@recordBodyScan": {
+    "description": "Record sheet row."
+  },
+  "recordBodyMeal": "Add a meal",
+  "@recordBodyMeal": {
+    "description": "Record sheet row."
+  },
+  "recordBodyWeight": "Log weight",
+  "@recordBodyWeight": {
+    "description": "Record sheet row."
+  },
+  "recordNothingHere": "Nothing to start in this mode yet.",
+  "@recordNothingHere": {
+    "description": "Record sheet empty text."
+  },
+  "recordOpenTrain": "Open Train",
+  "@recordOpenTrain": {
+    "description": "Record sheet button that opens Train."
+  },
+  "homeActivityToday": "Activity today",
+  "@homeActivityToday": {
+    "description": "Home section header."
+  },
+  "modeIntroTitle": "New: choose what you want to do",
+  "@modeIntroTitle": {
+    "description": "Title of the mode intro card."
+  },
+  "modeIntroBody": "Train, Ride, Explore and Body now share one history. Pick the one you use most.",
+  "@modeIntroBody": {
+    "description": "Body of the mode intro card."
+  },
+  "modeIntroChoose": "Choose a mode",
+  "@modeIntroChoose": {
+    "description": "Button of the mode intro card."
+  },
+  "modeIntroDismiss": "Not now",
+  "@modeIntroDismiss": {
+    "description": "Dismiss button of the mode intro card."
+  },
+  "homeScheduledGone": "That workout is no longer scheduled",
+  "@homeScheduledGone": {
+    "description": "Snackbar when a scheduled workout was removed."
+  },
+  "progressAllActivity": "All activity",
+  "@progressAllActivity": {
+    "description": "Progress section header."
+  },
+  "progressThisWeek": "This week",
+  "@progressThisWeek": {
+    "description": "Progress this-week header."
+  },
+  "progressThisWeekEmpty": "No recorded activity this week.",
+  "@progressThisWeekEmpty": {
+    "description": "Empty text of the this-week card."
+  },
+  "progressRecent": "Recent activity",
+  "@progressRecent": {
+    "description": "Recent activity header."
+  },
+  "progressSourcesRow": "Sources",
+  "@progressSourcesRow": {
+    "description": "Row that opens Sources."
+  },
+  "progressSourcesHint": "Walks, runs and rides you record will appear on Progress.",
+  "@progressSourcesHint": {
+    "description": "Hint under the Sources row."
+  },
+  "activityJournalFailed": "Activity history on this device could not be opened.",
+  "@activityJournalFailed": {
+    "description": "Error when the activity journal cannot be opened."
+  },
+  "activityJournalRetry": "Try again",
+  "@activityJournalRetry": {
+    "description": "Retry button for the activity journal."
+  },
+  "activityNoData": "No data",
+  "@activityNoData": {
+    "description": "Shown instead of a missing value."
+  },
+  "activityEstimate": "Estimate",
+  "@activityEstimate": {
+    "description": "Label that marks an estimated value."
+  },
+  "activityStreamLost": "Route not available on this device",
+  "@activityStreamLost": {
+    "description": "Shown when the route stream is missing."
+  },
+  "activityTimeFrom": "{n, plural, one{Time from {k} of {n} session} other{Time from {k} of {n} sessions}}",
+  "@activityTimeFrom": {
+    "description": "Note that a time total covers k of n sessions.",
+    "placeholders": {
+      "k": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sportGroupWalkHike": "Walk and hike",
+  "@sportGroupWalkHike": {
+    "description": "Sport group name."
+  },
+  "sportGroupRun": "Run",
+  "@sportGroupRun": {
+    "description": "Sport group name."
+  },
+  "sportGroupRide": "Ride",
+  "@sportGroupRide": {
+    "description": "Sport group name."
+  },
+  "sportGroupSwim": "Swim",
+  "@sportGroupSwim": {
+    "description": "Sport group name."
+  },
+  "sportGroupRow": "Row",
+  "@sportGroupRow": {
+    "description": "Sport group name."
+  },
+  "sportGroupOther": "Other",
+  "@sportGroupOther": {
+    "description": "Sport group name."
+  },
+  "activitySourcesMore": "{k, plural, one{+{k} source} other{+{k} sources}}",
+  "@activitySourcesMore": {
+    "description": "Count of additional sources on a card.",
+    "placeholders": {
+      "k": {
+        "type": "int"
+      }
+    }
+  },
+  "sourceLabelApp": "Recorded in this app",
+  "@sourceLabelApp": {
+    "description": "Source label."
+  },
+  "sourceLabelHealthPlatform": "Health platform",
+  "@sourceLabelHealthPlatform": {
+    "description": "Source label."
+  },
+  "sourceLabelSensor": "Sensor",
+  "@sourceLabelSensor": {
+    "description": "Source label."
+  },
+  "sourceLabelService": "Service",
+  "@sourceLabelService": {
+    "description": "Source label."
+  },
+  "sourceLabelCompanionApp": "App",
+  "@sourceLabelCompanionApp": {
+    "description": "Source label."
+  },
+  "sourceLabelFileImport": "File import",
+  "@sourceLabelFileImport": {
+    "description": "Source label."
+  },
+  "sourceLabelUnknown": "Unknown source",
+  "@sourceLabelUnknown": {
+    "description": "Source label."
+  },
+  "syncChipPending": "Waiting to sync",
+  "@syncChipPending": {
+    "description": "Sync chip, only with the cloud flag on."
+  },
+  "syncChipFailed": "Could not sync, will retry",
+  "@syncChipFailed": {
+    "description": "Sync chip, only with the cloud flag on."
+  },
+  "syncChipConflict": "Needs your decision",
+  "@syncChipConflict": {
+    "description": "Sync chip, only with the cloud flag on."
+  },
+  "sourcesTitle": "Sources",
+  "@sourcesTitle": {
+    "description": "Title of the Sources screen."
+  },
+  "sourcesIntro": "Your activity can come from this app, your phone or your devices.",
+  "@sourcesIntro": {
+    "description": "Intro of the Sources screen."
+  },
+  "sourceApp": "Recorded in this app",
+  "@sourceApp": {
+    "description": "Sources row."
+  },
+  "sourceHealthConnect": "Health Connect",
+  "@sourceHealthConnect": {
+    "description": "Sources row."
+  },
+  "sourceBle": "Bluetooth sensors",
+  "@sourceBle": {
+    "description": "Sources row."
+  },
+  "sourceWatch": "Watch",
+  "@sourceWatch": {
+    "description": "Sources row."
+  },
+  "sourceOther": "Other services",
+  "@sourceOther": {
+    "description": "Sources row."
+  },
+  "sourceStatusInUse": "In use",
+  "@sourceStatusInUse": {
+    "description": "Source status."
+  },
+  "sourceStatusReady": "Ready",
+  "@sourceStatusReady": {
+    "description": "Source status."
+  },
+  "sourceStatusNotConnected": "Not connected",
+  "@sourceStatusNotConnected": {
+    "description": "Source status."
+  },
+  "sourceStatusNotActive": "Not active",
+  "@sourceStatusNotActive": {
+    "description": "Source status."
+  },
+  "sourceStatusPermission": "Permission needed",
+  "@sourceStatusPermission": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusUnavailable": "Unavailable on this device",
+  "@sourceStatusUnavailable": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusStale": "Out of date",
+  "@sourceStatusStale": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusError": "Problem",
+  "@sourceStatusError": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusConnected": "Connected",
+  "@sourceStatusConnected": {
+    "description": "Source status, shown later."
+  },
+  "sourcesNotActiveLine": "Activity history is not active in this build.",
+  "@sourcesNotActiveLine": {
+    "description": "Line shown when activity history is off."
+  },
+  "sourcesDedupNote": "If the same workout comes from two sources, we do not yet merge them automatically.",
+  "@sourcesDedupNote": {
+    "description": "Note about duplicate workouts."
+  },
+  "sourceStatusChecking": "Checking",
+  "@sourceStatusChecking": {
+    "description": "Source status while checking."
+  },
+  "signOutWarningTitle": "{n, plural, one{You have {n} activity stored only on this device} other{You have {n} activities stored only on this device}}",
+  "@signOutWarningTitle": {
+    "description": "Title of the sign-out warning; n is the count of local-only activities.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutExportFirst": "Export first (GPX/FIT)",
+  "@signOutExportFirst": {
+    "description": "Sign-out warning button."
+  },
+  "signOutAndDelete": "Sign out and delete from this device",
+  "@signOutAndDelete": {
+    "description": "Sign-out warning button."
+  },
+  "signOutCancel": "Cancel",
+  "@signOutCancel": {
+    "description": "Sign-out warning button."
+  },
+  "signOutConfirmDelete": "{n, plural, one{Delete {n} activity from this device? This cannot be undone.} other{Delete {n} activities from this device? This cannot be undone.}}",
+  "@signOutConfirmDelete": {
+    "description": "Second confirmation of the sign-out deletion.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

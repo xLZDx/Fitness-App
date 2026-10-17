@@ -819,3 +819,11 @@ Facts: design 2.6 says the bottom clearance of the bar presentation without a do
 Root cause: the design stated a number from the code map without deriving it from the framework source (design author).
 Layer: design; caught by the implementation agent before any test run.
 Rule next time: a design claim of the form 'equals today's value' is checked against the framework source or a measured value. The test agents measure the bar-presentation clearance against the pre-S03 value (AC-REG-x) instead of trusting the formula.
+
+## 2026-10-17 - Commit: feat(l10n): add the S03 localization keys in English and Russian
+
+Kind: SHORTCOMING (design gaps found while adding the keys) and SUCCESS.
+Facts: lane L13 added 129 keys per language (groups 6.1 to 6.9: 20, 10, 15, 15, 10, 6, 29, 19, 5). The design left these open and the agent chose the nearest pattern: no `other` branch for the mode selects (fallback Train / Coming later / Record); English plural forms for five keys; Russian plural forms for `activityTimeFrom` and `activitySourcesMore` derived from the base phrase (marked as the agent's work that needs a translator check); `railMinutes` as a plain int placeholder because the table gave no plural forms; `activitySourceUnknown` named in the design but without a value (the existing `sourceLabelUnknown` covers it, key not added). The English text of `signOutConfirmDelete` was not a plural ('Delete 1 activities'); the coordinator made it a plural in this commit.
+Root cause: design section 6 listed copy per key without a column for plural forms or select fallbacks (design author); no lane owned the ARB files until the build revealed it (see the L4b entry).
+Layer: design; caught by the implementation agent and by the coordinator's read of the result.
+Rule next time: the ARB parity test (S03-18) must check plural forms and select fallbacks, not only key sets; the pseudo-locale run and a Russian translator check cover the derived forms.
