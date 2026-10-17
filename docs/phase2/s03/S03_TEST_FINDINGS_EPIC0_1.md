@@ -3,7 +3,19 @@
 Head revision: 5bb24fcc (worktree D:\Repo\Fitness_App_Phase2_s01, branch phase2/s03d-ui-design-contract). Nothing committed.
 Flutter: `where flutter` resolved to D:\flutter\bin\flutter (Flutter 3.27.1, Dart 3.6.0, revision 17025dd882).
 
-## NEWEST RESULT (head fca06cba, same-uid re-emission fix)
+## FINAL RESULT (head 7888326b)
+
+Complete set of the 13 files (includes the unchanged `activity_journal_binding_retry_test.dart`), same command as Run 1, real tree: `+150: All tests passed!` (150 passed, 0 failed, 0 not run). D8 is fixed; there is no open production defect for this step. Still partial by design: AC-CH-8a real-app first Home frame and DT-0-4 dashboard widget part (see "Partial rows").
+
+## Previous result (head e78925d3, includes 9b42ef53)
+
+New tests: `mode_state_test.dart` adds (a) `selectedModeProvider` is null while the state loads and after an account switch until B's state is read (held read, then released), and four rollback tests (stored `ride` with the ride flag off: in memory train; `markResolved` keeps `ride` on disk; an answer write keeps `ride`; `selectMode(body)` overwrites it and a later write keeps `body`; `resolveChooser(train)` replaces it). `journal_availability_test.dart` adds DT-0-18 (a retry timer firing while the account is being deleted is re-armed with the same index and delay, nothing is bound, and after the deletion ends it runs once and the next delay is 15 s).
+
+Complete set of the 13 files, same command as Run 1, real tree: `+148 -1`. All tests of 12 files pass (148). The file `mode_ui_seams_test.dart` (DT-01-8, DT-01-9; 2 tests) does NOT load: production compile error D8.
+
+D8 (BLOCKER): `mobile/lib/features/modes/widgets/mode_switcher_sheet.dart:127`: `Error: The getter 'state' isn't defined for the class 'ModeSwitcherSheet'` (`unansweredQuestionsFor(m, modeState: state, ...)`; the local `state` was removed or renamed when `selectedModeProvider` was introduced in 9b42ef53). Proposed fix: define `final ModeState? state = ref.watch(modeStateProvider).valueOrNull;` before the loop (or pass the variable the build method now holds). It blocks every test that imports the app pages (Home, chooser, switcher).
+
+## Previous result (head fca06cba, same-uid re-emission fix)
 
 Four regression tests added to `mobile/test/features/activity/journal_availability_test.dart`: DT-0-17a (bound journal plus a same-uid AuthUser with a changed display name, twice: `bindUid` called once, availability stays Open, status and generation unchanged), DT-0-17b (retry armed after a failed first bind plus a same-uid re-emission: no new attempt, the 5 s timer object stays active and is not replaced, the generation is unchanged, the original deadline still fires and the next delay is 15 s, so the index was kept), DT-0-17c (after gaveUp a same-uid re-emission restarts the bind: 7th `bindUid`, availability Open, generation increased), DT-0-17d (a uid change restarts, a sign-out unbinds with no timer, signing in again as A after the sign-out binds again).
 Complete set of the 13 files, which includes the unchanged `activity_journal_binding_retry_test.dart`, same command as Run 1, real tree: `+144: All tests passed!` (144 passed, 0 failed, 0 not run). No production defect found in this round.

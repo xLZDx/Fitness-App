@@ -1017,3 +1017,9 @@ Facts: batch 8 replaced the line that declared the mode state in the switcher sh
 Root cause: implementation agents run nothing, so a compile error is only visible at the next test run; I committed the batch after reading the agent's summary, without reading the diff of the risky edit myself.
 Layer: author (agent) and coordinator (no diff read); caught by the test agents within one run cycle.
 Rule next time: after every batch that edits code the agents cannot compile, ask one test agent for a compile-only smoke (a single quick test that imports the app router) before committing; the cost is minutes and it avoids a broken head.
+
+## 2026-10-17 - Commit: test(modes): add tests for the selected mode, the rollback write and the retry during account deletion
+
+Kind: SUCCESS.
+Facts: the step 1 test agent added tests for the review fixes (selected mode is null while loading and after an account switch, the raw stored mode survives writes after a flag rollback and is replaced by an explicit choice, a retry timer firing during account deletion is re-armed with the same index) and ran the complete set: 150 passed, 0 failed at head 7888326b. The same run cycle found the compile error of the previous batch, so the tests also served as the compile gate.
+Rule next time: the tests for a review fix are written by the test agent in the same cycle as the fix, which is what happened here.

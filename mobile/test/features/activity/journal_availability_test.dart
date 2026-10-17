@@ -553,6 +553,27 @@ void main() {
     expect(j.calls, ['A', 'B', null, 'A']);
   });
 
+  test('DT-0-18 a retry timer that fires while the account is being deleted is '
+      're-armed with the SAME index, not dropped', () async {
+    final j = ControlledJournal()..script.addAll([false, false]);
+    final c = make(journal: j);
+    await emit(_user('A'));
+    expect(timers.last.delay, const Duration(seconds: 5));
+    c.read(accountBeingDeletedUidProvider.notifier).state = 'A';
+    await timers.advance(const Duration(seconds: 5));
+    expect(j.calls, ['A'], reason: 'no bind of the account being deleted');
+    expect(timers.all, hasLength(2), reason: 'the retry was re-armed');
+    expect(timers.last.delay, const Duration(seconds: 5),
+        reason: 'same index, same delay');
+    expect(timers.active, 1);
+    // Deletion ends (the uid is bindable again): the kept retry runs once and,
+    // failing, moves on to the NEXT index.
+    c.read(accountBeingDeletedUidProvider.notifier).state = null;
+    await timers.advance(const Duration(seconds: 5));
+    expect(j.calls, ['A', 'A']);
+    expect(timers.last.delay, const Duration(seconds: 15));
+  });
+
   test('DT-0-16 retryNow results: started, busy, notApplicable', () async {
     // (1) and (2): from gaveUp.
     final j = ControlledJournal()..script.addAll(List<Object>.filled(6, false));

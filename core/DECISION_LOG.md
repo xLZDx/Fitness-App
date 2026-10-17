@@ -57963,3 +57963,7 @@ Decision: _location in app_shortcuts.dart uses currentConfiguration.last.matched
 ## 2026-10-17 - Commit: fix(modes): declare the mode state in the switcher sheet build method
 
 Decision: the switcher sheet reads the mode state in build (initial state while the state is loading, so another account's state is not used). The re-read of all files touched by batches 8 to 10 found no other compile error by reading (the compiler was not run). Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-11.md.
+
+## 2026-10-17 - Commit: test(modes): add tests for the selected mode, the rollback write and the retry during account deletion
+
+Decision: step 1 additions are committed after a green complete run (150 of 150). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1-review-fixes.md.

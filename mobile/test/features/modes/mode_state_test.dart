@@ -3,6 +3,8 @@
 // storage K scan. Oracle: S03_TEST_PLAN.md section 2.2 and S03_DESIGN 2.2 / 5.
 import 'dart:io';
 
+import 'dart:async';
+
 import 'package:fitness_app/features/modes/data/mode_codec.dart';
 import 'package:fitness_app/features/modes/data/mode_models.dart';
 import 'package:fitness_app/features/modes/data/mode_store.dart';
@@ -303,6 +305,83 @@ void main() {
     expect(rootBuilds, before, reason: 'the app root must not rebuild');
     expect(watcherBuilds, greaterThan(beforeWatcher),
         reason: 'control: the counter can see rebuilds');
+  });
+
+  test('RV selectedModeProvider is null while the state loads and after an '
+      'account switch until the new state is read', () async {
+    final env = ModeEnv(initialUid: 'A');
+    env.fake.stored['A'] = ModeReadValue(ModeState(
+        selectedMode: AppMode.body, chooserStatus: ChooserStatus.resolved));
+    expect(env.container.read(selectedModeProvider), isNull,
+        reason: 'loading: the lens must not be guessed');
+    await env.load();
+    expect(env.container.read(selectedModeProvider), AppMode.body);
+
+    // Account switch: B's read is held; the previous value (body) is kept by
+    // Riverpod during the reload and must NOT be exposed.
+    final gate = Completer<void>();
+    env.fake.readGate = gate;
+    env.emitAuth('B');
+    await pumpEventQueue();
+    expect(env.container.read(selectedModeProvider), isNull,
+        reason: "A's mode must not show for B while B's state loads");
+    gate.complete();
+    await env.load();
+    expect(env.container.read(selectedModeProvider), AppMode.train,
+        reason: "B's own (default) mode once read");
+  });
+
+  group('rollback: a stored mode that is unavailable in this build', () {
+    ModeEnv rolledBack() {
+      final env = ModeEnv(initialUid: 'u1'); // ride is off by default
+      env.fake.stored['u1'] = ModeReadValue(ModeState(
+          selectedMode: AppMode.ride, chooserStatus: ChooserStatus.migrated));
+      return env;
+    }
+
+    test('in memory it is train; markResolved keeps the raw mode on disk',
+        () async {
+      final env = rolledBack();
+      final s = await env.load();
+      expect(s.selectedMode, AppMode.train);
+      expect(await env.notifier.markResolved(), ModeSaveResult.saved);
+      final w = env.fake.writes.last.state;
+      expect(w.chooserStatus, ChooserStatus.resolved);
+      expect(w.selectedMode, AppMode.ride,
+          reason: 'a rollback must not destroy the stored choice');
+      expect(env.state.selectedMode, AppMode.train);
+    });
+
+    test('an answer write keeps the raw mode on disk', () async {
+      final env = rolledBack();
+      await env.load();
+      expect(await env.notifier.answerQuestion(
+              AppMode.body, ModeAnswer.answered('food')),
+          ModeSaveResult.saved);
+      final w = env.fake.writes.last.state;
+      expect(w.selectedMode, AppMode.ride);
+      expect(w.answerFor(AppMode.body).value, 'food');
+    });
+
+    test('an explicit selectMode of another mode overwrites it, and later '
+        'writes keep the new choice', () async {
+      final env = rolledBack();
+      await env.load();
+      expect(await env.notifier.selectMode(AppMode.body), ModeSaveResult.saved);
+      expect(env.fake.writes.last.state.selectedMode, AppMode.body);
+      await env.notifier.skipQuestion(AppMode.body);
+      expect(env.fake.writes.last.state.selectedMode, AppMode.body,
+          reason: 'the raw value must be forgotten after an explicit choice');
+    });
+
+    test('an explicit chooser choice of train replaces the raw mode',
+        () async {
+      final env = rolledBack();
+      await env.load();
+      expect(await env.notifier.resolveChooser(AppMode.train),
+          ModeSaveResult.saved);
+      expect(env.fake.writes.last.state.selectedMode, AppMode.train);
+    });
   });
 
   group('DT-01-25 storage K scan', () {
