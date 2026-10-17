@@ -2,16 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Compile-time switches of the unified-activity feature (S02 design 12.1).
 ///
-/// Two independent flags, both OFF by default:
-/// - [localJournal] (`--dart-define=ACTIVITY_LOCAL_JOURNAL=true`) opens the
-///   device journal with NO network path at all (later sprints use it without
-///   turning the cloud on).
+/// Two independent flags:
+/// - [localJournal] (`--dart-define=ACTIVITY_LOCAL_JOURNAL`, ON by default since
+///   S03) opens the device journal with NO network path at all.
 /// - [cloudSync] (`--dart-define=ACTIVITY_CLOUD_STREAMS=true`) adds the Firestore
 ///   backend, start-up sync, tombstone push, sync-conflict entry point and
 ///   stream upload. It also opens the journal ([journalEnabled]).
 ///
-/// Both OFF = device-only without a journal: the default build behaves exactly
-/// as before S02. Turning the cloud on is an operator action (privacy text and
+/// The default build opens the local journal and has no cloud piece. Turning
+/// the cloud on is an operator action (privacy text and
 /// bucket runbook first, design 12.1).
 ///
 /// Same pattern as `BodyScanFlags`: `bool.fromEnvironment` must be a
@@ -29,10 +28,15 @@ class ActivityFlags {
   /// True when a journal must exist: local-only or cloud.
   bool get journalEnabled => localJournal || cloudSync;
 
-  /// The flags this build was compiled with; false unless `--dart-define`d.
+  /// The flags this build was compiled with. S03: the local journal is ON by
+  /// default (`--dart-define=ACTIVITY_LOCAL_JOURNAL=false` switches it off);
+  /// the cloud flag stays OFF unless `--dart-define`d. The constructor defaults
+  /// above stay false, so explicit `ActivityFlags(...)` values keep their
+  /// meaning.
   static const ActivityFlags compileTime = ActivityFlags(
     cloudSync: bool.fromEnvironment('ACTIVITY_CLOUD_STREAMS'),
-    localJournal: bool.fromEnvironment('ACTIVITY_LOCAL_JOURNAL'),
+    localJournal:
+        bool.fromEnvironment('ACTIVITY_LOCAL_JOURNAL', defaultValue: true),
   );
 
   @override
