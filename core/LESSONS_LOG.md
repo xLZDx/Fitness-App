@@ -860,3 +860,11 @@ Rule next time: before approving a design, grep every quoted UI sentence and key
 Kind: SUCCESS with open risks.
 Facts: lane L9 run 2 wrote the sign-out guard (cannot-check sheet, warning sheet, delete confirmation, error sheet with Retry), the temporary export file bound to a hashed uid and deleted after the share, the Profile tile change and the Sources recovery and capability lines; account_deletion_providers.dart was not edited. The agent added a plain 'Sign out' button that keeps the data on the device (not in design 6.9) so that a user with local activity is not forced to delete. Risks it reported: tests that turn the journal flag on without a journal override get failedToOpen and the guard shows the cannot-check sheet; share_plus and generated getter signatures were not checked against the packages; `_SourcesStub` is now unused.
 Rule next time: the test agents prove the guard rows (DT-16-x) with a journal override, check the export file is deleted after the share and that no wipe call happens unless availability is open; the first compile will confirm the package API.
+
+## 2026-10-17 - Commit: fix(modes): persist again after a failed save when the same choice is repeated
+
+Kind: FAILURE (caught by an implementation agent of another lane before any test).
+Facts: the mode notifier set the state in memory first and returned `unchanged` when the identical value was already in memory, so 'Try again' after a failed save wrote nothing and the caller treated unchanged as success; the user would advance with an answer only in memory (test plan row DT-09-2). Fixed with a per-uid persist-failed flag: the identical call writes again while the flag is set. initIfAbsent is intentionally unchanged.
+Root cause: 'set memory first, compare with memory' design in my lane brief (coordinator) plus no scenario 'repeat after failed write' in the state-layer review.
+Layer: author (brief, notifier); caught by lane L6 while building the question page; the test agents prove it (DT-09-2, DT-01-x).
+Rule next time: any optimistic-update state holder gets the scenario 'same value after a failed write' in its brief and its tests.

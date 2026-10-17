@@ -105,6 +105,13 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
   /// refuses (RV-2).
   bool _unreadable = false;
 
+  /// The last write for this uid failed (or was refused as read-only), so the
+  /// in-memory state may be ahead of the disk. While set, an identical call is
+  /// NOT `unchanged`: it persists again and reports the truthful result
+  /// ("Try again" after a failed save). Cleared by a successful write and
+  /// reset on every rebuild (uid change).
+  bool _persistFailed = false;
+
   Map<AppMode, ModeAvailability> _table = kDefaultModeAvailability;
 
   ModeState get _current => state.valueOrNull ?? ModeState.initial();
@@ -115,6 +122,7 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     _uid = null;
     _readOnly = false;
     _unreadable = false;
+    _persistFailed = false;
     ref.watch(modeWipeGuardProvider);
     _table = ref.watch(modeFlagsProvider).availabilityTable;
     final store = ref.watch(modeStoreProvider);
@@ -181,16 +189,23 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
   }
 
   Future<ModeSaveResult> _write(int gen, String uid, ModeState next) async {
-    if (_readOnly) return ModeSaveResult.saveFailed;
+    if (_readOnly) {
+      _persistFailed = true;
+      return ModeSaveResult.saveFailed;
+    }
+    ModeSaveResult result;
     try {
       final r = await ref.read(modeStoreProvider).write(uid, next);
-      return r == ModeWriteResult.written
+      result = r == ModeWriteResult.written
           ? ModeSaveResult.saved
           : ModeSaveResult.saveFailed;
     } catch (e) {
       _log('write failed', e);
-      return ModeSaveResult.saveFailed;
+      result = ModeSaveResult.saveFailed;
     }
+    // A result for a previous account must not touch the new account's flag.
+    if (gen == _gen) _persistFailed = result != ModeSaveResult.saved;
+    return result;
   }
 
   /// Selects [mode]. State changes first, then the awaited write; a failed
@@ -200,7 +215,12 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     final refusal = _refusal();
     if (refusal != null) return refusal;
     final cur = _current;
-    if (cur.selectedMode == mode) return ModeSaveResult.unchanged;
+    if (cur.selectedMode == mode) {
+      // Same mode: no event. Persist again only after a failed save.
+      return _persistFailed
+          ? _write(_gen, _uid!, cur)
+          : ModeSaveResult.unchanged;
+    }
     final next = cur.copyWith(selectedMode: mode);
     state = AsyncData(next);
     _emit(cur.selectedMode, mode);
@@ -215,7 +235,9 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     if (refusal != null) return refusal;
     final cur = _current;
     final changed = cur.selectedMode != mode;
-    if (!changed && cur.chooserStatus == ChooserStatus.resolved) {
+    if (!changed &&
+        cur.chooserStatus == ChooserStatus.resolved &&
+        !_persistFailed) {
       return ModeSaveResult.unchanged;
     }
     final gen = _gen;
@@ -242,6 +264,9 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     final refusal = _refusal();
     if (refusal != null) return refusal;
     final cur = _current;
+    if (cur.chooserStatus == ChooserStatus.resolved && _persistFailed) {
+      return _write(_gen, _uid!, cur); // retry after a failed save
+    }
     if (cur.chooserStatus != ChooserStatus.pending &&
         cur.chooserStatus != ChooserStatus.migrated) {
       return ModeSaveResult.unchanged;
@@ -266,7 +291,12 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     if (refusal != null) return refusal;
     if (answer == null) return ModeSaveResult.unchanged;
     final cur = _current;
-    if (cur.answerFor(mode) == answer) return ModeSaveResult.unchanged;
+    if (cur.answerFor(mode) == answer) {
+      // Identical value in memory: persist again only after a failed save.
+      return _persistFailed
+          ? _write(_gen, _uid!, cur)
+          : ModeSaveResult.unchanged;
+    }
     final next = cur.withAnswer(mode, answer);
     state = AsyncData(next);
     return _write(_gen, _uid!, next);
