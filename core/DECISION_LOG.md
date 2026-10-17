@@ -58061,3 +58061,7 @@ Decision (2026-10-17, same commit): the contract remediation-log line for Z7 com
 ## 2026-10-17 - Commit: docs(s04): make DECISION recovery one table with a whole-published never-unlinked decision file
 
 Decision: decisions Z9..Z12 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 7 apply: one recovery table executed by listUnfinished(); DECISION is published whole (temp file, fsync, exclusive hard-link create, parent fsync) and never unlinked; an empty, truncated or unknown-token DECISION at recovery is QUARANTINED; quarantine covers malformed decision state but never ordinary permission revocation; the crash test asserts only the barrier ordering invariant. This session owns S04 to the merge. Evidence: core/changes/2026-10-17-s04-docs-z9-z12.md.
+
+## 2026-10-17 - Commit: docs(s04): separate KEEP cleanup from the never-unlink rule and tie the fallback to the process-wide journal lock
+
+Decision: Z13..Z15 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 8: a DECISION is never removed or replaced on its own; it goes only with its whole recording directory after a completed DELETE or after a verified owner-checked KEEP hand-off; the no-hard-link fallback is allowed only under the process-wide exclusive journal lock (a second process cannot open the journal); S04-19 AC-13 mapped. Evidence: core/changes/2026-10-17-s04-docs-z13-z15.md.

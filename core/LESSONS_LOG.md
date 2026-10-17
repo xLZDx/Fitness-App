@@ -1195,3 +1195,11 @@ Facts: GPT-PM verification round 3 on a43283d5 returned MODIFY with 2 MAJOR and 
 Root cause: the Z7 fix changed the protocol in 4.3 only; older recovery text in 4.5 and 12.1 was not grepped for the old rule, and a second session was allowed to run in the same worktree without a single owner.
 Missed by: authors and the internal consistency checks; caught by the external gate round 3. The collision was caught by a cross-session message.
 Rule next time: after changing a protocol, grep every document for each older statement of the same state machine; one worktree has exactly one session owning the gate and its commits.
+
+## 2026-10-17 - Commit: docs(s04): separate KEEP cleanup from the never-unlink rule and tie the fallback to the process-wide journal lock
+
+Kind: FAILURE.
+Facts: GPT-PM round 4 on 68766a70 returned MODIFY with 2 MAJOR and 1 MINOR: the never-unlink rule contradicted the KEEP cleanup step, the fallback publication argument relied on an in-process lock that does not cover a second process, and a new story AC had no test mapping.
+Root cause: each fix of the DECISION protocol introduced a new absolute statement ("never", "ever") without checking it against the other lifecycle paths (KEEP cleanup, other processes).
+Missed by: authors and the author-run id comparison (it checks ids, not rules); caught by the external gate.
+Rule next time: state an invariant with its exact exceptions the first time (who may remove it and when), and list every lifecycle path (DELETE, KEEP cleanup, crash, second process) against it before writing it.
