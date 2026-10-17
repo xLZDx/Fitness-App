@@ -839,3 +839,11 @@ Rule next time: the test agents prove the guards (no shortcut in a text field, n
 Kind: NEUTRAL.
 Facts: main.dart now wraps the router content in WindowSizeScope and AppShortcuts and refreshes the activity digests on app resume without a second lifecycle observer. Unverified: how AppShortcuts finds a navigator context above the router navigator (internal to app_shortcuts.dart).
 Rule next time: the test agents pump FitnessApp once and prove that shortcuts reach the router and that the window class rebuilds only on a class change (DT-02-3, DT-17-x).
+
+## 2026-10-17 - Commit: feat(sources): add the Sources page with the app row states and the source rows
+
+Kind: SHORTCOMING (design gaps) and SUCCESS (survey).
+Facts: lane L9 run 1 wrote the Sources page and surveyed the sign-out call sites without editing them. Gaps it found: the design names a `sourcesSummaryProvider` that does not exist in the code (the page derives its data from the digest snapshot); the keys `activityRecoveryNotice`, the 'May provide' texts and the sign-out guard sentences have no ARB entries; the contract asks for Try again on the failedToOpen state while the approved design says retryNow is not applicable there. The survey found exactly two sign-out callers (Profile tile, no confirmation today; account deletion, best effort after the wipe) and that `ActivityWipeCoordinator.onSignOut` does delete the departing uid's journal, and that `activity_local_export.dart` writes no file (bytes only), so the export file location is new code.
+Root cause: design section 6 and 2.5 named strings and a provider without checking that they exist (design author); the contract and the design disagree on one button (documented AC-PR-2 deviation).
+Layer: design; caught by the implementation agent.
+Rule next time: every key and provider name in a design is grepped before the design is approved. Run 2 removes the Try again button for failedToOpen on Sources (consistent with the approved design).
