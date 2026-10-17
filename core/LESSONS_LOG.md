@@ -1179,3 +1179,11 @@ Facts: the GPT-PM verification round on 3054d6fe returned MODIFY with 1 MAJOR an
 Root cause: Z2 introduced two actions on one pending state without stating which decision is final, and the id comparison covered contract and requirement ids but not story acceptance criteria.
 Missed by: authors, the two internal review rounds and the gate-fix author; caught by the external verification round.
 Rule next time: when a fix adds a second action on a shared state, write the exclusion rule and the fault-injection points (before, during, after each durable step) in the same edit; extend the mechanical id comparison to every id family (here story AC ids).
+
+## 2026-10-17 - Commit: docs(s04): arbitrate Keep and Delete with one exclusive-create decision file
+
+Kind: FAILURE.
+Facts: the GPT-PM verification round 2 on b8ec248c returned MODIFY with 1 MAJOR: the Z5 rule said the DECISION marker is written by temp file, fsync and rename, but a rename can replace an existing target, so two callers that both saw no marker could both publish and the later one would overwrite the earlier decision; DISCARDING and DECISION=DELETE were also two representations of one decision. 1 MINOR: DT-19-13 did not state that Delete after a durable KEEP is refused.
+Root cause: I wrote the mutual-exclusion rule in terms of atomic publication, which is not first-writer arbitration; the rule was never checked against a forced two-writer interleaving.
+Missed by: author (me), the internal agents and the first gate pass; caught by the external verification round.
+Rule next time: for any first-wins rule name the exact primitive (exclusive create or compare-and-set, never rename-over) and require a test that forces both callers past the check before either commits.

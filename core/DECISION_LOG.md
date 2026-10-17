@@ -58051,3 +58051,9 @@ Decision: decisions Z1..Z4 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md sect
 ## 2026-10-17 - Commit: docs(s04): make Keep and Delete of a pending recording mutually exclusive and complete the story AC map
 
 Decision: decision Z5 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 5 applies: a durable DECISION marker (KEEP or DELETE) is written atomically before any action and the first durable decision wins; Delete is not offered after Keep is durable and never removes the hand-off activity; Keep is refused after Delete is durable; recovery follows the marker. Z6: the story AC to test mapping is complete (147 story ACs, 109 contract ids and 58 requirement ids compared, no gaps). Evidence: core/changes/2026-10-17-s04-docs-z5-z6.md.
+
+## 2026-10-17 - Commit: docs(s04): arbitrate Keep and Delete with one exclusive-create decision file
+
+Decision: decisions Z7 and Z8 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 6 apply: one DECISION file per recording created only by an exclusive create-if-absent, shared by Keep and Delete, durable (file and parent directory fsync) before any irreversible action; the loser does nothing irreversible; DISCARDING is only a progress marker valid with DECISION=DELETE; malformed combinations go to QUARANTINED. Evidence: core/changes/2026-10-17-s04-docs-z7-z8.md.
+
+Decision (2026-10-17, same commit): the contract remediation-log line for Z7 completes the Z7 batch; no new decision beyond Z7 in section 6 of S04_REVIEW_FINDINGS_ROUND1.md.
