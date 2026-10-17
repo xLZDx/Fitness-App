@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 159371 |
+| `core/LESSONS_LOG.md` | Lessons log | 160501 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -331,14 +331,14 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md` | S03 test findings, epic 5C (S03-18 conformance to the UI design contract) | 16769 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md` | S03 final test summary | 4908 |
 | `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 174368 |
-| `docs/phase2/s04/S04D_UI_DESIGN_CONTRACT.md` | S04-D UI design contract: GPS permission and recording-state contract | 137383 |
+| `docs/phase2/s04/S04D_UI_DESIGN_CONTRACT.md` | S04-D UI design contract: GPS permission and recording-state contract | 139556 |
 | `docs/phase2/s04/S04_ANDROID_PLATFORM_STUDY.md` | S04 Android platform study (GPS recorder without a map) | 27999 |
-| `docs/phase2/s04/S04_DESIGN.md` | S04 Technical Design: GPS recorder without a map | 131571 |
+| `docs/phase2/s04/S04_DESIGN.md` | S04 Technical Design: GPS recorder without a map | 135947 |
 | `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21323 |
-| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 83576 |
-| `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 26948 |
-| `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 68876 |
-| `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 181577 |
+| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 87063 |
+| `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 26416 |
+| `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 71569 |
+| `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 184802 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
 | `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 14013 |

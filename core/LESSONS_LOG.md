@@ -1187,3 +1187,11 @@ Facts: the GPT-PM verification round 2 on b8ec248c returned MODIFY with 1 MAJOR:
 Root cause: I wrote the mutual-exclusion rule in terms of atomic publication, which is not first-writer arbitration; the rule was never checked against a forced two-writer interleaving.
 Missed by: author (me), the internal agents and the first gate pass; caught by the external verification round.
 Rule next time: for any first-wins rule name the exact primitive (exclusive create or compare-and-set, never rename-over) and require a test that forces both callers past the check before either commits.
+
+## 2026-10-17 - Commit: docs(s04): make DECISION recovery one table with a whole-published never-unlinked decision file
+
+Kind: FAILURE.
+Facts: GPT-PM verification round 3 on a43283d5 returned MODIFY with 2 MAJOR and 2 MINOR: design 4.5 still deleted any directory with a DISCARDING marker while 4.3 quarantined it, and an empty DECISION file had two recovery outcomes (removed and quarantined). Two Claude sessions also drove the same documentation gate concurrently, committed and amended each other's work, and wrote two incompatible rules for the empty file into the same documents.
+Root cause: the Z7 fix changed the protocol in 4.3 only; older recovery text in 4.5 and 12.1 was not grepped for the old rule, and a second session was allowed to run in the same worktree without a single owner.
+Missed by: authors and the internal consistency checks; caught by the external gate round 3. The collision was caught by a cross-session message.
+Rule next time: after changing a protocol, grep every document for each older statement of the same state machine; one worktree has exactly one session owning the gate and its commits.

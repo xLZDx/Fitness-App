@@ -58057,3 +58057,7 @@ Decision: decision Z5 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 5
 Decision: decisions Z7 and Z8 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 6 apply: one DECISION file per recording created only by an exclusive create-if-absent, shared by Keep and Delete, durable (file and parent directory fsync) before any irreversible action; the loser does nothing irreversible; DISCARDING is only a progress marker valid with DECISION=DELETE; malformed combinations go to QUARANTINED. Evidence: core/changes/2026-10-17-s04-docs-z7-z8.md.
 
 Decision (2026-10-17, same commit): the contract remediation-log line for Z7 completes the Z7 batch; no new decision beyond Z7 in section 6 of S04_REVIEW_FINDINGS_ROUND1.md.
+
+## 2026-10-17 - Commit: docs(s04): make DECISION recovery one table with a whole-published never-unlinked decision file
+
+Decision: decisions Z9..Z12 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 7 apply: one recovery table executed by listUnfinished(); DECISION is published whole (temp file, fsync, exclusive hard-link create, parent fsync) and never unlinked; an empty, truncated or unknown-token DECISION at recovery is QUARANTINED; quarantine covers malformed decision state but never ordinary permission revocation; the crash test asserts only the barrier ordering invariant. This session owns S04 to the merge. Evidence: core/changes/2026-10-17-s04-docs-z9-z12.md.
