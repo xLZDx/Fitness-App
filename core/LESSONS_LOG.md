@@ -717,3 +717,18 @@ Rule next time: send a state-machine remediation to an independent read-only rev
 Kind: NEUTRAL.
 Facts: three attempts to send round 3 failed because the PM Bridge daemon was handing over to a new build (the error named two source builds changing, and the pm-bridge repository had uncommitted edits by another session); the request never reached the chat (recovery by request id found no inbound record), so resending created no duplicate. The fourth attempt went through after the other session's lifecycle operation finished and the mode came on by itself. The break-glass direct send was not used and the daemon was not restarted.
 Rule next time: on 'source update did not complete', check recovery by request id first, then wait for the other session's lifecycle operation; never use the break-glass path while the normal path is merely busy.
+
+## 2026-10-17 - Commit: fix(activity): exclude the per-account activity_journal tree from Android backup and device transfer
+
+Kind: FAILURE (inherited from S02, found by the S03 design review, fixed here).
+Facts: the S02 backup exclusion listed `journal`, `sources` and `quarantine` directly under the app support directory, but the production journal is created by `fileActivityJournalFactory` at `<support>/activity_journal/<scopeId>`, so the exclusion never matched the real tree. The journal is off in release builds and nothing is written to it before S05, so no user data was exposed. Evidence: mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart (factory), mobile/android/app/src/main/res/xml/backup_rules.xml and data_extraction_rules.xml (before this commit), docs/phase2/s03/S03_DESIGN.md section 5 (finding found by the design review).
+Root cause: the exclusion list and the factory path were written by two different stories and no test compared the directory the factory really creates with the directory the XML excludes. The tests asserted only the three names of the list.
+Layer that missed it: author, tests and the S02 reviewers; the S03 design reviewers caught it before the journal was switched on.
+Rule next time: a backup or privacy exclusion is tested against the path the production code really builds (one shared constant, now `kScopedJournalRootDirName`), never against a hand-copied list of names. The test agents extend the checker fixtures so that a list without `activity_journal` fails.
+
+## 2026-10-17 - Commit: fix(activity): exclude the per-account activity_journal tree from Android backup and device transfer
+
+Kind: SUCCESS.
+Facts: the fix landed as its own commit BEFORE the default of the local journal flag is changed (build lane L1, run 1 of 3), which is the order the design review required (RV-13). The path is now one constant used by the factory, the exclusion list and both Android XML files.
+Why it worked: the build brief fixed the order of the three runs of the lane and named the flag flip as a later run.
+Rule next time: land the data-protection part of a change before the part that switches the data on.

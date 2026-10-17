@@ -18,11 +18,16 @@ void main() {
   const fullBackup = ['full-backup-content'];
   const dataExtraction = ['cloud-backup', 'device-transfer'];
 
-  test('the constants name exactly journal, sources and quarantine under '
-      'domain file', () {
-    expect(kActivityBackupExcludedDirs, ['journal', 'sources', 'quarantine']);
-    expect(androidBackupExclusions(),
-        ['file|journal', 'file|sources', 'file|quarantine']);
+  test('the constants name exactly journal, sources, quarantine and '
+      'activity_journal under domain file', () {
+    expect(kActivityBackupExcludedDirs,
+        ['journal', 'sources', 'quarantine', 'activity_journal']);
+    expect(androidBackupExclusions(), [
+      'file|journal',
+      'file|sources',
+      'file|quarantine',
+      'file|activity_journal',
+    ]);
   });
 
   test('the constants are the directories the repository really writes', () {

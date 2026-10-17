@@ -17,6 +17,7 @@ import 'activity_journal.dart';
 import 'file_activity_journal.dart';
 import 'journal_cipher.dart';
 import 'journal_errors.dart';
+import 'journal_layout.dart' show kScopedJournalRootDirName;
 import 'journal_models.dart';
 
 /// The account-binding surface of a scoped journal.
@@ -50,7 +51,7 @@ ActivityJournalFactory fileActivityJournalFactory() => (scopeId) async {
       final dir = await getApplicationSupportDirectory();
       final sep = Platform.pathSeparator;
       return FileActivityJournal(
-        rootPath: '${dir.path}${sep}activity_journal$sep$scopeId',
+        rootPath: '${dir.path}$sep$kScopedJournalRootDirName$sep$scopeId',
         keyProvider: SecureStorageJournalKeyProvider(scopeId: scopeId),
       );
     };
