@@ -57979,3 +57979,7 @@ Decision: step 4 additions are committed after a green complete run at head 7888
 ## 2026-10-17 - Commit: test(input): add the keyboard and pointer tests for the shortcuts, the shell input and the real pages
 
 Decision: step 5 tests and the findings file are committed after a green complete run (63 of 63). The listed NOT_RUN rows are carried to the acceptance record with the owner: the final complete run (step 7) is not expected to close them, they need an end-to-end journey runner. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md, core/changes/2026-10-17-s03-test-step-5.md.
+
+## 2026-10-17 - Commit: test(modes): add tests for the Coming-later Back button, the Open Train announcement and wrapped labels
+
+Decision: step 3 additions are committed after a green complete run (103 of 103). While the mode loads, the Record sheet shows the neutral Train rows (selected mode or Train) rather than an empty list; this stays unless the operator wants otherwise. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md, core/changes/2026-10-17-s03-test-step-3-review-fixes.md.

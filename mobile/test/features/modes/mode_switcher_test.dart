@@ -126,6 +126,23 @@ void main() {
         reason: 'visible order $present vs BODY order $expected');
   });
 
+  testWidgets('RV-9b Coming-later Back from the switcher writes nothing and keeps the mode',
+      (tester) async {
+    final store = _store(mode: AppMode.body);
+    final rig = await _pump(tester, store);
+    await _open(tester);
+    await tester.tap(_row('ride'));
+    await settleFrames(tester, frames: 6);
+    expect(byKeyS('comingLater.sheet'), findsOneWidget);
+    await tester.tap(byKeyS('comingLater.back'));
+    await settleFrames(tester, frames: 6);
+    expect(byKeyS('comingLater.sheet'), findsNothing);
+    expect(store.writes, isEmpty);
+    expect(rig.container.read(selectedModeProvider), AppMode.body);
+    await _closeAll(tester);
+    expect(store.writes, isEmpty);
+  });
+
   group('AC-SW-3', () {
     testWidgets('AC-SW-3/scrim dismiss: zero writes, zero events', (tester) async {
       final store = _store();

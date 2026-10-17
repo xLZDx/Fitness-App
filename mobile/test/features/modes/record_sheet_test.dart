@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -224,6 +226,75 @@ void main() {
         reason: 'meal and weight rows are always offered; no flag hides them');
     expect(rows.length, 3);
   }, skip: false);
+
+  testWidgets('RV-9d Open Train announces the change and writes only the mode',
+      (tester) async {
+    final announced = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockDecodedMessageHandler<dynamic>(
+        SystemChannels.accessibility, (dynamic m) async {
+      if (m is Map && m['type'] == 'announce') {
+        announced.add((m['data'] as Map)['message'] as String);
+      }
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger
+        .setMockDecodedMessageHandler<dynamic>(SystemChannels.accessibility, null));
+    final answers = {AppMode.body: ModeAnswer.answered('food')};
+    final store = FakeModeStore()
+      ..seed('uid-a', mode: AppMode.ride, answers: answers);
+    await _pump(tester, store: store, flags: const ModeFlags(rideEnabled: true));
+    await _open(tester);
+    await tester.tap(byKeyS('recordSheet.openTrain'));
+    await settleFrames(tester);
+    expect(store.writes.length, 1);
+    final w = store.writes.single.state;
+    expect(w.selectedMode, AppMode.train);
+    expect(w.chooserStatus, ChooserStatus.resolved, reason: 'status untouched');
+    expect(w.answers, answers, reason: 'answers untouched');
+    expect(announced, [l10nOf('en').modeChangedAnnouncement('train')]);
+  });
+
+  testWidgets('RV-9e account switch: no rows of the previous account mode while loading',
+      (tester) async {
+    final store = FakeModeStore()
+      ..seed('uid-a', mode: AppMode.body)
+      ..seed('uid-b', mode: AppMode.train);
+    final rig = await _pump(tester, store: store);
+    await _open(tester);
+    expect(_row('bodyMeal'), findsOneWidget, reason: 'A is on BODY');
+    store.readDelay = const Duration(milliseconds: 600);
+    rig.auth.emit(kUserB);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(rig.container.read(selectedModeProvider), isNull);
+    expect(_row('bodyScan'), findsNothing);
+    expect(_row('bodyMeal'), findsNothing);
+    expect(_row('bodyWeight'), findsNothing);
+    await settleFrames(tester, frames: 10);
+    expect(_row('trainScan'), findsOneWidget, reason: 'B is on TRAIN');
+    expect(_row('bodyMeal'), findsNothing);
+    expect(store.writes, isEmpty);
+    await _close(tester);
+  });
+
+  testWidgets('RV-9c Open Train shows the full ru label at scale 2.0 on 360 dp',
+      (tester) async {
+    final store = FakeModeStore()..seed('uid-a', mode: AppMode.ride);
+    await pumpRig(tester,
+        store: store,
+        flags: const ModeFlags(rideEnabled: true),
+        locale: const Locale('ru'),
+        textScale: 2.0,
+        initial: '/home',
+        overrides: [todayDigestProvider.overrideWithValue(_emptyDigest)],
+        replace: {'/home': _host});
+    await _open(tester);
+    final label = l10nOf('ru').recordOpenTrain;
+    final text = find.descendant(
+        of: byKeyS('recordSheet.openTrain'), matching: find.text(label));
+    expect(text, findsOneWidget);
+    expect(tester.renderObject<RenderParagraph>(text).didExceedMaxLines, isFalse);
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
 
   testWidgets('DT-11-2 does not open while a session strip shows', (tester) async {
     await _pump(tester, extra: [

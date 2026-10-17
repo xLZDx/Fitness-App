@@ -640,6 +640,47 @@ void main() {
     });
   });
 
+  testWidgets('RV-9b Coming-later Back closes the sheet without any write',
+      (tester) async {
+    final store = _pending();
+    await pumpRig(tester, store: store);
+    await _tapCard(tester, 'ride');
+    expect(byKeyS('comingLater.sheet'), findsOneWidget);
+    await tester.tap(byKeyS('comingLater.back'));
+    await settleFrames(tester);
+    expect(byKeyS('comingLater.sheet'), findsNothing);
+    expect(store.writes, isEmpty);
+    expect(tester.widget<ModeCard>(_card('train')).selected, isFalse,
+        reason: 'Back is not "Choose Train"');
+    expect(_continueEnabled(tester), isFalse);
+    expect(byKeyS('modeChooser.grid'), findsOneWidget);
+  });
+
+  testWidgets('RV-9c wrapped buttons show the full ru label at scale 2.0 on 360 dp',
+      (tester) async {
+    final l10n = l10nOf('ru');
+    await pumpRig(tester,
+        store: _pending(), locale: const Locale('ru'), textScale: 2.0);
+    Future<void> expectFull(Finder button, String label) async {
+      final text = find.descendant(of: button, matching: find.text(label));
+      expect(text, findsOneWidget, reason: 'label "$label" must be in the button');
+      final p = tester.renderObject<RenderParagraph>(text);
+      expect(p.didExceedMaxLines, isFalse, reason: label);
+      expect(p.text.toPlainText(), label);
+      expect(tester.takeException(), isNull);
+    }
+
+    await tester.scrollUntilVisible(_continue(), 100,
+        scrollable: find.byType(Scrollable).first);
+    await expectFull(_continue(), l10n.modeContinue);
+    await tester.scrollUntilVisible(_card('ride'), -100,
+        scrollable: find.byType(Scrollable).first);
+    await _tapCard(tester, 'ride');
+    await expectFull(byKeyS('comingLater.chooseTrain'), l10n.modeComingLaterSheetAction);
+    await tester.tap(byKeyS('comingLater.back'));
+    await settleFrames(tester);
+  });
+
   group('DT-08-7 system Back on the chooser', () {
     Future<Rig> openFromHome(WidgetTester t, FakeModeStore store) async {
       final rig = await pumpRig(t, store: store, prefValues: _ctxAnswered, initial: '/home');

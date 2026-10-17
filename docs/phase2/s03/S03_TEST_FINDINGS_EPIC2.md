@@ -1,6 +1,31 @@
 # S03 test findings, step 3 (EP-2: S03-08 to S03-11)
 
-## Final run (latest): head 0969258b
+## Latest run: head 7888326b (supersedes the run history below)
+
+Real tree, branch phase2/s03d-ui-design-contract, includes 9b42ef53 and e78925d3. Flutter: /d/flutter/bin/flutter (Flutter 3.27.1, Dart 3.6.0), run from `mobile/`.
+
+Command (complete set, 4 files):
+
+    flutter test --timeout 60s test/features/modes/mode_chooser_test.dart test/features/modes/mode_questions_test.dart test/features/modes/mode_switcher_test.dart test/features/modes/record_sheet_test.dart
+
+Result line: `00:21 +103: All tests passed!` (103 written, 103 PASS, 0 FAIL, 0 skipped; no PathExistsException seen).
+Per file (separate runs): mode_chooser_test.dart 47, mode_questions_test.dart 21, mode_switcher_test.dart 17, record_sheet_test.dart 18.
+
+Added in this round (all PASS at 7888326b):
+- RV-9b (mode_chooser_test.dart): Coming-later `comingLater.back` closes the sheet, zero writes, no card selected, Continue still disabled.
+- RV-9b (mode_switcher_test.dart): Back on the Coming-later sheet opened from the switcher: zero writes, mode stays body.
+- RV-9c (3 tests): at text scale 2.0, 360 dp, locale ru, the full labels of chooser Continue, Coming-later "Choose Train", question Skip and Retry, and Record "Open Train" are present with `didExceedMaxLines == false` and no overflow exception.
+- RV-9d (record_sheet_test.dart): Open Train writes exactly one state (mode train; chooser status and BODY answer unchanged) and announces `modeChangedAnnouncement('train')` on the accessibility channel.
+- RV-9e (record_sheet_test.dart): during an account switch (B's read delayed 600 ms) `selectedModeProvider` is null and no BODY rows are listed; after the load B's TRAIN rows show. Observation: while loading the sheet shows the neutral TRAIN rows (`record_sheet.dart`, `selectedModeProvider ?? AppMode.train`), not an empty list.
+
+Compile defect seen at 9b42ef53 and e78925d3 (BLOCKER, closed by 7888326b): mobile/lib/features/modes/widgets/mode_switcher_sheet.dart:127 used the undeclared `state`. Tests were validated meanwhile in a scratch copy with the one-line declaration, then re-run in the real tree after 7888326b.
+
+Open production items at 7888326b:
+- P-8b, MINOR: mobile/lib/features/modes/widgets/record_sheet.dart (`recordRowsFor`, body branch) has no FOOD_AI/FOOD_LOOKUP input (AC-RC-3 /flagsOff and DT-11-1 stay weak; DT-11-1b documents it).
+- Observation (MINOR): mobile/lib/features/modes/widgets/record_sheet.dart `_modeNameForTitle` still reads `modeStateProvider` directly for the semantic route label instead of `selectedModeProvider`, so during an account switch the route label can name the previous account's mode.
+
+## Earlier run: head 0969258b
+
 
 Head revision: 0969258b (branch phase2/s03d-ui-design-contract, worktree D:\Repo\Fitness_App_Phase2_s01; includes 8a5c7474, fe67291b and fix batch 3). Real tree, no scratch copy.
 Flutter: /d/flutter/bin/flutter (D:/flutter/bin/flutter), Flutter 3.27.1 stable, Dart 3.6.0. Run from `mobile/`.

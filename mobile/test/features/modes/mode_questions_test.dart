@@ -2,6 +2,7 @@
 // real `/mode-questions/:mode` route (with its redirect), stub destinations.
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -155,6 +156,31 @@ void main() {
     // The other options stay usable.
     expect(isEnabledNode(tester.getSemantics(_opt('food'))), isTrue);
     h.dispose();
+  });
+
+  testWidgets('RV-9c Skip and Retry show the full ru label at scale 2.0 on 360 dp',
+      (tester) async {
+    final l10n = l10nOf('ru');
+    final store = _store(mode: AppMode.body)..throwOnWrite = true;
+    await pumpRig(tester,
+        store: store,
+        initial: '/mode-questions/body',
+        locale: const Locale('ru'),
+        textScale: 2.0);
+    await tester.ensureVisible(_opt('food'));
+    await tester.tap(_opt('food'));
+    await _wait(tester);
+    for (final c in [
+      (_skip(), l10n.modeQuestionSkip),
+      (byKeyS('modeQuestion.retry'), l10n.modeQuestionRetry),
+    ]) {
+      await tester.ensureVisible(c.$1);
+      final text = find.descendant(of: c.$1, matching: find.text(c.$2));
+      expect(text, findsOneWidget, reason: c.$2);
+      final p = tester.renderObject<RenderParagraph>(text);
+      expect(p.didExceedMaxLines, isFalse, reason: c.$2);
+    }
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('DT-09-1 saving feedback for >= 300 ms, no spinner, no double submit',
