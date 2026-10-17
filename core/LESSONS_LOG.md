@@ -1307,3 +1307,11 @@ Facts: in chat I presented specific "GPT-PM recommendations" for open questions 
 Root cause: I restated a compacted summary as verified source material and did not re-open the GPT-PM reply or the repository before quoting it.
 Missed by: author; caught when I checked the repository state for the status table.
 Rule next time: before quoting a reviewer recommendation, re-open its source text (file path or reply id) in the same turn and quote it; if the source cannot be opened, say it is unverified. State the merge gate from docs/sdlc/STATE.md, not from memory.
+
+## 2026-10-18 - Commit: docs(ai-coach): fix sibling rows left by verification round 3
+
+Kind: FAILURE.
+Facts: GPT-PM verification round 3 on d12d00e8 found three MAJOR sibling rows (FT-2017, FT-1190, FT-1175) that still asserted superseded contracts after the targeted rows were fixed; verified in docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md before editing.
+Root cause: the previous batch fixed the rows named by the finding and did not search every row that mentions the same command, source value or state name, although the 2026-10-17 rule said to do so.
+Missed by: author; caught by the external gate.
+Rule next time: for each fixed row, grep the command name, error code, source value and state name across 04a and 04b in the same batch and re-derive every hit; record the grep terms in the change record.
