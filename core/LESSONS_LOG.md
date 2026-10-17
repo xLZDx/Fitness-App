@@ -917,3 +917,11 @@ Facts: the chooser skipped two cards in Tab order once a card was selected (DT-0
 Root cause: authors (lane L6) relied on default focus traversal and left the anchor and ordering inputs out of the first version; the lane L6 report listed the anchor gap itself as an open item, and the briefs did not turn open items into stories.
 Layer: author; caught by the step 3 test agent through widget tests.
 Rule next time: an open item in a lane report becomes a test-plan row or a fix item before the lane is closed; every screen with several focus targets gets an explicit traversal order in its first version.
+
+## 2026-10-17 - Commit: test(modes): add the functional tests for the chooser, the questions, the switcher and the Record sheet
+
+Kind: SUCCESS with open items.
+Facts: the step 3 test agent wrote 96 widget tests (chooser 45, questions 20, switcher 16, Record sheet 15) and ran them in the real tree at 0969258b: 96 passed, 0 failed. Run history: 93 passed and 3 failed at 8a5c7474; the failures were production defects (chooser Tab order, missing rail anchor, meal-first), fixed in batch 3, after which the same tests pass.
+Why it worked: the tests were written against the contract rows and run per epic by the author of the tests, so the defects were found before review.
+Open: flag inputs for the Record rows (minor finding, tests DT-11-1 and the flags-off row of AC-RC-3 stay weak, DT-11-1b pins current behaviour and must be replaced when the inputs are added); DT-09-4, DT-09-5 and DT-10-2 are partial because no mode asks two questions yet; the loading height shift was not re-measured.
+Rule next time: when a minor finding is skipped, the test that pins the current behaviour carries the marker in its name so the fix forces its replacement.
