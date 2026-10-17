@@ -1,4 +1,4 @@
-# Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 3: ADR-011 and ADR-012 amended for review round 2)
+# Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revision 3 amended ADR-011 and ADR-012 for review round 2)
 
 Status of every ADR in this file: PROPOSED. None is ACCEPTED. Listing an option in the draft (`TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` section 16) does not approve it (constraint C-04). Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Companion: `03_DESIGN.md` (section numbers below refer to it). Nothing here was tested or measured. UNKNOWN = the repository cannot answer; UNVERIFIED-EXTERNAL = depends on provider/OS/store behaviour not checked in this phase.
 
@@ -98,6 +98,8 @@ Options:
 - C. Rely on the Firestore offline cache as the journal.
 
 Revision 2 amendments: no time-based deletion (a journal is removed only after local projection, metadata-observed server confirmation and tracked streak step; abandoned sessions only after the user deletes or exports); files are AES-GCM encrypted, excluded from Android backup, bounded and disk-preflighted, with a visible manual-only mode on storage failure; the projector uses a new observed write path with a durable `projected` marker; the sync driver is bounded with a "sync blocked" quarantine state; real-device kill-and-restart evidence is an exit criterion of AI-COACH-01 with SQLite as the named fallback.
+
+Revision 4 amendment (design 4.2 step 5, 6.1, 6.2; findings F-08, F-09): when the journal cannot be written, `record_set`, `correct_set` and `void_set` are held in a typed in-memory VOLATILE queue (shown as "Not saved yet" with a count, retried automatically, never given the Saved confirmation, never spoken as saved, lost if the process dies, the user warned on entering the mode); this replaces the earlier "rolled back" wording for those three commands, while other commands return `PERSIST_FAILED`. Durable / volatile / lost are three distinct, separately asserted states. Recovery reads the separate safety marker (`sessionId`, monotonic `stopSeq`) before anything else and enforces the lock before exposing recovered state or emitting a cue; unpersisted internal commands are discarded and recomputed; the marker is cleared only by a journaled `restart_after_safety`. Consequence: a volatile fact can be lost on a process kill during storage failure (accepted and disclosed, not hidden).
 
 Proposed decision: A, behind an interface so B can replace it. A record contains command, result, new revision and events; acknowledgement means flushed; a torn trailing line is discarded. Three confirmation levels are kept apart: journal-committed, replica-queued, server-confirmed (snapshot without pending writes and not from cache). The old repository's `save()` future is never treated as confirmation.
 
@@ -214,6 +216,14 @@ Amendment (revision 3, round 2; design 4.2, 5.1, 5.3, 6.4, 7):
 - Account-deletion fence refusal wipes the uid's local journals (export offered first); the journal key is per uid in secure storage and is deleted by that wipe.
 - Sync quarantine only after the server was reached and denied permanently; the age bound gives a "stale, will retry" state with manual retry and export.
 - Option C (last-writer-wins) stays rejected. Additional consequence: parked journals need a Review UI and their own size bound. Still unproven: all of the above (no test written or run).
+
+Amendment (revision 4, GPT-PM gate round 1; design 4.1b, 5.1, 5.2, 5.3, 6.5, 7; findings F-01, F-04, F-05, F-06, F-12). These SUPERSEDE the revision 3 bullets they touch:
+- Ownership and set id: the set id is defined once in design 5.1 as `<session_id>:<owner_epoch>:<seq>`; two epochs with equal `seq` give different ids (F-01). The "cooperative only" fallback of the revision 3 bullet is withdrawn.
+- Server-enforced epoch (F-05): validating the `ownerEpoch` of replica session, set and command writes on the server is an AI-COACH-01 EXIT requirement. If the measured rules call budget cannot support it, replica writes go through a callable that validates the epoch. A cooperative-only fence is not accepted without a recorded operator acceptance (OQ-31). Consequence: either more rules lookups per batch or a new callable on the write path (latency, cost, App Check and account fence on it).
+- Deletion fence (F-04): a state machine `DETECTED`, `EXPORT_OFFERED`, `EXPORT_DONE`, `WIPE_PENDING`, `WIPED`; the replica queue is purged at `DETECTED`; export is offered at foreground at most 3 times or 7 days (PROPOSED); the mandatory idempotent wipe of journals, key and safety markers runs at the next app start after the export is done, dismissed 3 times, failed 3 times or 7 days passed. Replaces the bullet "wipes ... (export offered first)".
+- Fenced projection (F-06): the `workout_sessions/<sessionId>` write is a Firestore transaction that reads the live session and proceeds only if `ownerEpoch` matches the projecting device and the live status is not already projected by another epoch; rules enforce the same through `getAfter`; a payload hash makes a retry idempotent and refuses a different payload; the durable `projected` marker is written only after the acknowledged transaction; a lost acknowledgement is resolved by reading and comparing the hash. Consequence: an extra read per finish and a transaction that fails offline until online (the journal stays).
+- Admission (F-12): creation is admitted by a per-user counter document updated in the same batch as the session document and checked in rules with `getAfter`; limit 5 unfinished plus parked sessions (PROPOSED); a rejected creation has a typed result (`SESSION_LIMIT`) and writes no partial documents; the scheduled sweep is a retention mechanism only. Consequence: one more document write per creation and counter-drift repair in the sweep.
+- Still unproven: all of the above (no test written or run).
 
 ---
 

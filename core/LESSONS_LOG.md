@@ -1267,3 +1267,11 @@ Facts: a final consistency check found 2 MAJOR and 5 MINOR contradictions betwee
 Root cause: editing agents changed their own files and did not search for the old wording in the others.
 Missed by: author and editing agents; caught by the consistency reviewer.
 Rule next time: when a number or rule changes, Grep every document for the old wording in the same edit batch; a consistency pass is part of every remediation batch, not an extra.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM gate round 1 remediation
+
+Kind: FAILURE.
+Facts: GPT-PM returned MODIFY with 14 MAJOR on head d60cb979, mostly stale wording left in other documents after the earlier batches (test plans still asserting the old set id format and the old rest timer, a backlog criterion still quarantining on age, a backlog criterion still granting zero charge to a timed-out turn); see docs/ai-coach/08_GPTPM_GATE_ROUND1.md.
+Root cause: the internal consistency check was a partial grep over 7 invariants and stopped at its turn limit; the old wording of changed rules was not searched for in every file in the batch that changed it.
+Missed by: author, editing agents and the internal consistency reviewer; caught by the external gate.
+Rule next time: for every rule changed in a batch, the editing agent greps all documents for the old wording in the same batch and lists the hits; the consistency check must finish (run it in two smaller passes if it hits its turn limit) before the gate request.

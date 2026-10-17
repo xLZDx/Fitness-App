@@ -58093,3 +58093,7 @@ Decision: round 2 findings are applied as the second batch (docs/ai-coach/06_REM
 ## 2026-10-17 - Commit: docs(ai-coach): cross-document consistency fixes
 
 Decision: design revision 3 and requirements win over older wording in the backlog, ADRs, UI spec and test plans; seven contradictions fixed (P0 and E2E counts in the backlog gate criterion, recovery independent of the flag, ADR count 13, offline command set in ADR-009, internal commands exempt from rollback, safetyLock field name). Evidence: core/changes/2026-10-17-ai-coach-consistency-fixes.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM gate round 1 remediation
+
+Decision: GPT-PM MODIFY findings F-01..F-14 and M-01..M-06 are applied as one batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md section E). Server-enforced epoch validation is required for AI-COACH-01 (callable fallback; a cooperative-only fence needs operator acceptance, OQ-31). Finish and abandon during a whole safety stop need a trusted on-screen two-step confirmation. Numeric defaults 3 export offers within 7 days and a limit of 5 unfinished sessions are PROPOSED for the operator. Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-round1-remediation.md.

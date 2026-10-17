@@ -2,17 +2,17 @@
 
 Status as of 2026-10-17: documentation program for sprint AI-COACH-00 only. Implementation, production deployment and user-data migration are NOT authorised. Branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints and changes none of them.
 
-Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is remediated in commit `0965349a`. Round 2 (four reviewers verifying the fixes; 23 new MAJOR, 0 BLOCKER) is remediated in the next commit; its findings are in `07_REVIEW_ROUND2.md`. A cross-document consistency check and the GPT-PM documentation gate follow; they are recorded in `docs/sdlc/STATE.md` under the AI Coach section. Nothing in this package is approved until that section says so.
+Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is remediated in commit `0965349a`. Round 2 (four reviewers verifying the fixes; 23 new MAJOR, 0 BLOCKER) is remediated in the next commit; its findings are in `07_REVIEW_ROUND2.md`. The GPT-PM documentation gate round 1 returned MODIFY (14 MAJOR, 6 MINOR; `08_GPTPM_GATE_ROUND1.md`) and is remediated; a focused verification round follows. Gate state is recorded in `docs/sdlc/STATE.md` under the AI Coach section. Nothing in this package is approved until that section says so.
 
 ## Reading order
 
 | Order | File | What it is |
 |---|---|---|
 | 1 | `TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | Operator draft, translated. Source of intent |
-| 2 | `01_REQUIREMENTS.md` | 138 requirements (AICR-001 to 138), non-functional targets, 30 open questions |
+| 2 | `01_REQUIREMENTS.md` | 145 requirements (AICR-001 to 145), non-functional targets, 31 open questions |
 | 3 | `01b_CODE_MAP.md` | The draft checked against the real code: 17 disagreements, reusable seams, risks |
 | 4 | `02_BACKLOG.md` | Sprints AI-COACH-00 to 05, stories with acceptance criteria, definition of done, coverage |
-| 5 | `03_DESIGN.md` | Technical design revision 3 |
+| 5 | `03_DESIGN.md` | Technical design revision 4 |
 | 6 | `03a_ADR_PROPOSALS.md` | ADR-001 to ADR-013, all PROPOSED |
 | 7 | `03b_UI_SPEC.md` | Hands-free UI: journeys, screens, states, copy and accessibility rules (DRAFT) |
 | 8 | `04a_FUNCTIONAL_TEST_PLAN.md` | Unit, provider, rules-emulator and function tests, all PLANNED |
@@ -20,6 +20,7 @@ Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is re
 | 10 | `05_REVIEW_ROUND1.md` | The 97 reviewer claims |
 | 11 | `06_REMEDIATION_DECISIONS.md` | The decisions applied after rounds 1 and 2 and the questions that stay open |
 | 12 | `07_REVIEW_ROUND2.md` | Round 2 verification findings |
+| 13 | `08_GPTPM_GATE_ROUND1.md` | GPT-PM documentation gate round 1: verdict MODIFY and its findings |
 
 ## What the package decides, in one paragraph
 
