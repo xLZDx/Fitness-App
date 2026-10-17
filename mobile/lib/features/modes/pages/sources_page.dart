@@ -21,6 +21,7 @@ import '../../../shared/widgets/hud/hud_scaffold.dart';
 import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../../shared/widgets/shell_back_button.dart';
 import '../../activity/data/activity_aggregates.dart';
+import '../../activity/data/device_source.dart';
 import '../../activity/state/activity_dashboard_providers.dart';
 import '../../activity/state/journal_availability.dart';
 
@@ -83,6 +84,38 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
         SourceLabelKey.unknown => l10n.sourceLabelUnknown,
       };
 
+  String _capName(AppLocalizations l10n, CapabilityColumn c) => switch (c) {
+        CapabilityColumn.sessionList => l10n.sourceCapSessionList,
+        CapabilityColumn.heartRate => l10n.sourceCapHeartRate,
+        CapabilityColumn.speedPace => l10n.sourceCapSpeedPace,
+        CapabilityColumn.cadence => l10n.sourceCapCadence,
+        CapabilityColumn.power => l10n.sourceCapPower,
+        CapabilityColumn.gpsRoute => l10n.sourceCapGpsRoute,
+        CapabilityColumn.strokesLaps => l10n.sourceCapStrokesLaps,
+        CapabilityColumn.steps => l10n.sourceCapSteps,
+        CapabilityColumn.sleep => l10n.sourceCapSleep,
+        CapabilityColumn.liveStream => l10n.sourceCapLiveStream,
+      };
+
+  /// "May provide ..." from the yes/partial levels of the matrix rows
+  /// [matrixIds]; "Unknown" when no level is yes or partial.
+  String _mayProvide(AppLocalizations l10n, List<String> matrixIds) {
+    final List<String> names = <String>[];
+    for (final CapabilityColumn col in CapabilityColumn.values) {
+      for (final String id in matrixIds) {
+        final SourceCapabilities? caps = kCapabilityMatrix[id];
+        if (caps == null) continue;
+        final CapabilityLevel level = caps.levelOf(col);
+        if (level == CapabilityLevel.yes || level == CapabilityLevel.partial) {
+          names.add(_capName(l10n, col));
+          break;
+        }
+      }
+    }
+    if (names.isEmpty) return l10n.sourceCapUnknown;
+    return l10n.sourceMayProvide(names.join(', '));
+  }
+
   /// The app row state: availability first, then the loaded digests.
   ({_Status status, bool retry, VoidCallback? onRetry, String? line}) _appRow(
     AppLocalizations l10n,
@@ -104,13 +137,20 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
           line: null,
         );
       case JournalGaveUp():
-      case JournalFailedToOpen():
         return (
           status: _Status.problem,
           retry: true,
           onRetry: () {
             ref.read(activityBindStatusProvider.notifier).retryNow();
           },
+          line: l10n.activityJournalFailed,
+        );
+      case JournalFailedToOpen():
+        // Not retriable (retryNow is notApplicable): no Try again button.
+        return (
+          status: _Status.problem,
+          retry: false,
+          onRetry: null,
           line: l10n.activityJournalFailed,
         );
       case JournalOpen():
@@ -168,6 +208,13 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
         ref.watch(journalAvailabilityProvider);
     final app = _appRow(l10n, availability);
     final List<SourceLabelKey> extras = _extraSources();
+    // Activities dropped or route-less after the last recovery (RV-10); the
+    // counts belong to the bound journal, so only an open journal shows them.
+    final int lostCount = availability is JournalOpen
+        ? ref.watch(activityBindStatusProvider.select(
+            (ActivityBindStatus s) =>
+                s.recoveredAbsentCount + s.streamLostCount))
+        : 0;
 
     final List<Widget> rows = <Widget>[
       _SourceRow(
@@ -179,17 +226,25 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
         retryLabel: app.retry ? l10n.activityJournalRetry : null,
         onRetry: app.onRetry,
       ),
-      for (final (String id, String name) in <(String, String)>[
-        ('health_connect', l10n.sourceHealthConnect),
-        ('ble', l10n.sourceBle),
-        ('wear_os', l10n.sourceWatch),
-        ('vendor_cloud', l10n.sourceOther),
+      for (final (String id, String name, List<String> matrixIds)
+          in <(String, String, List<String>)>[
+        ('health_connect', l10n.sourceHealthConnect, <String>['health_connect']),
+        (
+          'ble',
+          l10n.sourceBle,
+          kCapabilityMatrix.keys
+              .where((String k) => k.startsWith('ble_'))
+              .toList(),
+        ),
+        ('wear_os', l10n.sourceWatch, <String>['wear_os']),
+        ('vendor_cloud', l10n.sourceOther, <String>['vendor_cloud']),
       ])
         _SourceRow(
           rowKey: Key('sources.row.$id'),
           name: name,
           statusText: _statusText(l10n, _Status.notConnected),
           statusIcon: _statusIcon(_Status.notConnected),
+          line: _mayProvide(l10n, matrixIds),
         ),
       for (final SourceLabelKey key in extras)
         _SourceRow(
@@ -212,6 +267,17 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
         final Widget column = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            if (lostCount > 0) ...<Widget>[
+              HudPanel(
+                key: const Key('sources.recoveryNotice'),
+                secondary: true,
+                child: Text(
+                  l10n.activityRecoveryNotice(lostCount),
+                  style: HudType.body(t, size: 12.5),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             for (final Widget r in rows) ...<Widget>[
               r,
               const SizedBox(height: 10),

@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/modes/data/mode_models.dart';
+import '../../features/modes/pages/sources_page.dart';
 
 /// `/mode-chooser`: the first-run mode chooser (S-1).
 const String kModeChooserPath = '/mode-chooser';
@@ -128,9 +129,8 @@ List<RouteBase> buildS03Routes({
     ),
     GoRoute(
       path: kSourcesPath,
-      // PAGE SWAP (L9): replace `_SourcesStub()` with `SourcesPage()`.
       pageBuilder: (context, state) =>
-          noTransitionIfReduced(context, state, const _SourcesStub()),
+          noTransitionIfReduced(context, state, const SourcesPage()),
     ),
   ];
 }
