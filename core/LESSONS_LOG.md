@@ -941,3 +941,11 @@ Kind: SUCCESS.
 Facts: while S03 testing runs, the next sprint documents were reviewed once (as the delivery rules require, in parallel with the current sprint) and the result is a readiness note: 12 gaps and 8 entry decisions for the operator. Top gaps: there is no UI design contract for S04, the recorder requirements and numbers are undefined, the relationship between the recording journal and the S02 journal is undecided, Android location and foreground-service rules are unverified, and no sprint owns the consent centre.
 Why it worked: the note is a list of facts with file pointers, produced without delaying the current sprint.
 Rule next time: the S04 documentation pass starts from this note, one fix pass, no rewrite of settled documents.
+
+## 2026-10-17 - Commit: fix(progress): compensate the scroll offset by the net height change when the activity block arrives
+
+Kind: FAILURE (defect in my own fix, found by the step 4 test agent).
+Facts: the scroll compensation added in the previous batch added the full height of the arriving All-activity block (492 dp), but the Sources slot with its gap (116 dp) disappears in the same frame, so the Last 8 weeks heading moved 116 dp up (test DT-14-2).
+Root cause: the author (lane L12) compensated for the added block only and did not account for the element removed above the anchor in the same frame; the brief did not say the slot goes away.
+Layer: author; caught by the step 4 test measurement of a stable heading, not by a literal offset check.
+Rule next time: scroll compensation is the net height change above the anchor; tests measure a stable element below the change, not the offset.

@@ -58,6 +58,10 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
 
   final GlobalKey _activityBlockKey = GlobalKey(debugLabel: 'progress.block');
   bool _hadActivityBlock = false;
+  final GlobalKey _slotKey = GlobalKey(debugLabel: 'progress.slot');
+
+  /// Last measured height of the Sources slot plus its gap (single column).
+  double _slotHeight = 0;
 
   /// Keeps the content the user is reading in place when the activity block
   /// appears above it: the offset grows by the block's height (D1).
@@ -69,7 +73,12 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
             .height;
     final ScrollPosition position = _scroll.position;
     if (height == null || height <= 0 || position.pixels <= 0) return;
-    position.jumpTo(position.pixels + height);
+    // Net height change above the anchor: the block arrives, the Sources slot
+    // (and its gap) above 'Last 8 weeks' goes away in the same frame.
+    final double target = position.pixels + height - _slotHeight;
+    _slotHeight = 0;
+    position.jumpTo(
+        target.clamp(0.0, position.maxScrollExtent).toDouble());
   }
 
   @override
@@ -117,11 +126,33 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
         final side = 20.0 + (width > cap ? (width - cap) / 2 : 0.0);
         final showSlot = view.kind != ProgressActivityKind.block;
         final slot = <Widget>[
-          if (showSlot) ...[
-            const ProgressSourcesSlot(),
-            const SizedBox(height: 24),
-          ],
+          if (showSlot)
+            KeyedSubtree(
+              key: _slotKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: const <Widget>[
+                  ProgressSourcesSlot(),
+                  SizedBox(height: 24),
+                ],
+              ),
+            ),
         ];
+        if (showSlot) {
+          // Remember the slot's height (single column only: there it sits
+          // above 'Last 8 weeks'), so D1 can subtract it when it goes away.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final h = (_slotKey.currentContext?.findRenderObject() as RenderBox?)
+                ?.size
+                .height;
+            if (twoPane) {
+              _slotHeight = 0;
+            } else if (h != null) {
+              _slotHeight = h;
+            }
+          });
+        }
         final blockSources = <Widget>[
           if (twoPane && view.kind == ProgressActivityKind.block) ...[
             const ProgressBlockSourcesRow(),

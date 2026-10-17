@@ -57923,3 +57923,7 @@ Decision: lane L12 batches 4 and 5. Scroll compensation (jumpTo by the added hei
 ## 2026-10-17 - Commit: docs(s04): add the S04 documentation readiness note
 
 Decision: the S04 readiness note is committed as a planning input only; none of its 8 entry decisions is taken by it and no S04 scope changes. Evidence: docs/phase2/s04/S04_DOC_READINESS.md, core/changes/2026-10-17-s04-doc-readiness.md.
+
+## 2026-10-17 - Commit: fix(progress): compensate the scroll offset by the net height change when the activity block arrives
+
+Decision: Progress compensates by the arriving block height minus the Sources slot height (slot and gap) measured while it was shown, clamped to 0 and the maximum scroll extent; in two-column layout the slot height is 0. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-6.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md.
