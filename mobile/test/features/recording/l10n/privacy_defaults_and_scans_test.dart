@@ -248,7 +248,13 @@ void main() {
       for (final f in _recordingFiles()) {
         // kRecordingExpiryMs is the 30-day sweep of quarantined local
         // recordings, not an upload expiry (S04-R-049).
-        final code = _code(f).replaceAll('kRecordingExpiryMs', '');
+        // The journal's local 30-day sweep helpers are the same local
+        // quarantine sweep (not an upload expiry).
+        final code = _code(f).replaceAll(
+            RegExp(r'kRecordingExpiryMs|_expired|_expireDelete|'
+                r'_quarantinedOrExpired|sweepExpiredAllScopes|'
+                r'sweepExpiredRecordings'),
+            '');
         for (final m in re.allMatches(code)) {
           hits.add('${f.path}: ${m.group(0)}');
         }

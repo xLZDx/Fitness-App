@@ -36,6 +36,45 @@ import 'gps_outcome_views.dart';
 /// [GpsRecordingPage.onAddManually].
 const String kGpsManualEntryRoute = '/record/manual';
 
+/// Marks [gpsRecordingPageOpenProvider] while mounted (U5).
+class _PageOpenMarker extends ConsumerStatefulWidget {
+  const _PageOpenMarker({required this.child});
+  final Widget child;
+
+  @override
+  ConsumerState<_PageOpenMarker> createState() => _PageOpenMarkerState();
+}
+
+class _PageOpenMarkerState extends ConsumerState<_PageOpenMarker> {
+  StateController<bool>? _flag;
+
+  @override
+  void initState() {
+    super.initState();
+    final flag = ref.read(gpsRecordingPageOpenProvider.notifier);
+    _flag = flag;
+    Future<void>.microtask(() {
+      if (mounted) flag.state = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    final flag = _flag;
+    Future<void>.microtask(() {
+      try {
+        flag?.state = false;
+      } catch (_) {
+        // The container is already gone.
+      }
+    });
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class GpsRecordingPage extends ConsumerWidget {
   const GpsRecordingPage({
     super.key,
@@ -80,9 +119,20 @@ class GpsRecordingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return _PageOpenMarker(child: _body(context, ref));
+  }
+
+  Widget _body(BuildContext context, WidgetRef ref) {
     final phase = ref.watch(recorderPhaseProvider);
     final handOffFailed =
         ref.watch(recorderControllerProvider.select((s) => s.handOffFailed));
+    final saveFailedDismissed = ref.watch(gpsSaveFailedDismissedProvider);
+    ref.listen<bool>(
+        recorderControllerProvider.select((s) => s.handOffFailed), (p, n) {
+      if (n && p != true) {
+        ref.read(gpsSaveFailedDismissedProvider.notifier).state = false;
+      }
+    });
     void close() => _close(context);
     void manual() => _manual(context);
 
@@ -112,7 +162,7 @@ class GpsRecordingPage extends ConsumerWidget {
         return GpsRevokedView(onClose: close);
       case RecorderPhase.idle:
       case RecorderPhase.preparing:
-        if (handOffFailed) {
+        if (handOffFailed && !saveFailedDismissed) {
           return GpsSaveFailedView(onClose: close);
         }
         return GpsStartView(
@@ -189,6 +239,7 @@ class _GpsStartViewState extends ConsumerState<GpsStartView>
   void _go() {
     final flow = ref.read(gpsStartFlowProvider.notifier);
     ref.read(gpsNothingRecordedProvider.notifier).state = false;
+    ref.read(gpsSaveFailedDismissedProvider.notifier).state = false;
     if (widget.resumeMode) {
       final id = _resumeId();
       if (id != null) unawaited(flow.resume(id));
@@ -253,6 +304,7 @@ class _GpsStartViewState extends ConsumerState<GpsStartView>
           if (panel != GpsStartPanelId.none) const SizedBox(height: 12),
           const GpsPrivacyLine(),
           const GpsBatteryStartNote(),
+          const GpsSafetyGapNote(),
         ],
         bottom: KeyedSubtree(
           key: const ValueKey<String>('gps.start.button'),

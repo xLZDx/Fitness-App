@@ -70,8 +70,32 @@ const List<GpsStartPanelId> kGpsPanelPrecedence = <GpsStartPanelId>[
 
 /// Whether the phone's location services are on. Default: assumed on (the
 /// recorder lane has no probe yet); lane R9 overrides it when a probe exists.
+///
+/// Null means "no probe wired": the flow then assumes services are on and the
+/// Start screen says so (U6, [gpsSafetyGapProvider]).
 final gpsLocationServicesEnabledProvider =
-    Provider<Future<bool> Function()>((ref) => () async => true);
+    Provider<Future<bool> Function()?>((ref) => null);
+
+/// True when a safety seam is still a placeholder: no location-services probe
+/// or the fake battery monitor. With the recorder flag on, the Start screen
+/// then states that the 10 % / 3 % battery guards and the services check are
+/// not active on this build (U6).
+final gpsSafetyGapProvider = Provider<bool>((ref) {
+  if (ref.watch(gpsLocationServicesEnabledProvider) == null) return true;
+  try {
+    return ref.watch(batteryMonitorProvider) is FakeBatteryMonitor;
+  } catch (_) {
+    return true;
+  }
+});
+
+/// True while the GPS recording page is mounted (and so on screen). The shell
+/// stays silent for recorder events then: one announcer (U5).
+final gpsRecordingPageOpenProvider = StateProvider<bool>((ref) => false);
+
+/// "Not now" on the save-failed screen: hides it until the next Start or the
+/// next failure (U3).
+final gpsSaveFailedDismissedProvider = StateProvider<bool>((ref) => false);
 
 /// Whether the device reports GPS hardware (DN-13). Default: true.
 final gpsDeviceHasGpsProvider = Provider<bool>((ref) => true);
@@ -344,7 +368,8 @@ class GpsStartFlow extends AutoDisposeNotifier<GpsStartFlowState> {
     // 5. Location services.
     bool servicesOn = true;
     try {
-      servicesOn = await ref.read(gpsLocationServicesEnabledProvider)();
+      final probe = ref.read(gpsLocationServicesEnabledProvider);
+      servicesOn = probe == null ? true : await probe();
     } catch (_) {
       servicesOn = true;
     }

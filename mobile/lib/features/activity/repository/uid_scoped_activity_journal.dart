@@ -22,6 +22,7 @@ import 'journal_errors.dart';
 import 'journal_file_system.dart';
 import 'journal_layout.dart'
     show
+        kRecordingDirName,
         kScopedJournalRootDirName,
         kTempSuffix,
         kWipeMarkerWiped,
@@ -39,6 +40,23 @@ abstract class RecordingScopeGuard {
   /// wiped-uid refusal as `UidScopedActivityJournal._wipedUid`). Releases the
   /// directory lock so the wipe can delete the files.
   Future<void> closeScope(String scopeId);
+}
+
+/// Optional companion of [RecordingScopeGuard]: a scope that was closed by a
+/// wipe is opened again when the same uid binds afterwards (review S4).
+abstract class RecordingScopeReopener {
+  void reopenScope(String scopeId);
+}
+
+/// A put whose owner check and write are one synchronous step (review S2): the
+/// delegate of the bound journal is captured only if [expectedUid] is bound at
+/// that very moment, so a hand-off for account A can never land in B's store.
+abstract class OwnerCheckedPut {
+  Future<JournalEntry> putForOwner(
+    String expectedUid,
+    ActivitySession session, {
+    JournalSyncState? syncState,
+  });
 }
 
 /// The account-binding surface of a scoped journal.
@@ -86,7 +104,11 @@ ActivityJournalFactory fileActivityJournalFactory() => (scopeId) async {
     };
 
 class UidScopedActivityJournal
-    implements ActivityJournal, AccountScopedJournal, RecoveryReportSource {
+    implements
+        ActivityJournal,
+        AccountScopedJournal,
+        RecoveryReportSource,
+        OwnerCheckedPut {
   /// Cheap: no I/O until [bindUid].
   UidScopedActivityJournal({
     ActivityJournalFactory? factory,
@@ -182,6 +204,10 @@ class UidScopedActivityJournal
           _bound = opened;
           _boundUid = uid;
           _lastReport = report;
+          final g = recordingGuard;
+          if (g is RecordingScopeReopener) {
+            (g as RecordingScopeReopener).reopenScope(activityJournalScopeId(uid));
+          }
           return true;
         } catch (e) {
           // Fixed message and the exception TYPE only: never a message, path,
@@ -218,6 +244,13 @@ class UidScopedActivityJournal
           }
         }
         await _writeWipeMarker(scopeId, kWipeMarkerWiping);
+        // The recordings go regardless of whether the S02 scope can be started
+        // (review S3).
+        try {
+          await _fs.deleteDir('${await _scopesRoot()}/$scopeId/$kRecordingDirName');
+        } catch (e) {
+          debugPrint('activity: recordings not deleted (${e.runtimeType})');
+        }
         if (uid == _boundUid && _bound != null) {
           final current = _bound!;
           try {
@@ -342,6 +375,19 @@ class UidScopedActivityJournal
   }) async =>
       _writer().put(session,
           syncState: syncState, baseRev: baseRev, baseSummary: baseSummary);
+
+  @override
+  Future<JournalEntry> putForOwner(
+    String expectedUid,
+    ActivitySession session, {
+    JournalSyncState? syncState,
+  }) {
+    final bound = _bound;
+    if (bound == null || _boundUid != expectedUid) {
+      throw const JournalUnbound();
+    }
+    return bound.put(session, syncState: syncState);
+  }
 
   @override
   Future<void> delete(String id) async => _writer().delete(id);

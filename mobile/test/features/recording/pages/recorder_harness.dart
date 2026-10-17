@@ -138,6 +138,11 @@ class ScriptedJournal implements RecordingJournalPort {
   }
 
   @override
+  Future<void> abandonActive(String recordingId) async {
+    calls.add('abandonActive');
+  }
+
+  @override
   Future<void> quarantine(String recordingId) async {
     calls.add('quarantine');
   }

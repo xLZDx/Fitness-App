@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fitness_app/features/recording/widgets/gps_start_flow.dart'
+    show gpsRecordingPageOpenProvider;
 import 'package:go_router/go_router.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
@@ -424,6 +426,7 @@ void main() {
           ActiveSessionState.autoPaused => l.gpsStripPausedAuto,
           ActiveSessionState.unfinished => l.gpsStripUnfinished,
           ActiveSessionState.notRestored => l.gpsStripNotRestored,
+          ActiveSessionState.revoked => l.gpsStripRevoked,
         };
     String railWord(AppLocalizations l, ActiveSessionState s) => switch (s) {
           ActiveSessionState.running => l.railStateRunning,
@@ -436,6 +439,7 @@ void main() {
           ActiveSessionState.autoPaused => l.gpsRailAuto,
           ActiveSessionState.unfinished => l.gpsRailWaiting,
           ActiveSessionState.notRestored => l.gpsRailProblem,
+          ActiveSessionState.revoked => l.gpsRailChoose,
         };
 
     test('the rail words are at most 8 characters in ru and en, non-empty', () async {
@@ -525,6 +529,7 @@ void main() {
             ActiveSessionState.autoPaused => l10n.gpsRailAuto,
             ActiveSessionState.unfinished => l10n.gpsRailWaiting,
             ActiveSessionState.notRestored => l10n.gpsRailProblem,
+            ActiveSessionState.revoked => l10n.gpsRailChoose,
           };
           expect(find.text(rail), findsOneWidget, reason: '$loc $s');
           expect(t.takeException(), isNull, reason: 'overflow for $loc $s');
@@ -579,6 +584,33 @@ void main() {
       expect(announced.where((a) => a == l10n.gpsAnnAutoResumed).length, 1);
       expect(announced.where((a) => a == l10n.gpsAnnAutoPaused).length, 1);
       expect(announced.where((a) => a == l10n.gpsAnnStarted).length, 1);
+    });
+  });
+
+  group('U5 one announcer: the shell is silent while the page is open', () {
+    testWidgets('start and auto-pause are not spoken by the shell',
+        (t) async {
+      final l10n = await en();
+      final announced = <String>[];
+      t.binding.defaultBinaryMessenger.setMockDecodedMessageHandler<dynamic>(
+          SystemChannels.accessibility, (dynamic m) async {
+        if (m is Map && m['type'] == 'announce') {
+          announced.add((m['data'] as Map)['message'] as String);
+        }
+      });
+      addTearDown(() => t.binding.defaultBinaryMessenger
+          .setMockDecodedMessageHandler<dynamic>(SystemChannels.accessibility, null));
+      final w = await pump(t);
+      w.c.read(gpsRecordingPageOpenProvider.notifier).state = true;
+      await w.startRecording();
+      for (var i = 0; i < 14; i++) {
+        await w.advance(const Duration(seconds: 1));
+        w.seams.emitFix(speed: 0);
+        await t.pump();
+      }
+      expect(w.c.read(recorderPhaseProvider), RecorderPhase.pausedAuto);
+      expect(announced.where((a) => a == l10n.gpsAnnStarted), isEmpty);
+      expect(announced.where((a) => a == l10n.gpsAnnAutoPaused), isEmpty);
     });
   });
 

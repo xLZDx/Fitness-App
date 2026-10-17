@@ -11,6 +11,8 @@ import '../../core/background/hud_sky.dart';
 import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
 import '../../features/auth/state/auth_providers.dart' show authUserProvider;
+import '../../features/recording/widgets/gps_start_flow.dart'
+    show gpsRecordingPageOpenProvider;
 import '../../features/recording/state/recorder_phase.dart' show RecorderPhase;
 import '../../features/recording/state/recorder_providers.dart'
     show recorderPhaseProvider;
@@ -165,6 +167,12 @@ class _MainShellState extends State<MainShell> {
                     s.state == ActiveSessionState.restFinished;
                 ref.listen<ActiveSessionStatus?>(activeSessionStatusProvider,
                     (ActiveSessionStatus? prev, ActiveSessionStatus? next) {
+                  // One announcer: the open recording page speaks for its own
+                  // recording (U5).
+                  if ((next ?? prev)?.kind == ActiveSessionKind.gpsRecording &&
+                      ref.read(gpsRecordingPageOpenProvider)) {
+                    return;
+                  }
                   final AppLocalizations l10n = AppLocalizations.of(c);
                   final String text;
                   if (next == null) {
@@ -205,6 +213,7 @@ class _MainShellState extends State<MainShell> {
                 if (ref.watch(gpsRecorderEnabledProvider)) {
                   ref.listen<RecorderPhase>(recorderPhaseProvider,
                       (RecorderPhase? prev, RecorderPhase next) {
+                    if (ref.read(gpsRecordingPageOpenProvider)) return;
                     final AppLocalizations l10n = AppLocalizations.of(c);
                     final String? text;
                     if (next == RecorderPhase.pausedAuto) {

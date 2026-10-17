@@ -75,6 +75,21 @@ class AutoStopNotice {
   final double distanceM;
 }
 
+/// Outcome of the last Keep / Delete / discard action (review C8). The UI shows
+/// it instead of a silent no-op.
+enum RecorderActionResult {
+  /// Nothing to report (no action yet, or the last one succeeded).
+  none,
+
+  /// The action threw or could not complete; the phase is unchanged and the
+  /// user can choose again.
+  failed,
+
+  /// The opposite decision was already durable; the controller continued the
+  /// winner (KEEP completed the hand-off, DELETE completed the delete).
+  alreadyDecided,
+}
+
 class _Unset {
   const _Unset();
 }
@@ -101,6 +116,8 @@ class RecorderState {
     this.pausePromptDue = false,
     this.engineDetached = false,
     this.unfinished = const [],
+    this.lastActionResult = RecorderActionResult.none,
+    this.recoveryCheckFailed = false,
   });
 
   static const RecorderState initial = RecorderState();
@@ -153,6 +170,13 @@ class RecorderState {
   /// Result of the last unfinished-recording check (restoring / recovery).
   final List<UnfinishedRecording> unfinished;
 
+  /// Result of the last Keep / Delete / discard action (review C8).
+  final RecorderActionResult lastActionResult;
+
+  /// The unfinished-recording check failed (or found a recording that is only
+  /// temporarily unreadable) and is retried (review C16).
+  final bool recoveryCheckFailed;
+
   double get totalDistanceM => recoveredDistanceM + (metrics?.distanceM ?? 0);
 
   int get totalMovingTimeMs =>
@@ -184,6 +208,8 @@ class RecorderState {
     bool? pausePromptDue,
     bool? engineDetached,
     List<UnfinishedRecording>? unfinished,
+    RecorderActionResult? lastActionResult,
+    bool? recoveryCheckFailed,
   }) =>
       RecorderState(
         phase: phase ?? this.phase,
@@ -218,6 +244,8 @@ class RecorderState {
         pausePromptDue: pausePromptDue ?? this.pausePromptDue,
         engineDetached: engineDetached ?? this.engineDetached,
         unfinished: unfinished ?? this.unfinished,
+        lastActionResult: lastActionResult ?? this.lastActionResult,
+        recoveryCheckFailed: recoveryCheckFailed ?? this.recoveryCheckFailed,
       );
 
   /// Counters of the gate for the batch frame and logs (integers only).

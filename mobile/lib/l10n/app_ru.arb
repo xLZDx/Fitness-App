@@ -3199,5 +3199,7 @@
   "gpsLabelAvgSpeed": "Средняя скорость",
   "gpsLabelAscent": "Набор высоты",
   "gpsLabelDescent": "Спуск",
-  "gpsManualEnteredByHand": "Введено вручную"
+  "gpsManualEnteredByHand": "Введено вручную",
+  "gpsSafetyGapNote": "В этой сборке не работают защита от низкого заряда и проверка служб геолокации.",
+  "gpsConsentWithdrawFailed": "Не удалось сохранить выбор. Запись геопозиции пока выключена, но может включиться после перезапуска. Повторите."
 }

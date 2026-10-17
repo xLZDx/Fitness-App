@@ -5977,5 +5977,13 @@
   "gpsManualEnteredByHand": "Entered by hand",
   "@gpsManualEnteredByHand": {
     "description": "Source label of a manual activity."
+  },
+  "gpsSafetyGapNote": "Low-battery protection and the location-services check are not active in this build.",
+  "@gpsSafetyGapNote": {
+    "description": "Start screen note while the battery monitor or location-services probe is a placeholder."
+  },
+  "gpsConsentWithdrawFailed": "We could not save your choice. Location recording is off for now, but may turn on again after a restart. Try again.",
+  "@gpsConsentWithdrawFailed": {
+    "description": "Shown when withdrawing location consent was not saved; the toggle keeps its true state."
   }
 }

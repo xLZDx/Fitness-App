@@ -58101,3 +58101,7 @@ Decision: the epic test groups EP-A/B/C, EP-D and EP-E/H are committed with thei
 ## 2026-10-17 - Commit: fix(s04): hold the distance and elevation tolerances found by the epic tests and record the final test run
 
 Decision: distance uses a chord accumulator with a 20 m minimum step and elevation counts a change only after 8 consecutive fixes beyond the 3 m band, to meet the plan tolerances; auto-pause on a provider speed of exactly 0.0 is kept as the design says (plan row DT-07-5 is wrong); the offline chip stays unset because the design gives the recorder no connectivity input. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.
+
+## 2026-10-17 - Commit: fix(s04): close the code-review findings on journal release, recovery classes, expiry, owner check, adapter stop and recorder screens
+
+Decision: accepted all MAJOR findings of docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md; the revoked state now shows a strip row per UI contract 14.1 (design 7.2 loses); the real battery monitor and services-off probe stay unwired and the Start panel states this when the flag is on (gap carried to the sprint report); the hook timeout cancels the hand-off. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.

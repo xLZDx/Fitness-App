@@ -36,3 +36,21 @@ Result: 1096 passed, 0 failed, 0 skipped (exit 0). No repo-wide suite, no analyz
 | Mutation runs | NOT_RUN | operator rule |
 | flutter analyze, build, CI, repo-wide suite | NOT_RUN | outside the requested scope |
 | Tests outside the three named folders | NOT_RUN | not part of this set |
+
+## Round 2 after code review
+
+Working tree: branch phase2/s04, HEAD 03143df3 plus uncommitted FIX-A and FIX-B. Leftover flutter_tester processes were killed first. Each folder was run separately from `mobile/` with `flutter test <folder> --timeout 120s` under a shell timeout.
+
+Hang found: not a production deadlock. `test/features/recording/pages/fix_b_pages_test.dart` (U3 Back test) called `await w.ctl.stop()`, which never completes under the fake clock of `testWidgets`; the other two tests in the file were reported "did not complete" with it. Fixed in the test: Stop and Finish are tapped through the screen. A second test defect: `find.byType(PopScope)` matches no `PopScope<Object?>`; the test now uses a type predicate.
+
+Other failures fixed:
+- `recording/l10n` DT-27-3 and DT-28-7: FIX-A added `developer.log('expired')` (removed from `file_recording_journal.dart`) and expiry helper names; the DT-28-7 scan now whitelists the local quarantine-sweep identifiers only.
+- `gps_strip/record_entry_points_test.dart` DT-24-18: with a pending revoked decision (U4) the record sheet correctly shows the enabled Open row, not Start; the stale expectation was updated.
+
+New focused tests: U5 shell stays silent while the recording page is open (`gps_strip_widget_test.dart`, "U5 one announcer"). Existing FIX-B tests: U1/U2 `stream_location_source_test.dart` (4), U3/U5 `fix_b_pages_test.dart` (3), U6/U7 `fix_b_consent_gap_test.dart` (3), U4 `gps_sources_test.dart` and `record_entry_points_test.dart`.
+
+Per-folder results (all green after fixes): location, pages 127, widgets 94, consent 58, permissions 56, safety 45, l10n 68, pipeline 204, battery 106, gps_strip 82, gps_signout 31.
+
+Final complete set: `flutter test test/features/recording test/shared/widgets/gps_strip test/features/activity/gps_signout --timeout 300s` -> `+1119: All tests passed!`
+
+Not covered: U6 real battery/services-off wiring (gap is stated on the Start panel only); no whole-repo suite, analyze or build was run.

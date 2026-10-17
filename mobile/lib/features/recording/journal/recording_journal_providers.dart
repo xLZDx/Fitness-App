@@ -5,6 +5,8 @@
 /// it with [recordingJournalPortOverride] in `main.dart`.
 library;
 
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -44,8 +46,23 @@ final fileRecordingJournalProvider = Provider<FileRecordingJournal>((ref) {
   if (activity is UidScopedActivityJournal) {
     activity.recordingGuard = journal;
   }
+  // Releases the timer and the process lock with the provider (review C13).
+  ref.onDispose(() => unawaited(journal.dispose()));
   return journal;
 });
+
+/// Number of recordings left in the 30-day fallback of the signed-in account
+/// (sign-out notice, review C4/S6). Set by the pre-unbind hook and refreshed at
+/// bind time from the FALLBACK markers on disk, so it survives a relaunch.
+final recordingFallbackKeptProvider = StateProvider<int>((_) => 0);
+
+/// App-start sweep of expired FALLBACK / QUARANTINED recordings in EVERY scope
+/// (review S1). Never throws.
+Future<void> sweepExpiredRecordings(Ref ref) async {
+  try {
+    await ref.read(fileRecordingJournalProvider).sweepExpiredAllScopes();
+  } catch (_) {}
+}
 
 /// Override for the recorder state's port provider (lane R9 `main.dart`).
 Override recordingJournalPortOverride() =>

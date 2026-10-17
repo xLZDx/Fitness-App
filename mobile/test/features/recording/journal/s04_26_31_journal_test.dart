@@ -201,7 +201,8 @@ void main() {
       expect(err, isA<RecordingJournalError>());
       expect(hasSentinel(describe(err!, st)), isFalse);
       final r = await k.journal.listUnfinished();
-      expect(r.single.status, UnfinishedStatus.unreadable, reason: 'a failed decode is not "recovered"');
+      expect(r.single.status, UnfinishedStatus.unavailable,
+          reason: 'a failed worker is retryable, not damage and not "recovered" (review C3)');
       expect(hasSentinel(r.toString()), isFalse);
       await k.dispose();
     });

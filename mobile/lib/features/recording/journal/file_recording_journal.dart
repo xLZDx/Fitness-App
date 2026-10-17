@@ -31,7 +31,11 @@ import '../../activity/repository/journal_layout.dart';
 import '../../activity/repository/journal_models.dart' show JournalMutex;
 import '../../activity/repository/journal_recovery.dart' show kJournalIdPattern;
 import '../../activity/repository/uid_scoped_activity_journal.dart'
-    show RecordingScopeGuard, activityJournalScopeId;
+    show
+        OwnerCheckedPut,
+        RecordingScopeGuard,
+        RecordingScopeReopener,
+        activityJournalScopeId;
 import '../pipeline/pipeline_types.dart';
 import '../pipeline/recording_constants.dart';
 import '../state/recorder_phase.dart' show StopReason;
@@ -142,7 +146,8 @@ class FinishAllReport {
   final int keptInFallback;
 }
 
-class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard {
+class FileRecordingJournal
+    implements RecordingJournalPort, RecordingScopeGuard, RecordingScopeReopener {
   FileRecordingJournal({
     required ActivityJournal activity,
     required String? Function() boundUid,
@@ -175,12 +180,16 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
 
   final Map<String, JournalKeyProvider> _keys = {};
   final Map<String, Object> _locks = {};
+  final Map<String, Future<void>> _lockFutures = {};
   final Set<String> _closedScopes = {};
   final Map<String, JournalMutex> _recMutex = {};
   final Map<String, Future<void>> _publishing = {};
   final StreamController<JournalFault> _faults = StreamController.broadcast();
   _Active? _active;
   int _flushMs = 5000;
+
+  /// Set by `finishAllForOwner` while the pre-unbind hook runs.
+  bool Function()? _handOffCancelled;
 
   @override
   Stream<JournalFault> get faults => _faults.stream;
@@ -206,15 +215,38 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     final root = '$base/$scopeId';
     final recDir = '$root/$kRecordingDirName';
     if (!_locks.containsKey(scopeId)) {
-      await _fs.createDir(recDir);
-      try {
-        _locks[scopeId] = await _ops.acquireLock('$recDir/$kRecordingLockFile');
-      } catch (_) {
-        throw const RecordingJournalError('journalLocked');
-      }
+      // One acquisition per scope: concurrent first callers share the future
+      // instead of racing for the process lock (review C13).
+      await _lockFutures.putIfAbsent(
+          scopeId, () => _acquireScopeLock(scopeId, recDir));
     }
     final key = await _keys.putIfAbsent(scopeId, () => _keyFor(scopeId)).loadKey();
     return _Scope(scopeId, uid, root, recDir, key == null ? null : AesGcmJournalCipher(key));
+  }
+
+  Future<void> _acquireScopeLock(String scopeId, String recDir) async {
+    try {
+      await _fs.createDir(recDir);
+      _locks[scopeId] = await _ops.acquireLock('$recDir/$kRecordingLockFile');
+    } catch (_) {
+      _lockFutures.remove(scopeId); // a failed acquisition is retried later
+      throw const RecordingJournalError('journalLocked');
+    }
+  }
+
+  /// Releases the active recording's timer and every process lock (provider
+  /// dispose). Never seals or deletes.
+  Future<void> dispose() async {
+    final a = _active;
+    if (a != null) await _detach(a);
+    for (final id in List<String>.of(_locks.keys)) {
+      final l = _locks.remove(id);
+      if (l == null) continue;
+      try {
+        await _ops.releaseLock(l);
+      } catch (_) {}
+    }
+    _lockFutures.clear();
   }
 
   Future<_Scope> _needScope() async {
@@ -222,6 +254,9 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     if (s == null) throw const RecordingJournalError('ownerScopeLost');
     return s;
   }
+
+  @override
+  void reopenScope(String scopeId) => _closedScopes.remove(scopeId);
 
   @override
   Future<void> closeScope(String scopeId) async {
@@ -236,6 +271,7 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       _fault(JournalFault.ownerScopeLost);
       _active = null;
     }
+    _lockFutures.remove(scopeId);
     final l = _locks.remove(scopeId);
     if (l != null) {
       try {
@@ -287,12 +323,37 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     }
   }
 
+  /// Detaches [a] from the journal WITHOUT sealing or deleting: the timer stops,
+  /// the handle closes, the active slot clears. The files stay as an unfinished
+  /// recording (review C1, C2, C11).
+  Future<void> _detach(_Active a) async {
+    a.closed = true;
+    a.timer?.cancel();
+    await a.lock.run(() => _closeHandle(a));
+    if (identical(_active, a)) _active = null;
+  }
+
+  @override
+  Future<void> abandonActive(String recordingId) =>
+      _mutexFor(recordingId).run(() async {
+        final a = _active;
+        if (a == null || a.id != recordingId) return;
+        await _detach(a);
+        try {
+          // Only a truly empty directory is removed; anything else is data.
+          if ((await _fs.list(a.dir)).isEmpty) await _fs.deleteDir(a.dir);
+        } catch (_) {}
+      });
+
+  /// Reads `meta.json`. An I/O failure PROPAGATES (the caller reports
+  /// `unavailable`); only an undecodable or foreign file yields null (review
+  /// C3).
   Future<_MetaData?> _readMeta(_Scope s, String id) async {
     final c = s.cipher;
     if (c == null) return null;
+    final raw = await _readOpt('${s.recDir}/$id/$kMetaFile');
+    if (raw == null) return null;
     try {
-      final raw = await _readOpt('${s.recDir}/$id/$kMetaFile');
-      if (raw == null) return null;
       final m = jsonDecode(utf8.decode(c.open(raw)));
       if (m is! Map || m['v'] != 1 || m['id'] != id) return null;
       final sport = SportType.values.firstWhere((x) => x.name == m['sport'],
@@ -305,6 +366,9 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       return null;
     }
   }
+
+  /// True when [id] is the active recording (it is never offered or swept).
+  bool _isActive(String id) => _active?.id == id;
 
   /// Segment numbers present in [dir], ascending.
   Future<List<int>> _segments(String dir) async {
@@ -343,7 +407,8 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         ),
       );
     } catch (_) {
-      return AnalyseResult(damage: Damage.worker);
+      // The runner failed: that says nothing about the data (review C3).
+      return AnalyseResult(damage: Damage.unavailable);
     }
   }
 
@@ -393,6 +458,15 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         } catch (_) {}
       }
       throw const RecordingJournalError('io');
+    }
+    if (_active != null) {
+      // A late begin that finished after another one took the slot.
+      if (created) {
+        try {
+          await _fs.deleteDir(dir);
+        } catch (_) {}
+      }
+      throw const RecordingJournalError('alreadyActive');
     }
     _activate(_Active(meta.recordingId, s.scopeId, s.uid, cipher, dir));
   }
@@ -504,7 +578,9 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
   Future<void> _writePending(_Active a) async {
     if (a.suspectSeg != null) await _rotateAfterError(a);
     var n = a.counter;
-    for (final p in List<_Pending>.of(a.pending)) {
+    final work = List<_Pending>.of(a.pending);
+    var done = 0;
+    for (final p in work) {
       if (a.handle == null) {
         // The number advances only once the file is open: a failed open (disk
         // full) must not leave a hole in the segment numbering, which the
@@ -517,10 +593,17 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       n += 1;
       await a.handle!.write(encodeFrame(a.cipher, p.build(n)));
       a.segFrames += 1;
-      if (a.segFrames >= kFramesPerSegment && p != a.pending.last) {
+      done += 1;
+      if (a.segFrames >= kFramesPerSegment && !identical(p, work.last)) {
         await a.handle!.flush();
         await a.handle!.fsync();
         await _closeHandle(a);
+        // Durable: advance the counter and prune per closed segment so a later
+        // failure re-reads against the right frame numbers (review C14).
+        a.counter = n;
+        a.pending.removeRange(0, done);
+        work.removeRange(0, done);
+        done = 0;
       }
     }
     final h = a.handle;
@@ -529,7 +612,8 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       await h.fsync();
     }
     a.counter = n;
-    a.pending.clear();
+    // Frames appended while this drain ran stay queued.
+    a.pending.removeRange(0, done);
     if (a.segFrames >= kFramesPerSegment) await _closeHandle(a);
   }
 
@@ -561,7 +645,9 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
 
   @override
   Future<void> seal(String recordingId, SealRequest request) =>
-      _mutexFor(recordingId).run(() async {
+      _mutexFor(recordingId).run(() => _sealLocked(recordingId, request));
+
+  Future<void> _sealLocked(String recordingId, SealRequest request) async {
         final s = await _needScope();
         final dir = '${s.recDir}/$recordingId';
         final meta = await _readMeta(s, recordingId);
@@ -571,10 +657,14 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         if (a != null && a.id == recordingId) {
           _closeBatch(a);
           await _drain(a);
-          if (a.pending.isNotEmpty) throw const RecordingJournalError('flushFailed');
-          a.timer?.cancel();
-          await a.lock.run(() => _closeHandle(a));
-          _active = null;
+          if (a.pending.isNotEmpty) {
+            // The flush failed: detach so Start is not blocked; the data on
+            // disk stays an unfinished recording (review C2).
+            await _detach(a);
+            throw const RecordingJournalError('flushFailed');
+          }
+          // `closed` is set under the lock before the final close (C11).
+          await _detach(a);
         }
         if (await _fs.exists('$dir/$kSealedFile')) return; // idempotent
         final r = await _analyse(s, dir, startUtcMs: meta.startUtcMs);
@@ -594,14 +684,14 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
             'lastSeg': r.lastSegment,
           }))),
         );
-      });
+  }
 
   Future<Map<String, dynamic>?> _readSealed(_Scope s, String dir) async {
     final c = s.cipher;
     if (c == null) return null;
+    final raw = await _readOpt('$dir/$kSealedFile');
+    if (raw == null) return null;
     try {
-      final raw = await _readOpt('$dir/$kSealedFile');
-      if (raw == null) return null;
       final m = jsonDecode(utf8.decode(c.open(raw)));
       return m is Map<String, dynamic> ? m : null;
     } catch (_) {
@@ -636,6 +726,10 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         final doneId = nativeActivityId(id);
         if ((await _activity.list()).any((e) => e.session.id == doneId)) {
           return HandOffResult.done;
+        }
+        if ((await _activity.listTombstones())
+            .any((e) => e.session.id == doneId)) {
+          return HandOffResult.tombstoned;
         }
       }
       return HandOffResult.failedKept;
@@ -716,8 +810,16 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       if (again == null || again.scopeId != meta.scopeId) {
         return HandOffResult.failedKept;
       }
+      if (_handOffCancelled?.call() ?? false) return HandOffResult.failedKept;
       try {
-        await _activity.put(session);
+        // Owner check and write are ONE synchronous step in the scoped journal
+        // (review S2); other journals fall back to the plain put.
+        final act = _activity;
+        if (act is OwnerCheckedPut) {
+          await (act as OwnerCheckedPut).putForOwner(meta.uid, session);
+        } else {
+          await _activity.put(session);
+        }
       } on JournalTombstonedException {
         // Deleted by the user meanwhile: delete wins; cleanup still runs.
       }
@@ -730,10 +832,19 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       }
     }
     final fin = await _scope();
+    final stillTombstoned =
+        (await _activity.listTombstones()).any((e) => e.session.id == activityId);
     if (fin == null || fin.scopeId != meta.scopeId) {
-      return HandOffResult.done; // activity exists; cleanup deferred, nothing written
+      // activity exists; cleanup deferred, nothing written
+      return stillTombstoned ? HandOffResult.tombstoned : HandOffResult.done;
     }
-    await _cleanupVerified(s, id);
+    try {
+      await _cleanupVerified(s, id);
+    } catch (_) {
+      // The activity is verified: the hand-off is done. A leftover directory is
+      // finished silently by the next recovery pass (review C9).
+    }
+    if (stillTombstoned) return HandOffResult.tombstoned;
     _onHandedOff?.call();
     return HandOffResult.done;
   }
@@ -749,13 +860,21 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     }
   }
 
+  static bool _handOffComplete(HandOffResult r) =>
+      r == HandOffResult.done || r == HandOffResult.tombstoned;
+
   /// KEEP / normal cleanup: ONE atomic rename, then content deletion (design
   /// 4.3 step 6).
   Future<void> _cleanupVerified(_Scope s, String id) async {
     final dir = '${s.recDir}/$id';
     final tomb = '$dir$kCleanupSuffix';
     if (await _fs.exists(dir)) {
-      await _ops.renameDir(dir, tomb);
+      try {
+        await _ops.renameDir(dir, tomb);
+      } catch (_) {
+        // A vanished directory (a concurrent cleanup) is already done.
+        if (await _fs.exists(dir)) throw const RecordingJournalError('io');
+      }
       await _ops.fsyncDir(s.recDir);
     }
     await _fs.deleteDir(tomb);
@@ -806,10 +925,16 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       }
       var outcome = await _ops.linkExclusive(tmp, target);
       if (outcome == LinkOutcome.unsupported) {
+        // Without hard links: publish by rename of the already durable temp
+        // file, only while the target is absent, under the process lock and the
+        // per-recording mutex. No empty DECISION window exists (review C6).
         if (!_locks.containsKey(s.scopeId)) throw const RecordingJournalError('lockMissing');
-        outcome = await _ops.createExclusive(target, bytes)
-            ? LinkOutcome.created
-            : LinkOutcome.exists;
+        if (await _fs.exists(target)) {
+          outcome = LinkOutcome.exists;
+        } else {
+          await _fs.rename(tmp, target);
+          outcome = LinkOutcome.created;
+        }
       }
       await _ops.fsyncDir(dir);
       try {
@@ -838,11 +963,7 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         final got = await _publishDecision(s, recordingId, 'DELETE');
         if (got != 'DELETE') return DecisionOutcome.alreadyDecided;
         final a = _active;
-        if (a != null && a.id == recordingId) {
-          a.timer?.cancel();
-          await a.lock.run(() => _closeHandle(a));
-          _active = null;
-        }
+        if (a != null && a.id == recordingId) await _detach(a);
         await _executeDelete(s, recordingId);
         return DecisionOutcome.committed;
       });
@@ -850,8 +971,10 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
   /// Ordered delete (design 4.5): DISCARDING (plain), segments, SEALED and
   /// markers, meta.json LAST, then the directory. Only after a durable
   /// `DECISION=DELETE`.
-  Future<void> _executeDelete(_Scope s, String id) async {
-    final dir = '${s.recDir}/$id';
+  Future<void> _executeDelete(_Scope s, String id) =>
+      _executeDeleteAt('${s.recDir}/$id');
+
+  Future<void> _executeDeleteAt(String dir) async {
     if (!await _fs.exists('$dir/$kDiscardingFile')) {
       await _atomicWrite('$dir/$kDiscardingFile', _utf('1'));
     }
@@ -884,19 +1007,34 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     await _atomicWrite('$dir/$kQuarantinedFile', out);
   }
 
-  Future<int?> _markerTime(_Scope s, String dir, String name) async {
+  /// The age reference of a marker: the LATER of the time written inside and
+  /// the file's modification time, so a wall-clock jump alone cannot expire a
+  /// recording (review C12).
+  Future<int?> _markerTime(_Scope? s, String dir, String name) async {
+    int? inside;
     try {
       final raw = await _readOpt('$dir/$name');
       if (raw == null) return null;
       try {
-        final m = jsonDecode(utf8.decode(s.cipher!.open(raw)));
-        if (m is Map && m['q'] is int) return m['q'] as int;
+        final m = jsonDecode(utf8.decode(s!.cipher!.open(raw)));
+        if (m is Map && m['q'] is int) inside = m['q'] as int;
       } catch (_) {}
-      final t = int.tryParse(utf8.decode(raw, allowMalformed: true));
-      if (t != null) return t;
+      inside ??= int.tryParse(utf8.decode(raw, allowMalformed: true));
     } catch (_) {}
-    final mod = await _fs.modified('$dir/$name');
-    return mod?.millisecondsSinceEpoch ?? _now();
+    int? mtime;
+    try {
+      mtime = (await _fs.modified('$dir/$name'))?.millisecondsSinceEpoch;
+    } catch (_) {}
+    if (inside != null && mtime != null) return math.max(inside, mtime);
+    return inside ?? mtime ?? _now();
+  }
+
+  bool _expired(int markerMs) => _now() - markerMs >= kRecordingExpiryMs;
+
+  /// Expiry delete: a direct ordered delete, never a DECISION publication
+  /// (review C5); content-free log.
+  Future<void> _expireDelete(_Scope s, String id) async {
+    await _executeDelete(s, id);
   }
 
   // ------------------------------------------------------------ recovery
@@ -910,38 +1048,64 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     for (final e in entries) {
       if (e.isDirectory && e.name.endsWith(kCleanupSuffix)) {
         // Garbage of a verified KEEP or a completed DELETE: no checks at all.
+        // Under the per-recording mutex so it cannot race a KEEP cleanup (C10).
+        final id = e.name.substring(0, e.name.length - kCleanupSuffix.length);
         try {
-          await _fs.deleteDir('${s.recDir}/${e.name}');
+          await _mutexFor(id)
+              .run(() => _fs.deleteDir('${s.recDir}/${e.name}'));
         } catch (_) {}
       }
     }
     for (final e in entries) {
       if (!e.isDirectory || e.name.endsWith(kCleanupSuffix)) continue;
       if (!kJournalIdPattern.hasMatch(e.name)) continue;
-      if (_active?.id == e.name) continue;
+      if (_isActive(e.name)) continue;
       try {
         final u = await _mutexFor(e.name).run(() => _recoverOne(s, e.name));
         if (u != null) out.add(u);
       } catch (_) {
+        // Could not be read NOW (I/O, key store): retryable, never quarantined
+        // and never expired (review C3).
         out.add(UnfinishedRecording(
-            recordingId: e.name, status: UnfinishedStatus.unreadable));
+            recordingId: e.name, status: UnfinishedStatus.unavailable));
       }
     }
     return out;
+  }
+
+  static StopReason? _stopReasonOfEvent(String? event) => switch (event) {
+        'stoppedBattery' => StopReason.battery,
+        'stoppedStorage' => StopReason.storage,
+        'stoppedAccount' => StopReason.account,
+        'stoppedConsent' => StopReason.consentWithdrawn,
+        'stoppedCap' => StopReason.sampleCap,
+        'permissionRevoked' => StopReason.permissionRevoked,
+        _ => null,
+      };
+
+  Future<UnfinishedRecording?> _quarantinedOrExpired(
+      _Scope s, String id, String dir) async {
+    final t = await _markerTime(s, dir, kQuarantinedFile) ?? _now();
+    if (_expired(t)) {
+      await _expireDelete(s, id);
+      return null;
+    }
+    return UnfinishedRecording(
+        recordingId: id, status: UnfinishedStatus.quarantined);
   }
 
   Future<UnfinishedRecording?> _recoverOne(_Scope s, String id) async {
     final dir = '${s.recDir}/$id';
     final decision = await _readDecision(dir);
     final discarding = await _fs.exists('$dir/$kDiscardingFile');
-    UnfinishedRecording quarantined() => UnfinishedRecording(
-        recordingId: id, status: UnfinishedStatus.quarantined);
 
     if (decision == 'INVALID' ||
         (decision == 'KEEP' && discarding) ||
         (discarding && decision != 'DELETE')) {
       await _writeQuarantine(s, dir); // no delete, no hand-off
-      return quarantined();
+      // The 30-day expiry applies here too (review C5): a direct ordered delete,
+      // never a DELETE publication over an invalid decision.
+      return _quarantinedOrExpired(s, id, dir);
     }
     if (decision == 'DELETE') {
       await _executeDelete(s, id);
@@ -950,32 +1114,30 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     final meta = await _readMeta(s, id);
     if (meta != null && meta.scopeId != s.scopeId) return null; // never offered
     if (decision == 'KEEP') {
-      if (await _tryHandOffLocked(id) == HandOffResult.done) return null;
+      if (_handOffComplete(await _tryHandOffLocked(id))) return null;
       return UnfinishedRecording(recordingId: id, status: UnfinishedStatus.readable);
     }
     if (await _fs.exists('$dir/$kQuarantinedFile')) {
-      final t = await _markerTime(s, dir, kQuarantinedFile) ?? _now();
-      if (_now() - t >= kRecordingExpiryMs) {
-        await _publishDecision(s, id, 'DELETE');
-        await _executeDelete(s, id);
+      return _quarantinedOrExpired(s, id, dir);
+    }
+    // FALLBACK expiry runs BEFORE the meta check: an unreadable FALLBACK
+    // recording must still expire (review C12).
+    if (await _fs.exists('$dir/$kFallbackFile')) {
+      final t = await _markerTime(s, dir, kFallbackFile) ?? _now();
+      if (_expired(t)) {
+        await _expireDelete(s, id);
         return null;
       }
-      return quarantined();
     }
     if (meta == null) {
       return UnfinishedRecording(recordingId: id, status: UnfinishedStatus.unreadable);
     }
-    if (await _fs.exists('$dir/$kFallbackFile')) {
-      final t = await _markerTime(s, dir, kFallbackFile) ?? _now();
-      if (_now() - t >= kRecordingExpiryMs) {
-        await _publishDecision(s, id, 'DELETE');
-        await _executeDelete(s, id);
-        return null;
-      }
+    var sealed = await _readSealed(s, dir);
+    var isSealed = await _fs.exists('$dir/$kSealedFile');
+    final r = await _analyse(s, dir, metrics: true, startUtcMs: meta.startUtcMs);
+    if (r.damage == Damage.unavailable) {
+      return UnfinishedRecording(recordingId: id, status: UnfinishedStatus.unavailable);
     }
-    final sealed = await _readSealed(s, dir);
-    final isSealed = await _fs.exists('$dir/$kSealedFile');
-    final r = await _analyse(s, dir, startUtcMs: meta.startUtcMs);
     if (!r.readable || (isSealed && sealed == null)) {
       return UnfinishedRecording(recordingId: id, status: UnfinishedStatus.unreadable);
     }
@@ -989,9 +1151,19 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       await _executeDelete(s, id);
       return null;
     }
+    if (!isSealed) {
+      // Killed between the stop event and SEALED: seal with that stop reason
+      // (design 4.3 step 2, review C15).
+      final reason = _stopReasonOfEvent(r.lastEvent);
+      if (reason != null) {
+        await _sealLocked(id, SealRequest(reason: reason));
+        sealed = await _readSealed(s, dir);
+        isSealed = sealed != null;
+      }
+    }
     if (isSealed && sealed!['reason'] != StopReason.permissionRevoked.name) {
       // Killed between SEALED and the end of the hand-off: finish silently.
-      if (await _tryHandOffLocked(id) == HandOffResult.done) return null;
+      if (_handOffComplete(await _tryHandOffLocked(id))) return null;
     }
     return UnfinishedRecording(
       recordingId: id,
@@ -1000,6 +1172,8 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       sport: meta.sport,
       lastOffsetMs: r.lastOffsetMs,
       sampleCount: r.sampleCount,
+      distanceM: r.metricsOk ? r.distanceM : null,
+      movingTimeMs: r.metricsOk ? (r.movingTimeS * 1000).round() : null,
       pendingDecision:
           isSealed && sealed!['reason'] == StopReason.permissionRevoked.name,
     );
@@ -1041,8 +1215,7 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         _activate(a);
         await _drain(a);
         if (a.pending.isNotEmpty) {
-          a.timer?.cancel();
-          _active = null;
+          await _detach(a);
           throw const RecordingJournalError('flushFailed');
         }
         return RecoveredRecording(
@@ -1056,10 +1229,98 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
 
   // ------------------------------------------------------------ account events
 
+  /// Step 1 of the pre-unbind hook (review C4): the cheap 30-day `FALLBACK`
+  /// marker for EVERY remaining recording of [ownerUid] (also the ones the slow
+  /// seal skips: pending decisions, KEEP decisions). A recording that is handed
+  /// off afterwards disappears with its directory; one that is not keeps its
+  /// expiry. Returns the number of recordings marked.
+  Future<int> markFallbackForOwner(String ownerUid) async {
+    final s = await _scope();
+    if (s == null || s.uid != ownerUid) return 0;
+    var marked = 0;
+    final ids = <String>{if (_active != null) _active!.id};
+    for (final e in await _fs.list(s.recDir)) {
+      if (e.isDirectory &&
+          !e.name.endsWith(kCleanupSuffix) &&
+          kJournalIdPattern.hasMatch(e.name)) {
+        ids.add(e.name);
+      }
+    }
+    for (final id in ids) {
+      final dir = '${s.recDir}/$id';
+      try {
+        if (!await _fs.exists(dir)) continue;
+        if (await _fs.exists('$dir/$kQuarantinedFile')) continue;
+        if (!await _fs.exists('$dir/$kFallbackFile')) {
+          await _atomicWrite('$dir/$kFallbackFile', _utf('${_now()}'));
+        }
+        marked++;
+      } catch (_) {}
+    }
+    return marked;
+  }
+
+  /// Recordings of the bound scope that wait under a `FALLBACK` marker. The
+  /// markers are on disk, so the next launch of the account can show the notice
+  /// even when the hook outcome was discarded (review S6).
+  Future<int> fallbackCount() async {
+    final s = await _scope();
+    if (s == null) return 0;
+    var n = 0;
+    for (final e in await _fs.list(s.recDir)) {
+      if (e.isDirectory &&
+          !e.name.endsWith(kCleanupSuffix) &&
+          await _fs.exists('${s.recDir}/${e.name}/$kFallbackFile')) {
+        n++;
+      }
+    }
+    return n;
+  }
+
+  /// App-start sweep (review S1, C4): deletes expired `FALLBACK` and
+  /// `QUARANTINED` recordings of EVERY scope under the scopes root, whichever
+  /// uid is bound. Needs no key: the marker time is read as plain text with the
+  /// file modification time as the other reference, and the delete is the
+  /// ordered file delete. The active recording is never touched.
+  Future<int> sweepExpiredAllScopes() async {
+    final base = await _scopesRoot();
+    var removed = 0;
+    for (final scope in await _fs.list(base)) {
+      if (!scope.isDirectory) continue;
+      final recDir = '$base/${scope.name}/$kRecordingDirName';
+      for (final e in await _fs.list(recDir)) {
+        if (!e.isDirectory ||
+            e.name.endsWith(kCleanupSuffix) ||
+            !kJournalIdPattern.hasMatch(e.name) ||
+            _isActive(e.name)) {
+          continue;
+        }
+        final dir = '$recDir/${e.name}';
+        try {
+          final done = await _mutexFor(e.name).run(() async {
+            for (final marker in [kQuarantinedFile, kFallbackFile]) {
+              if (!await _fs.exists('$dir/$marker')) continue;
+              final t = await _markerTime(null, dir, marker) ?? _now();
+              if (!_expired(t)) continue;
+                        await _executeDeleteAt(dir);
+              return true;
+            }
+            return false;
+          });
+          if (done) removed++;
+        } catch (_) {}
+      }
+    }
+    return removed;
+  }
+
   /// Strict path of the pre-unbind hook (design 4.7): seal and hand off every
   /// unfinished recording of [ownerUid]; whatever cannot be handed off stays
-  /// ENCRYPTED in its scope under the 30-day `FALLBACK` marker.
-  Future<FinishAllReport> finishAllForOwner(String ownerUid) async {
+  /// ENCRYPTED in its scope under the 30-day `FALLBACK` marker. [cancelled] is
+  /// polled between steps and inside the hand-off so a timed-out hook stops
+  /// (review C4, S2).
+  Future<FinishAllReport> finishAllForOwner(String ownerUid,
+      {bool Function()? cancelled}) async {
     final s = await _scope();
     if (s == null || s.uid != ownerUid) return const FinishAllReport(0, 0);
     var ok = 0, kept = 0;
@@ -1072,37 +1333,50 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         ids.add(e.name);
       }
     }
-    for (final id in ids) {
-      final dir = '${s.recDir}/$id';
-      try {
-        if (await _fs.exists('$dir/$kDecisionFile') ||
-            await _fs.exists('$dir/$kQuarantinedFile')) {
-          continue;
-        }
-        final sealed = await _readSealed(s, dir);
-        if (sealed != null && sealed['reason'] == StopReason.permissionRevoked.name) {
-          continue; // pending decision of the user: stays as is
-        }
-        await seal(id, const SealRequest(reason: StopReason.account));
-        if (await handOff(id) == HandOffResult.done) {
-          ok++;
-          continue;
-        }
-      } catch (_) {}
-      kept++;
-      try {
-        if (await _fs.exists(dir) && !await _fs.exists('$dir/$kFallbackFile')) {
-          await _atomicWrite('$dir/$kFallbackFile', _utf('${_now()}'));
-        }
-      } catch (_) {}
+    final previous = _handOffCancelled;
+    _handOffCancelled = cancelled;
+    try {
+      for (final id in ids) {
+        if (cancelled?.call() ?? false) break;
+        final dir = '${s.recDir}/$id';
+        try {
+          if (await _fs.exists('$dir/$kDecisionFile') ||
+              await _fs.exists('$dir/$kQuarantinedFile')) {
+            if (await _fs.exists('$dir/$kFallbackFile')) kept++;
+            continue;
+          }
+          final sealed = await _readSealed(s, dir);
+          if (sealed != null &&
+              sealed['reason'] == StopReason.permissionRevoked.name) {
+            if (await _fs.exists('$dir/$kFallbackFile')) kept++;
+            continue; // pending decision of the user: stays as is
+          }
+          await seal(id, const SealRequest(reason: StopReason.account));
+          if (cancelled?.call() ?? false) break;
+          if (_handOffComplete(await handOff(id))) {
+            ok++;
+            continue;
+          }
+        } catch (_) {}
+        kept++;
+        try {
+          if (await _fs.exists(dir) && !await _fs.exists('$dir/$kFallbackFile')) {
+            await _atomicWrite('$dir/$kFallbackFile', _utf('${_now()}'));
+          }
+        } catch (_) {}
+      }
+    } finally {
+      _handOffCancelled = previous;
     }
     return FinishAllReport(ok, kept);
   }
 }
 
-/// The recorder-facing pre-unbind hook: shuts the recorder down through
-/// [shutdownRecorder] (`releaseAll()`), then runs the strict path.
-class RecordingPreUnbindHook implements PreUnbindHook {
+/// The recorder-facing pre-unbind hook: writes the cheap FALLBACK markers
+/// first, shuts the recorder down through [shutdownRecorder] (which awaits an
+/// in-flight stop), then runs the strict path. Cooperative: after
+/// [cancel] (the registry calls it on a timeout) no further step starts.
+class RecordingPreUnbindHook implements PreUnbindHook, CancellablePreUnbindHook {
   RecordingPreUnbindHook({
     required this.journal,
     required this.shutdownRecorder,
@@ -1116,11 +1390,22 @@ class RecordingPreUnbindHook implements PreUnbindHook {
   /// sign-out UI can tell the user (S04-30 AC-3).
   final void Function(int kept)? onFallbackKept;
 
+  bool _cancelled = false;
+
+  @override
+  void cancel() => _cancelled = true;
+
   @override
   Future<void> run(String ownerUid, UnbindReason reason) async {
+    _cancelled = false;
+    if (reason != UnbindReason.accountDeleted) {
+      try {
+        await journal.markFallbackForOwner(ownerUid);
+      } catch (_) {}
+    }
     await shutdownRecorder();
-    if (reason == UnbindReason.accountDeleted) return;
-    final r = await journal.finishAllForOwner(ownerUid);
+    if (reason == UnbindReason.accountDeleted || _cancelled) return;
+    final r = await journal.finishAllForOwner(ownerUid, cancelled: () => _cancelled);
     if (r.keptInFallback > 0) onFallbackKept?.call(r.keptInFallback);
   }
 }

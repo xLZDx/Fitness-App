@@ -35,7 +35,16 @@ class GpsFinishedView extends ConsumerWidget {
     final m = s.metrics;
     final reason = gpsStopReasonLine(l10n, s.stopReason);
     final useSpeed = gpsUsesSpeed(s.sport);
-    return GpsScreenFrame(
+    // System Back must leave `finished` too, or Start stays a silent no-op
+    // until Done is tapped (U3).
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          ref.read(recorderControllerProvider.notifier).acknowledgeFinished();
+        }
+      },
+      child: GpsScreenFrame(
       scaffoldKey: const ValueKey<String>('gps.finish.screen'),
       body: <Widget>[
         // The title takes focus and is read by focus (no separate announce).
@@ -68,7 +77,7 @@ class GpsFinishedView extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -95,7 +104,12 @@ class GpsSaveFailedView extends ConsumerWidget {
                 label: l10n.gpsTryAgain,
                 primary: true,
                 onPressed: () => unawaited(c.checkUnfinished())),
-            GpsButton(label: l10n.gpsNotNow, onPressed: onClose),
+            GpsButton(
+                label: l10n.gpsNotNow,
+                onPressed: () {
+                  ref.read(gpsSaveFailedDismissedProvider.notifier).state = true;
+                  onClose();
+                }),
           ],
         ),
       ],

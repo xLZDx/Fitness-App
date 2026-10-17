@@ -59,7 +59,12 @@ import 'features/activity/repository/uid_scoped_activity_journal.dart'
 import 'features/recording/consent/location_consent_providers.dart'
     show locationConsentGrantedProvider;
 import 'features/recording/journal/recording_journal_providers.dart'
-    show recordingJournalPortOverride, registerRecordingPreUnbindHook;
+    show
+        fileRecordingJournalProvider,
+        recordingFallbackKeptProvider,
+        recordingJournalPortOverride,
+        registerRecordingPreUnbindHook,
+        sweepExpiredRecordings;
 import 'features/recording/l10n/recording_log.dart'
     show logRecorderError, recorderLogSink;
 import 'features/recording/location/geolocator_location_source.dart'
@@ -272,14 +277,17 @@ class _AppRecorderEnvironment implements RecorderEnvironment {
 /// that account's journal is bound.
 final _gpsRecorderWiringProvider = Provider<void>((ref) {
   registerRecordingPreUnbindHook(ref, shutdownRecorder: () async {
-    // The recorder's single release path runs inside stop; nothing running means
-    // nothing to release.
-    if (ref.read(recorderControllerProvider).phase.isCollecting) {
-      await ref
-          .read(recorderControllerProvider.notifier)
-          .stopAutomatically(StopReason.account);
-    }
+    // Awaits an in-flight stop, then stops a still-collecting recording through
+    // the recorder's single release path (review C4).
+    await ref
+        .read(recorderControllerProvider.notifier)
+        .shutdownForAccountChange();
+  }, onFallbackKept: (kept) {
+    ref.read(recordingFallbackKeptProvider.notifier).state = kept;
   });
+  // App-start sweep of expired FALLBACK / QUARANTINED recordings in every
+  // scope, whichever account is bound (review S1).
+  unawaited(Future<void>.microtask(() => sweepExpiredRecordings(ref)));
   // Consent must be loaded before the first Start precondition check.
   ref.listen<bool>(locationConsentGrantedProvider, (_, __) {},
       fireImmediately: true);
@@ -287,6 +295,12 @@ final _gpsRecorderWiringProvider = Provider<void>((ref) {
   void gate() {
     final s = ref.read(activityBindStatusProvider);
     final uid = s.phase == BindPhase.bound ? s.uid : null;
+    // A confirmed account change resets the recorder's stale non-collecting
+    // phase after the pre-unbind hook ran (review C7).
+    final accountUid = s.phase == BindPhase.none ? null : s.uid;
+    unawaited(Future<void>.microtask(() => ref
+        .read(recorderControllerProvider.notifier)
+        .onAccountChanged(accountUid)));
     if (uid == null || uid.isEmpty) {
       checkedUid = null;
       return;
@@ -295,10 +309,15 @@ final _gpsRecorderWiringProvider = Provider<void>((ref) {
     checkedUid = uid;
     // Deferred: the first call can come while this provider is building, and a
     // provider must not modify another provider during its initialisation.
-    unawaited(Future<void>.microtask(() => ref
-            .read(recorderControllerProvider.notifier)
-            .checkUnfinished())
-        .catchError((Object e) {
+    unawaited(Future<void>.microtask(() async {
+      await ref.read(recorderControllerProvider.notifier).checkUnfinished();
+      // The FALLBACK markers are on disk: show the notice again at the next
+      // launch of the account (review S6).
+      try {
+        final n = await ref.read(fileRecordingJournalProvider).fallbackCount();
+        if (n > 0) ref.read(recordingFallbackKeptProvider.notifier).state = n;
+      } catch (_) {}
+    }).catchError((Object e) {
       logRecorderError('recovery.gate', e);
     }));
   }

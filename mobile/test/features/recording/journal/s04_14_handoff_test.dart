@@ -110,17 +110,19 @@ void main() {
         expect(c.filesOf(recId(1)), isEmpty);
         await c.dispose();
       }
-      expect(offered, greaterThan(0), reason: 'early crash points leave an unfinished recording');
+      // Since review C15 a crash after the stop event is re-sealed and finished at
+      // recovery, so no crash point of this window need remain offered.
+      expect(offered, greaterThanOrEqualTo(0));
       expect(finished, greaterThan(0), reason: 'late crash points finish silently');
     });
 
-    test('/after-step: before SEALED the recording is offered (stop event without SEALED)', () async {
+    test('/after-step: a stop event without SEALED is re-sealed with its reason and finished (review C15)', () async {
       await prepRun(k);
       await k.journal.appendEvent(const JournalEvent(JournalEventKind.stoppedBattery, 6500));
       await k.kill();
-      final r = await k.journal.listUnfinished();
-      expect(r.single.status, UnfinishedStatus.readable);
-      expect(await activityCount(k), 0);
+      expect(await k.journal.listUnfinished(), isEmpty);
+      expect(await activityCount(k), 1);
+      expect(k.filesOf(recId(1)), isEmpty);
     });
 
     test('/after-step SEALED, no stored session: re-run from step 3, silently', () async {
@@ -150,7 +152,8 @@ void main() {
       await prepRun(k);
       await k.journal.seal(recId(1), const SealRequest(reason: StopReason.user));
       k.ops.crashAfterPrefix = 'ops.renameDir';
-      expect(await k.journal.handOff(recId(1)), HandOffResult.failedKept);
+      // The activity is verified; a failing cleanup does not undo it (review C9).
+      expect(await k.journal.handOff(recId(1)), HandOffResult.done);
       expect(k.mem.dirs.contains('${k.dirOf(recId(1))}.cleanup'), isTrue);
       await k.kill();
       expect(await k.journal.listUnfinished(), isEmpty);
@@ -357,7 +360,8 @@ void main() {
     expect(await activityCount(k), 1);
     await k.activityReal.delete(nativeActivityId(recId(1))); // the user deletes it
     k.activity.crashAfterPut = null;
-    expect(await k.journal.handOff(recId(1)), HandOffResult.done);
+    expect(await k.journal.handOff(recId(1)), HandOffResult.tombstoned,
+        reason: 'nothing was saved: a distinct result (review C9)');
     expect(await activityCount(k), 0, reason: 'the activity is NOT re-created');
     expect((await k.activityReal.listTombstones()), hasLength(1));
     expect(k.filesOf(recId(1)), isEmpty, reason: 'step 6 still deletes the recording directory');

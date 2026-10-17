@@ -103,6 +103,11 @@ enum UnfinishedStatus {
 
   /// Quarantined by an earlier Keep: never blocks Start, never offered.
   quarantined,
+
+  /// Could not be read right now (I/O error, key store, worker failure): NOT
+  /// confirmed damage. Retryable; never quarantined and never expires (review
+  /// C3). Blocks Start like any unfinished recording.
+  unavailable,
 }
 
 /// Summary of one unfinished recording.
@@ -114,6 +119,8 @@ class UnfinishedRecording {
     this.sport,
     this.lastOffsetMs,
     this.sampleCount,
+    this.distanceM,
+    this.movingTimeMs,
     this.pendingDecision = false,
   });
 
@@ -123,6 +130,11 @@ class UnfinishedRecording {
   final SportType? sport;
   final int? lastOffsetMs;
   final int? sampleCount;
+
+  /// Distance and moving time recomputed from the readable data; null when
+  /// unknown (unreadable, quarantined, metrics not computable).
+  final double? distanceM;
+  final int? movingTimeMs;
 
   /// Sealed by a permission revocation and waiting for the user's Keep or
   /// Delete (design 4.3, Z2). It is listed, but it does not block Start (design
@@ -175,6 +187,10 @@ enum HandOffResult {
   /// The hand-off could not complete; the recording stays on the device and is
   /// offered again (design 5.2 `stopping -> idle`).
   failedKept,
+
+  /// The activity was deleted by the user meanwhile (tombstone): nothing was
+  /// saved and the journal files are cleaned up. Not a save (review C9).
+  tombstoned,
 }
 
 /// Result of the durable KEEP/DELETE decision (design 4.3, Z5, Z7).
@@ -231,4 +247,11 @@ abstract class RecordingJournalPort {
 
   /// Quarantines an unreadable recording (Keep in `recoveryFailed`).
   Future<void> quarantine(String recordingId);
+
+  /// Releases the active recording WITHOUT sealing or deleting it: cancels the
+  /// flush timer, closes the handle and clears the active slot so the next
+  /// `begin` works. The data stays on disk as an unfinished recording (only an
+  /// empty directory is removed). No-op when [recordingId] is not active
+  /// (review C1).
+  Future<void> abandonActive(String recordingId);
 }

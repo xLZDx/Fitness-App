@@ -346,8 +346,8 @@ void main() {
   });
 
   group('DT-24-18 the pending decision and the recording stay reachable', () {
-    sheetTest('/only-a-pending-revoked-decision-shows-the-normal-enabled-gps-'
-        'start-row (real recorder, permission lost)', (t) async {
+    sheetTest('/only-a-pending-revoked-decision-shows-the-enabled-gps-'
+        'open-row (real recorder, permission lost)', (t) async {
       final l10n = await AppLocalizations.delegate.load(const Locale('en'));
       final s = await pumpSheet(t);
       s.seams.perms
@@ -366,14 +366,16 @@ void main() {
         await t.pump(const Duration(seconds: 1));
       }
       expect(c.read(recorderPhaseProvider), RecorderPhase.permissionRevoked);
-      expect(c.read(activeSessionStatusProvider), isNull,
-          reason: 'a revoked recording has no strip');
+      expect(c.read(activeSessionStatusProvider)?.state,
+          ActiveSessionState.revoked,
+          reason: 'a pending revoked decision keeps a strip row (U4)');
       await s.open();
       expect(sheet, findsOneWidget);
-      expect(row(kRecordGpsStart), findsOneWidget);
-      expect(t.widget<HudSettingRow>(row(kRecordGpsStart)).onTap, isNotNull,
-          reason: 'the normal enabled start row leads to the pending decision');
-      expect(find.text(l10n.gpsRowTitle), findsOneWidget);
+      expect(row(kRecordGpsStart), findsNothing);
+      expect(row(kRecordGpsOpen), findsOneWidget);
+      expect(t.widget<HudSettingRow>(row(kRecordGpsOpen)).onTap, isNotNull,
+          reason: 'the enabled Open row leads to the pending decision (U4)');
+      expect(find.text(l10n.gpsOpenRecording), findsOneWidget);
     });
 
     sheetTest('/recording-or-unfinished-shows-the-enabled-gpsOpen-row-never-'

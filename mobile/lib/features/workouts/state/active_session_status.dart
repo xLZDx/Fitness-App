@@ -115,6 +115,9 @@ enum ActiveSessionState {
 
   /// "Recording not restored" (unreadable recording).
   notRestored,
+
+  /// "Location off: choose" (permission revoked, decision pending; S04-D 14.1).
+  revoked,
 }
 
 /// One running session as the shell shows it.
@@ -441,7 +444,8 @@ final gpsRecordingOwnerUidProvider =
         GpsRecordingOwnerController.new);
 
 /// Pure projection of the recorder display onto a strip status (S04-D 14.1).
-/// Null for `idle`, `finished` and `permissionRevoked` (design 7.2: no strip).
+/// Null for `idle` and `finished`. A pending `permissionRevoked` decision keeps
+/// a strip row until Keep or Delete (S04-D 14.1, SH-9).
 /// [movingSeconds] is the moving time (frozen while paused).
 ActiveSessionStatus? deriveGpsRecordingStatus({
   required RecorderDisplay display,
@@ -490,9 +494,10 @@ ActiveSessionStatus? deriveGpsRecordingStatus({
           null => null,
         },
       );
+    case RecorderDisplayState.permissionRevoked:
+      return make(ActiveSessionState.revoked);
     case RecorderDisplayState.idle:
     case RecorderDisplayState.finished:
-    case RecorderDisplayState.permissionRevoked:
       return null;
   }
 }

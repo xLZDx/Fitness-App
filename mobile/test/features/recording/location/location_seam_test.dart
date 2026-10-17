@@ -137,7 +137,10 @@ void main() {
     test('sanity: the adapter exists and implements the seam', () {
       final adapter = recordingSources().singleWhere((f) =>
           f.path.endsWith('location/geolocator_location_source.dart'));
-      expect(adapter.text.contains('implements LocationSource'), isTrue);
+      expect(
+          adapter.text.contains('implements LocationSource') ||
+              adapter.text.contains('extends StreamLocationSource'),
+          isTrue);
     });
   });
 

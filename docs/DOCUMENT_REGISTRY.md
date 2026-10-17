@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 169486 |
+| `core/LESSONS_LOG.md` | Lessons log | 170977 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -339,13 +339,14 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21323 |
 | `docs/phase2/s04/S04_RELEASE_CHECKLIST.md` | S04 release checklist (story S04-38) | 5285 |
 | `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 89665 |
+| `docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md` | S04 code review, round 1 (consolidated) | 8080 |
 | `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 31591 |
 | `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 73623 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_A_B_C.md` | S04 test findings, group EP_A_B_C (EP-A, EP-B, EP-C) | 10330 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_D.md` | S04 test findings, group EP_D (journal, kill and recovery) | 7793 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_E_H.md` | S04 test findings, group EP_E_H (EP-E permission/consent, EP-H privacy guarantees) | 4414 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_F_G_J.md` | S04 test findings, group EP_F_G_J (epics EP-F, EP-G, EP-J) | 4951 |
-| `docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md` | S04 final test run | 2221 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md` | S04 final test run | 4219 |
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 190077 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |

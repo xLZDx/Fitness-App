@@ -32,6 +32,7 @@ class GpsConsentRow extends ConsumerStatefulWidget {
 class _GpsConsentRowState extends ConsumerState<GpsConsentRow> {
   bool _confirming = false;
   bool _busy = false;
+  bool _failed = false;
   final FocusNode _switchFocus = FocusNode(debugLabel: 'gps.consent.switch');
 
   @override
@@ -40,10 +41,14 @@ class _GpsConsentRowState extends ConsumerState<GpsConsentRow> {
     super.dispose();
   }
 
-  Future<void> _withdraw() async {
+  /// Returns true only when the withdrawal was persisted (U7).
+  Future<bool> _withdraw() async {
     setState(() => _busy = true);
+    var ok = false;
     try {
-      await ref.read(locationConsentProvider.notifier).withdraw();
+      ok = await ref.read(locationConsentProvider.notifier).withdraw();
+    } catch (_) {
+      ok = false;
     } finally {
       if (mounted) {
         setState(() {
@@ -53,6 +58,7 @@ class _GpsConsentRowState extends ConsumerState<GpsConsentRow> {
         _switchFocus.requestFocus();
       }
     }
+    return ok;
   }
 
   Future<void> _grant() async {
@@ -112,6 +118,11 @@ class _GpsConsentRowState extends ConsumerState<GpsConsentRow> {
           divider: !widget.hasLinks,
           trailing: trailing,
         ),
+        if (_failed && !_confirming)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: GpsBodyText(l10n.gpsConsentWithdrawFailed),
+          ),
         if (_confirming)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -123,11 +134,16 @@ class _GpsConsentRowState extends ConsumerState<GpsConsentRow> {
                     label: l10n.gpsConsentWithdraw,
                     enabled: !_busy,
                     onPressed: () async {
-                      await _withdraw();
-                      if (mounted) {
-                        // ignore: use_build_context_synchronously
-                        gpsAnnounce(context, l10n.gpsConsentOff);
-                      }
+                      final ok = await _withdraw();
+                      if (!mounted) return;
+                      // ignore: use_build_context_synchronously
+                      gpsAnnounce(
+                          context,
+                          ok
+                              ? l10n.gpsConsentOff
+                              : l10n.gpsConsentWithdrawFailed,
+                          assertive: !ok);
+                      setState(() => _failed = !ok);
                     }),
                 GpsButton(
                   label: l10n.gpsKeep,

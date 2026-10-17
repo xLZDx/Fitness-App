@@ -1273,3 +1273,11 @@ Facts: the epic tests found that the documented 5-fix smoothing and 3 m elevatio
 Root cause: algorithms were written to the design text without replaying the plan fixtures; a wording check pinned a status word that changes with decisions.
 Missed by: authors; caught by the epic test agents.
 Rule next time: write the replay-tolerance fixture test together with each calculator; never pin a document status word in a test.
+
+## 2026-10-17 - Commit: fix(s04): close the code-review findings on journal release, recovery classes, expiry, owner check, adapter stop and recorder screens
+
+Kind: FAILURE.
+Facts: four static reviews (reliability, silent failures, Flutter, security) of the tested code found no blocker but 14 MAJOR items, among them: the journal's active recording was never released on several controller paths so Start stayed blocked; a transient I/O or key error was classed as damage and led to a 30-day deletion; the 30-day expiry ran only for the signed-in account; a hand-off could land in another account's store because the owner check and the write were not atomic; overlapping setInterval calls leaked a location subscription; the finished and revoked screens could trap the recorder. All fixed; the full set of tests written this sprint is 1119 passed.
+Root cause: the epic tests exercised the happy path and designed failure injections but not release-on-every-exit, error classification, cross-scope sweeps or concurrency of the adapter. One FIX agent also hung on a test that awaited a future that never completes under the fake clock.
+Missed by: authors and epic tests; caught by the independent reviewers.
+Rule next time: for every acquire add a test that every exit path releases; classify transient versus permanent errors at the first design pass; never await recorder futures under the fake clock in tests, tap through the UI instead; give agents running flutter test a hard timeout.

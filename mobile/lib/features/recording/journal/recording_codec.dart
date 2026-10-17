@@ -26,6 +26,14 @@ class Damage {
   static const breakMismatch = 'breakMismatch';
   static const sealedMismatch = 'sealedMismatch';
   static const worker = 'worker';
+
+  /// NOT damage: the recording could not be read right now (I/O error, key
+  /// store, worker failure). Retryable; never quarantined (S04 review C3).
+  static const unavailable = 'unavailable';
+
+  /// True for a confirmed damage code (authentication, CRC, schema, ...).
+  static bool isConfirmed(String? code) =>
+      code != null && code != unavailable;
 }
 
 Uint32List _crcTable() {

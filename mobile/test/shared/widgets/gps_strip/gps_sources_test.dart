@@ -411,9 +411,13 @@ void main() {
       expect(of(st(RecorderPhase.restoring))?.remaining, isNull);
     });
 
-    test('revoked, finished and idle give no strip', () {
+    test('a pending revoked decision keeps a strip row (U4)', () {
+      expect(of(st(RecorderPhase.permissionRevoked))?.state,
+          ActiveSessionState.revoked);
+    });
+
+    test('finished and idle give no strip', () {
       for (final p in [
-        RecorderPhase.permissionRevoked,
         RecorderPhase.finished,
         RecorderPhase.idle,
         RecorderPhase.preparing,

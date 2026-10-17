@@ -318,7 +318,11 @@ void main() {
       await revokedRecording(k2);
       k2.fs.clearLog();
       expect(await k2.journal.decideDelete(id1), DecisionOutcome.committed);
-      expect(k2.fs.log.map((o) => o.path), contains(startsWith('ops.createExclusive')));
+      // Without hard links the durable temp file is renamed into place while
+      // the target is absent: no empty DECISION window (review C6).
+      expect(k2.fs.log.where((o) => o.kind == FsOpKind.rename && (o.to ?? '').endsWith('/DECISION')),
+          isNotEmpty);
+      expect(k2.fs.log.map((o) => o.path), isNot(contains(startsWith('ops.createExclusive'))));
       await k2.dispose();
     });
 
@@ -496,25 +500,18 @@ void main() {
       });
     }
 
-    test('/live-loser-finds-empty-file (fallback publish): the loser waits behind the winner and acts on nothing', () async {
+    test('/fallback publish has no empty window (review C6): the loser sees the whole winner', () async {
       await revokedRecording(k);
       k.ops.linkSupported = false;
-      final reached = Completer<void>(), release = Completer<void>();
-      k.ops.afterEmptyCreate = () async {
-        reached.complete();
-        await release.future;
-      };
+      k.fs.clearLog();
       final winner = k.journal.decideKeep(id1);
-      await reached.future;
-      expect(k.bytesOf(decisionPath(k)), isEmpty, reason: 'precondition: the empty window exists');
       final loser = k.journal.decideDelete(id1);
-      await Future<void>.delayed(const Duration(milliseconds: 30));
-      expect(k.filesOf(id1), contains('seg-0001.log'), reason: 'the loser acted on nothing while the file was empty');
-      release.complete();
       expect(await winner, DecisionOutcome.committed);
       expect(await loser, DecisionOutcome.alreadyDecided);
       expect(decisionText(k), 'KEEP');
       expect(k.filesOf(id1), contains('seg-0001.log'));
+      expect(k.fs.log.where((o) => o.kind == FsOpKind.openWrite && o.path.endsWith('/DECISION')), isEmpty,
+          reason: 'DECISION is never opened for writing: it appears whole by rename');
     });
   });
 

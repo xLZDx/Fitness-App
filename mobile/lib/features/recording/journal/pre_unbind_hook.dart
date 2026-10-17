@@ -33,6 +33,12 @@ abstract class PreUnbindHook {
   Future<void> run(String ownerUid, UnbindReason reason);
 }
 
+/// Optional cooperative cancellation: the registry calls [cancel] when the
+/// bound passes so the still-running hook starts no further step (review C4).
+abstract class CancellablePreUnbindHook {
+  void cancel();
+}
+
 /// What a bounded run did, for the sign-out guard's notice (S04-30 AC-3, AC-6).
 enum PreUnbindOutcome {
   /// No hook is registered: nothing to do.
@@ -75,6 +81,9 @@ class PreUnbindHookRegistry {
       await hook.run(ownerUid, reason).timeout(timeout);
       return PreUnbindOutcome.completed;
     } on TimeoutException {
+      if (hook is CancellablePreUnbindHook) {
+        (hook as CancellablePreUnbindHook).cancel();
+      }
       return PreUnbindOutcome.timedOut;
     } catch (_) {
       // Content-free: the type of the failure is not even needed here.

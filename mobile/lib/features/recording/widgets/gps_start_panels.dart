@@ -116,6 +116,21 @@ class GpsBatteryStartNote extends ConsumerWidget {
   }
 }
 
+/// U6: states that a safety check is not active on this build.
+class GpsSafetyGapNote extends ConsumerWidget {
+  const GpsSafetyGapNote({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(gpsSafetyGapProvider)) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: GpsBodyText(AppLocalizations.of(context).gpsSafetyGapNote,
+          secondary: true, size: 13),
+    );
+  }
+}
+
 /// The active panel above the Start button. Returns an empty box for
 /// [GpsStartPanelId.none].
 class GpsStartPanelView extends ConsumerWidget {

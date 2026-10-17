@@ -65,6 +65,7 @@ String _stateWord(AppLocalizations l10n, ActiveSessionState s) => switch (s) {
       ActiveSessionState.autoPaused => l10n.gpsStripPausedAuto,
       ActiveSessionState.unfinished => l10n.gpsStripUnfinished,
       ActiveSessionState.notRestored => l10n.gpsStripNotRestored,
+      ActiveSessionState.revoked => l10n.gpsStripRevoked,
     };
 
 String _railWord(AppLocalizations l10n, ActiveSessionState s) => switch (s) {
@@ -78,6 +79,7 @@ String _railWord(AppLocalizations l10n, ActiveSessionState s) => switch (s) {
       ActiveSessionState.autoPaused => l10n.gpsRailAuto,
       ActiveSessionState.unfinished => l10n.gpsRailWaiting,
       ActiveSessionState.notRestored => l10n.gpsRailProblem,
+      ActiveSessionState.revoked => l10n.gpsRailChoose,
     };
 
 IconData _stateIcon(ActiveSessionState s) => switch (s) {
@@ -91,6 +93,7 @@ IconData _stateIcon(ActiveSessionState s) => switch (s) {
       ActiveSessionState.autoPaused => Icons.motion_photos_paused_rounded,
       ActiveSessionState.unfinished => Icons.history_rounded,
       ActiveSessionState.notRestored => Icons.error_outline_rounded,
+      ActiveSessionState.revoked => Icons.location_off_rounded,
     };
 
 /// The third strip line: the mode label for the gym timers; for a GPS

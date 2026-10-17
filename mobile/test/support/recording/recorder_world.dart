@@ -49,6 +49,10 @@ class MemoryJournalPort implements RecordingJournalPort {
   HandOffResult handOffResult = HandOffResult.done;
   Object? handOffError;
   RecoveredRecording? recovered;
+  DecisionOutcome keepOutcome = DecisionOutcome.committed;
+  DecisionOutcome deleteOutcome = DecisionOutcome.committed;
+  Object? decideError;
+  final List<String> abandoned = [];
 
   void fault(JournalFault f) => _faults.add(f);
 
@@ -123,14 +127,24 @@ class MemoryJournalPort implements RecordingJournalPort {
   Future<DecisionOutcome> decideKeep(String recordingId) async {
     calls.add('decideKeep');
     keeps.add(recordingId);
-    return DecisionOutcome.committed;
+    final e = decideError;
+    if (e != null) throw e;
+    return keepOutcome;
   }
 
   @override
   Future<DecisionOutcome> decideDelete(String recordingId) async {
     calls.add('decideDelete');
     deletes.add(recordingId);
-    return DecisionOutcome.committed;
+    final e = decideError;
+    if (e != null) throw e;
+    return deleteOutcome;
+  }
+
+  @override
+  Future<void> abandonActive(String recordingId) async {
+    calls.add('abandonActive');
+    abandoned.add(recordingId);
   }
 
   @override
