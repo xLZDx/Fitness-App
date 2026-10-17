@@ -6,8 +6,8 @@
 /// randomness and no iteration over unordered collections.
 library;
 
+import 'distance_accumulator.dart';
 import 'elevation.dart';
-import 'geo.dart';
 import 'pace.dart';
 import 'pipeline_types.dart';
 import 'smoothing.dart';
@@ -164,10 +164,11 @@ class SessionCalculator {
     void closeSegment() {
       if (segment.isEmpty) return;
       final smoothed = smoothing.smooth(segment);
-      for (var i = 1; i < smoothed.length; i++) {
-        distance += haversineM(smoothed[i - 1].lat, smoothed[i - 1].lon,
-            smoothed[i].lat, smoothed[i].lon);
+      final acc = DistanceAccumulator();
+      for (final p in smoothed) {
+        acc.add(p.lat, p.lon);
       }
+      distance += acc.totalM;
       if (smoothed.length > 1) segments++;
       segment = <PipelineSample>[];
     }

@@ -13,7 +13,8 @@ import 'recording_constants.dart';
 /// one second) is an outlier and ignored; after [kAltitudeOutlierAcceptAfter]
 /// consecutive outliers the new level is accepted without counting; (3)
 /// hysteresis: a change counts only after the median moves
-/// [kAltitudeHysteresisM] from the last counted level. No barometer in S04.
+/// [kAltitudeHysteresisM] from the last counted level and stays there for
+/// [kAltitudeConfirmSamples] consecutive fixes. No barometer in S04.
 /// With no altitude at all ascent and descent are undefined (null), never 0.
 class ElevationAccumulator {
   ElevationAccumulator({
@@ -21,8 +22,10 @@ class ElevationAccumulator {
     this.medianWindow = kAltitudeMedianWindow,
     this.maxStepMps = kAltitudeMaxStepMps,
     this.acceptAfter = kAltitudeOutlierAcceptAfter,
+    this.confirmSamples = kAltitudeConfirmSamples,
   });
 
+  final int confirmSamples;
   final double hysteresisM;
   final int medianWindow;
   final double maxStepMps;
@@ -33,6 +36,8 @@ class ElevationAccumulator {
   int _refMs = 0;
   double? _level;
   int _outliers = 0;
+  int _pendingDir = 0;
+  int _pendingCount = 0;
   double _ascent = 0;
   double _descent = 0;
   bool _any = false;
@@ -71,6 +76,8 @@ class ElevationAccumulator {
       if (_outliers < acceptAfter) return;
       // A sustained new level: accept it without counting the jump.
       _outliers = 0;
+      _pendingDir = 0;
+      _pendingCount = 0;
       _refMedian = m;
       _refMs = offsetMs;
       _level = m;
@@ -81,13 +88,28 @@ class ElevationAccumulator {
     _refMs = offsetMs;
 
     final level = _level!;
-    if (m - level >= hysteresisM) {
-      _ascent += m - level;
-      _level = m;
-    } else if (level - m >= hysteresisM) {
-      _descent += level - m;
-      _level = m;
+    final dir = m - level >= hysteresisM
+        ? 1
+        : level - m >= hysteresisM
+            ? -1
+            : 0;
+    if (dir == 0) {
+      _pendingDir = 0;
+      _pendingCount = 0;
+      return;
     }
+    _pendingCount = dir == _pendingDir ? _pendingCount + 1 : 1;
+    _pendingDir = dir;
+    if (_pendingCount < confirmSamples) return;
+    // Confirmed: the median stayed beyond the band for confirmSamples fixes.
+    if (dir > 0) {
+      _ascent += m - level;
+    } else {
+      _descent += level - m;
+    }
+    _level = m;
+    _pendingDir = 0;
+    _pendingCount = 0;
   }
 
   static double _median(List<double> values) {

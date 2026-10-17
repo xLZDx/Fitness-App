@@ -95,9 +95,7 @@ void main() {
       final d = _finalOf(replay(fx)).distanceM;
       expect((d - fx.truthLengthM!).abs() / fx.truthLengthM!,
           lessThanOrEqualTo(0.03));
-    },
-        skip: 'KNOWN_DEFECT S04-R-011/S04-R-032: +54 percent on the plan\'s '
-            '8 m noise fixture (see S04_TEST_FINDINGS_EP_A_B_C.md)');
+    });
   });
 
   group('DT-08-2 real-shaped tracks', () {
@@ -127,9 +125,7 @@ void main() {
       final d = _finalOf(replay(fx)).distanceM;
       expect((d - fx.truthLengthM!).abs() / fx.truthLengthM!,
           lessThanOrEqualTo(0.02));
-    },
-        skip: 'KNOWN_DEFECT S04-R-032: +8.7 percent with correlated 2.5 m '
-            'noise under the 5-fix smoothing (see findings)');
+    });
   });
 
   group('DT-08-3 gaps and pauses add 0 m', () {
@@ -687,10 +683,7 @@ void main() {
       final r = elev(fFlatAltNoise());
       expect(r.asc, lessThanOrEqualTo(5.0), reason: 'ascent ${r.asc}');
       expect(r.desc, lessThanOrEqualTo(5.0), reason: 'descent ${r.desc}');
-    },
-        skip: 'KNOWN_DEFECT S04-R-034: measured ascent 61 m and descent 59 m '
-            'for +-4 m noise with the 5-sample median and 3 m hysteresis '
-            '(see findings)');
+    });
 
     test('through the live pipeline the same numbers appear', () {
       final r = replay(fFlatAltNoise());
@@ -781,7 +774,7 @@ void main() {
       final e = ElevationAccumulator();
       var t = 0;
       for (final p in plateaus) {
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 12; i++) {
           e.add(t * 1000, p);
           t++;
         }

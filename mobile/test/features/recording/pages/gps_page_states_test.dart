@@ -147,11 +147,14 @@ void main() {
       final l10n = await en();
       final w = await pumpPage(t);
       await w.startRecording();
-      final before = w.state.totalDistanceM;
       await w.advance(const Duration(seconds: 12));
       expect(w.state.flags.poorAccuracy, isTrue);
       expect(headline(t), l10n.gpsHeadWeak);
       expect(find.text(l10n.gpsWeakHint), findsOneWidget);
+      // The smoother lag is flushed when the gap opens (the segment end keeps
+      // its true length), so the distance is read once the gap is open.
+      final before = w.state.totalDistanceM;
+      await w.advance(const Duration(seconds: 3));
       expect(w.state.totalDistanceM, before, reason: 'distance frozen in a gap');
       expect(w.messages.where((m) => m == l10n.gpsAnnWeak).length, 1);
       // signal back, lost again inside 30 s: not announced a second time

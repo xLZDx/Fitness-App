@@ -6,9 +6,9 @@ library;
 
 import 'accuracy_gate.dart';
 import 'auto_pause.dart';
+import 'distance_accumulator.dart';
 import 'elevation.dart';
 import 'gap_detector.dart';
-import 'geo.dart';
 import 'pace.dart';
 import 'pipeline_types.dart';
 import 'recording_constants.dart';
@@ -83,8 +83,10 @@ class RecorderPipeline {
   int _closedPausedMs = 0;
   int _nowMs = 0;
   int _kept = 0;
-  double _distanceM = 0;
-  PipelineSample? _lastSmoothed;
+  // Distance of the closed segments plus the open segment's accumulator.
+  double _closedDistanceM = 0;
+  DistanceAccumulator _segDistance = DistanceAccumulator();
+  double get _distanceM => _closedDistanceM + _segDistance.totalM;
 
   /// Advances time without a fix (a tick from the recorder). Opens a gap when
   /// no fix was kept for the poor-accuracy time.
@@ -223,11 +225,7 @@ class RecorderPipeline {
   }
 
   void _accept(PipelineSample p) {
-    final prev = _lastSmoothed;
-    if (prev != null) {
-      _distanceM += haversineM(prev.lat, prev.lon, p.lat, p.lon);
-    }
-    _lastSmoothed = p;
+    _segDistance.add(p.lat, p.lon);
     final moving = p.offsetMs - _closedPausedMs;
     _pace.add(moving < 0 ? 0 : moving, _distanceM);
   }
@@ -237,6 +235,7 @@ class RecorderPipeline {
       _accept(p);
     }
     _smoother = smoothing.createIncremental();
-    _lastSmoothed = null;
+    _closedDistanceM += _segDistance.totalM;
+    _segDistance = DistanceAccumulator();
   }
 }

@@ -375,7 +375,12 @@ void main() {
     final i = contract.indexOf('GPS-PRIV-014');
     expect(i, isNonNegative);
     final near = contract.substring(i, (i + 2200).clamp(0, contract.length));
-    expect(near.contains('S04 proposed clarification'), isTrue);
+    // The clarification was PROPOSED when S04 was written and is APPROVED by the operator
+    // (2026-10-17); accept either recorded state, but one of them must sit next to the line.
+    expect(
+        near.contains('S04 proposed clarification') ||
+            near.contains('S04 clarification, APPROVED by the operator'),
+        isTrue);
     expect(near.contains('PROPOSED'), isTrue);
     expect(near.contains('30 days'), isTrue);
     final req = File('../docs/phase2/s04/S04_REQUIREMENTS.md').readAsStringSync();

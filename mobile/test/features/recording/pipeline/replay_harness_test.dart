@@ -164,7 +164,12 @@ void main() {
 
       for (final fx in [fClimb(), fFlatAltNoise()]) {
         final b = asc(fx);
-        expect(asc(fx, h: 2.0), isNot(b), reason: '${fx.name} at 2 m');
+        // The F-climb staircase (1 m noise, 5 m steps) counts the same at 2 m
+        // and 3 m since the confirmed levels coincide; the noise fixture
+        // still separates them.
+        if (fx.name != 'F-climb') {
+          expect(asc(fx, h: 2.0), isNot(b), reason: '${fx.name} at 2 m');
+        }
         expect(asc(fx, h: 4.0), isNot(b), reason: '${fx.name} at 4 m');
       }
     });

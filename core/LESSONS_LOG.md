@@ -1265,3 +1265,11 @@ Facts: test agents for EP-A/B/C (273 passed, 4 skipped as known defects), EP-D (
 Root cause: tests found what compile-only passes cannot; the allowlist hook is a platform control that took effect when the session moved to the project directory.
 Missed by: author (bugs); the allowlist was not known to the coordinator.
 Rule next time: keep test agents out of docs/phase2/s01 (contract files are not theirs); check the project agent allowlist before planning agent waves.
+
+## 2026-10-17 - Commit: fix(s04): hold the distance and elevation tolerances found by the epic tests and record the final test run
+
+Kind: FAILURE and SUCCESS.
+Facts: the epic tests found that the documented 5-fix smoothing and 3 m elevation hysteresis missed their own plan tolerances on noisy fixtures (distance +8.7% vs 3%, ascent 61 m vs 5 m) and that every segment end lost about two steps of distance; a journal bug deleted a recording whose stored activity had lost its streams (data loss). All fixed; the final full run of the tests written this sprint is 1096 passed, 0 failed, 0 skipped. One test kept requiring the old PROPOSED wording after the operator approved the clarification.
+Root cause: algorithms were written to the design text without replaying the plan fixtures; a wording check pinned a status word that changes with decisions.
+Missed by: authors; caught by the epic test agents.
+Rule next time: write the replay-tolerance fixture test together with each calculator; never pin a document status word in a test.

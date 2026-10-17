@@ -17,6 +17,14 @@ import 'package:fitness_app/features/recording/state/recorder_environment.dart';
 
 import '../pages/recorder_harness.dart';
 
+/// Runs an async controller call without awaiting it in the fake-async zone.
+Future<void> runCall(Rig r, Future<void> Function() call) async {
+  unawaited(call());
+  for (var i = 0; i < 3; i++) {
+    await r.flush();
+  }
+}
+
 void expectRefused(Rig r, StartRefusal why) {
   expect(r.phase, RecorderPhase.idle);
   expect(r.state.refusal, why);
@@ -228,14 +236,14 @@ void main() {
     });
     rigTest('/consent-withdrawal-stop', (r) async {
       await r.startRecording();
-      await r.controller.stopAutomatically(StopReason.consentWithdrawn);
+      await runCall(r, () => r.controller.stopAutomatically(StopReason.consentWithdrawn));
       await r.flush();
       expect(r.state.autoStopNotice?.reason, StopReason.consentWithdrawn);
       expect(r.journal.calls, contains('seal:consentWithdrawn'));
     });
     rigTest('/a user stop has no automatic-stop notice', (r) async {
       await r.startRecording();
-      await r.controller.stop();
+      await runCall(r, () => r.controller.stop());
       await r.flush();
       expect(r.state.autoStopNotice, isNull);
       expect(r.state.stopReason, StopReason.user);
@@ -389,8 +397,13 @@ void main() {
       r.location.emitEngineDetached();
       await r.flush();
       r.journal.unfinished = [readableRecording('rec-1')];
+      final starts = r.location.startCount;
+      final begins = r.journal.calls.where((c) => c == 'begin').length;
       await r.start();
-      expectRefused(r, StartRefusal.unfinishedRecording);
+      expect(r.phase, RecorderPhase.idle);
+      expect(r.state.refusal, StartRefusal.unfinishedRecording);
+      expect(r.location.startCount, starts, reason: 'no new location request');
+      expect(r.journal.calls.where((c) => c == 'begin').length, begins);
     });
 
     rigTest('a detach while idle changes nothing', (r) async {

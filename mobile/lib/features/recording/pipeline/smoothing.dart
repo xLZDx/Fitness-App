@@ -41,7 +41,7 @@ abstract class IncrementalSmoother {
 /// `smooth-wma5-1`: a centred weighted moving average over up to 5 kept fixes
 /// (weight 1 / accuracy squared), each smoothed point clamped to at most
 /// [maxDisplacementM] from its raw position. Segment ends use a shorter
-/// window. Live use has a lag of [kSmoothingWindowRadius] fixes.
+/// symmetric window. Live use has a lag of [kSmoothingWindowRadius] fixes.
 class WeightedMovingAverageSmoothing extends SmoothingStrategy {
   const WeightedMovingAverageSmoothing({
     this.radius = kSmoothingWindowRadius,
@@ -111,9 +111,15 @@ class _WmaIncremental implements IncrementalSmoother {
   PipelineSample _at(int absolute) => _buf[absolute - (_count - _buf.length)];
 
   PipelineSample _emit(int index) {
-    final r = _algo.radius;
-    final lo = index - r < 0 ? 0 : index - r;
-    final hi = index + r > _count - 1 ? _count - 1 : index + r;
+    // The window is symmetric and shrinks towards the segment ends (radius 0 at
+    // the first and the last fix, which stay raw). A one-sided window would
+    // pull an end point inwards and lose about two steps of distance at every
+    // segment end.
+    var r = _algo.radius;
+    if (r > index) r = index;
+    if (r > _count - 1 - index) r = _count - 1 - index;
+    final lo = index - r;
+    final hi = index + r;
     final window = <PipelineSample>[
       for (var i = lo; i <= hi; i++) _at(i),
     ];

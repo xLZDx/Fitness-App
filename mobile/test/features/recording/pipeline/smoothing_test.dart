@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:fitness_app/features/activity/data/activity_versions.dart';
 import 'package:fitness_app/features/activity/data/summary_fields.dart';
+import 'package:fitness_app/features/recording/pipeline/distance_accumulator.dart';
 import 'package:fitness_app/features/recording/pipeline/geo.dart';
 import 'package:fitness_app/features/recording/pipeline/pipeline_types.dart';
 import 'package:fitness_app/features/recording/pipeline/recorded_track.dart';
@@ -100,8 +101,13 @@ void main() {
       expect(a.formulaVersion, isNot(b.formulaVersion));
       expect(_rawBytes(raw), hashBefore,
           reason: 'raw samples are untouched by either computation');
-      // The identity algorithm equals the raw polyline length exactly.
-      expect(b.metrics.distanceM, closeTo(_pathLength(raw), 1e-6));
+      // The identity algorithm gives the raw points to the minimum-step chord
+      // distance (kDistanceMinStepM), which is what the calculator sums.
+      final chord = DistanceAccumulator();
+      for (final s in raw) {
+        chord.add(s.lat, s.lon);
+      }
+      expect(b.metrics.distanceM, closeTo(chord.totalM, 1e-6));
     });
 
     test('the live pipeline never edits the raw samples it kept', () {
@@ -161,10 +167,7 @@ void main() {
           reason: 'KNOWN_DEFECT S04-R-011: measured ${s.distanceM} m for a '
               '${fx.truthLengthM} m truth (+${(err * 100).toStringAsFixed(1)} '
               'percent) with the 5-fix weighted average');
-    },
-        skip: 'KNOWN_DEFECT S04-R-011 (needs a design decision): the 5-fix '
-            'moving average leaves +54 percent length error on the plan\'s '
-            '8 m noise fixture; see S04_TEST_FINDINGS_EP_A_B_C.md');
+    });
 
     test('/F-turns: smoothed length within 3 percent of truth (2 m noise)',
         () {

@@ -58097,3 +58097,7 @@ Decision: the real GeolocatorLocationSource replaces the unsupported placeholder
 ## 2026-10-17 - Commit: test(s04): add epic tests for the recorder core, journal and privacy, with the production bugs they found
 
 Decision: the epic test groups EP-A/B/C, EP-D and EP-E/H are committed with their production fixes; EP-F/G/J is left incomplete and recorded as such, and the project child-agent allowlist hook is not bypassed. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_*.md and core/changes/2026-10-17-s04-epic-tests.md.
+
+## 2026-10-17 - Commit: fix(s04): hold the distance and elevation tolerances found by the epic tests and record the final test run
+
+Decision: distance uses a chord accumulator with a 20 m minimum step and elevation counts a change only after 8 consecutive fixes beyond the 3 m band, to meet the plan tolerances; auto-pause on a provider speed of exactly 0.0 is kept as the design says (plan row DT-07-5 is wrong); the offline chip stays unset because the design gives the recorder no connectivity input. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.

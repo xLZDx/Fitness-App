@@ -53,6 +53,16 @@ const double kSmoothingMaxDisplacementM = 15.0;
 /// accuracy of 0 cannot produce an infinite weight.
 const double kSmoothingMinAccuracyM = 1.0;
 
+/// Distance is measured along a chord that is extended only once the smoothed
+/// track is at least this far from the last chord point (see
+/// `DistanceAccumulator`). The 5-fix average alone leaves +54 percent length
+/// on 8 m noise and +8.7 percent on correlated 2.5 m noise (S04 findings D1);
+/// a wider window would change the lag, the id `smooth-wma5-1` and the live
+/// behaviour, so the residual jitter is removed here instead. 20 m is below
+/// one fix step of a ride (8 m/s) times 3 and keeps corner cutting on the
+/// F-turns and ride fixtures inside the 3 percent limit (replay decides).
+const double kDistanceMinStepM = 20.0;
+
 /// Algorithm id of the smoothing step; part of `formulaVersion`.
 const String kSmoothingAlgorithmId = 'smooth-wma5-1';
 
@@ -95,8 +105,13 @@ const double kAltitudeMaxStepMps = 10.0;
 const int kAltitudeOutlierAcceptAfter = 5;
 
 /// ... and a change counts only after the altitude moves this far from the last
-/// counted level.
+/// counted level ...
 const double kAltitudeHysteresisM = 3.0;
+
+/// ... and stays beyond that distance for this many consecutive kept fixes.
+/// Without the confirmation +-4 m noise crossed the 3 m band about 20 times in
+/// 10 minutes (61 m of ascent on a flat track, S04 findings D2).
+const int kAltitudeConfirmSamples = 8;
 
 /// Auto-pause default per sport (S04-R-012): on for exactly walk, run and ride,
 /// off for every other sport value. The user can switch it off.
