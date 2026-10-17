@@ -804,3 +804,10 @@ Facts: lane L4b stopped at the 20-turn limit once and was resumed; it finished t
 Root cause: the ownership table of design 9.2 covered code paths but not the two ARB files (coordinator design); the announcement host was not assigned to a lane.
 Layer: design author; caught by the implementation agent's report.
 Rule next time: when a design splits work into lanes, list shared resource files (ARB files, router, main.dart) as owned rows too. Carry-over: the persistent host (lane L4a shell) or the conformance fixes (lane L12) must write the announcements; the test agents keep AC-A11Y-4 as a failing-by-design finding until then.
+
+## 2026-10-17 - Commit: docs: record the activity journal tree, the mode key and the Apple backup marking in the data documents
+
+Kind: SUCCESS.
+Facts: the doc-updater agent corrected three documents after story S03-0 landed and reported what it could not ground (the mode key surviving sign-out is marked INFERENCE in the matrix; the journal-on-sign-out behaviour is stated as 'as for the other local data' instead of a claim). It also found that core/DATA_INVENTORY_2026-08-11.md had no mention of the journal at all and added both rows.
+Why it worked: the brief listed the code facts to verify and asked for UNKNOWN items instead of guesses.
+Rule next time: the sign-out behaviour of the mode key and the journal is part of the S03-16 sign-out guard tests; when they are green, the two INFERENCE cells are turned into FACT in the documentation pass at the end of the sprint.
