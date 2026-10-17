@@ -45,7 +45,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show LogicalKeyboardKey;
+import 'package:flutter/services.dart' show KeyDownEvent, KeyEvent, LogicalKeyboardKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/hud_tokens.dart';
@@ -169,7 +169,7 @@ class AdaptiveSurface {
       final ProviderContainer container =
           ProviderScope.containerOf(context, listen: false);
       depth = container.read(openSurfaceDepthProvider.notifier);
-      generation = depth.opened();
+      generation = depth?.opened() ?? 0;
     } on StateError {
       depth = null;
     }

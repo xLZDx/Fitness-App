@@ -387,8 +387,9 @@ class _ActivityBindController {
   void _readRecoveryCounts() {
     _absent = 0;
     _lost = 0;
-    final source = scoped;
-    if (source is! RecoveryReportSource) return;
+    final Object sourceObject = scoped;
+    if (sourceObject is! RecoveryReportSource) return;
+    final RecoveryReportSource source = sourceObject;
     try {
       final report = source.lastRecoveryReport;
       _absent = report?.absent.length ?? 0;

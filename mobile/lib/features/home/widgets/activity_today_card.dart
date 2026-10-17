@@ -58,7 +58,7 @@ class ActivityTodayCard extends ConsumerWidget {
             if (more > 0) ...<Widget>[
               const SizedBox(height: 8),
               Text(
-                '+${formatProgressCount(more, locale)}',
+                AppLocalizations.of(context).activityTodayMore(more),
                 key: const Key('home.activityToday.more'),
                 style: HudType.body(t, size: 12).inPanel(t),
               ),

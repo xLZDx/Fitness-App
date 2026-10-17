@@ -67,9 +67,11 @@ final journalAvailabilityProvider = Provider<JournalAvailability>((ref) {
 
   // A journal without the account-binding surface has no bind machine and is
   // usable as it is (test harness journals).
-  if (journal is! AccountScopedJournal) {
+  final Object journalObject = journal;
+  if (journalObject is! AccountScopedJournal) {
     return JournalOpen(ownerUid: authUid);
   }
+  final AccountScopedJournal scoped = journalObject;
 
   final status = ref.watch(activityBindStatusProvider);
   if (status.uid != authUid) {
@@ -77,7 +79,7 @@ final journalAvailabilityProvider = Provider<JournalAvailability>((ref) {
   }
   switch (status.phase) {
     case BindPhase.bound:
-      if (journal.isBound && journal.boundUid == authUid) {
+      if (scoped.isBound && scoped.boundUid == authUid) {
         return JournalOpen(ownerUid: authUid, generation: status.generation);
       }
       return JournalBinding(ownerUid: authUid, generation: status.generation);

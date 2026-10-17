@@ -347,7 +347,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     return LayoutBuilder(builder: (context, constraints) {
       final double pane = constraints.maxWidth;
       final List<Widget> children;
-      if (pane >= kHomeTwoPaneMinWidth) {
+      // AC-LS-3: a wide pane with a large font falls back to one column.
+      final bool largeText =
+          MediaQuery.textScalerOf(context).scale(1.0) > 1.3;
+      if (pane >= kHomeTwoPaneMinWidth && !largeText) {
         children = <Widget>[
           Align(
             alignment: Alignment.topCenter,

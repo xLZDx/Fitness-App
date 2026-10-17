@@ -4904,5 +4904,14 @@
   "activityUnitKm": "km",
   "@activityUnitKm": {
     "description": "Kilometre unit label."
+  },
+  "activityTodayMore": "+{n} more",
+  "@activityTodayMore": {
+    "description": "Activity today card: how many more activities are not listed.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

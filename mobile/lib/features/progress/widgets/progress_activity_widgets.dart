@@ -125,7 +125,7 @@ class ProgressSourcesSlot extends ConsumerWidget {
 }
 
 class _SourcesRow extends StatelessWidget {
-  const _SourcesRow({required this.title, this.subtitle});
+  const _SourcesRow({super.key, required this.title, this.subtitle});
   final String title;
   final String? subtitle;
 

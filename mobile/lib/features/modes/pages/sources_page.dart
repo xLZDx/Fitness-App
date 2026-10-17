@@ -13,6 +13,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
@@ -155,6 +156,18 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
         );
       case JournalOpen():
         final DigestSnapshot? snap = ref.watch(activityDigestSnapshotProvider);
+        if (snap != null && snap.lastLoadFailedAt != null) {
+          final String time = DateFormat.Hm(l10n.localeName)
+              .format(snap.lastLoadFailedAt!.toLocal());
+          return (
+            status: _Status.problem,
+            retry: true,
+            onRetry: () {
+              ref.read(activityDigestsProvider.notifier).refresh();
+            },
+            line: l10n.activityStaleNotice(time),
+          );
+        }
         if (snap != null) {
           return (
             status: snap.digests.isEmpty ? _Status.ready : _Status.inUse,

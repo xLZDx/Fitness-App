@@ -207,7 +207,7 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
       final String path = '/mode-questions/${mode.name}';
       final NavigatorState? nav = Navigator.maybeOf(context);
       if (nav != null && nav.canPop()) {
-        unawaited(context.pushReplacement<void>(path));
+        context.pushReplacement(path);
       } else {
         context.go(path);
       }

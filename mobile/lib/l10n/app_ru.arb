@@ -2973,5 +2973,6 @@
   "activityTileTime": "Время",
   "activityTileDistance": "Дистанция",
   "activityDistanceFrom": "{n, plural, one{Дистанция по {k} из {n} тренировки} few{Дистанция по {k} из {n} тренировок} many{Дистанция по {k} из {n} тренировок} other{Дистанция по {k} из {n} тренировки}}",
-  "activityUnitKm": "км"
+  "activityUnitKm": "км",
+  "activityTodayMore": "+{n} ещё"
 }
