@@ -58073,3 +58073,7 @@ Decision: Z16 and Z17 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 9
 ## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
 
 Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup; DELETE stays on DECISION=DELETE, DISCARDING and the ordered 4.5 steps. Evidence: core/changes/2026-10-17-s04-docs-z18.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
+
+Decision: the Live AI Coach (TDD-001) is documented as its own line on branch docs/ai-coach-tdd-001, based on origin/phase2/main in a separate worktree, and does not change any Phase 2 sprint or the dirty phase2/s04 checkout. Documentation program only: sprint AI-COACH-00; later sprints are planned but not authorised; implementation and production remain not authorised. Evidence: core/changes/2026-10-17-ai-coach-discovery-backlog.md, docs/ai-coach/01b_CODE_MAP.md.

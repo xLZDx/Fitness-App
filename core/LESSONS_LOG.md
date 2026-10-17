@@ -1219,3 +1219,11 @@ Facts: GPT-PM round 6 on 838d1cdc returned MODIFY with 1 MAJOR: one sentence in 
 Root cause: a convenience sentence generalizing the KEEP fix to DELETE was added without checking 4.5; the author had the same stale-generalization habit as in earlier rounds.
 Missed by: authors and the design agent grep (it searched for the old rule, not for the new generalization); caught by the external gate.
 Rule next time: never extend a fix to a second path in passing; scope a new mechanism explicitly to the path it fixes.
+
+## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
+
+Kind: SUCCESS.
+Facts: checking the operator draft against the real code before design found 17 disagreements (no set ids or revision, a swallowed 4 s write timeout, device-only health data, no voice or foreground-service plumbing); see docs/ai-coach/01b_CODE_MAP.md.
+Why it worked: the code-explorer ran before any design text was written, so the design starts from verified facts instead of the draft's assumptions.
+Caught by: code-explorer.
+Rule next time: run the code map before the design for any draft that claims reuse of existing modules; work in a separate worktree so a concurrent sprint's dirty files are not touched.
