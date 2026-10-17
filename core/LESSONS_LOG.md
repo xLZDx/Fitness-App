@@ -827,3 +827,9 @@ Facts: lane L13 added 129 keys per language (groups 6.1 to 6.9: 20, 10, 15, 15, 
 Root cause: design section 6 listed copy per key without a column for plural forms or select fallbacks (design author); no lane owned the ARB files until the build revealed it (see the L4b entry).
 Layer: design; caught by the implementation agent and by the coordinator's read of the result.
 Rule next time: the ARB parity test (S03-18) must check plural forms and select fallbacks, not only key sets; the pseudo-locale run and a Russian translator check cover the derived forms.
+
+## 2026-10-17 - Commit: feat(shell): add keyboard shortcuts, the visible Back control and scroll helpers
+
+Kind: SUCCESS.
+Facts: lane L10 wrote the interface files first and reported its deviations: the Back shortcut does nothing on the home route (a key must not quit the app), and a matching key is consumed even when a guard stops the action. Two go_router APIs it uses (`routerDelegate.navigatorKey`, `currentConfiguration.uri`) were not checked against the pinned version.
+Rule next time: the test agents prove the guards (no shortcut in a text field, none while a surface is open, tab shortcuts only on shell routes, Esc never navigates back) and compile-check the two router API uses first.
