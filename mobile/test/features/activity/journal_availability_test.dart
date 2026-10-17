@@ -479,6 +479,80 @@ void main() {
   test('DT-0-15b stale failure of the old generation changes nothing for the '
       'new account', () => dt015(aSucceeds: false));
 
+  AuthUser renamed(String uid, String name) =>
+      AuthUser(uid: uid, displayName: name, provider: AuthProvider.google);
+
+  test('DT-0-17a a same-uid re-emission (token refresh) on a bound journal '
+      'starts no bind and changes neither availability nor status', () async {
+    final j = ControlledJournal();
+    final c = make(journal: j);
+    await emit(_user('A'));
+    expect(avail(c), isA<JournalOpen>());
+    final before = status(c);
+    await emit(renamed('A', 'token refreshed'));
+    await emit(renamed('A', 'profile reloaded'));
+    expect(j.calls, ['A'], reason: 'no second bindUid');
+    expect(avail(c), isA<JournalOpen>());
+    expect(status(c), before, reason: 'generation and status unchanged');
+    expect(status(c).generation, before.generation);
+  });
+
+  test('DT-0-17b a same-uid re-emission while a retry is armed starts no '
+      'attempt, keeps the armed timer and the schedule continues', () async {
+    final j = ControlledJournal()..script.addAll([false, false]);
+    final c = make(journal: j);
+    await emit(_user('A'));
+    final armed = timers.last;
+    final gen = status(c).generation;
+    expect(armed.delay, const Duration(seconds: 5));
+    await emit(renamed('A', 'token refreshed'));
+    expect(j.calls, ['A'], reason: 'no new attempt');
+    expect(armed.isActive, isTrue, reason: 'the armed timer is kept');
+    expect(timers.all, hasLength(1));
+    expect(status(c).generation, gen);
+    expect(avail(c), isA<JournalBinding>());
+    await timers.advance(const Duration(seconds: 5));
+    expect(j.calls, ['A', 'A'], reason: 'the original deadline still fires');
+    expect(timers.last.delay, const Duration(seconds: 15),
+        reason: 'the delay index was kept (not reset to 5 s)');
+  });
+
+  test('DT-0-17c a same-uid re-emission after gaveUp restarts the bind '
+      '(deliberate)', () async {
+    final j = ControlledJournal()..script.addAll(List<Object>.filled(6, false));
+    final c = make(journal: j);
+    await driveToGaveUp(c);
+    expect(avail(c), isA<JournalGaveUp>());
+    final gen = status(c).generation;
+    await emit(renamed('A', 'token refreshed'));
+    expect(j.calls, hasLength(7), reason: 'a fresh attempt started');
+    expect(avail(c), isA<JournalOpen>());
+    expect(status(c).generation, greaterThan(gen));
+  });
+
+  test('DT-0-17d a uid change and a sign-out still restart the bind',
+      () async {
+    final j = ControlledJournal()..script.addAll([true, false]);
+    final c = make(journal: j);
+    await emit(_user('A'));
+    expect(avail(c), isA<JournalOpen>());
+    final gen = status(c).generation;
+    await emit(_user('B'));
+    expect(j.calls, ['A', 'B']);
+    expect(status(c).uid, 'B');
+    expect(status(c).generation, greaterThan(gen));
+    expect(timers.last.delay, const Duration(seconds: 5),
+        reason: 'B starts its own schedule after its failed first attempt');
+    await emit(null);
+    expect(j.calls, ['A', 'B', null]);
+    expect(status(c).phase, BindPhase.none);
+    expect(timers.active, 0);
+    // Signing in again as A after a sign-out is a new bind, not an ignored
+    // re-emission.
+    await emit(_user('A'));
+    expect(j.calls, ['A', 'B', null, 'A']);
+  });
+
   test('DT-0-16 retryNow results: started, busy, notApplicable', () async {
     // (1) and (2): from gaveUp.
     final j = ControlledJournal()..script.addAll(List<Object>.filled(6, false));

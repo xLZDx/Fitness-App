@@ -3,7 +3,12 @@
 Head revision: 5bb24fcc (worktree D:\Repo\Fitness_App_Phase2_s01, branch phase2/s03d-ui-design-contract). Nothing committed.
 Flutter: `where flutter` resolved to D:\flutter\bin\flutter (Flutter 3.27.1, Dart 3.6.0, revision 17025dd882).
 
-## LATEST RESULT (head 4b52baca, includes fe67291b)
+## NEWEST RESULT (head fca06cba, same-uid re-emission fix)
+
+Four regression tests added to `mobile/test/features/activity/journal_availability_test.dart`: DT-0-17a (bound journal plus a same-uid AuthUser with a changed display name, twice: `bindUid` called once, availability stays Open, status and generation unchanged), DT-0-17b (retry armed after a failed first bind plus a same-uid re-emission: no new attempt, the 5 s timer object stays active and is not replaced, the generation is unchanged, the original deadline still fires and the next delay is 15 s, so the index was kept), DT-0-17c (after gaveUp a same-uid re-emission restarts the bind: 7th `bindUid`, availability Open, generation increased), DT-0-17d (a uid change restarts, a sign-out unbinds with no timer, signing in again as A after the sign-out binds again).
+Complete set of the 13 files, which includes the unchanged `activity_journal_binding_retry_test.dart`, same command as Run 1, real tree: `+144: All tests passed!` (144 passed, 0 failed, 0 not run). No production defect found in this round.
+
+## Previous result (head 4b52baca, includes fe67291b)
 
 Complete set of the 13 files, same command as Run 1, real tree: `+140: All tests passed!` (140 passed, 0 failed, 0 not run). D6 and D7 are fixed in production (DT-01-23 passes). DT-01-9 first failed against the fix only because its rule did not know the new loading frame (greeting only); that was a test defect, now the test accepts an empty frame or the greeting-only frame and still fails for any TRAIN-ordered or other partial frame. It passes.
 

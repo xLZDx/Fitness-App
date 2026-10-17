@@ -985,3 +985,10 @@ Kind: SUCCESS and SHORTCOMING.
 Facts: the S02 phase 10 report was produced by a reporting agent from git and the findings files in one run (154 lines, numbers labelled MEASURED or INFERRED, eight retrospective actions tied to lessons entries). The agent listed what it could not verify: no complete test run exists on the approved S02 head (the final-run file is at an earlier head, before remediation E to J), the documentation-gate severities of rounds 3 to 9 are not recorded, and there is no per-run model table.
 Shortcoming: S02 evidence was never collected into one place at the time, so the report has gaps that cannot be closed now.
 Rule next time: each gate round writes its head, severities and the models used into the sprint findings file in the same commit; the final complete test run is recorded on the head that is approved, not an earlier one.
+
+## 2026-10-17 - Commit: test(activity): add regression tests for a repeated auth value in the journal bind controller
+
+Kind: SUCCESS.
+Facts: four regression tests (DT-0-17a to d) cover the fix for same-account auth re-emission: a bound journal keeps its state and makes no extra bind call, an armed retry keeps its timer and schedule, a given-up bind restarts, a uid change and a sign-out still restart or unbind. The complete step 1 set passes: 144 passed, 0 failed.
+Why it worked: the tests simulate the re-emission with a same-uid user object whose display name differs, because an identical value would not reach the listener.
+Rule next time: every listener on a stream gets a row for repeated and equal values.

@@ -57947,3 +57947,7 @@ Decision: onAuthValue returns early when the target uid equals the current uid a
 ## 2026-10-17 - Commit: docs(s02): add the S02 sprint report and retrospective and the architecture input to the S04 readiness note
 
 Decision: the S02 report is committed in this branch and goes into the S03 pull request as agreed; unverifiable S02 facts stay marked UNKNOWN. The S04 readiness note gets an addendum from the S03 architecture review: the running-session status provider has one source and must be replaced by a prioritised list of sources or rewritten in S04 (a decision for the S04 plan, not taken here). Evidence: docs/phase2/s02/S02_SPRINT_REPORT.md, docs/phase2/s04/S04_DOC_READINESS.md, core/changes/2026-10-17-s02-report-and-s04-addendum.md.
+
+## 2026-10-17 - Commit: test(activity): add regression tests for a repeated auth value in the journal bind controller
+
+Decision: regression tests for the repeated auth value are committed with the step 1 findings update (144 of 144). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1-regression.md.
