@@ -81,12 +81,27 @@ class _ModeCardState extends State<ModeCard> {
       return HudPanel(
         radius: radius,
         secondary: true,
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.zero,
         enabled: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: double.infinity,
-            minHeight: widget.minHeight - 28,
+        // An invisible loaded card keeps the outline exactly as tall as the
+        // loaded card (no row shift when the saved mode arrives, P-7).
+        child: Visibility(
+          visible: false,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: ModeCard(
+            mode: widget.mode,
+            name: widget.name,
+            blurb: widget.blurb,
+            description: widget.description,
+            comingLaterWord: widget.comingLaterWord,
+            selectedWord: widget.selectedWord,
+            selected: false,
+            comingLater: widget.comingLater,
+            showBlurb: widget.showBlurb,
+            onTap: null,
+            minHeight: widget.minHeight,
           ),
         ),
       );

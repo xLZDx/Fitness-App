@@ -909,3 +909,11 @@ Facts: Home rendered the TRAIN section order while the stored mode was still loa
 Root cause: Home used `modeState?.selectedMode ?? AppMode.train`, a default that silently invents a mode (lane L7); the refusal read provider state without a guard (lane L2).
 Layer: authors; caught by the step 1 test agent through real-notifier tests.
 Rule next time: a null state never defaults to a concrete user choice; any async continuation that reads providers after an await is wrapped or uses a captured value. Open: the chooser offer path (`_maybeOfferChooser`) was not re-read for the loading case; the test agents check that no chooser is offered while the mode state is loading.
+
+## 2026-10-17 - Commit: fix(modes): fix chooser focus order, anchor the rail Record sheet, put meal first for food answers and size the loading cards
+
+Kind: FAILURE (defects found by the step 3 test agent in mode screens).
+Facts: the chooser skipped two cards in Tab order once a card was selected (DT-08-1b); the rail Record slot had no anchor key so the Record sheet opened centred on expanded windows (DT-12); the Record sheet ignored the stored Body answer so a food answer did not put the meal row first (DT-11-3); the loading outline cards were 25 dp shorter than loaded cards, so the second row shifted on load.
+Root cause: authors (lane L6) relied on default focus traversal and left the anchor and ordering inputs out of the first version; the lane L6 report listed the anchor gap itself as an open item, and the briefs did not turn open items into stories.
+Layer: author; caught by the step 3 test agent through widget tests.
+Rule next time: an open item in a lane report becomes a test-plan row or a fix item before the lane is closed; every screen with several focus targets gets an explicit traversal order in its first version.

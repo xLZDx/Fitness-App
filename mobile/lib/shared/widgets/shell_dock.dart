@@ -10,7 +10,8 @@ import '../../core/theme/hud_tokens.dart';
 
 /// Opens the Record sheet (S-5). The sheet belongs to lane L6; until it is
 /// wired the default is null and the Record controls do nothing on tap.
-typedef ShellRecordSheetOpener = void Function(BuildContext context);
+typedef ShellRecordSheetOpener = void Function(BuildContext context,
+    {GlobalKey? anchorKey});
 
 /// Mount seam for the Record sheet (L6). `MainShell` reads it when the pill or
 /// the rail Record slot is tapped.

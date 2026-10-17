@@ -32,6 +32,7 @@ import '../../workouts/state/active_session_status.dart'
 import '../../workouts/state/session_digest_providers.dart';
 import '../data/mode_models.dart';
 import '../state/mode_providers.dart';
+import 'mode_question_plan.dart' show kBodyStartFood, kBodyStartWeight;
 
 /// Row ids (keys `recordSheet.row.<id>`).
 const String kRecordTrainScan = 'trainScan';
@@ -74,6 +75,7 @@ List<RecordRowSpec> recordRowsFor(
   AppMode mode, {
   String? todayPath,
   ScanAccess scanAccess = ScanAccess.allowed,
+  String? bodyStart,
 }) {
   switch (mode) {
     case AppMode.train:
@@ -87,17 +89,24 @@ List<RecordRowSpec> recordRowsFor(
     case AppMode.body:
       final bool scanOk = scanAccess == ScanAccess.allowed ||
           scanAccess == ScanAccess.needsConsent;
-      return <RecordRowSpec>[
-        RecordRowSpec(
-          id: kRecordBodyScan,
-          destination: '/body-scan',
-          enabled: scanOk,
-          refusedBy: scanOk ? null : scanAccess,
-        ),
-        const RecordRowSpec(id: kRecordBodyMeal, destination: '/nutrition/add'),
-        const RecordRowSpec(
-            id: kRecordBodyWeight, destination: '/nutrition/weight'),
-      ];
+      final RecordRowSpec scan = RecordRowSpec(
+        id: kRecordBodyScan,
+        destination: '/body-scan',
+        enabled: scanOk,
+        refusedBy: scanOk ? null : scanAccess,
+      );
+      const RecordRowSpec meal =
+          RecordRowSpec(id: kRecordBodyMeal, destination: '/nutrition/add');
+      const RecordRowSpec weight = RecordRowSpec(
+          id: kRecordBodyWeight, destination: '/nutrition/weight');
+      // The stored BODY start answer moves its row first (P-8, DT-11-3).
+      if (bodyStart == kBodyStartFood) {
+        return <RecordRowSpec>[meal, scan, weight];
+      }
+      if (bodyStart == kBodyStartWeight) {
+        return <RecordRowSpec>[weight, scan, meal];
+      }
+      return <RecordRowSpec>[scan, meal, weight];
     case AppMode.ride:
     case AppMode.explore:
       return const <RecordRowSpec>[];
@@ -192,8 +201,12 @@ class RecordSheet extends ConsumerWidget {
     final String? today = mode == AppMode.train
         ? todayWorkoutPath(ref.watch(todayDigestProvider), DateTime.now())
         : null;
-    final List<RecordRowSpec> specs =
-        recordRowsFor(mode, todayPath: today, scanAccess: access);
+    final answer =
+        ref.watch(modeStateProvider).valueOrNull?.answerFor(AppMode.body);
+    final String? bodyStart =
+        (answer?.isAnswered ?? false) ? answer!.value : null;
+    final List<RecordRowSpec> specs = recordRowsFor(mode,
+        todayPath: today, scanAccess: access, bodyStart: bodyStart);
 
     final List<Widget> rows = <Widget>[];
     for (int i = 0; i < specs.length; i++) {

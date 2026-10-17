@@ -166,9 +166,14 @@ class _MainShellState extends State<MainShell> {
   // Everything the dock widgets need is passed in here; the widgets themselves
   // (RecordPill, RecordingStrip, RailRecordSlot) live in dock_widgets.dart.
 
-  void _openRecord(BuildContext context, WidgetRef? ref) {
+  /// Anchor of the rail Record slot: the Record sheet hangs at it on Expanded.
+  final GlobalKey _railRecordKey = GlobalKey(debugLabel: 'shell.rail.record');
+
+  void _openRecord(BuildContext context, WidgetRef? ref, {GlobalKey? anchorKey}) {
     // Seam for the Record sheet (lane L6): null until it is wired.
-    ref?.read(shellRecordSheetOpenerProvider)?.call(context);
+    ref
+        ?.read(shellRecordSheetOpenerProvider)
+        ?.call(context, anchorKey: anchorKey);
   }
 
   Widget _frame(BuildContext context, String location, int selected,
@@ -309,9 +314,13 @@ class _MainShellState extends State<MainShell> {
                           // Always mounted on all five tabs (contract 10.4).
                           recordSlot: ref == null
                               ? SizedBox(height: extended ? 56 : 64)
-                              : RailRecordSlot(
-                                  extended: extended,
-                                  onRecord: () => _openRecord(context, ref),
+                              : KeyedSubtree(
+                                  key: _railRecordKey,
+                                  child: RailRecordSlot(
+                                    extended: extended,
+                                    onRecord: () => _openRecord(context, ref,
+                                        anchorKey: _railRecordKey),
+                                  ),
                                 ),
                         ),
                       ),

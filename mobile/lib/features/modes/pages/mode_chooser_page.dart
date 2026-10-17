@@ -359,7 +359,9 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
 
     Widget cardFor(AppMode m) {
       final bool available = _isAvailable(m, table);
-      return KeyedSubtree(
+      return FocusTraversalOrder(
+        order: NumericFocusOrder(kChooserCardOrder.indexOf(m).toDouble()),
+        child: KeyedSubtree(
         key: _slots[m],
         child: ModeCard(
           key: Key('modeChooser.card.${m.name}'),
@@ -376,6 +378,7 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
           loadingOutline: loading,
           onTap: loading ? null : () => _onCardTap(m, available),
           onHighlight: loading ? null : (bool on) => _onHighlight(m, on),
+        ),
         ),
       );
     }
@@ -403,16 +406,22 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
     );
 
     final Widget description = _buildDescription(l10n, tokens, shown, selected, table);
-    final Widget continueButton = HudButton(
-      key: const Key('modeChooser.continue'),
-      label: l10n.modeContinue,
-      tone: HudButtonTone.accent,
-      centered: true,
-      enabled: canContinue,
-      onPressed: canContinue ? () => unawaited(_continue(selected)) : null,
+    // Reading order for Tab (P-6): cards, then Continue, then Decide later.
+    final Widget continueButton = FocusTraversalOrder(
+      order: NumericFocusOrder(kChooserCardOrder.length.toDouble()),
+      child: HudButton(
+        key: const Key('modeChooser.continue'),
+        label: l10n.modeContinue,
+        tone: HudButtonTone.accent,
+        centered: true,
+        enabled: canContinue,
+        onPressed: canContinue ? () => unawaited(_continue(selected)) : null,
+      ),
     );
     final Widget? decideLater = pending
-        ? TextButton(
+        ? FocusTraversalOrder(
+            order: NumericFocusOrder(kChooserCardOrder.length + 1.0),
+            child: TextButton(
             key: const Key('modeChooser.decideLater'),
             style: TextButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
@@ -420,7 +429,7 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
             ),
             onPressed: (_busy || _leaving) ? null : () => unawaited(_decideLater()),
             child: Text(l10n.modeDecideLater),
-          )
+          ))
         : null;
 
     final Widget header = Column(
@@ -428,10 +437,14 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
       children: <Widget>[
         // Visible on Apple desktop only; takes no space elsewhere. While the
         // status is pending it is the same path as system Back.
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: kChooserSidePadding),
-          child: ShellBackButton(
-            onPressed: pending ? () => unawaited(_decideLater()) : null,
+        FocusTraversalOrder(
+          order: const NumericFocusOrder(-1),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: kChooserSidePadding),
+            child: ShellBackButton(
+              onPressed: pending ? () => unawaited(_decideLater()) : null,
+            ),
           ),
         ),
         HudScreenTitle(
@@ -497,13 +510,16 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
       );
     }
 
-    return SingleChildScrollView(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxContent),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[header, content],
+    return FocusTraversalGroup(
+      policy: OrderedTraversalPolicy(),
+      child: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxContent),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[header, content],
+            ),
           ),
         ),
       ),
