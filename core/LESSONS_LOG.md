@@ -874,3 +874,9 @@ Rule next time: any optimistic-update state holder gets the scenario 'same value
 Kind: SUCCESS with open items.
 Facts: lane L6 wrote stories S03-08 to S03-11 in two runs: the chooser (four cards, three layouts, grid rule by available width, no spinner, Back equals Decide later, unsaved selection dropped on account switch), the questions page, the mode switcher, the Coming-later sheet and the Record sheet (every row navigates, the only write is the explicit Open Train tap). While building it the agent found the repeat-after-failed-save defect in the state layer (fixed in 6521e152). Open items it reported: the rail Record slot has no GlobalKey so on expanded windows the Record sheet is a centred dialog unless an anchor is passed; SemanticsService.announce is used with an ignore for a deprecation; ModeState.answers holds one answer per mode (enough for one question per mode today).
 Rule next time: the test agents prove: no write on opening or closing any sheet (AC-RC), Ride and Explore never write, a failed save keeps the selection and shows the error, Back on the chooser runs Decide later only while pending.
+
+## 2026-10-17 - Commit: feat(app): route to the real chooser, questions and Sources pages and wire the switcher and Record openers
+
+Kind: NEUTRAL.
+Facts: the three stub pages of the S03 router splice were replaced by the real pages (three separate lanes edited the same router file one after another, each touching only its own line, and the unused stubs and the unused route list were then deleted). The mode switcher and Record sheet openers are wired as provider overrides in main.dart; tear-offs with an extra optional named parameter are assumed assignable to the one-argument typedefs (not compiled).
+Rule next time: when several lanes must edit one file, serialise them and give each exact lines; the first compile of the test agents confirms the tear-off assignment.

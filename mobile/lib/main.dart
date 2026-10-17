@@ -51,7 +51,11 @@ import 'features/marketplace/state/marketplace_providers.dart';
 import 'features/activity/state/activity_dashboard_providers.dart'
     show activityDigestsProvider;
 import 'features/modes/state/mode_providers.dart' show modeWarmUpProvider;
-import 'shared/widgets/app_shortcuts.dart' show AppShortcuts;
+import 'features/modes/widgets/mode_switcher_sheet.dart' show openModeSwitcher;
+import 'features/modes/widgets/record_sheet.dart' show openRecordSheet;
+import 'shared/widgets/app_shortcuts.dart'
+    show AppShortcuts, modeSwitcherOpenerProvider;
+import 'shared/widgets/shell_dock.dart' show shellRecordSheetOpenerProvider;
 import 'shared/widgets/window_size.dart' show WindowSizeScope;
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
@@ -614,6 +618,10 @@ Future<void> main() async {
         // Device preferences (theme, language, reminders).
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
         initialSettingsProvider.overrideWithValue(settings),
+
+        // S03 sheet openers (mode switcher, Record sheet).
+        modeSwitcherOpenerProvider.overrideWithValue(openModeSwitcher),
+        shellRecordSheetOpenerProvider.overrideWithValue(openRecordSheet),
       ],
       child: const FitnessApp(),
     ),

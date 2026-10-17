@@ -1,6 +1,6 @@
 /// Routes added by sprint S03 (design 2.3, 2.6; contract 10.6, 12).
 ///
-/// [s03Routes] is spliced into `app_router.dart` exactly once, as top-level
+/// [buildS03Routes] is spliced into `app_router.dart` exactly once, as top-level
 /// (non-shell) routes, so no rail or bar shows on them. They are not public
 /// paths: the existing redirects send a signed-out user to `/login` and a
 /// not-onboarded user to `/onboarding`; no redirect rule is added here.
@@ -9,19 +9,14 @@
 ///  * the chooser is opened by `context.go(kModeChooserPath)` (replace), so
 ///    Back does not return to the empty Home behind it;
 ///  * the switcher's "See all modes" uses `context.push(kModeChooserPath)`.
-///
-/// ## Stub pages
-///
-/// The three pages below are blank placeholders. Lane L6 (chooser, questions)
-/// and lane L9 (Sources) write the real pages in their own files; when those
-/// files exist, only the marked `// PAGE SWAP` lines in this file change. The
-/// router never changes again.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/modes/data/mode_models.dart';
+import '../../features/modes/pages/mode_chooser_page.dart';
+import '../../features/modes/pages/mode_question_page.dart';
 import '../../features/modes/pages/sources_page.dart';
 
 /// `/mode-chooser`: the first-run mode chooser (S-1).
@@ -108,9 +103,8 @@ List<RouteBase> buildS03Routes({
   return <RouteBase>[
     GoRoute(
       path: kModeChooserPath,
-      // PAGE SWAP (L6): replace `_ModeChooserStub()` with `ModeChooserPage()`.
       pageBuilder: (context, state) =>
-          noTransitionIfReduced(context, state, const _ModeChooserStub()),
+          noTransitionIfReduced(context, state, const ModeChooserPage()),
     ),
     GoRoute(
       path: kModeQuestionsTemplate,
@@ -118,13 +112,11 @@ List<RouteBase> buildS03Routes({
         state.pathParameters['mode'],
         table: availability,
       ),
-      // PAGE SWAP (L6): replace `_ModeQuestionsStub(mode: mode)` with
-      // `ModeQuestionPage(mode: mode)`.
       pageBuilder: (context, state) {
         // The redirect already guarantees a parsable, available mode.
         final AppMode mode = AppMode.tryParse(state.pathParameters['mode'])!;
         return noTransitionIfReduced(
-            context, state, _ModeQuestionsStub(mode: mode));
+            context, state, ModeQuestionPage(mode: mode));
       },
     ),
     GoRoute(
@@ -133,36 +125,4 @@ List<RouteBase> buildS03Routes({
           noTransitionIfReduced(context, state, const SourcesPage()),
     ),
   ];
-}
-
-/// The list spliced into `app_router.dart`.
-final List<RouteBase> s03Routes = buildS03Routes();
-
-// Blank placeholders: no user-visible text, so no ARB key is needed.
-class _ModeChooserStub extends StatelessWidget {
-  const _ModeChooserStub();
-
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(key: Key('s03.stub.modeChooser'), body: SizedBox.shrink());
-}
-
-class _ModeQuestionsStub extends StatelessWidget {
-  const _ModeQuestionsStub({required this.mode});
-
-  final AppMode mode;
-
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-        key: Key('s03.stub.modeQuestions'),
-        body: SizedBox.shrink(),
-      );
-}
-
-class _SourcesStub extends StatelessWidget {
-  const _SourcesStub();
-
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(key: Key('s03.stub.sources'), body: SizedBox.shrink());
 }
