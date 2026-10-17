@@ -58077,3 +58077,7 @@ Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup;
 ## 2026-10-17 - Commit: docs(s04): add the operator report for the approved S04 documentation gate
 
 Decision: the operator approved the GPS-PRIV-014 sign-out exception (30-day encrypted fallback only if the hand-off fails) and named the Samsung S8 as the S04 reference phone; both are recorded in the report and will be written into the privacy contract and the device-lab document in the first S04 code commits. Evidence: core/changes/2026-10-17-s04-docs-report.md.
+
+## 2026-10-17 - Commit: feat(s04): add the location seam, permission service, calculators pipeline and flag-gated manifest (lanes R1, R2, R3)
+
+Decision: operator approved the GPS-PRIV-014 sign-out exception on 2026-10-17 (the privacy contract note now says APPROVED); geolocator is added at ^13.0.4 because 14.x could not be confirmed against Flutter 3.27.1; the manifest is stripped of location entries when the GPS_RECORDER flag is off by a post-merge Gradle transform. Evidence: core/changes/2026-10-17-s04-lanes-r1-r2-r3.md.

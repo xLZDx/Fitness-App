@@ -42,6 +42,12 @@
   would be undecryptable anyway. The names come from `journal_layout.dart`
   (`kActivityBackupExcludedDirs`); keep both files and that constant in step.
 
+  The S04 GPS recording journal (S04-15) needs no extra line: it lives at
+  `<support>/activity_journal/<scopeId>/recording/<recordingUuid>/`, below the
+  excluded `activity_journal` directory (the 30-day fallback copy of a recording
+  after a failed sign-out hand-off lives in the same tree). The S04 test walks
+  the directory the real factory creates and asserts this exclusion.
+
   Everything else in the app stays backed up. This is an exclusion list, not a
   switch: `android:allowBackup` is untouched.
 -->

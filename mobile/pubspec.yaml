@@ -100,6 +100,15 @@ dependencies:
   firebase_crashlytics: ^5.2.0
   firebase_app_check: ^0.4.3
   flutter_secure_storage: ^10.3.1
+  # S04 GPS recorder (design D-1 option A). Imported ONLY by
+  # lib/features/recording/location/geolocator_location_source.dart (import
+  # guard, S04-01). ^13.0.4 and not the 14.x line the study read: 14.x was not
+  # confirmed against the installed Flutter 3.27.1 / Dart 3.6.0 (same trap as
+  # mobile_scanner above) and `flutter pub get` was not run in this lane, so
+  # pubspec.lock is NOT updated. The plugin merges its location and
+  # foreground-service manifest entries into every build; android/app/
+  # build.gradle strips them unless GPS_RECORDER=true.
+  geolocator: ^13.0.4
 
 dev_dependencies:
   flutter_test:

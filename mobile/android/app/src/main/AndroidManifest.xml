@@ -34,6 +34,18 @@
          is used). Re-add a permission only together with the feature, the
          privacy text and the Play declaration. -->
 
+    <!-- S04 GPS recorder: NO location or foreground-service entry is written in
+         this file on purpose. The geolocator plugin merges ACCESS_FINE_LOCATION,
+         ACCESS_COARSE_LOCATION, FOREGROUND_SERVICE, FOREGROUND_SERVICE_LOCATION
+         and one `location` foreground service into every build; the
+         `*GpsManifestGate` transform in android/app/build.gradle strips them
+         from the merged manifest unless GPS_RECORDER=true, fails a flag-on
+         build if the approved set is missing, and always strips
+         ACCESS_BACKGROUND_LOCATION (S04-18 default branch). POST_NOTIFICATIONS
+         above is the only notification permission; no battery-optimisation
+         exemption and no ACTIVITY_RECOGNITION are declared. Privacy text and
+         the Play foreground-service declaration: S04-38. -->
+
     <application
         android:label="fitness_app"
         android:name="${applicationName}"

@@ -1226,3 +1226,10 @@ Kind: SUCCESS.
 Facts: the operator report for the seven-round S04 documentation gate is written as a RU/EN pair and conformed; the Python launcher `py` resolved to a missing interpreter, the pinned C:\Python314 interpreter worked.
 Why it worked: the report reuses the S03 report structure and states what was not verified.
 Rule next time: run report_conform.py with the pinned interpreter, not `py -3`.
+
+## 2026-10-17 - Commit: feat(s04): add the location seam, permission service, calculators pipeline and flag-gated manifest (lanes R1, R2, R3)
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: three lanes were written by agents without running anything; one agent (R3) hit its turn limit without a report and was resumed. Nothing is compiled or tested yet: pub get was not run, the geolocator adapter is parked as a .pending file, and the manifest gate was written from memory of the plugin.
+Why it worked: disjoint file ownership per lane made parallel writing safe.
+Rule next time: give agents that write many files a higher turn budget and tell them to report first, then polish; the first compile and test runs by the test agents must cover manifest merge for both flag states.
