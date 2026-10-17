@@ -704,3 +704,16 @@ Kind: SUCCESS.
 Facts: the independent review took about two minutes of reviewer time and removed a probable third GPT-PM round; its traces of nine scripts (manual failure, manual success, timer due during a manual attempt, gave-up, account switch during a manual attempt, sign-out while waiting, recovery failure) agreed with DT-0-11 to DT-0-14 and DT-13-11 (six bind calls) and with the existing retry test.
 Why it worked: the reviewer was given the exact scripts to trace and the real code to compare with, and was told what previous reviewers had missed.
 Rule next time: give reviewers a list of scripts to trace, not only a scope.
+
+## 2026-10-17 - Commit: docs: record the S03 documentation gate approval and start the build
+
+Kind: SUCCESS.
+Facts: the S03 documentation gate ended in APPROVE on exact head 59828804 in round 3 (0 BLOCKER, 0 MAJOR), after MODIFY in round 1 (3bedcba4, one MAJOR) and round 2 (27d6dc44, one MAJOR). Each round found a real defect in the retry contract of the journal bind, and the independent reliability review run before round 3 found the root cause (a separate open attempt does not exist in the code). Evidence: docs/sdlc/STATE.md section S03, docs/phase2/s03/S03_DESIGN.md section 2.1 item 3.
+Why it worked: every finding was verified against the code before it was accepted, remediation was written as numbered rules with tests derived from them, and mechanical checks (id sets, sum of the count column) ran before every commit.
+Rule next time: send a state-machine remediation to an independent read-only review BEFORE the gate round.
+
+## 2026-10-17 - Commit: docs: record the S03 documentation gate approval and start the build
+
+Kind: NEUTRAL.
+Facts: three attempts to send round 3 failed because the PM Bridge daemon was handing over to a new build (the error named two source builds changing, and the pm-bridge repository had uncommitted edits by another session); the request never reached the chat (recovery by request id found no inbound record), so resending created no duplicate. The fourth attempt went through after the other session's lifecycle operation finished and the mode came on by itself. The break-glass direct send was not used and the daemon was not restarted.
+Rule next time: on 'source update did not complete', check recovery by request id first, then wait for the other session's lifecycle operation; never use the break-glass path while the normal path is merely busy.
