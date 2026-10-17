@@ -732,3 +732,10 @@ Kind: SUCCESS.
 Facts: the fix landed as its own commit BEFORE the default of the local journal flag is changed (build lane L1, run 1 of 3), which is the order the design review required (RV-13). The path is now one constant used by the factory, the exclusion list and both Android XML files.
 Why it worked: the build brief fixed the order of the three runs of the lane and named the flag flip as a later run.
 Rule next time: land the data-protection part of a change before the part that switches the data on.
+
+## 2026-10-17 - Commit: feat(ui): add the window size class and optional focus, hover and semantics parameters to the HUD controls
+
+Kind: SUCCESS.
+Facts: build lane L3 wrote two stories (S03-03 HUD primitives, S03-02 window size class) in two runs without running anything; every new parameter of the HUD controls defaults to today's behaviour, and `HudPanel` and `HudSettingRow` pass `handlesKeys: false` so there is no second activation handler or extra tab stop. The exact hover colour is not specified by the UI contract (10.9); the implementation agent used the nearest existing token and said so in its report.
+Why it worked: the brief required every default to reproduce current behaviour and named the files the lane may touch.
+Rule next time: the test agents must prove the defaults (existing widget tests stay green unchanged) and the one cross-lane precondition: `WindowSizeScope` has to be mounted once above the router (main.dart, wave 4) for the rebuild-per-class guarantee of DT-02-3.

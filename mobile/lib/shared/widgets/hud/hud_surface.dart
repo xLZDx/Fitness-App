@@ -9,7 +9,7 @@ library;
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
-    show KeyDownEvent, KeyEvent, LogicalKeyboardKey;
+    show KeyDownEvent, KeyEvent, LogicalKeyboardKey, SystemMouseCursors;
 
 import '../../../core/background/hud_sky.dart';
 import '../../../core/theme/app_semantic_colors.dart';
@@ -28,32 +28,197 @@ import '../../../core/theme/hud_typography.dart';
 /// could Tab past every primary control and never be able to press it. This
 /// wrapper is the one place that gap is closed, so all three controls fix it
 /// the same way rather than three slightly different ways.
-class HudKeyboardActivation extends StatelessWidget {
+///
+/// S03-03 (contract 9.1, 10.9): three optional, default-off extensions turn on
+/// the pointer and keyboard affordances of the new S03 controls. With all of
+/// them off the built tree is exactly the original `Focus` around [child].
+///
+///  * [showFocusRing] -- a 2 px outline in the text-primary token, 2 px off
+///    the control, drawn only while the control has focus AND the focus came
+///    from keyboard-style navigation (`FocusHighlightMode.traditional`), so a
+///    pointer tap does not show it.
+///  * [hoverStyle] -- the accent wash the selected chip already uses, at half
+///    strength, while a pointer hovers the control.
+///  * [cursor] -- the pointing-hand cursor over the (enabled) control. A
+///    disabled control ([onActivate] null) is returned bare and keeps the
+///    default arrow.
+///
+/// [handlesKeys] false is for a child that already activates itself from the
+/// keyboard (an `InkWell`): the extras are drawn but no second activation
+/// handler or extra tab stop is added.
+class HudKeyboardActivation extends StatefulWidget {
   const HudKeyboardActivation({
     super.key,
     required this.onActivate,
     required this.child,
+    this.showFocusRing = false,
+    this.hoverStyle = false,
+    this.cursor = false,
+    this.handlesKeys = true,
+    this.borderRadius,
   });
 
   /// Null makes the control unfocusable, matching a disabled tap handler.
   final VoidCallback? onActivate;
   final Widget child;
 
+  /// 2 px keyboard-focus outline. Default off (today's behaviour).
+  final bool showFocusRing;
+
+  /// Half-strength accent wash while hovered. Default off.
+  final bool hoverStyle;
+
+  /// Pointing-hand cursor while enabled. Default off.
+  final bool cursor;
+
+  /// Whether this wrapper handles Enter/Space itself. Default true.
+  final bool handlesKeys;
+
+  /// The control's corner radius, used to shape the ring and the wash.
+  /// Null means square corners.
+  final BorderRadius? borderRadius;
+
+  /// Key of the focus-ring box while it is painted (tests find it by this).
+  static const Key focusRingKey = ValueKey<String>('hud.focusRing');
+
+  @override
+  State<HudKeyboardActivation> createState() => _HudKeyboardActivationState();
+}
+
+class _HudKeyboardActivationState extends State<HudKeyboardActivation> {
+  bool _focused = false;
+  bool _hovered = false;
+  bool _listening = false;
+
+  void _syncListener() {
+    if (widget.showFocusRing && !_listening) {
+      FocusManager.instance.addHighlightModeListener(_onHighlightMode);
+      _listening = true;
+    } else if (!widget.showFocusRing && _listening) {
+      FocusManager.instance.removeHighlightModeListener(_onHighlightMode);
+      _listening = false;
+    }
+  }
+
+  void _onHighlightMode(FocusHighlightMode mode) {
+    if (mounted && _focused) setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _syncListener();
+  }
+
+  @override
+  void didUpdateWidget(HudKeyboardActivation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncListener();
+  }
+
+  @override
+  void dispose() {
+    if (_listening) {
+      FocusManager.instance.removeHighlightModeListener(_onHighlightMode);
+      _listening = false;
+    }
+    super.dispose();
+  }
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final bool isActivation = event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter ||
+        event.logicalKey == LogicalKeyboardKey.space;
+    if (!isActivation) return KeyEventResult.ignored;
+    widget.onActivate!();
+    return KeyEventResult.handled;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (onActivate == null) return child;
+    if (widget.onActivate == null) return widget.child;
+
+    final bool extras = widget.showFocusRing || widget.hoverStyle;
+    Widget content = widget.child;
+    if (extras) {
+      final HudTokens t = context.hud;
+      final BorderRadius radius = widget.borderRadius ?? BorderRadius.zero;
+      final bool ringOn = widget.showFocusRing &&
+          _focused &&
+          FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+      final bool washOn = widget.hoverStyle && _hovered;
+      content = Stack(
+        fit: StackFit.passthrough,
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          widget.child,
+          if (washOn)
+            Positioned.fill(
+              key: const ValueKey<String>('hud.hoverWash'),
+              child: IgnorePointer(
+                child: ExcludeSemantics(
+                  child: ClipRRect(
+                    borderRadius: radius,
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: DecoratedBox(
+                        decoration:
+                            BoxDecoration(gradient: t.accentChipGradient),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (ringOn)
+            Positioned(
+              key: const ValueKey<String>('hud.focusRingSlot'),
+              left: -4,
+              top: -4,
+              right: -4,
+              bottom: -4,
+              child: IgnorePointer(
+                child: ExcludeSemantics(
+                  child: DecoratedBox(
+                    key: HudKeyboardActivation.focusRingKey,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: radius.topLeft + const Radius.circular(4),
+                        topRight: radius.topRight + const Radius.circular(4),
+                        bottomLeft: radius.bottomLeft + const Radius.circular(4),
+                        bottomRight:
+                            radius.bottomRight + const Radius.circular(4),
+                      ),
+                      border: Border.all(color: t.textPrimary, width: 2),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    if (widget.cursor || widget.hoverStyle) {
+      content = MouseRegion(
+        cursor: widget.cursor ? SystemMouseCursors.click : MouseCursor.defer,
+        onEnter: widget.hoverStyle ? (_) => setState(() => _hovered = true) : null,
+        onExit: widget.hoverStyle ? (_) => setState(() => _hovered = false) : null,
+        child: content,
+      );
+    }
+
     return Focus(
-      onKeyEvent: (FocusNode node, KeyEvent event) {
-        if (event is! KeyDownEvent) return KeyEventResult.ignored;
-        final bool isActivation =
-            event.logicalKey == LogicalKeyboardKey.enter ||
-                event.logicalKey == LogicalKeyboardKey.numpadEnter ||
-                event.logicalKey == LogicalKeyboardKey.space;
-        if (!isActivation) return KeyEventResult.ignored;
-        onActivate!();
-        return KeyEventResult.handled;
-      },
-      child: child,
+      canRequestFocus: widget.handlesKeys,
+      skipTraversal: !widget.handlesKeys,
+      onKeyEvent: widget.handlesKeys ? _onKeyEvent : null,
+      onFocusChange: widget.showFocusRing
+          ? (bool f) {
+              if (mounted && f != _focused) setState(() => _focused = f);
+            }
+          : null,
+      child: content,
     );
   }
 }
@@ -331,6 +496,13 @@ class HudPanel extends StatelessWidget {
     this.tone = HudPanelTone.normal,
     this.onTap,
     this.semanticLabel,
+    this.semanticHint,
+    this.selected,
+    this.enabled,
+    this.inMutuallyExclusiveGroup = false,
+    this.showFocusRing = false,
+    this.hoverStyle = false,
+    this.cursor = false,
   })  : assert(!(secondary && dense),
             'A panel is one tier: subPanel is the lightest, contentPanel the '
             'most protective. Asking for both describes no surface.'),
@@ -359,6 +531,26 @@ class HudPanel extends StatelessWidget {
   final HudPanelTone tone;
   final VoidCallback? onTap;
   final String? semanticLabel;
+
+  /// S03-03 (contract 9.1): spoken hint. Null (default) adds none.
+  final String? semanticHint;
+
+  /// Exposes `isSelected` when non-null (a choice card). Null (default) sets
+  /// no selected flag.
+  final bool? selected;
+
+  /// `false` announces the panel as a disabled button and ignores [onTap];
+  /// null (default) changes nothing.
+  final bool? enabled;
+
+  /// Marks the panel as one option of a radio-style group.
+  final bool inMutuallyExclusiveGroup;
+
+  /// S03-03 pointer/keyboard extensions, active only with an [onTap]; all
+  /// default off (see [HudKeyboardActivation]).
+  final bool showFocusRing;
+  final bool hoverStyle;
+  final bool cursor;
 
   /// The `t.panel` recipe with only its fill replaced by the tone's semantic
   /// colour -- the same "same recipe, one field overridden" shape
@@ -420,23 +612,46 @@ class HudPanel extends StatelessWidget {
         ? _toneGlass(context, t)
         : (dense ? _denseGlass(context, t) : (secondary ? t.subPanel : t.panel));
 
-    final Widget surface = HudSurface(
+    // `enabled: false` suppresses the tap; null/true leave `onTap` as given.
+    final VoidCallback? tap = enabled == false ? null : onTap;
+
+    Widget surface = HudSurface(
       glass: glass,
       borderRadius: br,
-      padding: onTap == null ? padding : null,
-      child: onTap == null
+      padding: tap == null ? padding : null,
+      child: tap == null
           ? body
           : Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: onTap,
+                onTap: tap,
                 borderRadius: br,
                 child: Padding(padding: padding, child: body),
               ),
             ),
     );
 
-    if (semanticLabel == null && onTap == null) return surface;
+    if (tap != null && (showFocusRing || hoverStyle || cursor)) {
+      // The InkWell already activates from the keyboard; the wrapper only
+      // adds the ring, the wash and the cursor around the whole surface.
+      surface = HudKeyboardActivation(
+        onActivate: tap,
+        handlesKeys: false,
+        showFocusRing: showFocusRing,
+        hoverStyle: hoverStyle,
+        cursor: cursor,
+        borderRadius: br,
+        child: surface,
+      );
+    }
+
+    final bool extendedSemantics = semanticHint != null ||
+        selected != null ||
+        enabled != null ||
+        inMutuallyExclusiveGroup;
+    if (semanticLabel == null && onTap == null && !extendedSemantics) {
+      return surface;
+    }
     // Without `ExcludeSemantics`, the panel's own Text children merge into
     // this node and a screen reader announces the label and then the visible
     // copy again — `HudButton`'s doc comment names this exact bug for the
@@ -445,6 +660,10 @@ class HudPanel extends StatelessWidget {
     return Semantics(
       button: onTap != null,
       label: semanticLabel,
+      hint: semanticHint,
+      selected: selected,
+      enabled: enabled,
+      inMutuallyExclusiveGroup: inMutuallyExclusiveGroup ? true : null,
       child: semanticLabel != null ? ExcludeSemantics(child: surface) : surface,
     );
   }
@@ -574,7 +793,25 @@ class HudButton extends StatefulWidget {
     this.labelStyle,
     this.foreground,
     this.shadowOutsideOnly = false,
+    this.minHeight = HudTokens.minTapTarget,
+    this.semanticHint,
+    this.showFocusRing = false,
+    this.hoverStyle = false,
+    this.cursor = false,
   });
+
+  /// S03-03 (contract 9.1): the height floor, which also sets the hit region
+  /// because the constraint wraps the tap area. Default 44 (today).
+  final double minHeight;
+
+  /// Spoken hint; null (default) adds none.
+  final String? semanticHint;
+
+  /// S03-03 pointer/keyboard extensions, all default off (see
+  /// [HudKeyboardActivation]).
+  final bool showFocusRing;
+  final bool hoverStyle;
+  final bool cursor;
 
   final String label;
   final IconData? icon;
@@ -701,6 +938,7 @@ class _HudButtonState extends State<HudButton> {
       button: true,
       enabled: live,
       label: widget.label,
+      hint: widget.semanticHint,
       // The visible label is excluded below, not left to merge: the outer
       // `Semantics` already carries it, and a merged pair makes a screen
       // reader announce the same words twice. Measured: the node's label came
@@ -708,6 +946,10 @@ class _HudButtonState extends State<HudButton> {
       // added.
       child: HudKeyboardActivation(
         onActivate: live ? widget.onPressed : null,
+        showFocusRing: widget.showFocusRing,
+        hoverStyle: widget.hoverStyle,
+        cursor: widget.cursor,
+        borderRadius: BorderRadius.circular(widget.radius),
         child: GestureDetector(
           onTapDown: live ? (_) => setState(() => _pressed = true) : null,
           onTapUp: live ? (_) => setState(() => _pressed = false) : null,
@@ -724,8 +966,7 @@ class _HudButtonState extends State<HudButton> {
             curve: Curves.ease,
             child: ConstrainedBox(
               // The handoff's own floor, and WCAG 2.5.5's.
-              constraints:
-                  const BoxConstraints(minHeight: HudTokens.minTapTarget),
+              constraints: BoxConstraints(minHeight: widget.minHeight),
               child: HudSurface(
                 glass: glass,
                 overlay: overlay,
@@ -786,7 +1027,33 @@ class HudChip extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
     this.expand = false,
     this.enabled,
+    this.minHeight = HudTokens.minTapTarget,
+    this.maxLines = 1,
+    this.semanticLabel,
+    this.semanticHint,
+    this.showFocusRing = false,
+    this.hoverStyle = false,
+    this.cursor = false,
   });
+
+  /// S03-03 (contract 9.1): height floor and hit region. Default 44 (today).
+  final double minHeight;
+
+  /// Text lines before ellipsis. Default 1 (today); wrapping chips use 2.
+  final int maxLines;
+
+  /// Overrides the visible text as the accessible name; null (default) keeps
+  /// the visible label.
+  final String? semanticLabel;
+
+  /// Spoken hint; null (default) adds none.
+  final String? semanticHint;
+
+  /// S03-03 pointer/keyboard extensions, all default off (see
+  /// [HudKeyboardActivation]).
+  final bool showFocusRing;
+  final bool hoverStyle;
+  final bool cursor;
 
   final String label;
   final bool selected;
@@ -822,7 +1089,7 @@ class HudChip extends StatelessWidget {
     final Widget text = Text(
       label,
       textAlign: expand ? TextAlign.center : TextAlign.start,
-      maxLines: 1,
+      maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
       style: HudType.body(t, size: expand ? 12.5 : 11.5).copyWith(
         fontWeight: FontWeight.w600,
@@ -837,15 +1104,19 @@ class HudChip extends StatelessWidget {
       button: onTap != null || isDisabledControl,
       enabled: isDisabledControl ? false : null,
       selected: selected,
-      label: label,
+      label: semanticLabel ?? label,
+      hint: semanticHint,
       child: HudKeyboardActivation(
         onActivate: onTap,
+        showFocusRing: showFocusRing,
+        hoverStyle: hoverStyle,
+        cursor: cursor,
+        borderRadius: br,
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(minHeight: HudTokens.minTapTarget),
+            constraints: BoxConstraints(minHeight: minHeight),
             child: HudSurface(
               glass: t.chip,
               overlay: selected ? t.accentChipGradient : null,
