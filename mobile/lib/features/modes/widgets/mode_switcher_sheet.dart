@@ -112,6 +112,9 @@ class ModeSwitcherSheet extends ConsumerWidget {
     final HudTokens t = context.hud;
     // Null while the state reloads: no row is marked current.
     final AppMode? selectedMode = ref.watch(selectedModeProvider);
+    final AsyncValue<ModeState> modeAsync = ref.watch(modeStateProvider);
+    final ModeState state =
+        modeAsync.isLoading ? ModeState.initial() : (modeAsync.valueOrNull ?? ModeState.initial());
     final Map<AppMode, ModeAvailability> table =
         ref.watch(modeFlagsProvider).availabilityTable;
     // Still loading counts as answered: never show a count that may be wrong.

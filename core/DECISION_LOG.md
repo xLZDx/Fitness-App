@@ -57959,3 +57959,7 @@ Decision: lane L12 batches 8 and 9 apply the review findings that were verified 
 ## 2026-10-17 - Commit: fix(shell): make the keyboard shortcuts see pages pushed over a tab
 
 Decision: _location in app_shortcuts.dart uses currentConfiguration.last.matchedLocation, so Back pops a pushed page and the tab shortcuts do nothing while a pushed page is on top (the contract tests require that; my own instruction to the fix agent said to replace the stack like the dock, which was wrong and is corrected here). Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-10.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md.
+
+## 2026-10-17 - Commit: fix(modes): declare the mode state in the switcher sheet build method
+
+Decision: the switcher sheet reads the mode state in build (initial state while the state is loading, so another account's state is not used). The re-read of all files touched by batches 8 to 10 found no other compile error by reading (the compiler was not run). Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-11.md.

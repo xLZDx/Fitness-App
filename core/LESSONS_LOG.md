@@ -1009,3 +1009,11 @@ Facts: the shortcut layer read the current location from the router configuratio
 Root cause: the author read the location from the configuration uri, which describes the matched stack root, not the topmost route (lane L10); the brief did not mention pushed pages above a tab.
 Layer: author; found by a test that pushes a page over a tab.
 Rule next time: any code that reads the current location is tested with a pushed page above a tab; use the matched location of the last route.
+
+## 2026-10-17 - Commit: fix(modes): declare the mode state in the switcher sheet build method
+
+Kind: FAILURE (compile error introduced by the review batch and committed without a compile check).
+Facts: batch 8 replaced the line that declared the mode state in the switcher sheet and left its use below, so the app no longer compiled from commit 9b42ef53 until this commit; two test agents (steps 1 and 2) found it on their next run: one existing test file and one new test file could not load.
+Root cause: implementation agents run nothing, so a compile error is only visible at the next test run; I committed the batch after reading the agent's summary, without reading the diff of the risky edit myself.
+Layer: author (agent) and coordinator (no diff read); caught by the test agents within one run cycle.
+Rule next time: after every batch that edits code the agents cannot compile, ask one test agent for a compile-only smoke (a single quick test that imports the app router) before committing; the cost is minutes and it avoids a broken head.
