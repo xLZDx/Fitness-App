@@ -1227,3 +1227,11 @@ Facts: checking the operator draft against the real code before design found 17 
 Why it worked: the code-explorer ran before any design text was written, so the design starts from verified facts instead of the draft's assumptions.
 Caught by: code-explorer.
 Rule next time: run the code map before the design for any draft that claims reuse of existing modules; work in a separate worktree so a concurrent sprint's dirty files are not touched.
+
+## 2026-10-17 - Commit: docs(ai-coach): design, ADR proposals and UI spec
+
+Kind: SHORTCOMING.
+Facts: the design agent stopped at its 14-turn limit after verification only and wrote no file; it had to be resumed with an explicit order to write.
+Root cause: the brief asked for verification and a very large deliverable in one run without a turn budget.
+Missed by: coordinator (brief), caught by the completion notice.
+Rule next time: for a large design brief, tell the agent to write the skeleton file first and verify while filling it.

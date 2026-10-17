@@ -74,15 +74,15 @@ Current phase: 9 Accept and 10 Report (S03 is merged: PR #11 into `phase2/main` 
 
 Updated 2026-10-17. Worktree `D:\Repo\Fitness_App_aicoach`, branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints (S00 to S04) and does not close or change any of them. Input: `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` (operator draft, translated). Status of the draft: design review pending; implementation and production are not authorized.
 
-Current phase: 1 Discovery (agents running).
+Current phase: 4 Docs and test plan (agents running); phases 1 to 3 written.
 
 | # | Phase | Status | Artifacts |
 |---|---|---|---|
-| 1 Discovery | in progress | `docs/ai-coach/01_REQUIREMENTS.md` (business-analyst), code map (code-explorer) |
-| 2 Backlog | open | |
-| 3 Design | open | |
+| 1 Discovery | done | `docs/ai-coach/01_REQUIREMENTS.md`, `docs/ai-coach/01b_CODE_MAP.md` |
+| 2 Backlog | done | `docs/ai-coach/02_BACKLOG.md` |
+| 3 Design | done | `docs/ai-coach/03_DESIGN.md`, `03a_ADR_PROPOSALS.md`, `03b_UI_SPEC.md` |
 | 4 Docs + test plan | open | |
 | 5 Doc review | open | |
 | 6 to 10 | not started | documentation program only; code is a later gate |
 
-Agents and models actually run so far (Sonnet 5.5): business-analyst, code-explorer.
+Agents and models actually run so far (Sonnet 5.5): business-analyst, code-explorer, product-owner, technical-writer, ui-designer.

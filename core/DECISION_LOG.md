@@ -58077,3 +58077,7 @@ Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup;
 ## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
 
 Decision: the Live AI Coach (TDD-001) is documented as its own line on branch docs/ai-coach-tdd-001, based on origin/phase2/main in a separate worktree, and does not change any Phase 2 sprint or the dirty phase2/s04 checkout. Documentation program only: sprint AI-COACH-00; later sprints are planned but not authorised; implementation and production remain not authorised. Evidence: core/changes/2026-10-17-ai-coach-discovery-backlog.md, docs/ai-coach/01b_CODE_MAP.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): design, ADR proposals and UI spec
+
+Decision: design keeps a live workout in a new live_workout_sessions collection with a revision fence and writes workout_sessions only on finish, because totals() and weeklyVolume count every workout_sessions document without a status filter. ADR-001 to 010 stay PROPOSED. Open operator questions OQ-03 to OQ-24 are listed in docs/ai-coach/03_DESIGN.md. Evidence: core/changes/2026-10-17-ai-coach-design.md.
