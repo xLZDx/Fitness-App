@@ -1148,3 +1148,74 @@ Kind: SUCCESS.
 Facts: 9 write-order tests and 12 foreign-session Record tests were added by the test agents; the Record tests failed once on a real layout shift in my first fix (recorded in the previous entry) and are green on 85f88bb2 (243 passed); mode tests 94 passed, 2 skipped in code.
 Why it worked: the test agent asserted neighbouring positions and focus, not only the missing control, and kept the red test red instead of weakening it.
 Rule next time: keep applying that: a failing test found by a test agent is fixed in production, not relaxed.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 requirements and Android platform study, the S03 sprint report, and close S03 in STATE
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: three documentation agents ran in parallel on separate files (requirements 51 items, platform study 169 lines, S03 report 157 lines). The S03 report records that no complete test run exists on the approved head 1e56d651, only targeted runs of the gate fixes.
+Shortcoming: the same evidence gap as S02 repeated (the complete run was on an earlier head than the approved one).
+Rule next time: after the last gate fix, schedule one complete run of all test sets on the exact head that goes to the gate.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 UI contract, design, stories and test plan with two review rounds, and the S03 operator report
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: four internal reviews (UX, accessibility, architecture, security) found 0 BLOCKER and about 45 MAJOR/MINOR items in the first S04 drafts; a verification round found the round 1 fixes had introduced 8 contract and 10 consistency MAJOR (contradicting timeouts of 5, 10 and 15 s, notification content, G-1 arithmetic, Keep semantics defined two ways, lane ownership collisions). Several authoring agents hit their turn limit without a report and were resumed.
+Root cause: four authors edited four documents in parallel from one findings list that left cross-document values (timeouts, set of automatic stops, notification content, Keep meaning) undecided until the second round.
+Missed by: authors and round 1 remediation; caught by the verification reviewers and the test-plan author, who listed 20 input conflicts.
+Rule next time: decide every cross-document constant (timeouts, sets, names) in the findings file BEFORE fan-out to authors, and give each author a turn-budget-friendly brief (grep, large edits, write the report first).
+
+## 2026-10-17 - Commit: docs(s04): fix the documentation gate findings on recovery phase, revocation sequence and sign-out retention
+
+Kind: FAILURE.
+Facts: the GPT-PM documentation gate on 535ae9e4 returned MODIFY with 3 MAJOR and 1 MINOR: the test plan row DT-12-4 contradicted the design and contract about the phase after recovery from a pause, three documents persisted a revoked recording at different moments (revocation vs Keep), and the sign-out 30-day fallback contradicted GPS-PRIV-014 of the S01 privacy contract. AC-D4-B-4 was missing from the plan.
+Root cause: round 1 and round 2 fixes were applied document by document; the recovery phase, the persistence moment and the S01 rule were not listed as cross-document constants (the same class as the timeouts of round 2), and the id comparison between contract and plan was done before the contract was final.
+Missed by: authors, two internal review rounds and the test-plan author; caught by the external gate.
+Rule next time: run a mechanical id and constant comparison (grep set comparison) AFTER the last edit of every document, and read the cited upstream rule (here GPS-PRIV-014) in its original file before writing an exception to it.
+
+## 2026-10-17 - Commit: docs(s04): make Keep and Delete of a pending recording mutually exclusive and complete the story AC map
+
+Kind: FAILURE.
+Facts: the GPT-PM verification round on 3054d6fe returned MODIFY with 1 MAJOR and 1 MINOR: after the gate fix, Keep (hand-off into the S02 repository) and Delete (ordered delete) of a sealed pending recording could both be started, so a crash or a double tap could create an activity and then delete it, or revive a deleted recording; four story acceptance criteria had no test plan mapping.
+Root cause: Z2 introduced two actions on one pending state without stating which decision is final, and the id comparison covered contract and requirement ids but not story acceptance criteria.
+Missed by: authors, the two internal review rounds and the gate-fix author; caught by the external verification round.
+Rule next time: when a fix adds a second action on a shared state, write the exclusion rule and the fault-injection points (before, during, after each durable step) in the same edit; extend the mechanical id comparison to every id family (here story AC ids).
+
+## 2026-10-17 - Commit: docs(s04): arbitrate Keep and Delete with one exclusive-create decision file
+
+Kind: FAILURE.
+Facts: the GPT-PM verification round 2 on b8ec248c returned MODIFY with 1 MAJOR: the Z5 rule said the DECISION marker is written by temp file, fsync and rename, but a rename can replace an existing target, so two callers that both saw no marker could both publish and the later one would overwrite the earlier decision; DISCARDING and DECISION=DELETE were also two representations of one decision. 1 MINOR: DT-19-13 did not state that Delete after a durable KEEP is refused.
+Root cause: I wrote the mutual-exclusion rule in terms of atomic publication, which is not first-writer arbitration; the rule was never checked against a forced two-writer interleaving.
+Missed by: author (me), the internal agents and the first gate pass; caught by the external verification round.
+Rule next time: for any first-wins rule name the exact primitive (exclusive create or compare-and-set, never rename-over) and require a test that forces both callers past the check before either commits.
+
+## 2026-10-17 - Commit: docs(s04): make DECISION recovery one table with a whole-published never-unlinked decision file
+
+Kind: FAILURE.
+Facts: GPT-PM verification round 3 on a43283d5 returned MODIFY with 2 MAJOR and 2 MINOR: design 4.5 still deleted any directory with a DISCARDING marker while 4.3 quarantined it, and an empty DECISION file had two recovery outcomes (removed and quarantined). Two Claude sessions also drove the same documentation gate concurrently, committed and amended each other's work, and wrote two incompatible rules for the empty file into the same documents.
+Root cause: the Z7 fix changed the protocol in 4.3 only; older recovery text in 4.5 and 12.1 was not grepped for the old rule, and a second session was allowed to run in the same worktree without a single owner.
+Missed by: authors and the internal consistency checks; caught by the external gate round 3. The collision was caught by a cross-session message.
+Rule next time: after changing a protocol, grep every document for each older statement of the same state machine; one worktree has exactly one session owning the gate and its commits.
+
+## 2026-10-17 - Commit: docs(s04): separate KEEP cleanup from the never-unlink rule and tie the fallback to the process-wide journal lock
+
+Kind: FAILURE.
+Facts: GPT-PM round 4 on 68766a70 returned MODIFY with 2 MAJOR and 1 MINOR: the never-unlink rule contradicted the KEEP cleanup step, the fallback publication argument relied on an in-process lock that does not cover a second process, and a new story AC had no test mapping.
+Root cause: each fix of the DECISION protocol introduced a new absolute statement ("never", "ever") without checking it against the other lifecycle paths (KEEP cleanup, other processes).
+Missed by: authors and the author-run id comparison (it checks ids, not rules); caught by the external gate.
+Rule next time: state an invariant with its exact exceptions the first time (who may remove it and when), and list every lifecycle path (DELETE, KEEP cleanup, crash, second process) against it before writing it.
+
+## 2026-10-17 - Commit: docs(s04): make KEEP cleanup one atomic rename and split the journal lock from the publication mutex
+
+Kind: FAILURE.
+Facts: GPT-PM round 5 on bd95a54a returned MODIFY with 2 MAJOR: multi-step KEEP cleanup deleted the owner metadata that recovery needed, and the process-lifetime journal lock was also used as a short-lived writer-completion signal.
+Root cause: each protocol fix was checked for the named failure only; crash points inside the new cleanup sequence and the lifetime of each lock were not enumerated.
+Missed by: authors and the id comparisons; caught by the external gate (fifth round on one mechanism).
+Rule next time: for any multi-step durable sequence enumerate a crash after every step before writing it, prefer one atomic rename as the commit point, and give every lock one stated lifetime and one purpose.
+
+## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
+
+Kind: FAILURE.
+Facts: GPT-PM round 6 on 838d1cdc returned MODIFY with 1 MAJOR: one sentence in design 4.3 said DELETE also uses the new rename-then-delete cleanup, contradicting the ordered DELETE procedure of 4.5 and the recovery table.
+Root cause: a convenience sentence generalizing the KEEP fix to DELETE was added without checking 4.5; the author had the same stale-generalization habit as in earlier rounds.
+Missed by: authors and the design agent grep (it searched for the old rule, not for the new generalization); caught by the external gate.
+Rule next time: never extend a fix to a second path in passing; scope a new mechanism explicitly to the path it fixes.

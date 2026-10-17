@@ -58035,3 +58035,41 @@ Decision: the foreign-owner rail slot lays out the idle control invisibly (no se
 ## 2026-10-17 - Commit: test(s03): regression tests for the code gate findings on foreign sessions and mode write order
 
 Decision: after this commit the code gate is requested again from GPT-PM on the new exact head as a verification round (the two MAJOR findings and regressions caused by their fixes only). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md section 1a, core/changes/2026-10-17-s03-gate-fix-tests.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 requirements and Android platform study, the S03 sprint report, and close S03 in STATE
+
+Decision: the operator answered yes to merging PR 11 (merged as f605cf3e) and to starting S04 documentation. S04 documentation proceeds on branch phase2/s04-docs with the readiness-note defaults (Android only, consent rows built inside S04, cloud upload off, S04-D produced as a separate contract in this phase); every invented number is PROPOSED. Evidence: docs/phase2/s04/S04_REQUIREMENTS.md section 3, core/changes/2026-10-17-s04-docs-wave1.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 UI contract, design, stories and test plan with two review rounds, and the S03 operator report
+
+Decision: the operator ordered 'finish S04 and stop after the merge'. The S04 documentation set (requirements 58 items, platform study, 38 stories, UI contract revision 2 with about 105 AC ids, technical design, test plan with 783 committed rows) is committed on branch phase2/s04-docs after two review rounds; defaults Y1..Y11 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md apply until the operator overrides them. Next: GPT-PM documentation gate on the exact head, then one push, one PR and the merge; no S04 code is built in this work. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md, core/changes/2026-10-17-s04-docs-wave2.md.
+
+## 2026-10-17 - Commit: docs(s04): fix the documentation gate findings on recovery phase, revocation sequence and sign-out retention
+
+Decision: decisions Z1..Z4 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 4 apply (defaults pending operator override): after a kill Resume enters acquiring for every origin; revocation seals the partial recording as a pending decision and Keep hands it off; ordinary sign-out hands off then deletes (strict GPS-PRIV-014) and the 30-day encrypted fallback applies only when the hand-off cannot complete, recorded as a PROPOSED clarification next to GPS-PRIV-014 and as an operator question; AC-D4-B-4 added to the plan. Evidence: core/changes/2026-10-17-s04-docs-gate-fix.md.
+
+## 2026-10-17 - Commit: docs(s04): make Keep and Delete of a pending recording mutually exclusive and complete the story AC map
+
+Decision: decision Z5 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 5 applies: a durable DECISION marker (KEEP or DELETE) is written atomically before any action and the first durable decision wins; Delete is not offered after Keep is durable and never removes the hand-off activity; Keep is refused after Delete is durable; recovery follows the marker. Z6: the story AC to test mapping is complete (147 story ACs, 109 contract ids and 58 requirement ids compared, no gaps). Evidence: core/changes/2026-10-17-s04-docs-z5-z6.md.
+
+## 2026-10-17 - Commit: docs(s04): arbitrate Keep and Delete with one exclusive-create decision file
+
+Decision: decisions Z7 and Z8 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 6 apply: one DECISION file per recording created only by an exclusive create-if-absent, shared by Keep and Delete, durable (file and parent directory fsync) before any irreversible action; the loser does nothing irreversible; DISCARDING is only a progress marker valid with DECISION=DELETE; malformed combinations go to QUARANTINED. Evidence: core/changes/2026-10-17-s04-docs-z7-z8.md.
+
+Decision (2026-10-17, same commit): the contract remediation-log line for Z7 completes the Z7 batch; no new decision beyond Z7 in section 6 of S04_REVIEW_FINDINGS_ROUND1.md.
+
+## 2026-10-17 - Commit: docs(s04): make DECISION recovery one table with a whole-published never-unlinked decision file
+
+Decision: decisions Z9..Z12 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 7 apply: one recovery table executed by listUnfinished(); DECISION is published whole (temp file, fsync, exclusive hard-link create, parent fsync) and never unlinked; an empty, truncated or unknown-token DECISION at recovery is QUARANTINED; quarantine covers malformed decision state but never ordinary permission revocation; the crash test asserts only the barrier ordering invariant. This session owns S04 to the merge. Evidence: core/changes/2026-10-17-s04-docs-z9-z12.md.
+
+## 2026-10-17 - Commit: docs(s04): separate KEEP cleanup from the never-unlink rule and tie the fallback to the process-wide journal lock
+
+Decision: Z13..Z15 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 8: a DECISION is never removed or replaced on its own; it goes only with its whole recording directory after a completed DELETE or after a verified owner-checked KEEP hand-off; the no-hard-link fallback is allowed only under the process-wide exclusive journal lock (a second process cannot open the journal); S04-19 AC-13 mapped. Evidence: core/changes/2026-10-17-s04-docs-z13-z15.md.
+
+## 2026-10-17 - Commit: docs(s04): make KEEP cleanup one atomic rename and split the journal lock from the publication mutex
+
+Decision: Z16 and Z17 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 9: KEEP cleanup verifies the hand-off, renames the recording directory atomically to a .cleanup sibling, then deletes contents (recovery deletes .cleanup garbage without owner checks); the journal ownership lock (process lifetime) is separate from a per-recording publication mutex that readers wait on. Evidence: core/changes/2026-10-17-s04-docs-z16-z17.md.
+
+## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
+
+Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup; DELETE stays on DECISION=DELETE, DISCARDING and the ordered 4.5 steps. Evidence: core/changes/2026-10-17-s04-docs-z18.md.
