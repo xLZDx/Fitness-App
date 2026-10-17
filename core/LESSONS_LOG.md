@@ -868,3 +868,9 @@ Facts: the mode notifier set the state in memory first and returned `unchanged` 
 Root cause: 'set memory first, compare with memory' design in my lane brief (coordinator) plus no scenario 'repeat after failed write' in the state-layer review.
 Layer: author (brief, notifier); caught by lane L6 while building the question page; the test agents prove it (DT-09-2, DT-01-x).
 Rule next time: any optimistic-update state holder gets the scenario 'same value after a failed write' in its brief and its tests.
+
+## 2026-10-17 - Commit: feat(modes): add the mode chooser, the per-mode questions, the switcher, the Coming-later sheet and the Record sheet
+
+Kind: SUCCESS with open items.
+Facts: lane L6 wrote stories S03-08 to S03-11 in two runs: the chooser (four cards, three layouts, grid rule by available width, no spinner, Back equals Decide later, unsaved selection dropped on account switch), the questions page, the mode switcher, the Coming-later sheet and the Record sheet (every row navigates, the only write is the explicit Open Train tap). While building it the agent found the repeat-after-failed-save defect in the state layer (fixed in 6521e152). Open items it reported: the rail Record slot has no GlobalKey so on expanded windows the Record sheet is a centred dialog unless an anchor is passed; SemanticsService.announce is used with an ignore for a deprecation; ModeState.answers holds one answer per mode (enough for one question per mode today).
+Rule next time: the test agents prove: no write on opening or closing any sheet (AC-RC), Ride and Explore never write, a failed save keeps the selection and shows the error, Back on the chooser runs Decide later only while pending.
