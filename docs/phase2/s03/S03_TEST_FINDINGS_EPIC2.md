@@ -2,14 +2,14 @@
 
 ## FINAL RUN
 
-Head: c7758293370ee0cfa8265fe93d93945b82b0c0a1 (batch 16; the previous FINAL RUN at 8783b58b gave the same 103 passed). Real tree, run from `mobile/`, Flutter /d/flutter/bin/flutter (3.27.1, Dart 3.6.0). No PathExistsException.
+Head: 489e486d22b7fe6e37981df815c05174617db775 (batches 17 and 18; earlier FINAL RUNs at 8783b58b and c7758293 gave 103 passed). Real tree, run from `mobile/`, Flutter /d/flutter/bin/flutter (3.27.1, Dart 3.6.0). No PathExistsException.
 
 Command (one command, all four files of step 3):
 
     flutter test --timeout 60s test/features/modes/mode_chooser_test.dart test/features/modes/mode_questions_test.dart test/features/modes/mode_switcher_test.dart test/features/modes/record_sheet_test.dart
 
-Result line: `00:19 +103: All tests passed!` (re-run at c7758293) -> passed 103, failed 0, skipped 0.
-Per file: mode_chooser_test.dart 47, mode_questions_test.dart 21, mode_switcher_test.dart 17, record_sheet_test.dart 18. Harness (not a test file): mode_epic2_harness.dart.
+Result line: `00:16 +106: All tests passed!` -> passed 106, failed 0, skipped 0.
+Per file: mode_chooser_test.dart 50, mode_questions_test.dart 21, mode_switcher_test.dart 17, record_sheet_test.dart 18. Harness (not a test file): mode_epic2_harness.dart.
 
 NOT_RUN / not fully proved:
 - AC-LS-7: alias row (N=0), no test of its own; covered by the AC-CH-9..14 tests.
@@ -18,6 +18,8 @@ NOT_RUN / not fully proved:
 - DT-11-4: source scan of app_router.dart, not navigation through the real router.
 - AC-RC-3 /flagsOff and DT-11-1 (BODY with all tiles flag-hidden): weak/partial; DT-11-1b documents current behaviour.
 - Most rows run in `en` only; no device, TalkBack or VoiceOver check; the TP-3 earlier files of step 2 were not run here.
+
+Added at 489e486d (mode_chooser_test.dart, 3 tests, all PASS): wide card at 1100x800: Coming-later chip right edge within 4 dp of the card inner right edge and on the icon line; scale 2.0 on 360 dp: en chip below the icon; ru chip follows the Wrap rule (the short ru word still fits beside the icon at 360 dp, so it stays on the icon line); never clipped, no overflow. Test-side correction: my first ru expectation assumed the chip always drops under the icon; the production rule is fit-based, so the test asserts the rule.
 
 Production defects open: none failing a test. Open MINOR items: mobile/lib/features/modes/widgets/record_sheet.dart (`recordRowsFor`, body branch) has no FOOD_AI/FOOD_LOOKUP input (P-8b); the same file's `_modeNameForTitle` reads `modeStateProvider` directly instead of `selectedModeProvider`.
 

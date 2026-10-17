@@ -374,6 +374,27 @@ void main() {
           reason: 'the raw value must be forgotten after an explicit choice');
     });
 
+    test('selectMode(train) on the coerced train persists train, sends no '
+        'event, and a repeat is unchanged', () async {
+      final env = rolledBack();
+      await env.load();
+      env.recordEvents();
+      expect(env.state.selectedMode, AppMode.train);
+      final r = await env.notifier.selectMode(AppMode.train);
+      expect(r, ModeSaveResult.saved);
+      expect(env.fake.writes, hasLength(1));
+      expect(env.fake.stateOf('u1')!.selectedMode, AppMode.train,
+          reason: 'the store must hold train, not the rolled-back ride');
+      expect(env.events, isEmpty, reason: 'the shown mode did not change');
+      final writesBefore = env.fake.writeCalls;
+      expect(await env.notifier.selectMode(AppMode.train),
+          ModeSaveResult.unchanged);
+      expect(env.fake.writeCalls, writesBefore, reason: 'no second write');
+      // Later writes keep train.
+      await env.notifier.skipQuestion(AppMode.body);
+      expect(env.fake.writes.last.state.selectedMode, AppMode.train);
+    });
+
     test('an explicit chooser choice of train replaces the raw mode',
         () async {
       final env = rolledBack();

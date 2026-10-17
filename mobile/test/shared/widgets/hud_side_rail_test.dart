@@ -209,6 +209,34 @@ void main() {
     }
   });
 
+  group('focus across the rail to bar swap', () {
+    String lbl() => FocusManager.instance.primaryFocus?.debugLabel ?? '';
+
+    testWidgets('focus on a destination that is not the active route is restored',
+        (t) async {
+      final f = await pumpShell(t,
+          size: const Size(1100, 800), initial: '/progress', locale: const Locale('en'));
+      await _tabTo(t, () => lbl() == 'shell.destination.4');
+      expect(lbl(), 'shell.destination.4', reason: 'precondition: Profile focused');
+      expect(f.location, '/progress', reason: 'focusing must not activate it');
+      await resizeTo(t, const Size(360, 800));
+      expect(f.location, '/progress');
+      expect(lbl(), 'shell.destination.4',
+          reason: 'focus must follow the destination, not the active route');
+      expect(focusIsWithin(_bar), isTrue);
+    });
+
+    testWidgets('nothing is focused after the swap when no destination had focus',
+        (t) async {
+      await pumpShell(t,
+          size: const Size(1100, 800), initial: '/progress', locale: const Locale('en'));
+      expect(lbl().startsWith('shell.destination.'), isFalse);
+      await resizeTo(t, const Size(360, 800));
+      expect(lbl().startsWith('shell.destination.'), isFalse,
+          reason: 'no focus may be requested: "${lbl()}"');
+    });
+  });
+
   group('AC-WS-6 pushed routes have no chrome', () {
     for (final route in const ['/workout/x1', '/settings']) {
       testWidgets('AC-WS-6/$route', (t) async {

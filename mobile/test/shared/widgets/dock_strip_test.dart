@@ -580,6 +580,27 @@ void announcementTests() {
       expect(said.length, n, reason: 'rest finished/ended must not announce: $said');
     });
 
+    testWidgets('rest-only to running announces started once; ending back to rest-only stays silent', (t) async {
+      final l10n = await _en();
+      final said = _captureAnnouncements();
+      final clock = TestClock();
+      final f = await pumpShell(t, clock: clock, overrides: realTimerOverrides(clock));
+      f.container.read(restTimerProvider.notifier).start(const Duration(seconds: 60));
+      await t.pump();
+      expect(said, isEmpty);
+      f.container.read(setTimerProvider.notifier).start(kTestSetPlan);
+      await t.pump();
+      expect(said, [l10n.stripSessionStarted], reason: 'exactly once: $said');
+      f.container.read(setTimerProvider.notifier).reset();
+      await t.pump();
+      expect(find.text(l10n.stripResting), findsOneWidget);
+      expect(said.length, 1, reason: 'running -> resting is silent: $said');
+      clock.advance(const Duration(minutes: 12));
+      await t.pump(const Duration(minutes: 12));
+      expect(find.byKey(_strip), findsNothing);
+      expect(said.length, 1, reason: 'rest-only -> null is silent: $said');
+    });
+
     testWidgets('an account switch announces nothing', (t) async {
       final said = _captureAnnouncements();
       final clock = TestClock();

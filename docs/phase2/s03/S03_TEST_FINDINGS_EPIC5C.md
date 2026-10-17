@@ -2,7 +2,7 @@
 
 ## FINAL RUN
 
-- Head: `c7758293370ee0cfa8265fe93d93945b82b0c0a1` (git rev-parse HEAD, after batch 16: chip cap via windowWidthShare, behaviour unchanged); the previous FINAL RUN on 8783b58b gave the same counts.
+- Head: `489e486d22b7fe6e37981df815c05174617db775` (git rev-parse HEAD, after batches 17 and 18: full-width Wrap card header, shell focus and announcement changes); the earlier FINAL RUNs on 8783b58b and c7758293 gave the same counts. The chooser matrix has no clipped label and no overflow in any cell.
 - Command, from `D:\Repo\Fitness_App_Phase2_s01\mobile`, one invocation (the fifth file, `s03_conformance_support.dart`, is a helper with no tests):
 
 ```

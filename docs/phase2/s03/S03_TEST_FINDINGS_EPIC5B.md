@@ -2,7 +2,7 @@
 
 ## FINAL RUN
 
-- Head: `8783b58bdbf569a580ed17dcb3259ec644989127` (production code frozen).
+- Head: `489e486d22b7fe6e37981df815c05174617db775` (after production batches 16 to 18; previous final run was on 8783b58b with the same 63 passed).
 - Command, from `D:\Repo\Fitness_App_Phase2_s01\mobile`: `flutter test --timeout 60s test/shared/widgets/app_shortcuts_test.dart test/shared/widgets/shell_input_test.dart test/shared/widgets/real_pages_input_test.dart`
 - Result: 63 passed, 0 failed, 0 skipped (app_shortcuts 32, shell_input 19, real_pages_input 12).
 - Production defects open: none (D-1 at `mobile/lib/shared/widgets/app_shortcuts.dart:102-103` was fixed in e78925d3 and stays green).

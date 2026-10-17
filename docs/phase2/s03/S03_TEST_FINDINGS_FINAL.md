@@ -8,14 +8,14 @@ Each test agent ran every file it wrote, once more, after the last production ch
 
 | Step | Epic | Findings file | Run head | Passed | Failed | Skipped |
 |---|---|---|---|---|---|---|
-| 1 | Journal availability, flags, mode state, migration, wipe | S03_TEST_FINDINGS_EPIC0_1.md | `8783b58b` | 150 | 0 | 0 |
-| 2 | Window class, HUD, rail, dock, surfaces, session strip | S03_TEST_FINDINGS_EPIC5A.md | `c7758293` | 230 | 0 | 0 |
-| 3 | Mode chooser, questions, switcher, Record sheet | S03_TEST_FINDINGS_EPIC2.md | `c7758293` | 103 | 0 | 0 |
-| 4 | Dashboards, Sources, Home, Progress, sign-out warning | S03_TEST_FINDINGS_EPIC3_4.md | `8783b58b` | 247 | 0 | 2 (in code) |
-| 5 | Keyboard and pointer | S03_TEST_FINDINGS_EPIC5B.md | `8783b58b` | 63 | 0 | 0 |
-| 6 | Contract conformance | S03_TEST_FINDINGS_EPIC5C.md | `c7758293` | 177 | 0 | 18 (carried base-code cells) |
+| 1 | Journal availability, flags, mode state, migration, wipe | S03_TEST_FINDINGS_EPIC0_1.md | `489e486d` | 151 | 0 | 0 |
+| 2 | Window class, HUD, rail, dock, surfaces, session strip | S03_TEST_FINDINGS_EPIC5A.md | `489e486d` | 233 | 0 | 0 |
+| 3 | Mode chooser, questions, switcher, Record sheet | S03_TEST_FINDINGS_EPIC2.md | `489e486d` | 106 | 0 | 0 |
+| 4 | Dashboards, Sources, Home, Progress, sign-out warning | S03_TEST_FINDINGS_EPIC3_4.md | `489e486d` | 247 | 0 | 2 (in code) |
+| 5 | Keyboard and pointer | S03_TEST_FINDINGS_EPIC5B.md | `489e486d` | 63 | 0 | 0 |
+| 6 | Contract conformance | S03_TEST_FINDINGS_EPIC5C.md | `489e486d` | 177 | 0 | 18 (carried base-code cells) |
 
-Heads: `8783b58b` was the head of the first final run; `c7758293` added one helper function and changed one line in the mode switcher sheet (window width share). Steps 2, 3 and 6 were re-run on `c7758293` because their files cover that code; steps 1, 4 and 5 were not re-run after it (the difference is one function and one line in a file those steps do not assert on beyond what steps 2, 3 and 6 re-ran). This is a limit of the evidence, not a claim of equivalence.
+Heads: all six steps ran their complete sets on `489e486d` (the head after the last production change, batch 18). Total 977 passed, 0 failed, 20 skipped (2 skipped in code, 18 carried base-code cells). Earlier runs on `8783b58b` and `c7758293` are superseded.
 
 Steps 2 to 6 include the existing test files named in each findings file (back navigation, HUD, shell insets, Home, Progress): all passed in the same runs.
 

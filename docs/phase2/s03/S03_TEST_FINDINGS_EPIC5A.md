@@ -2,9 +2,10 @@
 
 ## FINAL RUN (step 7)
 
-Head: c7758293370ee0cfa8265fe93d93945b82b0c0a1 (batch 16; production frozen). Command, from `mobile/`:
+Head: 489e486d22b7fe6e37981df815c05174617db775 (batches 17 and 18; production frozen). Command, from `mobile/`:
 `flutter test --timeout 60s test/shared/widgets/window_size_test.dart test/shared/widgets/hud_primitives_extension_test.dart test/shared/widgets/nav_config_test.dart test/shared/widgets/hud_side_rail_test.dart test/shared/widgets/adaptive_surface_test.dart test/shared/widgets/dock_strip_test.dart test/features/workouts/active_session_status_test.dart test/router/back_navigation_test.dart test/shared/widgets/hud/hud_components_test.dart test/shared/widgets/shell_insets_test.dart`
-No PathExistsException. Totals: 230 passed, 0 failed, 0 skipped (my 134 entries all pass; existing back_navigation 10/10, hud_components 66/66, shell_insets 20/20). DT-02-5 now passes (the earlier hit at `mode_switcher_sheet.dart:124` was replaced by `windowWidthShare` in 8783b58b..c7758293). Production defects open: none.
+No PathExistsException. Totals: 233 passed, 0 failed, 0 skipped. My files: 137 entries (window_size 8, nav_config 10, hud_primitives 18, hud_side_rail 36, adaptive_surface 19, dock_strip 37, active_session_status 9), all pass; existing back_navigation 10/10, hud_components 66/66, shell_insets 20/20.
+New in this run: hud_side_rail_test.dart "focus across the rail to bar swap" (focus on destination 4, Profile, while the route is /progress, is restored to that destination after the swap and the route is unchanged; no destination focus is requested when none held it) and dock_strip_test.dart (rest-only then running announces "started" exactly once; running then rest-only then null stays silent). Production defects open: none.
 
 NOT_RUN (with reason; unchanged): AC-SH-3, AC-WS-4/fourItemList, DT-04-2 at shell level (no injection seam for the destination list; partial widget-level/pure versions pass); AC-KB-3 /modeChip, /chooserCard, /sheetRow and AC-KB-4 on the chooser card, AC-LS-8c (sign-out sheet), chooser-card AC-LS-8b, real-content AC-LS-8a/8d, AC-WS-7c sheet content and AC-WS-7d (belong to steps 3 and 4); AC-WS-7e (step 5); S-3/S-5 open/close parts of DT-07-13; DT-03-1 `ru` variant; real-device checks.
 

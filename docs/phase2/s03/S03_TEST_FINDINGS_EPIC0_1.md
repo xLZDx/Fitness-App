@@ -3,9 +3,11 @@
 Head revision: 5bb24fcc (worktree D:\Repo\Fitness_App_Phase2_s01, branch phase2/s03d-ui-design-contract). Nothing committed.
 Flutter: `where flutter` resolved to D:\flutter\bin\flutter (Flutter 3.27.1, Dart 3.6.0, revision 17025dd882).
 
-## FINAL RUN (step 7)
+## FINAL RUN (step 7), re-run after production batches 17 and 18
 
-Head: 8783b58bdbf569a580ed17dcb3259ec644989127 (production code frozen). Real tree, from `D:\Repo\Fitness_App_Phase2_s01\mobile`, Flutter D:\flutter\bin\flutter 3.27.1:
+Head: 489e486d22b7fe6e37981df815c05174617db775. New test in `mode_state_test.dart` (rollback group): stored `ride` with the ride flag off, shown `train`; `selectMode(train)` returns `saved`, the store then holds `train`, no mode-changed event is sent, a repeat `selectMode(train)` returns `unchanged` with no new write, and a later write keeps `train`. Same command as below (private output file, no PathExistsException): `+151: All tests passed!` (151 passed, 0 failed, 0 skipped). NOT_RUN and open defects: as listed below, unchanged (no open production defect).
+
+## Earlier final run, head 8783b58bdbf569a580ed17dcb3259ec644989127 (production code was frozen then). Real tree, from `D:\Repo\Fitness_App_Phase2_s01\mobile`, Flutter D:\flutter\bin\flutter 3.27.1:
 
 ```
 flutter test --timeout 90s test/features/activity/journal_availability_test.dart test/features/activity/repository/activity_journal_binding_retry_test.dart test/features/activity/config/activity_wiring_flag_matrix_test.dart test/features/activity/config/activity_flags_test.dart test/android/backup_rules_test.dart test/features/activity/repository/backup_exclusion_test.dart test/features/modes/mode_flags_test.dart test/features/modes/mode_state_test.dart test/features/modes/mode_migration_test.dart test/features/modes/mode_onboarding_hook_test.dart test/features/modes/mode_timer_isolation_test.dart test/features/modes/mode_ui_seams_test.dart test/features/account_deletion/mode_key_wipe_test.dart

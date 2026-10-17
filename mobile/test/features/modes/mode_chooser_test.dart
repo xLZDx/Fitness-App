@@ -19,7 +19,7 @@ import 'package:fitness_app/features/modes/data/mode_models.dart';
 import 'package:fitness_app/features/modes/widgets/mode_chooser_offer.dart';
 import 'package:fitness_app/features/modes/widgets/mode_card.dart';
 import 'package:fitness_app/features/modes/widgets/mode_switcher_sheet.dart';
-import 'package:fitness_app/shared/widgets/hud/hud_surface.dart' show HudButton;
+import 'package:fitness_app/shared/widgets/hud/hud_surface.dart' show HudButton, HudChip;
 
 import 'mode_epic2_harness.dart';
 
@@ -680,6 +680,63 @@ void main() {
     await tester.tap(byKeyS('comingLater.back'));
     await settleFrames(tester);
   });
+
+  testWidgets('RV-chip wide card: Coming-later chip at the inner right end, same line as the icon',
+      (tester) async {
+    await pumpRig(tester, store: _pending(), size: const Size(1100, 800));
+    final card = tester.getRect(_card('ride'));
+    final chip = tester.getRect(find.descendant(
+        of: _card('ride'), matching: find.byType(HudChip)));
+    final icon = tester.getRect(find.descendant(
+        of: _card('ride'), matching: find.byIcon(Icons.directions_bike_rounded)));
+    const inner = 14.0; // HudPanel padding of the card
+    expect(chip.right, closeTo(card.right - inner, 4),
+        reason: 'chip=$chip card=$card');
+    expect((chip.center.dy - icon.center.dy).abs(), lessThan(6),
+        reason: 'same line: chip=$chip icon=$icon');
+    expect(chip.left, greaterThan(icon.right));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final lang in ['en', 'ru']) {
+    testWidgets('RV-chip/$lang scale 2.0 on 360 dp: chip under the icon, not clipped',
+        (tester) async {
+      await pumpRig(tester,
+          store: _pending(), locale: Locale(lang), textScale: 2.0);
+      final card = tester.getRect(_card('ride'));
+      final chipFinder = find.descendant(
+          of: _card('ride'), matching: find.byType(HudChip));
+      final chip = tester.getRect(chipFinder);
+      final icon = tester.getRect(find.descendant(
+          of: _card('ride'),
+          matching: find.byIcon(Icons.directions_bike_rounded)));
+      // The Wrap rule: beside the icon (at the inner right end) while both
+      // fit in the inner width, otherwise below the icon.
+      final innerWidth = card.width - 28;
+      final fits = icon.width + 8 + chip.width <= innerWidth + 0.5;
+      if (fits) {
+        expect(chip.right, closeTo(card.right - 14, 4), reason: 'chip=$chip');
+        expect((chip.center.dy - icon.center.dy).abs(), lessThan(6));
+      } else {
+        expect(chip.top, greaterThanOrEqualTo(icon.bottom - 0.5),
+            reason: 'chip must be below the icon: chip=$chip icon=$icon');
+      }
+      if (lang == 'en') {
+        expect(fits, isFalse,
+            reason: 'the English word at scale 2.0 does not fit beside the icon');
+        expect(chip.top, greaterThanOrEqualTo(icon.bottom - 0.5));
+      }
+      expect(chip.left, greaterThanOrEqualTo(card.left));
+      expect(chip.right, lessThanOrEqualTo(card.right));
+      final word = lang == 'en'
+          ? l10nOf('en').modeComingLater
+          : l10nOf('ru').modeComingLater;
+      final text = find.descendant(of: chipFinder, matching: find.text(word));
+      expect(text, findsOneWidget);
+      expect(tester.renderObject<RenderParagraph>(text).didExceedMaxLines, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   group('DT-08-7 system Back on the chooser', () {
     Future<Rig> openFromHome(WidgetTester t, FakeModeStore store) async {

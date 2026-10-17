@@ -1119,3 +1119,9 @@ Facts: the card header Wrap received loose width from its Column, so space-betwe
 Root cause: authors (coordinator and the fix agent) fixed clipping and noise without asserting the position and the sequences; tests covered the cases we thought of.
 Layer: author and tests; caught by the verification review.
 Rule next time: a layout fix gets a position assertion, and a filter on transitions gets a sequence test with every path through the state table.
+
+## 2026-10-17 - Commit: test(s03): final complete runs on 489e486d and chip, focus and announcement tests
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: all six test steps re-ran their complete sets on the last production head: 977 passed, 0 failed, 20 skipped (docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md). New tests cover the card chip placement, focus kept across the rail/bar swap, and the started announcement after a rest. Shortcoming: step 3's first Russian chip expectation was wrong (assumed the chip always wraps at scale 2.0); the test, not production, was corrected.
+Rule next time: derive a layout expectation from the rule (fits beside, else below), not from one language's measurement.

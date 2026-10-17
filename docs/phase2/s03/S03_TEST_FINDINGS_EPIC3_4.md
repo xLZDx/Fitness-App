@@ -2,7 +2,7 @@
 
 ## FINAL RUN (step 7)
 
-Head: 8783b58bdbf569a580ed17dcb3259ec644989127 (production frozen). Flutter `/d/flutter/bin/flutter` 3.27.1. From `mobile/`, one command:
+Head: 489e486d22b7fe6e37981df815c05174617db775 (re-run after production batches 16 to 18; previous final run was at 8783b58b with the identical result). Flutter `/d/flutter/bin/flutter` 3.27.1. From `mobile/`, one command:
 `flutter test --timeout 60s test/features/home_page_test.dart test/features/home/home_body_check_in_card_test.dart test/features/home/home_clock_test.dart test/features/home/home_dashboard_test.dart test/features/home/format_schedule_label_test.dart test/features/home/suggestion_builder_test.dart test/features/progress_page_test.dart test/features/progress/progress_charts_test.dart test/features/progress/progress_stats_test.dart test/features/home/home_mode_lens_test.dart test/features/activity/data/activity_aggregates_test.dart test/features/activity/state/activity_dashboard_providers_test.dart test/features/progress/progress_dashboard_test.dart test/features/modes/sources_panel_test.dart test/features/activity/sign_out_warning_test.dart`
 Result: `+247 ~2: All tests passed!` = 247 passed, 0 failed, 2 skipped. No PathExistsException. Production defects open: none.
 NOT_RUN: DT-16-3 and DT-16-8 (skipped in code), DT-13-23 (G1) and DT-14-8 (G2) (measure-only gates, not run in this step), AC-LS-5/offline (no offline seam), DT-13-19 as planned (not constructible; the reachable parse form is tested).
