@@ -1055,3 +1055,11 @@ Rule next time: when the tree does not compile, the test agent reports it at onc
 Kind: SHORTCOMING (leftover of the selected-mode change, found by the step 3 test agent).
 Facts: after the selected-mode provider was introduced, the Record sheet route label still read the raw mode state and could name the previous account's mode while the new one loads. One line fixed; the diff was read by me before the commit this time.
 Rule next time: when a read path is replaced by a new provider, grep for every other reader of the old provider in the same batch.
+
+## 2026-10-17 - Commit: fix(modes): let the Coming-later chip wrap on the chooser cards and bound it in the switcher row
+
+Kind: FAILURE (two layout defects in S03 widgets, found by the step 6 conformance tests) and a triage SUCCESS.
+Facts: the conformance matrix (four window classes, text scale 1.0 and 2.0, en and ru) flagged six clipped or overflowing texts. Triage with git blame showed two were S03's: the Coming-later chip on the chooser cards sat in a Row with a Spacer and a Flexible, which halved its width and truncated it; the same chip in the switcher row had no width bound and overflowed the sheet by up to 54 px at text scale 2.0. The other four (bottom bar labels, Home total cards, Home adaptive plan, an eligibility notice) come from commits already in the base and were not touched.
+Root cause: authors (lanes L6) tested nothing at large text because nothing could run; the reviewers read the layout code but not at scale 2.0.
+Layer: author; the step 6 conformance tests caught it.
+Rule next time: a layout row with a chip or a trailing label gets an explicit width rule (Expanded with wrap, or a max width) in the first version; conformance runs are scheduled right after wave 1 for layout, not at the end.

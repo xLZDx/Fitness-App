@@ -145,17 +145,24 @@ class _ModeCardState extends State<ModeCard> {
                   size: 26,
                   color: widget.selected ? t.accent : t.textPrimary,
                 ),
-                const Spacer(),
-                if (chipWord != null)
-                  Flexible(
-                    child: HudChip(
-                      label: chipWord,
-                      selected: widget.selected,
-                      minHeight: 24,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                    ),
-                  ),
+                const SizedBox(width: 8),
+                // The chip takes all the room left of the icon and wraps
+                // instead of being cut (a Spacer would halve its width).
+                Expanded(
+                  child: chipWord == null
+                      ? const SizedBox.shrink()
+                      : Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: HudChip(
+                            label: chipWord,
+                            selected: widget.selected,
+                            minHeight: 24,
+                            maxLines: 2,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                          ),
+                        ),
+                ),
               ],
             ),
             const SizedBox(height: 10),

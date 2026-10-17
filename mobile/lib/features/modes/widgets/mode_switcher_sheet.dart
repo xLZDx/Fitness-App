@@ -147,12 +147,18 @@ class ModeSwitcherSheet extends ConsumerWidget {
                 ? (current
                     ? Icon(Icons.check_rounded, color: t.accent)
                     : const SizedBox.shrink())
-                : HudChip(
-                    label: l10n.modeComingLater,
-                    selected: false,
-                    minHeight: 24,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                // Bounded and wrapping: a wide chip at large text must not
+                // overflow the row.
+                : ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 104),
+                    child: HudChip(
+                      label: l10n.modeComingLater,
+                      selected: false,
+                      minHeight: 24,
+                      maxLines: 2,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                    ),
                   ),
             showFocusRing: true,
             hoverStyle: true,
