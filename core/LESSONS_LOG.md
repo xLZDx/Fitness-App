@@ -1035,3 +1035,10 @@ Rule next time: none new; the run after a fix batch is also the compile gate.
 Kind: SUCCESS.
 Facts: the step 4 test agent added tests for the review fixes (the Activity today card scrolled out of the cache extent and back keeps the offset, compensation only when the card lands above the viewport edge, Progress loading to error keeps a stable heading, Try again is disabled during a manual attempt, tile order does not use the previous account's mode) and changed two earlier tests to the new rule (compensate only above the viewport edge). The complete run at head 7888326b: 247 passed, 0 failed, 2 skipped in code.
 Rule next time: a test of a one-shot behaviour scrolls the widget away and back; that test is what the Flutter reviewer asked for and it did not exist before.
+
+## 2026-10-17 - Commit: test(input): add the keyboard and pointer tests for the shortcuts, the shell input and the real pages
+
+Kind: SUCCESS and FAILURE (one defect found).
+Facts: the step 5 test agent wrote 63 tests in three files (shortcuts 32, shell input 19, real pages 12) and ran them green at head 7c961d79. They found one real defect: the shortcut layer read the location from the router configuration uri, which ignores pages opened with push, so Back and the tab shortcuts acted on the wrong page (fixed in e78925d3). A run in between failed to load because of the compile error of the review batch (fixed in 7888326b).
+Open and carried: Home and End keys in the rail versus the page; wheel and scrollbar on the real Home and Sources pages; the Record and mode-switcher shortcuts end to end (the openers are faked in the shortcut tests); Esc ordering with a popup menu above the popover; touch-only, pointer-only and keyboard-only journeys; the scanner page as a pushed route.
+Rule next time: end-to-end journeys through the real openers are an explicit later step, not left as NOT_RUN rows without an owner.

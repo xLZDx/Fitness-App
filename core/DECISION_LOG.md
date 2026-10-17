@@ -57975,3 +57975,7 @@ Decision: step 2 additions are committed after a green complete run at head 7888
 ## 2026-10-17 - Commit: test(dashboards): add tests for the scroll compensation, the error transition, Try again and the account switch
 
 Decision: step 4 additions are committed after a green complete run at head 7888326b (247 passed, 0 failed, 2 skipped). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md, core/changes/2026-10-17-s03-test-step-4-review-fixes.md.
+
+## 2026-10-17 - Commit: test(input): add the keyboard and pointer tests for the shortcuts, the shell input and the real pages
+
+Decision: step 5 tests and the findings file are committed after a green complete run (63 of 63). The listed NOT_RUN rows are carried to the acceptance record with the owner: the final complete run (step 7) is not expected to close them, they need an end-to-end journey runner. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md, core/changes/2026-10-17-s03-test-step-5.md.
