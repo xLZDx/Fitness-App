@@ -1125,3 +1125,11 @@ Rule next time: a layout fix gets a position assertion, and a filter on transiti
 Kind: SUCCESS and SHORTCOMING.
 Facts: all six test steps re-ran their complete sets on the last production head: 977 passed, 0 failed, 20 skipped (docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md). New tests cover the card chip placement, focus kept across the rail/bar swap, and the started announcement after a rest. Shortcoming: step 3's first Russian chip expectation was wrong (assumed the chip always wraps at scale 2.0); the test, not production, was corrected.
 Rule next time: derive a layout expectation from the rule (fits beside, else below), not from one language's measurement.
+
+## 2026-10-17 - Commit: fix(shell): hide every Record entry point for a foreign session and order mode writes
+
+Kind: FAILURE.
+Facts: the GPT-PM code gate (MODIFY on 95a7ea04) found two MAJOR defects. (1) The side rail Record slot and the Record keyboard shortcut ignored the foreign-owner flag, although the bottom dock honoured it. (2) Mode writes of one account were not ordered, so an older write could land last.
+Root cause: batch 4-5 applied the foreign-owner rule to the dock only and I did not enumerate all Record entry points; the mode notifier awaited the store directly with no write queue.
+Missed by: author (me), the six internal reviews and the six test steps (tests asserted the dock and the pill, not the rail slot or the shortcut); caught by the GPT-PM gate.
+Rule next time: when a rule applies to a capability, list every entry point of that capability (dock, rail, shortcut, sheet opener) and test each one; any notifier that persists state needs an ordered write path.

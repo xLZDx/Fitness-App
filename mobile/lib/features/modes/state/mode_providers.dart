@@ -208,6 +208,10 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     if (!bus.isClosed) bus.add(ModeChanged(from, to));
   }
 
+  /// Tail of the pending store writes: same-account writes run strictly in
+  /// call order, so the latest accepted write is the one persisted last.
+  Future<void> _writeTail = Future<void>.value();
+
   Future<ModeSaveResult> _write(int gen, String uid, ModeState next) async {
     if (_readOnly) {
       _persistFailed = true;
@@ -216,14 +220,23 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     ModeSaveResult result;
     try {
       // Keep the raw stored mode on disk unless the user selected one.
+      // Computed synchronously at call time, before any await.
       final raw = _rawStoredMode;
       final toWrite = (raw != null && next.selectedMode == AppMode.train)
           ? next.copyWith(selectedMode: raw)
           : next;
-      final r = await ref.read(modeStoreProvider).write(uid, toWrite);
-      result = r == ModeWriteResult.written
-          ? ModeSaveResult.saved
-          : ModeSaveResult.saveFailed;
+      final previous = _writeTail;
+      final turn = Completer<void>();
+      _writeTail = turn.future;
+      try {
+        await previous;
+        final r = await ref.read(modeStoreProvider).write(uid, toWrite);
+        result = r == ModeWriteResult.written
+            ? ModeSaveResult.saved
+            : ModeSaveResult.saveFailed;
+      } finally {
+        turn.complete();
+      }
     } catch (e) {
       _log('write failed', e);
       result = ModeSaveResult.saveFailed;

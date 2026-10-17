@@ -118,6 +118,8 @@ class _AppShortcutsState extends ConsumerState<AppShortcuts> {
 
   void _record() {
     _guarded((BuildContext navContext, GoRouter router) {
+      // A session of another account blocks every Record entry point.
+      if (ref.read(activeSessionForeignOwnerProvider)) return;
       if (ref.read(activeSessionStatusProvider) != null) {
         openActiveSessionDestination(
             navContext, ref.read(activeSessionDestinationProvider));

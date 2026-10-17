@@ -234,6 +234,8 @@ class _MainShellState extends State<MainShell> {
   final GlobalKey _railRecordKey = GlobalKey(debugLabel: 'shell.rail.record');
 
   void _openRecord(BuildContext context, WidgetRef? ref, {GlobalKey? anchorKey}) {
+    // A session of another account blocks every Record entry point (F-11).
+    if (ref?.read(activeSessionForeignOwnerProvider) ?? false) return;
     // Seam for the Record sheet (lane L6): null until it is wired.
     ref
         ?.read(shellRecordSheetOpenerProvider)

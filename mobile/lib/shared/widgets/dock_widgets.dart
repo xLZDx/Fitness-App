@@ -333,7 +333,10 @@ class RailRecordSlot extends ConsumerWidget {
     final ActiveSessionStatus? status = ref.watch(activeSessionStatusProvider);
     final double reserved = extended ? 56 : 64;
     final Widget body;
-    if (status == null) {
+    if (status == null && ref.watch(activeSessionForeignOwnerProvider)) {
+      // A session of another account: no Record control, same reserved height.
+      body = const ExcludeSemantics(child: SizedBox.shrink());
+    } else if (status == null) {
       body = _IdleRecord(onRecord: onRecord, extended: extended);
     } else if (extended) {
       body = RecordingStrip(onOpen: onOpenSession);
