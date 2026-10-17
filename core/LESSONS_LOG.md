@@ -1299,3 +1299,11 @@ Facts: after commit 9ced50ab (verification round 2 remediation) the AI Coach cur
 Root cause: the remediation commits updated the change record and the sibling test rows but no step required the STATE.md phase line to be rewritten in the same commit.
 Missed by: author; not caught by tests or reviewers (documentation has no state check).
 Rule next time: every gate remediation commit rewrites the current-phase line of its STATE.md section in the same commit, naming the new head and what the next gate is; compare the last commit subject with that line before reporting status.
+
+## 2026-10-18 - Commit: docs(ai-coach): record unverified GPT-PM recommendations as not decided
+
+Kind: FAILURE.
+Facts: in chat I presented specific "GPT-PM recommendations" for open questions 3, 4 and 5 (for example "Google Cloud Vertex Streaming via relay", "spike S-A3") that were not in any repository file or GPT-PM reply I had re-read; they came from a compacted summary. The repository section 6 of docs/ai-coach/01_REQUIREMENTS.md holds only proposed defaults. I also said the PR #13 merge was an operator-only step, while docs/sdlc/STATE.md shows no GPT-PM APPROVE, so the merge is gated by review.
+Root cause: I restated a compacted summary as verified source material and did not re-open the GPT-PM reply or the repository before quoting it.
+Missed by: author; caught when I checked the repository state for the status table.
+Rule next time: before quoting a reviewer recommendation, re-open its source text (file path or reply id) in the same turn and quote it; if the source cannot be opened, say it is unverified. State the merge gate from docs/sdlc/STATE.md, not from memory.

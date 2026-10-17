@@ -58105,3 +58105,7 @@ Decision: `ui_confirmed` is a local UI confirmation capability, not an envelope 
 ## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round 2 remediation
 
 Decision: a successful deletion-fence export does not wipe at once: EXPORT_DONE then WIPE_PENDING, wipe at the next app start; the full-disk outcome is defined per command type; the UI confirmation is always `source=manual` plus the local capability. Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-verification2-remediation.md.
+
+## 2026-10-18 - Commit: docs(ai-coach): record unverified GPT-PM recommendations as not decided
+
+Decision: the open-question recommendations quoted in chat on 2026-10-18 were reconstructed from a compacted summary and are not in the repository; they are not treated as GPT-PM output. Section 6 of docs/ai-coach/01_REQUIREMENTS.md keeps only the proposed defaults until the operator answers. The third GPT-PM verification (V3-01..V3-03 on 9ced50ab) is blocked because PM Bridge reports mode OFF (health verdict DAEMON_DOWN); the assistant does not switch PM Bridge on without the operator. Evidence: core/changes/2026-10-18-ai-coach-state-sync.md (updated in this commit).
