@@ -152,13 +152,20 @@ class _ModeCardState extends State<ModeCard> {
                   color: widget.selected ? t.accent : t.textPrimary,
                 ),
                 if (chipWord != null)
-                  HudChip(
-                    label: chipWord,
-                    selected: widget.selected,
-                    minHeight: 24,
-                    maxLines: 2,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  // Badge text scale is bounded: the full meaning is in the
+                  // card's semantics label and hint.
+                  MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                        textScaler: MediaQuery.textScalerOf(context)
+                            .clamp(maxScaleFactor: 1.3)),
+                    child: HudChip(
+                      label: chipWord,
+                      selected: widget.selected,
+                      minHeight: 24,
+                      maxLines: 2,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                    ),
                   ),
               ],
             ),

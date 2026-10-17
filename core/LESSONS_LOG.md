@@ -1071,3 +1071,11 @@ Facts: the first chip fix kept a fixed 104 dp cap in the switcher row; at text s
 Root cause: I told the fix agent a number-free approach in the second message but accepted its guessed number in the first; the measurement only existed at test time.
 Layer: coordinator accepted a constant without a measurement; caught by the step 6 tests.
 Rule next time: when a fix depends on a measured size, require the layout to derive it (wrap or scale), never a constant; the test run confirms.
+
+## 2026-10-17 - Commit: fix(modes): bound the text scale of the Coming-later badge at 1.3
+
+Kind: SHORTCOMING (three fix rounds for one badge) and SUCCESS (measurement closed it).
+Facts: the Coming-later badge was clipped at text scale 2.0 after the wrap fix and after the width fix. The step 6 agent measured the paragraph: the single word needs about 140 dp at that scale and only 114 to 128 dp are available, so no wrapping can fit it. The remaining option that keeps the layout was to bound the badge text scale at 1.3; the full meaning stays in the semantics label and hint of the card and the row.
+Root cause: the first two rounds changed the layout without a measurement; the measurement showed the cause is the font size of a short fixed word in a narrow box.
+Layer: author and coordinator (guessed fixes); the step 6 measurement found the real cause.
+Rule next time: for a clipped fixed word, measure the word width at the target scale before choosing wrap, cap or clamp; stop after one fix round and measure.

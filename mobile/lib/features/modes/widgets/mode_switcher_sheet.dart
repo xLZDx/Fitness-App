@@ -121,9 +121,7 @@ class ModeSwitcherSheet extends ConsumerWidget {
     final TrainingContextAnswer tc = ref.watch(trainingContextProvider).valueOrNull ??
         TrainingContextAnswer.skipped;
 
-    final double chipMaxWidth = (104 * MediaQuery.textScalerOf(context).scale(1.0))
-        .clamp(0.0, MediaQuery.sizeOf(context).width * 0.4)
-        .toDouble();
+    final double chipMaxWidth = MediaQuery.sizeOf(context).width * 0.4;
 
     final List<Widget> rows = <Widget>[];
     for (final AppMode m in AppMode.values) {
@@ -151,17 +149,22 @@ class ModeSwitcherSheet extends ConsumerWidget {
                 ? (current
                     ? Icon(Icons.check_rounded, color: t.accent)
                     : const SizedBox.shrink())
-                // Wrapping, with a cap that grows with the text scale (so the
-                // longest word fits) up to 40% of the window width.
+                // Badge text scale is bounded: the full meaning is in the row's
+                // semantics label.
                 : ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: chipMaxWidth),
-                    child: HudChip(
-                      label: l10n.modeComingLater,
-                      selected: false,
-                      minHeight: 24,
-                      maxLines: 2,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                    child: MediaQuery(
+                      data: MediaQuery.of(context).copyWith(
+                          textScaler: MediaQuery.textScalerOf(context)
+                              .clamp(maxScaleFactor: 1.3)),
+                      child: HudChip(
+                        label: l10n.modeComingLater,
+                        selected: false,
+                        minHeight: 24,
+                        maxLines: 2,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                      ),
                     ),
                   ),
             showFocusRing: true,

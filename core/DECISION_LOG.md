@@ -57995,3 +57995,7 @@ Decision: lane L12 batch 13 fixes only the two candidates S03 introduced: the ch
 ## 2026-10-17 - Commit: fix(modes): drop the Coming-later chip under the icon on narrow cards and scale its cap with the text size
 
 Decision: card header is a Wrap (icon and chip on one line while they fit, otherwise the chip under the icon); the switcher chip cap is 104 dp times the text scale, at most 40 percent of the window width. If the step 6 run still shows a clip or a narrowed title, the next step is a chip on its own line below the title, which needs a change to the shared setting row and is then a carried item. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-14.md.
+
+## 2026-10-17 - Commit: fix(modes): bound the text scale of the Coming-later badge at 1.3
+
+Decision (coordinator, deviation to be recorded for acceptance): the Coming-later badge text scale is bounded at 1.3 on the chooser cards and in the switcher rows, a small exception to the contract's rule that text follows the system scale. The meaning is available in full through the semantics label and hint. The switcher chip cap is 40 percent of the window width. If the operator or the designer rejects the bound, the alternative is a wider layout where the badge sits on its own line below the title, which changes the shared setting row. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-15.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md.
