@@ -1257,3 +1257,11 @@ Facts: the first analyzer pass over the unrun lane code found 14 errors, all of 
 Root cause: agents wrote 12 lanes without any compiler feedback.
 Missed by: authors (no compile in the loop); caught by the build-resolver agent pass.
 Rule next time: run a compile-only pass by a resolver agent after every wave, not after the last one; leave any analyze to agents.
+
+## 2026-10-17 - Commit: test(s04): add epic tests for the recorder core, journal and privacy, with the production bugs they found
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: test agents for EP-A/B/C (273 passed, 4 skipped as known defects), EP-D (160 passed) and EP-E/H (227 passed) found and fixed production bugs: a negative accuracy accepted by the gate, coordinates printed by PipelineSample.toString, a double-tap hand-off reported as failure, a segment number advanced before the file opened, recovery swallowing hand-off exceptions, an empty directory left by a failed begin. Group EP-F/G/J has tests on disk but no completed run: its agent was cut off, and the project child-agent allowlist hook (fitness-child-agents.json) now denies the agent types needed to finish it. A test agent also appended a stale PROPOSED line to the privacy contract; it is left out of this commit.
+Root cause: tests found what compile-only passes cannot; the allowlist hook is a platform control that took effect when the session moved to the project directory.
+Missed by: author (bugs); the allowlist was not known to the coordinator.
+Rule next time: keep test agents out of docs/phase2/s01 (contract files are not theirs); check the project agent allowlist before planning agent waves.

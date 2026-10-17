@@ -58093,3 +58093,7 @@ Decision: everything is behind the GPS_RECORDER flag and Android, off by default
 ## 2026-10-17 - Commit: fix(s04): make the S04 code compile and wire the real geolocator source
 
 Decision: the real GeolocatorLocationSource replaces the unsupported placeholder in main.dart (still behind GPS_RECORDER); the battery monitor stays a fake and manual entry stays a redirect until their stories are built. Evidence: core/changes/2026-10-17-s04-compile-pass.md.
+
+## 2026-10-17 - Commit: test(s04): add epic tests for the recorder core, journal and privacy, with the production bugs they found
+
+Decision: the epic test groups EP-A/B/C, EP-D and EP-E/H are committed with their production fixes; EP-F/G/J is left incomplete and recorded as such, and the project child-agent allowlist hook is not bypassed. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_*.md and core/changes/2026-10-17-s04-epic-tests.md.

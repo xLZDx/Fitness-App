@@ -114,6 +114,7 @@ class UnfinishedRecording {
     this.sport,
     this.lastOffsetMs,
     this.sampleCount,
+    this.pendingDecision = false,
   });
 
   final String recordingId;
@@ -123,8 +124,14 @@ class UnfinishedRecording {
   final int? lastOffsetMs;
   final int? sampleCount;
 
+  /// Sealed by a permission revocation and waiting for the user's Keep or
+  /// Delete (design 4.3, Z2). It is listed, but it does not block Start (design
+  /// 5.4: "revoked item does not block Start").
+  final bool pendingDecision;
+
   /// Start refuses while such a recording exists (design 5.4 check 2).
-  bool get blocksStart => status != UnfinishedStatus.quarantined;
+  bool get blocksStart =>
+      status != UnfinishedStatus.quarantined && !pendingDecision;
 }
 
 /// What `openForResume` returns once the journal has opened a new segment and

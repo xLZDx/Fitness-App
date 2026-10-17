@@ -294,7 +294,14 @@ class _GpsLiveViewState extends ConsumerState<GpsLiveView>
   bool _wasHidden = false;
   Timer? _tick;
   Timer? _chipTimer;
-  DateTime? _poorSince;
+  int? _poorSinceMs;
+
+  /// The recorder's own clock (RecorderEnvironment), so the 30 s rules follow
+  /// the same time as the recording and can be driven by a fake clock.
+  int _nowMs() => ref.read(recorderEnvironmentProvider).nowUtcMs();
+
+  DateTime _nowForGate() =>
+      DateTime.fromMillisecondsSinceEpoch(_nowMs(), isUtc: true);
   final GpsAnnounceGate _gate = GpsAnnounceGate();
   final FocusNode _stopFocus = FocusNode(debugLabel: 'gps.stop');
   final FocusNode _panelFocus = FocusNode(debugLabel: 'gps.panel');
@@ -360,27 +367,39 @@ class _GpsLiveViewState extends ConsumerState<GpsLiveView>
         gpsAnnounce(context, l10n.gpsAnnPaused);
       } else if (to == RecorderPhase.recording && from == RecorderPhase.pausedManual) {
         gpsAnnounce(context, l10n.gpsAnnResumed);
-      } else if (to == RecorderPhase.pausedAuto && _gate.allow('autoPaused')) {
+      } else if (to == RecorderPhase.pausedAuto && _gate.allow('autoPaused', now: _nowForGate())) {
         gpsAnnounce(context, l10n.gpsAnnAutoPaused);
       } else if (to == RecorderPhase.recording &&
           from == RecorderPhase.pausedAuto &&
-          _gate.allow('autoResumed')) {
+          _gate.allow('autoResumed', now: _nowForGate())) {
         gpsAnnounce(context, l10n.gpsAnnAutoResumed);
       } else if (to == RecorderPhase.acquiring && from == null) {
         gpsAnnounce(context, l10n.gpsAnnAcquiring);
       }
     }
     if (next.flags.poorAccuracy != (prev?.flags.poorAccuracy ?? false)) {
-      _poorSince = next.flags.poorAccuracy ? DateTime.now() : null;
-      if (_gate.allow(next.flags.poorAccuracy ? 'weak' : 'signalBack')) {
+      _poorSinceMs = next.flags.poorAccuracy ? _nowMs() : null;
+      if (_gate.allow(next.flags.poorAccuracy ? 'weak' : 'signalBack',
+          now: _nowForGate())) {
         gpsAnnounce(context,
             next.flags.poorAccuracy ? l10n.gpsAnnWeak : l10n.gpsAnnSignalBack);
       }
     }
     if (next.flags.batteryCritical && !(prev?.flags.batteryCritical ?? false)) {
-      final pct = ref.read(gpsLiveBatteryProvider).valueOrNull?.percent ??
-          kBatteryDisplayFallbackPercent;
-      gpsAnnounce(context, l10n.gpsAnnBattery(pct), assertive: true);
+      // Read the percentage after the frame: the live battery stream delivers
+      // the same reading just after the recorder reacted to it, and the
+      // announcement must name that reading, not the previous one.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final pct = ref.read(gpsLiveBatteryProvider).valueOrNull?.percent ??
+            kBatteryDisplayFallbackPercent;
+        gpsAnnounce(context, l10n.gpsAnnBattery(pct), assertive: true);
+      });
+    }
+    if (next.stopReason == StopReason.battery &&
+        prev?.stopReason != StopReason.battery &&
+        next.phase == RecorderPhase.stopping) {
+      gpsAnnounce(context, l10n.gpsAnnBatteryFinish, assertive: true);
     }
     if (next.flags.offline && !_offlineAnnounced) {
       _offlineAnnounced = true;
@@ -483,9 +502,8 @@ class _GpsLiveViewState extends ConsumerState<GpsLiveView>
         }
       case RecorderPhase.recording:
         if (display.headline == RecorderDisplayState.poorAccuracy) {
-          final since = _poorSince;
-          final long = since != null &&
-              DateTime.now().difference(since) >= const Duration(seconds: 30);
+          final since = _poorSinceMs;
+          final long = since != null && _nowMs() - since >= 30000;
           hint = long ? l10n.gpsWeakLongHint : l10n.gpsWeakHint;
           weakLink = long;
         }
@@ -515,6 +533,11 @@ class _GpsLiveViewState extends ConsumerState<GpsLiveView>
     }
 
     final useSpeed = gpsUsesSpeed(s.sport);
+    // Time starts at the first signal (S04-D 8.2): while acquiring only a
+    // recovered recording's earlier time shows, a fresh one reads 0:00.
+    final shownMovingMs = phase == RecorderPhase.acquiring
+        ? s.recoveredMovingTimeMs
+        : s.totalMovingTimeMs;
     final stepWidget = switch (_step) {
       _LiveStep.controls => null,
       _LiveStep.stopPanel => GpsStopPanel(
@@ -593,16 +616,23 @@ class _GpsLiveViewState extends ConsumerState<GpsLiveView>
                     ),
                   ),
                 ),
-                GpsSignalIndicator(level: level),
+                if (scale <= 1.3) GpsSignalIndicator(level: level),
               ],
             ),
+            if (scale > 1.3) ...<Widget>[
+              const SizedBox(height: 6),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: GpsSignalIndicator(level: level),
+              ),
+            ],
             const SizedBox(height: 10),
             if (banner != null) ...<Widget>[
               GpsBannerView(text: banner, icon: bannerIcon),
               const SizedBox(height: 10),
             ],
             GpsMetricBlock(
-              movingTimeMs: s.totalMovingTimeMs,
+              movingTimeMs: shownMovingMs,
               distanceM: s.totalDistanceM,
               pace: m?.currentPaceSecPerKm,
               speed: m?.currentSpeedMps,

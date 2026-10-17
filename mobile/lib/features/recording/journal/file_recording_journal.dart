@@ -365,7 +365,9 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     }
     final cipher = AesGcmJournalCipher(key);
     final dir = '${s.recDir}/${meta.recordingId}';
+    var created = false;
     try {
+      created = !await _fs.exists(dir);
       await _fs.createDir(dir);
       await _atomicWrite(
         '$dir/$kMetaFile',
@@ -383,6 +385,13 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
         }))),
       );
     } on Object catch (_) {
+      // A failed begin leaves no recording directory (S04-16 AC, DT-11-4):
+      // an empty directory would later be offered as an unreadable recording.
+      if (created) {
+        try {
+          await _fs.deleteDir(dir);
+        } catch (_) {}
+      }
       throw const RecordingJournalError('io');
     }
     _activate(_Active(meta.recordingId, s.scopeId, s.uid, cipher, dir));
@@ -476,7 +485,8 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
           }
         } catch (_) {
           await _closeHandle(a);
-          a.suspectSeg = a.segNo;
+          // Nothing to re-read when no segment was ever opened.
+          if (a.segNo > 0) a.suspectSeg = a.segNo;
           final first = a.failingSince == null;
           a.failingSince ??= _now();
           if (first) _fault(JournalFault.storageFailing);
@@ -496,9 +506,13 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     var n = a.counter;
     for (final p in List<_Pending>.of(a.pending)) {
       if (a.handle == null) {
-        a.segNo += 1;
+        // The number advances only once the file is open: a failed open (disk
+        // full) must not leave a hole in the segment numbering, which the
+        // reader reports as a missing middle segment.
+        final next = a.segNo + 1;
+        a.handle = await _fs.openWrite('${a.dir}/${_segName(next)}', append: true);
+        a.segNo = next;
         a.segFrames = 0;
-        a.handle = await _fs.openWrite('${a.dir}/${_segName(a.segNo)}', append: true);
       }
       n += 1;
       await a.handle!.write(encodeFrame(a.cipher, p.build(n)));
@@ -614,10 +628,27 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     final meta = await _readMeta(s, id);
     final sealed = await _readSealed(s, dir);
     if (meta == null || sealed == null || meta.scopeId != s.scopeId) {
+      // A repeated call (double tap) after a completed hand-off: the recording
+      // directory is gone and the activity with the deterministic id exists.
+      // That is "done" (port contract: idempotent), not a failure the UI would
+      // report as "could not save".
+      if (!await _fs.exists(dir)) {
+        final doneId = nativeActivityId(id);
+        if ((await _activity.list()).any((e) => e.session.id == doneId)) {
+          return HandOffResult.done;
+        }
+      }
       return HandOffResult.failedKept;
     }
     final activityId = nativeActivityId(id);
-    final existing = (await _activity.list()).any((e) => e.session.id == activityId);
+    // "Exists" means VERIFIED (design 4.3 step 5): the stored entry reads back
+    // with its streams. An entry that lost its streams is not a hand-off: the
+    // recording is kept and the put is repeated from it.
+    var existing = false;
+    if ((await _activity.list()).any((e) => e.session.id == activityId)) {
+      final stored = await _activity.read(activityId);
+      existing = stored != null && !stored.streamLost && stored.streamsLoaded;
+    }
     final tombstoned = (await _activity.listTombstones()).any((e) => e.session.id == activityId);
     if (!existing && !tombstoned) {
       final r = await _analyse(s, dir,
@@ -693,7 +724,10 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       final back = await _activity.read(activityId);
       final nowTomb =
           (await _activity.listTombstones()).any((e) => e.session.id == activityId);
-      if (!nowTomb && (back == null)) return HandOffResult.failedKept;
+      if (!nowTomb &&
+          (back == null || back.streamLost || !back.streamsLoaded)) {
+        return HandOffResult.failedKept;
+      }
     }
     final fin = await _scope();
     if (fin == null || fin.scopeId != meta.scopeId) {
@@ -702,6 +736,17 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     await _cleanupVerified(s, id);
     _onHandedOff?.call();
     return HandOffResult.done;
+  }
+
+  /// Recovery-time hand-off: a failing store (storage full, key unavailable)
+  /// keeps the recording offered; it must never turn a healthy recording into
+  /// an unreadable one.
+  Future<HandOffResult> _tryHandOffLocked(String id) async {
+    try {
+      return await _handOffLocked(id);
+    } catch (_) {
+      return HandOffResult.failedKept;
+    }
   }
 
   /// KEEP / normal cleanup: ONE atomic rename, then content deletion (design
@@ -905,8 +950,7 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     final meta = await _readMeta(s, id);
     if (meta != null && meta.scopeId != s.scopeId) return null; // never offered
     if (decision == 'KEEP') {
-      final r = await _handOffLocked(id);
-      if (r == HandOffResult.done) return null;
+      if (await _tryHandOffLocked(id) == HandOffResult.done) return null;
       return UnfinishedRecording(recordingId: id, status: UnfinishedStatus.readable);
     }
     if (await _fs.exists('$dir/$kQuarantinedFile')) {
@@ -947,7 +991,7 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
     }
     if (isSealed && sealed!['reason'] != StopReason.permissionRevoked.name) {
       // Killed between SEALED and the end of the hand-off: finish silently.
-      if (await _handOffLocked(id) == HandOffResult.done) return null;
+      if (await _tryHandOffLocked(id) == HandOffResult.done) return null;
     }
     return UnfinishedRecording(
       recordingId: id,
@@ -956,6 +1000,8 @@ class FileRecordingJournal implements RecordingJournalPort, RecordingScopeGuard 
       sport: meta.sport,
       lastOffsetMs: r.lastOffsetMs,
       sampleCount: r.sampleCount,
+      pendingDecision:
+          isSealed && sealed!['reason'] == StopReason.permissionRevoked.name,
     );
   }
 

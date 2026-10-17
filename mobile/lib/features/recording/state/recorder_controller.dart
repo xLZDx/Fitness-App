@@ -238,7 +238,8 @@ class RecorderController extends Notifier<RecorderState> {
       _detachSub = location.engineDetached.listen((_) => _onEngineDetached());
       _revokedSub = watcher.onRevoked.listen((_) => unawaited(_onRevoked()));
       watcher.start();
-      _batterySub = battery.readings.listen(_onBattery);
+      // A failing battery source must never kill the recording (S04-22).
+      _batterySub = battery.readings.listen(_onBattery, onError: (Object _) {});
       _faultSub = journal.faults.listen(_onFault);
       _tick = Timer.periodic(
           const Duration(milliseconds: kRecorderTickMs), (_) => _onTick());

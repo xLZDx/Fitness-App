@@ -59,8 +59,9 @@ class PipelineSample {
       Object.hash(offsetMs, lat, lon, accuracyM, altitudeM, speedMps);
 
   @override
-  String toString() =>
-      'PipelineSample(t=$offsetMs, lat=$lat, lon=$lon, acc=$accuracyM)';
+  // Content-free (S04-27, S04-R-044): no coordinate in any log or exception
+  // text, so only the offset is printed.
+  String toString() => 'PipelineSample(t=$offsetMs)';
 }
 
 /// Why the gate rejected a fix (S04-R-008). Rejected fixes are not journaled;

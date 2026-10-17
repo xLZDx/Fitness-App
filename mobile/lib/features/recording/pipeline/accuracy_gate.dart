@@ -70,7 +70,7 @@ class AccuracyGate {
       return _reject(RejectReason.nonMonotonic);
     }
     final acc = s.accuracyM;
-    if (acc == null || !acc.isFinite || acc > config.maxAccuracyM) {
+    if (acc == null || !acc.isFinite || acc < 0 || acc > config.maxAccuracyM) {
       return _reject(RejectReason.accuracy);
     }
     if (prev == null) return _keep(s);
