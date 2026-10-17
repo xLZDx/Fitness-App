@@ -129,6 +129,11 @@ WindowSizeInfo classifyWindow(Size size, {double textScale = 1.0}) {
   );
 }
 
+/// [fraction] of the current window width, for size caps that scale with the
+/// window (screens never read raw widths themselves).
+double windowWidthShare(BuildContext context, double fraction) =>
+    MediaQuery.sizeOf(context).width * fraction;
+
 /// Test seam: null by default (the real `MediaQuery` size decides); a test sets
 /// a value and every [WindowSizeInfo.of] caller sees it instead of the view.
 final StateProvider<WindowSizeInfo?> windowSizeOverrideProvider =

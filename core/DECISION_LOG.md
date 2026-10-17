@@ -58003,3 +58003,7 @@ Decision (coordinator, deviation to be recorded for acceptance): the Coming-late
 ## 2026-10-17 - Commit: test(conformance): add the contract conformance matrix and the carried items record for S03
 
 Decision: conformance tests are committed after a green run (177 passed, 18 skipped as carried, 0 failed). The skipped cells (bottom bar label ellipsis, Home totals and adaptive plan labels at 360x640 and scale 2.0, an eligibility notice label) are base-code findings named in the test titles and listed with their base commits in docs/phase2/s03/S03_CARRIED_ITEMS.md, which is added in this commit as the single record of S03 deviations, carried findings, texts needing product review and operator-owned items. NOT_RUN rows are listed in the findings file. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md, core/changes/2026-10-17-s03-test-step-6.md.
+
+## 2026-10-17 - Commit: fix(modes): take the chip width cap from the window helper instead of a raw width
+
+Decision: windowWidthShare(context, fraction) is added next to classifyWindow in shared/widgets/window_size.dart and used by the switcher sheet for the chip cap (40 percent of the window width). Behaviour is unchanged. Because this changes the head after the final run, the affected test files (steps 2, 3 and 6) are re-run on the new head; steps 1, 4 and 5 were run on the previous head and the difference is one added function and one changed line in the switcher sheet. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-16.md.

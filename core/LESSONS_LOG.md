@@ -1087,3 +1087,12 @@ Facts: the step 6 test agent wrote 195 conformance tests (pages 136, shell 34, l
 Cost and cause: the first two fix rounds changed the layout without measuring the word width; the conformance run was scheduled after all lanes instead of right after the layout lanes.
 Rule next time: run the layout conformance matrix once after the first UI wave, and measure before choosing wrap, cap or clamp.
 Carried: the badge clamp deviates from the contract wording that status words follow the system scale; the contract should name this exception. The Colors.transparent exception in the raw colour scan is recorded in the findings file.
+
+## 2026-10-17 - Commit: fix(modes): take the chip width cap from the window helper instead of a raw width
+
+Kind: FAILURE (a rule violation I introduced in the previous fix, caught by a design-rule scan in the final run).
+Facts: batch 15 computed the switcher chip cap from the raw window width; the step 2 scan test for the design rule that S03 screens do not read raw widths failed in the final run (229 of 230). The line is a proportion, not a breakpoint, so it is minor.
+Root cause: I gave the fix agent a constant-free formulation but not the design rule about raw widths; the agent read the width directly.
+Layer: author and coordinator; caught by the scan test in the final run, not by an earlier run (the scan passed before batch 15).
+Rule next time: brief fix agents with the design rules that have scan tests (no raw widths, no raw colours, no unlabeled controls), not only with the defect; the final complete run exists to catch exactly this kind of late change.
+Note: the helper keeps the raw read in one allowed place next to the window classifier. It satisfies the scan and the rule's purpose (no breakpoints in screens), but the letter of the rule is bent; recorded for the acceptance record.

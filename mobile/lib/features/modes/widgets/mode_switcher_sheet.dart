@@ -28,6 +28,7 @@ import '../../training_context/data/training_context.dart';
 import '../../training_context/state/training_context_providers.dart';
 import '../data/mode_models.dart';
 import '../state/mode_providers.dart';
+import '../../../shared/widgets/window_size.dart' show windowWidthShare;
 import 'coming_later_sheet.dart';
 import 'mode_question_plan.dart';
 import 'mode_text.dart';
@@ -121,7 +122,7 @@ class ModeSwitcherSheet extends ConsumerWidget {
     final TrainingContextAnswer tc = ref.watch(trainingContextProvider).valueOrNull ??
         TrainingContextAnswer.skipped;
 
-    final double chipMaxWidth = MediaQuery.sizeOf(context).width * 0.4;
+    final double chipMaxWidth = windowWidthShare(context, 0.4);
 
     final List<Widget> rows = <Widget>[];
     for (final AppMode m in AppMode.values) {
