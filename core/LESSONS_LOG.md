@@ -1211,3 +1211,11 @@ Facts: GPT-PM round 5 on bd95a54a returned MODIFY with 2 MAJOR: multi-step KEEP 
 Root cause: each protocol fix was checked for the named failure only; crash points inside the new cleanup sequence and the lifetime of each lock were not enumerated.
 Missed by: authors and the id comparisons; caught by the external gate (fifth round on one mechanism).
 Rule next time: for any multi-step durable sequence enumerate a crash after every step before writing it, prefer one atomic rename as the commit point, and give every lock one stated lifetime and one purpose.
+
+## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
+
+Kind: FAILURE.
+Facts: GPT-PM round 6 on 838d1cdc returned MODIFY with 1 MAJOR: one sentence in design 4.3 said DELETE also uses the new rename-then-delete cleanup, contradicting the ordered DELETE procedure of 4.5 and the recovery table.
+Root cause: a convenience sentence generalizing the KEEP fix to DELETE was added without checking 4.5; the author had the same stale-generalization habit as in earlier rounds.
+Missed by: authors and the design agent grep (it searched for the old rule, not for the new generalization); caught by the external gate.
+Rule next time: never extend a fix to a second path in passing; scope a new mechanism explicitly to the path it fixes.

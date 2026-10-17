@@ -58069,3 +58069,7 @@ Decision: Z13..Z15 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 8: a
 ## 2026-10-17 - Commit: docs(s04): make KEEP cleanup one atomic rename and split the journal lock from the publication mutex
 
 Decision: Z16 and Z17 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 9: KEEP cleanup verifies the hand-off, renames the recording directory atomically to a .cleanup sibling, then deletes contents (recovery deletes .cleanup garbage without owner checks); the journal ownership lock (process lifetime) is separate from a per-recording publication mutex that readers wait on. Evidence: core/changes/2026-10-17-s04-docs-z16-z17.md.
+
+## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
+
+Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup; DELETE stays on DECISION=DELETE, DISCARDING and the ordered 4.5 steps. Evidence: core/changes/2026-10-17-s04-docs-z18.md.
