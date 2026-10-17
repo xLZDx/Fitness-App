@@ -775,3 +775,9 @@ Kind: SUCCESS.
 Facts: lane L2 run 3 added exactly the two wiring edits the brief allowed: one awaited `initIfAbsent(onboarding)` call before `context.go('/home')` in the onboarding page, and one `ref.watch(modeWarmUpProvider)` line plus one import in `main.dart`. `_FitnessAppState` and its resume callback are untouched and no second `WidgetsBindingObserver` was added.
 Why it worked: the wiring was kept for the last run, after the state layer existed, and each edit was specified to the line in the brief.
 Rule next time: the test agents prove the three facts that matter here: a new user gets `pending` before `/home`, a failure never blocks the navigation, and `/onboarding/edit` for an onboarded user writes nothing (DT-01-12, DT-01-13, F-7). One small behaviour change to watch: if the page is unmounted during the awaited call, navigation is skipped (it was unguarded before).
+
+## 2026-10-17 - Commit: docs: add the S03 documentation gate report pair for the operator
+
+Kind: NEUTRAL.
+Facts: the operator report of the S03 documentation gate (Russian for the operator, English as the durable record) was built from the draft written before the approval; the draft had to be corrected before publishing because two sentences ("code is not written yet", "nothing started") were already stale when the build had begun.
+Rule next time: a report draft that is written before a gate verdict is re-read against the repository state (git log) at the moment it is built, not only filled in at the placeholders.

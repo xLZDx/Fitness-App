@@ -57831,3 +57831,7 @@ Decision: `ACTIVITY_LOCAL_JOURNAL` defaults to true (the backup exclusion landed
 ## 2026-10-17 - Commit: feat(modes): record the onboarding choice and start the mode warm-up at the app root
 
 Decision: the onboarding page awaits `modeStateProvider.future` and then `initIfAbsent(InitSource.onboarding)` inside try/catch (fixed log message with the exception type only) before it navigates to `/home`; a failed or ignored `saveFailed` result never blocks the navigation; when the widget is unmounted after the await it returns without navigating. `FitnessApp.build` watches only `modeWarmUpProvider`. The `AppShortcuts` splice and the `WindowSizeScope` mount in `main.dart` are NOT part of this commit (waves 3 and 4). Nothing was run. Evidence: core/changes/2026-10-17-s03-l2-run3-onboarding-hook-warmup.md.
+
+## 2026-10-17 - Commit: docs: add the S03 documentation gate report pair for the operator
+
+Decision: the checkpoint report of the S03 documentation gate (GPT-PM APPROVE on 59828804 in round 3, the inherited S02 backup-exclusion defect, the accepted deviation and risk, the open operator decisions with defaults) is kept in reports/2026-10-17-s03-documentation-gate.ru.html and reports/2026-10-17-s03-documentation-gate.html. It states that the build has started and lists the first commits. The report is a checkpoint: the program continues. Evidence: core/changes/2026-10-17-s03-documentation-gate-report.md.
