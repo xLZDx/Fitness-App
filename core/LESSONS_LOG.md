@@ -739,3 +739,10 @@ Kind: SUCCESS.
 Facts: build lane L3 wrote two stories (S03-03 HUD primitives, S03-02 window size class) in two runs without running anything; every new parameter of the HUD controls defaults to today's behaviour, and `HudPanel` and `HudSettingRow` pass `handlesKeys: false` so there is no second activation handler or extra tab stop. The exact hover colour is not specified by the UI contract (10.9); the implementation agent used the nearest existing token and said so in its report.
 Why it worked: the brief required every default to reproduce current behaviour and named the files the lane may touch.
 Rule next time: the test agents must prove the defaults (existing widget tests stay green unchanged) and the one cross-lane precondition: `WindowSizeScope` has to be mounted once above the router (main.dart, wave 4) for the rebuild-per-class guarantee of DT-02-3.
+
+## 2026-10-17 - Commit: feat(modes): add the mode state models, the never-throwing codec and the per-account store
+
+Kind: SUCCESS.
+Facts: build lane L2 run 1 wrote the data layer of the mode state (models, codec, store) as pure Dart plus a thin SharedPreferences store. The store read is three-way (missing, value, unreadable with a reason), so a corrupt or newer-version value can never be mistaken for a missing key and overwritten (RV-2). The implementation agent reported its deviations from the design text itself (read returns a result type instead of a nullable state, write returns a result and never throws, the encoder accepts chooser status absent).
+Why it worked: the brief named the risks from the review (RV-2, RV-14) and asked for a report of deviations and unknowns.
+Rule next time: the wiped-uid guard needs a caller. The agent could not find one in its lane paths; the coordinator decided that the mode notifier listens to `accountBeingDeletedUidProvider` (set before the wipe) and marks the uid, so no security-sensitive wipe file is edited. A guard without a caller is a silent gap: the test agents prove DT-01-20 through the real deletion path.
