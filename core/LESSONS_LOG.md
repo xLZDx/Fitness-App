@@ -978,3 +978,10 @@ Facts: the bind controller restarted the whole bind (new generation, reset sched
 Root cause: the design sentence "a generation is one auth value" was written against sign-in and sign-out only; nobody listed the other events the stream emits (author of the design, which I am; design reviewers; the 140 tests had no re-emission case).
 Layer: author and tests missed it; the reliability review caught it.
 Rule next time: for every stream a state machine listens to, list all event kinds the source emits before defining what starts a new generation, and add a re-emission test row.
+
+## 2026-10-17 - Commit: docs(s02): add the S02 sprint report and retrospective and the architecture input to the S04 readiness note
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: the S02 phase 10 report was produced by a reporting agent from git and the findings files in one run (154 lines, numbers labelled MEASURED or INFERRED, eight retrospective actions tied to lessons entries). The agent listed what it could not verify: no complete test run exists on the approved S02 head (the final-run file is at an earlier head, before remediation E to J), the documentation-gate severities of rounds 3 to 9 are not recorded, and there is no per-run model table.
+Shortcoming: S02 evidence was never collected into one place at the time, so the report has gaps that cannot be closed now.
+Rule next time: each gate round writes its head, severities and the models used into the sprint findings file in the same commit; the final complete test run is recorded on the head that is approved, not an earlier one.

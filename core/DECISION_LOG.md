@@ -57943,3 +57943,7 @@ Decision: step 4 tests and the findings file are committed after a green complet
 ## 2026-10-17 - Commit: fix(wiring): ignore a repeated auth value for the same account in the journal bind controller
 
 Decision: onAuthValue returns early when the target uid equals the current uid and the state is neither none nor gaveUp; a generation is now one distinct uid. A repeated value after gaveUp still restarts the bind (kept deliberately). The related minor review findings (timer dropped during account deletion, no timeout on a hung open, no reaction to an external unbind, no busy feedback on Try again) are not fixed in this commit and are carried to the review consensus. Nothing was run by the coordinator; a test for the re-emission is added by the test agent. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-7.md.
+
+## 2026-10-17 - Commit: docs(s02): add the S02 sprint report and retrospective and the architecture input to the S04 readiness note
+
+Decision: the S02 report is committed in this branch and goes into the S03 pull request as agreed; unverifiable S02 facts stay marked UNKNOWN. The S04 readiness note gets an addendum from the S03 architecture review: the running-session status provider has one source and must be replaced by a prioritised list of sources or rewritten in S04 (a decision for the S04 plan, not taken here). Evidence: docs/phase2/s02/S02_SPRINT_REPORT.md, docs/phase2/s04/S04_DOC_READINESS.md, core/changes/2026-10-17-s02-report-and-s04-addendum.md.
