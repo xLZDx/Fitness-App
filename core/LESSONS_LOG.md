@@ -789,3 +789,10 @@ Facts: the lane brief for run 3 gave the aggregates file the path `features/acti
 Root cause: the brief was typed from memory instead of copying the path column of the ownership table (coordinator); the plan row for DT-13-19 assumed a runtime fallback (plan author).
 Layer: author (brief, plan); caught by the implementation agent.
 Rule next time: lane briefs quote the paths of the ownership table verbatim. The test agent of epic 13 decides DT-13-19 (exhaustive switch kept; test the parsed-unknown case if `SourceKind` has one) and records it in the findings file.
+
+## 2026-10-17 - Commit: feat(ui): add the adaptive surface route and the S03 routes with guarded mode questions
+
+Kind: SUCCESS.
+Facts: lane L5 wrote one route class that serves bottom sheet, popover and dialog, because a Flutter modal bottom sheet cannot turn into a popover while open and RV-9 requires live re-placement; the brief named three route types and the agent reported the deviation with its reason. The router is spliced once; the three stub pages live in `s03_routes.dart`, so later lanes replace their own page files and never edit the router. The first answer to the open availability question (a constant table) was replaced by the committed flags table read at router construction.
+Why it worked: the agent reported UNKNOWNs instead of inventing a provider, and the coordinator answered each one with a concrete instruction.
+Rule next time: the test agents prove the placement table (compact, medium, expanded), the depth counter reset on account change (late `closed` ignored) and the redirect of `/mode-questions/:mode` to Home with no write (DT-06-x, DT-09-6). Architect review checks the new import from `shared/widgets` to `features/auth`.

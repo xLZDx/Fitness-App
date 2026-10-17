@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../config/demo_features.dart';
+import 's03_routes.dart';
+import '../../features/modes/state/mode_providers.dart' show modeFlagsProvider;
 import '../../features/about/about_page.dart';
 import '../../features/account_deletion/account_deletion_page.dart';
 import '../../features/legal/privacy_page.dart';
@@ -670,6 +672,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/coaches',
         pageBuilder: (_, __) => _fadeThrough(const MarketplacePage()),
+      ),
+      // S03: mode chooser, per-mode questions and Sources. Spliced once; the
+      // pages are swapped inside `s03_routes.dart`, never here.
+      ...buildS03Routes(
+        availability: ref.read(modeFlagsProvider).availabilityTable,
       ),
       ShellRoute(
         navigatorKey: _shellKey,
