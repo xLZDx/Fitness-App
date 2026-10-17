@@ -7,6 +7,9 @@ import 'package:go_router/go_router.dart';
 
 import '../config/demo_features.dart';
 import 's03_routes.dart';
+import 's04_routes.dart';
+import '../../features/workouts/state/active_session_status.dart'
+    show gpsRecorderEnabledProvider;
 import '../../features/modes/state/mode_providers.dart' show modeFlagsProvider;
 import '../../features/about/about_page.dart';
 import '../../features/account_deletion/account_deletion_page.dart';
@@ -678,6 +681,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ...buildS03Routes(
         availability: ref.read(modeFlagsProvider).availabilityTable,
       ),
+      // S04: GPS recording page; empty unless the recorder flag is on.
+      ...buildS04Routes(enabled: ref.read(gpsRecorderEnabledProvider)),
       ShellRoute(
         navigatorKey: _shellKey,
         builder: (context, state, child) => MainShell(child: child),

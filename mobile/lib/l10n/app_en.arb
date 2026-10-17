@@ -5960,6 +5960,20 @@
   "@gpsManualSaved": {
     "description": "Confirmation line on the origin screen."
   },
+  "gpsLabelMovingTime": "Moving time",
+  "@gpsLabelMovingTime": {"description": "Summary metric label."},
+  "gpsLabelElapsed": "Elapsed time",
+  "@gpsLabelElapsed": {"description": "Summary metric label."},
+  "gpsLabelDistance": "Distance",
+  "@gpsLabelDistance": {"description": "Summary metric label."},
+  "gpsLabelAvgPace": "Avg pace",
+  "@gpsLabelAvgPace": {"description": "Summary metric label."},
+  "gpsLabelAvgSpeed": "Avg speed",
+  "@gpsLabelAvgSpeed": {"description": "Summary metric label."},
+  "gpsLabelAscent": "Ascent",
+  "@gpsLabelAscent": {"description": "Summary metric label."},
+  "gpsLabelDescent": "Descent",
+  "@gpsLabelDescent": {"description": "Summary metric label."},
   "gpsManualEnteredByHand": "Entered by hand",
   "@gpsManualEnteredByHand": {
     "description": "Source label of a manual activity."

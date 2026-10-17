@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show Random;
 import 'dart:ui';
 
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -6,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kDebugMode;
+    show defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +51,40 @@ import 'features/marketplace/data/coach_marketplace_service.dart';
 import 'features/marketplace/state/marketplace_providers.dart';
 import 'features/activity/state/activity_dashboard_providers.dart'
     show activityDigestsProvider;
+import 'features/activity/repository/activity_journal.dart' show ActivityJournal;
+import 'features/activity/repository/file_activity_journal.dart'
+    show kGpsRecorderBuild;
+import 'features/activity/repository/uid_scoped_activity_journal.dart'
+    show AccountScopedJournal;
+import 'features/recording/consent/location_consent_providers.dart'
+    show locationConsentGrantedProvider;
+import 'features/recording/journal/recording_journal_providers.dart'
+    show recordingJournalPortOverride, registerRecordingPreUnbindHook;
+import 'features/recording/l10n/recording_log.dart'
+    show logRecorderError, recorderLogSink;
+import 'features/recording/location/fix.dart' show Fix;
+import 'features/recording/location/location_providers.dart'
+    show locationSourceProvider;
+import 'features/recording/location/location_source.dart'
+    show LocationRequest, LocationSource;
+import 'features/recording/safety/recorder_safe_error.dart'
+    show sanitizeForGlobalHandler;
+import 'features/recording/state/battery_monitor.dart' show FakeBatteryMonitor;
+import 'features/recording/state/recorder_environment.dart'
+    show RecorderEnvironment;
+import 'features/recording/state/recorder_phase.dart' show StopReason;
+import 'features/recording/state/recorder_providers.dart'
+    show
+        batteryMonitorProvider,
+        recorderControllerProvider,
+        recorderEnvironmentProvider;
+import 'features/recording/widgets/gps_live_widgets.dart'
+    show GpsBackgroundReporter;
+import 'features/workouts/state/active_session_status.dart'
+    show
+        ActiveSessionSource,
+        activeSessionSourcesProvider,
+        gpsRecorderEnabledProvider;
 import 'features/modes/state/mode_providers.dart' show modeWarmUpProvider;
 import 'features/modes/widgets/mode_switcher_sheet.dart' show openModeSwitcher;
 import 'features/modes/widgets/record_sheet.dart' show openRecordSheet;
@@ -151,6 +186,149 @@ Future<void> _flushTelemetry() async {
   }
 }
 
+// ---- S04 GPS recorder wiring (all behind GPS_RECORDER and Android) ------------
+
+/// The recorder is wired only with the compile-time flag, on Android, with the
+/// account-scoped activity journal open. Anything else leaves the S03 behaviour.
+bool _gpsRecorderWired(ActivityJournal? journal) =>
+    kGpsRecorderBuild &&
+    !kIsWeb &&
+    defaultTargetPlatform == TargetPlatform.android &&
+    journal is AccountScopedJournal;
+
+/// Placeholder until the geolocator adapter file replaces its `.pending` name.
+/// Starting it fails with a content-free error, so the recorder refuses to
+/// collect instead of recording nothing.
+class _UnsupportedLocationSource implements LocationSource {
+  @override
+  Stream<Fix> start(LocationRequest request) =>
+      Stream<Fix>.error(UnsupportedError('location source is not available'));
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> setInterval(int seconds) async {}
+
+  @override
+  Stream<void> get engineDetached => const Stream<void>.empty();
+
+  @override
+  int get activeSubscriptions => 0;
+}
+
+/// Reads every precondition live from the app providers (design 5.4).
+class _AppRecorderEnvironment implements RecorderEnvironment {
+  _AppRecorderEnvironment(this._ref);
+
+  final Ref _ref;
+
+  String? get _signedInUid => _ref.read(authUserProvider).valueOrNull?.uid;
+
+  @override
+  String? get openJournalOwnerUid {
+    final s = _ref.read(activityBindStatusProvider);
+    final uid = s.uid;
+    if (s.phase != BindPhase.bound || uid == null || uid.isEmpty) return null;
+    return uid == _signedInUid ? uid : null;
+  }
+
+  @override
+  bool get locationConsentGranted => _ref.read(locationConsentGrantedProvider);
+
+  ActiveSessionSource? get _gymSource {
+    for (final s in _ref.read(activeSessionSourcesProvider)) {
+      if (s.id == 'gymTimers') return s;
+    }
+    return null;
+  }
+
+  @override
+  bool get gymTimerRunning {
+    final src = _gymSource;
+    if (src == null || _ref.read(src.status) == null) return false;
+    final owner = _ref.read(src.ownerUid);
+    return owner == null || owner == _signedInUid;
+  }
+
+  @override
+  bool get foreignSessionRunning {
+    final src = _gymSource;
+    if (src == null || _ref.read(src.status) == null) return false;
+    final owner = _ref.read(src.ownerUid);
+    return owner != null && owner.isNotEmpty && owner != _signedInUid;
+  }
+
+  @override
+  int nowUtcMs() => DateTime.now().toUtc().millisecondsSinceEpoch;
+
+  @override
+  int utcOffsetMinutes() => DateTime.now().timeZoneOffset.inMinutes;
+
+  @override
+  String newRecordingId() {
+    final r = Random.secure();
+    final b = List<int>.generate(16, (_) => r.nextInt(256));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    final h = b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
+    return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-'
+        '${h.substring(16, 20)}-${h.substring(20)}';
+  }
+
+  // Fixed, content-free strings (never built from a fix); localised copy of the
+  // notification is lane R8's, this is the fallback.
+  @override
+  String? get notificationTitle => 'Fitness App';
+
+  @override
+  String? get notificationText => 'Recording in progress';
+
+  @override
+  bool get requireNotificationPermission => true;
+}
+
+/// Keep-alive recorder wiring, watched once from the app root when the recorder
+/// is wired: the pre-unbind hook (S04-30), consent warm-up and the recovery
+/// gate (design 4.5): `checkUnfinished` runs once per signed-in account, after
+/// that account's journal is bound.
+final _gpsRecorderWiringProvider = Provider<void>((ref) {
+  registerRecordingPreUnbindHook(ref, shutdownRecorder: () async {
+    // The recorder's single release path runs inside stop; nothing running means
+    // nothing to release.
+    if (ref.read(recorderControllerProvider).phase.isCollecting) {
+      await ref
+          .read(recorderControllerProvider.notifier)
+          .stopAutomatically(StopReason.account);
+    }
+  });
+  // Consent must be loaded before the first Start precondition check.
+  ref.listen<bool>(locationConsentGrantedProvider, (_, __) {},
+      fireImmediately: true);
+  String? checkedUid;
+  void gate() {
+    final s = ref.read(activityBindStatusProvider);
+    final uid = s.phase == BindPhase.bound ? s.uid : null;
+    if (uid == null || uid.isEmpty) {
+      checkedUid = null;
+      return;
+    }
+    if (uid == checkedUid) return;
+    checkedUid = uid;
+    // Deferred: the first call can come while this provider is building, and a
+    // provider must not modify another provider during its initialisation.
+    unawaited(Future<void>.microtask(() => ref
+            .read(recorderControllerProvider.notifier)
+            .checkUnfinished())
+        .catchError((Object e) {
+      logRecorderError('recovery.gate', e);
+    }));
+  }
+
+  ref.listen<ActivityBindStatus>(activityBindStatusProvider, (_, __) => gate(),
+      fireImmediately: true);
+});
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -244,8 +422,26 @@ Future<void> main() async {
         'built ${_telemetry!.identity.builtAt}');
   }
 
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-  PlatformDispatcher.instance.onError = (error, stack) {
+  // S04-31: recorder log lines are content-free by construction.
+  recorderLogSink = (line) => debugPrint(line);
+  // S04-31: an error of recorder origin is replaced by its sanitised form
+  // before it reaches Crashlytics or the console; any other error is untouched.
+  FlutterError.onError = (details) {
+    final s = sanitizeForGlobalHandler(details.exception, details.stack);
+    if (identical(s.error, details.exception)) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      return;
+    }
+    FirebaseCrashlytics.instance.recordFlutterFatalError(FlutterErrorDetails(
+      exception: s.error,
+      stack: s.stack,
+      library: details.library,
+    ));
+  };
+  PlatformDispatcher.instance.onError = (rawError, rawStack) {
+    final s = sanitizeForGlobalHandler(rawError, rawStack);
+    final error = s.error;
+    final stack = s.stack ?? rawStack;
     // Debug-only console echo: `setCrashlyticsCollectionEnabled(false)`
     // above means a `flutter run` session reports nothing to the Firebase
     // Console by design -- without this, an uncaught error during local
@@ -384,11 +580,23 @@ Future<void> main() async {
   // Unified activity (S02): the journal is opened only with the cloud flag
   // (ACTIVITY_CLOUD_STREAMS, default OFF); null = device-only, no overrides.
   final activityJournal = await openActivityJournal();
+  final gpsRecorderOn = _gpsRecorderWired(activityJournal);
 
   runApp(
     ProviderScope(
       overrides: [
         ...activityRootOverrides(journal: activityJournal),
+        // S04 recorder seams; nothing is overridden with the flag off.
+        if (gpsRecorderOn) ...[
+          gpsRecorderEnabledProvider.overrideWithValue(true),
+          recordingJournalPortOverride(),
+          recorderEnvironmentProvider
+              .overrideWith((ref) => _AppRecorderEnvironment(ref)),
+          // No battery plugin is chosen (D-14): no reading, no battery rules.
+          batteryMonitorProvider.overrideWith((_) => FakeBatteryMonitor()),
+          // The geolocator adapter is still `.pending`; Start fails visibly.
+          locationSourceProvider.overrideWith((_) => _UnsupportedLocationSource()),
+        ],
         // Auth + profile + subscriptions
         authRepositoryProvider.overrideWith((_) => FirebaseAuthRepository()),
         // Firestore for everything except the health block, which never
@@ -607,8 +815,11 @@ Future<void> main() async {
         // A1 — the on-device half of the same operation. Real implementation
         // only here: the default provider records instead of deleting, so a
         // widget test can never wipe the host machine's documents directory.
-        localDataWipeProvider.overrideWith((_) =>
-            activityAwareLocalDataWipe(DeviceLocalDataWipe(), activityJournal)),
+        localDataWipeProvider.overrideWith((ref) => activityAwareLocalDataWipe(
+              DeviceLocalDataWipe(),
+              activityJournal,
+              preUnbind: ref.read(activityPreUnbindHookRegistryProvider),
+            )),
         pendingWipeMarkerProvider.overrideWith((_) => PrefsPendingWipeMarker()),
 
         // Nurture moments + notifications.
@@ -702,6 +913,9 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     ref.watch(activityCloudSyncWiringProvider);
     // S03 mode state + migration warm-up (one provider; never rebuilds on a mode choice).
     ref.watch(modeWarmUpProvider);
+    // S04 recorder hook, consent warm-up and recovery gate (flag-gated).
+    final gpsOn = ref.watch(gpsRecorderEnabledProvider);
+    if (gpsOn) ref.watch(_gpsRecorderWiringProvider);
     final settings = ref.watch(settingsControllerProvider);
     // Resolved, never nullable: one source of truth shared with the exercise
     // catalog. Passing `null` here would hand resolution to Flutter alone and
@@ -730,7 +944,11 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       builder: (context, child) => WindowSizeScope(
         child: AppShortcuts(
           child: _InputTraceListener(
-            child: AuroraBackground(child: child ?? const SizedBox.shrink()),
+            child: gpsOn
+                ? GpsBackgroundReporter(
+                    child: AuroraBackground(
+                        child: child ?? const SizedBox.shrink()))
+                : AuroraBackground(child: child ?? const SizedBox.shrink()),
           ),
         ),
       ),

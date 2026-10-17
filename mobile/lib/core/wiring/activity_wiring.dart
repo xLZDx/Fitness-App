@@ -48,10 +48,12 @@ Future<ActivityJournal?> openActivityJournal({
 /// behaviour is exactly the pre-S02 one.
 LocalDataWipe activityAwareLocalDataWipe(
   LocalDataWipe inner,
-  ActivityJournal? journal,
-) {
+  ActivityJournal? journal, {
+  PreUnbindHookRegistry? preUnbind,
+}) {
   if (journal == null) return inner;
-  return ActivityAwareLocalDataWipe(inner: inner, journal: journal);
+  return ActivityAwareLocalDataWipe(
+      inner: inner, journal: journal, preUnbind: preUnbind);
 }
 
 /// Provider overrides for the root `ProviderScope`. Empty unless a journal flag

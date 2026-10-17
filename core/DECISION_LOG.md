@@ -58085,3 +58085,7 @@ Decision: operator approved the GPS-PRIV-014 sign-out exception on 2026-10-17 (t
 ## 2026-10-17 - Commit: feat(s04): add the recorder state machine, journal with recovery, shell strip, copy and consent, and device-lab documents (lanes R4, R5, R6, R8, R11)
 
 Decision: the DECISION file uses the documented exclusive-create fallback under the process-wide journal lock until a native hard-link and directory-fsync implementation of RecordingFileOps exists; R6 treats the revoked-permission strip row as conflicting between design 7.2 (no strip) and contract 14.1 (Location off row) and follows the design; R8 uses draft-1 for the consent text version. Evidence: core/changes/2026-10-17-s04-lanes-r4-r5-r6-r8-r11.md.
+
+## 2026-10-17 - Commit: feat(s04): add the recording screens, sign-out guard, app wiring and routes behind the GPS_RECORDER flag (lanes R7, R9, R13)
+
+Decision: everything is behind the GPS_RECORDER flag and Android, off by default so behaviour equals S03; the pre-unbind hook uses stopAutomatically(account) because the recorder has no releaseAll; /record/manual redirects to /workouts until a manual-entry page exists. Evidence: core/changes/2026-10-17-s04-lanes-r7-r9-r13.md.

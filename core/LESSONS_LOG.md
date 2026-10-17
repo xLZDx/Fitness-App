@@ -1241,3 +1241,11 @@ Facts: lanes R5, R6 and R8 each hit the 20-turn agent limit without a report and
 Root cause: the briefs let agents investigate for most of their turns; the design assumed OS primitives the Dart runtime does not offer.
 Missed by: author (design) and brief writer (me); the first compile and the test agents will catch the rest.
 Rule next time: put 'write first, report, then polish' in every long-lane brief; check platform primitives against the language runtime in the design phase.
+
+## 2026-10-17 - Commit: feat(s04): add the recording screens, sign-out guard, app wiring and routes behind the GPS_RECORDER flag (lanes R7, R9, R13)
+
+Kind: SHORTCOMING.
+Facts: the build phase is code-complete but unverified. Known gaps: real location source not wired (the geolocator adapter is still a .pending file), battery monitor is a fake, manual entry page missing, recorder has no public releaseAll, seven label keys were added late because the screens needed them, and the ARB inserts may carry LF endings in CRLF files.
+Root cause: lane briefs did not list every key and provider the neighbouring lane needs, and the platform dependency (pub get) cannot be run by the coordinator.
+Missed by: briefs and the lane table; the first compile and the test agents will catch the rest.
+Rule next time: have each lane publish its required keys and overrides in a short list before the dependent lane starts.

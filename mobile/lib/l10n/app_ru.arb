@@ -3192,5 +3192,12 @@
   "gpsManualCancel": "Отмена",
   "gpsManualDiscardChanges": "Отменить изменения?",
   "gpsManualSaved": "Занятие добавлено",
+  "gpsLabelMovingTime": "Время в движении",
+  "gpsLabelElapsed": "Общее время",
+  "gpsLabelDistance": "Дистанция",
+  "gpsLabelAvgPace": "Средний темп",
+  "gpsLabelAvgSpeed": "Средняя скорость",
+  "gpsLabelAscent": "Набор высоты",
+  "gpsLabelDescent": "Спуск",
   "gpsManualEnteredByHand": "Введено вручную"
 }

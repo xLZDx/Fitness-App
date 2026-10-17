@@ -59,24 +59,37 @@ Future<SignOutChoice> _show(
 
 /// The sheet shown for a non-empty open journal ("You have n activities stored
 /// only on this device").
+///
+/// [count] is the number of finished activities; [recordingCount] is the number
+/// of active or unfinished recordings (S04-30 AC-6), named in the title when
+/// there are no activities and in the body otherwise. Export covers finished
+/// activities only, so it is offered only when [count] is above zero.
 Future<SignOutChoice> showSignOutWarningSheet(
   BuildContext context, {
   required int count,
+  int recordingCount = 0,
 }) {
   final AppLocalizations l10n = AppLocalizations.of(context);
-  final String title = l10n.signOutWarningTitle(count);
+  final String title = count > 0 || recordingCount <= 0
+      ? l10n.signOutWarningTitle(count)
+      : l10n.gpsSignOutRecordingCount(recordingCount);
+  final String? body = count > 0 && recordingCount > 0
+      ? l10n.gpsSignOutRecordingCount(recordingCount)
+      : null;
   return _show(
     context,
     title,
     (BuildContext ctx) => _SheetFrame(
       title: title,
+      body: body,
       actions: <_Action>[
-        _Action(
-          const Key('signOut.exportFirst'),
-          l10n.signOutExportFirst,
-          SignOutChoice.exportFirst,
-          HudButtonTone.accent,
-        ),
+        if (count > 0)
+          _Action(
+            const Key('signOut.exportFirst'),
+            l10n.signOutExportFirst,
+            SignOutChoice.exportFirst,
+            HudButtonTone.accent,
+          ),
         _Action(
           const Key('signOut.andDelete'),
           l10n.signOutAndDelete,
@@ -156,6 +169,29 @@ Future<SignOutChoice> showSignOutConfirmDeleteSheet(
         _Action(
           const Key('signOut.cancel'),
           l10n.signOutCancel,
+          SignOutChoice.cancel,
+          HudButtonTone.accent,
+        ),
+      ],
+    ),
+  );
+}
+
+/// The notice shown at sign-out when a recording could not be handed off to the
+/// history (S04-30 AC-3, `gpsSignOutNotice`). It only informs; any dismissal
+/// completes with [SignOutChoice.cancel], which the guard ignores.
+Future<SignOutChoice> showSignOutRecordingNoticeSheet(BuildContext context) {
+  final AppLocalizations l10n = AppLocalizations.of(context);
+  final String text = l10n.gpsSignOutNotice;
+  return _show(
+    context,
+    text,
+    (BuildContext ctx) => _SheetFrame(
+      title: text,
+      actions: <_Action>[
+        _Action(
+          const Key('signOut.noticeDone'),
+          l10n.commonDone,
           SignOutChoice.cancel,
           HudButtonTone.accent,
         ),
