@@ -49,7 +49,6 @@ import 'package:flutter/services.dart' show KeyDownEvent, KeyEvent, LogicalKeybo
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/hud_tokens.dart';
-import '../../features/auth/state/auth_providers.dart';
 import 'hud/hud_surface.dart';
 import 'window_size.dart';
 
@@ -112,8 +111,8 @@ const double kAdaptiveDialogMaxWidth = 480;
   }
 }
 
-/// Number of adaptive surfaces currently open. Reset to 0 when the signed-in
-/// account changes.
+/// Number of adaptive surfaces currently open (decremented when each route
+/// completes).
 final NotifierProvider<OpenSurfaceDepth, int> openSurfaceDepthProvider =
     NotifierProvider<OpenSurfaceDepth, int>(OpenSurfaceDepth.new);
 
@@ -122,8 +121,6 @@ class OpenSurfaceDepth extends Notifier<int> {
 
   @override
   int build() {
-    // A new account (or sign-out) starts a new generation at depth 0.
-    ref.watch(authUserProvider.select((a) => a.valueOrNull?.uid));
     _generation++;
     return 0;
   }

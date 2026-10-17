@@ -138,12 +138,17 @@ class _SourcesPageState extends ConsumerState<SourcesPage> {
           line: null,
         );
       case JournalGaveUp():
+        // A manual attempt is running: the button stays disabled meanwhile.
+        final bool bindBusy = ref
+            .watch(activityBindStatusProvider.select((s) => s.bindBusy));
         return (
           status: _Status.problem,
           retry: true,
-          onRetry: () {
-            ref.read(activityBindStatusProvider.notifier).retryNow();
-          },
+          onRetry: bindBusy
+              ? null
+              : () {
+                  ref.read(activityBindStatusProvider.notifier).retryNow();
+                },
           line: l10n.activityJournalFailed,
         );
       case JournalFailedToOpen():
@@ -381,6 +386,7 @@ class _SourceRow extends StatelessWidget {
         children: <Widget>[
           Semantics(
             container: true,
+            liveRegion: true,
             excludeSemantics: true,
             label: lineText == null
                 ? '$name, $statusText'

@@ -58,6 +58,8 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
 
   final GlobalKey _activityBlockKey = GlobalKey(debugLabel: 'progress.block');
   bool _hadActivityBlock = false;
+  /// Keeps the list (and its offset) when the scrollbar wrapper toggles.
+  final GlobalKey _listKey = GlobalKey(debugLabel: 'progress.list');
   final GlobalKey _slotKey = GlobalKey(debugLabel: 'progress.slot');
 
   /// Last measured height of the Sources slot plus its gap (single column).
@@ -65,18 +67,34 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
 
   /// Keeps the content the user is reading in place when the activity block
   /// appears above it: the offset grows by the block's height (D1).
-  void _compensateScroll() {
+  void _compensateScroll({required bool slotLeaves}) {
     if (!mounted || !_scroll.hasClients) return;
-    final double? height =
-        (_activityBlockKey.currentContext?.findRenderObject() as RenderBox?)
-            ?.size
-            .height;
+    final BuildContext? blockContext = _activityBlockKey.currentContext;
+    final RenderObject? block = blockContext?.findRenderObject();
+    final RenderObject? viewport = blockContext == null
+        ? null
+        : Scrollable.maybeOf(blockContext)?.context.findRenderObject();
+    if (block is! RenderBox ||
+        !block.attached ||
+        viewport is! RenderBox ||
+        !viewport.attached) {
+      return;
+    }
+    // Only a block landing above the viewport's leading edge moves content.
+    if (block.localToGlobal(Offset.zero).dy >=
+        viewport.localToGlobal(Offset.zero).dy) {
+      if (slotLeaves) _slotHeight = 0;
+      return;
+    }
+    final double height = block.size.height;
     final ScrollPosition position = _scroll.position;
-    if (height == null || height <= 0 || position.pixels <= 0) return;
+    if (height <= 0 || position.pixels <= 0) return;
     // Net height change above the anchor: the block arrives, the Sources slot
     // (and its gap) above 'Last 8 weeks' goes away in the same frame.
-    final double target = position.pixels + height - _slotHeight;
-    _slotHeight = 0;
+    // The slot only leaves when the real block shows (not for an error panel).
+    final double target =
+        position.pixels + height - (slotLeaves ? _slotHeight : 0);
+    if (slotLeaves) _slotHeight = 0;
     position.jumpTo(
         target.clamp(0.0, position.maxScrollExtent).toDouble());
   }
@@ -97,7 +115,9 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
         view.kind == ProgressActivityKind.errorNoRetry;
     if (hasActivityBlock && !_hadActivityBlock) {
       // D1: the block arrives above content the user may have scrolled to.
-      WidgetsBinding.instance.addPostFrameCallback((_) => _compensateScroll());
+      final bool slotLeaves = view.kind == ProgressActivityKind.block;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _compensateScroll(slotLeaves: slotLeaves));
     }
     _hadActivityBlock = hasActivityBlock;
     List<Widget> activityBlockFor(bool twoPane) => <Widget>[
@@ -220,6 +240,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                 : const Duration(milliseconds: 180),
             curve: Curves.easeOut,
             builder: (context, foot, _) => ListView(
+              key: _listKey,
               controller: _scroll,
               padding: EdgeInsets.fromLTRB(side, 92, side, foot),
               children: children,

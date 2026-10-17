@@ -1,6 +1,7 @@
 /// Per-account storage of the mode state (design 5.1-5.3).
 library;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'mode_codec.dart';
@@ -75,7 +76,8 @@ class PrefsModeStore implements ModeStore {
         return ModeWriteResult.refusedWipedUid;
       }
       return ok ? ModeWriteResult.written : ModeWriteResult.failed;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('mode store: write failed (${e.runtimeType})');
       return ModeWriteResult.failed;
     }
   }

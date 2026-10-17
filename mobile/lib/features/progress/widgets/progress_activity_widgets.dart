@@ -257,8 +257,7 @@ class ProgressActivityBlock extends ConsumerWidget {
     final snap = ref.watch(activityDigestSnapshotProvider);
     final week = ref.watch(activityWeekTilesProvider);
     final recent = ref.watch(activityRecentProvider);
-    final mode = ref.watch(
-        modeStateProvider.select((a) => a.valueOrNull?.selectedMode));
+    final mode = ref.watch(selectedModeProvider);
     final tiles = orderTilesForMode(week.tiles, mode);
     final failedAt = snap?.lastLoadFailedAt;
     final lost = snap?.notRestoredCount ?? 0;
@@ -563,4 +562,4 @@ class _ActivityRow extends ConsumerWidget {
 
 /// The selected mode, for tests that want to assert the tile order seam.
 AppMode? progressSelectedModeOf(WidgetRef ref) =>
-    ref.read(modeStateProvider).valueOrNull?.selectedMode;
+    ref.read(selectedModeProvider);

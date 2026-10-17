@@ -12,6 +12,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsService;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -194,15 +195,15 @@ class RecordSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final HudTokens t = context.hud;
-    final AppMode mode =
-        ref.watch(modeStateProvider).valueOrNull?.selectedMode ?? AppMode.train;
+    // Null while the mode state reloads: the neutral default (train rows).
+    final AppMode mode = ref.watch(selectedModeProvider) ?? AppMode.train;
     final ScanAccess access =
         mode == AppMode.body ? ref.watch(scanAccessProvider) : ScanAccess.allowed;
     final String? today = mode == AppMode.train
         ? todayWorkoutPath(ref.watch(todayDigestProvider), DateTime.now())
         : null;
-    final answer =
-        ref.watch(modeStateProvider).valueOrNull?.answerFor(AppMode.body);
+    final answer = ref.watch(modeStateProvider.select(
+        (a) => a.isLoading ? null : a.valueOrNull?.answerFor(AppMode.body)));
     final String? bodyStart =
         (answer?.isAnswered ?? false) ? answer!.value : null;
     final List<RecordRowSpec> specs = recordRowsFor(mode,
@@ -276,11 +277,23 @@ class RecordSheet extends ConsumerWidget {
                   key: const Key('recordSheet.openTrain'),
                   label: l10n.recordOpenTrain,
                   centered: true,
+                  wrap: true,
                   onPressed: () {
                     final ModeNotifier notifier =
                         ref.read(modeStateProvider.notifier);
+                    final TextDirection direction = Directionality.of(context);
                     Navigator.of(context).pop();
-                    unawaited(notifier.selectMode(AppMode.train));
+                    unawaited(notifier.selectMode(AppMode.train).then(
+                        (ModeSaveResult r) {
+                      if (r == ModeSaveResult.saved ||
+                          r == ModeSaveResult.saveFailed) {
+                        // Same announcement as the mode switcher.
+                        // ignore: deprecated_member_use
+                        unawaited(SemanticsService.announce(
+                            l10n.modeChangedAnnouncement(AppMode.train.name),
+                            direction));
+                      }
+                    }));
                   },
                 ),
               ] else

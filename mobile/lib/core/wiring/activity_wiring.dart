@@ -332,8 +332,13 @@ class _ActivityBindController {
       _pending = null;
       if (myGeneration != _generation) return;
       final uid = _uid;
-      // Retry only while the same account is still the one to bind.
-      if (bindableUid() != uid) return;
+      // Not the account to bind right now (deletion in progress): keep the
+      // retry with the SAME index. A real uid change or sign-out bumps the
+      // generation and cancels this timer.
+      if (bindableUid() != uid) {
+        _arm(index, myGeneration);
+        return;
+      }
       // A bind is in flight (a manual attempt): do nothing and re-arm with the
       // SAME index, so the retry is neither lost nor consumed twice.
       if (_inFlight) {

@@ -676,7 +676,13 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       resumeBodyScanRunner(ref);
       // S03: refresh the activity digests on resume; must never throw.
       try {
-        unawaited(ref.read(activityDigestsProvider.notifier).refresh());
+        unawaited(ref
+            .read(activityDigestsProvider.notifier)
+            .refresh()
+            .catchError((Object e) {
+          debugPrint(
+              'activity digest refresh on resume failed (${e.runtimeType})');
+        }));
       } catch (e) {
         debugPrint('activity digest refresh on resume failed (${e.runtimeType})');
       }

@@ -156,6 +156,10 @@ class _MainShellState extends State<MainShell> {
                 // AC-A11Y-4: one polite announcement per strip transition
                 // (started, paused, resumed, ended). The 30-second tick never
                 // fires.
+                // A rest timer alone is not a workout starting or ending.
+                bool restOnly(ActiveSessionStatus s) =>
+                    s.state == ActiveSessionState.resting ||
+                    s.state == ActiveSessionState.restFinished;
                 ref.listen<ActiveSessionStatus?>(activeSessionStatusProvider,
                     (ActiveSessionStatus? prev, ActiveSessionStatus? next) {
                   final AppLocalizations l10n = AppLocalizations.of(c);
@@ -163,7 +167,7 @@ class _MainShellState extends State<MainShell> {
                   if (next == null) {
                     // Ended: only for the signed-in owner (an account switch
                     // or sign-out also turns the status null, silently).
-                    if (prev == null) return;
+                    if (prev == null || restOnly(prev)) return;
                     final String? uid =
                         ref.read(authUserProvider).valueOrNull?.uid;
                     if (uid == null ||
@@ -173,6 +177,7 @@ class _MainShellState extends State<MainShell> {
                     }
                     text = l10n.stripSessionEnded;
                   } else if (prev == null) {
+                    if (restOnly(next)) return;
                     text = l10n.stripSessionStarted;
                   } else {
                     final bool wasPaused =

@@ -992,3 +992,12 @@ Kind: SUCCESS.
 Facts: four regression tests (DT-0-17a to d) cover the fix for same-account auth re-emission: a bound journal keeps its state and makes no extra bind call, an armed retry keeps its timer and schedule, a given-up bind restarts, a uid change and a sign-out still restart or unbind. The complete step 1 set passes: 144 passed, 0 failed.
 Why it worked: the tests simulate the re-emission with a same-uid user object whose display name differs, because an identical value would not reach the listener.
 Rule next time: every listener on a stream gets a row for repeated and equal values.
+
+## 2026-10-17 - Commit: fix(s03): apply the review findings on mode state, logging, scroll compensation and accessibility
+
+Kind: FAILURE (two major defects in my own earlier fix, found by the Flutter reviewer) and review follow-up.
+Facts: six read-only reviews (reliability, security, architecture, silent failures, Flutter, accessibility) produced 0 BLOCKER, 3 MAJOR and about 30 MINOR findings. The two Flutter majors were in the scroll compensation I added for the dashboard cards: the Home card compensated on every re-creation while scrolling (state held in the widget), and Progress subtracted the Sources slot height in the error states where the slot stays. The third major was the same-account auth re-emission restarting the bind (fixed in fca06cba).
+Root cause: the compensation was written against one test measurement (first arrival), without asking how long the widget lives, and without checking which states keep the slot.
+Layer: author; tests passed because they exercised the first arrival only; reviewers caught it.
+Rule next time: a one-shot behaviour is triggered by a state transition observed outside the widget lifetime (listener on the provider), never by a flag in a widget that a lazy list can recreate; tests scroll the widget out of the cache extent and back.
+Also fixed: the mode of the previous account no longer shows on Progress, the Record sheet and the switcher while the new mode loads (one selected-mode provider); the stored mode is no longer overwritten after a flag rollback; failed mode writes and the Day-3 and refresh failures are logged with a fixed message; a retry timer that fires during account deletion is re-armed; Try again is disabled while an attempt runs; accessibility: wrapping button labels, session announcements skip rest-only changes, live regions for errors, announcement from the Record sheet, 48 dp targets, a visible Back on the Coming-later sheet.

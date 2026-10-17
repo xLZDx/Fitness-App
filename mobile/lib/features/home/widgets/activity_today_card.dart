@@ -28,15 +28,27 @@ class ActivityTodayCard extends ConsumerStatefulWidget {
 }
 
 class _ActivityTodayCardState extends ConsumerState<ActivityTodayCard> {
-  bool _hadContent = false;
-
-  /// The card arriving after the user scrolled pushes the content below it
-  /// down; the scroll offset grows by the card's height so what the user is
-  /// reading stays in place (D2, contract S-6 LOADING).
+  /// The card arriving ABOVE the viewport's leading edge pushes the content
+  /// the user reads down; the scroll offset grows by the card's height so it
+  /// stays in place (D2, contract S-6 LOADING). A card that lands inside the
+  /// viewport does not move the offset.
   void _compensateScroll() {
     final ScrollableState? scrollable = Scrollable.maybeOf(context);
-    final double? height = (context.findRenderObject() as RenderBox?)?.size.height;
-    if (scrollable == null || height == null || height <= 0) return;
+    final RenderObject? self = context.findRenderObject();
+    final RenderObject? viewport = scrollable?.context.findRenderObject();
+    if (scrollable == null ||
+        self is! RenderBox ||
+        !self.attached ||
+        viewport is! RenderBox ||
+        !viewport.attached) {
+      return;
+    }
+    final double height = self.size.height;
+    if (height <= 0) return;
+    if (self.localToGlobal(Offset.zero).dy >=
+        viewport.localToGlobal(Offset.zero).dy) {
+      return;
+    }
     final ScrollPosition position = scrollable.position;
     if (!position.hasPixels || position.pixels <= 0) return;
     position.jumpTo(position.pixels + height);
@@ -45,13 +57,15 @@ class _ActivityTodayCardState extends ConsumerState<ActivityTodayCard> {
   @override
   Widget build(BuildContext context) {
     final List<SessionDigest> today = ref.watch(activityTodayProvider);
-    final bool appeared = today.isNotEmpty && !_hadContent;
-    _hadContent = today.isNotEmpty;
-    if (appeared) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _compensateScroll();
-      });
-    }
+    // Only a real empty -> non-empty transition compensates; a card that is
+    // disposed and rebuilt while scrolling never fires this listener.
+    ref.listen<List<SessionDigest>>(activityTodayProvider, (prev, next) {
+      if (prev != null && prev.isEmpty && next.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _compensateScroll();
+        });
+      }
+    });
     if (today.isEmpty) return const SizedBox.shrink();
     final AppLocalizations l10n = AppLocalizations.of(context);
     final HudTokens t = context.hud;

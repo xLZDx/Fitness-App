@@ -798,7 +798,11 @@ class HudButton extends StatefulWidget {
     this.showFocusRing = false,
     this.hoverStyle = false,
     this.cursor = false,
+    this.wrap = false,
   });
+
+  /// Centred labels: allow the label to wrap instead of one ellipsised line.
+  final bool wrap;
 
   /// S03-03 (contract 9.1): the height floor, which also sets the hit region
   /// because the constraint wraps the tap area. Default 44 (today).
@@ -995,8 +999,11 @@ class _HudButtonState extends State<HudButton> {
                               child: Text(
                                 widget.label,
                                 style: labelStyle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                textAlign: widget.wrap ? TextAlign.center : null,
+                                maxLines: widget.wrap ? null : 1,
+                                overflow: widget.wrap
+                                    ? TextOverflow.visible
+                                    : TextOverflow.ellipsis,
                               ),
                             ),
                             if (widget.trailing != null) ...<Widget>[

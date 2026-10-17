@@ -42,9 +42,12 @@ Future<void> _migrate(Ref ref, String uid) async {
   try {
     await ref.read(modeStateProvider.future);
     if (ref.read(authUserProvider).valueOrNull?.uid != uid) return;
-    await ref
+    final result = await ref
         .read(modeStateProvider.notifier)
         .initIfAbsent(InitSource.migration, forUid: uid);
+    if (result == ModeSaveResult.saveFailed) {
+      debugPrint('mode migration: save failed (code=save_failed)');
+    }
   } catch (e) {
     debugPrint('mode migration failed (${e.runtimeType})');
   }

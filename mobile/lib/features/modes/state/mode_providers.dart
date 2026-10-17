@@ -85,6 +85,13 @@ final modeChangedProvider = StreamProvider<ModeChanged>(
 final modeStateProvider =
     AsyncNotifierProvider<ModeNotifier, ModeState>(ModeNotifier.new);
 
+/// The selected mode, or null while the state is (re)loading (an account
+/// switch keeps the previous value during the reload; it must not be shown).
+final selectedModeProvider = Provider<AppMode?>((ref) {
+  final async = ref.watch(modeStateProvider);
+  return async.isLoading ? null : async.valueOrNull?.selectedMode;
+});
+
 void _log(String code, [Object? error]) {
   // Fixed message, content-free reason code, exception type only.
   debugPrint(
@@ -112,6 +119,11 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
   /// reset on every rebuild (uid change).
   bool _persistFailed = false;
 
+  /// The stored mode that was unavailable (flag rolled back) and is shown as
+  /// train in memory only. Written back unchanged until the user selects a
+  /// mode (null after that and after every rebuild).
+  AppMode? _rawStoredMode;
+
   Map<AppMode, ModeAvailability> _table = kDefaultModeAvailability;
 
   ModeState get _current => state.valueOrNull ?? ModeState.initial();
@@ -123,6 +135,7 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     _readOnly = false;
     _unreadable = false;
     _persistFailed = false;
+    _rawStoredMode = null;
     ref.watch(modeWipeGuardProvider);
     _table = ref.watch(modeFlagsProvider).availabilityTable;
     final store = ref.watch(modeStoreProvider);
@@ -142,9 +155,9 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
         final stored = read.state;
         // A stored-but-unavailable mode (a flag rolled back) is coerced to
         // train in memory only and is not rewritten.
-        return _isAvailable(stored.selectedMode)
-            ? stored
-            : stored.copyWith(selectedMode: AppMode.train);
+        if (_isAvailable(stored.selectedMode)) return stored;
+        _rawStoredMode = stored.selectedMode;
+        return stored.copyWith(selectedMode: AppMode.train);
       }
       if (read is ModeReadUnreadable) {
         _uid = uid;
@@ -202,7 +215,12 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     }
     ModeSaveResult result;
     try {
-      final r = await ref.read(modeStoreProvider).write(uid, next);
+      // Keep the raw stored mode on disk unless the user selected one.
+      final raw = _rawStoredMode;
+      final toWrite = (raw != null && next.selectedMode == AppMode.train)
+          ? next.copyWith(selectedMode: raw)
+          : next;
+      final r = await ref.read(modeStoreProvider).write(uid, toWrite);
       result = r == ModeWriteResult.written
           ? ModeSaveResult.saved
           : ModeSaveResult.saveFailed;
@@ -228,6 +246,7 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
           ? _write(_gen, _uid!, cur)
           : ModeSaveResult.unchanged;
     }
+    _rawStoredMode = null; // an explicit choice replaces the stored value
     final next = cur.copyWith(selectedMode: mode);
     state = AsyncData(next);
     _emit(cur.selectedMode, mode);
@@ -249,6 +268,7 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     }
     final gen = _gen;
     final uid = _uid!;
+    _rawStoredMode = null; // an explicit choice replaces the stored value
     final inMemory = cur.copyWith(selectedMode: mode);
     if (changed) {
       state = AsyncData(inMemory);

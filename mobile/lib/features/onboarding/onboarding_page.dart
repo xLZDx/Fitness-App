@@ -10,7 +10,7 @@ import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import '../modes/state/mode_providers.dart'
-    show InitSource, modeStateProvider;
+    show InitSource, ModeSaveResult, modeStateProvider;
 import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
 import 'data/step_answered.dart';
@@ -197,9 +197,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     try {
       await ref.read(modeStateProvider.future);
       if (!mounted || !context.mounted) return;
-      await ref
+      final result = await ref
           .read(modeStateProvider.notifier)
           .initIfAbsent(InitSource.onboarding);
+      if (result == ModeSaveResult.saveFailed) {
+        debugPrint('mode onboarding hook: save failed (code=save_failed)');
+      }
     } catch (e) {
       debugPrint('mode onboarding hook failed (${e.runtimeType})');
     }

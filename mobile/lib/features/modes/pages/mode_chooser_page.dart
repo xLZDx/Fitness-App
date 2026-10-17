@@ -414,6 +414,7 @@ class _ModeChooserPageState extends ConsumerState<ModeChooserPage> {
         label: l10n.modeContinue,
         tone: HudButtonTone.accent,
         centered: true,
+        wrap: true,
         enabled: canContinue,
         onPressed: canContinue ? () => unawaited(_continue(selected)) : null,
       ),

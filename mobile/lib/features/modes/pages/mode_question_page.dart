@@ -144,7 +144,11 @@ class _ModeQuestionPageState extends ConsumerState<ModeQuestionPage> {
     if (_saving || _finished) return;
     setState(() => _saving = true);
     try {
-      await ref.read(modeStateProvider.notifier).skipQuestion(widget.mode);
+      final result =
+          await ref.read(modeStateProvider.notifier).skipQuestion(widget.mode);
+      if (result == ModeSaveResult.saveFailed) {
+        debugPrint('mode question: skip not saved (code=save_failed)');
+      }
       if (widget.mode == AppMode.train) {
         await ref.read(trainingContextProvider.notifier).skip();
       }
@@ -322,16 +326,20 @@ class _ModeQuestionPageState extends ConsumerState<ModeQuestionPage> {
                     ),
                   ),
                 if (_failed) ...<Widget>[
-                  Text(
-                    l10n.modeQuestionSaveError,
-                    key: const Key('modeQuestion.error'),
-                    style: HudType.body(t, size: 13).overPhoto(t),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      l10n.modeQuestionSaveError,
+                      key: const Key('modeQuestion.error'),
+                      style: HudType.body(t, size: 13).overPhoto(t),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   HudButton(
                     key: const Key('modeQuestion.retry'),
                     label: l10n.modeQuestionRetry,
                     centered: true,
+                    wrap: true,
                     enabled: chosen != null,
                     onPressed: chosen == null
                         ? null
@@ -347,6 +355,7 @@ class _ModeQuestionPageState extends ConsumerState<ModeQuestionPage> {
           key: const Key('modeQuestion.skip'),
           label: l10n.modeQuestionSkip,
           centered: true,
+          wrap: true,
           enabled: !_saving,
           onPressed: _saving ? null : () => unawaited(_skip()),
         ),

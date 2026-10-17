@@ -39,7 +39,7 @@ import '../../shared/widgets/shell_scroll.dart' show ShellScrollbar;
 import '../activity/state/activity_dashboard_providers.dart'
     show activityDigestsProvider;
 import '../modes/data/mode_models.dart' show AppMode, ChooserStatus, ModeState;
-import '../modes/state/mode_providers.dart' show modeStateProvider;
+import '../modes/state/mode_providers.dart' show ModeSaveResult, modeStateProvider;
 import '../modes/widgets/mode_chooser_offer.dart' show offeredThisRunProvider;
 import 'widgets/activity_today_card.dart';
 import 'widgets/home_lens.dart';
@@ -120,6 +120,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.dispose();
   }
 
+  void _logIntroSave(ModeSaveResult r) {
+    if (r == ModeSaveResult.saveFailed) {
+      debugPrint('home: mode intro resolve not saved (code=save_failed)');
+    }
+  }
+
   /// Refresh of the journal digests; here, never in `build` (design 3.1).
   void _refreshJournal() {
     try {
@@ -174,6 +180,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         setState(() => _day3ShownThisSession = true);
         await Day3WelcomeModal.show(context);
         await repo.markShown(MomentId.day3Welcome);
+      } catch (e) {
+        debugPrint('home: day-3 flow failed (code=day3_failed, ${e.runtimeType})');
       } finally {
         if (mounted) {
           setState(() => _day3Settled = true);
@@ -212,11 +220,16 @@ class _HomePageState extends ConsumerState<HomePage> {
         ? HomeModeIntroCard(
             onChoose: () {
               final router = GoRouter.of(context);
-              unawaited(ref.read(modeStateProvider.notifier).markResolved());
+              unawaited(ref
+                  .read(modeStateProvider.notifier)
+                  .markResolved()
+                  .then(_logIntroSave));
               router.push(kModeChooserPath);
             },
-            onDismiss: () => unawaited(
-                ref.read(modeStateProvider.notifier).markResolved()),
+            onDismiss: () => unawaited(ref
+                .read(modeStateProvider.notifier)
+                .markResolved()
+                .then(_logIntroSave)),
           )
         : null;
 

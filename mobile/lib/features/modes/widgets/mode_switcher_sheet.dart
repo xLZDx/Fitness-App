@@ -110,8 +110,8 @@ class ModeSwitcherSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final HudTokens t = context.hud;
-    final ModeState state =
-        ref.watch(modeStateProvider).valueOrNull ?? ModeState.initial();
+    // Null while the state reloads: no row is marked current.
+    final AppMode? selectedMode = ref.watch(selectedModeProvider);
     final Map<AppMode, ModeAvailability> table =
         ref.watch(modeFlagsProvider).availabilityTable;
     // Still loading counts as answered: never show a count that may be wrong.
@@ -122,7 +122,7 @@ class ModeSwitcherSheet extends ConsumerWidget {
     for (final AppMode m in AppMode.values) {
       final bool available =
           availabilityOfMode(m, table: table) == ModeAvailability.available;
-      final bool current = available && state.selectedMode == m;
+      final bool current = available && selectedMode == m;
       final int questions = available
           ? unansweredQuestionsFor(m, modeState: state, trainingContext: tc)
               .length
@@ -165,7 +165,7 @@ class ModeSwitcherSheet extends ConsumerWidget {
             child: TextButton(
               key: Key('modeSwitcher.questions.${m.name}'),
               style: TextButton.styleFrom(
-                minimumSize: const Size(48, 44),
+                minimumSize: const Size(48, 48),
                 foregroundColor: t.textSecondary,
               ),
               onPressed: () {

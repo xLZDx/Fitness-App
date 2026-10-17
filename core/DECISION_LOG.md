@@ -57951,3 +57951,7 @@ Decision: the S02 report is committed in this branch and goes into the S03 pull 
 ## 2026-10-17 - Commit: test(activity): add regression tests for a repeated auth value in the journal bind controller
 
 Decision: regression tests for the repeated auth value are committed with the step 1 findings update (144 of 144). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1-regression.md.
+
+## 2026-10-17 - Commit: fix(s03): apply the review findings on mode state, logging, scroll compensation and accessibility
+
+Decision: lane L12 batches 8 and 9 apply the review findings that were verified against the code. Skipped with reasons: refreshIfStale returns void (nothing to catch at future level); the contrast hypothesis and the speculative Flutter minors (rebuild breadth, anchor not built) are not changed; the S04 single-source session status finding is carried to the S04 plan; the guest sign-out wording and the unbound wipe fallback (security minors) are carried to the acceptance record as product and design questions; unknown format entries (silent failure minor) are carried as a format rule: adding a mode requires a version bump. Pause versus rest pause cannot be told apart, so pause and resume are announced in both cases. Nothing was run by the coordinator; the test agents re-run all sets. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-8-9.md.
