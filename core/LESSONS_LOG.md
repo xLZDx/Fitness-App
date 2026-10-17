@@ -1111,3 +1111,11 @@ Facts: the raw stored mode kept after a flag rollback was not released when the 
 Root cause: the remediation of the first review introduced state (raw stored mode, shell focus nodes) without walking the exits of the functions that touch it.
 Layer: author; not covered by the tests I asked for (they covered the write paths, not the same-mode selection); caught by the verification round.
 Rule next time: when a remediation adds a state field, list every function that reads or resets it and give each exit a test row.
+
+## 2026-10-17 - Commit: fix(shell): put the chip at the card end and announce a session that starts after a rest
+
+Kind: SHORTCOMING (two defects in my own earlier fixes, found by the Flutter verification review).
+Facts: the card header Wrap received loose width from its Column, so space-between did nothing and the Coming-later chip stood next to the icon, not at the card end (no test asserted the chip position, the conformance matrix only asserted no clipping); the rest-only filter for session announcements dropped the start when a session began with a rest and a set followed.
+Root cause: authors (coordinator and the fix agent) fixed clipping and noise without asserting the position and the sequences; tests covered the cases we thought of.
+Layer: author and tests; caught by the verification review.
+Rule next time: a layout fix gets a position assertion, and a filter on transitions gets a sequence test with every path through the state table.

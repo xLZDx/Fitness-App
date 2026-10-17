@@ -179,6 +179,10 @@ class _MainShellState extends State<MainShell> {
                   } else if (prev == null) {
                     if (restOnly(next)) return;
                     text = l10n.stripSessionStarted;
+                  } else if (restOnly(prev) &&
+                      next.state == ActiveSessionState.running) {
+                    // A set/workout session starts after a rest-only status.
+                    text = l10n.stripSessionStarted;
                   } else {
                     final bool wasPaused =
                         prev.state == ActiveSessionState.paused;

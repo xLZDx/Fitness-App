@@ -58015,3 +58015,7 @@ Decision: S03_TEST_FINDINGS_FINAL.md is the summary of the test evidence for the
 ## 2026-10-17 - Commit: fix(modes): persist an explicit Train choice over a rolled-back mode and keep focus on the destination that held it
 
 Decision: selectMode on the mode that is shown only because of a rollback now clears the raw stored mode and persists the explicit choice (no mode-change event, since memory did not change); the shell restores focus to the destination that held it before the swap and does nothing when none held it. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-17.md.
+
+## 2026-10-17 - Commit: fix(shell): put the chip at the card end and announce a session that starts after a rest
+
+Decision: the card header Wrap takes the full width; a session that starts after a rest-only status announces started when the status becomes running; resting to null stays silent and rest pause versus set pause still cannot be told apart. Nothing was run by the coordinator; the test agents add tests (chip position at normal scale and under the icon at scale 2.0; the sequence nothing, resting, running announces once) and re-run all six steps. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-18.md.

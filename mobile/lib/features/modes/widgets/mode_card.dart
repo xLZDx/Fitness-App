@@ -140,7 +140,9 @@ class _ModeCardState extends State<ModeCard> {
           children: <Widget>[
             // One line (icon at the start, chip at the end) while both fit;
             // otherwise the chip drops under the icon with the full width.
-            Wrap(
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
               spacing: 8,
@@ -168,6 +170,7 @@ class _ModeCardState extends State<ModeCard> {
                     ),
                   ),
               ],
+            ),
             ),
             const SizedBox(height: 10),
             // No maxLines: Russian names must wrap, never be cut (AC-CH-13).
