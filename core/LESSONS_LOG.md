@@ -811,3 +811,11 @@ Kind: SUCCESS.
 Facts: the doc-updater agent corrected three documents after story S03-0 landed and reported what it could not ground (the mode key surviving sign-out is marked INFERENCE in the matrix; the journal-on-sign-out behaviour is stated as 'as for the other local data' instead of a claim). It also found that core/DATA_INVENTORY_2026-08-11.md had no mention of the journal at all and added both rows.
 Why it worked: the brief listed the code facts to verify and asked for UNKNOWN items instead of guesses.
 Rule next time: the sign-out behaviour of the mode key and the journal is part of the S03-16 sign-out guard tests; when they are green, the two INFERENCE cells are turned into FACT in the documentation pass at the end of the sprint.
+
+## 2026-10-17 - Commit: feat(shell): build the navigation bar and the side rail from one destinations list with the dock host
+
+Kind: SHORTCOMING (design claim was wrong) and SUCCESS (agent behaviour).
+Facts: design 2.6 says the bottom clearance of the bar presentation without a dock equals today's value. The implementation agent read the Flutter scaffold source and found it does not: with `extendBody` the body bottom padding is the bar height plus the inset, about 86 dp larger than the design's sum (14 + 72 + inset + 24). The agent kept the default build identical by building `ShellLayout` inside the body from the same body padding. The rewritten `main_shell.dart` also had to work without a `ProviderScope` because `back_navigation_test.dart` pumps `MainShell` bare; the agent detected the scope instead of changing that test.
+Root cause: the design stated a number from the code map without deriving it from the framework source (design author).
+Layer: design; caught by the implementation agent before any test run.
+Rule next time: a design claim of the form 'equals today's value' is checked against the framework source or a measured value. The test agents measure the bar-presentation clearance against the pre-S03 value (AC-REG-x) instead of trusting the formula.

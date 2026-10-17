@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
+import '../shell_layout.dart';
 import 'hud_surface.dart';
 
 /// A screen's scrollable body, inset and masked the way the handoff draws it.
@@ -50,19 +51,34 @@ class HudScreenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inside the shell the layout it publishes decides the foot clearance (bar:
+    // today's value plus the dock while shown; rail: inset + 24). Outside the
+    // shell (null) the behaviour is exactly the pre-S03 one.
+    final ShellLayout? layout = ShellLayout.maybeOf(context);
     final double bottom = reserveNavBar
-        ? bottomClearance(context)
+        ? (layout?.bottomClearance ?? bottomClearance(context))
         : MediaQuery.paddingOf(context).bottom + 18;
+    final double top = MediaQuery.paddingOf(context).top + topPadding;
 
-    return HudScrollFade(
-      child: ListView(
-        controller: controller,
-        padding: EdgeInsets.only(
-          top: MediaQuery.paddingOf(context).top + topPadding,
-          bottom: bottom,
-        ),
-        children: children,
-      ),
+    Widget list(double foot) => HudScrollFade(
+          child: ListView(
+            controller: controller,
+            padding: EdgeInsets.only(top: top, bottom: foot),
+            children: children,
+          ),
+        );
+
+    if (layout == null) return list(bottom);
+
+    // The dock appearing or leaving changes the clearance: animate it so the
+    // content does not jump (none when the user asked for reduced motion).
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: bottom),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      builder: (BuildContext _, double foot, Widget? __) => list(foot),
     );
   }
 }
