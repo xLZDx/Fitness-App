@@ -1,4 +1,4 @@
-# Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 2)
+# Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 3: ADR-011 and ADR-012 amended for review round 2)
 
 Status of every ADR in this file: PROPOSED. None is ACCEPTED. Listing an option in the draft (`TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` section 16) does not approve it (constraint C-04). Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Companion: `03_DESIGN.md` (section numbers below refer to it). Nothing here was tested or measured. UNKNOWN = the repository cannot answer; UNVERIFIED-EXTERNAL = depends on provider/OS/store behaviour not checked in this phase.
 
@@ -207,6 +207,14 @@ Consequences: (+) no change to existing readers, no migration, safe rollback (ad
 
 Evidence still needed: rules-emulator tests (fence, tombstone, owner immutability, allowlist, replay after deletion); call-budget measurement; isolate-concurrency and takeover tests. Nothing was run.
 
+Amendment (revision 3, round 2; design 4.2, 5.1, 5.3, 6.4, 7):
+- The owner listens to the session document and parks itself on an epoch change. A parked journal is never offered "finish", never projects to `workout_sessions/<sessionId>`, and is excluded from the journal count bound. The user can Review it: re-add its sets through `record_set` with new command ids after confirming each set, or export it. A parked journal is not lost but is not in History until the user acts; "lost confirmed sets = 0" is restated that way.
+- Takeover: a dialog warns with the other device's unsynced count when known and the replica-incomplete flag, requires on-screen confirmation on the taking device, shows a notice on the displaced device, and lands the session in PAUSED with an explicit on-screen restart.
+- `ownerEpoch` is written in every replica set and command document and is part of the set id (`<session>:<epoch>:<seq>`). Rules compare it with the session document's epoch only if the measured call budget allows; otherwise the fence is cooperative only and is documented as such. `ownerDeviceId` is a client-asserted install id, not proof of device identity.
+- Account-deletion fence refusal wipes the uid's local journals (export offered first); the journal key is per uid in secure storage and is deleted by that wipe.
+- Sync quarantine only after the server was reached and denied permanently; the age bound gives a "stale, will retry" state with manual retry and export.
+- Option C (last-writer-wins) stays rejected. Additional consequence: parked journals need a Review UI and their own size bound. Still unproven: all of the above (no test written or run).
+
 ---
 
 ## ADR-012 Feature flag mechanism
@@ -222,6 +230,8 @@ Proposed decision: B. Flags gate only the START of new sessions; an unfinished s
 Consequences: (+) the operator can disable voice or Mode A without disabling the manual runtime, and users never lose a session to a flag. (-) a server callable and a cache TTL to maintain; a stale cache can allow a new start until the server re-check refuses it.
 
 Evidence still needed: operator choice (OQ-13); a test for flag expiry mid-session; kill-switch test that `liveCoachEndSession` still works.
+
+Amendment (revision 3, round 2; design 6.2, 12): build gate versus flag. The `LIVE_COACH` build define gates only the entry point, route and voice/orchestration providers. Recovery of unfinished journals, the finish projector and "finish my last workout" are compiled into every build and live outside the gate, so a build with the define off still recovers and projects (test required). `FLAG_OFF` is a refusal only for `start_workout`; all other commands, recovery and the projector ignore the flag. Consequence: a rollback that turns the feature off never strands recorded sets. Cost: recovery and projector code ships in builds where the feature is dark, so they need their own tests independent of the feature.
 
 ---
 

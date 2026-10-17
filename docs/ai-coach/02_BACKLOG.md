@@ -1,6 +1,6 @@
 # Live AI Coach - Backlog (SDLC phase 2, Backlog)
 
-Status: DRAFT for review. Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Inputs: `docs/ai-coach/01_REQUIREMENTS.md` (115 requirements AICR-001..115, 28 open questions OQ-01..28; AICR-081..115 and OQ-19..28 added by review round 1 on 2026-10-17) and `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` (draft roadmap, section 15). Format follows `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` (one sprint = one PR, DoR/DoD, documentation first).
+Status: DRAFT for review. Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Inputs: `docs/ai-coach/01_REQUIREMENTS.md` (138 requirements AICR-001..138, 30 open questions OQ-01..30; AICR-081..115 and OQ-19..28 added by review round 1 and AICR-116..138 and OQ-29..30 by review round 2, both on 2026-10-17) and `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` (draft roadmap, section 15). Format follows `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` (one sprint = one PR, DoR/DoD, documentation first).
 
 ## 0. Authorisation statement (read first)
 
@@ -280,6 +280,30 @@ Exit: all critical runtime tests pass (per-epic tests by the test agents). Block
 - AC-2 Given a screen reader active, then there is no duplicate announcement while the coach speaks, no focus jump, chip actions are custom actions, and headset or tap-to-talk is used.
 - AC-3 Given the live screen, then Back shows a persistent microphone cue or a confirm sheet, the pain control is outside the scrolling bar, rest controls are at least 56 dp, an in-app reduce-animation row exists, a corrupt journal uses neutral wording and abandoned-session copy says where data is.
 
+### Epic E01-E Review round 2 additions (added 2026-10-17, DRAFT)
+
+**ACS-110 Safety scope, restart_after_safety and unpersisted-stop protection** (P0; AICR-116, 118, 133, 082)
+- AC-1 Given a `whole`-scope stop (chest, dizziness, fainting, breathing, unclassified free text), when the user runs the on-screen `restart_after_safety`, then the state is PAUSED without lock, `resume_workout` then works and rest state is recomputed fresh; a spoken "restart" does not clear the lock (the lock stays).
+- AC-2 Given an `exercise`-scope stop (joint or muscle pain), when `restart_after_safety` runs, then the same workout continues with the current exercise offered for replace, skip or finish; `replace_exercise`, skip exercise, `record_set`, `correct_set`, `void_set` and `finish_workout` are allowed under the stop and rest is frozen.
+- AC-3 Given the shared allowed-action table, then it has an "exercise-level pain stop" column and a test compares code to the table; the performed-fact oracle is an independent hard-coded list, and `record_set`, `correct_set`, `void_set` from manual source succeed in PAUSED including safety-locked.
+- AC-4 Given a `safety_stop` with the journal forced to fail, when the process is killed and relaunched, then a separate durable marker was written first and the resume prompt requires "I am well to continue"; the residual risk before the marker write is documented and awaits operator acceptance (OQ-29).
+- AC-5 Given a symptom on a non-owner device, then that view stops locally, "Stop the other phone" with a takeover-and-stop action is shown, takeover lands PAUSED and needs an explicit on-screen restart, and no safety code is replicated.
+
+**ACS-111 Internal-command persistence, late replies, service death and rest clamp** (P0; AICR-117, 128, 129, 130)
+- AC-1 Given `rest_elapsed` or `preparing_done` and each FaultableJournalStore fault mode, when the append fails, then the command is applied in memory with a notice and a persist retry, the rest-end cue fires and a following spoken set is accepted.
+- AC-2 Given a model reply arriving after its turn deadline or after PROCESSING left, then it is discarded and adds no set.
+- AC-3 Given foreground-service or process death, then the next open recovers from the journal and tells the user; given `ForegroundServiceStartNotAllowedException`, then the app enters manual-only with a notice and an event, with no crash.
+- AC-4 Given a backward clock jump of one hour during rest, then remaining rest is at most the original rest duration.
+
+**ACS-112 Parked journals, owner epoch, deletion wipe, quarantine and build-gate independence** (P0; AICR-119, 120, 121, 122, 123)
+- AC-1 Given a takeover, then the dialog shows the other device's unsynced count when known and needs on-screen confirmation on the taking device, and the displaced device shows a notice and parks itself on the epoch change.
+- AC-2 Given a parked journal, then it is never offered "finish", cannot write `workout_sessions/<sessionId>` (test), is excluded from the journal count bound and a new session can start; Review re-adds only per-set confirmed sets through `record_set` with new command ids, and an export exists.
+- AC-3 Given replica set and command documents, then each carries `ownerEpoch`, the set id is `<session>:<epoch>:<seq>`, a stale-epoch create is denied in the emulator (or the fence is stated as cooperative only if the call budget does not allow), and `ownerDeviceId` is documented as client-asserted.
+- AC-4 Given a fence refusal caused by account deletion, then an export is offered, then all local journals and the per-uid secure-storage key for that uid are wiped.
+- AC-5 Given the server was reached and denied a record permanently, then it is quarantined; given an offline period beyond the backlog age bound, then a "stale, will retry on reconnect" state with manual retry and export shows and nothing is quarantined; a replica-incomplete flag warns before takeover.
+- AC-6 Given a build with the `LIVE_COACH` define off, then seeded journals still recover and project and "finish my last workout" works; `FLAG_OFF` refuses only `start_workout`; takeover always lands PAUSED with fresh rest state.
+- AC-7 Given the NFR "lost confirmed sets = 0", then the exit evidence reports parked-and-unreviewed sets separately from lost sets.
+
 ## 7. Sprint AI-COACH-02 - Voice vertical slice (PLANNED, NOT AUTHORISED)
 
 Sprint goal: a user can start a demo workout by voice and finish it hands-free on a real phone with the screen locked, with manual fallback always available.
@@ -361,6 +385,28 @@ Exit: a full demo workout without manual control after start (E2E-01, E2E-11 on 
 
 **ACS-085 Account-deletion fence for liveCoach callables** (P0; AICR-098)
 - AC-1 Given a tombstoned account, when any `liveCoach*` callable runs, then the account fence check refuses it.
+
+### Epic E02-E Review round 2 additions (added 2026-10-17, DRAFT)
+
+**ACS-113 Start idempotency, heartbeat, reservation cap, charge on invocation** (P0; AICR-124, 125, 136)
+- AC-1 Given a retried `liveCoachStartSession` with the same `requestId`, then one reservation exists.
+- AC-2 Given a live session, then renewal goes through `liveCoachHeartbeat` (App Check, account fence, quota) or `liveCoachTurn`, and the lease does not expire mid-session; open reservations per user are capped (value OPEN, OQ-05) and over-cap start is refused with a typed error.
+- AC-3 Given a client-aborted turn after the provider was invoked, then quota is still consumed; given a call that never reached the provider, then it is refunded; the invocation-rate cap counts failures.
+- AC-4 Given Mode A with direct credentials, then the reservation is consumed in full at issue and refunded only on provider-side evidence or via a relay (spike S-A8).
+- AC-5 Given a lease-expired state, then its own copy shows, distinct from the daily-limit banner, with a way to start a new session or continue manually.
+
+**ACS-114 Server consent check, App Check table, session bound, log hygiene** (P0; AICR-126, 131, 132, 134)
+- AC-1 Given a stored consent version below the server minimum or an `appVersion` below the minimum, then `liveCoachStartSession` and `liveCoachTurn` refuse; rules force the consent timestamp to `request.time`.
+- AC-2 Given the per-callable App Check options table (including `liveCoachHeartbeat`), then the scaling test pins each row and fails on a missing callable.
+- AC-3 Given live session documents, then their number per user is bounded and a scheduled sweep function removes expired ones and keeps unfinished ones (emulator test).
+- AC-4 Given a spoken health statement in an utterance, then no server log line, trace or error payload contains it.
+
+**ACS-115 Model-bound plan projection, recogniser preference, locked-screen talk and tool-call mechanism** (P0; AICR-127, 135, 137, 138)
+- AC-1 Given a plan tool result sent to the model, then `safety_status` is opaque or absent and the serialization test (AICR-107) covers plan tool results.
+- AC-2 Given a device that supports offline recognition, then the port requests it; otherwise the platform recogniser is used and disclosed.
+- AC-3 Given tap-to-talk with the screen locked, then the pocket copy is not shown, and a headset-button press or a Talk notification action starts capture (OPEN: spike S-A1); given hands-free with a headset or always-on, the pocket copy may show.
+- AC-4 Given TalkBack active, then no announcement or focus-driven speech occurs while the microphone is open; announcements queue until capture closes.
+- AC-5 Given the design, then the tool-call production mechanism is named with an owner or listed as OPEN (OQ-30); ids are sent instead of titles.
 
 ## 8. Sprint AI-COACH-03 - Planner and memory (PLANNED, NOT AUTHORISED)
 
@@ -505,9 +551,15 @@ AICR-063 (deep Form Coach integration), AICR-064 (extra personalities and voices
 | AICR-107, 109 | ACS-005 | ACS-090 |
 | AICR-112 | ACS-100 | ACS-100 (design), ACS-036 |
 | AICR-113, 115 | ACS-101 | ACS-078 |
+| AICR-116, 118, 133 (review round 2) | ACS-101 | ACS-110 |
+| AICR-117, 128, 129, 130 | ACS-101 | ACS-111 |
+| AICR-119, 120, 121, 122, 123 | ACS-101 | ACS-112 |
+| AICR-124, 125, 136 | ACS-101, ACS-008 | ACS-113 |
+| AICR-126, 131, 132, 134 | ACS-101 | ACS-114 |
+| AICR-127, 135, 137, 138 | ACS-005, ACS-101 | ACS-115 |
 | P1: AICR-054, 055 / 056, 057 | n/a | ACS-050 / ACS-051 |
 | P1: AICR-058, 059, 060 | ACS-005 (policy) | ACS-044 |
 | P1: AICR-061, 062 | n/a | ACS-045 |
 | P2: AICR-063, 064, 065 | n/a | unscheduled (section 11) |
 
-Unmapped P0 requirements: none (rechecked 2026-10-17 after review round 1; AICR-021, 022, 028, 032, 010 are amended and keep their existing stories, see the amended acceptance in ACS-028, ACS-040 and the notes in `01_REQUIREMENTS.md`). P0 set checked = AICR-001..053 and AICR-066..115 (103 requirements). Stories ACS-021 and ACS-029 AC-2 must be read with the amended AICR-021/022: the live state is in the separate live collection and `workout_sessions` is written only at finish. Unmapped overall: only the three P2 requirements AICR-063..065, intentionally unscheduled. Non-functional ids NFR-11 (battery), NFR-12 (cost) and NFR-13 (accessibility) have no numeric target; NFR-13 has no owning story beyond the OQ-11 recorded default in ACS-011 and should get a story once the operator answers OQ-11.
+Unmapped P0 requirements: none (rechecked 2026-10-17 after review round 1; AICR-021, 022, 028, 032, 010 are amended and keep their existing stories, see the amended acceptance in ACS-028, ACS-040 and the notes in `01_REQUIREMENTS.md`). P0 set checked = AICR-001..053 and AICR-066..138 (126 requirements; AICR-116..138 added by review round 2 and mapped to ACS-110..115 above, nothing unmapped after round 2; AICR-045, 047, 051, 082 amended and keep their stories, with the amended acceptance read through ACS-110 and ACS-070). Stories ACS-021 and ACS-029 AC-2 must be read with the amended AICR-021/022: the live state is in the separate live collection and `workout_sessions` is written only at finish. Unmapped overall: only the three P2 requirements AICR-063..065, intentionally unscheduled. Non-functional ids NFR-11 (battery), NFR-12 (cost) and NFR-13 (accessibility) have no numeric target; NFR-13 has no owning story beyond the OQ-11 recorded default in ACS-011 and should get a story once the operator answers OQ-11.

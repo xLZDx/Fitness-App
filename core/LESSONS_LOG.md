@@ -1251,3 +1251,11 @@ Facts: five independent reviewers found 97 claims including two BLOCKERs that th
 Why it worked: reviewers had different focus areas and the instruction to verify against real code; the findings were merged into one decision file before editing, so the five documents were changed from one source.
 Caught by: reviewers.
 Rule next time: split large editing briefs by file and give every agent an explicit instruction to edit in many small steps; several agents hit their turn limit mid-task and had to be resumed (SHORTCOMING of the briefs, not of the agents).
+
+## 2026-10-17 - Commit: docs(ai-coach): review round 2 and second remediation batch
+
+Kind: SHORTCOMING.
+Facts: the round 2 verification found 23 new MAJOR defects introduced by the round 1 remediation itself (for example a performed set could not be logged while PAUSED, a takeover could overwrite the real history entry, a failed turn was not charged); see docs/ai-coach/07_REVIEW_ROUND2.md.
+Root cause: the round 1 fixes were applied document by document from one decision list without a cross-document consistency pass and without asking what each new mechanism does at its edges (pause, takeover, offline, deletion).
+Missed by: author and the editing agents; caught by the round 2 reviewers.
+Rule next time: after a remediation batch that adds a mechanism, run a cross-document consistency check and, for each new mechanism, list its behaviour under pause, takeover, offline and account deletion before editing.
