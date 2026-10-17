@@ -175,9 +175,16 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
   ModeSaveResult? _refusal() {
     final uid = _uid;
     if (uid == null) return ModeSaveResult.notReady;
-    final current = ref.read(authUserProvider).valueOrNull?.uid;
-    if (current == null || current != uid) return ModeSaveResult.saveFailed;
-    if (ref.read(modeStoreProvider).isUidWiped(uid)) {
+    try {
+      final current = ref.read(authUserProvider).valueOrNull?.uid;
+      if (current == null || current != uid) return ModeSaveResult.saveFailed;
+      if (ref.read(modeStoreProvider).isUidWiped(uid)) {
+        return ModeSaveResult.saveFailed;
+      }
+    } on Error catch (e) {
+      // A stale ref after an account switch (debug AssertionError / StateError):
+      // the write belongs to a previous account, so it changes nothing.
+      _log('refusal on stale ref', e);
       return ModeSaveResult.saveFailed;
     }
     return null;

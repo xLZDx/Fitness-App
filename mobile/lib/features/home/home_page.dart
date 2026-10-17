@@ -331,6 +331,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     for (final name in homeSectionOrder(lens, bodyStart: bodyStart)) {
       final w = sections[name];
       if (w == null) continue;
+      // Mode state not known yet: greeting only, so no section order of a
+      // guessed mode flashes (F-35, DT-01-9).
+      if (modeState == null && name != HomeSection.greeting) continue;
       entries.add(_HomeEntry(
           KeyedSubtree(key: Key('home.section.$name'), child: w),
           homePaneOf(name, lens)));

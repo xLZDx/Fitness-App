@@ -901,3 +901,11 @@ Facts: the first run of the code by a test agent found six compile errors in pro
 Root cause: implementation agents are forbidden to run anything, so nothing compiled until the test phase; lane briefs did not ask for a careful compile read of type relations (is-checks across interfaces), only for a syntax read.
 Layer: author (implementation agents) and reviewers (none had run yet); caught by the test agent on the first run.
 Rule next time: the first test run is scheduled as soon as the first lane lands (a compile-only smoke by the test agent after wave 1), not after the last lane; lane briefs list the known Dart traps (is-check promotion needs a subtype, go_router extensions, nullable providers, imports of event classes).
+
+## 2026-10-17 - Commit: fix(modes): show only the greeting while the mode is unknown and refuse a stale write without throwing
+
+Kind: FAILURE (two defects found by the step 1 test agent).
+Facts: Home rendered the TRAIN section order while the stored mode was still loading, so a BODY user saw a wrong-mode flash (contract forbids it, test DT-01-9); the mode notifier's refusal path read providers through a stale reference after an account switch, which throws an AssertionError in debug builds instead of returning saveFailed (DT-01-23).
+Root cause: Home used `modeState?.selectedMode ?? AppMode.train`, a default that silently invents a mode (lane L7); the refusal read provider state without a guard (lane L2).
+Layer: authors; caught by the step 1 test agent through real-notifier tests.
+Rule next time: a null state never defaults to a concrete user choice; any async continuation that reads providers after an await is wrapped or uses a captured value. Open: the chooser offer path (`_maybeOfferChooser`) was not re-read for the loading case; the test agents check that no chooser is offered while the mode state is loading.
