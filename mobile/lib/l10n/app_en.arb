@@ -4777,5 +4777,91 @@
         "type": "int"
       }
     }
+  },
+  "activityRecoveryNotice": "{n, plural, one{{n} activity could not be fully restored on this device} other{{n} activities could not be fully restored on this device}}",
+  "@activityRecoveryNotice": {
+    "description": "Notice on Sources and Progress: n activities could not be fully restored after a recovery.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sourceMayProvide": "May provide {list}",
+  "@sourceMayProvide": {
+    "description": "Sources row line; list is a joined list of capability names.",
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceCapSessionList": "workout history",
+  "@sourceCapSessionList": {
+    "description": "Capability name for the Sources line (session list)."
+  },
+  "sourceCapHeartRate": "heart rate",
+  "@sourceCapHeartRate": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapSpeedPace": "speed and pace",
+  "@sourceCapSpeedPace": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapCadence": "cadence",
+  "@sourceCapCadence": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapPower": "power",
+  "@sourceCapPower": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapGpsRoute": "GPS route",
+  "@sourceCapGpsRoute": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapStrokesLaps": "strokes and laps",
+  "@sourceCapStrokesLaps": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapSteps": "steps",
+  "@sourceCapSteps": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapSleep": "sleep",
+  "@sourceCapSleep": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapLiveStream": "live data",
+  "@sourceCapLiveStream": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapUnknown": "Unknown",
+  "@sourceCapUnknown": {
+    "description": "Sources line when no capability is known."
+  },
+  "signOutCannotCheckTitle": "We could not check the activity stored on this device",
+  "@signOutCannotCheckTitle": {
+    "description": "Title of the sign-out sheet when the journal cannot be counted."
+  },
+  "signOutCannotCheckBody": "If you sign out now, activity stored on this device may stay on it or be lost.",
+  "@signOutCannotCheckBody": {
+    "description": "Body of the cannot-check sign-out sheet."
+  },
+  "signOutAnyway": "Sign out anyway",
+  "@signOutAnyway": {
+    "description": "Button that signs out without checking local data."
+  },
+  "signOutPlain": "Sign out",
+  "@signOutPlain": {
+    "description": "Plain sign-out button."
+  },
+  "signOutErrorTitle": "Export or deletion failed. You are still signed in.",
+  "@signOutErrorTitle": {
+    "description": "Error title when export or wipe fails during sign-out."
+  },
+  "signOutDeleted": "Activity deleted from this device.",
+  "@signOutDeleted": {
+    "description": "Shown only after the wipe returned normally."
   }
 }

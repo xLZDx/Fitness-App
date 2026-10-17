@@ -847,3 +847,10 @@ Facts: lane L9 run 1 wrote the Sources page and surveyed the sign-out call sites
 Root cause: design section 6 and 2.5 named strings and a provider without checking that they exist (design author); the contract and the design disagree on one button (documented AC-PR-2 deviation).
 Layer: design; caught by the implementation agent.
 Rule next time: every key and provider name in a design is grepped before the design is approved. Run 2 removes the Try again button for failedToOpen on Sources (consistent with the approved design).
+
+## 2026-10-17 - Commit: feat(l10n): add the keys for the Sources capability lines, the recovery notice and the sign-out guard
+
+Kind: SHORTCOMING (resolved).
+Facts: 19 more keys per language were needed because design section 6 did not list the Sources capability texts, the recovery notice and the sign-out guard sentences although the approved design and contract name them; the lane agent drafted all English texts except one sentence and ALL Russian texts for them (listed in the lane report, not product-reviewed). A concurrent edit of signOutConfirmDelete by the coordinator was handled correctly by the agent (it did not revert it).
+Root cause: design copy tables were not checked against the list of strings the contract and the design text refer to (design author).
+Rule next time: before approving a design, grep every quoted UI sentence and key name against its copy table. Product review of the agent-drafted Russian texts is a carried item for the acceptance record.
