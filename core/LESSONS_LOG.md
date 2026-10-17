@@ -934,3 +934,10 @@ Root cause: authors (lanes L4a, L4b, L7, L8) did not apply the viewport, focus a
 Layer: author and reviewers (none had run yet); caught by the step 2 and step 4 test agents with widget tests.
 Open and carried: the session owner is not cleared when another account signs in (clearing it while a timer runs would show account A's session to account B, so the provider-level test of that row must be re-worded); flag inputs for the Record rows are not done; announcement texts are agent-drafted and need product review.
 Rule next time: contract rules about viewport, focus and text scale become acceptance rows in the lane brief itself, with the exact widget to measure.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 documentation readiness note
+
+Kind: SUCCESS.
+Facts: while S03 testing runs, the next sprint documents were reviewed once (as the delivery rules require, in parallel with the current sprint) and the result is a readiness note: 12 gaps and 8 entry decisions for the operator. Top gaps: there is no UI design contract for S04, the recorder requirements and numbers are undefined, the relationship between the recording journal and the S02 journal is undecided, Android location and foreground-service rules are unverified, and no sprint owns the consent centre.
+Why it worked: the note is a list of facts with file pointers, produced without delaying the current sprint.
+Rule next time: the S04 documentation pass starts from this note, one fix pass, no rewrite of settled documents.
