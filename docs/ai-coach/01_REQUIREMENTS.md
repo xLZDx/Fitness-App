@@ -7,7 +7,7 @@ Conventions:
 - FACT = observed in a file I read (path cited). ASSUMPTION = not in the draft and not proven by code; needs confirmation. UNKNOWN = open, see section 6.
 - Every requirement is one testable claim. MUST/SHOULD per RFC 2119. Priority P0/P1/P2 is copied from the draft table (draft section 2); requirements the draft does not prioritise are marked "(ASSUMPTION)" and inherit the priority of the function they support.
 - Targets in section 4 are design targets copied from the draft, not measurements.
-- Backlog ordering is not decided here (product owner). Architecture choices are not decided here (ADR-001..010 stay open).
+- Backlog ordering is not decided here (product owner). Architecture choices are not decided here (ADR-001..013 stay open).
 
 ## 1. Scope and non-goals
 
@@ -340,7 +340,7 @@ Source column cites findings from `07_REVIEW_ROUND2.md` and decisions D1..D15 in
 - C-01 Reuse existing modules; do not duplicate business logic without an architectural reason (draft 3).
 - C-02 Stack: Flutter/Dart, Riverpod, GoRouter, Firebase Auth, Firestore, Cloud Functions, Firebase AI Logic, ML Kit (draft 3; consistent with F-02).
 - C-03 The Workout Runtime and event journal are authoritative; the model gets a state snapshot, not authority (draft 6).
-- C-04 No option in ADR-001..010 is approved by being listed (draft 16).
+- C-04 No option in ADR-001..013 is approved by being listed (draft 16).
 - C-05 The unfinished AI Coach must not be mixed with mandatory Phase 2 stabilisation tasks (draft 3).
 - C-06 Source folder and file names must be confirmed against the current Phase 2 branch before implementation (draft 4).
 - C-07 Where the draft and the code disagree, the code wins (draft header).

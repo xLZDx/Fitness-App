@@ -11,7 +11,7 @@ Tags: FACT = read in a repository file (path given). INFERENCE = concluded from 
 
 In scope: the user-visible surface of the Live AI Coach for Android phone first (MVP, draft section 2): entry, consent and permission screens, the live session screen with all states, conversation view, workout HUD, voice indicator, avatar slot, hands-free controls, foreground-service notification, safety stop, manual fallback, resume after crash, finish, coach settings and privacy controls, copy rules, accessibility, responsive behaviour, and the list of things the UI must never claim.
 
-Not in scope: legal text; backend, provider or transport choices (ADR-001..010 stay open); Runtime command semantics beyond what the UI must display; an avatar art style or 3D asset; iOS, Wear OS and tablet device verification (design is kept portable, section 12); pricing/paywall.
+Not in scope: legal text; backend, provider or transport choices (ADR-001..013 stay open); Runtime command semantics beyond what the UI must display; an avatar art style or 3D asset; iOS, Wear OS and tablet device verification (design is kept portable, section 12); pricing/paywall.
 
 Priority mapping: P0 screens and states are the MVP. The avatar is P1 (AC-015): the P0 screen is complete and correct with the avatar slot absent (AICR-054..057). Long-term memory screens (AC-016) are specified only as a settings entry and delete/export controls (AICR-060). Post-workout coach analysis is P1 (AICR-061); the P0 finish screen shows stored totals only.
 

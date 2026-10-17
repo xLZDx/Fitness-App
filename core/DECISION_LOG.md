@@ -58089,3 +58089,7 @@ Decision: the 97 round 1 review claims are applied as one batch (docs/ai-coach/0
 ## 2026-10-17 - Commit: docs(ai-coach): review round 2 and second remediation batch
 
 Decision: round 2 findings are applied as the second batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md section D): safety stop has a whole or exercise scope and a user-only restart; performed facts are accepted while paused; a parked journal never overwrites history and is reviewed or exported by the user; a turn is charged when the provider is invoked; consent is checked on the server. Residual risk left for the operator: a safety stop lost if the process dies before the safety marker is written (OQ-29). Evidence: core/changes/2026-10-17-ai-coach-review-round2-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): cross-document consistency fixes
+
+Decision: design revision 3 and requirements win over older wording in the backlog, ADRs, UI spec and test plans; seven contradictions fixed (P0 and E2E counts in the backlog gate criterion, recovery independent of the flag, ADR count 13, offline command set in ADR-009, internal commands exempt from rollback, safetyLock field name). Evidence: core/changes/2026-10-17-ai-coach-consistency-fixes.md.

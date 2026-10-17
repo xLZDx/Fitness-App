@@ -1259,3 +1259,11 @@ Facts: the round 2 verification found 23 new MAJOR defects introduced by the rou
 Root cause: the round 1 fixes were applied document by document from one decision list without a cross-document consistency pass and without asking what each new mechanism does at its edges (pause, takeover, offline, deletion).
 Missed by: author and the editing agents; caught by the round 2 reviewers.
 Rule next time: after a remediation batch that adds a mechanism, run a cross-document consistency check and, for each new mechanism, list its behaviour under pause, takeover, offline and account deletion before editing.
+
+## 2026-10-17 - Commit: docs(ai-coach): cross-document consistency fixes
+
+Kind: SHORTCOMING.
+Facts: a final consistency check found 2 MAJOR and 5 MINOR contradictions between documents after two review rounds (a stale "68 P0 requirements / 12 E2E scenarios" gate criterion in the backlog; a design paragraph that still said recovery runs only with the flag on; stale ADR counts).
+Root cause: editing agents changed their own files and did not search for the old wording in the others.
+Missed by: author and editing agents; caught by the consistency reviewer.
+Rule next time: when a number or rule changes, Grep every document for the old wording in the same edit batch; a consistency pass is part of every remediation batch, not an extra.

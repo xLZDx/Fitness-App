@@ -556,7 +556,7 @@ S: (AUTO-H) user speech detected while SPEAKING: state INTERRUPTED then LISTENIN
 K: echo cancellation outcome (S-A6); OQ-12.
 
 ### X-09 Persistence failure and low storage (AICR-027, 042, 081, 096)
-`safety_stop` is part of EVERY case below (X-11 details it): it is the one command whose in-memory effect is NOT rolled back.
+`safety_stop` is part of EVERY case below (X-11 details it): together with the internal commands `rest_elapsed` and `preparing_done` it is one of the commands whose in-memory effect is NOT rolled back on a failed append (design 4.2 step 5).
 S: (AUTO-H) `FaultableJournalStore` fails append, in three injection points (fail-before-append, fail-on-flush, out-of-space): `record_set` returns `PERSIST_FAILED`, in-memory state rolled back, the card reconciles against the journal head and shows `notConfirmed` after T-3 only if the command is not in the journal, `SpyTts` has no success phrase, set not counted; Try again with the same command_id succeeds once the store recovers (a refusal is not ledgered, AICR-088); disk-full variant on device (07b). Also: replica write rejected by the rev fence or schema: surfaces as a sync-conflict state, never swallowed; the old 4 s swallowed-timeout behaviour is not reused for live data (design 6.4).
 K: AI-COACH-01.
 

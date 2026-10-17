@@ -134,7 +134,7 @@ Out of scope: any implementation, ADR options not needed for P0 (avatar renderer
 ### Epic E00-D Test plan, dependency map and review gate
 
 **ACS-009 Test plan and requirement-to-test map** (P0; all P0 AICR ids as test targets; E2E-01..12)
-- AC-1 Given the 12 E2E scenarios and the 68 P0 requirements, when the plan is written, then every P0 requirement has at least one named test level (unit, integration, E2E, device, review) and an owner agent.
+- AC-1 Given the 19 E2E scenarios (E2E-01 to E2E-19, extended by the X scenarios in 04b) and the 126 P0 requirements, when the plan is written, then every P0 requirement has at least one named test level (unit, integration, E2E, device, review) and an owner agent.
 - AC-2 Given NFR-14 and NFR-15, when written, then the split between emulator evidence and real-device/gym evidence is explicit.
 - AC-3 Given AICR-032 and AICR-049 (design checks), when written, then each has a reviewable checklist item.
 

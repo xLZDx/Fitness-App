@@ -164,7 +164,7 @@ Status: PROPOSED. Related: AICR-031, 074, 075; draft section 11.
 
 Context: Local rest timer uses wall-clock `endsAt` and an injectable clock (FACT). The journal makes local commands durable (ADR-005). Cloud dialogue may be unavailable.
 
-Options: A. Limited safe set offline (start_set, record_set, rest commands, complete_exercise, pause/resume, finish, get_current_exercise, abandon, safety_stop; start_workout from a cached local plan). B. All commands offline including model-suggested replacement. C. Nothing offline.
+Options: A. Limited safe set offline (start_set, record_set, rest commands, complete_exercise, pause/resume, finish, get_current_exercise, abandon, safety_stop, restart_after_safety, correct_set, void_set, add_rest_time; start_workout from a cached local plan; restart_after_safety and correct_set must work offline, otherwise a safety lock could not be cleared offline). B. All commands offline including model-suggested replacement. C. Nothing offline.
 
 Proposed decision: A. Model-dependent commands (dialogue, model-suggested replacement) are unavailable offline and the app says so honestly, never imitating success (AICR-036). Manual replacement from a locally cached eligible list stays available. Sync after reconnect follows design 6.5 with idempotent create-only documents.
 
