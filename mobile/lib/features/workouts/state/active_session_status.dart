@@ -357,6 +357,16 @@ final activeSessionStatusProvider = Provider<ActiveSessionStatus?>((ref) {
   }
 });
 
+/// True while a session started by another account is still running: the
+/// shell then shows neither the strip nor the Record pill (F-11, DT-07-8).
+/// The owner is kept so the other account's session is never exposed.
+final activeSessionForeignOwnerProvider = Provider<bool>((ref) {
+  final owner = ref.watch(activeSessionOwnerProvider);
+  if (owner == null) return false;
+  final uid = ref.watch(authUserProvider.select((u) => u.valueOrNull?.uid));
+  return !_sameUid(owner.uid, uid);
+});
+
 /// The route string a tap on the strip opens (AC-ST-5): the owner's
 /// destination, else `/workouts`.
 final activeSessionDestinationProvider = Provider<String>((ref) {

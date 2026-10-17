@@ -4411,6 +4411,18 @@
   "@stripPaused": {
     "description": "Active session strip state."
   },
+  "stripSessionStarted": "Workout started",
+  "@stripSessionStarted": {
+    "description": "Screen reader announcement when a workout timer session starts."
+  },
+  "stripSessionResumed": "Workout resumed",
+  "@stripSessionResumed": {
+    "description": "Screen reader announcement when a paused workout timer session resumes."
+  },
+  "stripSessionEnded": "Workout ended",
+  "@stripSessionEnded": {
+    "description": "Screen reader announcement when a workout timer session ends."
+  },
   "stripResting": "Resting",
   "@stripResting": {
     "description": "Active session strip state."

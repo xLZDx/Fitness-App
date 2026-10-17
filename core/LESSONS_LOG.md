@@ -925,3 +925,12 @@ Facts: the step 3 test agent wrote 96 widget tests (chooser 45, questions 20, sw
 Why it worked: the tests were written against the contract rows and run per epic by the author of the tests, so the defects were found before review.
 Open: flag inputs for the Record rows (minor finding, tests DT-11-1 and the flags-off row of AC-RC-3 stay weak, DT-11-1b pins current behaviour and must be replaced when the inputs are added); DT-09-4, DT-09-5 and DT-10-2 are partial because no mode asks two questions yet; the loading height shift was not re-measured.
 Rule next time: when a minor finding is skipped, the test that pins the current behaviour carries the marker in its name so the fix forces its replacement.
+
+## 2026-10-17 - Commit: fix(shell): keep the viewport steady, show the rail focus ring, keep focus on resize, hide the Record pill for another account and announce session changes
+
+Kind: FAILURE (defects found by test steps 2 and 4) and SHORTCOMING.
+Facts: the Progress All-activity block and the Home Activity today card shifted the visible content by 376 dp and 155 dp when they arrived; the five rail destinations painted no focus ring; focus fell to the root navigator when the layout switched from rail to bottom bar; the Record pill stayed visible for another account; at text scale 2.0 on a 360x480 window the pill was 230x70 and the strip was not one line; session start, pause, resume and end were not announced to screen readers.
+Root cause: authors (lanes L4a, L4b, L7, L8) did not apply the viewport, focus and text-scale rules of the contract to the parts they built; the lane briefs named the rules but the lanes could not run anything to see the effect.
+Layer: author and reviewers (none had run yet); caught by the step 2 and step 4 test agents with widget tests.
+Open and carried: the session owner is not cleared when another account signs in (clearing it while a timer runs would show account A's session to account B, so the provider-level test of that row must be re-worded); flag inputs for the Record rows are not done; announcement texts are agent-drafted and need product review.
+Rule next time: contract rules about viewport, focus and text scale become acceptance rows in the lane brief itself, with the exact widget to measure.

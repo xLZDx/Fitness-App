@@ -20,12 +20,38 @@ import '../../progress/widgets/progress_activity_format.dart';
 /// Rows shown before the non-interactive "+n" line.
 const int kActivityTodayMaxRows = 3;
 
-class ActivityTodayCard extends ConsumerWidget {
+class ActivityTodayCard extends ConsumerStatefulWidget {
   const ActivityTodayCard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ActivityTodayCard> createState() => _ActivityTodayCardState();
+}
+
+class _ActivityTodayCardState extends ConsumerState<ActivityTodayCard> {
+  bool _hadContent = false;
+
+  /// The card arriving after the user scrolled pushes the content below it
+  /// down; the scroll offset grows by the card's height so what the user is
+  /// reading stays in place (D2, contract S-6 LOADING).
+  void _compensateScroll() {
+    final ScrollableState? scrollable = Scrollable.maybeOf(context);
+    final double? height = (context.findRenderObject() as RenderBox?)?.size.height;
+    if (scrollable == null || height == null || height <= 0) return;
+    final ScrollPosition position = scrollable.position;
+    if (!position.hasPixels || position.pixels <= 0) return;
+    position.jumpTo(position.pixels + height);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final List<SessionDigest> today = ref.watch(activityTodayProvider);
+    final bool appeared = today.isNotEmpty && !_hadContent;
+    _hadContent = today.isNotEmpty;
+    if (appeared) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _compensateScroll();
+      });
+    }
     if (today.isEmpty) return const SizedBox.shrink();
     final AppLocalizations l10n = AppLocalizations.of(context);
     final HudTokens t = context.hud;

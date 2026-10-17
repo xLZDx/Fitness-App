@@ -252,7 +252,12 @@ class HudNavBar extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onSelect,
+    this.focusNodes,
   });
+
+  /// Optional caller-owned focus nodes, one per item (the shell keeps focus
+  /// across a rail/bar switch with them).
+  final List<FocusNode>? focusNodes;
 
   final List<HudNavItem> items;
 
@@ -297,6 +302,9 @@ class HudNavBar extends StatelessWidget {
                     active: t.textPrimary,
                     inactive: inactive,
                     dot: t.accent,
+                    focusNode: (focusNodes != null && i < focusNodes!.length)
+                        ? focusNodes![i]
+                        : null,
                     onTap: () => onSelect(i),
                   ),
                 ),
@@ -316,8 +324,10 @@ class _NavTab extends StatelessWidget {
     required this.inactive,
     required this.dot,
     required this.onTap,
+    this.focusNode,
   });
 
+  final FocusNode? focusNode;
   final HudNavItem item;
   final bool selected;
   final Color active;
@@ -342,6 +352,7 @@ class _NavTab extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: HudTokens.minTapTarget),
         child: InkResponse(
+          focusNode: focusNode,
           onTap: onTap,
           radius: 40,
           containedInkWell: true,

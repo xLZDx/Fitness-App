@@ -56,6 +56,22 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
     });
   }
 
+  final GlobalKey _activityBlockKey = GlobalKey(debugLabel: 'progress.block');
+  bool _hadActivityBlock = false;
+
+  /// Keeps the content the user is reading in place when the activity block
+  /// appears above it: the offset grows by the block's height (D1).
+  void _compensateScroll() {
+    if (!mounted || !_scroll.hasClients) return;
+    final double? height =
+        (_activityBlockKey.currentContext?.findRenderObject() as RenderBox?)
+            ?.size
+            .height;
+    final ScrollPosition position = _scroll.position;
+    if (height == null || height <= 0 || position.pixels <= 0) return;
+    position.jumpTo(position.pixels + height);
+  }
+
   @override
   void dispose() {
     _scroll.dispose();
@@ -67,17 +83,30 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
     final theme = Theme.of(context);
     final dock = ShellLayout.maybeOf(context)?.dockHeight ?? 0;
     final view = ref.watch(progressActivityViewProvider);
+    final bool hasActivityBlock = view.kind == ProgressActivityKind.block ||
+        view.kind == ProgressActivityKind.errorRetry ||
+        view.kind == ProgressActivityKind.errorNoRetry;
+    if (hasActivityBlock && !_hadActivityBlock) {
+      // D1: the block arrives above content the user may have scrolled to.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _compensateScroll());
+    }
+    _hadActivityBlock = hasActivityBlock;
     List<Widget> activityBlockFor(bool twoPane) => <Widget>[
-          if (view.kind == ProgressActivityKind.block) ...[
-            const SizedBox(height: 16),
-            ProgressActivityBlock(showSourcesRow: !twoPane),
-            const SizedBox(height: 16),
-          ] else if (view.kind == ProgressActivityKind.errorRetry ||
-              view.kind == ProgressActivityKind.errorNoRetry) ...[
-            const SizedBox(height: 16),
-            ProgressJournalErrorPanel(view: view),
-            const SizedBox(height: 16),
-          ],
+          if (hasActivityBlock)
+            KeyedSubtree(
+              key: _activityBlockKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const SizedBox(height: 16),
+                  if (view.kind == ProgressActivityKind.block)
+                    ProgressActivityBlock(showSourcesRow: !twoPane)
+                  else
+                    ProgressJournalErrorPanel(view: view),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
         ];
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).progressProgress),

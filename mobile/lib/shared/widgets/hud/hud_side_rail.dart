@@ -24,7 +24,12 @@ class HudSideRail extends StatefulWidget {
     required this.semanticsLabel,
     this.extended = false,
     this.shortWindow = false,
+    this.focusNodes,
   }) : super(key: key ?? const ValueKey<String>('shell.rail'));
+
+  /// Destination focus nodes owned by the caller (the shell), so focus
+  /// survives a rail-to-bar layout switch. Null: the rail owns its own nodes.
+  final List<FocusNode>? focusNodes;
 
   final List<HudNavItem> items;
   final int selectedIndex;
@@ -48,11 +53,13 @@ class HudSideRail extends StatefulWidget {
 
 class _HudSideRailState extends State<HudSideRail> {
   late List<FocusNode> _nodes;
+  bool _ownsNodes = true;
 
   @override
   void initState() {
     super.initState();
-    _nodes = _makeNodes(widget.items.length);
+    _ownsNodes = widget.focusNodes == null;
+    _nodes = widget.focusNodes ?? _makeNodes(widget.items.length);
   }
 
   List<FocusNode> _makeNodes(int n) => <FocusNode>[
@@ -62,18 +69,24 @@ class _HudSideRailState extends State<HudSideRail> {
   @override
   void didUpdateWidget(HudSideRail old) {
     super.didUpdateWidget(old);
-    if (old.items.length != widget.items.length) {
-      for (final FocusNode n in _nodes) {
-        n.dispose();
+    if (!identical(old.focusNodes, widget.focusNodes) ||
+        old.items.length != widget.items.length) {
+      if (_ownsNodes) {
+        for (final FocusNode n in _nodes) {
+          n.dispose();
+        }
       }
-      _nodes = _makeNodes(widget.items.length);
+      _ownsNodes = widget.focusNodes == null;
+      _nodes = widget.focusNodes ?? _makeNodes(widget.items.length);
     }
   }
 
   @override
   void dispose() {
-    for (final FocusNode n in _nodes) {
-      n.dispose();
+    if (_ownsNodes) {
+      for (final FocusNode n in _nodes) {
+        n.dispose();
+      }
     }
     super.dispose();
   }
@@ -212,19 +225,25 @@ class _RailTile extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: height,
-        child: InkResponse(
-          focusNode: focusNode,
-          onTap: onTap,
-          containedInkWell: true,
-          highlightShape: BoxShape.rectangle,
+        child: HudKeyboardActivation(
+          onActivate: onTap,
+          handlesKeys: false,
+          showFocusRing: true,
           borderRadius: BorderRadius.circular(22),
-          onFocusChange: (bool focused) {
-            if (focused && context.mounted) {
-              Scrollable.ensureVisible(context,
-                  alignment: 0.5, duration: Duration.zero);
-            }
-          },
-          child: ExcludeSemantics(child: body),
+          child: InkResponse(
+            focusNode: focusNode,
+            onTap: onTap,
+            containedInkWell: true,
+            highlightShape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(22),
+            onFocusChange: (bool focused) {
+              if (focused && context.mounted) {
+                Scrollable.ensureVisible(context,
+                    alignment: 0.5, duration: Duration.zero);
+              }
+            },
+            child: ExcludeSemantics(child: body),
+          ),
         ),
       ),
     );

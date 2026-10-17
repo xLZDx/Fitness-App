@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 123580 |
+| `core/LESSONS_LOG.md` | Lessons log | 125137 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -322,7 +322,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 194349 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 10518 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md` | S03 test findings, step 3 (EP-2: S03-08 to S03-11) | 11550 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md` | S03 test findings, step 4 (EP-3 and EP-4) | 12120 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md` | S03 test findings, step 4 (EP-3 and EP-4) | 13396 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md` | S03 test findings: EP-5 foundations (step 2) | 8875 |
 | `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 174368 |
 | `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 20131 |

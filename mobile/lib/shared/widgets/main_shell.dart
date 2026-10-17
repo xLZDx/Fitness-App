@@ -1,5 +1,8 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsService;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -7,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/background/hud_sky.dart';
 import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
+import '../../features/auth/state/auth_providers.dart' show authUserProvider;
 import '../../features/workouts/state/active_session_status.dart';
 import 'dock_widgets.dart';
 import 'hud/hud_scaffold.dart';
@@ -102,6 +106,22 @@ class _MainShellState extends State<MainShell> {
 
   final RailWidthMemo _railMemo = RailWidthMemo();
 
+  /// One focus node per destination, owned here so the focused destination
+  /// keeps focus when the layout switches between rail and bar (AC-WS-5).
+  final List<FocusNode> _destNodes = <FocusNode>[
+    for (int i = 0; i < kShellDestinations.length; i++)
+      FocusNode(debugLabel: 'shell.destination.$i'),
+  ];
+  bool? _lastRail;
+
+  @override
+  void dispose() {
+    for (final FocusNode n in _destNodes) {
+      n.dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
@@ -133,6 +153,41 @@ class _MainShellState extends State<MainShell> {
               builder: (BuildContext c, WidgetRef ref, Widget? _) {
                 final bool hasSession = ref.watch(
                     activeSessionStatusProvider.select((s) => s != null));
+                // AC-A11Y-4: one polite announcement per strip transition
+                // (started, paused, resumed, ended). The 30-second tick never
+                // fires.
+                ref.listen<ActiveSessionStatus?>(activeSessionStatusProvider,
+                    (ActiveSessionStatus? prev, ActiveSessionStatus? next) {
+                  final AppLocalizations l10n = AppLocalizations.of(c);
+                  final String text;
+                  if (next == null) {
+                    // Ended: only for the signed-in owner (an account switch
+                    // or sign-out also turns the status null, silently).
+                    if (prev == null) return;
+                    final String? uid =
+                        ref.read(authUserProvider).valueOrNull?.uid;
+                    if (uid == null ||
+                        uid.isEmpty ||
+                        (prev.ownerUid.isNotEmpty && prev.ownerUid != uid)) {
+                      return;
+                    }
+                    text = l10n.stripSessionEnded;
+                  } else if (prev == null) {
+                    text = l10n.stripSessionStarted;
+                  } else {
+                    final bool wasPaused =
+                        prev.state == ActiveSessionState.paused;
+                    final bool isPaused =
+                        next.state == ActiveSessionState.paused;
+                    if (wasPaused == isPaused) return;
+                    text = isPaused
+                        ? l10n.stripPaused
+                        : l10n.stripSessionResumed;
+                  }
+                  // ignore: deprecated_member_use
+                  unawaited(SemanticsService.announce(
+                      text, Directionality.of(c)));
+                });
                 return _frame(c, location, selected, hasSession, ref);
               },
             )
@@ -183,6 +238,18 @@ class _MainShellState extends State<MainShell> {
     final Size size = MediaQuery.sizeOf(context);
     final EdgeInsets pad = MediaQuery.paddingOf(context);
     final bool rail = info.usesRail;
+    if (_lastRail != null &&
+        _lastRail != rail &&
+        _destNodes.any((FocusNode n) => n.hasFocus) &&
+        selected >= 0 &&
+        selected < _destNodes.length) {
+      // The old presentation held focus: give it to the same destination in
+      // the new one once it is mounted.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _destNodes[selected].requestFocus();
+      });
+    }
+    _lastRail = rail;
     final bool rtl = Directionality.of(context) == TextDirection.rtl;
     final double safeStart = rtl ? pad.right : pad.left;
 
@@ -196,13 +263,19 @@ class _MainShellState extends State<MainShell> {
 
     final List<HudNavItem> items = shellNavItems(l10n);
     final bool pillTab = _kPillPaths.any(location.startsWith);
-    final bool dockShown = !rail && (hasSession || pillTab);
+    // A session of another account hides both strip and pill (F-11).
+    final bool foreignOwner =
+        ref?.watch(activeSessionForeignOwnerProvider) ?? false;
+    final bool dockShown =
+        !rail && (hasSession || (pillTab && !foreignOwner));
     final double dockBottom = HudTokens.navBarBottom +
         HudTokens.navBarHeight +
         pad.bottom +
         kShellDockGap;
+    // Large text makes the full dock taller than the room: compact too (AC-ST-9).
     final bool compactDock =
-        size.height - (dockBottom + kShellDockHeight) < 240;
+        size.height - (dockBottom + kShellDockHeight) < 240 ||
+            MediaQuery.textScalerOf(context).scale(1.0) > 1.5;
     final bool medium = info.sizeClass == WindowSizeClass.medium;
 
     final double railWidth =
@@ -221,6 +294,7 @@ class _MainShellState extends State<MainShell> {
             items: items,
             selectedIndex: selected,
             onSelect: onSelect,
+            focusNodes: _destNodes,
           ),
         ),
       );
@@ -308,6 +382,7 @@ class _MainShellState extends State<MainShell> {
                           items: items,
                           selectedIndex: selected,
                           onSelect: onSelect,
+                          focusNodes: _destNodes,
                           extended: extended,
                           shortWindow: info.isShort,
                           semanticsLabel: l10n.navMainLabel,

@@ -30,17 +30,30 @@ class HomeModeChip extends ConsumerWidget {
     // the switcher popover measures (lane L6).
     return KeyedSubtree(
       key: const Key('home.modeChip'),
-      child: HudChip(
-        key: kHomeModeChipKey,
-        label: modeNameOf(l10n, mode),
-        selected: true,
-        minHeight: 48,
-        maxLines: 2,
-        semanticLabel: l10n.homeModeChipLabel(mode.name),
-        showFocusRing: true,
-        hoverStyle: true,
-        cursor: true,
-        onTap: () => ref.read(modeSwitcherOpenerProvider)?.call(context),
+      // HudChip takes a text label only, so the leading mode icon sits beside
+      // it (decorative; the chip keeps its key and accessible name).
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          ExcludeSemantics(
+            child: Icon(modeIconOf(mode), size: 20, color: context.hud.accent),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: HudChip(
+              key: kHomeModeChipKey,
+              label: modeNameOf(l10n, mode),
+              selected: true,
+              minHeight: 48,
+              maxLines: 2,
+              semanticLabel: l10n.homeModeChipLabel(mode.name),
+              showFocusRing: true,
+              hoverStyle: true,
+              cursor: true,
+              onTap: () => ref.read(modeSwitcherOpenerProvider)?.call(context),
+            ),
+          ),
+        ],
       ),
     );
   }
