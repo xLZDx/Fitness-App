@@ -69,3 +69,20 @@ Current phase: 9 Accept and 10 Report (S03 is merged: PR #11 into `phase2/main` 
 | 8 Gate | done | GPT-PM APPROVE on `1e56d651`; one push, PR #11 merged as `f605cf3e` |
 | 9 Accept | open | product acceptance and release notes; texts drafted by agents need product review (carried items file section 3) |
 | 10 Report | in progress | `docs/phase2/s03/S03_SPRINT_REPORT.md` (reporting-analyst) on branch `phase2/s04-docs` |
+
+## AI Coach line: TDD-001 Live AI Coach (documentation program)
+
+Updated 2026-10-17. Worktree `D:\Repo\Fitness_App_aicoach`, branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints (S00 to S04) and does not close or change any of them. Input: `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` (operator draft, translated). Status of the draft: design review pending; implementation and production are not authorized.
+
+Current phase: 8 Gate (GPT-PM documentation gate round 1 returned MODIFY on `d60cb979`; remediated; the focused verification round on `2a31a3f0` returned MODIFY again with four MAJOR test-versus-contract contradictions and five MINOR leftovers; remediated in the next commit; second focused verification next).
+
+| # | Phase | Status | Artifacts |
+|---|---|---|---|
+| 1 Discovery | done | `docs/ai-coach/01_REQUIREMENTS.md`, `docs/ai-coach/01b_CODE_MAP.md` |
+| 2 Backlog | done | `docs/ai-coach/02_BACKLOG.md` |
+| 3 Design | done | `docs/ai-coach/03_DESIGN.md`, `03a_ADR_PROPOSALS.md`, `03b_UI_SPEC.md` |
+| 4 Docs + test plan | done | `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md`, `04b_E2E_AND_DEVICE_PLAN.md` (all rows PLANNED) |
+| 5 Doc review | in progress | `05_REVIEW_ROUND1.md` (97 claims, 2 BLOCKER), `07_REVIEW_ROUND2.md` (23 new MAJOR, 0 BLOCKER), `06_REMEDIATION_DECISIONS.md` (sections A to E); design revision 4; GPT-PM gate round 1 MODIFY (`08_GPTPM_GATE_ROUND1.md`: 14 MAJOR, 6 MINOR), push withheld |
+| 6 to 10 | not started | documentation program only; code is a later gate |
+
+Agents and models actually run so far (Sonnet 5.5): business-analyst, code-explorer, product-owner, technical-writer, ui-designer.

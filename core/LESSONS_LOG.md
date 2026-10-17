@@ -1219,3 +1219,75 @@ Facts: GPT-PM round 6 on 838d1cdc returned MODIFY with 1 MAJOR: one sentence in 
 Root cause: a convenience sentence generalizing the KEEP fix to DELETE was added without checking 4.5; the author had the same stale-generalization habit as in earlier rounds.
 Missed by: authors and the design agent grep (it searched for the old rule, not for the new generalization); caught by the external gate.
 Rule next time: never extend a fix to a second path in passing; scope a new mechanism explicitly to the path it fixes.
+
+## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
+
+Kind: SUCCESS.
+Facts: checking the operator draft against the real code before design found 17 disagreements (no set ids or revision, a swallowed 4 s write timeout, device-only health data, no voice or foreground-service plumbing); see docs/ai-coach/01b_CODE_MAP.md.
+Why it worked: the code-explorer ran before any design text was written, so the design starts from verified facts instead of the draft's assumptions.
+Caught by: code-explorer.
+Rule next time: run the code map before the design for any draft that claims reuse of existing modules; work in a separate worktree so a concurrent sprint's dirty files are not touched.
+
+## 2026-10-17 - Commit: docs(ai-coach): design, ADR proposals and UI spec
+
+Kind: SHORTCOMING.
+Facts: the design agent stopped at its 14-turn limit after verification only and wrote no file; it had to be resumed with an explicit order to write.
+Root cause: the brief asked for verification and a very large deliverable in one run without a turn budget.
+Missed by: coordinator (brief), caught by the completion notice.
+Rule next time: for a large design brief, tell the agent to write the skeleton file first and verify while filling it.
+
+## 2026-10-17 - Commit: docs(ai-coach): test plans and review round 1
+
+Kind: FAILURE.
+Facts: the coordinator launched the Workflow multi-agent tool for the round 1 documentation review although the operator had not asked for a workflow or multi-agent orchestration; it was stopped within the same turn and the same five reviewers were started as ordinary agents.
+Root cause: the tool was chosen for convenience when launching five parallel reviewers; the explicit-opt-in condition in the tool description was not checked first.
+Missed by: author (coordinator); caught by the coordinator on re-reading the tool contract before any result was used.
+Rule next time: parallel reviewers are launched as separate Agent calls in one message; Workflow is used only after the operator asks for a workflow or fan-out in their own words.
+
+## 2026-10-17 - Commit: docs(ai-coach): test plans, review round 1 and remediation
+
+Kind: SUCCESS.
+Facts: five independent reviewers found 97 claims including two BLOCKERs that the author documents and the first test plan missed (a failed journal write could undo a safety stop; a second device could lose confirmed sets); see docs/ai-coach/05_REVIEW_ROUND1.md.
+Why it worked: reviewers had different focus areas and the instruction to verify against real code; the findings were merged into one decision file before editing, so the five documents were changed from one source.
+Caught by: reviewers.
+Rule next time: split large editing briefs by file and give every agent an explicit instruction to edit in many small steps; several agents hit their turn limit mid-task and had to be resumed (SHORTCOMING of the briefs, not of the agents).
+
+## 2026-10-17 - Commit: docs(ai-coach): review round 2 and second remediation batch
+
+Kind: SHORTCOMING.
+Facts: the round 2 verification found 23 new MAJOR defects introduced by the round 1 remediation itself (for example a performed set could not be logged while PAUSED, a takeover could overwrite the real history entry, a failed turn was not charged); see docs/ai-coach/07_REVIEW_ROUND2.md.
+Root cause: the round 1 fixes were applied document by document from one decision list without a cross-document consistency pass and without asking what each new mechanism does at its edges (pause, takeover, offline, deletion).
+Missed by: author and the editing agents; caught by the round 2 reviewers.
+Rule next time: after a remediation batch that adds a mechanism, run a cross-document consistency check and, for each new mechanism, list its behaviour under pause, takeover, offline and account deletion before editing.
+
+## 2026-10-17 - Commit: docs(ai-coach): cross-document consistency fixes
+
+Kind: SHORTCOMING.
+Facts: a final consistency check found 2 MAJOR and 5 MINOR contradictions between documents after two review rounds (a stale "68 P0 requirements / 12 E2E scenarios" gate criterion in the backlog; a design paragraph that still said recovery runs only with the flag on; stale ADR counts).
+Root cause: editing agents changed their own files and did not search for the old wording in the others.
+Missed by: author and editing agents; caught by the consistency reviewer.
+Rule next time: when a number or rule changes, Grep every document for the old wording in the same edit batch; a consistency pass is part of every remediation batch, not an extra.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM gate round 1 remediation
+
+Kind: FAILURE.
+Facts: GPT-PM returned MODIFY with 14 MAJOR on head d60cb979, mostly stale wording left in other documents after the earlier batches (test plans still asserting the old set id format and the old rest timer, a backlog criterion still quarantining on age, a backlog criterion still granting zero charge to a timed-out turn); see docs/ai-coach/08_GPTPM_GATE_ROUND1.md.
+Root cause: the internal consistency check was a partial grep over 7 invariants and stopped at its turn limit; the old wording of changed rules was not searched for in every file in the batch that changed it.
+Missed by: author, editing agents and the internal consistency reviewer; caught by the external gate.
+Rule next time: for every rule changed in a batch, the editing agent greps all documents for the old wording in the same batch and lists the hits; the consistency check must finish (run it in two smaller passes if it hits its turn limit) before the gate request.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round remediation
+
+Kind: FAILURE.
+Facts: the verification round found 4 MAJOR where the remediation of the previous round introduced new contracts (VOLATILE result, in-memory-first rest end, ui_confirmed, deletion-fence states) but older test rows FT-1025, FT-1037, FT-1002, FT-1175 and FT-1176 still asserted the replaced behaviour; see 08_GPTPM_GATE_ROUND1.md and the change record.
+Root cause: the previous batch grepped for old wording of the rules it knew it changed, not for the tests that assert the old behaviour of each new contract.
+Missed by: author and editing agents; caught by the external gate.
+Rule next time: when a contract is added or replaced, list every test row, story criterion and E2E step that mentions the affected command or state and re-derive its oracle in the same batch.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round 2 remediation
+
+Kind: FAILURE.
+Facts: the previous remediation fixed the named rows but left sibling rows (FT-1133, FT-1020, FT-1104, FT-1191) and the successful-export branch of FT-1176 on the old contract; found by GPT-PM, see the change record.
+Root cause: rows were fixed by id from the finding, not by searching every row that asserts the same command, source or state.
+Missed by: author; caught by the external gate.
+Rule next time: for each fixed row, grep the contract keyword (command name, source value, state name, error code) across 04a and 04b and re-derive every hit in the same batch.
