@@ -58105,3 +58105,7 @@ Decision: distance uses a chord accumulator with a 20 m minimum step and elevati
 ## 2026-10-17 - Commit: fix(s04): close the code-review findings on journal release, recovery classes, expiry, owner check, adapter stop and recorder screens
 
 Decision: accepted all MAJOR findings of docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md; the revoked state now shows a strip row per UI contract 14.1 (design 7.2 loses); the real battery monitor and services-off probe stay unwired and the Start panel states this when the flag is on (gap carried to the sprint report); the hook timeout cancels the hand-off. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.
+
+## 2026-10-17 - Commit: docs(s04): sync design and test plan with the implemented journal and record the security residuals
+
+Decision: stale hard-link wording in the history entries (Z7, Z10, Z14) is kept as history; the 12.1 race row, F2, the 5.2 row and the 4.5 Discard step are recorded as documented deviations until the next doc pass. Security residuals (flag parsing, plugin pinning, lock-screen notification text, Play Services disclosure) go to the release checklist. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md section C.

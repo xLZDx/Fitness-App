@@ -1281,3 +1281,11 @@ Facts: four static reviews (reliability, silent failures, Flutter, security) of 
 Root cause: the epic tests exercised the happy path and designed failure injections but not release-on-every-exit, error classification, cross-scope sweeps or concurrency of the adapter. One FIX agent also hung on a test that awaited a future that never completes under the fake clock.
 Missed by: authors and epic tests; caught by the independent reviewers.
 Rule next time: for every acquire add a test that every exit path releases; classify transient versus permanent errors at the first design pass; never await recorder futures under the fake clock in tests, tap through the UI instead; give agents running flutter test a hard timeout.
+
+## 2026-10-17 - Commit: docs(s04): sync design and test plan with the implemented journal and record the security residuals
+
+Kind: SHORTCOMING.
+Facts: the code fixes changed DECISION publication to temp-file rename, but the design still described hard-link or exclusive-create in the 12.1 race row, F2, the 5.2 row, the 4.5 Discard step and code header comments; the doc agent fixed 4.3, 7.2 and DT-07-5 only.
+Root cause: the protocol was changed in code without a grep of every doc mention, the same defect class as the docs-gate rounds.
+Missed by: author; no reviewer was asked to compare docs with code.
+Rule next time: when a mechanism changes, grep all docs and comments for its old name in the same commit.

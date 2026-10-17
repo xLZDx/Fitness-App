@@ -38,4 +38,13 @@ Date: 2026-10-17. Head reviewed: 03143df3. Reviewers (static reading, nothing ru
 
 ## C. Security reviewer
 
-Appended below when the report arrives.
+The security reviewer's findings overlap with section A (owner-atomic hand-off, FALLBACK expiry, scope-agnostic sweep), which FIX-A closed. The residual items below are not fixed in code and are carried to the release checklist and the sprint report.
+
+| Id | Sev | Finding | Disposition |
+|---|---|---|---|
+| S-a | MINOR | Gradle and Dart parse the GPS_RECORDER flag separately, so the two can disagree. | Carried: align the parsing in the release checklist. |
+| S-b | MINOR | Supply-chain: the location and permission plugins are version-ranged, not pinned. | Carried: pin and review before release. |
+| S-c | MINOR | Lock-screen notification privacy (S04-R-053): the notification text may be visible on a locked phone. | Carried: needs the native fallback text; operator-visible gap. |
+| S-d | MINOR | The Play Services location provider may use the network; this is not disclosed in the privacy copy. | Carried: add the disclosure to the Play Console rows of the release checklist. |
+
+Note: the reviewer's original numbering (S1 to S11) was not preserved in the files available after compaction. The items above are the ones still open; the rest were merged into section A.

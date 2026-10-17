@@ -54,3 +54,13 @@ Per-folder results (all green after fixes): location, pages 127, widgets 94, con
 Final complete set: `flutter test test/features/recording test/shared/widgets/gps_strip test/features/activity/gps_signout --timeout 300s` -> `+1119: All tests passed!`
 
 Not covered: U6 real battery/services-off wiring (gap is stated on the Start panel only); no whole-repo suite, analyze or build was run.
+
+## Known gaps at code gate
+
+- Real battery monitor and services-off probe are not wired (the gap is stated on the Start panel only).
+- The manual-entry page is missing; `/record/manual` redirects.
+- The recorder has no public `releaseAll`.
+- The native notification fallback text is not done.
+- The offline chip is never set.
+- `formulaVersion` is still `rec1.smooth-wma5-1`.
+- NOT_RUN: device-lab rows, whole-repo analyze, build, CI, and manifest gate E8.
