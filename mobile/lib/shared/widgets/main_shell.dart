@@ -243,15 +243,12 @@ class _MainShellState extends State<MainShell> {
     final Size size = MediaQuery.sizeOf(context);
     final EdgeInsets pad = MediaQuery.paddingOf(context);
     final bool rail = info.usesRail;
-    if (_lastRail != null &&
-        _lastRail != rail &&
-        _destNodes.any((FocusNode n) => n.hasFocus) &&
-        selected >= 0 &&
-        selected < _destNodes.length) {
-      // The old presentation held focus: give it to the same destination in
-      // the new one once it is mounted.
+    final int held = _destNodes.indexWhere((FocusNode n) => n.hasFocus);
+    if (_lastRail != null && _lastRail != rail && held >= 0) {
+      // The old presentation held focus on destination [held]: give it to
+      // the same destination in the new one once it is mounted.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _destNodes[selected].requestFocus();
+        if (mounted) _destNodes[held].requestFocus();
       });
     }
     _lastRail = rail;

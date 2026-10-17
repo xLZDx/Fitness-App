@@ -58011,3 +58011,7 @@ Decision: windowWidthShare(context, fraction) is added next to classifyWindow in
 ## 2026-10-17 - Commit: docs(s03): record the final complete test runs and the test summary
 
 Decision: S03_TEST_FINDINGS_FINAL.md is the summary of the test evidence for the gate; the per-epic findings files keep the detail and the run history. Steps 1, 4 and 5 were last run on 8783b58b and steps 2, 3 and 6 on c7758293; the difference between those heads is one helper function and one changed line in the mode switcher sheet, stated in the summary as a limit of the evidence. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md, core/changes/2026-10-17-s03-test-final-runs.md.
+
+## 2026-10-17 - Commit: fix(modes): persist an explicit Train choice over a rolled-back mode and keep focus on the destination that held it
+
+Decision: selectMode on the mode that is shown only because of a rollback now clears the raw stored mode and persists the explicit choice (no mode-change event, since memory did not change); the shell restores focus to the destination that held it before the swap and does nothing when none held it. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-17.md.

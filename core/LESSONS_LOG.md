@@ -1103,3 +1103,11 @@ Kind: SUCCESS with two costs.
 Facts: the final complete runs of all six test steps are green: 150 (step 1), 230 (step 2), 103 (step 3), 247 with 2 skipped in code (step 4), 63 (step 5) and 177 with 18 carried skips (step 6), 0 failures in total. The final run still found one rule violation introduced by a late fix (a raw window width read, caught by the design-rule scan) and one stale report line, which shows the value of running everything once more after the last change.
 Costs: a run of one agent wrote to an output file name used by another agent and showed the wrong tests (discarded and repeated); several agent runs took hours of wall-clock because six agents shared one build cache.
 Rule next time: each test agent uses a private output file name; schedule the final runs in sequence or in two waves instead of six at once.
+
+## 2026-10-17 - Commit: fix(modes): persist an explicit Train choice over a rolled-back mode and keep focus on the destination that held it
+
+Kind: SHORTCOMING (two edge cases in my own remediation, found by the code-reviewer verification round).
+Facts: the raw stored mode kept after a flag rollback was not released when the user explicitly chose the mode shown (the early return came before the reset), so the old stored value came back when the flag returned; the focus restore after a rail to bottom bar swap requested focus on the active route instead of the destination that held it.
+Root cause: the remediation of the first review introduced state (raw stored mode, shell focus nodes) without walking the exits of the functions that touch it.
+Layer: author; not covered by the tests I asked for (they covered the write paths, not the same-mode selection); caught by the verification round.
+Rule next time: when a remediation adds a state field, list every function that reads or resets it and give each exit a test row.

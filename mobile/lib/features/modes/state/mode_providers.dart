@@ -241,6 +241,12 @@ class ModeNotifier extends AsyncNotifier<ModeState> {
     if (refusal != null) return refusal;
     final cur = _current;
     if (cur.selectedMode == mode) {
+      if (_rawStoredMode != null) {
+        // Shown only because a rolled-back flag coerced it: the explicit
+        // choice replaces the stored value on disk.
+        _rawStoredMode = null;
+        return _write(_gen, _uid!, cur);
+      }
       // Same mode: no event. Persist again only after a failed save.
       return _persistFailed
           ? _write(_gen, _uid!, cur)
