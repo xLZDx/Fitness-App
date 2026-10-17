@@ -405,6 +405,245 @@ void main() {
     });
   });
 
+  group('DT-01-26 store writes are serialised in call order (MAJOR-02)', () {
+    test('write #2 reaches the store only after write #1 completes, even when '
+        'its gate is released first; the last accepted mutation is stored',
+        () async {
+      final store = GatedModeStore();
+      final env = ModeEnv(store: store, initialUid: 'u1');
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.answerQuestion(
+          AppMode.body, ModeAnswer.answered('food'));
+      var done2 = false;
+      // ignore: unawaited_futures
+      f2.then((_) => done2 = true);
+      await pumpEventQueue();
+      expect(store.started, hasLength(1),
+          reason: 'write #2 must wait for write #1');
+      // Release the SECOND gate first (out of order completion).
+      store.gate(1).complete();
+      await pumpEventQueue();
+      expect(store.started, hasLength(1),
+          reason: 'write #2 must not start while write #1 is pending');
+      expect(done2, isFalse);
+      expect(store.writes, isEmpty);
+      store.gate(0).complete();
+      expect(await f1, ModeSaveResult.saved);
+      expect(await f2, ModeSaveResult.saved);
+      expect(store.started, hasLength(2));
+      expect(store.started[0].state.selectedMode, AppMode.body);
+      expect(store.started[0].state.answerFor(AppMode.body),
+          ModeAnswer.unanswered);
+      expect(store.started[1].state.answerFor(AppMode.body).value, 'food');
+      expect(store.writes.map((w) => w.state.answerFor(AppMode.body).value),
+          [null, 'food'],
+          reason: 'completion order equals call order');
+      final persisted = store.stateOf('u1')!;
+      expect(persisted.selectedMode, AppMode.body);
+      expect(persisted.answerFor(AppMode.body).value, 'food',
+          reason: 'the latest accepted write is persisted last');
+
+      // A rebuilt container reads the same final value from the store.
+      final env2 = ModeEnv(store: store, initialUid: 'u1');
+      final s = await env2.load();
+      expect(s.selectedMode, AppMode.body);
+      expect(s.answerFor(AppMode.body).value, 'food');
+    });
+
+    test('two selectMode calls in a row: the last mode wins on disk even '
+        'when the second gate is released first', () async {
+      final store = GatedModeStore();
+      final env = ModeEnv(
+          store: store,
+          initialUid: 'u1',
+          flags: const ModeFlags(rideEnabled: true));
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.selectMode(AppMode.ride);
+      await pumpEventQueue();
+      store.gate(1).complete();
+      await pumpEventQueue();
+      expect(store.started, hasLength(1));
+      store.gate(0).complete();
+      expect(await f1, ModeSaveResult.saved);
+      expect(await f2, ModeSaveResult.saved);
+      expect(store.writes.map((w) => w.state.selectedMode),
+          [AppMode.body, AppMode.ride]);
+      expect(store.stateOf('u1')!.selectedMode, AppMode.ride);
+      expect(env.state.selectedMode, AppMode.ride);
+      final env2 = ModeEnv(
+          store: store,
+          initialUid: 'u1',
+          flags: const ModeFlags(rideEnabled: true));
+      expect((await env2.load()).selectedMode, AppMode.ride);
+    });
+
+    test('a failing first write (failed result) does not block the second; '
+        'each call has its own result', () async {
+      final store = GatedModeStore()..outcomes[0] = WriteOutcome.fail;
+      final env = ModeEnv(store: store, initialUid: 'u1');
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.skipQuestion(AppMode.body);
+      store.gate(0).complete();
+      store.gate(1).complete();
+      expect(await f1, ModeSaveResult.saveFailed);
+      expect(await f2, ModeSaveResult.saved);
+      expect(store.started, hasLength(2));
+      expect(store.writes, hasLength(1), reason: 'only write #2 took effect');
+      final persisted = store.stateOf('u1')!;
+      expect(persisted.selectedMode, AppMode.body,
+          reason: 'the second payload carries the first in-memory change');
+      expect(persisted.answerFor(AppMode.body), ModeAnswer.skipped);
+      // The newest result (saved) cleared the retry flag.
+      expect(await env.notifier.selectMode(AppMode.body),
+          ModeSaveResult.unchanged);
+    });
+
+    test('a throwing first write does not block the second', () async {
+      final store = GatedModeStore()..outcomes[0] = WriteOutcome.throwError;
+      final env = ModeEnv(store: store, initialUid: 'u1');
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.skipQuestion(AppMode.body);
+      store.gate(0).complete();
+      store.gate(1).complete();
+      expect(await f1, ModeSaveResult.saveFailed);
+      expect(await f2, ModeSaveResult.saved);
+      expect(store.stateOf('u1')!.answerFor(AppMode.body), ModeAnswer.skipped);
+    });
+
+    test('retry on the next call is unchanged: a failed last write makes an '
+        'identical call persist again', () async {
+      final store = GatedModeStore()
+        ..outcomes[0] = WriteOutcome.fail
+        ..outcomes[1] = WriteOutcome.fail;
+      final env = ModeEnv(store: store, initialUid: 'u1');
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.skipQuestion(AppMode.body);
+      store.gate(0).complete();
+      store.gate(1).complete();
+      expect(await f1, ModeSaveResult.saveFailed);
+      expect(await f2, ModeSaveResult.saveFailed);
+      expect(store.writes, isEmpty);
+      // Identical mode, but the last save failed: it is a retry, not unchanged.
+      final f3 = env.notifier.selectMode(AppMode.body);
+      store.gate(2).complete();
+      expect(await f3, ModeSaveResult.saved);
+      final persisted = store.stateOf('u1')!;
+      expect(persisted.selectedMode, AppMode.body);
+      expect(persisted.answerFor(AppMode.body), ModeAnswer.skipped);
+      expect(await env.notifier.selectMode(AppMode.body),
+          ModeSaveResult.unchanged);
+    });
+
+    test('an account switch while a write is queued never writes the old '
+        "account's state into the new account's key", () async {
+      final store = GatedModeStore();
+      final env = ModeEnv(store: store, initialUid: 'A');
+      await env.load();
+      final stale = env.notifier;
+      final f1 = stale.selectMode(AppMode.body);
+      final f2 = stale.answerQuestion(AppMode.body, ModeAnswer.answered('x'));
+      await pumpEventQueue();
+      expect(store.started, hasLength(1));
+      await env.signIn('B'); // rebuild while write #1 is in flight, #2 queued
+      final b = await env.load();
+      expect(b, ModeState.initial(), reason: "B starts with its own state");
+      // B's own write is queued behind A's two writes.
+      final fb = env.notifier.selectMode(AppMode.body);
+      store.gate(2).complete();
+      store.gate(1).complete();
+      await pumpEventQueue();
+      expect(store.started, hasLength(1),
+          reason: 'still waiting for A write #1');
+      store.gate(0).complete();
+      await f1;
+      await f2;
+      expect(await fb, ModeSaveResult.saved);
+      expect(store.started.map((w) => w.uid), ['A', 'A', 'B'],
+          reason: 'call order is kept across the switch');
+      final a = store.stateOf('A')!;
+      expect(a.answerFor(AppMode.body).value, 'x');
+      final bs = store.stateOf('B')!;
+      expect(bs.selectedMode, AppMode.body);
+      expect(bs.answerFor(AppMode.body), ModeAnswer.unanswered,
+          reason: "A's answer never lands under B");
+    });
+
+    test('a queued write for an old account that is only switched away from '
+        'is never written to B when B has no mutation', () async {
+      final store = GatedModeStore();
+      final env = ModeEnv(store: store, initialUid: 'A');
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.skipQuestion(AppMode.body);
+      await pumpEventQueue();
+      await env.signIn('B');
+      await env.load();
+      store.gate(0).complete();
+      store.gate(1).complete();
+      await f1;
+      await f2;
+      expect(store.started.map((w) => w.uid), ['A', 'A']);
+      expect(store.stored.containsKey('B'), isFalse);
+      expect(store.writes.every((w) => w.uid == 'A'), isTrue);
+    });
+
+    test('a uid marked deleted while writes are queued is still refused by '
+        'the store', () async {
+      final store = GatedModeStore();
+      final env = ModeEnv(store: store, initialUid: 'A');
+      await env.load();
+      final f1 = env.notifier.selectMode(AppMode.body);
+      final f2 = env.notifier.skipQuestion(AppMode.body);
+      await pumpEventQueue();
+      store.markUidWiped('A'); // account deletion starts
+      store.gate(0).complete();
+      store.gate(1).complete();
+      expect(await f1, ModeSaveResult.saveFailed);
+      expect(await f2, ModeSaveResult.saveFailed);
+      expect(store.writes, isEmpty);
+      expect(store.stored.containsKey('A'), isFalse,
+          reason: 'nothing recreated the deleted key');
+      // New calls for the deleted uid are refused before the store.
+      final before = store.started.length;
+      expect(await env.notifier.selectMode(AppMode.train),
+          ModeSaveResult.saveFailed);
+      expect(store.started.length, before);
+    });
+
+    test('rollback: queued writes keep the raw stored mode, and an explicit '
+        'selection after them replaces it only for later writes', () async {
+      final store = GatedModeStore();
+      final env = ModeEnv(store: store, initialUid: 'u1');
+      store.stored['u1'] = ModeReadValue(ModeState(
+          selectedMode: AppMode.ride, chooserStatus: ChooserStatus.migrated));
+      await env.load();
+      final f1 = env.notifier.markResolved();
+      final f2 = env.notifier
+          .answerQuestion(AppMode.body, ModeAnswer.answered('food'));
+      final f3 = env.notifier.selectMode(AppMode.body);
+      await pumpEventQueue();
+      store.gate(2).complete();
+      store.gate(1).complete();
+      await pumpEventQueue();
+      expect(store.started, hasLength(1));
+      store.gate(0).complete();
+      expect(await f1, ModeSaveResult.saved);
+      expect(await f2, ModeSaveResult.saved);
+      expect(await f3, ModeSaveResult.saved);
+      expect(store.writes.map((w) => w.state.selectedMode),
+          [AppMode.ride, AppMode.ride, AppMode.body],
+          reason: 'raw ride survives queued writes; body is written last');
+      expect(store.writes[0].state.chooserStatus, ChooserStatus.resolved);
+      expect(store.writes[1].state.answerFor(AppMode.body).value, 'food');
+      expect(store.stateOf('u1')!.selectedMode, AppMode.body);
+    });
+  });
+
   group('DT-01-25 storage K scan', () {
     List<File> files() => [
           for (final e in Directory('lib/features/modes')
@@ -442,4 +681,31 @@ void main() {
           reason: 'storage outside PrefsModeStore: $offenders');
     });
   });
+}
+
+enum WriteOutcome { ok, fail, throwError }
+
+/// A store whose write number N completes only when the test completes
+/// `gate(N)`. `started` records every write that REACHED the store, in order.
+class GatedModeStore extends FakeModeStore {
+  final List<WriteRec> started = [];
+  final Map<int, Completer<void>> _gates = {};
+  final Map<int, WriteOutcome> outcomes = {};
+
+  Completer<void> gate(int i) => _gates.putIfAbsent(i, Completer<void>.new);
+
+  @override
+  Future<ModeWriteResult> write(String uid, ModeState state) async {
+    final i = started.length;
+    started.add(WriteRec(i, uid, state));
+    await gate(i).future;
+    switch (outcomes[i] ?? WriteOutcome.ok) {
+      case WriteOutcome.throwError:
+        throw StateError('gated write threw');
+      case WriteOutcome.fail:
+        return ModeWriteResult.failed;
+      case WriteOutcome.ok:
+        return super.write(uid, state);
+    }
+  }
 }

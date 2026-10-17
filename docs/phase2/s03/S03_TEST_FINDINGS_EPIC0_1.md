@@ -3,7 +3,29 @@
 Head revision: 5bb24fcc (worktree D:\Repo\Fitness_App_Phase2_s01, branch phase2/s03d-ui-design-contract). Nothing committed.
 Flutter: `where flutter` resolved to D:\flutter\bin\flutter (Flutter 3.27.1, Dart 3.6.0, revision 17025dd882).
 
-## FINAL RUN (step 7), re-run after production batches 17 and 18
+## FINAL RUN (head 20b39611, mode write ordering, GPT-PM MAJOR-02)
+
+Head: 20b39611 (`ModeNotifier._write` chains store writes behind a private `_writeTail`). New test group `DT-01-26 store writes are serialised in call order` in `mobile/test/features/modes/mode_state_test.dart`, using a new `GatedModeStore` (a `FakeModeStore` subclass whose write number N completes only when the test releases `gate(N)`; it records every write that reached the store and can fail or throw per write). 9 new tests:
+
+1. `selectMode(body)` then `answerQuestion`: write #2's gate is released FIRST; the store still sees only write #1 until it completes, then write #2; completion order equals call order, the final stored value is the last mutation, and a rebuilt container reads it.
+2. `selectMode(body)` then `selectMode(ride)` (ride flag on), same out-of-order release: stored mode is `ride`, survives a rebuilt container.
+3. First write returns `failed`: second still runs; results are `saveFailed` then `saved`; the retry flag is cleared by the newer result (an identical call is `unchanged`).
+4. First write throws: second still runs; `saveFailed` then `saved`.
+5. Both writes fail: an identical call afterwards is a retry (`saved`, not `unchanged`), then `unchanged`.
+6. Account switch A to B with write #1 in flight and #2 queued: keys written are exactly A, A, B in call order; A's answer never appears in B's state.
+7. Account switch with queued writes and no B mutation: nothing is ever written under B.
+8. A uid marked deleted (`markUidWiped`) while writes are queued: both are refused (`saveFailed`), nothing is stored, no key is recreated, a new call is refused before the store.
+9. Rollback (stored `ride`, flag off) with queued `markResolved`, `answerQuestion`, `selectMode(body)`: the first two writes keep `ride`, the last writes `body`, even with out-of-order gate release. The existing rollback tests still pass.
+
+Command, from `D:\Repo\Fitness_App_Phase2_s01\mobile` (private output file `D:\Temp\claude\d--Repo\c10b37ff-3506-44a4-9cd1-d2e82bb71961\scratchpad\tdd_chain_run3.txt`):
+
+```
+flutter test --timeout 60s test/features/modes/mode_state_test.dart test/features/modes/mode_flags_test.dart test/features/modes/mode_migration_test.dart test/features/modes/mode_onboarding_hook_test.dart test/features/modes/mode_timer_isolation_test.dart test/features/modes/mode_ui_seams_test.dart test/features/activity/journal_availability_test.dart test/features/activity/sign_out_warning_test.dart
+```
+
+Result: `+94 ~2: All tests passed!` (94 passed, 0 failed, 2 skipped; the 2 skips are the pre-existing `skip: true` tests in `sign_out_warning_test.dart`). `mode_state_test.dart` alone: 34 passed. An earlier attempt used the wrong path `test/features/account_deletion/sign_out_warning_test.dart` (file does not exist; the file is under `test/features/activity/`) and was repeated. Mutation runs were not done by operator rule; the ordering proof is the out-of-order gate release (without the chain write #2 would reach the store while #1 is pending and the `started` length assertions would fail). Open production defects: none.
+
+## Earlier FINAL RUN (step 7), re-run after production batches 17 and 18
 
 Head: 489e486d22b7fe6e37981df815c05174617db775. New test in `mode_state_test.dart` (rollback group): stored `ride` with the ride flag off, shown `train`; `selectMode(train)` returns `saved`, the store then holds `train`, no mode-changed event is sent, a repeat `selectMode(train)` returns `unchanged` with no new write, and a later write keeps `train`. Same command as below (private output file, no PathExistsException): `+151: All tests passed!` (151 passed, 0 failed, 0 skipped). NOT_RUN and open defects: as listed below, unchanged (no open production defect).
 

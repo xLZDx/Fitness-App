@@ -58031,3 +58031,7 @@ Decision: both GPT-PM MAJOR findings were verified against the code (dock_widget
 ## 2026-10-17 - Commit: fix(shell): keep the rail Record slot height when a foreign session hides the control
 
 Decision: the foreign-owner rail slot lays out the idle control invisibly (no semantics, focus or pointer) so both states have identical size; the test agent's failing test was kept red until this fix. Evidence: core/changes/2026-10-17-s03-gate-fix-batch-20.md.
+
+## 2026-10-17 - Commit: test(s03): regression tests for the code gate findings on foreign sessions and mode write order
+
+Decision: after this commit the code gate is requested again from GPT-PM on the new exact head as a verification round (the two MAJOR findings and regressions caused by their fixes only). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md section 1a, core/changes/2026-10-17-s03-gate-fix-tests.md.

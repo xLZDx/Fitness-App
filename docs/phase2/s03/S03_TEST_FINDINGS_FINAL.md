@@ -19,6 +19,17 @@ Heads: all six steps ran their complete sets on `489e486d` (the head after the l
 
 Steps 2 to 6 include the existing test files named in each findings file (back navigation, HUD, shell insets, Home, Progress): all passed in the same runs.
 
+## 1a. Code gate remediation runs (after GPT-PM MODIFY on 95a7ea04)
+
+GPT-PM found two MAJOR defects: the rail Record slot and the Record shortcut ignored a foreign-account session, and same-account mode writes were not ordered. Fixed in `20b39611`; the regression test of the first fix found a 16 dp compact-rail shift, fixed in `85f88bb2`.
+
+| Area | Findings file | Run head | Passed | Failed | Skipped |
+|---|---|---|---|---|---|
+| Shell, dock, shortcuts (12 new tests plus existing shell files) | S03_TEST_FINDINGS_EPIC5A.md | `85f88bb2` | 243 | 0 | 0 |
+| Mode state and write order (9 new tests plus mode and journal files) | S03_TEST_FINDINGS_EPIC0_1.md | `20b39611` | 94 | 0 | 2 (in code) |
+
+The mode run is on `20b39611`; `85f88bb2` changes only the rail slot widget, which those files do not exercise.
+
 ## 2. Production defects found by the tests and how they were closed
 
 | Found by | Defect | Closed in |

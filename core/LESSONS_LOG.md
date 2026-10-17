@@ -1141,3 +1141,10 @@ Facts: the regression test written for the first gate fix (20b39611) failed: in 
 Root cause: my fix replaced the control with a fixed empty box instead of keeping the control's real size.
 Missed by: author (me) and the reading review of the diff; caught by the new regression test of the test agent before the gate re-request.
 Rule next time: a hidden state of a control keeps the control's layout (Visibility with maintainSize), and a regression test checks neighbouring positions, not only the missing control.
+
+## 2026-10-17 - Commit: test(s03): regression tests for the code gate findings on foreign sessions and mode write order
+
+Kind: SUCCESS.
+Facts: 9 write-order tests and 12 foreign-session Record tests were added by the test agents; the Record tests failed once on a real layout shift in my first fix (recorded in the previous entry) and are green on 85f88bb2 (243 passed); mode tests 94 passed, 2 skipped in code.
+Why it worked: the test agent asserted neighbouring positions and focus, not only the missing control, and kept the red test red instead of weakening it.
+Rule next time: keep applying that: a failing test found by a test agent is fixed in production, not relaxed.

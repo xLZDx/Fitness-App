@@ -1,6 +1,23 @@
 # S03 test findings: EP-5 foundations (step 2)
 
-## FINAL RUN (step 7)
+## FINAL RUN (MAJOR-01 regression, head 85f88bb2)
+
+Head: 85f88bb2 (production fix: the foreign-owner branch of RailRecordSlot lays out the idle control invisibly; earlier head 20b39611 had the first MAJOR-01 guard). Command, from mobile/ (output in the scratchpad file ftr_major01_run5.txt):
+flutter test --timeout 60s test/shared/widgets/dock_strip_test.dart test/shared/widgets/app_shortcuts_test.dart test/shared/widgets/hud_side_rail_test.dart test/shared/widgets/shell_input_test.dart test/router/back_navigation_test.dart test/shared/widgets/hud/hud_components_test.dart test/shared/widgets/shell_insets_test.dart test/shared/widgets/real_pages_input_test.dart
+Totals: 243 passed, 0 failed, 0 skipped. No PathExistsException.
+
+Defect found and fixed: at 20b39611 the compact rail slot was an empty 64 dp box while the idle control is taller, so the Progress destination moved up 16 dp (y 306 to 290) when another account's session was running. The test "compact rail: Progress destination does not move idle vs foreign owner" failed there and passes at 85f88bb2.
+
+New tests (12). dock_strip_test.dart group "MAJOR-01 foreign-owner session exposes no Record entry point" (account A starts the session, account B signs in; status null and foreign flag true are asserted first):
+- compact rail (1100x800) and extended rail (1200x800): the only Visibility in the slot is invisible, IgnorePointer present, no Record semantics label, no strip, no pill, slot height equals the idle slot height and is at least 64 / 56, slot position unchanged, five destinations present below it, a tap where the control was never calls the opener, and Tab traversal (14 presses) never lands inside the slot while still reaching all five destinations (no focusable node in the invisible copy) (2 tests).
+- Progress destination does not move idle vs foreign owner, compact and extended (2 tests).
+- bottom dock (360x800): no pill, no strip, no rail slot; a tap on the former pill position opens nothing.
+- after the foreign session ends the rail Record control returns (slot Visibility gone/visible, label shown) and its tap calls the opener once; the dock pill returns and its tap calls the opener once (2 tests).
+app_shortcuts_test.dart (4 tests, real owner uid vs authenticated uid; harness got an extra overrides parameter): foreign owner Ctrl+Shift+R calls no opener and opens no destination; no session calls the opener once; same-account session opens /workout/ex1 and not the sheet; after the foreign owner is cleared the shortcut works again. The other listed files run unchanged.
+
+Mutation note (reasoned, not run, by operator rule): removing the RailRecordSlot guard shows the visible idle control (Visibility absent, semantics label and Tab focus found); removing the _record() or _openRecord guard makes the opener lists non-empty.
+
+## PREVIOUS RUN (step 7)
 
 Head: 489e486d22b7fe6e37981df815c05174617db775 (batches 17 and 18; production frozen). Command, from `mobile/`:
 `flutter test --timeout 60s test/shared/widgets/window_size_test.dart test/shared/widgets/hud_primitives_extension_test.dart test/shared/widgets/nav_config_test.dart test/shared/widgets/hud_side_rail_test.dart test/shared/widgets/adaptive_surface_test.dart test/shared/widgets/dock_strip_test.dart test/features/workouts/active_session_status_test.dart test/router/back_navigation_test.dart test/shared/widgets/hud/hud_components_test.dart test/shared/widgets/shell_insets_test.dart`

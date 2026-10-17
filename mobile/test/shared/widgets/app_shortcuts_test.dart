@@ -13,6 +13,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/auth_user.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/workouts/state/active_session_status.dart';
 import 'package:fitness_app/shared/widgets/adaptive_surface.dart';
 import 'package:fitness_app/shared/widgets/app_shortcuts.dart';
@@ -44,6 +46,7 @@ Future<_World> _pump(
   bool withTextField = false,
   bool openers = true,
   ActiveSessionStatus? session,
+  List<Override> extra = const <Override>[],
 }) async {
   tester.view.physicalSize = const Size(1100, 800);
   tester.view.devicePixelRatio = 1.0;
@@ -85,6 +88,7 @@ Future<_World> _pump(
         modeSwitcherOpenerProvider
             .overrideWithValue((BuildContext c) => switcher.add('switcher')),
       activeSessionStatusProvider.overrideWithValue(session),
+      ...extra,
     ],
     child: MaterialApp.router(
       theme: AppTheme.dark().copyWith(platform: platform),
@@ -227,6 +231,82 @@ void main() {
       expect(w.location, kActiveSessionDefaultDestination);
     });
 
+    // MAJOR-01: a session of another account exposes no Record entry point.
+    // Real providers: signed-in uid vs the stored owner uid.
+    Future<_World> pumpOwned(WidgetTester tester, String signedIn,
+        {ActiveSessionStatus? session, String initial = '/progress'}) async {
+      final _World w = await _pump(
+        tester,
+        initial: initial,
+        session: session,
+        extra: <Override>[
+          authUserProvider.overrideWith((ref) async* {
+            yield AuthUser(uid: signedIn, displayName: signedIn);
+          }),
+        ],
+      );
+      // Keep the auth stream alive and loaded, then record the owner (uidA).
+      w.container.listen(authUserProvider, (_, __) {});
+      await tester.pump();
+      await tester.pump();
+      w.container.read(activeSessionOwnerProvider.notifier)
+          .capture(uid: 'uidA', destination: '/workout/ex1');
+      await tester.pump();
+      return w;
+    }
+
+    testWidgets('foreign owner (status hidden): Ctrl+Shift+R opens nothing',
+        (WidgetTester tester) async {
+      final _World w = await pumpOwned(tester, 'uidB');
+      expect(w.container.read(activeSessionForeignOwnerProvider), isTrue,
+          reason: 'precondition');
+      expect(w.container.read(activeSessionStatusProvider), isNull);
+      await _chord(tester, <LogicalKeyboardKey>[_ctrl, _shift],
+          LogicalKeyboardKey.keyR);
+      expect(w.recordCalls, isEmpty, reason: 'Record opener must not run');
+      expect(w.location, '/progress', reason: 'no destination opened');
+    });
+
+    testWidgets('control: no session, Ctrl+Shift+R calls the opener once',
+        (WidgetTester tester) async {
+      final _World w = await _pump(tester, initial: '/progress');
+      expect(w.container.read(activeSessionForeignOwnerProvider), isFalse);
+      await _chord(tester, <LogicalKeyboardKey>[_ctrl, _shift],
+          LogicalKeyboardKey.keyR);
+      expect(w.recordCalls, <String>['record']);
+      expect(w.location, '/progress');
+    });
+
+    testWidgets(
+        'control: same-account session opens the owner destination, not the sheet',
+        (WidgetTester tester) async {
+      final _World w = await pumpOwned(
+        tester,
+        'uidA',
+        session: const ActiveSessionStatus(
+          kind: ActiveSessionKind.gymWorkout,
+          state: ActiveSessionState.running,
+        ),
+      );
+      expect(w.container.read(activeSessionForeignOwnerProvider), isFalse);
+      await _chord(tester, <LogicalKeyboardKey>[_ctrl, _shift],
+          LogicalKeyboardKey.keyR);
+      expect(w.recordCalls, isEmpty);
+      expect(w.location, '/workout/ex1');
+    });
+
+    testWidgets('foreign owner ended: the shortcut works again',
+        (WidgetTester tester) async {
+      final _World w = await pumpOwned(tester, 'uidB');
+      await _chord(tester, <LogicalKeyboardKey>[_ctrl, _shift],
+          LogicalKeyboardKey.keyR);
+      expect(w.recordCalls, isEmpty);
+      w.container.read(activeSessionOwnerProvider.notifier).clear();
+      await tester.pump();
+      await _chord(tester, <LogicalKeyboardKey>[_ctrl, _shift],
+          LogicalKeyboardKey.keyR);
+      expect(w.recordCalls, <String>['record']);
+    });
   });
 
   group('AC-KB-1d modifier + [ (Back)', () {

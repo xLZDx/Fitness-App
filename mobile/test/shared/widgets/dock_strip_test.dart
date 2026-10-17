@@ -432,6 +432,182 @@ void main() {
         f.container.read(setTimerProvider).phase != s.phase, isTrue);
   });
 
+  group('MAJOR-01 foreign-owner session exposes no Record entry point', () {
+    // Account A starts a session, account B is then signed in: the status is
+    // null, the foreign-owner flag is true and the owner is kept.
+    Future<ShellFixture> foreign(WidgetTester t, List<String> calls,
+        {Size size = const Size(1100, 800), String initial = '/home'}) async {
+      final clock = TestClock();
+      final f = await pumpShell(t,
+          size: size,
+          initial: initial,
+          clock: clock,
+          overrides: [
+            ...realTimerOverrides(clock),
+            shellRecordSheetOpenerProvider
+                .overrideWithValue((ctx, {anchorKey}) => calls.add('record')),
+          ]);
+      f.container.read(activeSessionOwnerProvider.notifier)
+          .capture(uid: 'uidA', destination: '/workout/ex1');
+      _startReal(f);
+      await t.pump();
+      f.auth.add(kUserB);
+      await t.pump();
+      await t.pump();
+      expect(f.container.read(activeSessionForeignOwnerProvider), isTrue,
+          reason: 'precondition: foreign owner');
+      expect(f.container.read(activeSessionStatusProvider), isNull,
+          reason: 'precondition: status hidden for B');
+      return f;
+    }
+
+    Future<double> idleSlotHeight(WidgetTester t, Size size) async {
+      await pumpShell(t, size: size);
+      expect(find.descendant(of: find.byKey(_railRec), matching: find.byType(HudPanel)),
+          findsOneWidget,
+          reason: 'control: the idle slot has the Record control');
+      return t.getSize(find.byKey(_railRec)).height;
+    }
+
+    // Compact (96 dp, en) and extended (1200 dp window) rail forms.
+    for (final (String name, Size size, double reserved, double railW)
+        in const <(String, Size, double, double)>[
+      ('compact rail', Size(1100, 800), 64, 96),
+      ('extended rail', Size(1200, 800), 56, 240),
+    ]) {
+      testWidgets('$name: no Record control, no strip, height $reserved kept, destinations stay',
+          (t) async {
+        final h = t.ensureSemantics();
+        final l10n = await _en();
+        final idleHeight = await idleSlotHeight(t, size);
+        final idleSlotTop = t.getTopLeft(find.byKey(_railRec));
+
+        final calls = <String>[];
+        await foreign(t, calls, size: size);
+        expect(t.getSize(find.byKey(_rail)).width, railW, reason: 'rail form');
+        expect(find.byKey(_railRec), findsOneWidget, reason: 'slot stays mounted');
+        // The idle control may be laid out, but only invisibly.
+        final vis = find.descendant(of: find.byKey(_railRec), matching: find.byType(Visibility));
+        expect(vis, findsOneWidget);
+        expect(t.widget<Visibility>(vis).visible, isFalse,
+            reason: 'the copy used for sizing must be invisible');
+        expect(find.descendant(of: find.byKey(_railRec), matching: find.byType(IgnorePointer)),
+            findsWidgets);
+        expect(find.bySemanticsLabel(l10n.recordPill), findsNothing,
+            reason: 'no Record semantics node');
+        expect(find.byKey(_strip), findsNothing);
+        expect(find.byKey(_pill), findsNothing);
+        expect(t.getSize(find.byKey(_railRec)).height, idleHeight,
+            reason: 'same height as the idle slot');
+        expect(t.getSize(find.byKey(_railRec)).height, greaterThanOrEqualTo(reserved),
+            reason: 'at least the reserved height');
+        expect(t.getTopLeft(find.byKey(_railRec)), idleSlotTop,
+            reason: 'slot position unchanged');
+        // Destinations keep their order and stay below the slot.
+        expect(
+            t.getTopLeft(find.descendant(
+                    of: find.byKey(_rail), matching: find.text('PROGRESS'))).dy,
+            greaterThan(t.getBottomLeft(find.byKey(_railRec)).dy));
+        for (final d in ['HOME', 'WORKOUTS', 'SCAN', 'PROGRESS', 'PROFILE']) {
+          expect(find.descendant(of: find.byKey(_rail), matching: find.text(d)),
+              findsOneWidget,
+              reason: 'destination $d stays');
+        }
+        // A tap where the control used to be opens nothing.
+        await t.tapAt(t.getCenter(find.byKey(_railRec)));
+        await t.pump();
+        expect(calls, isEmpty, reason: 'Record opener must not run');
+        // Tab traversal never lands in the slot and still reaches all five
+        // destinations.
+        final seen = <String>{};
+        for (int i = 0; i < 14; i++) {
+          await t.sendKeyEvent(LogicalKeyboardKey.tab);
+          await t.pump();
+          expect(focusIsWithin(_railRec), isFalse,
+              reason: 'invisible Record copy must not be focusable (tab $i)');
+          final lbl = FocusManager.instance.primaryFocus?.debugLabel ?? '';
+          if (lbl.startsWith('shell.destination.')) seen.add(lbl);
+        }
+        expect(seen.length, 5, reason: 'destinations reachable by Tab: $seen');
+        h.dispose();
+      });
+    }
+
+    // Contract 10.4: the Progress destination never moves with the slot
+    // content (AC-WS-12 covers idle vs running; this adds idle vs foreign).
+    for (final (String name, Size size) in const <(String, Size)>[
+      ('compact rail', Size(1100, 800)),
+      ('extended rail', Size(1200, 800)),
+    ]) {
+      testWidgets('$name: Progress destination does not move idle vs foreign owner',
+          (t) async {
+        await pumpShell(t, size: size);
+        final idle = t.getTopLeft(
+            find.descendant(of: find.byKey(_rail), matching: find.text('PROGRESS')));
+        await foreign(t, <String>[], size: size);
+        expect(
+            t.getTopLeft(find.descendant(
+                of: find.byKey(_rail), matching: find.text('PROGRESS'))),
+            idle,
+            reason: 'destinations must not shift when the slot goes empty');
+      });
+    }
+
+    testWidgets('bottom dock: no pill, no strip, no dock; a tap on the old pill spot opens nothing',
+        (t) async {
+      await pumpShell(t, size: const Size(360, 800));
+      await t.pump(const Duration(seconds: 1));
+      final pillSpot = t.getCenter(
+          find.descendant(of: find.byKey(_pill), matching: find.byType(HudButton)));
+      final calls = <String>[];
+      await foreign(t, calls, size: const Size(360, 800));
+      expect(find.byKey(_pill, skipOffstage: false), findsNothing);
+      expect(find.byKey(_strip, skipOffstage: false), findsNothing);
+      expect(find.byKey(_railRec, skipOffstage: false), findsNothing,
+          reason: 'no rail in the compact window class');
+      await t.tapAt(pillSpot);
+      await t.pump();
+      expect(calls, isEmpty);
+    });
+
+    testWidgets('after the foreign session ends the rail Record control returns and works',
+        (t) async {
+      final calls = <String>[];
+      final f = await foreign(t, calls);
+      expect(
+          t.widget<Visibility>(find.descendant(
+                  of: find.byKey(_railRec), matching: find.byType(Visibility)))
+              .visible,
+          isFalse);
+      f.container.read(setTimerProvider.notifier).reset();
+      await t.pump();
+      await t.pump();
+      expect(f.container.read(activeSessionOwnerProvider), isNull,
+          reason: 'the owner goes with the ended session');
+      expect(f.container.read(activeSessionForeignOwnerProvider), isFalse);
+      final l10n = await _en();
+      expect(find.descendant(of: find.byKey(_railRec), matching: find.text(l10n.recordPill)),
+          findsOneWidget);
+      await t.tap(find.byKey(_railRec));
+      await t.pump();
+      expect(calls, <String>['record']);
+    });
+
+    testWidgets('after the foreign session ends the dock pill returns', (t) async {
+      final calls = <String>[];
+      final f = await foreign(t, calls, size: const Size(360, 800));
+      expect(find.byKey(_pill), findsNothing);
+      f.container.read(setTimerProvider.notifier).reset();
+      await t.pump();
+      await t.pump(const Duration(seconds: 1));
+      expect(find.byKey(_pill), findsOneWidget);
+      await t.tap(
+          find.descendant(of: find.byKey(_pill), matching: find.byType(HudButton)));
+      await t.pump();
+      expect(calls, <String>['record']);
+    });
+  });
+
   testWidgets('DT-07-9 strip changes state at endsAt and goes after 10 minutes', (t) async {
     final l10n = await _en();
     final clock = TestClock();
