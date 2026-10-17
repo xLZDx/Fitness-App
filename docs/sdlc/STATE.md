@@ -69,3 +69,17 @@ Current phase: 9 Accept and 10 Report (S03 is merged: PR #11 into `phase2/main` 
 | 8 Gate | done | GPT-PM APPROVE on `1e56d651`; one push, PR #11 merged as `f605cf3e` |
 | 9 Accept | open | product acceptance and release notes; texts drafted by agents need product review (carried items file section 3) |
 | 10 Report | in progress | `docs/phase2/s03/S03_SPRINT_REPORT.md` (reporting-analyst) on branch `phase2/s04-docs` |
+
+## S04: GPS recorder without a map
+
+| Phase | State | Evidence |
+|---|---|---|
+| 1 to 5 Docs | done | documents approved by GPT-PM on `a94c42a5` (round 7); PR #12 merged as `14513a87` |
+| 6 Build | done | lanes R1 to R9, R11, R13 on branch `phase2/s04` (commits `be03c368`, `1580c428`, `379b5ab1`, `1d76b05e`, `03143df3`) |
+| 7 Verify | done | epic tests by test agents; four independent code reviews (`docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md`); fixes in `a8804f88`; complete set of tests written this sprint: 1119 passed (`docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md`) |
+| 8 Gate | open | GPT-PM request on the exact head not yet sent |
+| 9 Accept | open | device rows on the Samsung S8 NOT_RUN; known gaps listed in the final findings file |
+| 10 Report | open | sprint report after the gate |
+
+Operator decisions 2026-10-17: GPS-PRIV-014 sign-out exception approved (30 days encrypted only if the hand-off fails); reference phone Samsung S8.
+Agents and models run in S04 code phase: implementation agents, test agents, dart-build-resolver, reliability-reviewer, silent-failure-hunter, flutter-reviewer, security-reviewer, doc-updater (all Sonnet 5.5).

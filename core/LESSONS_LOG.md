@@ -1289,3 +1289,8 @@ Facts: the code fixes changed DECISION publication to temp-file rename, but the 
 Root cause: the protocol was changed in code without a grep of every doc mention, the same defect class as the docs-gate rounds.
 Missed by: author; no reviewer was asked to compare docs with code.
 Rule next time: when a mechanism changes, grep all docs and comments for its old name in the same commit.
+
+## 2026-10-17 - Commit: docs(s04): record the S04 code phase state before the gate request
+
+Kind: NEUTRAL.
+Facts: STATE.md had no S04 section after the docs merge; added with evidence pointers.

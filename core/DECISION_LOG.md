@@ -58109,3 +58109,7 @@ Decision: accepted all MAJOR findings of docs/phase2/s04/S04_REVIEW_FINDINGS_COD
 ## 2026-10-17 - Commit: docs(s04): sync design and test plan with the implemented journal and record the security residuals
 
 Decision: stale hard-link wording in the history entries (Z7, Z10, Z14) is kept as history; the 12.1 race row, F2, the 5.2 row and the 4.5 Discard step are recorded as documented deviations until the next doc pass. Security residuals (flag parsing, plugin pinning, lock-screen notification text, Play Services disclosure) go to the release checklist. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md section C.
+
+## 2026-10-17 - Commit: docs(s04): record the S04 code phase state before the gate request
+
+Decision: send the GPT-PM gate request on this exact head; sprint report follows the gate. Evidence: docs/sdlc/STATE.md S04 section.
