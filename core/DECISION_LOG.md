@@ -57927,3 +57927,7 @@ Decision: the S04 readiness note is committed as a planning input only; none of 
 ## 2026-10-17 - Commit: fix(progress): compensate the scroll offset by the net height change when the activity block arrives
 
 Decision: Progress compensates by the arriving block height minus the Sources slot height (slot and gap) measured while it was shown, clamped to 0 and the maximum scroll extent; in two-column layout the slot height is 0. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-6.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md.
+
+## 2026-10-17 - Commit: test(activity): add the functional tests for the journal availability, the mode state and the account-switch wipe
+
+Decision: step 1 test files and the findings file are committed after a green complete run (140 of 140). Partial rows stay open: the real-app first Home frame part of the chooser-offer row, and the dashboard-widget part of one availability row. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1.md.

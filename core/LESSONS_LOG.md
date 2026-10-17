@@ -949,3 +949,9 @@ Facts: the scroll compensation added in the previous batch added the full height
 Root cause: the author (lane L12) compensated for the added block only and did not account for the element removed above the anchor in the same frame; the brief did not say the slot goes away.
 Layer: author; caught by the step 4 test measurement of a stable heading, not by a literal offset check.
 Rule next time: scroll compensation is the net height change above the anchor; tests measure a stable element below the change, not the offset.
+
+## 2026-10-17 - Commit: test(activity): add the functional tests for the journal availability, the mode state and the account-switch wipe
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: the step 1 test agent wrote 13 files with 140 tests (journal availability, flags, mode state, migration, onboarding hook, timer isolation, UI seams, wipe on account deletion) and ran the complete set in the tree: 140 passed, 0 failed; the existing Home tests (82) pass unchanged. The first run found six production compile errors and two behaviour defects (wrong-mode flash on Home, assertion on a stale notifier), all fixed in earlier commits. Shortcoming: the first re-run collided with another agent's flutter test on the shared build cache; it was repeated.
+Rule next time: test agents run in sequence when they share the build cache, or use separate output dirs; partial rows (real-app first Home frame, dashboard widget part of the availability test) are carried to acceptance.

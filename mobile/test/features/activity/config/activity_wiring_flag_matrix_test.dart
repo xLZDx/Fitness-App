@@ -99,6 +99,23 @@ void main() {
     } catch (_) {}
   });
 
+  group('S03-0 default build (no flags argument): local journal ON, no cloud',
+      () {
+    test('openActivityJournal() with the default flags returns an unbound '
+        'scoped journal and does no I/O', () async {
+      final j = await openActivityJournal();
+      expect(j, isA<UidScopedActivityJournal>(),
+          reason: 'default build must open the local journal');
+      expect((j! as UidScopedActivityJournal).boundUid, isNull);
+      expect(tmp.listSync(), isEmpty);
+    });
+
+    test('default overrides contain the journal only (no sync repository)',
+        () {
+      expect(activityRootOverrides(journal: h.journal), hasLength(1));
+    });
+  });
+
   group('both OFF: identical to today', () {
     test('openActivityJournal returns null and touches no disk', () async {
       expect(await openActivityJournal(flags: _off), isNull);
