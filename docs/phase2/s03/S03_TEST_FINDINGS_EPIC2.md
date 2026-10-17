@@ -1,5 +1,26 @@
 # S03 test findings, step 3 (EP-2: S03-08 to S03-11)
 
+## FINAL RUN
+
+Head: c7758293370ee0cfa8265fe93d93945b82b0c0a1 (batch 16; the previous FINAL RUN at 8783b58b gave the same 103 passed). Real tree, run from `mobile/`, Flutter /d/flutter/bin/flutter (3.27.1, Dart 3.6.0). No PathExistsException.
+
+Command (one command, all four files of step 3):
+
+    flutter test --timeout 60s test/features/modes/mode_chooser_test.dart test/features/modes/mode_questions_test.dart test/features/modes/mode_switcher_test.dart test/features/modes/record_sheet_test.dart
+
+Result line: `00:19 +103: All tests passed!` (re-run at c7758293) -> passed 103, failed 0, skipped 0.
+Per file: mode_chooser_test.dart 47, mode_questions_test.dart 21, mode_switcher_test.dart 17, record_sheet_test.dart 18. Harness (not a test file): mode_epic2_harness.dart.
+
+NOT_RUN / not fully proved:
+- AC-LS-7: alias row (N=0), no test of its own; covered by the AC-CH-9..14 tests.
+- DT-09-4, DT-09-5: run only as single-question reductions (no mode asks two questions, mode_question_plan.dart:76-99).
+- DT-10-2: plural forms asserted on ARB strings for 1, 2, 5, 21; rendered switcher can only show count 1.
+- DT-11-4: source scan of app_router.dart, not navigation through the real router.
+- AC-RC-3 /flagsOff and DT-11-1 (BODY with all tiles flag-hidden): weak/partial; DT-11-1b documents current behaviour.
+- Most rows run in `en` only; no device, TalkBack or VoiceOver check; the TP-3 earlier files of step 2 were not run here.
+
+Production defects open: none failing a test. Open MINOR items: mobile/lib/features/modes/widgets/record_sheet.dart (`recordRowsFor`, body branch) has no FOOD_AI/FOOD_LOOKUP input (P-8b); the same file's `_modeNameForTitle` reads `modeStateProvider` directly instead of `selectedModeProvider`.
+
 ## Latest run: head 7888326b (supersedes the run history below)
 
 Real tree, branch phase2/s03d-ui-design-contract, includes 9b42ef53 and e78925d3. Flutter: /d/flutter/bin/flutter (Flutter 3.27.1, Dart 3.6.0), run from `mobile/`.

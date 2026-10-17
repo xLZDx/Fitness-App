@@ -58007,3 +58007,7 @@ Decision: conformance tests are committed after a green run (177 passed, 18 skip
 ## 2026-10-17 - Commit: fix(modes): take the chip width cap from the window helper instead of a raw width
 
 Decision: windowWidthShare(context, fraction) is added next to classifyWindow in shared/widgets/window_size.dart and used by the switcher sheet for the chip cap (40 percent of the window width). Behaviour is unchanged. Because this changes the head after the final run, the affected test files (steps 2, 3 and 6) are re-run on the new head; steps 1, 4 and 5 were run on the previous head and the difference is one added function and one changed line in the switcher sheet. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-16.md.
+
+## 2026-10-17 - Commit: docs(s03): record the final complete test runs and the test summary
+
+Decision: S03_TEST_FINDINGS_FINAL.md is the summary of the test evidence for the gate; the per-epic findings files keep the detail and the run history. Steps 1, 4 and 5 were last run on 8783b58b and steps 2, 3 and 6 on c7758293; the difference between those heads is one helper function and one changed line in the mode switcher sheet, stated in the summary as a limit of the evidence. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md, core/changes/2026-10-17-s03-test-final-runs.md.

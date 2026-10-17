@@ -1,5 +1,12 @@
 # S03 test findings, step 4 (EP-3 and EP-4)
 
+## FINAL RUN (step 7)
+
+Head: 8783b58bdbf569a580ed17dcb3259ec644989127 (production frozen). Flutter `/d/flutter/bin/flutter` 3.27.1. From `mobile/`, one command:
+`flutter test --timeout 60s test/features/home_page_test.dart test/features/home/home_body_check_in_card_test.dart test/features/home/home_clock_test.dart test/features/home/home_dashboard_test.dart test/features/home/format_schedule_label_test.dart test/features/home/suggestion_builder_test.dart test/features/progress_page_test.dart test/features/progress/progress_charts_test.dart test/features/progress/progress_stats_test.dart test/features/home/home_mode_lens_test.dart test/features/activity/data/activity_aggregates_test.dart test/features/activity/state/activity_dashboard_providers_test.dart test/features/progress/progress_dashboard_test.dart test/features/modes/sources_panel_test.dart test/features/activity/sign_out_warning_test.dart`
+Result: `+247 ~2: All tests passed!` = 247 passed, 0 failed, 2 skipped. No PathExistsException. Production defects open: none.
+NOT_RUN: DT-16-3 and DT-16-8 (skipped in code), DT-13-23 (G1) and DT-14-8 (G2) (measure-only gates, not run in this step), AC-LS-5/offline (no offline seam), DT-13-19 as planned (not constructible; the reachable parse form is tested).
+
 ## 0d. LATEST in-tree result (head 7888326b, includes 9b42ef53 review fixes)
 
 One command from `mobile/` (`/d/flutter/bin/flutter` 3.27.1), same 15 files as 0c: `flutter test --timeout 60s` on the nine existing Home and Progress files plus my six files. Result: `+247 ~2: All tests passed!` (247 pass, 0 fail, 2 skipped: DT-16-3, DT-16-8).

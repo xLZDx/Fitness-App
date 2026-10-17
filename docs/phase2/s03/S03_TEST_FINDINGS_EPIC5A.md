@@ -1,5 +1,13 @@
 # S03 test findings: EP-5 foundations (step 2)
 
+## FINAL RUN (step 7)
+
+Head: c7758293370ee0cfa8265fe93d93945b82b0c0a1 (batch 16; production frozen). Command, from `mobile/`:
+`flutter test --timeout 60s test/shared/widgets/window_size_test.dart test/shared/widgets/hud_primitives_extension_test.dart test/shared/widgets/nav_config_test.dart test/shared/widgets/hud_side_rail_test.dart test/shared/widgets/adaptive_surface_test.dart test/shared/widgets/dock_strip_test.dart test/features/workouts/active_session_status_test.dart test/router/back_navigation_test.dart test/shared/widgets/hud/hud_components_test.dart test/shared/widgets/shell_insets_test.dart`
+No PathExistsException. Totals: 230 passed, 0 failed, 0 skipped (my 134 entries all pass; existing back_navigation 10/10, hud_components 66/66, shell_insets 20/20). DT-02-5 now passes (the earlier hit at `mode_switcher_sheet.dart:124` was replaced by `windowWidthShare` in 8783b58b..c7758293). Production defects open: none.
+
+NOT_RUN (with reason; unchanged): AC-SH-3, AC-WS-4/fourItemList, DT-04-2 at shell level (no injection seam for the destination list; partial widget-level/pure versions pass); AC-KB-3 /modeChip, /chooserCard, /sheetRow and AC-KB-4 on the chooser card, AC-LS-8c (sign-out sheet), chooser-card AC-LS-8b, real-content AC-LS-8a/8d, AC-WS-7c sheet content and AC-WS-7d (belong to steps 3 and 4); AC-WS-7e (step 5); S-3/S-5 open/close parts of DT-07-13; DT-03-1 `ru` variant; real-device checks.
+
 Head revision under test: 7888326b (earlier: 9b42ef53) (branch phase2/s03d-ui-design-contract). History: 5bb24fcc (compile blocker D-0, then D-1..D-4), e35a3f66 (all green), 9b42ef53 below. Nothing was committed by the test agent.
 
 Flutter: `D:lutterinlutter`, Flutter 3.27.1, Dart 3.6.0. From `mobile/`: `flutter test --timeout 60s` on window_size_test, hud_primitives_extension_test, nav_config_test, hud_side_rail_test, adaptive_surface_test, dock_strip_test (all under test/shared/widgets/), test/features/workouts/active_session_status_test.dart, plus the existing test/router/back_navigation_test.dart, test/shared/widgets/hud/hud_components_test.dart and test/shared/widgets/shell_insets_test.dart. No PathExistsException occurred.

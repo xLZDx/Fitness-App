@@ -1,5 +1,20 @@
 # S03 test findings, epic 5C (S03-18 conformance to the UI design contract)
 
+## FINAL RUN
+
+- Head: `c7758293370ee0cfa8265fe93d93945b82b0c0a1` (git rev-parse HEAD, after batch 16: chip cap via windowWidthShare, behaviour unchanged); the previous FINAL RUN on 8783b58b gave the same counts.
+- Command, from `D:\Repo\Fitness_App_Phase2_s01\mobile`, one invocation (the fifth file, `s03_conformance_support.dart`, is a helper with no tests):
+
+```
+D:\flutter\bin\flutter test --timeout 60s test/features/s03_conformance/s03_conformance_pages_test.dart test/features/s03_conformance/s03_conformance_shell_test.dart test/features/s03_conformance/s03_conformance_l10n_test.dart test/features/s03_conformance/s03_conformance_extra_test.dart
+```
+
+- Result: **PASS**. 195 tests: 177 passed, 0 failed, 18 skipped (carried, listed below). No PathExistsException occurred.
+- Production defects open: none. Carried (skipped, pre-S03 or accepted, base 2c121242): D2 `mobile/lib/shared/widgets/hud/hud_scaffold.dart:375-380` (6 shell cells), D4 `mobile/lib/features/home/home_page.dart:860`, D5 `home_page.dart:588` and `:1111`, D6 `mobile/lib/features/safety/widgets/eligibility_notice.dart:200` (12 Home cells together).
+- Deliberate deviations: Coming-later badge text scale clamped at 1.3 (batch 15); AC-A11Y-8 scan ignores `Colors.transparent`.
+- NOT_RUN: AC-LS-9 tile width >= 160 and the 1.3-scale rail rule; AC-LS-10 scroll anchor; DT-18-1 (real timers across a mode switch); AC-FAM-1, AC-FAM-2 platform runs, AC-FAM-5 haptics, AC-FAM-6 reduced motion; RTL on the shell and chooser (shared rig has no direction switch); AC-A11Y-3 and AC-A11Y-4 (covered by earlier step files); AC-REG-1 and AC-REG-3 (existing files, run evidence belongs to step 6 list); Sources touch targets (fixture exposes no tappable node).
+
+
 Head revision at the final run: `9063ad87e8dff4b4f8a8218f2d6eb5f5ac6b4b1c` (git rev-parse HEAD in the worktree). No file under `mobile/lib` was edited; nothing staged or committed.
 
 Command (from `D:\Repo\Fitness_App_Phase2_s01\mobile`, Flutter 3.27.1):

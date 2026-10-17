@@ -1,5 +1,13 @@
 # S03 test findings, epic 5B (S03-17 keyboard and pointer input)
 
+## FINAL RUN
+
+- Head: `8783b58bdbf569a580ed17dcb3259ec644989127` (production code frozen).
+- Command, from `D:\Repo\Fitness_App_Phase2_s01\mobile`: `flutter test --timeout 60s test/shared/widgets/app_shortcuts_test.dart test/shared/widgets/shell_input_test.dart test/shared/widgets/real_pages_input_test.dart`
+- Result: 63 passed, 0 failed, 0 skipped (app_shortcuts 32, shell_input 19, real_pages_input 12).
+- Production defects open: none (D-1 at `mobile/lib/shared/widgets/app_shortcuts.dart:102-103` was fixed in e78925d3 and stays green).
+- NOT_RUN: AC-KB-1i Home/End in rail versus page; wheel and scrollbar on the real Home and Sources pages; Cmd+Shift+M/R through AppShortcuts to the real popover and Record sheet (openers faked); Esc ordering with a popup menu above the popover; end-to-end touch-only, pointer-only and keyboard-only journeys (AC-KB-7, DT-17-1, DT-17-2); scanner page as a pushed route (DT-17-4).
+
 Head revision of the final run: `7c961d7922cb68c90731899bef17f2f4994a3fbc` (includes the app_shortcuts fix e78925d3 and the switcher compile fix 7888326b).
 Author: functional-test-reviewer. No file under `mobile/lib` was edited; nothing staged or committed.
 

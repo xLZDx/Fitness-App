@@ -3,7 +3,18 @@
 Head revision: 5bb24fcc (worktree D:\Repo\Fitness_App_Phase2_s01, branch phase2/s03d-ui-design-contract). Nothing committed.
 Flutter: `where flutter` resolved to D:\flutter\bin\flutter (Flutter 3.27.1, Dart 3.6.0, revision 17025dd882).
 
-## FINAL RESULT (head 7888326b)
+## FINAL RUN (step 7)
+
+Head: 8783b58bdbf569a580ed17dcb3259ec644989127 (production code frozen). Real tree, from `D:\Repo\Fitness_App_Phase2_s01\mobile`, Flutter D:\flutter\bin\flutter 3.27.1:
+
+```
+flutter test --timeout 90s test/features/activity/journal_availability_test.dart test/features/activity/repository/activity_journal_binding_retry_test.dart test/features/activity/config/activity_wiring_flag_matrix_test.dart test/features/activity/config/activity_flags_test.dart test/android/backup_rules_test.dart test/features/activity/repository/backup_exclusion_test.dart test/features/modes/mode_flags_test.dart test/features/modes/mode_state_test.dart test/features/modes/mode_migration_test.dart test/features/modes/mode_onboarding_hook_test.dart test/features/modes/mode_timer_isolation_test.dart test/features/modes/mode_ui_seams_test.dart test/features/account_deletion/mode_key_wipe_test.dart
+```
+
+Result: `+150: All tests passed!`: 150 passed, 0 failed, 0 skipped. No PathExistsException. (An earlier attempt of the same command wrote its output to a file name that another agent also used and showed that agent's conformance tests; it was discarded and repeated with a private output file, so the numbers above are from the repeat.)
+NOT_RUN (by design, unchanged): the real-app first Home frame and `/home` location part of AC-CH-8a (proved only at the provider level), and the dashboard-widget part of DT-0-4 (dashboards belong to a later step). Open production defects: none.
+
+## Previous result (head 7888326b)
 
 Complete set of the 13 files (includes the unchanged `activity_journal_binding_retry_test.dart`), same command as Run 1, real tree: `+150: All tests passed!` (150 passed, 0 failed, 0 not run). D8 is fixed; there is no open production defect for this step. Still partial by design: AC-CH-8a real-app first Home frame and DT-0-4 dashboard widget part (see "Partial rows").
 

@@ -1096,3 +1096,10 @@ Root cause: I gave the fix agent a constant-free formulation but not the design 
 Layer: author and coordinator; caught by the scan test in the final run, not by an earlier run (the scan passed before batch 15).
 Rule next time: brief fix agents with the design rules that have scan tests (no raw widths, no raw colours, no unlabeled controls), not only with the defect; the final complete run exists to catch exactly this kind of late change.
 Note: the helper keeps the raw read in one allowed place next to the window classifier. It satisfies the scan and the rule's purpose (no breakpoints in screens), but the letter of the rule is bent; recorded for the acceptance record.
+
+## 2026-10-17 - Commit: docs(s03): record the final complete test runs and the test summary
+
+Kind: SUCCESS with two costs.
+Facts: the final complete runs of all six test steps are green: 150 (step 1), 230 (step 2), 103 (step 3), 247 with 2 skipped in code (step 4), 63 (step 5) and 177 with 18 carried skips (step 6), 0 failures in total. The final run still found one rule violation introduced by a late fix (a raw window width read, caught by the design-rule scan) and one stale report line, which shows the value of running everything once more after the last change.
+Costs: a run of one agent wrote to an output file name used by another agent and showed the wrong tests (discarded and repeated); several agent runs took hours of wall-clock because six agents shared one build cache.
+Rule next time: each test agent uses a private output file name; schedule the final runs in sequence or in two waves instead of six at once.
