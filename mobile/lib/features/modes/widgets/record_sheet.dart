@@ -29,7 +29,13 @@ import '../../progress_photos/scan/ui/scan_gate_view.dart'
 import '../../workouts/data/scheduled_session.dart';
 import '../../workouts/data/session_digest.dart';
 import '../../workouts/state/active_session_status.dart'
-    show activeSessionStatusProvider;
+    show
+        ActiveSessionKind,
+        ActiveSessionStatus,
+        activeSessionForeignOwnerProvider,
+        activeSessionStatusProvider,
+        gpsRecorderEnabledProvider,
+        kGpsRecordingDestination;
 import '../../workouts/state/session_digest_providers.dart';
 import '../data/mode_models.dart';
 import '../state/mode_providers.dart';
@@ -43,6 +49,38 @@ const String kRecordTrainForm = 'trainForm';
 const String kRecordBodyScan = 'bodyScan';
 const String kRecordBodyMeal = 'bodyMeal';
 const String kRecordBodyWeight = 'bodyWeight';
+const String kRecordGpsStart = 'gpsStart';
+const String kRecordGpsOpen = 'gpsOpen';
+
+/// What the GPS row of the sheet is (S04-D 14.2, UX8).
+enum GpsRowMode {
+  /// The recorder is off: no GPS row (S03 behaviour).
+  none,
+
+  /// Nothing runs: "Record a GPS activity", opens `/record/gps`.
+  start,
+
+  /// A GPS recording or an unfinished one is pending: an ENABLED "Open
+  /// recording" row, never a disabled one.
+  open,
+
+  /// Only a gym timer runs: the Start row is disabled with the reason "Finish
+  /// the workout timer first"; the sheet adds an Open workout action.
+  gymRunning,
+}
+
+/// The GPS row mode for [status] (the visible, signed-in-account status).
+/// A foreign session never reaches the sheet (its entry points are blocked).
+GpsRowMode gpsRowModeFor({
+  required bool recorderEnabled,
+  required ActiveSessionStatus? status,
+}) {
+  if (!recorderEnabled) return GpsRowMode.none;
+  if (status == null) return GpsRowMode.start;
+  return status.kind == ActiveSessionKind.gpsRecording
+      ? GpsRowMode.open
+      : GpsRowMode.gymRunning;
+}
 
 /// One row of the sheet, without any text (labels come from ARB at render time).
 class RecordRowSpec {
@@ -51,6 +89,7 @@ class RecordRowSpec {
     required this.destination,
     this.enabled = true,
     this.refusedBy,
+    this.gymRunning = false,
   });
 
   final String id;
@@ -62,6 +101,9 @@ class RecordRowSpec {
   /// [refusedBy] and the row is shown disabled.
   final bool enabled;
   final ScanAccess? refusedBy;
+
+  /// Disabled because a gym timer runs (GPS Start row only).
+  final bool gymRunning;
 }
 
 /// The rows of [mode], in order (the first is the primary row). Pure.
@@ -71,8 +113,39 @@ class RecordRowSpec {
 ///  * [scanAccess] is the existing body-scan gate. Only `allowed` and
 ///    `needsConsent` open the flow (the flow asks for consent itself); every
 ///    other outcome gives a disabled row with the gate's reason.
-///  * Ride and Explore have no rows in S03.
+///  * [gps] is the GPS row: last in Train and Body, the only row in Ride and
+///    Explore (first once those modes have rows). Absent for
+///    [GpsRowMode.none].
+///  * Ride and Explore have no other rows in S03.
 List<RecordRowSpec> recordRowsFor(
+  AppMode mode, {
+  String? todayPath,
+  ScanAccess scanAccess = ScanAccess.allowed,
+  String? bodyStart,
+  GpsRowMode gps = GpsRowMode.none,
+}) {
+  final RecordRowSpec? gpsRow = switch (gps) {
+    GpsRowMode.none => null,
+    GpsRowMode.start => const RecordRowSpec(
+        id: kRecordGpsStart, destination: kGpsRecordingDestination),
+    GpsRowMode.open => const RecordRowSpec(
+        id: kRecordGpsOpen, destination: kGpsRecordingDestination),
+    GpsRowMode.gymRunning => const RecordRowSpec(
+        id: kRecordGpsStart,
+        destination: kGpsRecordingDestination,
+        enabled: false,
+        gymRunning: true),
+  };
+  final List<RecordRowSpec> base = _baseRows(mode,
+      todayPath: todayPath, scanAccess: scanAccess, bodyStart: bodyStart);
+  if (gpsRow == null) return base;
+  if (mode == AppMode.ride || mode == AppMode.explore) {
+    return <RecordRowSpec>[gpsRow, ...base];
+  }
+  return <RecordRowSpec>[...base, gpsRow];
+}
+
+List<RecordRowSpec> _baseRows(
   AppMode mode, {
   String? todayPath,
   ScanAccess scanAccess = ScanAccess.allowed,
@@ -128,14 +201,20 @@ String? todayWorkoutPath(SessionDigest digest, DateTime now) {
 bool _recordOpen = false;
 
 /// Opens the Record sheet. Matches `ShellRecordSheetOpener`. A second call while
-/// open, or while a session is running, is a no-op. [anchorKey] is the rail
+/// open is a no-op. While a session is running it is a no-op too, unless the
+/// GPS recorder is on: then the sheet stays openable and its GPS row reads Open
+/// recording (S04-D UX8). A session of another account never opens it. [anchorKey] is the rail
 /// Record slot on Expanded (without a mounted anchor: a centred dialog).
 void openRecordSheet(BuildContext context, {GlobalKey? anchorKey}) {
   if (_recordOpen) return;
   try {
     final ProviderContainer container =
         ProviderScope.containerOf(context, listen: false);
-    if (container.read(activeSessionStatusProvider) != null) return;
+    if (container.read(activeSessionForeignOwnerProvider)) return;
+    if (container.read(activeSessionStatusProvider) != null &&
+        !container.read(gpsRecorderEnabledProvider)) {
+      return;
+    }
   } on StateError {
     // No ProviderScope: nothing to check; the sheet itself needs one.
     return;
@@ -178,6 +257,7 @@ class RecordSheet extends ConsumerWidget {
         kRecordTrainForm => Icons.accessibility_new_rounded,
         kRecordBodyScan => Icons.camera_alt_outlined,
         kRecordBodyMeal => Icons.restaurant_rounded,
+        kRecordGpsStart || kRecordGpsOpen => Icons.route_rounded,
         _ => Icons.monitor_weight_outlined,
       };
 
@@ -188,6 +268,8 @@ class RecordSheet extends ConsumerWidget {
         kRecordTrainForm => l10n.recordTrainForm,
         kRecordBodyScan => l10n.recordBodyScan,
         kRecordBodyMeal => l10n.recordBodyMeal,
+        kRecordGpsStart => l10n.gpsRowTitle,
+        kRecordGpsOpen => l10n.gpsOpenRecording,
         _ => l10n.recordBodyWeight,
       };
 
@@ -206,14 +288,24 @@ class RecordSheet extends ConsumerWidget {
         (a) => a.isLoading ? null : a.valueOrNull?.answerFor(AppMode.body)));
     final String? bodyStart =
         (answer?.isAnswered ?? false) ? answer!.value : null;
+    final ActiveSessionStatus? running = ref.watch(activeSessionStatusProvider);
+    final GpsRowMode gps = gpsRowModeFor(
+        recorderEnabled: ref.watch(gpsRecorderEnabledProvider),
+        status: running);
     final List<RecordRowSpec> specs = recordRowsFor(mode,
-        todayPath: today, scanAccess: access, bodyStart: bodyStart);
+        todayPath: today,
+        scanAccess: access,
+        bodyStart: bodyStart,
+        gps: gps);
 
     final List<Widget> rows = <Widget>[];
     for (int i = 0; i < specs.length; i++) {
       final RecordRowSpec s = specs[i];
-      final String? reason =
-          s.refusedBy == null ? null : scanAccessMessage(l10n, s.refusedBy!);
+      final String? reason = s.gymRunning
+          ? l10n.gpsRowGymRunning
+          : (s.refusedBy == null
+              ? null
+              : scanAccessMessage(l10n, s.refusedBy!));
       rows.add(
         ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 56),
@@ -298,6 +390,19 @@ class RecordSheet extends ConsumerWidget {
                 ),
               ] else
                 ...rows,
+              if (gps == GpsRowMode.gymRunning && running != null)
+                HudButton(
+                  key: const Key('recordSheet.gpsOpenWorkout'),
+                  label: l10n.gpsOpenWorkout,
+                  centered: true,
+                  wrap: true,
+                  onPressed: () {
+                    final GoRouter router = GoRouter.of(context);
+                    final String destination = running.destination;
+                    Navigator.of(context).pop();
+                    unawaited(router.push<void>(destination));
+                  },
+                ),
             ],
           ),
         ),

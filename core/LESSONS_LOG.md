@@ -1233,3 +1233,11 @@ Kind: SUCCESS and SHORTCOMING.
 Facts: three lanes were written by agents without running anything; one agent (R3) hit its turn limit without a report and was resumed. Nothing is compiled or tested yet: pub get was not run, the geolocator adapter is parked as a .pending file, and the manifest gate was written from memory of the plugin.
 Why it worked: disjoint file ownership per lane made parallel writing safe.
 Rule next time: give agents that write many files a higher turn budget and tell them to report first, then polish; the first compile and test runs by the test agents must cover manifest merge for both flag states.
+
+## 2026-10-17 - Commit: feat(s04): add the recorder state machine, journal with recovery, shell strip, copy and consent, and device-lab documents (lanes R4, R5, R6, R8, R11)
+
+Kind: SHORTCOMING.
+Facts: lanes R5, R6 and R8 each hit the 20-turn agent limit without a report and had to be resumed with an instruction to write first; hard-link publication of the DECISION file is a stub because Dart has no hard link or directory fsync, so the journal uses the exclusive-create fallback under the process lock; the free-space warning (S04-16 AC-1) is not built; nothing is compiled or tested.
+Root cause: the briefs let agents investigate for most of their turns; the design assumed OS primitives the Dart runtime does not offer.
+Missed by: author (design) and brief writer (me); the first compile and the test agents will catch the rest.
+Rule next time: put 'write first, report, then polish' in every long-lane brief; check platform primitives against the language runtime in the design phase.

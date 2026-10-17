@@ -58081,3 +58081,7 @@ Decision: the operator approved the GPS-PRIV-014 sign-out exception (30-day encr
 ## 2026-10-17 - Commit: feat(s04): add the location seam, permission service, calculators pipeline and flag-gated manifest (lanes R1, R2, R3)
 
 Decision: operator approved the GPS-PRIV-014 sign-out exception on 2026-10-17 (the privacy contract note now says APPROVED); geolocator is added at ^13.0.4 because 14.x could not be confirmed against Flutter 3.27.1; the manifest is stripped of location entries when the GPS_RECORDER flag is off by a post-merge Gradle transform. Evidence: core/changes/2026-10-17-s04-lanes-r1-r2-r3.md.
+
+## 2026-10-17 - Commit: feat(s04): add the recorder state machine, journal with recovery, shell strip, copy and consent, and device-lab documents (lanes R4, R5, R6, R8, R11)
+
+Decision: the DECISION file uses the documented exclusive-create fallback under the process-wide journal lock until a native hard-link and directory-fsync implementation of RecordingFileOps exists; R6 treats the revoked-permission strip row as conflicting between design 7.2 (no strip) and contract 14.1 (Location off row) and follows the design; R8 uses draft-1 for the consent text version. Evidence: core/changes/2026-10-17-s04-lanes-r4-r5-r6-r8-r11.md.

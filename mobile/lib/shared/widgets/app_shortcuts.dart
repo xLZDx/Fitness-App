@@ -13,7 +13,10 @@
 ///    nothing.
 ///  * modifier + Shift + R: Record. While a session shows in the strip it opens
 ///    the strip destination and never a second start surface (DT-11-2);
-///    otherwise it calls [shellRecordSheetOpenerProvider].
+///    otherwise it calls [shellRecordSheetOpenerProvider]. With the GPS
+///    recorder on ([gpsRecorderEnabledProvider]) it always opens the sheet,
+///    whose GPS row reads Open recording during a session (S04-24 AC-6).
+///    A session of another account blocks it in every case.
 ///  * modifier + Shift + M: the mode switcher, through
 ///    [modeSwitcherOpenerProvider] (lane L6 sets it; null until then).
 ///  * modifier + `[`: Back with the result of system Back (F3). On a non-home
@@ -120,7 +123,11 @@ class _AppShortcutsState extends ConsumerState<AppShortcuts> {
     _guarded((BuildContext navContext, GoRouter router) {
       // A session of another account blocks every Record entry point.
       if (ref.read(activeSessionForeignOwnerProvider)) return;
-      if (ref.read(activeSessionStatusProvider) != null) {
+      // With the GPS recorder on, the sheet stays openable during a session:
+      // its GPS row reads Open recording (S04-D UX8, S04-24 AC-6), so the
+      // shortcut opens the sheet and not a second start surface.
+      if (ref.read(activeSessionStatusProvider) != null &&
+          !ref.read(gpsRecorderEnabledProvider)) {
         openActiveSessionDestination(
             navContext, ref.read(activeSessionDestinationProvider));
         return;

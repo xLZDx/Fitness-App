@@ -4925,5 +4925,1043 @@
         "type": "int"
       }
     }
+  },
+  "gpsRowTitle": "Record a GPS activity",
+  "@gpsRowTitle": {
+    "description": "Record sheet row that opens the GPS recorder."
+  },
+  "gpsRowBlocked": "Finish your unfinished recording first",
+  "@gpsRowBlocked": {
+    "description": "Record sheet row subtitle while an unfinished recording exists."
+  },
+  "gpsRowNoGps": "This device has no GPS",
+  "@gpsRowNoGps": {
+    "description": "Record sheet row subtitle on a device without GPS."
+  },
+  "gpsRowGymRunning": "Finish the workout timer first",
+  "@gpsRowGymRunning": {
+    "description": "Record sheet row subtitle while a gym timer of the same account runs."
+  },
+  "gpsStartTitle": "Record an activity",
+  "@gpsStartTitle": {
+    "description": "Title of the start screen."
+  },
+  "gpsSportWalk": "Walk",
+  "@gpsSportWalk": {
+    "description": "Sport chip: walk."
+  },
+  "gpsSportRun": "Run",
+  "@gpsSportRun": {
+    "description": "Sport chip: run."
+  },
+  "gpsSportHike": "Hike",
+  "@gpsSportHike": {
+    "description": "Sport chip: hike."
+  },
+  "gpsSportRide": "Ride",
+  "@gpsSportRide": {
+    "description": "Sport chip: ride."
+  },
+  "gpsAutoPause": "Auto-pause",
+  "@gpsAutoPause": {
+    "description": "Auto-pause switch label."
+  },
+  "gpsAutoPauseHint": "Pauses when you stop moving.",
+  "@gpsAutoPauseHint": {
+    "description": "Auto-pause switch hint."
+  },
+  "gpsPrivacyLine": "Location is recorded only while you record. It stays on this phone and only you can see it.",
+  "@gpsPrivacyLine": {
+    "description": "DRAFT location wording (text version gpsConsentTextVersion), awaiting approval."
+  },
+  "gpsStartButton": "Start",
+  "@gpsStartButton": {
+    "description": "Start button."
+  },
+  "gpsPrePromptReason": "To record your route we need your location while you record.",
+  "@gpsPrePromptReason": {
+    "description": "DRAFT pre-prompt reason before the system location dialog."
+  },
+  "gpsContinue": "Continue",
+  "@gpsContinue": {
+    "description": "Pre-prompt continue button."
+  },
+  "gpsNotNow": "Not now",
+  "@gpsNotNow": {
+    "description": "Pre-prompt dismiss button."
+  },
+  "gpsPrePromptPrecise": "On the next screen choose \"Precise\" so the route is accurate.",
+  "@gpsPrePromptPrecise": {
+    "description": "DRAFT pre-prompt hint about precise location."
+  },
+  "gpsStarting": "Starting...",
+  "@gpsStarting": {
+    "description": "Busy label of Start until the first state change."
+  },
+  "gpsPreparingBody": "Getting ready. One moment.",
+  "@gpsPreparingBody": {
+    "description": "Body of the preparing panel (S04-34)."
+  },
+  "gpsCannotStartTitle": "Cannot start yet",
+  "@gpsCannotStartTitle": {
+    "description": "Title of the cannot-start panel (S04-34)."
+  },
+  "gpsCannotStartBody": "The recording storage did not open. Try again, or add the activity by hand.",
+  "@gpsCannotStartBody": {
+    "description": "Body of the cannot-start panel (S04-34)."
+  },
+  "gpsStartFailedTitle": "Recording did not start",
+  "@gpsStartFailedTitle": {
+    "description": "Title of the start-failed panel (S04-34)."
+  },
+  "gpsStartFailedBody": "Nothing was recorded. Try again, or add the activity by hand.",
+  "@gpsStartFailedBody": {
+    "description": "Body of the start-failed panel (S04-34)."
+  },
+  "gpsConsentOffTitle": "Location recording is switched off",
+  "@gpsConsentOffTitle": {
+    "description": "Title of the consent-withdrawn panel."
+  },
+  "gpsConsentOffBody": "You withdrew consent to record location. Turn it on in privacy settings to record.",
+  "@gpsConsentOffBody": {
+    "description": "Body of the consent-withdrawn panel."
+  },
+  "gpsRestrictedTitle": "Location is restricted",
+  "@gpsRestrictedTitle": {
+    "description": "Title of the restricted-permission panel."
+  },
+  "gpsRestrictedBody": "Location access is restricted on this phone (for example by parental controls or your organisation), so the app cannot ask for it. You can add the activity by hand.",
+  "@gpsRestrictedBody": {
+    "description": "Body of the restricted-permission panel."
+  },
+  "gpsOpenPrivacySettings": "Open privacy settings",
+  "@gpsOpenPrivacySettings": {
+    "description": "Button of the consent-withdrawn panel."
+  },
+  "gpsResumeModeTitle": "Resume your recording",
+  "@gpsResumeModeTitle": {
+    "description": "Title of the start screen in resume mode."
+  },
+  "gpsOpenRecording": "Open recording",
+  "@gpsOpenRecording": {
+    "description": "Record sheet action while a recording runs."
+  },
+  "gpsOpenWorkout": "Open workout",
+  "@gpsOpenWorkout": {
+    "description": "Action that opens the running gym workout."
+  },
+  "gpsDeniedOnceTitle": "Location is off",
+  "@gpsDeniedOnceTitle": {
+    "description": "Title of the denied-once panel."
+  },
+  "gpsDeniedOnceBody": "Without location we cannot record a route. You can try again or add the activity by hand.",
+  "@gpsDeniedOnceBody": {
+    "description": "Body of the denied-once panel."
+  },
+  "gpsDeniedForeverBody": "Location is blocked for this app. Allow it in system settings, or add the activity by hand.",
+  "@gpsDeniedForeverBody": {
+    "description": "Body of the permanently-denied panel."
+  },
+  "gpsApproxTitle": "Precise location is needed",
+  "@gpsApproxTitle": {
+    "description": "Title of the approximate-only panel."
+  },
+  "gpsApproxBody": "You allowed only approximate location. A route needs precise location to be accurate.",
+  "@gpsApproxBody": {
+    "description": "Body of the approximate-only panel."
+  },
+  "gpsServicesOffTitle": "Location services are off",
+  "@gpsServicesOffTitle": {
+    "description": "Title of the services-off panel."
+  },
+  "gpsServicesOffBody": "Turn on location in your phone settings to record.",
+  "@gpsServicesOffBody": {
+    "description": "Body of the services-off panel."
+  },
+  "gpsNoGpsBody": "This device has no GPS, so it cannot record a route. You can add activities by hand.",
+  "@gpsNoGpsBody": {
+    "description": "Body of the no-GPS panel."
+  },
+  "gpsBlockedBody": "You have an unfinished recording. Review it before starting a new one.",
+  "@gpsBlockedBody": {
+    "description": "Body of the unfinished-recording-blocks-start panel."
+  },
+  "gpsBatteryTooLow": "Battery is too low to record (3 % or less). Charge the phone first.",
+  "@gpsBatteryTooLow": {
+    "description": "Start refused because the battery is at or below 3 percent."
+  },
+  "gpsBatteryStartNote": "Battery is at {n} %. Recording saves and stops at 3 %.",
+  "@gpsBatteryStartNote": {
+    "description": "Note on the start screen when the battery is low; the percent sign has a space in Russian.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsTryAgain": "Try again",
+  "@gpsTryAgain": {
+    "description": "Button."
+  },
+  "gpsAddManually": "Add manually",
+  "@gpsAddManually": {
+    "description": "Button that opens manual entry."
+  },
+  "gpsOpenSettings": "Open settings",
+  "@gpsOpenSettings": {
+    "description": "Button that opens the system app settings."
+  },
+  "gpsOpenLocationSettings": "Open location settings",
+  "@gpsOpenLocationSettings": {
+    "description": "Button that opens the system location settings."
+  },
+  "gpsReview": "Review",
+  "@gpsReview": {
+    "description": "Button that opens the recovery offer."
+  },
+  "gpsNotifReason": "A notification shows while you record, so you can always see that location is in use.",
+  "@gpsNotifReason": {
+    "description": "Reason shown before the notification permission request."
+  },
+  "gpsNotifOffTitle": "Notifications are off",
+  "@gpsNotifOffTitle": {
+    "description": "Title of the notifications-off panel (variant A)."
+  },
+  "gpsNotifOffBody": "Recording needs its notification so you can always see that location is in use. Turn notifications on to record.",
+  "@gpsNotifOffBody": {
+    "description": "Body of the notifications-off panel (variant A)."
+  },
+  "gpsAllowNotif": "Allow notifications",
+  "@gpsAllowNotif": {
+    "description": "Button of the notifications-off panel."
+  },
+  "gpsRecordWithoutNotif": "Record without notification",
+  "@gpsRecordWithoutNotif": {
+    "description": "Variant B button, used only if the operator chooses variant B."
+  },
+  "gpsNotifOffBanner": "The notification is hidden. Recording shows only in this app.",
+  "@gpsNotifOffBanner": {
+    "description": "Variant B banner, used only if the operator chooses variant B."
+  },
+  "gpsBgAskTitle": "Allow location in the background?",
+  "@gpsBgAskTitle": {
+    "description": "Title of the background-location ask (only if the background branch is built)."
+  },
+  "gpsBgAskBody": "On the next screen choose \"Allow all the time\" so location keeps working if the app is closed. You can record without it.",
+  "@gpsBgAskBody": {
+    "description": "Body of the background-location ask."
+  },
+  "gpsBgDisclosure": "This app collects location data to record your route, also when the app is closed or not in use.",
+  "@gpsBgDisclosure": {
+    "description": "DRAFT Play prominent-disclosure text for background location (S04-38)."
+  },
+  "gpsHeadAcquiring": "Looking for GPS signal",
+  "@gpsHeadAcquiring": {
+    "description": "Headline: acquiring."
+  },
+  "gpsHeadRecording": "Recording",
+  "@gpsHeadRecording": {
+    "description": "Headline: recording."
+  },
+  "gpsHeadWeak": "Weak GPS signal",
+  "@gpsHeadWeak": {
+    "description": "Headline: weak signal."
+  },
+  "gpsHeadPaused": "Paused",
+  "@gpsHeadPaused": {
+    "description": "Headline: manual pause."
+  },
+  "gpsHeadAutoPaused": "Auto-paused",
+  "@gpsHeadAutoPaused": {
+    "description": "Headline: auto-pause."
+  },
+  "gpsAcquiringHint": "Go outside with a clear view of the sky. Time starts at the first signal.",
+  "@gpsAcquiringHint": {
+    "description": "Hint while acquiring."
+  },
+  "gpsAcquiringLong": "Still looking. Move to open sky. You can keep waiting or stop.",
+  "@gpsAcquiringLong": {
+    "description": "Hint after a long acquire."
+  },
+  "gpsWeakHint": "Distance is not counted until the signal improves.",
+  "@gpsWeakHint": {
+    "description": "Hint while the signal is weak."
+  },
+  "gpsPausedHint": "Time and distance are not counting. Location stays on.",
+  "@gpsPausedHint": {
+    "description": "Hint while paused; says that location stays on (S04-36 AC-3)."
+  },
+  "gpsPausedLongBanner": "Paused for 30 minutes. Location is still on. Resume or finish.",
+  "@gpsPausedLongBanner": {
+    "description": "Banner after 30 minutes of manual pause (S04-36 AC-2)."
+  },
+  "gpsWeakLongHint": "No signal for a while. Check that location is on in your phone settings.",
+  "@gpsWeakLongHint": {
+    "description": "Hint after a long weak-signal stretch."
+  },
+  "gpsPauseDisabledHint": "Nothing to pause yet.",
+  "@gpsPauseDisabledHint": {
+    "description": "Semantics hint of the disabled pause button."
+  },
+  "gpsStopHint": "Opens the options to finish or discard. Recording continues until you choose.",
+  "@gpsStopHint": {
+    "description": "Semantics hint of the Stop button."
+  },
+  "gpsBannerShortBattery": "Low battery",
+  "@gpsBannerShortBattery": {
+    "description": "Short banner label: battery."
+  },
+  "gpsBannerShortStorage": "Storage full",
+  "@gpsBannerShortStorage": {
+    "description": "Short banner label: storage."
+  },
+  "gpsBannerShortLongPause": "Long pause",
+  "@gpsBannerShortLongPause": {
+    "description": "Short banner label: long pause."
+  },
+  "gpsAutoPausedHint": "You stopped moving. Recording continues when you start again.",
+  "@gpsAutoPausedHint": {
+    "description": "Hint while auto-paused."
+  },
+  "gpsSignal": "GPS signal: {level, select, none{None} weak{Weak} good{Good} other{None}}",
+  "@gpsSignal": {
+    "description": "Signal indicator text; level is none, weak or good.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsChipOffline": "Offline: recording continues",
+  "@gpsChipOffline": {
+    "description": "Chip: offline."
+  },
+  "gpsChipBackground": "Recording continued while the app was closed",
+  "@gpsChipBackground": {
+    "description": "Chip: recording ran in the background."
+  },
+  "gpsDetails": "Details",
+  "@gpsDetails": {
+    "description": "Details toggle."
+  },
+  "gpsGymTimerRow": "Workout timer is running. Open",
+  "@gpsGymTimerRow": {
+    "description": "Row that opens the running gym timer."
+  },
+  "gpsPause": "Pause",
+  "@gpsPause": {
+    "description": "Button."
+  },
+  "gpsResume": "Resume",
+  "@gpsResume": {
+    "description": "Button."
+  },
+  "gpsStop": "Stop",
+  "@gpsStop": {
+    "description": "Button."
+  },
+  "gpsBackLabel": "Back to the app. Recording continues.",
+  "@gpsBackLabel": {
+    "description": "Semantics label of the back button on the recording screen."
+  },
+  "gpsStripRecording": "Recording",
+  "@gpsStripRecording": {
+    "description": "Dock strip word: recording."
+  },
+  "gpsStripAcquiring": "Looking for GPS",
+  "@gpsStripAcquiring": {
+    "description": "Dock strip word: acquiring."
+  },
+  "gpsStripWeak": "Weak GPS signal",
+  "@gpsStripWeak": {
+    "description": "Dock strip word: weak signal."
+  },
+  "gpsStripPausedManual": "Paused",
+  "@gpsStripPausedManual": {
+    "description": "Dock strip word: manual pause."
+  },
+  "gpsStripPausedAuto": "Auto-paused",
+  "@gpsStripPausedAuto": {
+    "description": "Dock strip word: auto-pause."
+  },
+  "gpsStripUnfinished": "Unfinished recording",
+  "@gpsStripUnfinished": {
+    "description": "Dock strip word: unfinished recording."
+  },
+  "gpsStripNotRestored": "Recording unreadable",
+  "@gpsStripNotRestored": {
+    "description": "Dock strip word: recovery failed."
+  },
+  "gpsStripRevoked": "Location off: choose",
+  "@gpsStripRevoked": {
+    "description": "Dock strip word: permission revoked (22 characters in Russian, within the strip budget)."
+  },
+  "gpsStripOpenHint": "Tap to open",
+  "@gpsStripOpenHint": {
+    "description": "Semantics hint of the dock strip."
+  },
+  "gpsRailSearch": "Search",
+  "@gpsRailSearch": {
+    "description": "Rail word: acquiring."
+  },
+  "gpsRailRec": "Rec",
+  "@gpsRailRec": {
+    "description": "Rail word: recording."
+  },
+  "gpsRailWeak": "Weak",
+  "@gpsRailWeak": {
+    "description": "Rail word: weak signal."
+  },
+  "gpsRailPaused": "Paused",
+  "@gpsRailPaused": {
+    "description": "Rail word: manual pause."
+  },
+  "gpsRailAuto": "Auto",
+  "@gpsRailAuto": {
+    "description": "Rail word: auto-pause."
+  },
+  "gpsRailWaiting": "Waiting",
+  "@gpsRailWaiting": {
+    "description": "Rail word: unfinished recording."
+  },
+  "gpsRailProblem": "Problem",
+  "@gpsRailProblem": {
+    "description": "Rail word: recovery failed."
+  },
+  "gpsRailChoose": "Choose",
+  "@gpsRailChoose": {
+    "description": "Rail word: permission revoked."
+  },
+  "gpsBatteryBanner": "Battery low ({n} %). GPS updates less often to save power. Recording saves and stops at 3 %.",
+  "@gpsBatteryBanner": {
+    "description": "Banner at battery critical.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsStorageBanner": "Phone storage is almost full. Recording will save and stop soon.",
+  "@gpsStorageBanner": {
+    "description": "Banner when storage writes fail."
+  },
+  "gpsStopTitle": "Stop recording?",
+  "@gpsStopTitle": {
+    "description": "Stop panel header."
+  },
+  "gpsStopStillRecording": "Still recording until you choose.",
+  "@gpsStopStillRecording": {
+    "description": "Stop panel line."
+  },
+  "gpsFinishSave": "Finish and save",
+  "@gpsFinishSave": {
+    "description": "Stop panel button."
+  },
+  "gpsKeepRecording": "Keep recording",
+  "@gpsKeepRecording": {
+    "description": "Stop panel button."
+  },
+  "gpsDiscard": "Discard",
+  "@gpsDiscard": {
+    "description": "Stop panel button."
+  },
+  "gpsDiscardConfirm": "Delete this recording? {distance} and {time} will be lost. This cannot be undone.",
+  "@gpsDiscardConfirm": {
+    "description": "Discard confirmation.",
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsDelete": "Delete",
+  "@gpsDelete": {
+    "description": "Button."
+  },
+  "gpsKeep": "Keep",
+  "@gpsKeep": {
+    "description": "Button."
+  },
+  "gpsNothingRecorded": "No GPS points were recorded, so nothing was saved.",
+  "@gpsNothingRecorded": {
+    "description": "Finish screen when the recording has no points."
+  },
+  "gpsSavedTitle": "Activity saved",
+  "@gpsSavedTitle": {
+    "description": "Finish screen title."
+  },
+  "gpsSavedOnDevice": "Saved on this phone. It is not shared.",
+  "@gpsSavedOnDevice": {
+    "description": "Saved-on-device notice (S04-28 AC-2); removed only by the sprint that enables upload."
+  },
+  "gpsReasonSampleCap": "Stopped: the recording reached its size limit",
+  "@gpsReasonSampleCap": {
+    "description": "Stop reason line: sample cap."
+  },
+  "gpsReasonConsent": "Stopped: consent was withdrawn",
+  "@gpsReasonConsent": {
+    "description": "Stop reason line: consent withdrawn."
+  },
+  "gpsReasonAccount": "Stopped: you were signed out",
+  "@gpsReasonAccount": {
+    "description": "Stop reason line: account change."
+  },
+  "gpsReasonBattery": "Stopped: battery reached 3 %",
+  "@gpsReasonBattery": {
+    "description": "Stop reason line: battery."
+  },
+  "gpsReasonRevoked": "Stopped: location access was turned off",
+  "@gpsReasonRevoked": {
+    "description": "Stop reason line: permission revoked."
+  },
+  "gpsReasonStorage": "Stopped: phone storage was full",
+  "@gpsReasonStorage": {
+    "description": "Stop reason line: storage."
+  },
+  "gpsNoData": "No data",
+  "@gpsNoData": {
+    "description": "Visible placeholder of an empty summary value."
+  },
+  "gpsNoDataSpoken": "No data available",
+  "@gpsNoDataSpoken": {
+    "description": "Spoken form of gpsNoData."
+  },
+  "gpsSaveFailed": "We could not save the activity. Your recording is kept on this phone.",
+  "@gpsSaveFailed": {
+    "description": "Hand-off failed message."
+  },
+  "gpsDone": "Done",
+  "@gpsDone": {
+    "description": "Button."
+  },
+  "gpsRestoringLoading": "Checking your recording",
+  "@gpsRestoringLoading": {
+    "description": "Loading text while restoring."
+  },
+  "gpsRecoveryTitle": "Unfinished recording",
+  "@gpsRecoveryTitle": {
+    "description": "Recovery offer title."
+  },
+  "gpsRecoveryBody": "The app closed while you were recording. Kept: {time}, {distance}.",
+  "@gpsRecoveryBody": {
+    "description": "Recovery offer body.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsRecoveryAge": "Last point recorded {ago} ago.",
+  "@gpsRecoveryAge": {
+    "description": "Recovery offer age line; ago is composed from the gpsUnit* keys.",
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsRecoveryCaveat": "The last few seconds may be missing.",
+  "@gpsRecoveryCaveat": {
+    "description": "Recovery offer caveat."
+  },
+  "gpsResumeGapNote": "The time between is not counted and no distance is added for it.",
+  "@gpsResumeGapNote": {
+    "description": "Note about the gap on resume (also named gpsResumeNote in the contract)."
+  },
+  "gpsResumeNeedsPermission": "Resuming needs location access.",
+  "@gpsResumeNeedsPermission": {
+    "description": "Resume refused without permission."
+  },
+  "gpsRecoveryResume": "Resume",
+  "@gpsRecoveryResume": {
+    "description": "Recovery offer button."
+  },
+  "gpsRecoverySaveFinished": "Save as finished",
+  "@gpsRecoverySaveFinished": {
+    "description": "Recovery offer button."
+  },
+  "gpsRecoveryFailedTitle": "This recording could not be read",
+  "@gpsRecoveryFailedTitle": {
+    "description": "Recovery-failed title."
+  },
+  "gpsRecoveryFailedBody": "The saved file is damaged. We did not change it. You can keep it on this phone or delete it.",
+  "@gpsRecoveryFailedBody": {
+    "description": "Recovery-failed body."
+  },
+  "gpsDeleteFile": "Delete file",
+  "@gpsDeleteFile": {
+    "description": "Button."
+  },
+  "gpsKeepFile": "Keep file",
+  "@gpsKeepFile": {
+    "description": "Button."
+  },
+  "gpsRevokedTitle": "Location access was turned off",
+  "@gpsRevokedTitle": {
+    "description": "Permission-revoked title."
+  },
+  "gpsRevokedBody": "Recording stopped. Saved up to {clock}: {time}, {distance}.",
+  "@gpsRevokedBody": {
+    "description": "Permission-revoked body.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsRevokedNotif": "Location was turned off. Your recording was saved up to {clock}. Tap to choose what to do.",
+  "@gpsRevokedNotif": {
+    "description": "Notification text when permission is revoked.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifTitle": "{sport, select, walk{Recording: Walk} run{Recording: Run} hike{Recording: Hike} ride{Recording: Ride} other{Recording}}",
+  "@gpsNotifTitle": {
+    "description": "Notification title (owner-visible version); sport is walk, run, hike or ride.",
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifAcquiring": "{sport, select, walk{Looking for GPS signal: Walk} run{Looking for GPS signal: Run} hike{Looking for GPS signal: Hike} ride{Looking for GPS signal: Ride} other{Looking for GPS signal}}",
+  "@gpsNotifAcquiring": {
+    "description": "Notification title while acquiring.",
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifBody": "{time} · {distance}",
+  "@gpsNotifBody": {
+    "description": "Notification text while recording; never coordinates.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifPaused": "Paused · {time}",
+  "@gpsNotifPaused": {
+    "description": "Notification text while paused.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifPrivate": "Recording in progress",
+  "@gpsNotifPrivate": {
+    "description": "Public (lock-screen) notification text: no sport, time, distance, coordinates or actions (S04-32)."
+  },
+  "gpsNotifPause": "Pause",
+  "@gpsNotifPause": {
+    "description": "Notification action."
+  },
+  "gpsNotifResume": "Resume",
+  "@gpsNotifResume": {
+    "description": "Notification action."
+  },
+  "gpsNotifFinish": "Finish...",
+  "@gpsNotifFinish": {
+    "description": "Notification action; opens the stop panel and stops nothing."
+  },
+  "gpsAutoStopNotif": "Recording stopped and saved: {reason, select, battery{battery reached 3 %} storage{phone storage was full} sampleCap{the recording reached its size limit} consent{consent was withdrawn} other{stopped}}. {time}, {distance}.",
+  "@gpsAutoStopNotif": {
+    "description": "Automatic-stop notification (S04-35); reason is battery, storage, sampleCap or consent.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifDetached": "Recording is not running. Tap to open the app.",
+  "@gpsNotifDetached": {
+    "description": "Notification text after the engine detached (S04-37)."
+  },
+  "gpsPzTitle": "Privacy zone",
+  "@gpsPzTitle": {
+    "description": "Settings row title."
+  },
+  "gpsPzValue": "Hidden around the start and end when you share: {n} m (default)",
+  "@gpsPzValue": {
+    "description": "Settings row value; the default radius in metres.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsPzNote": "The default applies when you share a route. It is not applied in this version, and nothing is shared.",
+  "@gpsPzNote": {
+    "description": "Settings row note."
+  },
+  "gpsConsentTitle": "Location recording consent",
+  "@gpsConsentTitle": {
+    "description": "Consent row title."
+  },
+  "gpsConsentOn": "Allowed (version {v})",
+  "@gpsConsentOn": {
+    "description": "Consent row state: granted.",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsConsentOff": "Withdrawn",
+  "@gpsConsentOff": {
+    "description": "Consent row state: withdrawn."
+  },
+  "gpsConsentWithdrawConfirm": "Withdraw consent? You will not be able to start a recording. A recording in progress will stop and be kept.",
+  "@gpsConsentWithdrawConfirm": {
+    "description": "Inline withdraw confirmation."
+  },
+  "gpsConsentNone": "Not given yet. You will be asked when you first start a recording.",
+  "@gpsConsentNone": {
+    "description": "Consent row state: never consented."
+  },
+  "gpsConsentDeleteData": "Delete my location data",
+  "@gpsConsentDeleteData": {
+    "description": "Link row to the existing data-deletion path."
+  },
+  "gpsConsentWithdraw": "Withdraw",
+  "@gpsConsentWithdraw": {
+    "description": "Button and switch label."
+  },
+  "gpsConsentGrant": "Allow again",
+  "@gpsConsentGrant": {
+    "description": "Button and switch label."
+  },
+  "gpsConsentLinks": "What is stored and who sees it",
+  "@gpsConsentLinks": {
+    "description": "Link row to the privacy statement."
+  },
+  "gpsConsentTextVersion": "draft-1",
+  "@gpsConsentTextVersion": {
+    "description": "Text version of the DRAFT location wording (gpsPrivacyLine, gpsPrePromptReason, gpsPrePromptPrecise, gpsSignOutNotice, gpsBgDisclosure). Not translated. Must equal kLocationConsentTextVersion in recording_defaults.dart (S04-21 AC-3); bump both when the wording changes."
+  },
+  "gpsDecisionInProgress": "Decision in progress. Try again in a moment.",
+  "@gpsDecisionInProgress": {
+    "description": "Shown while a keep/delete decision is being written."
+  },
+  "gpsAlreadyKept": "Already saved to your history. To remove it, delete the activity there.",
+  "@gpsAlreadyKept": {
+    "description": "Shown when Delete follows Keep."
+  },
+  "gpsAlreadyDeleted": "Already deleted.",
+  "@gpsAlreadyDeleted": {
+    "description": "Shown when Keep follows Delete."
+  },
+  "gpsSignOutNotice": "Your unfinished recording could not be saved to your history. It stays encrypted on this phone in your account for up to 30 days and only you can open it.",
+  "@gpsSignOutNotice": {
+    "description": "DRAFT sign-out sheet text when the recording stays on the device."
+  },
+  "gpsSignOutRecordingCount": "{n, plural, one{{n} unfinished recording} other{{n} unfinished recordings}}",
+  "@gpsSignOutRecordingCount": {
+    "description": "Sign-out warning sheet: how many recordings stay on the phone.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsGenericError": "Something went wrong. Your recording is kept on this phone.",
+  "@gpsGenericError": {
+    "description": "Content-free generic error text."
+  },
+  "gpsAnnAcquiring": "Looking for GPS signal",
+  "@gpsAnnAcquiring": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnStarted": "Recording started",
+  "@gpsAnnStarted": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnWeak": "Weak GPS signal. Distance is paused.",
+  "@gpsAnnWeak": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnSignalBack": "GPS signal is back",
+  "@gpsAnnSignalBack": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnPaused": "Recording paused",
+  "@gpsAnnPaused": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnResumed": "Recording resumed",
+  "@gpsAnnResumed": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnAutoPaused": "Auto-paused",
+  "@gpsAnnAutoPaused": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnAutoResumed": "Recording resumed after auto-pause",
+  "@gpsAnnAutoResumed": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnOffline": "Offline. Recording continues.",
+  "@gpsAnnOffline": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnBackgroundReturn": "Recording continued while the app was closed",
+  "@gpsAnnBackgroundReturn": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnBattery": "Battery low, {n} percent. Recording saves and stops at 3 percent.",
+  "@gpsAnnBattery": {
+    "description": "Announcement (assertive).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsAnnBatteryFinish": "Recording stopped and saved because the battery reached 3 percent",
+  "@gpsAnnBatteryFinish": {
+    "description": "Announcement (assertive)."
+  },
+  "gpsAnnRevoked": "Location access turned off. Recording saved up to {clock}.",
+  "@gpsAnnRevoked": {
+    "description": "Announcement (assertive).",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsAnnSaved": "Activity saved",
+  "@gpsAnnSaved": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnDiscarded": "Recording deleted",
+  "@gpsAnnDiscarded": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnUnfinished": "Unfinished recording found",
+  "@gpsAnnUnfinished": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnResumedRecovered": "Recording resumed. The gap is not counted.",
+  "@gpsAnnResumedRecovered": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnRecoveryFailed": "The recording could not be read",
+  "@gpsAnnRecoveryFailed": {
+    "description": "Announcement (assertive)."
+  },
+  "gpsAnnPausedLong": "Paused for 30 minutes. Location is still on.",
+  "@gpsAnnPausedLong": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnStarting": "Starting",
+  "@gpsAnnStarting": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnStartFailed": "Recording did not start",
+  "@gpsAnnStartFailed": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnRestricted": "Location is restricted on this phone. You can add the activity by hand.",
+  "@gpsAnnRestricted": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnAutoStopped": "Recording stopped and saved: {reason, select, battery{battery reached 3 %} storage{phone storage was full} sampleCap{the recording reached its size limit} consent{consent was withdrawn} other{stopped}}",
+  "@gpsAnnAutoStopped": {
+    "description": "Announcement (assertive); reason is battery, storage, sampleCap or consent.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsUnitHours": "{n, plural, one{{n} hour} other{{n} hours}}",
+  "@gpsUnitHours": {
+    "description": "Spoken hours.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitMinutes": "{n, plural, one{{n} minute} other{{n} minutes}}",
+  "@gpsUnitMinutes": {
+    "description": "Spoken minutes.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitSeconds": "{n, plural, one{{n} second} other{{n} seconds}}",
+  "@gpsUnitSeconds": {
+    "description": "Spoken seconds.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitDays": "{n, plural, one{{n} day} other{{n} days}}",
+  "@gpsUnitDays": {
+    "description": "Spoken days (recovery age).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitKm": "{d, plural, one{{d} kilometre} other{{d} kilometres}}",
+  "@gpsUnitKm": {
+    "description": "Spoken kilometres; d is a number.",
+    "placeholders": {
+      "d": {
+        "type": "num"
+      }
+    }
+  },
+  "gpsUnitMeters": "{d, plural, one{{d} metre} other{{d} metres}}",
+  "@gpsUnitMeters": {
+    "description": "Spoken metres; d is a number.",
+    "placeholders": {
+      "d": {
+        "type": "num"
+      }
+    }
+  },
+  "gpsUnitPercent": "{n, plural, one{{n} percent} other{{n} percent}}",
+  "@gpsUnitPercent": {
+    "description": "Spoken percent.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsPaceSpoken": "{p} per kilometre",
+  "@gpsPaceSpoken": {
+    "description": "Spoken pace.",
+    "placeholders": {
+      "p": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsSummarySpoken": "Moving time {time}, distance {distance}, pace {pace}",
+  "@gpsSummarySpoken": {
+    "description": "Spoken summary node.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      },
+      "pace": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsStripLabel": "{state}, {sport}, {minutes}",
+  "@gpsStripLabel": {
+    "description": "Semantics label of the dock strip.",
+    "placeholders": {
+      "state": {
+        "type": "String"
+      },
+      "sport": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsManualTitle": "Add an activity",
+  "@gpsManualTitle": {
+    "description": "Manual entry screen title."
+  },
+  "gpsManualSport": "Sport",
+  "@gpsManualSport": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualStart": "Start",
+  "@gpsManualStart": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualDuration": "Duration",
+  "@gpsManualDuration": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualHours": "Hours",
+  "@gpsManualHours": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualMinutes": "Minutes",
+  "@gpsManualMinutes": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualDistance": "Distance, km (optional)",
+  "@gpsManualDistance": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualErrDuration": "Enter a duration longer than zero",
+  "@gpsManualErrDuration": {
+    "description": "Manual entry inline error."
+  },
+  "gpsManualErrFuture": "The start time cannot be in the future",
+  "@gpsManualErrFuture": {
+    "description": "Manual entry inline error."
+  },
+  "gpsManualErrDistance": "Enter a distance between 0.01 and 1000 km",
+  "@gpsManualErrDistance": {
+    "description": "Manual entry inline error (bounds PROPOSED)."
+  },
+  "gpsManualSave": "Save",
+  "@gpsManualSave": {
+    "description": "Manual entry button."
+  },
+  "gpsManualCancel": "Cancel",
+  "@gpsManualCancel": {
+    "description": "Manual entry button."
+  },
+  "gpsManualDiscardChanges": "Discard changes?",
+  "@gpsManualDiscardChanges": {
+    "description": "Inline step when leaving a changed form."
+  },
+  "gpsManualSaved": "Activity added",
+  "@gpsManualSaved": {
+    "description": "Confirmation line on the origin screen."
+  },
+  "gpsManualEnteredByHand": "Entered by hand",
+  "@gpsManualEnteredByHand": {
+    "description": "Source label of a manual activity."
   }
 }

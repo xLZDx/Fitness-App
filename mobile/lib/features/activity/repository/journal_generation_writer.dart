@@ -35,6 +35,9 @@ class JournalPaths {
   String get journalDir => '$root/$kJournalDirName';
   String get sourcesDir => '$root/$kSourcesDirName';
   String get quarantineDir => '$root/$kQuarantineDirName';
+
+  /// S04 recording journal directory (fourth child of the scope root).
+  String get recordingDir => '$root/$kRecordingDirName';
   String get indexFile => '$journalDir/$kIndexFileName';
   String activityDir(String id) => '$journalDir/$id';
   String genName(int seq) => '$kGenerationPrefix$seq';

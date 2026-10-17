@@ -14,6 +14,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
@@ -39,6 +40,79 @@ class _Meta {
   final JournalRecord record;
 }
 
+/// Runs a pure top-level function away from the calling isolate (S04 design
+/// 2.5, ARCH7). Tests inject [InlineHeavyWorkRunner] and assert it was used.
+abstract class HeavyWorkRunner {
+  const HeavyWorkRunner();
+
+  Future<R> run<P, R>(R Function(P input) fn, P input);
+}
+
+/// Production runner: one short-lived worker isolate per call.
+class IsolateHeavyWorkRunner extends HeavyWorkRunner {
+  const IsolateHeavyWorkRunner();
+
+  @override
+  Future<R> run<P, R>(R Function(P input) fn, P input) =>
+      Isolate.run<R>(() => fn(input));
+}
+
+/// Synchronous runner for tests; counts its calls.
+class InlineHeavyWorkRunner extends HeavyWorkRunner {
+  InlineHeavyWorkRunner();
+
+  int calls = 0;
+
+  @override
+  Future<R> run<P, R>(R Function(P input) fn, P input) async {
+    calls++;
+    return fn(input);
+  }
+}
+
+/// Input of [sealStreamsInWorker]. Only sendable data: streams are plain value
+/// objects and the key is raw bytes (never logged). A null [key] still yields
+/// the plain hash, so an identical re-put stays a no-op without a key.
+class SealStreamsJob {
+  const SealStreamsJob(this.streams, this.key);
+
+  final List<SampleStream> streams;
+  final Uint8List? key;
+}
+
+/// Output of [sealStreamsInWorker]. [plainHash] is the SHA-256 of the PLAIN
+/// stream bytes, identical to the inline path; [sealed] is null without a key.
+class SealStreamsResult {
+  const SealStreamsResult(this.plainHash, this.sealed);
+
+  final String plainHash;
+  final Uint8List? sealed;
+}
+
+/// The CPU part of `put` (jsonEncode, gzip, SHA-256, AES-GCM) as one pure
+/// top-level function. The plaintext bytes and [SealStreamsResult.plainHash]
+/// are identical to the inline path; sealed bytes differ per call (fresh IV).
+SealStreamsResult sealStreamsInWorker(SealStreamsJob job) {
+  final plain = Uint8List.fromList(utf8.encode(jsonEncode({
+    'streams': [for (final s in job.streams) s.toJson()],
+  })));
+  final hash = sha256Hex(plain);
+  final key = job.key;
+  if (key == null) return SealStreamsResult(hash, null);
+  return SealStreamsResult(
+    hash,
+    AesGcmJournalCipher(key).seal(Uint8List.fromList(gzip.encode(plain))),
+  );
+}
+
+/// Compile-time switch of the recorder build (S04 design 2.4). The worker path
+/// of `put` is used only with it on; with it off the code path is exactly the
+/// S02 inline one.
+const bool kGpsRecorderBuild = bool.fromEnvironment('GPS_RECORDER');
+
+/// Sessions with fewer samples than this stay on the inline path (PROPOSED).
+const int kWorkerSealMinSamples = 2000;
+
 class FileActivityJournal implements ActivityJournal {
   FileActivityJournal({
     required String rootPath,
@@ -49,12 +123,20 @@ class FileActivityJournal implements ActivityJournal {
     this.onAcknowledged,
     Duration orphanMaxAge = const Duration(days: 7),
     int quarantineMaxCount = 20,
+    HeavyWorkRunner? heavyWorkRunner,
+    bool? gpsRecorderEnabled,
+    int workerMinSamples = kWorkerSealMinSamples,
   })  : _fs = fileSystem,
         _keys = keyProvider,
         _clock = clock ?? DateTime.now,
         _marker = backupMarker,
         _orphanMaxAge = orphanMaxAge,
         _quarantineMax = quarantineMaxCount,
+        _runner = heavyWorkRunner ??
+            ((gpsRecorderEnabled ?? kGpsRecorderBuild)
+                ? const IsolateHeavyWorkRunner()
+                : null),
+        _workerMinSamples = workerMinSamples,
         _paths = JournalPaths(rootPath) {
     _writer = JournalGenerationWriter(_fs, _paths);
   }
@@ -84,6 +166,10 @@ class FileActivityJournal implements ActivityJournal {
   final BackupExclusionMarker _marker;
   final Duration _orphanMaxAge;
   final int _quarantineMax;
+
+  /// Null (flag off) keeps the exact S02 inline `put`.
+  final HeavyWorkRunner? _runner;
+  final int _workerMinSamples;
   final JournalPaths _paths;
   late final JournalGenerationWriter _writer;
   final JournalMutex _mutex = JournalMutex();
@@ -192,13 +278,44 @@ class FileActivityJournal implements ActivityJournal {
       }
 
       final sessionMap = session.toJson()..remove('streams');
-      final plain = Uint8List.fromList(utf8.encode(jsonEncode({
-        'streams': [
-          for (final k in StreamKind.values)
-            if (session.streams[k] != null) session.streams[k]!.toJson(),
-        ],
-      })));
-      final plainHash = sha256Hex(plain);
+      // S04 design 2.5: with the recorder build on, a big session runs its CPU
+      // part (jsonEncode, gzip, SHA-256, AES-GCM) in a worker isolate. Flag off
+      // or a small session: exactly the S02 inline path below.
+      final runner = _runner;
+      final streamList = [
+        for (final k in StreamKind.values)
+          if (session.streams[k] != null) session.streams[k]!,
+      ];
+      final useWorker = runner != null &&
+          streamList.fold<int>(0, (a, s) => a + s.length) >= _workerMinSamples;
+      Uint8List? plain;
+      Uint8List? workerKey;
+      Object? workerKeyError;
+      SealStreamsResult? workerResult;
+      final String plainHash;
+      if (useWorker) {
+        try {
+          workerKey = await _keys.loadOrCreateKey();
+        } catch (e) {
+          workerKeyError = e;
+        }
+        try {
+          workerResult = await runner!.run<SealStreamsJob, SealStreamsResult>(
+              sealStreamsInWorker, SealStreamsJob(streamList, workerKey));
+        } catch (e) {
+          throw JournalIoException('stream sealing failed',
+              cause: e.runtimeType, pending: session);
+        }
+        plainHash = workerResult.plainHash;
+      } else {
+        plain = Uint8List.fromList(utf8.encode(jsonEncode({
+          'streams': [
+            for (final k in StreamKind.values)
+              if (session.streams[k] != null) session.streams[k]!.toJson(),
+          ],
+        })));
+        plainHash = sha256Hex(plain);
+      }
       final base = prev?.record.state ?? const JournalState();
       final state = base.copyWith(
         syncState: syncState ?? JournalSyncState.pending,
@@ -224,15 +341,25 @@ class FileActivityJournal implements ActivityJournal {
         );
       }
 
-      final Uint8List key;
-      try {
-        key = await _keys.loadOrCreateKey();
-      } catch (e) {
-        throw JournalKeyUnavailable('encryption key unavailable',
-            cause: e, pending: session);
+      final Uint8List sealed;
+      if (useWorker) {
+        final fromWorker = workerResult!.sealed;
+        if (fromWorker == null) {
+          throw JournalKeyUnavailable('encryption key unavailable',
+              cause: workerKeyError, pending: session);
+        }
+        sealed = fromWorker;
+      } else {
+        final Uint8List key;
+        try {
+          key = await _keys.loadOrCreateKey();
+        } catch (e) {
+          throw JournalKeyUnavailable('encryption key unavailable',
+              cause: e, pending: session);
+        }
+        sealed = AesGcmJournalCipher(key)
+            .seal(Uint8List.fromList(gzip.encode(plain!)));
       }
-      final sealed =
-          AesGcmJournalCipher(key).seal(Uint8List.fromList(gzip.encode(plain)));
       final meta = await _commit(
         session.id,
         sessionMap,
@@ -659,6 +786,9 @@ class FileActivityJournal implements ActivityJournal {
           await _fs.deleteDir(dir);
           await _fs.createDir(dir);
         }
+        // S04 design 4.7: the recording journal is a fourth child of the scope
+        // root; without this a wipe would leave undecryptable recordings.
+        await _fs.deleteDir(_paths.recordingDir);
         _meta.clear();
         _lostIds.clear();
         _unavailableIds.clear();

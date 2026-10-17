@@ -9,6 +9,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
@@ -18,8 +19,27 @@ import 'activity_journal.dart';
 import 'file_activity_journal.dart';
 import 'journal_cipher.dart';
 import 'journal_errors.dart';
-import 'journal_layout.dart' show kScopedJournalRootDirName;
+import 'journal_file_system.dart';
+import 'journal_layout.dart'
+    show
+        kScopedJournalRootDirName,
+        kTempSuffix,
+        kWipeMarkerWiped,
+        kWipeMarkerWiping,
+        kWipedMarkerSuffix;
 import 'journal_models.dart';
+
+/// The recording journal's side of the wipe ordering (S04 design 4.7, X2,
+/// ARCH3). Implemented by lane R5's recording journal and registered with
+/// [UidScopedActivityJournal.recordingGuard]. The repository layer never
+/// imports the recorder; with no guard the wipe is exactly the S02 one.
+abstract class RecordingScopeGuard {
+  /// Drains the in-flight append of the recording journal of [scopeId], closes
+  /// it and makes it refuse every further write for that scope (the same
+  /// wiped-uid refusal as `UidScopedActivityJournal._wipedUid`). Releases the
+  /// directory lock so the wipe can delete the files.
+  Future<void> closeScope(String scopeId);
+}
 
 /// The account-binding surface of a scoped journal.
 abstract class AccountScopedJournal {
@@ -68,10 +88,29 @@ ActivityJournalFactory fileActivityJournalFactory() => (scopeId) async {
 class UidScopedActivityJournal
     implements ActivityJournal, AccountScopedJournal, RecoveryReportSource {
   /// Cheap: no I/O until [bindUid].
-  UidScopedActivityJournal({ActivityJournalFactory? factory})
-      : _factory = factory ?? fileActivityJournalFactory();
+  UidScopedActivityJournal({
+    ActivityJournalFactory? factory,
+    JournalFileSystem fileSystem = const IoJournalFileSystem(),
+    Future<String> Function()? scopesRoot,
+    this.recordingGuard,
+  })  : _factory = factory ?? fileActivityJournalFactory(),
+        _fs = fileSystem,
+        _scopesRoot = scopesRoot ?? _defaultScopesRoot;
 
   final ActivityJournalFactory _factory;
+  final JournalFileSystem _fs;
+
+  /// `<app support>/activity_journal`: the directory that holds every scope
+  /// directory and the durable wiped markers beside them.
+  final Future<String> Function() _scopesRoot;
+
+  static Future<String> _defaultScopesRoot() async {
+    final dir = await getApplicationSupportDirectory();
+    return '${dir.path}${Platform.pathSeparator}$kScopedJournalRootDirName';
+  }
+
+  /// Set by the recorder wiring (lane R5). Null = no recording journal.
+  RecordingScopeGuard? recordingGuard;
   final JournalMutex _mutex = JournalMutex();
   ActivityJournal? _bound;
   String? _boundUid;
@@ -116,12 +155,24 @@ class UidScopedActivityJournal
           await _unbind();
           return false;
         }
+        // S04 design 4.7: the DURABLE wiped marker survives a relaunch. It
+        // refuses the wiped scope until an explicit unbind or another uid.
+        if (uid != null &&
+            uid != _boundUid &&
+            await _wipeMarkerExists(activityJournalScopeId(uid))) {
+          await _unbind();
+          return false;
+        }
         // An explicit unbind ends the wiped-uid refusal even when nothing is
         // bound (a wipe of the bound uid already left the journal unbound).
-        if (uid == null) _wipedUid = null;
+        if (uid == null) {
+          _wipedUid = null;
+          await _clearCompletedWipeMarkers();
+        }
         if (uid == _boundUid && (uid == null || _bound != null)) return true;
         // A different uid or an explicit unbind ends the wiped-uid refusal.
         _wipedUid = null;
+        if (uid != null) await _clearCompletedWipeMarkers();
         await _unbind();
         if (uid == null) return true;
         ActivityJournal? opened;
@@ -153,6 +204,20 @@ class UidScopedActivityJournal
         // retries the wipe and nothing, not even an already queued
         // `bindUid(uid)`, may re-create the scope or its key afterwards.
         _wipedUid = uid;
+        final scopeId = activityJournalScopeId(uid);
+        // Ordering (S04 design 4.7): (1) the recorder was shut down by the
+        // caller; (2) the recording journal drains and refuses writes, and the
+        // durable marker is written BEFORE any S02 wipe step; (3) only then the
+        // S02 wipe, which also deletes `recording/` and forgets the key.
+        final guard = recordingGuard;
+        if (guard != null) {
+          try {
+            await guard.closeScope(scopeId);
+          } catch (e) {
+            debugPrint('activity: recording close failed (${e.runtimeType})');
+          }
+        }
+        await _writeWipeMarker(scopeId, kWipeMarkerWiping);
         if (uid == _boundUid && _bound != null) {
           final current = _bound!;
           try {
@@ -160,9 +225,10 @@ class UidScopedActivityJournal
           } finally {
             await _unbind();
           }
+          await _writeWipeMarker(scopeId, kWipeMarkerWiped);
           return;
         }
-        final other = await _factory(activityJournalScopeId(uid));
+        final other = await _factory(scopeId);
         try {
           await other.start();
           await other.wipe();
@@ -171,7 +237,70 @@ class UidScopedActivityJournal
             await other.close();
           } catch (_) {}
         }
+        await _writeWipeMarker(scopeId, kWipeMarkerWiped);
       });
+
+  // ---- durable wiped marker (S04 design 4.7) --------------------------------
+
+  Future<String?> _markerPath(String scopeId) async {
+    try {
+      return '${await _scopesRoot()}/$scopeId$kWipedMarkerSuffix';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Content-free marker file: temp, fsync, rename. Best effort: a failure is
+  /// logged by type only and never blocks the wipe (the in-memory `_wipedUid`
+  /// still refuses the rebind in this process).
+  Future<void> _writeWipeMarker(String scopeId, String content) async {
+    final path = await _markerPath(scopeId);
+    if (path == null) return;
+    final tmp = '$path$kTempSuffix';
+    try {
+      await _fs.createDir(path.substring(0, path.lastIndexOf('/')));
+      final h = await _fs.openWrite(tmp);
+      try {
+        await h.write(Uint8List.fromList(utf8.encode(content)));
+        await h.flush();
+        await h.fsync();
+      } finally {
+        await h.close();
+      }
+      await _fs.rename(tmp, path);
+    } catch (e) {
+      debugPrint('activity: wipe marker not written (${e.runtimeType})');
+      try {
+        await _fs.deleteFile(tmp);
+      } catch (_) {}
+    }
+  }
+
+  Future<bool> _wipeMarkerExists(String scopeId) async {
+    final path = await _markerPath(scopeId);
+    if (path == null) return false;
+    try {
+      return await _fs.exists(path);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Removes the markers of COMPLETED wipes (content `wiped`); a marker of a
+  /// wipe that did not finish stays so the relaunch path retries it.
+  Future<void> _clearCompletedWipeMarkers() async {
+    try {
+      final root = await _scopesRoot();
+      for (final e in await _fs.list(root)) {
+        if (e.isDirectory || !e.name.endsWith(kWipedMarkerSuffix)) continue;
+        final path = '$root/${e.name}';
+        final text = utf8.decode(await _fs.readBytes(path), allowMalformed: true);
+        if (text == kWipeMarkerWiped) await _fs.deleteFile(path);
+      }
+    } catch (_) {
+      // Best effort; a stale completed marker is only refused again, never lost.
+    }
+  }
 
   ActivityJournal _writer() => _bound ?? (throw const JournalUnbound());
 

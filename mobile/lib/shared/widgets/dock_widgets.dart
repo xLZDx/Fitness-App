@@ -59,6 +59,12 @@ String _stateWord(AppLocalizations l10n, ActiveSessionState s) => switch (s) {
       ActiveSessionState.paused => l10n.stripPaused,
       ActiveSessionState.resting => l10n.stripResting,
       ActiveSessionState.restFinished => l10n.stripRestDone,
+      ActiveSessionState.acquiring => l10n.gpsStripAcquiring,
+      ActiveSessionState.recording => l10n.gpsStripRecording,
+      ActiveSessionState.weakSignal => l10n.gpsStripWeak,
+      ActiveSessionState.autoPaused => l10n.gpsStripPausedAuto,
+      ActiveSessionState.unfinished => l10n.gpsStripUnfinished,
+      ActiveSessionState.notRestored => l10n.gpsStripNotRestored,
     };
 
 String _railWord(AppLocalizations l10n, ActiveSessionState s) => switch (s) {
@@ -66,6 +72,12 @@ String _railWord(AppLocalizations l10n, ActiveSessionState s) => switch (s) {
       ActiveSessionState.paused => l10n.railStatePaused,
       ActiveSessionState.resting => l10n.railStateResting,
       ActiveSessionState.restFinished => l10n.railStateRestDone,
+      ActiveSessionState.acquiring => l10n.gpsRailSearch,
+      ActiveSessionState.recording => l10n.gpsRailRec,
+      ActiveSessionState.weakSignal => l10n.gpsRailWeak,
+      ActiveSessionState.autoPaused => l10n.gpsRailAuto,
+      ActiveSessionState.unfinished => l10n.gpsRailWaiting,
+      ActiveSessionState.notRestored => l10n.gpsRailProblem,
     };
 
 IconData _stateIcon(ActiveSessionState s) => switch (s) {
@@ -73,7 +85,31 @@ IconData _stateIcon(ActiveSessionState s) => switch (s) {
       ActiveSessionState.paused => Icons.pause_circle_outline_rounded,
       ActiveSessionState.resting => Icons.hourglass_bottom_rounded,
       ActiveSessionState.restFinished => Icons.check_circle_outline_rounded,
+      ActiveSessionState.acquiring => Icons.location_searching_rounded,
+      ActiveSessionState.recording => Icons.fiber_manual_record_rounded,
+      ActiveSessionState.weakSignal => Icons.signal_cellular_alt_1_bar_rounded,
+      ActiveSessionState.autoPaused => Icons.motion_photos_paused_rounded,
+      ActiveSessionState.unfinished => Icons.history_rounded,
+      ActiveSessionState.notRestored => Icons.error_outline_rounded,
     };
+
+/// The third strip line: the mode label for the gym timers; for a GPS
+/// recording the banner label, or nothing (S04-D SH-1, no mode label).
+String? _thirdLine(AppLocalizations l10n, ActiveSessionStatus status) {
+  if (status.kind != ActiveSessionKind.gpsRecording) {
+    return l10n.stripModeLabel(status.mode);
+  }
+  return switch (status.note) {
+    ActiveSessionNote.storageWriteFailing => l10n.gpsBannerShortStorage,
+    ActiveSessionNote.batteryCritical => l10n.gpsBannerShortBattery,
+    null => null,
+  };
+}
+
+String _openHint(AppLocalizations l10n, ActiveSessionStatus status) =>
+    status.kind == ActiveSessionKind.gpsRecording
+        ? l10n.gpsStripOpenHint
+        : l10n.stripResumeHint;
 
 /// `m:ss`, never negative.
 String _formatClock(Duration d) {
@@ -93,11 +129,13 @@ String _stripLabel(
   final List<String> parts = <String>[
     _stateWord(l10n, status.state),
     if (status.title.isNotEmpty) status.title,
-    l10n.stripModeLabel(status.mode),
+    if (_thirdLine(l10n, status) case final String third) third,
   ];
   final Duration? left = status.remainingAt(now);
   if (left != null && left.inMinutes > 0) {
-    parts.add(l10n.stripSpokenMinutes(left.inMinutes));
+    parts.add(status.countsUp
+        ? l10n.gpsUnitMinutes(left.inMinutes)
+        : l10n.stripSpokenMinutes(left.inMinutes));
   }
   return parts.join(', ');
 }
@@ -247,8 +285,8 @@ class _RecordingStripState extends ConsumerState<RecordingStrip>
                   style: HudType.panelTitle(t)),
               if (status.title.isNotEmpty)
                 Text(status.title, style: HudType.rowTitle(t)),
-              Text(l10n.stripModeLabel(status.mode),
-                  style: HudType.rowMeta(t)),
+              if (_thirdLine(l10n, status) case final String third)
+                Text(third, style: HudType.rowMeta(t)),
             ],
           );
 
@@ -266,7 +304,7 @@ class _RecordingStripState extends ConsumerState<RecordingStrip>
           }
         },
         semanticLabel: _stripLabel(l10n, status, now),
-        semanticHint: l10n.stripResumeHint,
+        semanticHint: _openHint(l10n, status),
         showFocusRing: true,
         hoverStyle: true,
         cursor: true,
@@ -450,7 +488,7 @@ class _CompactRunningState extends ConsumerState<_CompactRunning>
         }
       },
       semanticLabel: _stripLabel(l10n, status, now),
-      semanticHint: l10n.stripResumeHint,
+      semanticHint: _openHint(l10n, status),
       showFocusRing: true,
       hoverStyle: true,
       cursor: true,
