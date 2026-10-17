@@ -1,15 +1,15 @@
 /// App-root wiring of the unified-activity cloud path (S02 design 3.2, 6.2,
 /// 12.1). The journal is behind [ActivityFlags.journalEnabled]
-/// (`ACTIVITY_LOCAL_JOURNAL` or `ACTIVITY_CLOUD_STREAMS`, default OFF); every
-/// network or Firestore object is behind [ActivityFlags.cloudSync] alone. With
-/// both flags off no journal is opened, no provider is overridden, nothing
-/// syncs and the app behaves as it did before S02.
+/// (`ACTIVITY_LOCAL_JOURNAL`, default ON since S03, or `ACTIVITY_CLOUD_STREAMS`,
+/// default OFF); every network or Firestore object is behind
+/// [ActivityFlags.cloudSync] alone. With both flags off no journal is opened, no
+/// provider is overridden and nothing syncs.
 library;
 
-import 'dart:async' show Timer, unawaited;
+import 'dart:async' show Timer, scheduleMicrotask, unawaited;
 
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -108,24 +108,251 @@ final activityJournalBindingProvider = Provider<void>((ref) {
       return;
   }
   final timerFactory = ref.read(activityBindRetryTimerFactoryProvider);
-  // At most one pending retry; every new auth value (or disposal) bumps
-  // [generation], which cancels the pending retry and invalidates running ones.
-  Timer? pending;
-  var generation = 0;
-  var disposed = false;
+  // The status Notifier is only WRITTEN to; reading it builds a default state,
+  // so the provider needs no override to build.
+  final status = ref.read(activityBindStatusProvider.notifier);
+  final controller = _ActivityBindController(
+    scoped: scoped,
+    timerFactory: timerFactory,
+    // The uid this wiring may bind right now: null when no user, an empty uid
+    // or the account whose deletion is in progress (never re-create its scope).
+    bindableUid: () =>
+        _bindableUid(ref, ref.read(authUserProvider).valueOrNull?.uid),
+    publishBindingChange: () => _publishBindingChange(ref),
+    sink: status._publish,
+  );
+  status._attach(controller);
   ref.onDispose(() {
-    disposed = true;
-    generation++;
-    pending?.cancel();
-    pending = null;
+    status._detach(controller);
+    controller.dispose();
   });
 
-  // The uid this wiring may bind right now: null when no user, an empty uid or
-  // the account whose deletion is in progress (never re-create its scope).
-  String? bindableUid() =>
-      _bindableUid(ref, ref.read(authUserProvider).valueOrNull?.uid);
+  // While this provider builds, status writes are deferred to a microtask (a
+  // provider must not modify another provider during its initialisation).
+  controller.building = true;
+  ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
+    if (!next.hasValue) return;
+    controller.onAuthValue(_bindableUid(ref, next.value?.uid));
+  }, fireImmediately: true);
+  controller.building = false;
+});
 
-  Future<void> attempt(String? uid, int myGeneration, int retryIndex) async {
+/// Result of [ActivityBindStatusNotifier.retryNow] (design 2.1 item 3, D2).
+enum RetryResult {
+  /// An attempt began.
+  started,
+
+  /// An attempt was already in flight; no new attempt.
+  busy,
+
+  /// Bound, no journal wiring (`failedToOpen`) or no bindable uid.
+  notApplicable,
+}
+
+/// Phase of the journal bind of the current account.
+enum BindPhase {
+  /// No bindable uid (signed out, empty uid, account being deleted).
+  none,
+
+  /// First attempt or an armed automatic retry.
+  binding,
+
+  /// The journal of [ActivityBindStatus.uid] is bound.
+  bound,
+
+  /// The automatic retry schedule is exhausted.
+  gaveUp,
+}
+
+/// The published outcome of the journal bind (additive companion of
+/// [activityJournalBindingProvider]). [generation] counts auth values; a
+/// consumer compares [uid] and [generation] with its own to reject stale data.
+@immutable
+class ActivityBindStatus {
+  const ActivityBindStatus({
+    this.phase = BindPhase.none,
+    this.uid,
+    this.generation = 0,
+    this.bindBusy = false,
+    this.recoveredAbsentCount = 0,
+    this.streamLostCount = 0,
+  });
+
+  final BindPhase phase;
+
+  /// The uid the phase belongs to; null for [BindPhase.none].
+  final String? uid;
+  final int generation;
+
+  /// True while a bind attempt is in flight. It is NOT part of availability.
+  final bool bindBusy;
+
+  /// Activities dropped at the last successful recovery (no valid COMMIT).
+  final int recoveredAbsentCount;
+
+  /// Activities found `streamLost` at the last successful recovery.
+  final int streamLostCount;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ActivityBindStatus &&
+      other.phase == phase &&
+      other.uid == uid &&
+      other.generation == generation &&
+      other.bindBusy == bindBusy &&
+      other.recoveredAbsentCount == recoveredAbsentCount &&
+      other.streamLostCount == streamLostCount;
+
+  @override
+  int get hashCode => Object.hash(phase, uid, generation, bindBusy,
+      recoveredAbsentCount, streamLostCount);
+}
+
+/// Publishes [ActivityBindStatus] and exposes [retryNow] ("Try again"). The
+/// retry state machine itself lives in the controller of
+/// [activityJournalBindingProvider]; without it (no journal wiring) [retryNow]
+/// is [RetryResult.notApplicable].
+class ActivityBindStatusNotifier extends Notifier<ActivityBindStatus> {
+  _ActivityBindController? _controller;
+
+  @override
+  ActivityBindStatus build() => const ActivityBindStatus();
+
+  void _attach(_ActivityBindController c) => _controller = c;
+
+  void _detach(_ActivityBindController c) {
+    if (identical(_controller, c)) _controller = null;
+  }
+
+  void _publish(ActivityBindStatus s) {
+    if (state != s) state = s;
+  }
+
+  /// One manual attempt through the same state machine as the automatic
+  /// retries. Returns at once; the outcome arrives through [state].
+  Future<RetryResult> retryNow() async =>
+      _controller?.retryNow() ?? RetryResult.notApplicable;
+}
+
+final activityBindStatusProvider =
+    NotifierProvider<ActivityBindStatusNotifier, ActivityBindStatus>(
+        ActivityBindStatusNotifier.new);
+
+enum _AttemptSource { automatic, manual }
+
+enum _BindState { none, firstAttempt, waiting, gaveUp, bound }
+
+/// The bind retry state machine (design 2.1 item 3): Idle/Bound, Attempting,
+/// WaitingRetry and GaveUp. One machine serves automatic and manual attempts;
+/// at most one `bindUid` is in flight per generation (a generation is one auth
+/// value). The automatic schedule is [kActivityBindRetryDelays].
+class _ActivityBindController {
+  _ActivityBindController({
+    required this.scoped,
+    required this.timerFactory,
+    required this.bindableUid,
+    required this.publishBindingChange,
+    required this.sink,
+  });
+
+  final AccountScopedJournal scoped;
+  final ActivityBindRetryTimerFactory timerFactory;
+  final String? Function() bindableUid;
+  final void Function() publishBindingChange;
+  final void Function(ActivityBindStatus) sink;
+
+  /// True only while the owning provider builds: status writes are deferred.
+  bool building = false;
+
+  Timer? _pending;
+  int _generation = 0;
+  bool _disposed = false;
+  bool _flushScheduled = false;
+  bool _inFlight = false;
+  String? _uid;
+  _BindState _state = _BindState.none;
+
+  /// Index of the armed (or last fired) automatic delay; -1 before the first.
+  int _armedIndex = -1;
+  int _absent = 0;
+  int _lost = 0;
+
+  /// A new auth value: new generation, everything resets, the attempt for
+  /// [target] (null = unbind) starts at once. A generation is one distinct
+  /// uid, not one auth emission: a re-emission for the uid already being
+  /// bound (token refresh, profile reload) keeps the generation, the timer,
+  /// the backoff schedule and the phase. Only a uid change, a sign-out, or a
+  /// re-emission after `gaveUp` restarts.
+  void onAuthValue(String? target) {
+    if (target != null &&
+        target == _uid &&
+        _state != _BindState.none &&
+        _state != _BindState.gaveUp) {
+      return;
+    }
+    _generation++;
+    _cancelTimer();
+    _inFlight = false;
+    _armedIndex = -1;
+    _absent = 0;
+    _lost = 0;
+    _uid = target;
+    _state = target == null ? _BindState.none : _BindState.firstAttempt;
+    unawaited(_run(target, _generation, _AttemptSource.automatic));
+  }
+
+  void dispose() {
+    _disposed = true;
+    _generation++;
+    _cancelTimer();
+    _inFlight = false;
+  }
+
+  RetryResult retryNow() {
+    if (_disposed) return RetryResult.notApplicable;
+    final uid = _uid;
+    if (uid == null || bindableUid() != uid) return RetryResult.notApplicable;
+    if (_inFlight) return RetryResult.busy;
+    if (_state != _BindState.waiting && _state != _BindState.gaveUp) {
+      return RetryResult.notApplicable;
+    }
+    unawaited(_run(uid, _generation, _AttemptSource.manual));
+    return RetryResult.started;
+  }
+
+  void _cancelTimer() {
+    _pending?.cancel();
+    _pending = null;
+  }
+
+  void _arm(int index, int myGeneration) {
+    _pending?.cancel();
+    _armedIndex = index;
+    _pending = timerFactory(kActivityBindRetryDelays[index], () {
+      _pending = null;
+      if (myGeneration != _generation) return;
+      final uid = _uid;
+      // Not the account to bind right now (deletion in progress): keep the
+      // retry with the SAME index. A real uid change or sign-out bumps the
+      // generation and cancels this timer.
+      if (bindableUid() != uid) {
+        _arm(index, myGeneration);
+        return;
+      }
+      // A bind is in flight (a manual attempt): do nothing and re-arm with the
+      // SAME index, so the retry is neither lost nor consumed twice.
+      if (_inFlight) {
+        _arm(index, myGeneration);
+        return;
+      }
+      unawaited(_run(uid, myGeneration, _AttemptSource.automatic));
+    });
+  }
+
+  Future<void> _run(
+      String? uid, int myGeneration, _AttemptSource source) async {
+    _inFlight = true;
+    _emit();
     var bound = false;
     try {
       bound = await scoped.bindUid(uid);
@@ -134,34 +361,87 @@ final activityJournalBindingProvider = Provider<void>((ref) {
     }
     // Every completion (success, false, exception) changes what a live
     // subscriber must show: publish the binding change.
-    if (!disposed) _publishBindingChange(ref);
-    // Unbinding (null) and a successful bind are final. A failed bind of a uid
-    // would otherwise leave the journal unbound for the whole session.
-    if (bound || uid == null) return;
-    if (myGeneration != generation) return;
-    if (retryIndex >= kActivityBindRetryDelays.length) {
-      debugPrint('activity: journal bind gave up after $retryIndex retries');
+    if (!_disposed) publishBindingChange();
+    // A stale completion touches nothing else.
+    if (myGeneration != _generation) return;
+    _inFlight = false;
+    if (uid == null) {
+      // Unbinding is final, whatever the result.
+      _state = _BindState.none;
+      _emit();
       return;
     }
-    pending?.cancel();
-    pending = timerFactory(kActivityBindRetryDelays[retryIndex], () {
-      pending = null;
-      if (myGeneration != generation) return;
-      // Retry only while the same account is still the one to bind.
-      if (bindableUid() != uid) return;
-      unawaited(attempt(uid, myGeneration, retryIndex + 1));
-    });
+    if (bound) {
+      _cancelTimer();
+      _armedIndex = -1;
+      _state = _BindState.bound;
+      _readRecoveryCounts();
+      _emit();
+      return;
+    }
+    if (source == _AttemptSource.manual) {
+      // A failed manual attempt keeps the state, the timer and the index.
+      _emit();
+      return;
+    }
+    final next = _armedIndex + 1;
+    if (next >= kActivityBindRetryDelays.length) {
+      debugPrint('activity: journal bind gave up after $next retries');
+      _cancelTimer();
+      _state = _BindState.gaveUp;
+      _emit();
+      return;
+    }
+    _arm(next, myGeneration);
+    _state = _BindState.waiting;
+    _emit();
   }
 
-  ref.listen<AsyncValue<AuthUser?>>(authUserProvider, (previous, next) {
-    if (!next.hasValue) return;
-    generation++;
-    pending?.cancel();
-    pending = null;
-    final target = _bindableUid(ref, next.value?.uid);
-    unawaited(attempt(target, generation, 0));
-  }, fireImmediately: true);
-});
+  /// Counts of the last recovery, read AFTER a successful bind. A journal
+  /// without [RecoveryReportSource] yields zeros.
+  void _readRecoveryCounts() {
+    _absent = 0;
+    _lost = 0;
+    final Object sourceObject = scoped;
+    if (sourceObject is! RecoveryReportSource) return;
+    final RecoveryReportSource source = sourceObject;
+    try {
+      final report = source.lastRecoveryReport;
+      _absent = report?.absent.length ?? 0;
+      _lost = report?.streamLost.length ?? 0;
+    } catch (e) {
+      debugPrint('activity: recovery report unreadable (${e.runtimeType})');
+    }
+  }
+
+  ActivityBindStatus _snapshot() => ActivityBindStatus(
+        phase: switch (_state) {
+          _BindState.none => BindPhase.none,
+          _BindState.firstAttempt || _BindState.waiting => BindPhase.binding,
+          _BindState.gaveUp => BindPhase.gaveUp,
+          _BindState.bound => BindPhase.bound,
+        },
+        uid: _state == _BindState.none ? null : _uid,
+        generation: _generation,
+        bindBusy: _inFlight,
+        recoveredAbsentCount: _absent,
+        streamLostCount: _lost,
+      );
+
+  void _emit() {
+    if (_disposed) return;
+    if (building) {
+      if (_flushScheduled) return;
+      _flushScheduled = true;
+      scheduleMicrotask(() {
+        _flushScheduled = false;
+        if (!_disposed) sink(_snapshot());
+      });
+      return;
+    }
+    sink(_snapshot());
+  }
+}
 
 /// The uid a wiring may bind right now: null for no user, an empty uid or the
 /// account whose deletion is in progress (its scope is never re-created). The

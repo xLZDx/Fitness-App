@@ -10,6 +10,7 @@ library;
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
 
 import '../data/activity_session.dart';
@@ -17,6 +18,7 @@ import 'activity_journal.dart';
 import 'file_activity_journal.dart';
 import 'journal_cipher.dart';
 import 'journal_errors.dart';
+import 'journal_layout.dart' show kScopedJournalRootDirName;
 import 'journal_models.dart';
 
 /// The account-binding surface of a scoped journal.
@@ -35,6 +37,14 @@ abstract class AccountScopedJournal {
   Future<void> wipeForUid(String uid);
 }
 
+/// Optional read-only view of the recovery report of the last successful bind.
+/// Implemented by [UidScopedActivityJournal]; other journals (fakes) need not.
+abstract class RecoveryReportSource {
+  /// The report returned by `start()` of the currently bound journal, null
+  /// while unbound.
+  JournalRecoveryReport? get lastRecoveryReport;
+}
+
 /// Opens (not yet started) the journal of one account scope.
 typedef ActivityJournalFactory = Future<ActivityJournal> Function(
     String scopeId);
@@ -50,13 +60,13 @@ ActivityJournalFactory fileActivityJournalFactory() => (scopeId) async {
       final dir = await getApplicationSupportDirectory();
       final sep = Platform.pathSeparator;
       return FileActivityJournal(
-        rootPath: '${dir.path}${sep}activity_journal$sep$scopeId',
+        rootPath: '${dir.path}$sep$kScopedJournalRootDirName$sep$scopeId',
         keyProvider: SecureStorageJournalKeyProvider(scopeId: scopeId),
       );
     };
 
 class UidScopedActivityJournal
-    implements ActivityJournal, AccountScopedJournal {
+    implements ActivityJournal, AccountScopedJournal, RecoveryReportSource {
   /// Cheap: no I/O until [bindUid].
   UidScopedActivityJournal({ActivityJournalFactory? factory})
       : _factory = factory ?? fileActivityJournalFactory();
@@ -65,6 +75,10 @@ class UidScopedActivityJournal
   final JournalMutex _mutex = JournalMutex();
   ActivityJournal? _bound;
   String? _boundUid;
+  JournalRecoveryReport? _lastReport;
+
+  @override
+  JournalRecoveryReport? get lastRecoveryReport => _lastReport;
 
   /// The uid whose scope was wiped while it was the bound one (account
   /// deletion). [bindUid] refuses it until another uid (or null) is bound, so a
@@ -81,6 +95,7 @@ class UidScopedActivityJournal
     final current = _bound;
     _bound = null;
     _boundUid = null;
+    _lastReport = null;
     if (current != null) {
       try {
         await current.close();
@@ -112,11 +127,16 @@ class UidScopedActivityJournal
         ActivityJournal? opened;
         try {
           opened = await _factory(activityJournalScopeId(uid));
-          await opened.start();
+          final report = await opened.start();
           _bound = opened;
           _boundUid = uid;
+          _lastReport = report;
           return true;
-        } catch (_) {
+        } catch (e) {
+          // Fixed message and the exception TYPE only: never a message, path,
+          // key or uid, so a keystore error, a corrupt directory and a full
+          // disk stay distinguishable in telemetry.
+          debugPrint('activity: journal open failed (${e.runtimeType})');
           if (opened != null) {
             try {
               await opened.close();

@@ -72,10 +72,15 @@ void main() {
         contains('localJournal: true'));
   });
 
-  test('compileTime is OFF/OFF unless --dart-define\'d (default build)', () {
-    expect(ActivityFlags.compileTime.cloudSync, isFalse);
-    expect(ActivityFlags.compileTime.localJournal, isFalse);
-    expect(ActivityFlags.compileTime.journalEnabled, isFalse);
+  test('S03-0: compileTime has the local journal ON and the cloud OFF unless '
+      '--dart-define\'d (default build)', () {
+    expect(ActivityFlags.compileTime.localJournal, isTrue,
+        reason: 'the default build opens the local journal (S03-0)');
+    expect(ActivityFlags.compileTime.cloudSync, isFalse,
+        reason: 'the cloud stays an operator action');
+    expect(ActivityFlags.compileTime.journalEnabled, isTrue);
+    // The constructor defaults stay false: explicit values keep their meaning.
+    expect(const ActivityFlags().localJournal, isFalse);
   });
 
   test('activityFlagsProvider defaults to compileTime and can be overridden',

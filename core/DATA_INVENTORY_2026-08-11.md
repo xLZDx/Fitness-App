@@ -111,6 +111,7 @@ when the final sweep failed and the reconciler will finish the job.
 | `profile.sensitive.<uid>` | **health/injury blob**, JSON, plaintext | yes (exact key) | via profile, partially |
 | `profile.sensitive.corrupt.<uid>` | raw copy of an unreadable health blob (plaintext) | yes | no |
 | `training_context.v1.<uid>` | training-context answer | yes | no |
+| `activity.mode.v1.<uid>` | S03 mode state (per account, `modeStorageKeyFor` in `mobile/lib/features/modes/data/mode_store.dart`) | yes (prefix `activity.` and suffix `.<uid>`) | no |
 | `progress_photos.consent.v1.<uid>` | photo consent record | yes | no |
 | `progress_photos.scan_reminder.v1.<uid>` | scan reminder toggle | yes | no |
 | `progress_photos.key.v1` | pre-A2-sec install-wide AES key, base64, **not uid-scoped** (legacy; the current key is in the Keystore, see Files) | yes, only when the legacy owner marker is unset or this uid | no (correctly) |
@@ -150,6 +151,7 @@ preferences are not restored either.
 | Android Keystore entry `key.v2` (via `SecurePhotoKeyStore`) | the current AES key for photos and scans | yes (`SecurePhotoKeyStore.forget(uid)`, best-effort) | no (correctly) |
 | `<docs>/coach_recordings/<uid>/` | developer coach recordings: joint angles + timestamps only (debug and profile builds) | yes | no |
 | `<docs>/progress_photos/<uid>/scans/<id>.scan` | Guided body-scan record: photo ids and pose landmarks (body-shape data), one AES-GCM envelope per scan, **no plaintext index**; same key as the photos | yes (whole per-uid directory) | no |
+| `<support>/activity_journal/<scopeId>/{journal,sources,quarantine}` | local activity journal (routes, heart rate, laps), one scope per account; ON by default since S03-0 (`ACTIVITY_LOCAL_JOURNAL`, `activity_flags.dart`); `activity_journal` is excluded from Android backup and device transfer in `backup_rules.xml` and both sections of `data_extraction_rules.xml` (`domain="file"`) | yes (the account's scope, by `ActivityAwareLocalDataWipe`) | local export only |
 | `<temp>/` camera stills | **plaintext JPEG** of the shot just encrypted | **NO** (not in `local_data_wipe.dart`) | no |
 | `<docs>/offline_videos/` | cached exercise clips (catalogue content) | no | n/a |
 | `<docs>/<model asset path>` | ML model files unpacked by `AssetBootstrap` | no | n/a |

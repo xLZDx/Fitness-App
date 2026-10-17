@@ -169,7 +169,7 @@ describe("A7 getActivityStreamDownloadUrls with a derived expiry", () => {
     expect((await dl([ACT])).results[0]).toMatchObject({ status: "ok" });
     expect(w.bucket.signed).toHaveLength(1);
   });
-  test("classifyRow: fourth argument optional, never is never due, due stored is expired, other states unchanged", () => {
+  test("classifyRow: fourth argument optional, a null retention given directly to the pure classifier is never due (defensive; callers pass effectiveStreamRetentionDays, which never returns null now), due stored is expired, other states unchanged", () => {
     const row = { state: "stored", objectPath: streamPath(UID, ACT, "up_1") };
     expect(classifyRow(UID, ACT, false, row)).toMatchObject({ kind: "sign" });
     expect(classifyRow(UID, ACT, false, row, { startUtcMs: T0 - 5000 * DAY, retentionDays: null, nowMs: T0 })).toMatchObject({ kind: "sign" });

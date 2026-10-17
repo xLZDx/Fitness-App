@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
+import '../shell_layout.dart';
 import 'hud_surface.dart';
 
 /// A screen's scrollable body, inset and masked the way the handoff draws it.
@@ -50,19 +51,34 @@ class HudScreenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inside the shell the layout it publishes decides the foot clearance (bar:
+    // today's value plus the dock while shown; rail: inset + 24). Outside the
+    // shell (null) the behaviour is exactly the pre-S03 one.
+    final ShellLayout? layout = ShellLayout.maybeOf(context);
     final double bottom = reserveNavBar
-        ? bottomClearance(context)
+        ? (layout?.bottomClearance ?? bottomClearance(context))
         : MediaQuery.paddingOf(context).bottom + 18;
+    final double top = MediaQuery.paddingOf(context).top + topPadding;
 
-    return HudScrollFade(
-      child: ListView(
-        controller: controller,
-        padding: EdgeInsets.only(
-          top: MediaQuery.paddingOf(context).top + topPadding,
-          bottom: bottom,
-        ),
-        children: children,
-      ),
+    Widget list(double foot) => HudScrollFade(
+          child: ListView(
+            controller: controller,
+            padding: EdgeInsets.only(top: top, bottom: foot),
+            children: children,
+          ),
+        );
+
+    if (layout == null) return list(bottom);
+
+    // The dock appearing or leaving changes the clearance: animate it so the
+    // content does not jump (none when the user asked for reduced motion).
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: bottom),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      builder: (BuildContext _, double foot, Widget? __) => list(foot),
     );
   }
 }
@@ -236,7 +252,12 @@ class HudNavBar extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onSelect,
+    this.focusNodes,
   });
+
+  /// Optional caller-owned focus nodes, one per item (the shell keeps focus
+  /// across a rail/bar switch with them).
+  final List<FocusNode>? focusNodes;
 
   final List<HudNavItem> items;
 
@@ -281,6 +302,9 @@ class HudNavBar extends StatelessWidget {
                     active: t.textPrimary,
                     inactive: inactive,
                     dot: t.accent,
+                    focusNode: (focusNodes != null && i < focusNodes!.length)
+                        ? focusNodes![i]
+                        : null,
                     onTap: () => onSelect(i),
                   ),
                 ),
@@ -300,8 +324,10 @@ class _NavTab extends StatelessWidget {
     required this.inactive,
     required this.dot,
     required this.onTap,
+    this.focusNode,
   });
 
+  final FocusNode? focusNode;
   final HudNavItem item;
   final bool selected;
   final Color active;
@@ -326,6 +352,7 @@ class _NavTab extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: HudTokens.minTapTarget),
         child: InkResponse(
+          focusNode: focusNode,
           onTap: onTap,
           radius: 40,
           containedInkWell: true,

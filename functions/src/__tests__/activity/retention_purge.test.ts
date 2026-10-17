@@ -54,16 +54,17 @@ beforeEach(() => {
 afterEach(() => releaseClock());
 
 describe("F15 purge decision uses the DERIVED expiry (boundaries)", () => {
-  test("due at now and now-1ms is purged, now+1ms is not, summary survives, other user purged, never is not purged", async () => {
+  test("due at now and now-1ms is purged, now+1ms is not, summary survives, other user purged, a stored null is the 730 day default (not 'never')", async () => {
     seedSettings(UID, 90);
     seedSettings(UID_B, 90);
-    const ids = { eq: actId(1), before: actId(2), after: actId(3), never: actId(4), other: actId(5) };
+    const ids = { eq: actId(1), before: actId(2), after: actId(3), never: actId(4), other: actId(5), nullOld: actId(6) };
     const pEq = seedStream(UID, ids.eq, { startMs: T0 - 90 * DAY });
     const pBefore = seedStream(UID, ids.before, { startMs: T0 - 90 * DAY - 1 });
     const pAfter = seedStream(UID, ids.after, { startMs: T0 - 90 * DAY + 1 });
     seedStream(UID_B, ids.other, { startMs: T0 - 91 * DAY });
     seedSettings("uid_never", null);
-    const pNever = seedStream("uid_never", ids.never, { startMs: T0 - 900 * DAY });
+    const pNever = seedStream("uid_never", ids.never, { startMs: T0 - 729 * DAY });
+    const pNullOld = seedStream("uid_never", ids.nullOld, { startMs: T0 - 900 * DAY });
 
     const r = await runActivityStreamPurge(deps(), limits());
 
@@ -76,11 +77,14 @@ describe("F15 purge decision uses the DERIVED expiry (boundaries)", () => {
     expect(w.bucket.objects.has(pBefore)).toBe(false);
     expect(w.bucket.objects.has(pAfter)).toBe(true);
     expect(w.bucket.objects.has(pNever)).toBe(true);
+    // a stored null no longer means "never": the 900 day old stream is purged under the 730 day default
+    expect(rowOf("uid_never", ids.nullOld).state).toBe("expired");
+    expect(w.bucket.objects.has(pNullOld)).toBe(false);
     for (const id of [ids.eq, ids.before, ids.after]) expect(store.has(sumPath(UID, id))).toBe(true);
-    expect(r.purged).toBe(3);
+    expect(r.purged).toBe(4);
     // the not-due row got its hint rewritten to the derived value (the hint can only ever follow the derivation)
     expect(rowOf(UID, ids.after).expiresAt.toMillis()).toBe(T0 + 1);
-    expect(rowOf("uid_never", ids.never).expiresAt).toBeNull();
+    expect(rowOf("uid_never", ids.never).expiresAt.toMillis()).toBe(T0 + 1 * DAY);
   });
 });
 

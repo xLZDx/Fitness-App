@@ -32,9 +32,12 @@
   (wrapped cipher keys). Wrapped keys restored without the original Keystore
   entry cannot be unwrapped, so they must not travel.
 
-  The activity journal (S02-02, GPS-PRIV-083) is excluded as well: `journal`,
-  `sources` and `quarantine` directly under `getFilesDir()` (the app support
-  directory, `domain="file"`). They hold routes, heart rate and laps; the
+  The activity journal (S02-02, GPS-PRIV-083) is excluded as well:
+  `activity_journal` (the production per-account tree
+  `<support>/activity_journal/<scopeId>`; excluding the directory excludes every
+  scope beneath it) plus the legacy `journal`, `sources` and `quarantine`, all
+  directly under `getFilesDir()` (the app support directory,
+  `domain="file"`). They hold routes, heart rate and laps; the
   stream key lives in the excluded secure-storage files, so a restored copy
   would be undecryptable anyway. The names come from `journal_layout.dart`
   (`kActivityBackupExcludedDirs`); keep both files and that constant in step.
@@ -50,4 +53,5 @@
     <exclude domain="file" path="journal" />
     <exclude domain="file" path="sources" />
     <exclude domain="file" path="quarantine" />
+    <exclude domain="file" path="activity_journal" />
 </full-backup-content>

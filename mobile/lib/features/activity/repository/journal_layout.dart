@@ -1,12 +1,23 @@
 /// Names of the on-disk layout of the local journal (S02 design 3.4) and the
 /// backup-exclusion constants derived from them (GPS-PRIV-083).
 ///
-/// Everything lives under the app SUPPORT directory (Android `getFilesDir()`,
-/// which is `domain="file"` in the backup XML files; the photo store uses the
-/// documents directory `app_flutter` instead, see `backup_rules.xml`).
+/// The production journal tree lives under the app SUPPORT directory (Android
+/// `getFilesDir()`, which is `domain="file"` in the backup XML files; the photo
+/// store uses the documents directory `app_flutter` instead, see
+/// `backup_rules.xml`), inside the per-account scoped root
+/// `<support>/activity_journal/<scopeId>` (see `fileActivityJournalFactory`).
+/// The directories below (`journal`, `sources`, `quarantine`) are the children
+/// of that scope root, or of the support directory itself for
+/// `FileActivityJournal.openDefault`. Excluding [kScopedJournalRootDirName]
+/// excludes every scope id beneath it.
 library;
 
-/// Top-level directories under the app support directory.
+/// The scoped root directory directly under the app support directory; each
+/// account's journal is `<support>/activity_journal/<scopeId>`. Used by
+/// `fileActivityJournalFactory` and listed in [kActivityBackupExcludedDirs].
+const String kScopedJournalRootDirName = 'activity_journal';
+
+/// Top-level directories of a journal root.
 const String kJournalDirName = 'journal';
 const String kSourcesDirName = 'sources';
 const String kQuarantineDirName = 'quarantine';
@@ -22,13 +33,16 @@ const String kTempSuffix = '.tmp';
 /// Generation directory name prefix: `g<seq>`.
 const String kGenerationPrefix = 'g';
 
-/// The directories that hold activity data and must never be backed up or
-/// transferred. One list drives the Android XML files, the checker and the iOS
-/// marking.
+/// The directories directly under the app support directory that hold activity
+/// data and must never be backed up or transferred. One list drives the Android
+/// XML files, the checker and the iOS marking. The three legacy names cover
+/// `FileActivityJournal.openDefault`; [kScopedJournalRootDirName] covers the
+/// production per-account tree.
 const List<String> kActivityBackupExcludedDirs = [
   kJournalDirName,
   kSourcesDirName,
   kQuarantineDirName,
+  kScopedJournalRootDirName,
 ];
 
 /// Android `<exclude domain=... path=.../>` entries for the journal, as

@@ -80,8 +80,19 @@ static documents, which is not a trade worth making.
 #: files and would still render an ISO date to a reader — one key each says
 #: the same thing in the form each language actually writes it.
 STAMP = {
-    "en": "Last updated 21 August 2026",
-    "ru": "Обновлено 21 августа 2026",
+    "en": "Last updated 15 October 2026",
+    "ru": "Обновлено 15 октября 2026",
+}
+
+#: Raw HTML placed right after the date stamp of a page, per document. Used for
+#: a reviewer-facing comment that must not show in the app text. Empty for most.
+PAGE_NOTES = {
+    "privacy": (
+        "\n    <!-- DRAFT wording for the body scan, weight, nutrition plan and "
+        "food diary sections: pending operator and professional review "
+        "(DECISION_LOG Q-10). Do not enable BODY_SCAN or FOOD_AI in production "
+        "before sign-off. -->"
+    ),
 }
 
 # --------------------------------------------------------------------------
@@ -108,6 +119,10 @@ below.
 - You can export everything we hold, and delete it permanently, from inside \
 the app. A report already forwarded to a gym is outside our systems by then, \
 so deleting your account does not recall it.
+- Body scan photos are processed on your phone first; a cloud copy exists \
+only with your consent, has the face blurred on the phone before upload, and \
+by default is deleted right after analysis (always within 48 hours). Meal \
+photos are not stored.
 
 ## What is collected
 
@@ -168,13 +183,49 @@ that other people may be in the frame.
 Progress photos are different: they stay on your phone. There is no \
 server-side storage for them at all.
 
-**Body scan.** The guided body scan takes photos with the camera and computes \
-pose landmarks (body-point positions) from them on your phone. The photos and \
-the landmarks stay on your phone, encrypted with a key that does not leave it. \
-They are never uploaded, and never used to calculate body measurements or \
-weight. The scan is not available to people under 18, and it needs your \
-consent. If you turn the scan reminder on, the app schedules a local \
-notification on your phone every two weeks; it is not sent from a server.
+**Body scan.** The guided body scan takes photos with the camera. The \
+provisional result (pose landmarks and a rough estimate) is computed on your \
+phone, and the photos stay on your phone, encrypted with a key that does not \
+leave it. Cloud analysis is a separate, optional step: it happens only if an \
+analysis provider is switched on in your version of the app, you have given \
+consent on a dedicated screen that names the provider, and you start it. \
+Before any photo leaves your phone, the face area is blurred on the phone \
+and the picture's metadata is removed. The scan is not available to people \
+under 18: that limit uses the birth year in your profile and is checked in \
+the app and again on the server. The scan needs your consent. If you turn \
+the scan reminder on, the app schedules a local notification on your phone \
+every two weeks; it is not sent from a server.
+
+**Cloud copies of scan photos.** A photo sent for cloud analysis is kept in \
+a private storage bucket in the European Union that only this app's server \
+code can read. By default it is deleted right after the analysis; if that \
+deletion fails it is retried and removed within 48 hours. In the scan \
+privacy screen you can instead keep photos for 30, 90 or 365 days, delete \
+one scan's photos with a single tap and a confirmation, delete all cloud \
+photos or all scans at once, and apply a shorter retention to photos already \
+stored. The scan result (measurements, date and the name of the provider) is \
+stored in your account until you delete it.
+
+**Weight, nutrition plan and food diary.** If you log your weight, save a \
+nutrition plan or keep a food diary, that data -- weights with dates, plan \
+targets and weekly review notes, diary entries and foods you saved -- is \
+stored in your account on this app's servers. Body measurements are \
+sensitive personal data, so before the first such entry the app shows a \
+short notice and asks you to acknowledge it once; until then nothing is \
+sent. Allergies, foods you exclude and your answer about whether nutrition \
+guidance suits you stay on your phone, like the other health answers. If the \
+app finds that nutrition guidance is not appropriate for you, it shows a \
+note to talk to a professional and stores no plan.
+
+**Meal and label photos.** If AI food recognition is switched on, a photo of \
+a meal or of a nutrition label, or the text you type to describe a meal, is \
+sent to Google's Vertex AI to recognise the food. This app does not store \
+the photo: only the entry you save in your diary is kept, and any small \
+thumbnail stays on your phone. Nutrition facts for barcodes and searches \
+come from the public Open Food Facts and USDA FoodData Central databases; \
+only the barcode or the search words are sent, and a shared cache keeps \
+those public answers without any personal data. If food recognition is not \
+available in your version of the app, none of this happens.
 
 **Voice and microphone.** The app does not use the microphone and does not \
 record or send any audio. The form coach's spoken cues are generated by your \
@@ -199,12 +250,34 @@ plugin requests together with workout writing; the app never reads or \
 writes distance, and never reads total calories. The app does not ask for \
 Android's activity-recognition permission.
 
-Those readings never leave your phone. They are held in memory while the app \
-is open, shown to you on the home screen, and used to judge whether to suggest \
-an easier week. They are not written to this app's servers, not included in \
-your account, and not sent to any AI model. Nothing is read until you grant \
-the permission, and revoking it in Health Connect or Apple Health stops the \
-reading immediately -- the app keeps working without it.
+Apart from the activity summaries described under "Activity summaries in \
+your account" below, those readings never leave your phone. They are held in \
+memory while the app is open, shown to you on the home screen, and used to \
+judge whether to suggest an easier week. They are not written to this app's \
+servers, not included in your account, and not sent to any AI model. Nothing \
+is read until you grant the permission, and revoking it in Health Connect or \
+Apple Health stops the reading immediately -- the app keeps working without \
+it.
+
+**Activity routes (GPS) in the cloud.** Only if you switch on cloud activity \
+streams in the settings, the route of a recorded activity (GPS position, \
+altitude and speed over time) is uploaded to a private storage bucket in the \
+European Union that only this app's server code can read. It is off by \
+default, you can switch it off again, and you can delete one activity or all \
+stored routes at any time. Stored routes expire automatically after the \
+expiry period you choose (90 days, 1 year or 2 years; the default is \
+2 years), counted from the date of the activity. Heart rate stays on the \
+device: heart rate values are never uploaded. Routes are deleted when you \
+delete your account.
+
+**Activity summaries in your account.** When summary sync is on, a short \
+summary of each activity (sport, start and end time, duration, distance, \
+power, cadence, and steps and calories, including steps and active calories \
+that came from Health Connect or Apple Health) is stored in your account so \
+your activities appear on all your devices. There is no separate switch for \
+this; it follows the activity sync of the app. Heart rate values and routes \
+are not part of the summary. Summaries are deleted when you delete the \
+activity or your account.
 
 **Crash reports.** When the app crashes, Firebase Crashlytics receives the \
 device model, the OS version and the stack trace. It is switched off in \
@@ -214,9 +287,12 @@ development builds.
 
 - Your data is not sold, and never has been.
 - Health answers are never sent to any AI model. The in-app coach receives \
-only the name of the machine you asked about and your language -- nothing else.
+only the name of the machine you asked about and your language -- nothing \
+else.
 - No advertising identifier is collected, and no third-party analytics or \
 attribution SDK is built into the app.
+- No analytics SDK receives your photos or your body measurements (weights, \
+scan results); crash reports carry no photos and no body values.
 
 ## Where it is stored, and who else touches it
 
@@ -225,12 +301,13 @@ the server code that reads it runs in europe-west1. Firestore security rules \
 restrict every document under your account to you alone.
 
 Two processors handle everything else: Google (Firebase Authentication, \
-Firestore, Crashlytics, App Check, and the Gemini model) and Stripe \
-(payments). A gym you name in an equipment report can be a third recipient of \
-that report's contents, but only that report, and only when that specific \
-gym has registered its own maintenance channel -- see "Equipment reports" \
-above. Unlike Google and Stripe, a gym does not act on this app's \
-instructions and nothing here governs what it does with what it receives.
+Firestore, Cloud Storage for scan photos, Crashlytics, App Check, and the \
+Gemini and Vertex AI models) and Stripe (payments). A gym you name in an \
+equipment report can be a third recipient of that report's contents, but \
+only that report, and only when that specific gym has registered its own \
+maintenance channel -- see "Equipment reports" above. Unlike Google and \
+Stripe, a gym does not act on this app's instructions and nothing here \
+governs what it does with what it receives.
 
 ## The supporter wall is public, and only by your own request
 
@@ -242,7 +319,11 @@ you is ever published.
 ## How long it is kept
 
 Your data is kept while your account exists, and goes when you delete it. \
-There is no separate retention timer and no archive copy kept afterwards.
+Scan photos in cloud storage are the exception: they follow the retention \
+you choose (default: deleted right after analysis, always within 48 hours), \
+and a 400-day storage rule exists only as a backstop. Weights, plan, diary \
+and scan results are kept until you delete them or delete the account. There \
+is no archive copy kept afterwards.
 
 Two kinds of record are shared with someone else, and those are kept with your \
 identifier removed rather than deleted: a coach booking, which is also the \
@@ -262,12 +343,19 @@ health answers, your whole workout history, your schedule and the details of \
 every progress photo, in a machine-readable file. The one thing it does not \
 carry is the progress-photo images themselves: they are encrypted with a key \
 that does not leave your device, so the export lists each photo and says so \
-in the file rather than shipping bytes nothing could open.
+in the file rather than shipping bytes nothing could open. The file also \
+carries your weights, nutrition plan and reviews, food diary, saved foods, \
+scan records and settings, and the list of foods you exclude from your \
+phone. Cloud scan photos are not embedded and no download links are written \
+into the file; the app can create one-hour download links for them on \
+request.
 
 **Deletion** -- Settings, then "Delete account". This cancels any active \
 subscription, erases every document under your account, and then deletes the \
 account itself. It is irreversible: afterwards there is nothing left to \
-restore, including for us.
+restore, including for us. It also deletes any scan photos in cloud storage, \
+and the app removes the data it keeps on your phone for that account \
+(photos, scan files, meal thumbnails and the per-account settings).
 
 If you are in the EU, the UK, or anywhere with comparable law, you can also \
 object to processing, ask for a correction, and complain to your data \
@@ -301,16 +389,20 @@ Fitness App делает и поддерживает один независим
 
 - Ответы о здоровье нужны, чтобы убирать из плана упражнения, которые \
 конфликтуют с вашими травмами. Их не продают и не отправляют в ИИ-модель.
-- Фотографии тренажёров, которые вы делаете, отправляются в Google Gemini для \
-распознавания. В кадр могут попасть посторонние люди.
+- Фотографии тренажёров, которые вы делаете, отправляются в Google Gemini \
+для распознавания. В кадр могут попасть посторонние люди.
 - То, что храним мы, лежит в дата-центрах Google Cloud на территории \
 Европейского союза. Единственное, что по замыслу покидает наши системы -- \
 сообщение о неисправном оборудовании, если вы отправили его в зал с \
 собственным каналом техобслуживания -- см. «Сообщения о неисправном \
 оборудовании» ниже.
 - Всё, что храним мы, можно выгрузить и можно безвозвратно удалить прямо из \
-приложения. Сообщение, уже переданное залу, к этому моменту вне наших систем, \
-поэтому удаление аккаунта его не отзывает.
+приложения. Сообщение, уже переданное залу, к этому моменту вне наших \
+систем, поэтому удаление аккаунта его не отзывает.
+- Фотографии сканирования тела сначала обрабатываются на телефоне; облачная \
+копия появляется только с вашего согласия, лицо на ней размывается на \
+телефоне до загрузки, а по умолчанию она удаляется сразу после анализа (в \
+любом случае в течение 48 часов). Фотографии еды не хранятся.
 
 ## Какие данные собираются
 
@@ -372,13 +464,54 @@ Fitness App делает и поддерживает один независим
 С фотографиями прогресса иначе: они остаются на телефоне. Серверного \
 хранилища для них нет вообще.
 
-**Сканирование тела.** Пошаговое сканирование делает фотографии камерой и \
-вычисляет по ним ключевые точки позы прямо на телефоне. Фотографии и точки \
-остаются на телефоне в зашифрованном виде, ключ не покидает устройство. Они \
-никогда не загружаются и не используются для расчёта размеров тела или веса. \
-Сканирование недоступно лицам младше 18 лет и требует вашего согласия. Если \
-включить напоминание о сканировании, приложение раз в две недели ставит \
-локальное уведомление на телефоне; с сервера оно не приходит.
+**Сканирование тела.** Пошаговое сканирование делает фотографии камерой. \
+Предварительный результат (ключевые точки позы и грубая оценка) вычисляется \
+на телефоне, а фотографии остаются на телефоне в зашифрованном виде, ключ не \
+покидает устройство. Облачный анализ -- отдельный необязательный шаг: он \
+происходит, только если в вашей версии приложения включён провайдер анализа, \
+вы дали согласие на отдельном экране с названием провайдера и сами его \
+запустили. Перед тем как любая фотография покинет телефон, область лица \
+размывается на телефоне, а метаданные снимка удаляются. Сканирование \
+недоступно лицам младше 18 лет: ограничение опирается на год рождения в \
+вашем профиле и проверяется и в приложении, и на сервере. Сканирование \
+требует вашего согласия. Если включить напоминание о сканировании, \
+приложение раз в две недели ставит локальное уведомление на телефоне; с \
+сервера оно не приходит.
+
+**Облачные копии фотографий сканирования.** Фотография, отправленная на \
+облачный анализ, хранится в закрытом хранилище на территории Европейского \
+союза, прочитать которое может только серверный код этого приложения. По \
+умолчанию она удаляется сразу после анализа; если удаление не удалось, оно \
+повторяется, и фотография убирается в течение 48 часов. На экране \
+конфиденциальности сканирования можно вместо этого хранить фотографии 30, 90 \
+или 365 дней, удалить фотографии одного сканирования одним нажатием с \
+подтверждением, удалить все облачные фотографии или все сканирования сразу, \
+а более короткий срок применить и к уже сохранённым фотографиям. Результат \
+сканирования (измерения, дата и название провайдера) хранится в вашей \
+учётной записи, пока вы его не удалите.
+
+**Вес, план питания и дневник питания.** Если вы записываете вес, сохраняете \
+план питания или ведёте дневник питания, эти данные -- веса с датами, цели \
+плана и заметки недельных обзоров, записи дневника и сохранённые продукты -- \
+хранятся в вашей учётной записи на серверах этого приложения. Измерения тела \
+-- чувствительные персональные данные, поэтому перед первой такой записью \
+приложение показывает короткое уведомление и просит один раз подтвердить \
+его; до этого ничего не отправляется. Аллергии, исключённые продукты и ваш \
+ответ о том, подходят ли вам рекомендации по питанию, остаются на телефоне, \
+как и другие ответы о здоровье. Если приложение решает, что рекомендации по \
+питанию вам не подходят, оно показывает совет обратиться к специалисту и не \
+сохраняет план.
+
+**Фотографии еды и этикеток.** Если включено ИИ-распознавание еды, \
+фотография блюда или этикетки с составом, либо текст, которым вы описываете \
+блюдо, отправляется в Google Vertex AI для распознавания продукта. \
+Приложение эту фотографию не хранит: сохраняется только запись, которую вы \
+добавили в дневник, а маленькая миниатюра, если есть, остаётся на телефоне. \
+Данные о составе по штрихкодам и поиску берутся из открытых баз Open Food \
+Facts и USDA FoodData Central; отправляются только штрихкод или слова \
+поиска, а общий кэш хранит эти открытые ответы без персональных данных. Если \
+распознавание еды недоступно в вашей версии приложения, ничего из этого не \
+происходит.
 
 **Голос и микрофон.** Приложение не использует микрофон и не записывает и не \
 отправляет звук. Голосовые подсказки тренера по технике воспроизводит \
@@ -420,10 +553,13 @@ Apple Health немедленно прекращает чтение -- прил�
 
 - Ваши данные не продаются и никогда не продавались.
 - Ответы о здоровье не отправляются ни в какую ИИ-модель. Встроенный \
-советчик получает только название тренажёра, о котором вы спросили, и язык -- \
-больше ничего.
-- Рекламный идентификатор не собирается, и в приложении не встроено ни одного \
-стороннего SDK аналитики или атрибуции.
+советчик получает только название тренажёра, о котором вы спросили, и язык \
+-- больше ничего.
+- Рекламный идентификатор не собирается, и в приложении не встроено ни \
+одного стороннего SDK аналитики или атрибуции.
+- Ни один SDK аналитики не получает ваши фотографии и измерения тела (вес, \
+результаты сканирования); в отчётах о сбоях нет фотографий и значений \
+измерений.
 
 ## Где данные хранятся и кто ещё их касается
 
@@ -433,13 +569,14 @@ Apple Health немедленно прекращает чтение -- прил�
 записи только вами.
 
 Всё остальное обрабатывают два обработчика: Google (Firebase Authentication, \
-Firestore, Crashlytics, App Check и модель Gemini) и Stripe (платежи). \
-Указанный вами в сообщении об оборудовании зал может стать третьим \
-получателем содержимого этого сообщения -- но только этого сообщения, и \
-только если у этого конкретного зала зарегистрирован собственный канал \
-техобслуживания -- см. «Сообщения о неисправном оборудовании» выше. В \
-отличие от Google и Stripe, зал не действует по инструкциям этого \
-приложения, и оно никак не контролирует, что зал делает с полученным.
+Firestore, Cloud Storage для фотографий сканирования, Crashlytics, App Check \
+и модели Gemini и Vertex AI) и Stripe (платежи). Указанный вами в сообщении \
+об оборудовании зал может стать третьим получателем содержимого этого \
+сообщения -- но только этого сообщения, и только если у этого конкретного \
+зала зарегистрирован собственный канал техобслуживания -- см. «Сообщения о \
+неисправном оборудовании» выше. В отличие от Google и Stripe, зал не \
+действует по инструкциям этого приложения, и оно никак не контролирует, что \
+зал делает с полученным.
 
 ## Стена поддержки публична -- и только по вашей просьбе
 
@@ -450,9 +587,13 @@ Firestore, Crashlytics, App Check и модель Gemini) и Stripe (плате�
 
 ## Сколько данные хранятся
 
-Данные хранятся, пока существует ваша учётная запись, и исчезают, когда вы её \
-удаляете. Отдельного таймера хранения нет, архивной копии после удаления не \
-остаётся.
+Данные хранятся, пока существует ваша учётная запись, и исчезают, когда вы \
+её удаляете. Отдельного таймера хранения нет, Исключение -- фотографии \
+сканирования в облачном хранилище: они хранятся столько, сколько вы выбрали \
+(по умолчанию удаляются сразу после анализа, в любом случае в течение 48 \
+часов), а правило хранилища на 400 дней служит только страховкой. Вес, план, \
+дневник и результаты сканирования хранятся, пока вы их не удалите или не \
+удалите учётную запись. Архивной копии после удаления не остаётся.
 
 Две записи принадлежат не только вам, и они не удаляются, а сохраняются без \
 вашего идентификатора: запись о занятии с тренером -- это одновременно и его \
@@ -473,12 +614,19 @@ Stripe хранит собственные платёжные записи ст�
 файле нет, -- сами изображения: они зашифрованы ключом, который не покидает \
 ваше устройство, поэтому выгрузка перечисляет каждую фотографию и прямо \
 сообщает об этом, а не кладёт внутрь байты, которые всё равно никто не \
-откроет.
+откроет. В файл также входят ваши веса, план питания и обзоры, дневник \
+питания, сохранённые продукты, записи сканирований и настройки, а также \
+список исключённых продуктов с телефона. Облачные фотографии сканирования \
+внутрь не вкладываются, и ссылок для скачивания в файле нет; приложение \
+может по запросу создать для них ссылки на один час.
 
 **Удаление** -- «Настройки», затем «Удалить аккаунт». Это отменяет активную \
 подписку, стирает все документы вашей учётной записи, а затем удаляет саму \
-запись. Действие необратимо: после него восстанавливать нечего, в том числе и \
-нам.
+запись. Действие необратимо: после него восстанавливать нечего, в том числе \
+и нам. Удаляются также все фотографии сканирования в облачном хранилище, а \
+приложение стирает данные, которые хранит на телефоне для этой учётной \
+записи (фотографии, файлы сканирования, миниатюры еды и настройки учётной \
+записи).
 
 Если вы в ЕС, Великобритании или там, где действует сопоставимый закон, вы \
 также вправе возразить против обработки, потребовать исправления и подать \

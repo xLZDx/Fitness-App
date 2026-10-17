@@ -105,9 +105,12 @@ describe("F87 already-due expiry is refused at create", () => {
     seedSummary(UID, ACT, T0 - 89 * DAY);
     expect((await create(w, req())).status).toBe("upload");
   });
-  test("the 'never' setting is never already due, even for a 1990 activity", async () => {
+  test("a stored null (never is not offered) counts as the 730 day default: a 1990 activity is already due, one 729 days old is not", async () => {
     seedConsent(UID, { streamRetentionDays: null });
     seedSummary(UID, ACT, Date.UTC(1990, 0, 1));
+    await expectHttpsError(create(w, req()), "failed-precondition", "already_expired");
+    nothingIssued();
+    seedSummary(UID, ACT, T0 - 729 * DAY);
     expect((await create(w, req())).status).toBe("upload");
   });
   test("a future startUtc is clamped to now (not due, expiry = now + retention)", async () => {

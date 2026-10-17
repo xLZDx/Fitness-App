@@ -48,6 +48,15 @@ import 'features/form_check/data/tts_voice_coach.dart';
 import 'features/form_check/state/form_check_providers.dart';
 import 'features/marketplace/data/coach_marketplace_service.dart';
 import 'features/marketplace/state/marketplace_providers.dart';
+import 'features/activity/state/activity_dashboard_providers.dart'
+    show activityDigestsProvider;
+import 'features/modes/state/mode_providers.dart' show modeWarmUpProvider;
+import 'features/modes/widgets/mode_switcher_sheet.dart' show openModeSwitcher;
+import 'features/modes/widgets/record_sheet.dart' show openRecordSheet;
+import 'shared/widgets/app_shortcuts.dart'
+    show AppShortcuts, modeSwitcherOpenerProvider;
+import 'shared/widgets/shell_dock.dart' show shellRecordSheetOpenerProvider;
+import 'shared/widgets/window_size.dart' show WindowSizeScope;
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
 import 'features/profile/data/device_health_profile_repository.dart';
@@ -609,6 +618,10 @@ Future<void> main() async {
         // Device preferences (theme, language, reminders).
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
         initialSettingsProvider.overrideWithValue(settings),
+
+        // S03 sheet openers (mode switcher, Record sheet).
+        modeSwitcherOpenerProvider.overrideWithValue(openModeSwitcher),
+        shellRecordSheetOpenerProvider.overrideWithValue(openRecordSheet),
       ],
       child: const FitnessApp(),
     ),
@@ -661,6 +674,18 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       unawaited(drainEquipmentIdentityTelemetryOutbox(ref));
       // Queued body scans continue after the app comes back.
       resumeBodyScanRunner(ref);
+      // S03: refresh the activity digests on resume; must never throw.
+      try {
+        unawaited(ref
+            .read(activityDigestsProvider.notifier)
+            .refresh()
+            .catchError((Object e) {
+          debugPrint(
+              'activity digest refresh on resume failed (${e.runtimeType})');
+        }));
+      } catch (e) {
+        debugPrint('activity digest refresh on resume failed (${e.runtimeType})');
+      }
     }
   }
 
@@ -675,6 +700,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     ref.watch(activityJournalBindingProvider);
     // Activity summary sync at start (flag-gated; a no-op when off).
     ref.watch(activityCloudSyncWiringProvider);
+    // S03 mode state + migration warm-up (one provider; never rebuilds on a mode choice).
+    ref.watch(modeWarmUpProvider);
     final settings = ref.watch(settingsControllerProvider);
     // Resolved, never nullable: one source of truth shared with the exercise
     // catalog. Passing `null` here would hand resolution to Flutter alone and
@@ -700,8 +727,12 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _GlassScrollBehavior(),
-      builder: (context, child) => _InputTraceListener(
-        child: AuroraBackground(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => WindowSizeScope(
+        child: AppShortcuts(
+          child: _InputTraceListener(
+            child: AuroraBackground(child: child ?? const SizedBox.shrink()),
+          ),
+        ),
       ),
     );
   }

@@ -9,6 +9,11 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
+import '../../shared/widgets/shell_layout.dart' show ShellLayout;
+import '../../shared/widgets/shell_scroll.dart' show ShellScrollbar;
+import '../activity/state/activity_dashboard_providers.dart'
+    show activityDigestsProvider;
+import 'widgets/progress_activity_widgets.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../activity/widgets/activity_sync_entry_card.dart';
 import '../body_scan/widgets/body_scan_entry_card.dart';
@@ -23,12 +28,231 @@ import '../workouts/state/workout_session_providers.dart';
 import 'data/progress_charts.dart';
 import 'data/progress_stats.dart';
 
-class ProgressPage extends ConsumerWidget {
+class ProgressPage extends ConsumerStatefulWidget {
   const ProgressPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProgressPage> createState() => _ProgressPageState();
+}
+
+/// Content pane width from which Progress uses two columns (contract 10.5).
+const double _kTwoPaneMinWidth = 880;
+
+/// Max content width of a single column (Medium) and of the two-pane layout.
+const double _kSingleColumnMaxWidth = 640;
+const double _kTwoPaneMaxWidth = 1120;
+
+class _ProgressPageState extends ConsumerState<ProgressPage> {
+  final ScrollController _scroll = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Staleness check (design 3.7): once on entering the tab, never in build.
+    // Deferred so it does not change provider state during the build phase.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(activityDigestsProvider.notifier).refreshIfStale();
+    });
+  }
+
+  final GlobalKey _activityBlockKey = GlobalKey(debugLabel: 'progress.block');
+  bool _hadActivityBlock = false;
+  /// Keeps the list (and its offset) when the scrollbar wrapper toggles.
+  final GlobalKey _listKey = GlobalKey(debugLabel: 'progress.list');
+  final GlobalKey _slotKey = GlobalKey(debugLabel: 'progress.slot');
+
+  /// Last measured height of the Sources slot plus its gap (single column).
+  double _slotHeight = 0;
+
+  /// Keeps the content the user is reading in place when the activity block
+  /// appears above it: the offset grows by the block's height (D1).
+  void _compensateScroll({required bool slotLeaves}) {
+    if (!mounted || !_scroll.hasClients) return;
+    final BuildContext? blockContext = _activityBlockKey.currentContext;
+    final RenderObject? block = blockContext?.findRenderObject();
+    final RenderObject? viewport = blockContext == null
+        ? null
+        : Scrollable.maybeOf(blockContext)?.context.findRenderObject();
+    if (block is! RenderBox ||
+        !block.attached ||
+        viewport is! RenderBox ||
+        !viewport.attached) {
+      return;
+    }
+    // Only a block landing above the viewport's leading edge moves content.
+    if (block.localToGlobal(Offset.zero).dy >=
+        viewport.localToGlobal(Offset.zero).dy) {
+      if (slotLeaves) _slotHeight = 0;
+      return;
+    }
+    final double height = block.size.height;
+    final ScrollPosition position = _scroll.position;
+    if (height <= 0 || position.pixels <= 0) return;
+    // Net height change above the anchor: the block arrives, the Sources slot
+    // (and its gap) above 'Last 8 weeks' goes away in the same frame.
+    // The slot only leaves when the real block shows (not for an error panel).
+    final double target =
+        position.pixels + height - (slotLeaves ? _slotHeight : 0);
+    if (slotLeaves) _slotHeight = 0;
+    position.jumpTo(
+        target.clamp(0.0, position.maxScrollExtent).toDouble());
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final dock = ShellLayout.maybeOf(context)?.dockHeight ?? 0;
+    final view = ref.watch(progressActivityViewProvider);
+    final bool hasActivityBlock = view.kind == ProgressActivityKind.block ||
+        view.kind == ProgressActivityKind.errorRetry ||
+        view.kind == ProgressActivityKind.errorNoRetry;
+    if (hasActivityBlock && !_hadActivityBlock) {
+      // D1: the block arrives above content the user may have scrolled to.
+      final bool slotLeaves = view.kind == ProgressActivityKind.block;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _compensateScroll(slotLeaves: slotLeaves));
+    }
+    _hadActivityBlock = hasActivityBlock;
+    List<Widget> activityBlockFor(bool twoPane) => <Widget>[
+          if (hasActivityBlock)
+            KeyedSubtree(
+              key: _activityBlockKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const SizedBox(height: 16),
+                  if (view.kind == ProgressActivityKind.block)
+                    ProgressActivityBlock(showSourcesRow: !twoPane)
+                  else
+                    ProgressJournalErrorPanel(view: view),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+        ];
+    return FrostedScaffold(
+      appBar: GlassAppBar(title: AppLocalizations.of(context).progressProgress),
+      body: LayoutBuilder(builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final twoPane = width >= _kTwoPaneMinWidth;
+        final cap = twoPane ? _kTwoPaneMaxWidth : _kSingleColumnMaxWidth;
+        final side = 20.0 + (width > cap ? (width - cap) / 2 : 0.0);
+        final showSlot = view.kind != ProgressActivityKind.block;
+        final slot = <Widget>[
+          if (showSlot)
+            KeyedSubtree(
+              key: _slotKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: const <Widget>[
+                  ProgressSourcesSlot(),
+                  SizedBox(height: 24),
+                ],
+              ),
+            ),
+        ];
+        if (showSlot) {
+          // Remember the slot's height (single column only: there it sits
+          // above 'Last 8 weeks'), so D1 can subtract it when it goes away.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final h = (_slotKey.currentContext?.findRenderObject() as RenderBox?)
+                ?.size
+                .height;
+            if (twoPane) {
+              _slotHeight = 0;
+            } else if (h != null) {
+              _slotHeight = h;
+            }
+          });
+        }
+        final blockSources = <Widget>[
+          if (twoPane && view.kind == ProgressActivityKind.block) ...[
+            const ProgressBlockSourcesRow(),
+            const SizedBox(height: 24),
+          ],
+        ];
+        final rest = _restChildren(context, theme);
+        final activityBlock = activityBlockFor(twoPane);
+        final children = twoPane
+            ? <Widget>[
+                const _HeadlineStats(),
+                const SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const ActivitySyncEntryCard(),
+                          ...activityBlock,
+                          ...rest,
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const BodyScanEntryCard(),
+                          const SizedBox(height: 12),
+                          const NutritionEntryCard(),
+                          const SizedBox(height: 24),
+                          ...slot,
+                          ...blockSources,
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+            : <Widget>[
+                const _HeadlineStats(),
+                const SizedBox(height: 16),
+                const ActivitySyncEntryCard(),
+                ...activityBlock,
+                const BodyScanEntryCard(),
+                const SizedBox(height: 12),
+                const NutritionEntryCard(),
+                const SizedBox(height: 24),
+                ...slot,
+                ...rest,
+              ];
+        // The dock appearing or leaving changes the foot: animate it so the
+        // content does not jump (none when reduced motion is on).
+        return ShellScrollbar(
+          controller: _scroll,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: 120 + dock),
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            builder: (context, foot, _) => ListView(
+              key: _listKey,
+              controller: _scroll,
+              padding: EdgeInsets.fromLTRB(side, 92, side, foot),
+              children: children,
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  /// The existing sections from "Last 8 weeks" down, unchanged.
+  List<Widget> _restChildren(BuildContext context, ThemeData theme) {
     // F3.3 read-convergence: sourced from workout_sessions (via the
     // WorkoutLogEntry adapter view), not the legacy workout_logs stream.
     final logs = ref.watch(workoutSessionHistoryProvider);
@@ -39,24 +263,7 @@ class ProgressPage extends ConsumerWidget {
       logs,
       totals: ref.watch(workoutSessionTotalsProvider).valueOrNull,
     );
-
-    return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).progressProgress),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 92, 20, 120),
-        children: [
-          // R11g: the design's three-across row of accent numbers
-          // (`App.tsx:3957`), not the app's previous 2x2 grid of gradient
-          // tiles. `thisWeek` and `longestStreakDays` have no slot in that
-          // row and are kept as the line underneath rather than dropped —
-          // a redesign is not a reason to stop showing real history.
-          const _HeadlineStats(),
-          const SizedBox(height: 16),
-          const ActivitySyncEntryCard(),
-          const BodyScanEntryCard(),
-          const SizedBox(height: 12),
-          const NutritionEntryCard(),
-          const SizedBox(height: 24),
+    return [
           Text(
             AppLocalizations.of(context).progressLast8Weeks,
             style: theme.textTheme.titleLarge?.copyWith(
@@ -115,9 +322,7 @@ class ProgressPage extends ConsumerWidget {
               _RecentLogCard(session: session),
               const SizedBox(height: 10),
             ],
-        ],
-      ),
-    );
+    ];
   }
 }
 

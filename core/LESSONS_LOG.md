@@ -589,3 +589,562 @@ SHORTCOMING 1 (mine): the first send of gate round 13 used the worktree folder a
 SHORTCOMING 2 (mine): the review and test agents have small turn limits; four of them stopped without a final report on the first run and had to be resumed (the J1 implementer left its work staged but uncommitted, and I reviewed and committed it myself). Rule: give agents narrower tasks, tell them to batch tool calls and to commit early, and expect to resume.
 Layers: caught by my own check of the reply, and by the resume handling.
 Rule next time: see the two rules above; for a gate resend, copy the previous command line exactly.
+
+## 2026-10-16 - Commit: docs: record operator answers after the S02 merge
+
+Kind: SHORTCOMING (mine, plan and communication), with one near-miss.
+Facts: after the S02 gate the operator asked two basic questions that the plan documents did not answer up front: whether Phase 1 is finished before Phase 2 and whether there will be two apps, and whether the design covers Android phone, iPhone, iPad, Android tablet and MacBook. The repository has only an `android` platform folder (no ios, macos or web), and the roadmap kept the tablet and large-screen layouts as an open question with a phone-only default, so the platform and form-factor scope had never been put to the operator as a decision. Near-miss: I edited `public/privacy.html` by hand and then saw from scripts/review/state_ledger.py that it is generated from the `legalPrivacyBody` key of app_en.arb and app_ru.arb; I reverted the edit before any commit. Evidence: core/changes/2026-10-16-s03d-record-operator-answers.md.
+Root cause: the roadmap states sprints and defaults but has no one-page picture of what is released when, on which platforms and in how many apps; the privacy text is a generated file and I did not check for that before editing.
+Layers: author (me); no reviewer or gate asks for a release and platform picture.
+Rule next time: put the release picture (apps, platforms, form factors, release lines) on the first page of the roadmap and ask it as an operator decision at sprint zero; before hand-editing a file under public/ or core/, grep scripts/ for "generated" and for the file name.
+
+## 2026-10-16 - Commit: test: rename a fake uid sentinel that the secret scanner flags
+
+Kind: SHORTCOMING (mine, author).
+Facts: after the S02 merge the full-history secret scan (gitleaks) went red with one finding. The only candidate is a unit test of the activity journal that declared a constant whose name contained the word "secret" and whose value was a made-up user-id marker ending in 7f3a91 (added in commit 2791285a, line 264 there). It is a made-up user-id marker, not a credential, but the variable name contains "secret" and the value has entropy 3.85, which matches the generic key rule. Evidence: core/changes/2026-10-16-gitleaks-false-positive-sentinel.md.
+Root cause: I named a fake value after what it protects instead of what it is, and the scan is not run before a push (CI is not run locally by operator decision), so the first sign was a red job on the merged PR. Because the scan covers the whole history, a rename alone cannot clear it; the old commit needs an ignore entry.
+Layers: author (me) introduced it; tests and reviewers could not see it (the test is correct); only the CI secret scan caught it.
+Rule next time: never put secret, token, key, password or credential in the name of a test variable or value that is only a fake; call it sentinel or marker. The fingerprint added here is inferred (rule id and line are not from a scanner run), so the next secrets job is the only proof; check its output first.
+
+## 2026-10-17 - Commit: S02 follow-up: apply the retention and privacy answers, close phase 9
+
+Kind: FAILURE (mine and my agents', one defect class), plus one SUCCESS.
+Facts: (1) `public/privacy.html` is generated from `scripts/legal/legal_text.py` by `scripts/legal/build_legal.py` (which also writes the legal keys of the two ARB files and `public/terms.html`), but it was hand-edited in three commits: 6dbe2392 (body scan wording), c7e30e9c (S02 routes and retention wording, by a test agent) and 7c4a404d (S02 remediation A, by an implementation agent). The source never received the wording, so one run of the generator, which its own docstring tells everyone to run, would have erased it and broken two jest policy tests that read the page; the rendered-versus-disk difference was 57 lines when measured. (2) The operator's post-merge retention answer ("never" is not offered) was not in the merged code: the constant `STREAM_RETENTION_NEVER_OFFERED` still said `true`, and the test for it branched on the constant so it passed either way. (3) Two more stale tests surfaced when the privacy surfaces were re-tested: one pinned the old "or never" sentence, one scanned a fixed 1200-character window of `functions/src/index.ts` for the booking sweep that had moved out of that window in commit ca40035e. (4) My own earlier statement that the page is generated "from the `legalPrivacyBody` key of the ARB files" was wrong: the ARB is also an output; the source is `legal_text.py`. Evidence: core/changes/2026-10-17-s02-followup-retention-privacy-phase9.md and docs/phase2/s02/S02_TEST_FINDINGS_EPIC17.md.
+Root cause: no brief named the generator source, authors edited the file that is served, and the tests pinned the hand-edited output, so they guarded the wrong thing; nothing runs the generator check. The retention answer sat as an OPEN-DEFAULT in a constant and a conditional test that could not fail.
+Layers: authors (me and two agents) introduced it; the tests pinned it; reviewers and GPT-PM never compared the page with its generator; I caught it only when applying the operator's answer and the acceptance agent flagged the constant.
+Success: the OPEN-DEFAULT constants made the retention answer a one-line change, and a focused test agent run found a fifth test (`retention_purge.test.ts`) that depended on the old behaviour.
+Rule next time: before editing any file under public/ or the legal ARB keys, find its generator (grep scripts/ for the file name and the word generated), edit the source and run the generator; name the source file in every agent brief. A conditional test that branches on the constant it checks is not a test: pin the decided value. The new `scripts/legal/test_build_legal_in_sync.py` is the mechanical guard.
+
+## 2026-10-17 - Commit: docs: S03-D UI design contract revision 3 for all device families
+
+Kind: SHORTCOMING (agent author, caught by reviewers) and SUCCESS (independent reviews).
+Facts: revision 3 of the S03-D contract (window-size model, side rail, platform families, pointer and keyboard) went to product-ux-reviewer and a11y-architect separately; they found 4 and 3 MAJOR items (no BLOCKER) and converged on three defect classes: the rail column overflows a 360 dp high landscape window (6 items of 56 dp plus insets), two-pane layouts were sized from the window width instead of the content pane (the 840 dp rationale left out the rail, insets and gutters), and the Record surface form was specified in two sections that disagreed (by input device in one, by size class in the other). Further items: the rail Record slot appeared and disappeared per tab so the destinations moved under the cursor, the compact rail hid the running state, the scroll-position promise was untested, Esc was overloaded, and reduced motion covered tokens only. All items were remediated in one batch (section 19 of the contract). The designer agent stopped at its turn limit four times and was resumed each time. Evidence: docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md section 19 and core/changes/2026-10-17-s03d-ui-contract-revision-3.md.
+Root cause: layout thresholds were stated in prose without the arithmetic, and one presentation rule was repeated in two places; a brief with twelve large changes does not fit into the 14 to 20 tool turns an agent gets.
+Layers: the author missed it; the two reviewers caught it independently, which is why the findings could be merged with confidence; no gate would have caught it before build.
+Rule next time: a contract states every size threshold with its arithmetic (pane width = window width minus rail minus insets) and keeps one table as the only authority for a surface's form, other sections only point to it. Brief design agents in chunks of three or four sections and expect two to four resumptions.
+
+## 2026-10-17 - Commit: docs: S03-D fix the short-window chooser grid after the GPT-PM gate
+
+Kind: SHORTCOMING (author and two internal reviewers), caught by the gate.
+Facts: GPT-PM returned MODIFY on head 5302915e with 1 MAJOR and 2 MINOR. The MAJOR was a contradiction inside the contract that I verified in the text before fixing: the mode chooser rule said a short window uses a 4x1 grid, while cards had floors of 200 dp (Medium, content capped at 640 dp; four cards need 836 dp) and 140 dp (Compact, 360 dp window; four cards need 560 dp), so the acceptance criteria could not all pass. The old 140 dp floor was also 2 dp wrong at a 320 dp phone ((320 - 32 - 12) / 2 = 138). The MINOR items: an acceptance criterion that hard-coded the 96 dp rail before applying the measured-width rule, and a stale privacy status line. Evidence: docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md (grid rule in S-1, section 19 gate round 1 table) and core/changes/2026-10-17-s03d-gate-round-1-fixes.md.
+Root cause: the contract gave a per-element minimum width and a per-situation column count in separate places and never wrote the check number of cards x minimum width + gaps against the available width for each size row; both internal reviewers re-checked the rail and pane arithmetic they had been told about but not this older rule, which came from revision 2.
+Layers: author missed it; product-ux-reviewer and a11y-architect missed it; the GPT-PM gate caught it before any code existed.
+Rule next time: for every layout rule of the form "N items in a row" or "minimum size X", the contract writes the fit check with numbers for each size row it applies to; reviewers get the instruction to re-derive every such check, including text inherited from an earlier revision, not only the ones that changed.
+
+## 2026-10-17 - Commit: docs: record the S03-D documentation gate approval and its report
+
+Kind: SUCCESS.
+Facts: the S03-D documentation gate closed in two rounds: round 1 on 5302915e returned MODIFY (1 MAJOR, 2 MINOR); every item was verified against the contract text before it was fixed (the MAJOR was a real contradiction), all items were fixed in one batch, and round 2 on 45b9184b returned APPROVE with 0 BLOCKER and 0 MAJOR. Evidence: GPT-PM replies of request ids 9bdd45d1 and 6e9e542e, core/changes/2026-10-17-s03d-gate-round-1-fixes.md.
+Why it worked: two independent internal reviews before the gate removed most defects (4 and 3 MAJOR findings, overlapping, fixed first), the scope note told the reviewer exactly what changed, and the fix was one batch that rechecked the arithmetic by hand.
+Rule next time: keep the order internal reviews, one batch of fixes, external gate, one batch of fixes, verification round; and tell reviewers to recompute inherited rules (see the entry for the gate fixes).
+
+## 2026-10-17 - Commit: docs: start sprint S03 on the operator GO
+
+Kind: NEUTRAL.
+Facts: sprint S03 starts only after the operator's explicit GO; the previous turn asked the question in plain words with the consequences of each answer, and the GO arrived as a short standalone message. The S03 state section lists the phases and artifacts so the sprint can be resumed from the repository alone. Evidence: docs/sdlc/STATE.md section S03 and core/changes/2026-10-17-s03-start.md.
+Rule next time: record a GO in the decision log in the same commit that records the start state, and name the artifacts of each phase in the state file at once.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: FAILURE (inherited from S02, found by a reviewer of the S03 design).
+Facts: the Android backup rules exclude `files/journal`, `files/sources` and `files/quarantine`, but the production journal root is `<support>/activity_journal/<scopeId>` with those three as children (uid_scoped_activity_journal.dart:47-55, journal_generation_writer.dart:35-37, backup_rules.xml:50-52, data_extraction_rules.xml:32-34 and 41-43). The real tree was never excluded. The S02 backup tests compared the XML with the same constants the code uses, so they stayed green. The S03 design had marked the question UNGROUNDED (R11) instead of reading three files; the security-reviewer and silent-failure-hunter established it independently and the coordinator verified it with Grep before it went into the design.
+Root cause: an exclusion test derived its expected value from the constants under test, and a design left a one-Grep security fact open.
+Layer that missed it: S02 author, S02 tests and S02 reviewers. Caught by: S03 internal review (security-reviewer, silent-failure-hunter). No user data was exposed: the journal flag is off in every shipped build and the journal has no writer before S05.
+Rule next time: a path-exclusion or path-wipe test builds the real object (the factory, the real directory) and walks the files it created; a design must not leave a security fact UNGROUNDED when one Grep settles it.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: SHORTCOMING.
+Facts: five independent reviewers (architect, flutter-reviewer, silent-failure-hunter, security-reviewer, tdd-guide) returned 0 BLOCKER and 21 root causes in the first S03 design and test plan; three of them (architect, flutter-reviewer, silent-failure-hunter) found the same race between the start-up migration and the onboarding hook, and four found that a journal that is still binding looks open and empty. Evidence: the disposition table at the end of docs/phase2/s03/S03_DESIGN.md (RV-1 to RV-19).
+Root cause: the first draft gave several writers to one piece of per-account state, derived availability as "otherwise open", and reused a previous value without stamping the uid; the test plan used fakes where the real controller is the thing that can break and the default test font where the width rule needs a real measurement.
+Layer that missed it: design author and test-plan author. Caught by: internal reviewers before any code existed.
+Rule next time: for each per-account state name its single writer and stamp every async result with the uid and a generation; derive availability from positive facts, never from "otherwise"; a test that guards a running timer drives the real controller; a width rule needs a stub measurer that yields both outcomes.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: FAILURE (coordinator).
+Facts: for remediation batch 1 the coordinator resumed the design author and the test-plan author in parallel and gave both the same decision list but no single registry of test ids; both invented new ids in the same id scheme, so the same id (for example DT-08-2, DT-07-7, DT-13-6, DT-01-9) named different tests in the two files. The coordinator found it only after both authors finished, by a mechanical set comparison of the ids (83 in the design, 144 in the plan, five design-only and 64 plan-only) and a sample of meanings. 94 lines of the design cited ids.
+Root cause: shared decisions without a shared id owner; ownership of ids was not decided before parallel work started.
+Layer that missed it: coordinator (brief). Caught by: coordinator, before any reviewer or the gate saw it.
+Rule next time: when two authors write documents that cite each other's artifacts, name ONE owner of the id space in the brief (here the test plan) and tell the other author to cite, never to mint; run a set comparison of ids before a gate.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Kind: SUCCESS.
+Facts: reviewers with different scopes found different parts of the same defect classes, and merging them into numbered findings (RV-1 to RV-19 plus nine test-plan findings) allowed ONE remediation batch with the decisions fixed up front and the same file for each author; the documentation went through review before any code was written.
+Why it worked: distinct role scopes, one finding contract, duplicates merged by root cause, decisions written down once and shared by both authors.
+Rule next time: keep the numbered merged-findings file as the single input of the remediation batch.
+
+## 2026-10-17 - Commit: docs: S03 one retry state machine for automatic and manual journal bind (GPT-PM MAJOR-01)
+
+Kind: FAILURE.
+Facts: GPT-PM documentation gate round 1 on 3bedcba4 returned MODIFY with one MAJOR: the test plan's DT-0-5 required that after a failed manual "Try again" no automatic retry follows (count stays 1 after 5 s of fake time), while the design kept the existing automatic bind retry (5 s, 15 s, 60 s, 5 min, 5 min) and added a manual retryNow() with the sentence "it does not touch the automatic back-off schedule". The coordinator verified it: activity_wiring.dart:101-164 and 189-204 keep one pending retry timer per generation and the plan row contradicted it.
+Root cause: DT-0-5 was written from the pre-review semantics ("failedToOpen has no automatic loop"); the review batch then added a manual action next to an existing automatic mechanism (RV-3) without writing the combined state machine in one place, and the test was not re-derived from it.
+Layer that missed it: design author (no combined state machine), test-plan author (kept an old expectation), coordinator (brief did not ask for a cross-check of new tests against retained mechanisms) and all five internal reviewers (none compared a test expectation with the retained retry code). Caught by: GPT-PM documentation gate.
+Rule next time: when a design adds a manual action next to an existing automatic mechanism, write ONE state machine for both (states, who may start an attempt, what a failure does to the schedule) in the design and derive every test from it; tell reviewers to check each test expectation against the retained mechanisms in the code, not only against the design text.
+
+## 2026-10-17 - Commit: docs: S03 one retry state machine for automatic and manual journal bind (GPT-PM MAJOR-01)
+
+Kind: SUCCESS.
+Facts: the gate returned a single MAJOR and no BLOCKER on a design of 21 stories and a plan of 452 tests; GPT-PM confirmed in its table that the single writer for the mode status, the three-way persisted-mode read, the uid and generation checks of the digests, the backup exclusion order, the element preservation of the shell, the owner uid of the timers and the lane ownership had no further proven BLOCKER or MAJOR, and accepted the sign-out guard refinement of contract J10.
+Why it worked: five role-scoped internal reviews before the gate, one merged remediation batch with fixed decisions, mechanical set checks of test ids and counts before the commit.
+Rule next time: keep the mechanical checks (id sets, sum of the count column, Cyrillic scan) as a standing pre-gate step.
+
+## 2026-10-17 - Commit: docs: S03 failedToOpen is defensive, retryNow contract and per-generation rules (GPT-PM MAJOR-02, reliability review)
+
+Kind: FAILURE.
+Facts: GPT-PM documentation gate round 2 on 27d6dc44 closed MAJOR-01 and found MAJOR-02 inside the remediation: the rewritten DT-0-5 started from failedToOpen and expected both an open spy and a bind spy to have count 1 after a failed retry. An independent read-only reliability review run before round 3 (0 BLOCKER, 5 MAJOR, 4 MINOR) then showed that the whole idea of a separate "open attempt" does not exist in the code: the UidScopedActivityJournal constructor does no I/O and the factory is called only inside bindUid (uid_scoped_activity_journal.dart:58-127), so failedToOpen cannot be reached in production. The review also found an unspecified retryNow() and busy contract, single flight that must be per generation, an unspecified seam for the recovery counts that would have broken the existing retry test, and an 11 minute 20 second LOADING window before the error panel.
+Root cause: the first remediation (round 1) and the coordinator's brief for DT-0-5 ("opener or bind spy count 1") were written from the design text, not from the control flow of activity_wiring.dart and uid_scoped_activity_journal.dart; the design invented an open step because an earlier review asked for a failedToOpen status.
+Layer that missed it: coordinator (brief), design author, test-plan author, five internal reviewers (none traced the control flow). Caught by: GPT-PM round 2 (the count), then the independent reliability review (the root cause), both before any code existed.
+Rule next time: before a gate round, trace every new state and every test expectation along the real call graph with numbers; run an independent read-only review of a state-machine remediation BEFORE sending it to the gate, not after; never invent a state that no code path can produce without saying that it is defensive.
+
+## 2026-10-17 - Commit: docs: S03 failedToOpen is defensive, retryNow contract and per-generation rules (GPT-PM MAJOR-02, reliability review)
+
+Kind: SUCCESS.
+Facts: the independent review took about two minutes of reviewer time and removed a probable third GPT-PM round; its traces of nine scripts (manual failure, manual success, timer due during a manual attempt, gave-up, account switch during a manual attempt, sign-out while waiting, recovery failure) agreed with DT-0-11 to DT-0-14 and DT-13-11 (six bind calls) and with the existing retry test.
+Why it worked: the reviewer was given the exact scripts to trace and the real code to compare with, and was told what previous reviewers had missed.
+Rule next time: give reviewers a list of scripts to trace, not only a scope.
+
+## 2026-10-17 - Commit: docs: record the S03 documentation gate approval and start the build
+
+Kind: SUCCESS.
+Facts: the S03 documentation gate ended in APPROVE on exact head 59828804 in round 3 (0 BLOCKER, 0 MAJOR), after MODIFY in round 1 (3bedcba4, one MAJOR) and round 2 (27d6dc44, one MAJOR). Each round found a real defect in the retry contract of the journal bind, and the independent reliability review run before round 3 found the root cause (a separate open attempt does not exist in the code). Evidence: docs/sdlc/STATE.md section S03, docs/phase2/s03/S03_DESIGN.md section 2.1 item 3.
+Why it worked: every finding was verified against the code before it was accepted, remediation was written as numbered rules with tests derived from them, and mechanical checks (id sets, sum of the count column) ran before every commit.
+Rule next time: send a state-machine remediation to an independent read-only review BEFORE the gate round.
+
+## 2026-10-17 - Commit: docs: record the S03 documentation gate approval and start the build
+
+Kind: NEUTRAL.
+Facts: three attempts to send round 3 failed because the PM Bridge daemon was handing over to a new build (the error named two source builds changing, and the pm-bridge repository had uncommitted edits by another session); the request never reached the chat (recovery by request id found no inbound record), so resending created no duplicate. The fourth attempt went through after the other session's lifecycle operation finished and the mode came on by itself. The break-glass direct send was not used and the daemon was not restarted.
+Rule next time: on 'source update did not complete', check recovery by request id first, then wait for the other session's lifecycle operation; never use the break-glass path while the normal path is merely busy.
+
+## 2026-10-17 - Commit: fix(activity): exclude the per-account activity_journal tree from Android backup and device transfer
+
+Kind: FAILURE (inherited from S02, found by the S03 design review, fixed here).
+Facts: the S02 backup exclusion listed `journal`, `sources` and `quarantine` directly under the app support directory, but the production journal is created by `fileActivityJournalFactory` at `<support>/activity_journal/<scopeId>`, so the exclusion never matched the real tree. The journal is off in release builds and nothing is written to it before S05, so no user data was exposed. Evidence: mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart (factory), mobile/android/app/src/main/res/xml/backup_rules.xml and data_extraction_rules.xml (before this commit), docs/phase2/s03/S03_DESIGN.md section 5 (finding found by the design review).
+Root cause: the exclusion list and the factory path were written by two different stories and no test compared the directory the factory really creates with the directory the XML excludes. The tests asserted only the three names of the list.
+Layer that missed it: author, tests and the S02 reviewers; the S03 design reviewers caught it before the journal was switched on.
+Rule next time: a backup or privacy exclusion is tested against the path the production code really builds (one shared constant, now `kScopedJournalRootDirName`), never against a hand-copied list of names. The test agents extend the checker fixtures so that a list without `activity_journal` fails.
+
+## 2026-10-17 - Commit: fix(activity): exclude the per-account activity_journal tree from Android backup and device transfer
+
+Kind: SUCCESS.
+Facts: the fix landed as its own commit BEFORE the default of the local journal flag is changed (build lane L1, run 1 of 3), which is the order the design review required (RV-13). The path is now one constant used by the factory, the exclusion list and both Android XML files.
+Why it worked: the build brief fixed the order of the three runs of the lane and named the flag flip as a later run.
+Rule next time: land the data-protection part of a change before the part that switches the data on.
+
+## 2026-10-17 - Commit: feat(ui): add the window size class and optional focus, hover and semantics parameters to the HUD controls
+
+Kind: SUCCESS.
+Facts: build lane L3 wrote two stories (S03-03 HUD primitives, S03-02 window size class) in two runs without running anything; every new parameter of the HUD controls defaults to today's behaviour, and `HudPanel` and `HudSettingRow` pass `handlesKeys: false` so there is no second activation handler or extra tab stop. The exact hover colour is not specified by the UI contract (10.9); the implementation agent used the nearest existing token and said so in its report.
+Why it worked: the brief required every default to reproduce current behaviour and named the files the lane may touch.
+Rule next time: the test agents must prove the defaults (existing widget tests stay green unchanged) and the one cross-lane precondition: `WindowSizeScope` has to be mounted once above the router (main.dart, wave 4) for the rebuild-per-class guarantee of DT-02-3.
+
+## 2026-10-17 - Commit: feat(modes): add the mode state models, the never-throwing codec and the per-account store
+
+Kind: SUCCESS.
+Facts: build lane L2 run 1 wrote the data layer of the mode state (models, codec, store) as pure Dart plus a thin SharedPreferences store. The store read is three-way (missing, value, unreadable with a reason), so a corrupt or newer-version value can never be mistaken for a missing key and overwritten (RV-2). The implementation agent reported its deviations from the design text itself (read returns a result type instead of a nullable state, write returns a result and never throws, the encoder accepts chooser status absent).
+Why it worked: the brief named the risks from the review (RV-2, RV-14) and asked for a report of deviations and unknowns.
+Rule next time: the wiped-uid guard needs a caller. The agent could not find one in its lane paths; the coordinator decided that the mode notifier listens to `accountBeingDeletedUidProvider` (set before the wipe) and marks the uid, so no security-sensitive wipe file is edited. A guard without a caller is a silent gap: the test agents prove DT-01-20 through the real deletion path.
+
+## 2026-10-17 - Commit: feat(modes): add the mode notifier, the start-up migration and the warm-up provider
+
+Kind: SUCCESS.
+Facts: build lane L2 run 2 wrote the mode notifier (selectMode, resolveChooser, decideLater, markResolved, answerQuestion, skipQuestion, atomic initIfAbsent), the once-per-process migration and one warm-up provider. The wiped-uid guard reaches the store through `accountBeingDeletedUidProvider`, as decided after the run 1 report, so no security-sensitive wipe file was edited. The agent read the real profile provider (`currentProfileProvider`, onboarded = `UserProfile.hasCompletedOnboarding`) instead of guessing.
+Why it worked: run 1 reported an open gap (nobody calls markUidWiped), the coordinator decided the seam before run 2 started.
+Rule next time: a UNKNOWN in a lane report is answered with a concrete decision before the next run starts. Open risk to prove by the test agents: the first profile value can be null (Firestore cache miss while offline) before the real profile arrives; then an upgrader is not migrated in that process and is retried at the next start. Accepted as harmless (no chooser, no card); DT-01-14 covers the first-value rule.
+
+## 2026-10-17 - Commit: feat(activity): turn the local journal on by default and add the bind retry state machine and journal availability
+
+Kind: SHORTCOMING (one existing test is knowingly left red until the test agents update it).
+Facts: the local journal flag default is now true. The existing test mobile/test/features/activity/config/activity_flags_test.dart (lines 75-79) asserts that `compileTime.localJournal` and `journalEnabled` are false, so it fails until updated. The design said the flag-matrix test encodes the old default; the implementation agent found that file does not, and the test that does is outside the lane ownership row.
+Root cause: design section 4.4 states that activity_wiring_flag_matrix_test.dart holds a row "compile-time default => journal off" (cited from the code map) and lists every other reader of `ActivityFlags.compileTime` as UNGROUNDED; the design authors (coordinator and design writer) never opened the file to check the row, and the search the design deferred to the lane was not done before the brief was written. The implementation agent did search, found no such row in the flag-matrix test, found the real assertion in activity_flags_test.dart and reported it instead of editing a file outside its lane (correct behaviour).
+Layer: author of the design and brief; caught by the implementation agent before any test run.
+Rule next time: a design statement about the content of a test file is verified by opening the file; when a story changes a default, grep the tests for the old default while writing the design, not in the build. The epic 0 test agents update activity_flags_test.dart first and report it as a known precondition.
+
+## 2026-10-17 - Commit: feat(activity): turn the local journal on by default and add the bind retry state machine and journal availability
+
+Kind: SUCCESS.
+Facts: lane L1 run 2 replaced the retry closure by a controller class with one state machine (single flight, busy result, preserved deadline after a failed manual attempt, generation-owned timer, stale completions touch nothing) and a bind-status notifier; the retry schedule and the existing log strings are unchanged. Recovery counts come from an optional read-only interface, so existing fakes keep working. The agent recorded nine decisions, including that status writes during provider build are deferred by a microtask.
+Why it worked: the state machine was specified once as numbered rules before the build and the independent reliability review had already run on the text.
+Rule next time: the controller is the highest-risk piece of the sprint; the reliability reviewer reads it against the seven rules before the code gate, and the test agents drive real controllers with the injected timer factory (DT-0-11 to DT-0-16).
+
+## 2026-10-17 - Commit: feat(modes): record the onboarding choice and start the mode warm-up at the app root
+
+Kind: SUCCESS.
+Facts: lane L2 run 3 added exactly the two wiring edits the brief allowed: one awaited `initIfAbsent(onboarding)` call before `context.go('/home')` in the onboarding page, and one `ref.watch(modeWarmUpProvider)` line plus one import in `main.dart`. `_FitnessAppState` and its resume callback are untouched and no second `WidgetsBindingObserver` was added.
+Why it worked: the wiring was kept for the last run, after the state layer existed, and each edit was specified to the line in the brief.
+Rule next time: the test agents prove the three facts that matter here: a new user gets `pending` before `/home`, a failure never blocks the navigation, and `/onboarding/edit` for an onboarded user writes nothing (DT-01-12, DT-01-13, F-7). One small behaviour change to watch: if the page is unmounted during the awaited call, navigation is skipped (it was unguarded before).
+
+## 2026-10-17 - Commit: docs: add the S03 documentation gate report pair for the operator
+
+Kind: NEUTRAL.
+Facts: the operator report of the S03 documentation gate (Russian for the operator, English as the durable record) was built from the draft written before the approval; the draft had to be corrected before publishing because two sentences ("code is not written yet", "nothing started") were already stale when the build had begun.
+Rule next time: a report draft that is written before a gate verdict is re-read against the repository state (git log) at the moment it is built, not only filled in at the placeholders.
+
+## 2026-10-17 - Commit: feat(activity): add the pure activity aggregates and the dashboard digest providers
+
+Kind: SHORTCOMING (coordinator brief) and SUCCESS (agent behaviour).
+Facts: the lane brief for run 3 gave the aggregates file the path `features/activity/state/`, while design 2.4 and the 9.2 ownership row say `features/activity/data/activity_aggregates.dart`; the agent followed the design and reported the conflict. The agent also found that the plan test DT-13-19 (an unmapped source kind is labelled 'Unknown source') cannot be written as planned: the label function switches exhaustively over `SourceKind`, so an unmapped kind does not compile, which protects better than a test but removes the test seam.
+Root cause: the brief was typed from memory instead of copying the path column of the ownership table (coordinator); the plan row for DT-13-19 assumed a runtime fallback (plan author).
+Layer: author (brief, plan); caught by the implementation agent.
+Rule next time: lane briefs quote the paths of the ownership table verbatim. The test agent of epic 13 decides DT-13-19 (exhaustive switch kept; test the parsed-unknown case if `SourceKind` has one) and records it in the findings file.
+
+## 2026-10-17 - Commit: feat(ui): add the adaptive surface route and the S03 routes with guarded mode questions
+
+Kind: SUCCESS.
+Facts: lane L5 wrote one route class that serves bottom sheet, popover and dialog, because a Flutter modal bottom sheet cannot turn into a popover while open and RV-9 requires live re-placement; the brief named three route types and the agent reported the deviation with its reason. The router is spliced once; the three stub pages live in `s03_routes.dart`, so later lanes replace their own page files and never edit the router. The first answer to the open availability question (a constant table) was replaced by the committed flags table read at router construction.
+Why it worked: the agent reported UNKNOWNs instead of inventing a provider, and the coordinator answered each one with a concrete instruction.
+Rule next time: the test agents prove the placement table (compact, medium, expanded), the depth counter reset on account change (late `closed` ignored) and the redirect of `/mode-questions/:mode` to Home with no write (DT-06-x, DT-09-6). Architect review checks the new import from `shared/widgets` to `features/auth`.
+
+## 2026-10-17 - Commit: feat(workouts): add the active session status, the dock widgets and the session owner capture
+
+Kind: SHORTCOMING (two gaps found while building) and SUCCESS (agent behaviour).
+Facts: lane L4b stopped at the 20-turn limit once and was resumed; it finished the interface files first as briefed. Two gaps surfaced: (1) no lane owned the ARB files, so the dock code uses generated getters that did not exist (`recordPill`, `strip*`, `rail*`); lane L13 was created for both ARB files; (2) the screen-reader announcements for session started, paused, resumed and ended (contract section 12, AC-A11Y-4) are not written because an unmounted strip cannot announce its own end.
+Root cause: the ownership table of design 9.2 covered code paths but not the two ARB files (coordinator design); the announcement host was not assigned to a lane.
+Layer: design author; caught by the implementation agent's report.
+Rule next time: when a design splits work into lanes, list shared resource files (ARB files, router, main.dart) as owned rows too. Carry-over: the persistent host (lane L4a shell) or the conformance fixes (lane L12) must write the announcements; the test agents keep AC-A11Y-4 as a failing-by-design finding until then.
+
+## 2026-10-17 - Commit: docs: record the activity journal tree, the mode key and the Apple backup marking in the data documents
+
+Kind: SUCCESS.
+Facts: the doc-updater agent corrected three documents after story S03-0 landed and reported what it could not ground (the mode key surviving sign-out is marked INFERENCE in the matrix; the journal-on-sign-out behaviour is stated as 'as for the other local data' instead of a claim). It also found that core/DATA_INVENTORY_2026-08-11.md had no mention of the journal at all and added both rows.
+Why it worked: the brief listed the code facts to verify and asked for UNKNOWN items instead of guesses.
+Rule next time: the sign-out behaviour of the mode key and the journal is part of the S03-16 sign-out guard tests; when they are green, the two INFERENCE cells are turned into FACT in the documentation pass at the end of the sprint.
+
+## 2026-10-17 - Commit: feat(shell): build the navigation bar and the side rail from one destinations list with the dock host
+
+Kind: SHORTCOMING (design claim was wrong) and SUCCESS (agent behaviour).
+Facts: design 2.6 says the bottom clearance of the bar presentation without a dock equals today's value. The implementation agent read the Flutter scaffold source and found it does not: with `extendBody` the body bottom padding is the bar height plus the inset, about 86 dp larger than the design's sum (14 + 72 + inset + 24). The agent kept the default build identical by building `ShellLayout` inside the body from the same body padding. The rewritten `main_shell.dart` also had to work without a `ProviderScope` because `back_navigation_test.dart` pumps `MainShell` bare; the agent detected the scope instead of changing that test.
+Root cause: the design stated a number from the code map without deriving it from the framework source (design author).
+Layer: design; caught by the implementation agent before any test run.
+Rule next time: a design claim of the form 'equals today's value' is checked against the framework source or a measured value. The test agents measure the bar-presentation clearance against the pre-S03 value (AC-REG-x) instead of trusting the formula.
+
+## 2026-10-17 - Commit: feat(l10n): add the S03 localization keys in English and Russian
+
+Kind: SHORTCOMING (design gaps found while adding the keys) and SUCCESS.
+Facts: lane L13 added 129 keys per language (groups 6.1 to 6.9: 20, 10, 15, 15, 10, 6, 29, 19, 5). The design left these open and the agent chose the nearest pattern: no `other` branch for the mode selects (fallback Train / Coming later / Record); English plural forms for five keys; Russian plural forms for `activityTimeFrom` and `activitySourcesMore` derived from the base phrase (marked as the agent's work that needs a translator check); `railMinutes` as a plain int placeholder because the table gave no plural forms; `activitySourceUnknown` named in the design but without a value (the existing `sourceLabelUnknown` covers it, key not added). The English text of `signOutConfirmDelete` was not a plural ('Delete 1 activities'); the coordinator made it a plural in this commit.
+Root cause: design section 6 listed copy per key without a column for plural forms or select fallbacks (design author); no lane owned the ARB files until the build revealed it (see the L4b entry).
+Layer: design; caught by the implementation agent and by the coordinator's read of the result.
+Rule next time: the ARB parity test (S03-18) must check plural forms and select fallbacks, not only key sets; the pseudo-locale run and a Russian translator check cover the derived forms.
+
+## 2026-10-17 - Commit: feat(shell): add keyboard shortcuts, the visible Back control and scroll helpers
+
+Kind: SUCCESS.
+Facts: lane L10 wrote the interface files first and reported its deviations: the Back shortcut does nothing on the home route (a key must not quit the app), and a matching key is consumed even when a guard stops the action. Two go_router APIs it uses (`routerDelegate.navigatorKey`, `currentConfiguration.uri`) were not checked against the pinned version.
+Rule next time: the test agents prove the guards (no shortcut in a text field, none while a surface is open, tab shortcuts only on shell routes, Esc never navigates back) and compile-check the two router API uses first.
+
+## 2026-10-17 - Commit: feat(app): mount the window scope and the shortcuts and refresh the digests on resume
+
+Kind: NEUTRAL.
+Facts: main.dart now wraps the router content in WindowSizeScope and AppShortcuts and refreshes the activity digests on app resume without a second lifecycle observer. Unverified: how AppShortcuts finds a navigator context above the router navigator (internal to app_shortcuts.dart).
+Rule next time: the test agents pump FitnessApp once and prove that shortcuts reach the router and that the window class rebuilds only on a class change (DT-02-3, DT-17-x).
+
+## 2026-10-17 - Commit: feat(sources): add the Sources page with the app row states and the source rows
+
+Kind: SHORTCOMING (design gaps) and SUCCESS (survey).
+Facts: lane L9 run 1 wrote the Sources page and surveyed the sign-out call sites without editing them. Gaps it found: the design names a `sourcesSummaryProvider` that does not exist in the code (the page derives its data from the digest snapshot); the keys `activityRecoveryNotice`, the 'May provide' texts and the sign-out guard sentences have no ARB entries; the contract asks for Try again on the failedToOpen state while the approved design says retryNow is not applicable there. The survey found exactly two sign-out callers (Profile tile, no confirmation today; account deletion, best effort after the wipe) and that `ActivityWipeCoordinator.onSignOut` does delete the departing uid's journal, and that `activity_local_export.dart` writes no file (bytes only), so the export file location is new code.
+Root cause: design section 6 and 2.5 named strings and a provider without checking that they exist (design author); the contract and the design disagree on one button (documented AC-PR-2 deviation).
+Layer: design; caught by the implementation agent.
+Rule next time: every key and provider name in a design is grepped before the design is approved. Run 2 removes the Try again button for failedToOpen on Sources (consistent with the approved design).
+
+## 2026-10-17 - Commit: feat(l10n): add the keys for the Sources capability lines, the recovery notice and the sign-out guard
+
+Kind: SHORTCOMING (resolved).
+Facts: 19 more keys per language were needed because design section 6 did not list the Sources capability texts, the recovery notice and the sign-out guard sentences although the approved design and contract name them; the lane agent drafted all English texts except one sentence and ALL Russian texts for them (listed in the lane report, not product-reviewed). A concurrent edit of signOutConfirmDelete by the coordinator was handled correctly by the agent (it did not revert it).
+Root cause: design copy tables were not checked against the list of strings the contract and the design text refer to (design author).
+Rule next time: before approving a design, grep every quoted UI sentence and key name against its copy table. Product review of the agent-drafted Russian texts is a carried item for the acceptance record.
+
+## 2026-10-17 - Commit: feat(signout): add the sign-out guard for local activity and finish the Sources page
+
+Kind: SUCCESS with open risks.
+Facts: lane L9 run 2 wrote the sign-out guard (cannot-check sheet, warning sheet, delete confirmation, error sheet with Retry), the temporary export file bound to a hashed uid and deleted after the share, the Profile tile change and the Sources recovery and capability lines; account_deletion_providers.dart was not edited. The agent added a plain 'Sign out' button that keeps the data on the device (not in design 6.9) so that a user with local activity is not forced to delete. Risks it reported: tests that turn the journal flag on without a journal override get failedToOpen and the guard shows the cannot-check sheet; share_plus and generated getter signatures were not checked against the packages; `_SourcesStub` is now unused.
+Rule next time: the test agents prove the guard rows (DT-16-x) with a journal override, check the export file is deleted after the share and that no wipe call happens unless availability is open; the first compile will confirm the package API.
+
+## 2026-10-17 - Commit: fix(modes): persist again after a failed save when the same choice is repeated
+
+Kind: FAILURE (caught by an implementation agent of another lane before any test).
+Facts: the mode notifier set the state in memory first and returned `unchanged` when the identical value was already in memory, so 'Try again' after a failed save wrote nothing and the caller treated unchanged as success; the user would advance with an answer only in memory (test plan row DT-09-2). Fixed with a per-uid persist-failed flag: the identical call writes again while the flag is set. initIfAbsent is intentionally unchanged.
+Root cause: 'set memory first, compare with memory' design in my lane brief (coordinator) plus no scenario 'repeat after failed write' in the state-layer review.
+Layer: author (brief, notifier); caught by lane L6 while building the question page; the test agents prove it (DT-09-2, DT-01-x).
+Rule next time: any optimistic-update state holder gets the scenario 'same value after a failed write' in its brief and its tests.
+
+## 2026-10-17 - Commit: feat(modes): add the mode chooser, the per-mode questions, the switcher, the Coming-later sheet and the Record sheet
+
+Kind: SUCCESS with open items.
+Facts: lane L6 wrote stories S03-08 to S03-11 in two runs: the chooser (four cards, three layouts, grid rule by available width, no spinner, Back equals Decide later, unsaved selection dropped on account switch), the questions page, the mode switcher, the Coming-later sheet and the Record sheet (every row navigates, the only write is the explicit Open Train tap). While building it the agent found the repeat-after-failed-save defect in the state layer (fixed in 6521e152). Open items it reported: the rail Record slot has no GlobalKey so on expanded windows the Record sheet is a centred dialog unless an anchor is passed; SemanticsService.announce is used with an ignore for a deprecation; ModeState.answers holds one answer per mode (enough for one question per mode today).
+Rule next time: the test agents prove: no write on opening or closing any sheet (AC-RC), Ride and Explore never write, a failed save keeps the selection and shows the error, Back on the chooser runs Decide later only while pending.
+
+## 2026-10-17 - Commit: feat(app): route to the real chooser, questions and Sources pages and wire the switcher and Record openers
+
+Kind: NEUTRAL.
+Facts: the three stub pages of the S03 router splice were replaced by the real pages (three separate lanes edited the same router file one after another, each touching only its own line, and the unused stubs and the unused route list were then deleted). The mode switcher and Record sheet openers are wired as provider overrides in main.dart; tear-offs with an extra optional named parameter are assumed assignable to the one-argument typedefs (not compiled).
+Rule next time: when several lanes must edit one file, serialise them and give each exact lines; the first compile of the test agents confirms the tear-off assignment.
+
+## 2026-10-17 - Commit: feat(progress): add the all-activity block, the journal error panel and the Sources slot to Progress
+
+Kind: SHORTCOMING (resolved in the same lane) and SUCCESS.
+Facts: lane L8 stopped once at the turn limit and was resumed. Its first version needed six ARB keys and hard-coded the distance unit and reused the time wording for the distance hint; the keys were added (7 per language, lane L13 run 3) and the code switched to them. Its report listed deviations: tile keys use walk (not walkHike) to match the test plan; failedToOpen has no Try again (same documented deviation as AC-PR-2); the staleness refresh runs from a post-frame callback; the recovery notice also shows in the demoted slot when the lost count is above zero (design silent).
+Root cause: design section 6.7 did not list the tile labels, the stale and incomplete notices or a distance unit (design author).
+Rule next time: the existing progress_page_test.dart is at risk (headline text counts); the test agents run it first and report. Distance wording and the new Russian texts need product review.
+
+## 2026-10-17 - Commit: feat(home): add the mode lens, the mode chip, the activity today card and the two-pane layout to Home
+
+Kind: SHORTCOMING (agent work pattern) and SUCCESS.
+Facts: lane L7 hit the 20-turn limit once with no file written (it read for the whole run), and finished after the coordinator told it to stop reading and write. Its report lists known gaps: no ARB key for the '+n more' line of the Activity today card (a bare '+n' is shown); the mode chip has no icon (HudChip has no icon parameter); the viewport is not compensated when the card arrives above the visible content (deviation from contract S-6 wording); the sport-group mapping is duplicated from the Progress lane; the lens only reorders and never removes sections.
+Rule next time: briefs for big existing pages say 'write after at most five reads'. The test agents check the section keys, the TRAIN order equals the pre-S03 order, the Day-3 modal and the chooser never appear together, and report the viewport gap as a finding for the conformance pass.
+
+## 2026-10-17 - Commit: fix(s03): fix the compile errors and the defects found by the first test run
+
+Kind: FAILURE (expected consequence of the no-run build rule, recorded so the cost is visible).
+Facts: the first run of the code by a test agent found six compile errors in production files written by four different lanes (type promotion between unrelated interfaces in two places, a go_router call with a type argument that does not exist, a nullable provider read, a missing import, a missing constructor key) and five behaviour defects: Sources kept saying In use after a failed refresh, Home chose two panes at a large text scale, the Home more line was a bare number without a key, and two viewport-jump findings (not fixed here). The existing Home and Progress tests also failed only because of the compile errors; with the six fixes applied in a scratch copy all nine existing files passed (115 tests).
+Root cause: implementation agents are forbidden to run anything, so nothing compiled until the test phase; lane briefs did not ask for a careful compile read of type relations (is-checks across interfaces), only for a syntax read.
+Layer: author (implementation agents) and reviewers (none had run yet); caught by the test agent on the first run.
+Rule next time: the first test run is scheduled as soon as the first lane lands (a compile-only smoke by the test agent after wave 1), not after the last lane; lane briefs list the known Dart traps (is-check promotion needs a subtype, go_router extensions, nullable providers, imports of event classes).
+
+## 2026-10-17 - Commit: fix(modes): show only the greeting while the mode is unknown and refuse a stale write without throwing
+
+Kind: FAILURE (two defects found by the step 1 test agent).
+Facts: Home rendered the TRAIN section order while the stored mode was still loading, so a BODY user saw a wrong-mode flash (contract forbids it, test DT-01-9); the mode notifier's refusal path read providers through a stale reference after an account switch, which throws an AssertionError in debug builds instead of returning saveFailed (DT-01-23).
+Root cause: Home used `modeState?.selectedMode ?? AppMode.train`, a default that silently invents a mode (lane L7); the refusal read provider state without a guard (lane L2).
+Layer: authors; caught by the step 1 test agent through real-notifier tests.
+Rule next time: a null state never defaults to a concrete user choice; any async continuation that reads providers after an await is wrapped or uses a captured value. Open: the chooser offer path (`_maybeOfferChooser`) was not re-read for the loading case; the test agents check that no chooser is offered while the mode state is loading.
+
+## 2026-10-17 - Commit: fix(modes): fix chooser focus order, anchor the rail Record sheet, put meal first for food answers and size the loading cards
+
+Kind: FAILURE (defects found by the step 3 test agent in mode screens).
+Facts: the chooser skipped two cards in Tab order once a card was selected (DT-08-1b); the rail Record slot had no anchor key so the Record sheet opened centred on expanded windows (DT-12); the Record sheet ignored the stored Body answer so a food answer did not put the meal row first (DT-11-3); the loading outline cards were 25 dp shorter than loaded cards, so the second row shifted on load.
+Root cause: authors (lane L6) relied on default focus traversal and left the anchor and ordering inputs out of the first version; the lane L6 report listed the anchor gap itself as an open item, and the briefs did not turn open items into stories.
+Layer: author; caught by the step 3 test agent through widget tests.
+Rule next time: an open item in a lane report becomes a test-plan row or a fix item before the lane is closed; every screen with several focus targets gets an explicit traversal order in its first version.
+
+## 2026-10-17 - Commit: test(modes): add the functional tests for the chooser, the questions, the switcher and the Record sheet
+
+Kind: SUCCESS with open items.
+Facts: the step 3 test agent wrote 96 widget tests (chooser 45, questions 20, switcher 16, Record sheet 15) and ran them in the real tree at 0969258b: 96 passed, 0 failed. Run history: 93 passed and 3 failed at 8a5c7474; the failures were production defects (chooser Tab order, missing rail anchor, meal-first), fixed in batch 3, after which the same tests pass.
+Why it worked: the tests were written against the contract rows and run per epic by the author of the tests, so the defects were found before review.
+Open: flag inputs for the Record rows (minor finding, tests DT-11-1 and the flags-off row of AC-RC-3 stay weak, DT-11-1b pins current behaviour and must be replaced when the inputs are added); DT-09-4, DT-09-5 and DT-10-2 are partial because no mode asks two questions yet; the loading height shift was not re-measured.
+Rule next time: when a minor finding is skipped, the test that pins the current behaviour carries the marker in its name so the fix forces its replacement.
+
+## 2026-10-17 - Commit: fix(shell): keep the viewport steady, show the rail focus ring, keep focus on resize, hide the Record pill for another account and announce session changes
+
+Kind: FAILURE (defects found by test steps 2 and 4) and SHORTCOMING.
+Facts: the Progress All-activity block and the Home Activity today card shifted the visible content by 376 dp and 155 dp when they arrived; the five rail destinations painted no focus ring; focus fell to the root navigator when the layout switched from rail to bottom bar; the Record pill stayed visible for another account; at text scale 2.0 on a 360x480 window the pill was 230x70 and the strip was not one line; session start, pause, resume and end were not announced to screen readers.
+Root cause: authors (lanes L4a, L4b, L7, L8) did not apply the viewport, focus and text-scale rules of the contract to the parts they built; the lane briefs named the rules but the lanes could not run anything to see the effect.
+Layer: author and reviewers (none had run yet); caught by the step 2 and step 4 test agents with widget tests.
+Open and carried: the session owner is not cleared when another account signs in (clearing it while a timer runs would show account A's session to account B, so the provider-level test of that row must be re-worded); flag inputs for the Record rows are not done; announcement texts are agent-drafted and need product review.
+Rule next time: contract rules about viewport, focus and text scale become acceptance rows in the lane brief itself, with the exact widget to measure.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 documentation readiness note
+
+Kind: SUCCESS.
+Facts: while S03 testing runs, the next sprint documents were reviewed once (as the delivery rules require, in parallel with the current sprint) and the result is a readiness note: 12 gaps and 8 entry decisions for the operator. Top gaps: there is no UI design contract for S04, the recorder requirements and numbers are undefined, the relationship between the recording journal and the S02 journal is undecided, Android location and foreground-service rules are unverified, and no sprint owns the consent centre.
+Why it worked: the note is a list of facts with file pointers, produced without delaying the current sprint.
+Rule next time: the S04 documentation pass starts from this note, one fix pass, no rewrite of settled documents.
+
+## 2026-10-17 - Commit: fix(progress): compensate the scroll offset by the net height change when the activity block arrives
+
+Kind: FAILURE (defect in my own fix, found by the step 4 test agent).
+Facts: the scroll compensation added in the previous batch added the full height of the arriving All-activity block (492 dp), but the Sources slot with its gap (116 dp) disappears in the same frame, so the Last 8 weeks heading moved 116 dp up (test DT-14-2).
+Root cause: the author (lane L12) compensated for the added block only and did not account for the element removed above the anchor in the same frame; the brief did not say the slot goes away.
+Layer: author; caught by the step 4 test measurement of a stable heading, not by a literal offset check.
+Rule next time: scroll compensation is the net height change above the anchor; tests measure a stable element below the change, not the offset.
+
+## 2026-10-17 - Commit: test(activity): add the functional tests for the journal availability, the mode state and the account-switch wipe
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: the step 1 test agent wrote 13 files with 140 tests (journal availability, flags, mode state, migration, onboarding hook, timer isolation, UI seams, wipe on account deletion) and ran the complete set in the tree: 140 passed, 0 failed; the existing Home tests (82) pass unchanged. The first run found six production compile errors and two behaviour defects (wrong-mode flash on Home, assertion on a stale notifier), all fixed in earlier commits. Shortcoming: the first re-run collided with another agent's flutter test on the shared build cache; it was repeated.
+Rule next time: test agents run in sequence when they share the build cache, or use separate output dirs; partial rows (real-app first Home frame, dashboard widget part of the availability test) are carried to acceptance.
+
+## 2026-10-17 - Commit: test(shell): add the functional tests for the window class, the rail, the dock, the surfaces and the session strip
+
+Kind: SUCCESS with open items.
+Facts: the step 2 test agent wrote 133 tests in 7 files plus a shell harness and ran them with three existing files (96 more): all pass at e35a3f66. The tests found five real production defects (compile errors in the surface file, no rail focus ring, focus lost on rail to bar swap, Record pill shown for another account, dock not compact at large text scale), each with a failing test before the fix. The agent hit its 25-turn limit once and was resumed.
+Open: MainShell has no seam to inject a destination list, so three rows are covered only at widget level; real tab pages at 640x360 are not covered; the ru variant of one HUD row was not recorded.
+Rule next time: give shell widgets an injectable destination list when a test plan needs one (carried as a refactor note).
+
+## 2026-10-17 - Commit: test(dashboards): add the functional tests for the activity aggregates, Home, Progress, Sources and the sign-out warning
+
+Kind: SUCCESS and FAILURE (one defect in my own earlier fix).
+Facts: the step 4 test agent wrote six files (aggregates, dashboard providers, Home mode lens, Progress dashboard, Sources panel, sign-out warning) with a support file and ran them with the nine existing Home and Progress files: 242 passed, 0 failed, 2 skipped in code. Run history: the first run found six production compile errors; the existing Home test then broke because of the greeting-only first frame I added (adapted on the test side); the scroll compensation I had added for Progress moved the Last 8 weeks heading 116 dp because the Sources slot disappeared in the same frame (fixed in d0b3ad54).
+Why it caught them: the tests measure a stable heading below the change, not a literal scroll offset.
+Open and carried: DT-16-3 and DT-16-8 skipped in code; DT-13-23 and DT-14-8 are measure-only gates for step 7; no offline seam for AC-LS-5; DT-13-19 is tested in the reachable form (SourceKind.parse fallback to file import); the plan said Apple Health for the health platform row but the code says Health platform; the sign-out sheet has an extra keep-data action.
+Rule next time: any production change that alters the first frame gets a grep for existing tests that sign in a user, before the commit, not after the test run.
+
+## 2026-10-17 - Commit: fix(wiring): ignore a repeated auth value for the same account in the journal bind controller
+
+Kind: FAILURE (design defect, found by the reliability reviewer, not by any test).
+Facts: the bind controller restarted the whole bind (new generation, reset schedule, state back to the first attempt) for every auth value, including repeated values for the same uid. The auth provider is built on userChanges(), which also fires on token refresh, profile reload, email verification and account linking, so a bound journal flapped to binding (dashboards flashed loading), a failing bind restarted its 5/15/60/300/300 s schedule without end, and a given-up bind was cleared silently. I confirmed it by reading activity_wiring.dart (onAuthValue has no uid comparison) and firebase_auth_repository.dart (userChanges).
+Root cause: the design sentence "a generation is one auth value" was written against sign-in and sign-out only; nobody listed the other events the stream emits (author of the design, which I am; design reviewers; the 140 tests had no re-emission case).
+Layer: author and tests missed it; the reliability review caught it.
+Rule next time: for every stream a state machine listens to, list all event kinds the source emits before defining what starts a new generation, and add a re-emission test row.
+
+## 2026-10-17 - Commit: docs(s02): add the S02 sprint report and retrospective and the architecture input to the S04 readiness note
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: the S02 phase 10 report was produced by a reporting agent from git and the findings files in one run (154 lines, numbers labelled MEASURED or INFERRED, eight retrospective actions tied to lessons entries). The agent listed what it could not verify: no complete test run exists on the approved S02 head (the final-run file is at an earlier head, before remediation E to J), the documentation-gate severities of rounds 3 to 9 are not recorded, and there is no per-run model table.
+Shortcoming: S02 evidence was never collected into one place at the time, so the report has gaps that cannot be closed now.
+Rule next time: each gate round writes its head, severities and the models used into the sprint findings file in the same commit; the final complete test run is recorded on the head that is approved, not an earlier one.
+
+## 2026-10-17 - Commit: test(activity): add regression tests for a repeated auth value in the journal bind controller
+
+Kind: SUCCESS.
+Facts: four regression tests (DT-0-17a to d) cover the fix for same-account auth re-emission: a bound journal keeps its state and makes no extra bind call, an armed retry keeps its timer and schedule, a given-up bind restarts, a uid change and a sign-out still restart or unbind. The complete step 1 set passes: 144 passed, 0 failed.
+Why it worked: the tests simulate the re-emission with a same-uid user object whose display name differs, because an identical value would not reach the listener.
+Rule next time: every listener on a stream gets a row for repeated and equal values.
+
+## 2026-10-17 - Commit: fix(s03): apply the review findings on mode state, logging, scroll compensation and accessibility
+
+Kind: FAILURE (two major defects in my own earlier fix, found by the Flutter reviewer) and review follow-up.
+Facts: six read-only reviews (reliability, security, architecture, silent failures, Flutter, accessibility) produced 0 BLOCKER, 3 MAJOR and about 30 MINOR findings. The two Flutter majors were in the scroll compensation I added for the dashboard cards: the Home card compensated on every re-creation while scrolling (state held in the widget), and Progress subtracted the Sources slot height in the error states where the slot stays. The third major was the same-account auth re-emission restarting the bind (fixed in fca06cba).
+Root cause: the compensation was written against one test measurement (first arrival), without asking how long the widget lives, and without checking which states keep the slot.
+Layer: author; tests passed because they exercised the first arrival only; reviewers caught it.
+Rule next time: a one-shot behaviour is triggered by a state transition observed outside the widget lifetime (listener on the provider), never by a flag in a widget that a lazy list can recreate; tests scroll the widget out of the cache extent and back.
+Also fixed: the mode of the previous account no longer shows on Progress, the Record sheet and the switcher while the new mode loads (one selected-mode provider); the stored mode is no longer overwritten after a flag rollback; failed mode writes and the Day-3 and refresh failures are logged with a fixed message; a retry timer that fires during account deletion is re-armed; Try again is disabled while an attempt runs; accessibility: wrapping button labels, session announcements skip rest-only changes, live regions for errors, announcement from the Record sheet, 48 dp targets, a visible Back on the Coming-later sheet.
+
+## 2026-10-17 - Commit: fix(shell): make the keyboard shortcuts see pages pushed over a tab
+
+Kind: FAILURE (defect in the shortcut layer written by lane L10, found by the step 5 test agent).
+Facts: the shortcut layer read the current location from the router configuration uri, which ignores pages opened with push. With Settings pushed over Progress, the Back shortcut jumped to Home instead of closing the page, and the tab shortcuts replaced the stack under the page. Two contract tests failed (the other 49 of the step 5 tests passed).
+Root cause: the author read the location from the configuration uri, which describes the matched stack root, not the topmost route (lane L10); the brief did not mention pushed pages above a tab.
+Layer: author; found by a test that pushes a page over a tab.
+Rule next time: any code that reads the current location is tested with a pushed page above a tab; use the matched location of the last route.
+
+## 2026-10-17 - Commit: fix(modes): declare the mode state in the switcher sheet build method
+
+Kind: FAILURE (compile error introduced by the review batch and committed without a compile check).
+Facts: batch 8 replaced the line that declared the mode state in the switcher sheet and left its use below, so the app no longer compiled from commit 9b42ef53 until this commit; two test agents (steps 1 and 2) found it on their next run: one existing test file and one new test file could not load.
+Root cause: implementation agents run nothing, so a compile error is only visible at the next test run; I committed the batch after reading the agent's summary, without reading the diff of the risky edit myself.
+Layer: author (agent) and coordinator (no diff read); caught by the test agents within one run cycle.
+Rule next time: after every batch that edits code the agents cannot compile, ask one test agent for a compile-only smoke (a single quick test that imports the app router) before committing; the cost is minutes and it avoids a broken head.
+
+## 2026-10-17 - Commit: test(modes): add tests for the selected mode, the rollback write and the retry during account deletion
+
+Kind: SUCCESS.
+Facts: the step 1 test agent added tests for the review fixes (selected mode is null while loading and after an account switch, the raw stored mode survives writes after a flag rollback and is replaced by an explicit choice, a retry timer firing during account deletion is re-armed with the same index) and ran the complete set: 150 passed, 0 failed at head 7888326b. The same run cycle found the compile error of the previous batch, so the tests also served as the compile gate.
+Rule next time: the tests for a review fix are written by the test agent in the same cycle as the fix, which is what happened here.
+
+## 2026-10-17 - Commit: test(shell): add tests for rest-only announcements and the surface depth on an account change
+
+Kind: SUCCESS.
+Facts: the step 2 test agent added tests for the review fixes (nothing is announced when only a rest timer runs, pause and resume still announce; the open-surface depth stays when the account changes and drops when the surface closes) and ran the complete set at head 7888326b: 134 new-set entries and 96 existing entries all pass, including back_navigation_test.dart, which had been blocked by the compile error of the previous batch.
+Rule next time: none new; the run after a fix batch is also the compile gate.
+
+## 2026-10-17 - Commit: test(dashboards): add tests for the scroll compensation, the error transition, Try again and the account switch
+
+Kind: SUCCESS.
+Facts: the step 4 test agent added tests for the review fixes (the Activity today card scrolled out of the cache extent and back keeps the offset, compensation only when the card lands above the viewport edge, Progress loading to error keeps a stable heading, Try again is disabled during a manual attempt, tile order does not use the previous account's mode) and changed two earlier tests to the new rule (compensate only above the viewport edge). The complete run at head 7888326b: 247 passed, 0 failed, 2 skipped in code.
+Rule next time: a test of a one-shot behaviour scrolls the widget away and back; that test is what the Flutter reviewer asked for and it did not exist before.
+
+## 2026-10-17 - Commit: test(input): add the keyboard and pointer tests for the shortcuts, the shell input and the real pages
+
+Kind: SUCCESS and FAILURE (one defect found).
+Facts: the step 5 test agent wrote 63 tests in three files (shortcuts 32, shell input 19, real pages 12) and ran them green at head 7c961d79. They found one real defect: the shortcut layer read the location from the router configuration uri, which ignores pages opened with push, so Back and the tab shortcuts acted on the wrong page (fixed in e78925d3). A run in between failed to load because of the compile error of the review batch (fixed in 7888326b).
+Open and carried: Home and End keys in the rail versus the page; wheel and scrollbar on the real Home and Sources pages; the Record and mode-switcher shortcuts end to end (the openers are faked in the shortcut tests); Esc ordering with a popup menu above the popover; touch-only, pointer-only and keyboard-only journeys; the scanner page as a pushed route.
+Rule next time: end-to-end journeys through the real openers are an explicit later step, not left as NOT_RUN rows without an owner.
+
+## 2026-10-17 - Commit: test(modes): add tests for the Coming-later Back button, the Open Train announcement and wrapped labels
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: the step 3 test agent added tests for the review fixes (Coming-later Back closes without any write from the chooser and from the switcher, Open Train writes exactly one state and announces the mode change, the Record sheet lists no rows of the previous account while the new mode loads, five wrapped labels show in full at text scale 2.0 in ru on 360 dp) and ran the complete set: 103 passed, 0 failed at head 7888326b. Shortcoming: the agent waited a long time while the tree did not compile (the batch 8 error) and checked its new tests in a scratch copy instead; it reported the error clearly.
+Open and carried: the Record row flag inputs (minor finding, DT-11-1b pins the current behaviour); the Record sheet title still reads the mode state directly and can name the previous account's mode during an account switch (minor, fixed in a later batch).
+Rule next time: when the tree does not compile, the test agent reports it at once and stops instead of working in a scratch copy for a long time.
+
+## 2026-10-17 - Commit: fix(modes): read the selected mode for the Record sheet title
+
+Kind: SHORTCOMING (leftover of the selected-mode change, found by the step 3 test agent).
+Facts: after the selected-mode provider was introduced, the Record sheet route label still read the raw mode state and could name the previous account's mode while the new one loads. One line fixed; the diff was read by me before the commit this time.
+Rule next time: when a read path is replaced by a new provider, grep for every other reader of the old provider in the same batch.
+
+## 2026-10-17 - Commit: fix(modes): let the Coming-later chip wrap on the chooser cards and bound it in the switcher row
+
+Kind: FAILURE (two layout defects in S03 widgets, found by the step 6 conformance tests) and a triage SUCCESS.
+Facts: the conformance matrix (four window classes, text scale 1.0 and 2.0, en and ru) flagged six clipped or overflowing texts. Triage with git blame showed two were S03's: the Coming-later chip on the chooser cards sat in a Row with a Spacer and a Flexible, which halved its width and truncated it; the same chip in the switcher row had no width bound and overflowed the sheet by up to 54 px at text scale 2.0. The other four (bottom bar labels, Home total cards, Home adaptive plan, an eligibility notice) come from commits already in the base and were not touched.
+Root cause: authors (lanes L6) tested nothing at large text because nothing could run; the reviewers read the layout code but not at scale 2.0.
+Layer: author; the step 6 conformance tests caught it.
+Rule next time: a layout row with a chip or a trailing label gets an explicit width rule (Expanded with wrap, or a max width) in the first version; conformance runs are scheduled right after wave 1 for layout, not at the end.
+
+## 2026-10-17 - Commit: fix(modes): drop the Coming-later chip under the icon on narrow cards and scale its cap with the text size
+
+Kind: SHORTCOMING (my fix in the previous commit used a guessed constant and was not enough).
+Facts: the first chip fix kept a fixed 104 dp cap in the switcher row; at text scale 2.0 the inner width after padding (about 72 dp) was narrower than the word, so the chip was still clipped (5 conformance cells). Batch 14 turns the card header into a Wrap (the chip drops under the icon when it does not fit) and derives the cap in the switcher row from the text scale, limited to 40% of the window width.
+Root cause: I told the fix agent a number-free approach in the second message but accepted its guessed number in the first; the measurement only existed at test time.
+Layer: coordinator accepted a constant without a measurement; caught by the step 6 tests.
+Rule next time: when a fix depends on a measured size, require the layout to derive it (wrap or scale), never a constant; the test run confirms.
+
+## 2026-10-17 - Commit: fix(modes): bound the text scale of the Coming-later badge at 1.3
+
+Kind: SHORTCOMING (three fix rounds for one badge) and SUCCESS (measurement closed it).
+Facts: the Coming-later badge was clipped at text scale 2.0 after the wrap fix and after the width fix. The step 6 agent measured the paragraph: the single word needs about 140 dp at that scale and only 114 to 128 dp are available, so no wrapping can fit it. The remaining option that keeps the layout was to bound the badge text scale at 1.3; the full meaning stays in the semantics label and hint of the card and the row.
+Root cause: the first two rounds changed the layout without a measurement; the measurement showed the cause is the font size of a short fixed word in a narrow box.
+Layer: author and coordinator (guessed fixes); the step 6 measurement found the real cause.
+Rule next time: for a clipped fixed word, measure the word width at the target scale before choosing wrap, cap or clamp; stop after one fix round and measure.
+
+## 2026-10-17 - Commit: test(conformance): add the contract conformance matrix and the carried items record for S03
+
+Kind: SUCCESS with a cost.
+Facts: the step 6 test agent wrote 195 conformance tests (pages 136, shell 34, localisation 6, extras 19) over four window classes, text scale 1.0 and 2.0, English and Russian, and ran them green at head 711d811c: 177 passed, 18 skipped as carried, 0 failed. The matrix found six clipped or overflowing texts; two were S03's (the Coming-later badge on the chooser cards and in the switcher row) and took four fix rounds, the last one a measured decision (bound the badge text scale at 1.3); four are in base code and are carried with the base commits.
+Cost and cause: the first two fix rounds changed the layout without measuring the word width; the conformance run was scheduled after all lanes instead of right after the layout lanes.
+Rule next time: run the layout conformance matrix once after the first UI wave, and measure before choosing wrap, cap or clamp.
+Carried: the badge clamp deviates from the contract wording that status words follow the system scale; the contract should name this exception. The Colors.transparent exception in the raw colour scan is recorded in the findings file.
+
+## 2026-10-17 - Commit: fix(modes): take the chip width cap from the window helper instead of a raw width
+
+Kind: FAILURE (a rule violation I introduced in the previous fix, caught by a design-rule scan in the final run).
+Facts: batch 15 computed the switcher chip cap from the raw window width; the step 2 scan test for the design rule that S03 screens do not read raw widths failed in the final run (229 of 230). The line is a proportion, not a breakpoint, so it is minor.
+Root cause: I gave the fix agent a constant-free formulation but not the design rule about raw widths; the agent read the width directly.
+Layer: author and coordinator; caught by the scan test in the final run, not by an earlier run (the scan passed before batch 15).
+Rule next time: brief fix agents with the design rules that have scan tests (no raw widths, no raw colours, no unlabeled controls), not only with the defect; the final complete run exists to catch exactly this kind of late change.
+Note: the helper keeps the raw read in one allowed place next to the window classifier. It satisfies the scan and the rule's purpose (no breakpoints in screens), but the letter of the rule is bent; recorded for the acceptance record.
+
+## 2026-10-17 - Commit: docs(s03): record the final complete test runs and the test summary
+
+Kind: SUCCESS with two costs.
+Facts: the final complete runs of all six test steps are green: 150 (step 1), 230 (step 2), 103 (step 3), 247 with 2 skipped in code (step 4), 63 (step 5) and 177 with 18 carried skips (step 6), 0 failures in total. The final run still found one rule violation introduced by a late fix (a raw window width read, caught by the design-rule scan) and one stale report line, which shows the value of running everything once more after the last change.
+Costs: a run of one agent wrote to an output file name used by another agent and showed the wrong tests (discarded and repeated); several agent runs took hours of wall-clock because six agents shared one build cache.
+Rule next time: each test agent uses a private output file name; schedule the final runs in sequence or in two waves instead of six at once.
+
+## 2026-10-17 - Commit: fix(modes): persist an explicit Train choice over a rolled-back mode and keep focus on the destination that held it
+
+Kind: SHORTCOMING (two edge cases in my own remediation, found by the code-reviewer verification round).
+Facts: the raw stored mode kept after a flag rollback was not released when the user explicitly chose the mode shown (the early return came before the reset), so the old stored value came back when the flag returned; the focus restore after a rail to bottom bar swap requested focus on the active route instead of the destination that held it.
+Root cause: the remediation of the first review introduced state (raw stored mode, shell focus nodes) without walking the exits of the functions that touch it.
+Layer: author; not covered by the tests I asked for (they covered the write paths, not the same-mode selection); caught by the verification round.
+Rule next time: when a remediation adds a state field, list every function that reads or resets it and give each exit a test row.
+
+## 2026-10-17 - Commit: fix(shell): put the chip at the card end and announce a session that starts after a rest
+
+Kind: SHORTCOMING (two defects in my own earlier fixes, found by the Flutter verification review).
+Facts: the card header Wrap received loose width from its Column, so space-between did nothing and the Coming-later chip stood next to the icon, not at the card end (no test asserted the chip position, the conformance matrix only asserted no clipping); the rest-only filter for session announcements dropped the start when a session began with a rest and a set followed.
+Root cause: authors (coordinator and the fix agent) fixed clipping and noise without asserting the position and the sequences; tests covered the cases we thought of.
+Layer: author and tests; caught by the verification review.
+Rule next time: a layout fix gets a position assertion, and a filter on transitions gets a sequence test with every path through the state table.
+
+## 2026-10-17 - Commit: test(s03): final complete runs on 489e486d and chip, focus and announcement tests
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: all six test steps re-ran their complete sets on the last production head: 977 passed, 0 failed, 20 skipped (docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md). New tests cover the card chip placement, focus kept across the rail/bar swap, and the started announcement after a rest. Shortcoming: step 3's first Russian chip expectation was wrong (assumed the chip always wraps at scale 2.0); the test, not production, was corrected.
+Rule next time: derive a layout expectation from the rule (fits beside, else below), not from one language's measurement.
+
+## 2026-10-17 - Commit: fix(shell): hide every Record entry point for a foreign session and order mode writes
+
+Kind: FAILURE.
+Facts: the GPT-PM code gate (MODIFY on 95a7ea04) found two MAJOR defects. (1) The side rail Record slot and the Record keyboard shortcut ignored the foreign-owner flag, although the bottom dock honoured it. (2) Mode writes of one account were not ordered, so an older write could land last.
+Root cause: batch 4-5 applied the foreign-owner rule to the dock only and I did not enumerate all Record entry points; the mode notifier awaited the store directly with no write queue.
+Missed by: author (me), the six internal reviews and the six test steps (tests asserted the dock and the pill, not the rail slot or the shortcut); caught by the GPT-PM gate.
+Rule next time: when a rule applies to a capability, list every entry point of that capability (dock, rail, shortcut, sheet opener) and test each one; any notifier that persists state needs an ordered write path.
+
+## 2026-10-17 - Commit: fix(shell): keep the rail Record slot height when a foreign session hides the control
+
+Kind: FAILURE.
+Facts: the regression test written for the first gate fix (20b39611) failed: in the compact rail the empty foreign-owner slot (64 dp) was shorter than the idle Record control, so the Progress destination moved up 16 dp when the account changed.
+Root cause: my fix replaced the control with a fixed empty box instead of keeping the control's real size.
+Missed by: author (me) and the reading review of the diff; caught by the new regression test of the test agent before the gate re-request.
+Rule next time: a hidden state of a control keeps the control's layout (Visibility with maintainSize), and a regression test checks neighbouring positions, not only the missing control.
+
+## 2026-10-17 - Commit: test(s03): regression tests for the code gate findings on foreign sessions and mode write order
+
+Kind: SUCCESS.
+Facts: 9 write-order tests and 12 foreign-session Record tests were added by the test agents; the Record tests failed once on a real layout shift in my first fix (recorded in the previous entry) and are green on 85f88bb2 (243 passed); mode tests 94 passed, 2 skipped in code.
+Why it worked: the test agent asserted neighbouring positions and focus, not only the missing control, and kept the red test red instead of weakening it.
+Rule next time: keep applying that: a failing test found by a test agent is fixed in production, not relaxed.

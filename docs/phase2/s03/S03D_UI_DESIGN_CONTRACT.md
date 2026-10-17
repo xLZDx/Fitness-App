@@ -1,8 +1,10 @@
 # S03-D UI design contract: shell, mode chooser, dashboard skeleton
 
-Status: DRAFT revision 2 for GPT-PM review, after product-ux-reviewer (findings U1-U10) and a11y-architect (findings A1-A10). Not approved. Date: 2026-10-16. Authoring role: ui-designer. Worktree read: branch `phase2/s02-unified-activity` (S02 is in test and review while this is written). No code is changed by this document. The review record is the table in section 19.
+Status: DRAFT revision 3 for review, not approved. Date: 2026-10-16. Authoring role: ui-designer. Worktree read: branch `phase2/s03d-ui-design-contract` (HEAD da3279f7, after the S02 merge). No code is changed by this document. The review record (revision 2 findings and the revision 3 disposition) is section 19.
 
-Purpose: a contract that the S03 build sprint (EP-1 mode state, EP-2 mode chooser and per-mode first-run questions, EP-3 Today / This week / Progress from `ActivitySession`, EP-4 sources panel) implements exactly, and that the S03 test agents can turn into functional tests. It resolves the design side of open questions U-1 (replace the Scan tab or not) and U-2 (tablet now or later); the decisions themselves belong to the operator and are listed in section 15.
+**Applied in revision 3 (operator answers of 2026-10-16):** (1) one app: Phase 2 is an update of the same app with one application id, not a second app; (2) keep five tabs, Record is a button over the screen, the alternative is dropped; (3) tablet and large layouts are designed NOW for Android phone, iPhone, iPad, Android tablet and MacBook, with a window-size model, one responsive chooser, a side rail, large-screen Home, Progress and Sources, platform conventions and Mac pointer and keyboard input; (4) Apple builds are design only for now: no iOS, iPadOS or macOS build target is created in S03 and when they are created is an open operator decision; (5) the local activity history opens in the default build whatever the cloud flag says (story S03-0 stays in scope); (6) cloud retention for GPS history offers 90, 365 or 730 days only, the default is 730 days (2 years), "never" is not offered. The list of changed sections is at the top of section 19.
+
+Purpose: a contract that the S03 build sprint (EP-1 mode state, EP-2 mode chooser and per-mode first-run questions, EP-3 Today / This week / Progress from `ActivitySession`, EP-4 sources panel) implements exactly, and that the S03 test agents can turn into functional tests. It carries the design side of two questions the operator has now answered: U-1 (whether the Scan tab is replaced by a Record tab: answered no, five tabs stay) and U-2 (tablet and large layouts now or later: answered now, for the five device families). Decisions still open are listed in section 15.
 
 Tags: FACT = read in a repository file (path given); INFERENCE = concluded from facts; PROPOSED = design choice made here; OPEN = needs an owner's answer; UNGROUNDED = could not be verified in the repository (collected in section 17).
 
@@ -53,6 +55,12 @@ Not read line by line: the rest of `home_page.dart`, `progress_page.dart` (after
 | F24 | Onboarding finish (`_submit`) ends with `context.go('/home')`; the router redirects an onboarded signed-in user away from `/onboarding` to `/home`. `/onboarding/edit` uses the same page, so the same finish code also runs after a profile edit by an existing user. | FACT `onboarding_page.dart` 179-193; `app_router.dart` 120, 150-152 |
 | F25 | HUD semantics today: `HudSettingRow` with `onTap` is `Semantics(button, label: title)` wrapping `ExcludeSemantics` (subtitle and trailing lost, no enabled/selected/hint); `HudPanel` with `semanticLabel` is button + label and excludes its subtree; `HudChip` uses its visible text as the label and `HudButton`/`HudChip` hard-code `minHeight: HudTokens.minTapTarget` (44) and single-line text. | FACT `hud_metric.dart` 734-737; `hud_surface.dart` 445-449, 700-736, 836-856 |
 
+| F26 | (Revision 3.) Platform targets: the `mobile` folder has only an `android` platform folder; no `ios`, `macos`, `web`, `windows` or `linux` folder exists in this worktree, and `.metadata` lists only the `root` and `android` platforms. The line `ios/Runner.xcodeproj/project.pbxproj` under `unmanaged_files` in `.metadata` is a leftover reference, not a folder. One Android application id exists: `com.fitnessapp.fitness_app.sptr` (debug adds the suffix `.debug`); `minSdk` 26, `targetSdk` 36. | FACT `mobile/.metadata` 13-30; `mobile/android/app/build.gradle` 121-132, 170 |
+| F27 | (Revision 3.) The Android activity declares `configChanges` for orientation, screen size, smallest screen size, screen layout, density, font scale, layout direction, locale and ui mode (so a resize or rotation does not restart it) and `windowSoftInputMode=adjustResize`. The manifest has NO `screenOrientation` attribute and NO `resizeableActivity` attribute. No code under `mobile/lib` calls `setPreferredOrientations`. So today the app rotates freely and, with `targetSdk` 36, the platform default for resizability applies (INFERENCE; not verified on a device). | FACT `AndroidManifest.xml` 50, 52; grep of `mobile/lib` |
+| F28 | (Revision 3.) Responsive code today: there is no breakpoint, no `NavigationRail`, no `Shortcuts` or `CallbackShortcuts`, no `MouseRegion` or cursor, no `Scrollbar`, no `Cupertino*` widget, no menu bar and no window-size class anywhere in `mobile/lib`. `MediaQuery` is read for insets (`paddingOf`), for `disableAnimations`, for the sky image cache width and for a few sheet heights (`sizeOf(...).height * 0.75` and `* 0.8`); `LayoutBuilder` appears only inside a slider (`hud_metric.dart` 469) and one Progress chart row (`progress_page.dart` 702). Content is not width-constrained: pages fill the window width. | FACT grep of `mobile/lib`; `shell_insets.dart`; `hud_scaffold.dart` 45-56, 267; `workouts_page.dart` 1337; `ai_coach_sheet.dart` 72 |
+| F29 | (Revision 3.) Fonts are bundled, not system fonts: Archivo (Latin) with Inter as the Cyrillic fallback, Barlow Condensed for display text, Roboto Mono for numbers. So type looks the same on every platform; there is no San Francisco or Roboto system-font path. Material 3 is on (`useMaterial3: true`). The page transition is a custom fade-and-scale registered for Android and iOS only (no entry for macOS), and there is no Cupertino swipe-back page. | FACT `hud_typography.dart` 18, 48-55; `app_theme.dart` 14-15, 123, 227-230, 238 |
+| F30 | (Revision 3.) Input: `HudButton`, `HudChip` and `HudToggle` are built on `GestureDetector` and get keyboard activation (Enter, NumpadEnter, Space) only through `HudKeyboardActivation`; they draw no focus ring (audit). The nav tab is an `InkResponse`. No hover or cursor handling exists. `HapticFeedback` is called in exactly two files (`rest_timer.dart`, `scan_ports.dart`). The wallpaper (`HudSkyBackground`) is `BoxFit.cover`, so a wide window crops the photograph (INFERENCE for the crop). | FACT `hud_surface.dart` 20-59; `hud_scaffold.dart` 326-337; grep; `hud_sky.dart` 735 |
+
 INFERENCE I1 (revised): `strength` lives in the other store (F16) and no recorder exists (F18), so the `ActivitySession` list is EMPTY for almost every real user during the whole of R2 alpha until S05. The first thing a Phase 1 user must NOT see is a "no activity" message above their real gym history (finding U5); the dashboard block is therefore demoted while empty (S-7).
 
 INFERENCE I2: nothing mounted in `MainShell` is visible on pushed routes, including the workout player itself (F5).
@@ -60,11 +68,11 @@ INFERENCE I2: nothing mounted in `MainShell` is visible on pushed routes, includ
 ## 3. Design principles for this contract
 
 1. Reuse, do not invent. Every new surface is built from the HUD primitives of F8 on the live `HudTokens` layer, extended only as stated in section 9.1. No new blur radius, colour, or type family.
-2. Existing flows do not move. The five tab paths and order (under the recommended option), the Back behaviour (F3), the gym QR flow, and the form coach are untouched (goal G-5).
+2. Existing flows do not move. The five tab paths and order (answer to U-1, section 5), the Back behaviour (F3), the gym QR flow, and the form coach are untouched (goal G-5).
 3. Mode is a lens, not a different app. A mode changes the first cards on Home, the target of the Record action and the sort order of discipline tiles. It never removes global content and never starts, stops, or resets anything.
 4. Missing is shown as missing. No zero for unknown, no estimate without a marker, no sum of energy across sports.
 5. Nothing asks for a permission at launch or in the chooser. Location is not requested anywhere in S03.
-6. (Rewritten, finding U1.) Local first WHEN the local journal exists. In the default build the journal does not exist today (F14). This contract therefore carries an explicit scope item (OD-9, story S03-0, section 4.4): open the local journal independent of the cloud flag. Every dashboard surface distinguishes three journal availabilities (open, not enabled, failed to open) and never offers "Try again" for "not enabled". Cloud wording appears only when `ACTIVITY_CLOUD_STREAMS` is on.
+6. (Rewritten in revision 3.) Local first. The operator answered OD-9 (the question "does the on-device activity history open in the default build?") on 2026-10-16: yes, always, whatever the cloud flag says. Story S03-0 (the first S03 story: open and recover the local journal at app start) is in scope, section 4.4. Today the journal is not opened in the default build (F14), so S03-0 changes that. Every dashboard surface still distinguishes journal availabilities and never offers "Try again" for a state that cannot be retried; `notEnabled` remains only as a defensive value for a build in which S03-0 is switched off (tests, overrides). Cloud wording appears only when `ACTIVITY_CLOUD_STREAMS` is on.
 7. Do not promise what is not built. A mode whose recorder is not shipped is labelled as coming later and cannot be started; no copy claims dedup with external sources.
 
 ## 4. Mode model (EP-1 contract)
@@ -107,7 +115,7 @@ Consequences: a new user who taps "Decide later" is `resolved` and never sees th
 ### 4.3 Rules
 
 R-M1. Changing mode never stops, pauses, resets or edits a running session or timer.
-R-M2. Changing mode never changes the route or `selectedIndex` of the current tab (both U-1 options; Option B's mode tab excepted, 5.3).
+R-M2. Changing mode never changes the route or `selectedIndex` of the current tab.
 R-M3. Mode change takes effect immediately on visible content and is announced (section 12).
 R-M4. A notification tap, deep link or "resume" never changes the selected mode.
 
@@ -118,43 +126,38 @@ The dashboard (S-6, S-7, S-8) reads the journal through ONE availability value w
 | Availability | Meaning | UI rule |
 |---|---|---|
 | `open` | Journal opened and recovered | Normal states (loading, empty, data) |
-| `notEnabled` | No journal was opened because the build does not enable it (today's default) | No error, no retry, no "Problem" chip. Dashboard block hidden; Sources shows the plain line "Activity history is not active in this build." |
+| `notEnabled` | No journal was opened because this build or test configuration does not enable it. After S03-0 this is NOT the default build any more; it remains a defined value for tests, overrides and a build that switches S03-0 off | No error, no retry, no "Problem" chip. Dashboard block hidden; Sources shows the plain line "Activity history is not active in this build." |
 | `failedToOpen` | Opening or recovery threw | Error panel with "Try again" that reopens ONCE (disabled while busy); no loop |
 
-Recommended scope item (S03-0, needs architect and operator confirmation, OD-9): open and recover the local journal at app start regardless of `ACTIVITY_CLOUD_STREAMS`, while every cloud piece (sync repository, uploader, tombstone push, conflict card) stays behind the flag. Effect: the default build can show the real empty state and a recorded session as soon as a recorder exists; without it, in the default build the new dashboard never shows anything and cannot be tested without overrides. It changes the S02 statement that with the flag off "no journal is opened" (activity_wiring.dart header), so it is not made silently here. If OD-9 is answered "no", availability is `notEnabled` in the default build, and every journey/acceptance criterion marked [flag off] below holds with that value.
+Scope item S03-0 (ANSWERED 2026-10-16, decision OD-9: yes, always): the app opens and recovers the local journal at start regardless of `ACTIVITY_CLOUD_STREAMS`, while every cloud piece (sync repository, uploader, tombstone push, conflict card) stays behind the flag. Effect: the default build shows the real empty state and, from the first recorder sprint (S05), recorded sessions. It changes the S02 statement that with the flag off "no journal is opened" (`activity_wiring.dart` header, F14); the architect records that change in the S03-0 story. Consequences for this contract:
+- In the default build (flag off) the expected availability is `open` or, after a failed open, `failedToOpen`. It is never `notEnabled`.
+- Criteria written as "[flag off]" now mean "cloud flag off, journal open" (the default build). The `notEnabled` rows of the state tables remain as a defensive state that tests force by override; they are not a product state of the default build.
+- The empty-journal rule is unchanged: with zero sessions the Progress tab shows only the quiet Sources row and Home shows no "Activity today" card (finding U5).
 
-## 5. Shell options for U-1
+## 5. The shell (answer to U-1: five tabs, Record is a button over the screen)
 
-Context: F1 (no header), F2/F4 (five tabs, one-line labels), F5 (pushed routes hide shell chrome), F6 (Scan is the gym QR recognition), F18 (nothing to record outside the gym until S04).
+U-1 was the question "should a context-sensitive Record tab replace the Scan tab?". The operator answered on 2026-10-16: no, keep five tabs; Record is a button over the screen. The five-tab shell below is the contract. Rejected alternative (two lines): a bar of Home, Mode, Record (centre), Progress, Profile was dropped because it would move the gym QR scan to two taps and leave the bar for Phase 1 users, and its centre button would act only in Train and Body during the whole R2 alpha.
 
-### 5.1 Option A (recommended and roadmap default): keep five tabs, Record is a shell action
+Context: F1 (no header), F2/F4 (five tabs, one-line labels), F5 (pushed routes hide shell chrome), F6 (Scan is the gym QR recognition), F18 (nothing to record outside the gym until S04), F28 (no responsive code today).
 
-Tabs unchanged: Home, Workouts, Scan, Progress, Profile; same labels, order, icons, paths. New in the shell:
+### 5.1 Contract: five tabs, Record is a shell action
+
+The same five destinations appear in two presentations chosen by window size (section 10): the floating bottom bar (compact and medium widths) and a side navigation rail (expanded width, 10.4). Destinations, order, labels, icons and paths are identical in both. Tabs unchanged: Home, Workouts, Scan, Progress, Profile; same labels, order, icons, paths. New in the shell:
 1. A "dock" slot directly above the nav bar (S-4). When idle it shows a compact Record pill on Home, Workouts and Progress. While a session runs the same slot shows the Recording strip on ALL FIVE tabs (finding U7: a running workout is visible everywhere in the shell; the pill stays only where starting something makes sense).
 2. A mode chip on Home only (greeting row). Progress is always the whole picture, so it has no chip (finding U4: Progress has no HUD title row, F13).
 3. The Workouts tab stays "Workouts" in every mode.
 
 Plain-words consequences:
 - Nothing a Phase 1 user already uses moves. The gym QR scan stays one tap. Lowest regression risk for G-5 and for tests that assume five fixed tabs.
-- The bar has no Ride, Explore or Body entry; they are reached through the Home chip, the Record pill and cards, one extra tap compared with option B once RIDE exists.
+- The bar has no Ride, Explore or Body entry; they are reached through the Home chip, the Record pill and cards.
 - The Record pill is not in the centre of the bar, so it is less prominent than the film's centre action.
-- Reversible: it can later become Option B (5.4).
+- Reversible: the tab set is one configuration list (5.3).
 
-### 5.2 Rejected within Option A: a mode-named label on the Workouts tab
+### 5.2 Rejected within the five-tab shell: a mode-named label on the Workouts tab
 It needs the tab label, icon and target page to change while the user stays on the tab (F2, F3), and no tab page exists for RIDE/EXPLORE in S03.
 
-### 5.3 Option B: context-sensitive Record replaces Scan
-Tabs: Home, Mode tab (label and icon Train/Ride/Explore/Body), Record (centre), Progress, Profile. The `/scan` tab entry is removed; equipment recognition moves under TRAIN (a Train-lens card and an entry in the Record sheet).
-
-Plain-words consequences:
-- The bar matches the film's mock, Record is always in the centre.
-- The gym QR scan becomes two taps and leaves the bar; risk to G-5; tests that select the third tab by path or index are touched.
-- Until S05/S06 the centre button acts only in Train and Body for the whole R2 alpha.
-- Mode tab labels change with mode; Russian labels are longer and the bar is one-line ellipsis (F4), so truncation tests are needed.
-- `_paths`, `_indexFor`, back-stack and deep links to `/scan` as a tab are touched.
-
-### 5.4 Recommendation and the requirement that keeps both open
-RECOMMEND Option A for S03; revisit B in S05-D/S06-D when Record can start a walk, run or ride. PROPOSED build requirement: nav items (icon, label, path, selected-index meaning) come from ONE configuration list read by `MainShell`, with a test that the default list equals today's five tabs. The decision is the operator's (OD-1). Option B deltas are listed in the screens as "Option B delta".
+### 5.3 Build requirement
+PROPOSED: nav items (icon, label, path, selected-index meaning) come from ONE configuration list read by `MainShell`, and BOTH presentations (bottom bar and side rail) are built from that same list, with a test that the list equals today's five tabs (AC-SH-1, AC-SH-3). This also keeps a later change of the tab set a one-place edit. The "Option B delta" lines of revision 2 are removed from the screens.
 
 ## 6. Journeys
 
@@ -208,8 +211,8 @@ Progress -> "Sources" row -> S-8. In S03 only "Recorded in this app" can contain
 ### J9. Tapping an unavailable mode
 Chooser or switcher: the card says "Coming later"; tap opens a small sheet with one sentence and "Back" / "Choose Train for now". The mode does not change. No waitlist (OD-4).
 
-### J10. Sign-out with local activity (CONDITIONAL on OD-8)
-If the operator assigns the S02 sign-out hooks to S03: signing out with a non-empty journal opens a sheet "You have {n} activities stored only on this device" with "Export first (GPX/FIT)", "Sign out and delete from this device" (destructive, second confirmation), "Cancel". An empty or unavailable journal signs out with no prompt. Account deletion needs no prompt.
+### J10. Sign-out with local activity
+Because the journal now always opens (OD-9 answered), a signed-in user can hold activity only on the device, so this journey no longer depends on the cloud flag. The CONDITIONAL label of revision 2 is removed: it depended on OD-8 (who builds the sign-out hooks), not on OD-9, and the design is kept unchanged. ASSUMED in revision 3 (section 15, OD-8): the warning sheet S-10 is built in S03 together with the Sources panel; the operator may still move it to the consent-centre sprint. Signing out with a non-empty journal opens a sheet "You have {n} activities stored only on this device" with "Export first (GPX/FIT)", "Sign out and delete from this device" (destructive, second confirmation), "Cancel". An empty or unavailable journal signs out with no prompt. Account deletion needs no prompt.
 
 ## 7. Screens and their states
 
@@ -221,7 +224,7 @@ Copy strings are English; Russian is authored in the S03 build under the per-key
 
 Purpose: pick the first mode, or change it. Reached from J1 (while `pending`), the intro card, and the switcher "See all modes".
 
-Layout (phone): `HudScreenTitle` "What do you want to do?" + subtitle; 2x2 grid of Mode cards C-1 (order Train, Ride / Explore, Body; gap 12; gutter 16); under the grid a description area showing the focused/selected card's description (NOT a live region, finding A7; each card carries the same description as its semantic hint); footer: primary `HudButton` "Continue" (enabled only when an available mode is selected) and, while `chooserStatus` is `pending`, text button "Decide later".
+Layout (Compact class; Medium and Expanded layouts are in the part headed S-9 below, they are the same screen): `HudScreenTitle` "What do you want to do?" + subtitle; 2x2 grid of Mode cards C-1 (order Train, Ride / Explore, Body; gap 12; gutter 16); under the grid a description area showing the focused/selected card's description (NOT a live region, finding A7; each card carries the same description as its semantic hint); footer: primary `HudButton` "Continue" (enabled only when an available mode is selected) and, while `chooserStatus` is `pending`, text button "Decide later".
 
 Card face: icon, one-word name, one-line blurb, optional chip ("Selected", "Coming later"). No photograph in S03 (licensed photography absent, U-3 default; the slot is reserved for UI-M). No corner brackets (capture/live device; scanner widgets unread). Keys: `modeChooser.card.train|ride|explore|body`, `modeChooser.continue`, `modeChooser.decideLater`, `modeChooser.description`, `modeChooser.saveError`.
 
@@ -266,8 +269,6 @@ Acceptance criteria (all observable; widget tests with an in-memory settings fak
 - AC-CH-7. Pumping S-1 produces zero calls on a mocked permission method channel.
 - AC-CH-8. (Rewritten.) Start-up migration: store with absent field + onboarded profile -> `migrated` and the chooser is NOT pushed; store absent + not onboarded -> stays absent; onboarding finish with absent field -> `pending` is written before navigation to `/home`; onboarding finish from `/onboarding/edit` (field already set) writes nothing.
 
-Option B delta: none.
-
 ### S-2. Per-mode first-run questions (full-screen steps in the onboarding look)
 
 Purpose: 1-3 questions for the selected mode, each visibly changing something. Reuses `ob_shell` and `inputs` (F11 precedent); not a new framework.
@@ -301,7 +302,7 @@ Acceptance criteria:
 
 ### S-3. Mode switcher sheet
 
-Purpose: switch in two taps from Home (chip). `HudSheet` in a modal bottom sheet, scroll-controlled, safe-area aware, one instance (opening twice is a no-op, same guard as `SyncConflictSheet`).
+Purpose: switch in two taps from Home (chip). `HudSheet`; its form depends on the size class only (bottom sheet on Compact and Medium, anchored popover on Expanded, table of 10.6); scroll-controlled, safe-area aware, one instance (opening twice is a no-op, same guard as `SyncConflictSheet`).
 
 Content: header "Choose a mode"; four rows (icon, name, blurb, check on the current one, "Coming later" chip on unavailable ones) with `Semantics(inMutuallyExclusiveGroup, selected)`; link row "See all modes" (opens S-1); a secondary line "{n} quick questions" on a mode with unanswered questions (opens S-2).
 
@@ -354,7 +355,7 @@ Input: selected mode and its availability. Output: opens S-5. A `HudButton` with
 - Compaction: when the visible height above the dock is under 240 dp (landscape, split screen, large text), the pill collapses to a 48x48 icon button with the same accessible name, and the strip becomes a single line 48 high. Fixed chrome (nav 72 + 14 + dock 56 + 12) is about 154 dp plus safe areas.
 
 Keys: `shell.dock`, `shell.dock.recordPill`, `shell.dock.strip`.
-Option B delta: no pill (the centre tab opens S-5); the strip still occupies the dock slot.
+On the side-rail presentation (10.4) there is no dock: the Record pill and the strip move into the rail's Record slot at the top of the rail, and the strip replaces the pill there while a session runs. Visibility differs by presentation (review of revision 3): on the bar presentation the pill shows on Home, Workouts and Progress only and the strip on all five tabs; on the rail presentation the Record slot is reserved and shown on all five tabs (idle: enabled Record button opening S-5; running: the strip), so the rail never changes height or shifts the destinations (10.4; ASSUMPTION for the operator, section 15).
 
 Acceptance criteria:
 - AC-ST-1. With idle timers: `shell.dock.recordPill` exists on `/home`, `/workouts`, `/progress` and not on `/scan`, `/profile`; `shell.dock.strip` exists nowhere.
@@ -389,7 +390,7 @@ Acceptance criteria:
 - AC-RC-4. Opening and closing the sheet performs no write to any repository fake.
 - AC-RC-5. After navigating via a row and popping, the router location is the originating tab and no `recordSheet` remains.
 
-Option B delta: same sheet from the centre tab; "Scan equipment" stays the first TRAIN row.
+Presentation: decided by size class ONLY, never by the input device, and defined in the table of 10.6 (bottom sheet on Compact; bottom sheet of at most 560 dp on Medium; popover anchored to the rail Record slot on Expanded). The same rule applies when a shortcut or the Mac menu opens it, on every tab including `/scan` and `/profile`.
 
 ### S-6. Home: mode chip, lens, activity today, upgrader intro
 
@@ -467,7 +468,7 @@ States summary:
 Keys: `progress.slot.sources`, `progress.journalError`, `progress.journalRetry`, `progress.allActivity`, `progress.thisWeek`, `progress.tile.<group>`, `progress.recent`, `progress.recent.row.<id>`.
 
 Acceptance criteria (those marked [flag off] run with `ACTIVITY_CLOUD_STREAMS` false and no journal override):
-- AC-PR-1. [flag off] Default providers (journal `notEnabled`): Progress renders `progress.slot.sources`, does not contain `progress.allActivity`, `progress.journalError` or any text equal to an "empty" or "unavailable" string, and the existing blocks are present in the original order.
+- AC-PR-1. [journal forced to `notEnabled` by a test override; in the default build after S03-0 the journal is `open`, and with zero sessions the same tree results] Progress renders `progress.slot.sources`, does not contain `progress.allActivity`, `progress.journalError` or any text equal to an "empty" or "unavailable" string, and the existing blocks are present in the original order.
 - AC-PR-2. Journal `failedToOpen`: `progress.journalError` and `progress.journalRetry` exist; tapping retry calls the opener exactly once and the button is disabled while the future is pending; a second tap during pending adds no call.
 - AC-PR-3. Journal `open` with zero sessions: same tree as AC-PR-1 (no block); with one session: `progress.allActivity` exists, `progress.slot.sources` does not, and `progress.allActivity` precedes `BodyScanEntryCard` in the child order and follows `ActivitySyncEntryCard`.
 - AC-PR-4. Fixture: one run (distance 5000 m, moving time 1500 s) and one walk (moving time 600 s, no distance) this week: `progress.tile.run` shows both values; `progress.tile.walk` shows "No data" for distance; the walk's time is included; no text node anywhere in the block contains a calorie figure.
@@ -483,7 +484,7 @@ Acceptance criteria (those marked [flag off] run with `ACTIVITY_CLOUD_STREAMS` f
 
 Purpose: an honest answer to "where does my data come from". Pushed route outside the shell; `HudScreenBody` + `HudPanel` rows.
 
-Rows (order): "Recorded in this app" (`app`), "Health Connect" (`health_connect`), "Apple Health" (`healthkit`, listed only on iOS builds; iOS is NOT_RUN under D-12 so not listed in S03), "Bluetooth sensors" (`ble_*`), "Watch" (`wear_os`), "Other services" (`vendor_cloud`). Each row: name, one-line purpose, status chip C-11, and "May provide ..." from `kCapabilityMatrix` for yes/partial levels, "Unknown" otherwise.
+Rows (order): "Recorded in this app" (`app`), "Health Connect" (`health_connect`), "Apple Health" (`healthkit`, listed only when the app runs on an Apple platform; no Apple build target exists in S03 (F26, OD-12), so it is not listed in any S03 build), "Bluetooth sensors" (`ble_*`), "Watch" (`wear_os`), "Other services" (`vendor_cloud`). Each row: name, one-line purpose, status chip C-11, and "May provide ..." from `kCapabilityMatrix` for yes/partial levels, "Unknown" otherwise.
 
 Status chip vocabulary (word + icon): "In use", "Ready", "Not connected", plus for S16 the `SourceHealth` map: ok "Connected", permissionMissing "Permission needed", unavailable "Unavailable on this device", stale "Out of date", error "Problem". In S03 no adapter exists, so `healthStatus()` is not called.
 
@@ -497,18 +498,42 @@ Keys: `sources.row.<id>`, `sources.dedupNote`, `sources.app.retry`.
 
 Acceptance criteria:
 - AC-SRC-1. Journal `open` empty -> `sources.row.app` semantics contains "Ready"; after one fake session -> "In use".
-- AC-SRC-2. [flag off] `notEnabled`: the app row contains the not-active line, has no `sources.app.retry`, and no "Problem" text exists on the screen.
+- AC-SRC-2. [journal forced to `notEnabled` by override] `notEnabled`: the app row contains the not-active line, has no `sources.app.retry`, and no "Problem" text exists on the screen.
 - AC-SRC-3. `failedToOpen`: "Problem" + `sources.app.retry`; retry calls the opener once.
 - AC-SRC-4. Every non-app row's semantics contains "Not connected" and has no tap action (the optional health-sync link excepted).
 - AC-SRC-5. `sources.dedupNote` exists; a text search of all S03 ARB additions finds none of "merged", "deduplicated" or "synced with Health Connect".
 - AC-SRC-6. A provenance record with an unknown `sourceId` and each of the five `SourceKind` values renders the label of section 8.1 and never an empty label.
 - AC-SRC-7. Each row is one semantics node whose label includes name and status.
 
-### S-9. Tablet mode chooser (design-only, NOT built while U-2 is OPEN)
-Breakpoint proposal: shortest side at least 600 dp (INFERENCE; no breakpoints exist, F7). Four cards in one row (a carousel under 900 dp wide) centred in a max width of 960; the description area becomes a right-hand detail panel; Continue bottom end. The film's focus bracket is optional (UI-M). A side rail instead of the floating bar is not decided (U-2). No acceptance criteria in S03; if U-2 is answered "now", add them in a revision.
+### S-9. Mode chooser on large windows (merged into S-1 in revision 3)
+In revision 2 S-9 was the name of a design-only drawing of the chooser for tablets, not built while U-2 (the tablet-now-or-later question) was open. U-2 is answered NOW, so S-9 is no longer a separate screen: S-1 is ONE responsive screen and this section is its large-window part. S-9 remains only as a label for the Medium and Expanded rows below. There is no carousel and no horizontal scrolling at any size.
+
+#### S-1 layout by size class (window width as in 10.1)
+
+| Class | Layout |
+|---|---|
+| Compact (under 600) | As section 7: `HudScreenTitle`, 2x2 grid, description area under the grid, footer buttons. On a short window (height under 480 dp, the single "short" threshold of 10.1) the grid stays 2x2 and the page scrolls vertically: a 4x1 grid needs a grid width of at least 580 dp (grid rule below) and a Compact window never has it (599 - 2 x 16 = 567 at most). |
+| Medium (600-839) | Content centred, max width 640 dp. 2x2 grid with cards at least 200 dp wide and 120 dp high; description area under the grid; footer buttons at the end of the column. On a short window (height under 480) the grid is 4x1 only when the grid rule below allows it (grid width of at least 580 dp); the blurb is dropped from the card face below 150 dp card width. Otherwise it stays 2x2 and the page scrolls vertically. |
+| Expanded (840 and up) | Content centred, max width 960 dp, two panes: left, the 2x2 grid (cards at least 220 x 150, gap 16); right, a detail panel 320 dp wide showing the description of the focused or selected card, with the "Selected"/"Coming later" state word, and the footer buttons (Continue, Decide later) at its bottom. The panel is not a live region (A7); its text is the focused card's hint. The route is pushed outside the shell, so there is no rail on it. |
+
+Grid rule (GPT-PM gate round 1, MAJOR-01: the number of columns is decided by the available grid width, never by the window height alone). Constants: gap between cards 12 dp, side padding of the page 16 dp, card width floor 136 dp in every grid except the Medium 2x2 grid (200 dp). Grid width = content width minus 2 x 16 dp (content width is the window width, capped at 640 dp on Medium). The grid is 4x1 only when the window is short (height under 480 dp) AND the grid width is at least 4 x 136 + 3 x 12 = 580 dp; in every other case it is 2x2 and the page scrolls vertically when its content does not fit (the footer buttons are the last items of the scroll content and stay reachable by scrolling and by focus). Arithmetic: 360x420 gives a grid width of 328, so 2x2 with vertical scroll; 600x400 gives 568, so 2x2; 640x360 and 700x420 give 640 - 32 = 608, so 4x1 with cards of (608 - 36) / 4 = 143 dp, which is under 150, so the blurb is dropped from the card face; a 320 dp wide phone gives (320 - 32 - 12) / 2 = 138 dp per 2x2 card, at least the 136 dp floor. There is no horizontal scrolling at any size.
+
+The film's focus bracket and photography stay out of S03 (U-3 default); the detail panel has NO illustration slot in S03 (no empty box is drawn; a slot is added when U-3 supplies artwork).
+
+Idle state of the detail panel (review of revision 3): on first run, before any card is focused, hovered or tapped, the panel shows the text `modeDetailIdle` "Pick a mode to see what it does", `modeChooser.continue` is disabled, and no card `isSelected`. A tap on an available card selects it and updates the panel (touch devices have no hover, so selection is the only trigger there); a tap on a Coming-later card opens the Coming-later sheet and the panel shows that card's description with the word "Coming later". On a returning visit (switcher "See all modes") the panel starts on the current mode's description with that card selected. Hover and keyboard focus update the panel text without selecting (AC-CH-13); when the pointer leaves or focus moves off the grid, the panel returns to the selected card's description, or to the idle text when nothing is selected. Behaviour, copy, states and keys of section 7 S-1 are unchanged in every class; added keys: `modeChooser.detailPanel` (Expanded only) and `modeChooser.grid`.
+
+Pointer and keyboard (all classes): arrow keys move focus between the four cards in the grid order (Right/Left within a row, Down/Up between rows), Space or Enter selects, and Enter on Continue confirms; hovering a card on a pointer device updates the detail panel text without selecting (Expanded) and shows the hover state of 10.9.
+
+Acceptance criteria (widget tests with a set window size, `ru` and `en`, default text scale unless stated):
+- AC-CH-9. At 360x800 the four cards are in a 2x2 grid (cards 1 and 2 share a top; card 3 is below card 1) and `modeChooser.detailPanel` does not exist.
+- AC-CH-10. At 700x900 (Medium) the grid is 2x2, the content width does not exceed 640 dp, and `modeChooser.detailPanel` does not exist; at 700x420 and 640x360 (short, grid width 608) the grid is 4x1, every card is at least 136 dp wide, the blurb is absent from the card face and no overflow is raised; at 600x400 (short, grid width 568) and 360x420 (Compact and short, grid width 328) the grid is 2x2, the page scrolls vertically so that `modeChooser.continue` is reachable by scrolling, every card is at least 136 dp wide, there is no horizontal scroll extent and no overflow is raised.
+- AC-CH-11. At 1100x800 (Expanded) `modeChooser.detailPanel` exists to the end side of `modeChooser.grid`, `modeChooser.continue` is inside the detail panel, the overall width does not exceed 960 dp, and the four cards keep the reading order train, ride, explore, body.
+- AC-CH-12. Boundary: at exactly 599 dp the chooser has no detail panel and a 2x2 grid; at exactly 840 dp it has the detail panel; at 839 dp it does not.
+- AC-CH-13. At 1100x800, hovering or focusing `modeChooser.card.body` changes the text in `modeChooser.detailPanel` to the body description without changing which card `isSelected`; at text scale 2.0 and 1100 wide, `ru`, no overflow and `didExceedMaxLines == false` for card names.
+- AC-CH-14. Changing the window from 1100x800 to 360x800 (a pumped resize) keeps the selected card, the enabled state of Continue and the focus; the test records no write to the settings fake during the resize.
 
 ### S-10. Sign-out warning sheet
-Conditional on OD-8 (J10). Not an S03 acceptance item unless assigned.
+Designed as in J10 and kept. The sheet is the same on every size class (a modal bottom sheet on compact, a centred dialog of max width 480 dp on medium and expanded, 10.6). Acceptance: AC-SO-1 with a non-empty fake journal, the sign-out action opens `signOut.warningSheet` offering Export first, Sign out and delete from this device (second confirmation) and Cancel, and nothing is deleted before the confirmation; AC-SO-2 with an empty journal sign-out proceeds with no sheet.
 
 ## 8. Dashboard content rules
 
@@ -531,6 +556,8 @@ Existing primitives hard-code 44 px height, one text line and thin semantics (F2
 | `HudPanel` | `semanticHint`, `selected`, `enabled`, `inMutuallyExclusiveGroup`; when `semanticLabel` is given the existing exclusion of the subtree stays, so callers must put every fact into the label | C-1, C-3 |
 | `HudSettingRow` | `subtitle` merged into the semantic label ("title, subtitle"), `semanticHint`, `enabled`, `selected`, `trailingLabel` (merged); today the subtitle and trailing widget are excluded (F25) | C-4, C-7, C-9 |
 
+Revision 3 adds one more optional extension to all four primitives above: `hoverStyle` (half-strength press wash), `cursor` (pointing hand when enabled) and `showFocusRing` (2 px outline on keyboard focus). Defaults are off, so the existing HUD tests pass unchanged; every NEW S03 call site turns them on. `HudKeyboardActivation` (F30) stays the keyboard activation path and also gets the focus ring.
+
 Wrapping rather than extending is used only where a primitive cannot express the need: the radio group is a `Semantics(inMutuallyExclusiveGroup: true)` wrapper around the card/row set; the strip is `Semantics` around a `HudPanel`. No new token, colour or blur radius is introduced. Hit regions: a 48 control built on a 44 primitive must enlarge the tappable constraint, not just the painted box (test AC-A11Y-1).
 
 ### 9.2 Components
@@ -549,17 +576,224 @@ Wrapping rather than extending is used only where a primitive cannot express the
 | C-10 | Question step | `ob_shell` + `inputs` | question, options, whatItChanges | single choice | `onAnswer`, `onSkip` | Not a new framework |
 | C-11 | Status chip | `HudChip` (`maxLines` 2, not interactive) | text, icon | in use, ready, not connected, permission needed, unavailable, out of date, problem, not active | none | Word is never truncated: it wraps, or the chip sits on its own line below the row title (finding A4); icon excluded from semantics |
 | C-12 | Info/empty/error panel | `HudPanel` | title, body, optional action | empty, error | action | No raw exception text |
+| C-13 | Side navigation rail (revision 3) | `HudSurface` (`t.navBar` glass) + the nav item configuration list + C-8 / C-3 in the Record slot | items (the list of 5.3), selectedIndex, form (compact 96 dp or extended 240 dp), Record slot content | compact form, extended form | `onSelect(i)` | Section 10.4. Same semantics as the bar tabs (button, selected, label). Rendered only on the rail presentation |
+| C-14 | Window-size class provider (revision 3) | Not visual: one provider reading the window width and height | window width, height, text scale | compact, medium, expanded; short flag; rail form | none | Section 10.1. Single source for class decisions; injectable in tests (a set window size) so no screen reads raw widths |
+| C-15 | Adaptive surface (revision 3) | Wraps the existing `HudSheet`/`HudPanel` | content, anchor (optional), class | bottom sheet, centred dialog, anchored popover | `onDismiss` | Section 10.6. One component chooses placement by class; content is identical |
 
-## 10. Responsive behaviour
+## 10. Responsive behaviour and platform families (revision 3, central section)
+
+Scope (answer to U-2, the question "tablet and large layouts now or later?": NOW). One codebase and one app must work well on five device families: Android phone, iPhone, iPad, Android tablet and MacBook. Today the app has no responsive code at all (F28): pages fill the window width, there is no rail, no breakpoint, no pointer or shortcut handling. Everything in this section is therefore PROPOSED design, built in S03 from the HUD primitives (no new design system).
+
+Apple targets: the repository has no `ios` or `macos` platform folder (F26). The iOS, iPadOS and macOS build targets are NOT created in S03, and when they are created is an OPEN operator decision (section 15, OD-12). This section is written so that the Apple layouts can be built later without redesign; until then the Apple-specific criteria can be tested in widget tests (a set window size, a faked `TargetPlatform`) but not on a device or simulator. No Apple store account, signing or release is promised.
+
+### 10.1 Window-size model
+
+The class is computed from the width of the WINDOW the app actually gets (the logical width in dp that `MediaQuery.sizeOf` reports to the shell), never from the device type or the physical screen. This is what makes split-screen, Stage Manager, resized Mac windows and foldable resizing work without special cases. PROPOSED, one provider `windowSizeClass` read once by the shell and passed down; screens never read raw widths for layout decisions.
+
+| Class | Window width | Height rule | Navigation | Content |
+|---|---|---|---|---|
+| Compact | under 600 dp | any | Floating bottom bar plus dock (as today) | One column, phone layout |
+| Medium | 600 to 839 dp | any | Floating bottom bar plus dock, bar width limited to 560 dp and centred | One column up to a max content width of 640 dp, two columns where 10.5 says so, side pane NOT used |
+| Expanded | 840 dp and up | any | Side navigation rail replaces the bar and the dock slot (10.4) | Content pane plus optional side pane (10.5) |
+
+Height class (second axis): "short" means window height under 480 dp (a phone in landscape, or a very short window). Rail override: when the width is 600 dp or more AND the window is short, the rail is used even though the width class is Medium. Reason: the bar plus dock take about 154 dp plus safe areas (S-4), which is nearly half of a 360 dp tall landscape phone; a rail takes width, which is plentiful there. In that case the width class stays Medium for content layout, and the content pane is the window minus the rail.
+
+Why these numbers (INFERENCE: they follow the width-class convention used by Material 3 guidance for large screens, 600 and 840 dp; that guidance is not in the repository, so the numbers are a PROPOSED choice, not a repository fact): 600 dp is the smallest width where the bar can sit centred with a single readable column of at least 520 dp; 840 dp is where the rail replaces the bar. Choosing the same boundaries as the platform guidance means Android tablets and foldables behave as users of those devices expect. IMPORTANT (correction in the review of revision 3): the class boundary does NOT decide whether a screen has two panes. Revision 3's first draft argued that 840 dp fits a 96 dp rail, a 400 dp column and a 320 dp pane; that arithmetic left out the rail's 12 dp inset and 12 dp gap and the page gutters. The real figure is: content pane width = window width minus the rail footprint, where the rail footprint = 12 + rail width + 12 (96 dp compact form, 240 dp extended form), and 0 when there is no rail. At 840 dp the pane is 720 dp, which cannot hold a 480 dp main column, a 340 dp side pane, a 16 dp gap and 32 dp of gutters (868 dp). Two-pane layouts therefore key on the CONTENT PANE width (10.5), not on the window class. With the extended rail (chosen by the measured-width rule of 10.4, in practice from about text scale 1.3 in `ru`, or a 1200 dp window) the footprint is 264 dp, so the pane is narrower still, and a 1100 dp window with the extended rail has a 836 dp pane and is single column.
+
+Rules:
+- WS-1. Boundaries are inclusive at the lower end: exactly 600 is Medium, exactly 840 is Expanded, 599.9 is Compact.
+- WS-2. The class is re-evaluated on every size change. No hysteresis (it would make the boundary untestable); to avoid flicker, the swap is a rebuild with no animation.
+- WS-3. A class change never changes the router location, the selected tab, the selected mode, any timer, any text the user typed, or an open sheet (an open sheet is re-laid-out for the new class, 10.6). Scroll position is promised only in this weaker form: the FIRST VISIBLE SECTION stays visible after the change, anchored by its key (`home.section.<name>` on Home, `progress.recent` and the other `progress.*` keys on Progress, `sources.row.<id>` on Sources); pixel offsets are not preserved because a column layout changes every height. (Alternative if the build prefers: one scroll controller kept across layouts; the keyed anchor is the tested promise either way.) Focus stays on the control that had it, or on the same destination in the other navigation presentation.
+- WS-4. The text scale (accessibility font size) is a separate input. It never changes the width class; it changes the rail form (10.4) and may move a column to a single column when the content does not fit (10.5).
+- WS-5. The maximum content width is applied INSIDE the content pane; beyond it the pane is centred and the wallpaper shows at the sides. The wallpaper stays `BoxFit.cover` (F30); how the photograph crops on a wide window is UNGROUNDED (never rendered at those aspect ratios) and goes to the visual review.
+
+### 10.2 What each situation becomes
+
+Window sizes below are typical values given for orientation only; the real device sizes are NOT in the repository (UNGROUNDED), so the contract and its tests use the class boundaries, not device names.
+
+| Situation | Typical window width x height (dp) | Class and navigation |
+|---|---|---|
+| Android phone or iPhone, portrait | 320-430 x 640-950 | Compact, bar plus dock |
+| Android phone or iPhone, landscape | 640-930 x 320-430 | Medium or Expanded by width; short, so the rail is used from 600 dp; content single pane |
+| Foldable, folded (cover screen) | about 360-400 wide | Compact |
+| Foldable, unfolded (inner screen), portrait or landscape | about 600-900 wide | Medium or Expanded by width; resizing while folding or unfolding is a live class change (WS-3) |
+| Android tablet or iPad, portrait | 600-834 wide (smaller tablets), up to about 1024 for large ones | Medium, or Expanded from 840 dp |
+| Android tablet or iPad, landscape (a first-class case) | 960-1366 wide | Expanded, rail, content plus side pane |
+| Split-screen (Android) or Split View, Slide Over (iPadOS) | 320-680 wide for a half or a third | Compact or Medium by the width actually granted; the app never assumes it owns the screen |
+| Stage Manager (iPadOS), free-form windows (Android desktop mode) | any width the user drags to, down to a floor the system sets (UNGROUNDED) | Class follows the width live |
+| MacBook, default window | 1100 x 760 (PROPOSED default) | Expanded, rail |
+| MacBook, window dragged narrower | down to the minimum of 10.9 | Medium at 600-839, Compact under 600 |
+| MacBook, full screen | 1280-1800 wide | Expanded; content capped by the max content width (10.5), wallpaper at the sides |
+
+### 10.3 Orientation, resize and the Android and Apple runtime
+- Orientation is never locked in any family (F27 shows none today; the contract keeps it that way). Portrait and landscape are both first-class on tablets and iPad; landscape on phones is supported through the short-window rules.
+- The Android activity already absorbs resize and rotation without restarting (F27 `configChanges`), so a live class change is a rebuild, not a process restart. Whether the app is marked resizable for split-screen and desktop windows on Android 16 and later is UNGROUNDED (no `resizeableActivity` attribute; `targetSdk` 36); the Android build story must confirm that large-screen resizing is not blocked by the manifest.
+- On Apple platforms multitasking widths come from the system; the app must declare multitasking support when the iOS and iPadOS targets are created (OD-12). Nothing in S03 depends on it.
+- Keyboard open (Android phone, iPhone, iPad software keyboard): these screens have no text input (unchanged), so the keyboard never resizes them; `adjustResize` stays (F27).
+
+### 10.4 Navigation presentation: bottom bar with dock, or side rail
+
+Both presentations come from the ONE navigation configuration list (5.3): five destinations Home, Workouts, Scan, Progress, Profile, same icons, same labels (keys `homeHome`, `navWorkouts`, `navScan`, `progressProgress`, `profileProfile`), same paths, same Back behaviour (F3).
+
+When each is used:
+
+| Window | Presentation |
+|---|---|
+| Width under 600 dp | Bottom bar + dock (as today, S-4) |
+| Width 600 to 839 dp and window height 480 dp or more | Bottom bar + dock, bar capped at 560 dp wide and centred |
+| Width 600 to 839 dp and window height under 480 dp (landscape phone, short window) | Side rail (compact form) |
+| Width 840 dp and up | Side rail (compact form, or extended form under the rule below) |
+
+Side rail contract (new component C-13, section 9.2):
+- Position: start edge, inside the safe area, 12 dp inset from the window edges (the bar's `navBarInset`, F8), full height minus insets; glass surface and radius of the existing bar (`t.navBar`, `radiusDevice`, F4). No new colour or blur.
+- Order, top to bottom: the PINNED Record slot, then a vertically scrollable list of the five destinations. The wallpaper and content sit to the end side of the rail. Focus order is the same top to bottom: Record slot, Home, Workouts, Scan, Progress, Profile, then the content. The slot stays pinned (it does not scroll away), so Record is always reachable; only the destinations list scrolls.
+- Vertical overflow rule (review of revision 3). A landscape phone window is 360 dp high or less, and six 56 dp items plus insets exceed it. Therefore: (a) when the window height is under 480 dp each destination is 48 dp high instead of 56 (the minimum touch target stays 48 dp), the Record slot keeps its reserved height (below), and at scale 1.0 the whole rail is 64 + 5 x 48 + 24 = 328 dp, which fits 360; (b) whenever the content still does not fit (larger text scale, or a window under about 330 dp high) the destinations list scrolls vertically inside the rail, with no overflow; (c) a destination that receives keyboard focus (Tab, arrows) is scrolled fully into view; (d) a screen reader focus moving to a destination also scrolls it into view; (e) scrolling the list never moves the Record slot and never changes the selected destination.
+- Compact form: 96 dp wide, icon above a one-line label, each destination at least 56 dp high (48 dp under 480 dp window height) and 96 dp wide (hit region, not only paint). Selected = ink + accent dot + `selected` semantics (the bar's three channels, F4).
+- Extended form: 240 dp wide, icon and label in one row. It is used when the window width is 1200 dp or more OR when the widest of the five labels, measured in the nav-label style, upper-cased, at the CURRENT text scale and locale (a `TextPainter` measurement, not a fixed scale number), plus 16 dp of padding, no longer fits inside 96 dp. The expected switch is near scale 1.3 in Russian, but the rule is the measured width, so a longer translation or another font metric moves it correctly. Reason: Russian uppercase labels such as the Workouts label are about 10 characters and stop fitting in 96 dp at larger text; the extended form removes the truncation instead of adding ellipsis. Because the form can change when the system text scale changes, the content pane width changes with it (10.5).
+- The label is never truncated in the rail (compact form budget: 11 Russian characters at scale 1.0, checked in section 13).
+- Record slot is RESERVED (review of revision 3): it occupies the same 64 dp (compact form) or 56 dp (extended form) at the top of the rail on all five tabs, in idle and running states, so the five destinations never move vertically when the user changes tab or when a session starts or ends. Its states: idle = enabled button (Record icon over the visible one-word label "Record") that opens S-5; running = the strip (below); on `/scan` and `/profile` the slot is the same enabled button and opens S-5 (ASSUMPTION for the operator, section 15: the rail shows Record on every tab, unlike the bar presentation where the pill is shown only on Home, Workouts and Progress, S-4; this is the simplest way to avoid the slot appearing and vanishing, and S-5 is useful from any tab because its first row is Scan equipment).
+- Running state in the compact rail (review of revision 3): the slot shows the state icon and TWO visible text lines, a short state word (`railStateRunning` "Active", `railStatePaused` "Paused", `railStateResting` "Rest", `railStateRestDone` "Done"; Russian budget 8 characters) and the elapsed or remaining time in whole minutes ("12 min", plural-aware formatter of section 13), so the running state, its kind and its duration are visible without opening anything. The accessible label is the full strip label of S-4. The extended form shows the full strip text.
+- Idle Record slot label: a visible one-word label under the icon in the compact form (not icon-only), so no tooltip is needed for the primary action; compact-rail destination icons keep their visible labels. Where an icon-only Record control is still used (the compacted dock pill of S-4), its tooltip must be dismissible with Esc, hoverable and persistent while hovered or focused (WCAG 1.4.13).
+- The rail is part of `MainShell`: it is present on the five tabs and absent on pushed routes (F5, I2), exactly like the bar today. Pushed pages are not redesigned in S03 (section 16).
+- Bottom clearance: with the rail, tab content no longer reserves the 72 + 14 + dock space at the bottom (it reserves only the bottom safe area + 24); its start inset becomes the rail width + 12 + 16. The shell publishes both values in one inherited object (`ShellLayout`: window class, navigation presentation, rail width, bottom clearance) so no page computes them. How this reaches `HudScreenBody` and the Progress list without double padding is UNGROUNDED (17.5 extended).
+- Keyboard: the rail is one focus group. Up and Down arrows move between the five destinations, Enter or Space selects, Tab moves on to the content. Home and End jump to the first and last destination ONLY while keyboard focus is inside the rail; outside it Home and End scroll the focused page (10.9). Tab order includes the pinned Record slot first.
+- Semantics (review of revision 3): the rail is a container node: a `Semantics` widget with `container: true`, `explicitChildNodes: true` and the label "Main navigation" (the Flutter mechanism for a navigation landmark; Flutter has no named landmark role, so the label on a container is the contract and the content pane is not labelled the same). The bottom bar gets the same container and label. Each destination is `Semantics(button: true, selected: <bool>, label: <name>)`; the selected state is the semantics `selected` flag (and the same on the bar). A position hint "n of 5" is NOT provided: Flutter has no list-position semantics for plain buttons and adding it to the label would be read twice by screen readers that already count a group; this loss is accepted and recorded (a11y reviewer to confirm). Tooltips are not the accessible name.
+- Contrast (review of revision 3): rail inactive labels and icons use the text-secondary tier of `HudTokens` (not the bar's literal inactive ink, whose light-theme ratio is 4.40, F10); the selected ink is the text-primary tier; the selected accent dot must reach 3:1 against the rail surface (non-text), and because the light accent is only 4.51 on the base the dot never carries meaning alone (ink and `selected` also do). If the build keeps the bar's literal inactive ink on the rail, the 4.40 exception of F10 is explicitly recorded for the rail as well; this contract prefers the secondary tier.
+- Reduced motion (review of revision 3): the rail swap with the bar is a rebuild without animation. Every new sheet, dialog and popover route (S-3, S-5, Coming-later, S-10, Day-3) uses a no-transition or opacity-only page when `disableAnimations` is true, like the new full-screen routes (section 12).
+- Swap behaviour: when a resize crosses a boundary of the table the presentation changes on the next frame, without animation; selection, route and focus are kept (WS-3).
+
+### 10.5 Content layouts per size class
+
+General rules. The content pane is the window minus the rail footprint (12 + rail width + 12 when the rail shows, otherwise 0), so a pushed route without a rail has a pane equal to the window. Side padding stays 16 dp (HUD screens) or 20 dp (Progress, F13). Max content width of the pane: 640 dp on Medium, 1120 dp on Expanded; wider panes centre the content.
+
+TWO-PANE RULE (review of revision 3). A screen is laid out in two panes from the CONTENT PANE width (including its side padding), never from the window class, and falls back to the single-column Compact order when the pane is too narrow:
+
+| Screen | Minimum main pane | Side pane | Gap | Padding | Two panes when pane width is at least | Below that |
+|---|---|---|---|---|---|---|
+| Home | 480 dp | 340 dp | 16 | 2 x 16 | 880 dp | Single column, Compact order (the side pane content follows the main column) |
+| Progress | 480 dp (left column) | 320 dp (right column) | 16 | 2 x 20 | 880 dp | Single column, Compact order |
+| Sources | 480 dp | 320 dp | 16 | 2 x 16 | 880 dp | Single column |
+| Mode chooser | 456 dp (2 x 220 + 16) | 320 dp | 16 | 2 x 16 | 840 dp (window width; the chooser is a pushed route with no rail) | 2x2 grid with description under it |
+
+Worked examples: Home at 1100 dp with the compact rail has a 980 dp pane, so two panes; at 1100 dp with the extended rail (text scale 1.3 or more) the pane is 836 dp, so ONE column; at 840 and 900 dp the pane is 720 and 780 dp, so one column; at 1024 dp (iPad landscape, compact rail) the pane is 904 dp, so two panes; at 1200 dp (extended rail) 936 dp, two panes. A tablet or Mac window in the Expanded class may therefore still show the single-column layout of Medium content, centred at the 640 dp cap on a pane under 880.
+
+Tile columns (Progress "This week" tiles, and any future grid) come from the available width, not the class: columns = clamp(floor((available + 12) / (minimum tile width + 12)), 1, 3) with a minimum tile width of 160 dp and a 12 dp gap, where available is the width of the column that holds the tiles minus its padding. A tile never gets narrower than 160 dp. Columns never reorder content: the reading order is main column first, then side pane, and the same keys exist in every class. All states of the compact design (loading, empty, partial, error, offline, not-available) are kept unchanged; a large layout only moves panels, it never adds a state or hides content that Compact shows (Nothing is removed).
+
+Home (S-6):
+
+| Class | Layout |
+|---|---|
+| Compact | Single column, as in section 7 |
+| Medium | Single column, max width 640 dp, centred; same order as Compact |
+| Expanded with a pane of at least 880 dp | Two panes in a row inside the 1120 dp cap: main column (takes the rest, at least 480 dp) and side pane (fixed 340 dp, gap 16). Main: greeting and mode chip, upgrader intro card, deload banner, day panel, week section, "Activity today", and under the BODY lens the body-scan and nutrition cards directly under the day panel. Side: recovery panel, gym quick-scan row, upcoming, summary link, suggestions, "More". Under the BODY lens the quick-scan row and suggestions go to the end of the side pane. |
+
+The lens rule of S-6 is unchanged: it reorders within the same key set. Keys: `home.pane.main`, `home.pane.side` on the two panes (Expanded only). The side pane drops below the main column (single column, Compact order, centred at the 640 dp cap) whenever the content pane is under 880 dp, for example at 900 dp with any rail, at 1100 dp with the extended rail (text scale 1.3 or more), or at 840 dp. The mode chip keeps its wrap rule (A9). `Day3WelcomeModal` is shown as a centred dialog of max width 480 dp on Medium and Expanded.
+
+Progress, dashboard skeleton (S-7; list padding 20 and top 92 are kept, F13):
+
+| Class | Layout |
+|---|---|
+| Compact | Single column in the order of section 7 |
+| Medium | Single column, max width 640 dp, centred; "This week" tiles by the tile-column rule (minimum tile width 160 dp, at most 3 columns) |
+| Expanded with a pane of at least 880 dp (below that: the Medium row) | A full-width headline row (`_HeadlineStats`), then two columns: left (flex 3): sync entry card, "All activity" block S-7b (tiles by the tile-column rule, at most 3, recent list) and the "Last 8 weeks" chart; right (flex 2, at least 320 dp): body-scan card, nutrition card, and the quiet Sources slot S-7a (or the Sources row of S-7b) |
+
+Order inside each column equals the compact order restricted to that column, so the checks "S-7b follows the sync card and precedes the body-scan card" hold in Compact and Medium (single column) and become "S-7b is in the left column, the body-scan card in the right column" in Expanded. The journal error panel (failedToOpen) sits in the left column in the place of S-7b with its Try again button. Loading, empty, partial and offline behave as in section 7. The "Last 8 weeks" chart is the existing widget; it only receives the wider constraint (its own row uses `LayoutBuilder`, F28) and no table alternative is added (section 16).
+
+Sources panel (S-8; pushed route, no rail, `HudScreenBody` kept):
+
+| Class | Layout |
+|---|---|
+| Compact | Single column |
+| Medium | Single column, max width 640 dp, centred |
+| Expanded with a window of at least 880 dp (below that: the Medium row) | Max width 880 dp, centred: source rows in the main column (at least 480 dp), and a side pane (fixed 320 dp) holding the intro text, the dedup note and the optional Health sync link |
+
+The rows stay non-interactive information (AC-SRC-4); no master-detail is introduced. All app-row states (In use, Ready, Not active, Problem with Try again) are in the main column.
+
+Mode chooser S-1 and S-9 as ONE responsive screen (S-9 of revision 2 is merged into S-1, section 7): see S-1 "Layout by size class" and AC-CH-9 to AC-CH-13.
+
+Other S03 surfaces: S-2 question steps keep the onboarding look with the content centred at max width 560 dp on Medium and Expanded. The Recording strip and Record pill live in the dock (bar presentation) or the rail Record slot (10.4); there is no dock on Expanded. The Home and Progress changes above are the only layout changes to existing tab pages in S03.
+
+Pushed pages that S03 does not redesign (about 45 of the 50 routes, F5): PROPOSED, a shared frame centres their content at max width 840 dp on Medium and Expanded so they do not stretch to 1500 dp on a Mac window; full-bleed camera pages (scanner, form coach, body-scan and posture capture) are excluded from the frame. Whether S03 includes this frame or leaves those pages stretched is an OPEN design question (DQ-12, owner architect). How each of those pages looks on a wide window is UNGROUNDED.
+
+### 10.6 Sheets, dialogs and popovers by class
+
+| Surface | Compact | Medium | Expanded |
+|---|---|---|---|
+| S-3 Mode switcher | Modal bottom sheet | Modal bottom sheet, max width 560 dp, centred | Popover anchored under `home.modeChip`, 360 dp wide |
+| S-5 Record sheet | Modal bottom sheet | Modal bottom sheet, max width 560 dp, centred | Popover anchored to the rail Record slot, 360 dp wide |
+| Coming-later sheet, S-10 sign-out sheet | Modal bottom sheet | Centred dialog, max width 480 dp | Centred dialog, max width 480 dp |
+| Day-3 welcome | As today | Centred dialog, 480 dp | Centred dialog, 480 dp |
+
+Rules: every surface closes with Esc (keyboard), the system Back, a tap or click outside, and its own close/cancel action; focus moves into the surface on open (its title) and returns to the opener on close (section 12); a surface open during a class change is rebuilt in the new form with the same content, focus and scroll position. The look is the existing `HudSheet`/`HudPanel` on every family; only the placement adapts. Popovers must stay inside the window (flip above/below and clamp to the safe area). Anchors when a shortcut or the menu opens a popover (review of revision 3): the S-5 popover anchors to the rail Record slot, which is mounted on all five tabs (10.4), so it opens inside the window on `/scan` and `/profile` too; the S-3 popover anchors under `home.modeChip` on Home and, on any other tab where the chip is not mounted, opens as a centred dialog of 360 dp wide instead (never as an unanchored floating box); a popover whose anchor disappears during a resize is re-anchored or becomes the centred dialog. The Mac menu item File > Record behaves exactly like the shortcut on every tab (opens S-5); it is enabled on all five tabs and disabled only while a modal surface is open. The form follows the size class only, never the input device: a touch tap and a mouse click open the same form. Day-3 welcome and the Coming-later sheet follow the table row for their own class (Day-3: as today on Compact, centred dialog of 480 dp on Medium and Expanded; the same as 10.5).
+
+### 10.7 Phone-width, text-scale and RTL rules (retained from revision 2, now the Compact column of the model)
 
 | Width / condition | Behaviour |
 |---|---|
-| Phone 320-411 dp (primary) | As specified. Mode cards 2x2, at least 140 dp wide at 320 dp; below 150 dp the blurb is dropped from the card face and stays in the hint/description. |
-| Phone landscape / height under 480 dp | No orientation lock exists. Chooser grid becomes 4x1 under 420 dp height; sheets scroll; dock compaction per S-4. Requirement: no overflow. |
-| Text scale 2.0 | Cards grow vertically, grid stays 2 columns, blurb wraps to 3 lines then ellipsises (the description area is never truncated); the chooser scrolls. Chips (C-2, C-11) wrap to two lines; chip text is never truncated at 2.0 in Russian or English. The dock strip is two lines (title above time). The nav bar behaviour is unchanged (F4, existing limitation). |
-| Tablet / large (S-9, design-only) | Not built. |
+| Phone 320-411 dp (primary) | As specified. Mode cards 2x2, at least 136 dp wide at 320 dp ((320 - 2 x 16 - 12) / 2 = 138); below 150 dp the blurb is dropped from the card face and stays in the hint/description. |
+| Phone landscape / height under 480 dp | No orientation lock exists. Chooser grid stays 2x2 with vertical scrolling on a Compact short window, and is 4x1 only when the grid width is at least 580 dp (the grid rule of S-1; the one "short" threshold of 10.1 is 480 dp high); sheets scroll; dock compaction per S-4. Requirement: no overflow. |
+| Text scale 2.0 | Cards grow vertically, grid stays 2 columns on Compact, blurb wraps to 3 lines then ellipsises (the description area is never truncated); the chooser scrolls. Chips (C-2, C-11) wrap to two lines; chip text is never truncated at 2.0 in Russian or English. The dock strip is two lines (title above time). The nav bar behaviour is unchanged (F4, existing limitation). The rail uses its extended form at scale 1.3 and above (10.4). |
 | Keyboard open | No text input in these screens. |
-| RTL (finding A10) | No RTL locale ships (F20). New code uses start/end (`EdgeInsetsDirectional`, `AlignmentDirectional`), mirrored chevrons via `Directionality`; one widget test pumps S-1 and S-4 with `TextDirection.rtl` and expects no overflow. |
+| RTL (finding A10) | No RTL locale ships (F20). New code uses start/end (`EdgeInsetsDirectional`, `AlignmentDirectional`), mirrored chevrons via `Directionality`; the rail sits on the start side (right in RTL); one widget test pumps S-1 and S-4 with `TextDirection.rtl` and expects no overflow. |
+
+### 10.8 Platform families: what is identical and what adapts
+
+One codebase. Build targets today: Android only (F26). The Apple columns describe the design for targets that do NOT exist yet (OD-12); they cannot be run or released from this repository today.
+
+Identical on every family (no platform branching): the five destinations and their order; copy and ARB keys; the mode model; the data rules (section 11); the HUD visual language (tokens, glass panels, colours); the bundled fonts (F29: Archivo with Inter for Cyrillic, Barlow Condensed, Roboto Mono; the theme does not use system fonts, so San Francisco and Roboto are NOT used; switching Apple builds to the system font is an OPEN design question, DQ-13, owner product-ux, and is not assumed); component look; state vocabulary; accessibility semantics; test keys.
+
+Adaptive (decided at run time from the window size class, section 10.1, or from the platform):
+
+| Topic | Android phone and Android tablet (Material) | iPhone, iPad, Mac (Apple conventions) |
+|---|---|---|
+| Base widgets | Material 3 theme is on (F29); HUD controls are custom and look the same | HUD controls look the same; no Cupertino widget is introduced (F28). Apple adaptation is behaviour and placement, not a restyle |
+| Back and navigation | System Back and predictive back; on a non-home tab Back goes to Home, on Home it leaves the app (F3) | iPhone and iPad: left-edge swipe back on pushed pages (the current custom fade-and-scale transition has no edge swipe, F29, so the Apple targets need a swipe-back-capable transition for pushed routes). Mac: no swipe; a visible Back control on every pushed page that S03 touches, and Cmd+[ as the keyboard Back (Esc is NOT Back: it only closes the top-most open surface, popup or field, 10.9). Apple has no system Back button, so on a non-home tab the visible way back is the tab itself; the F3 rule applies only where the platform sends a Back event (Android Back, Cmd+[) |
+| Tab re-selection | Selecting the already selected destination scrolls its page to the top (PROPOSED, identical on all families; harmless where unused) | Same |
+| Sheets and popovers | Bottom sheets on Compact, popovers and centred dialogs on larger windows (10.6) | Same placement rules; on iPad and Mac popovers are the Apple pattern and are anchored to the control; on iPhone bottom sheets. Dismiss by tap outside, Esc, or swipe down on a bottom sheet |
+| Safe areas | Edge-to-edge is already required at `targetSdk` 36 (INFERENCE); the existing code reads `MediaQuery.paddingOf` for bottom and top (F28) | iPhone notch or Dynamic Island and home indicator come through the same insets; iPad Stage Manager windows get their own insets; on Mac, if the window uses a full-size content view the traffic-light buttons (about 28 dp tall) overlap the top of the rail, so the rail's top inset must clear them. UNGROUNDED until a macOS runner exists |
+| Text scaling | Font scale from the system; layouts are tested at 2.0 (S-1 to S-8) | Dynamic Type reaches larger sizes than 2.0 (accessibility sizes, about 3x; UNGROUNDED, Apple value not in the repository): up to 2.0 the contract is tested; above 2.0 all screens scroll and no status word may be truncated, but no layout is promised pixel-perfect. Mac has no system text scaling |
+| Haptics | Light feedback on mode selection and on Continue (PROPOSED; today only the rest timer and the scanner use haptics, F30). Never the only feedback | Same calls; on iPad without haptic hardware and on Mac the call is a no-op. No required behaviour depends on it |
+| Scrolling | Platform scroll physics by default (INFERENCE: the app is not known to override it; UNGROUNDED) | Bouncing physics on Apple by the same default; trackpad and wheel on Mac (10.9) |
+| Health sources (S-8) | Health Connect row | Apple Health row, listed only when running on an Apple platform; no adapter exists on any platform in S03 |
+| Pointer and keyboard | Tablet with mouse or hardware keyboard: 10.9 | iPad with trackpad or keyboard and Mac: 10.9 |
+| Window | Free-form windows in Android desktop mode: the class model | Stage Manager and Mac windows: the class model and the Mac minimum size (10.9) |
+
+### 10.9 Pointer, keyboard, trackpad and the MacBook window
+
+Applies to MacBook, and equally to iPad and Android tablets when a pointer or hardware keyboard is attached. Touch targets stay at 48 dp in every family (pointer use does not shrink them).
+
+Window (MacBook): resizable, default 1100 x 760 dp, minimum 480 x 600 dp, full screen supported. Below 600 dp wide the Compact layout applies, which the model already supports from 320 dp. The window size values are set by the future macOS runner, not by Dart code (UNGROUNDED, no macOS target); remembering the last window size is a runner feature and is PROPOSED, not required.
+
+Pointer:
+- Every enabled interactive control (cards, chips, buttons, rows, rail items, Record) has a hover state and the pointing-hand cursor; disabled controls show the default arrow; non-interactive text shows the arrow, selectable text (none in S03) the text cursor.
+- Hover uses the same press geometry and accent wash the controls already have (F30) at half strength; no new colour. The exact token is UNGROUNDED.
+- Hover never reveals information that is not also reachable otherwise; tooltips (500 ms) only repeat the accessible name on icon-only controls (compact-rail Record, compacted dock pill).
+- Click, double click and right click: single click activates; no double-click or right-click behaviour is defined in S03 (no custom context menus).
+- Scroll wheel and two-finger trackpad scroll move every scrollable page and sheet; a visible scrollbar appears on scroll views of Expanded windows and wherever a mouse is attached; pinch and rotate gestures are ignored. No screen requires a drag, swipe, long-press or pinch: S03 adds no gestures, and every gesture that exists elsewhere has a button path (the rule is tested, AC-KB-6).
+
+Focus: on keyboard-driven focus every focusable control of the S03 surfaces draws the 2 px outline of section 12 (not on mouse click). Existing HUD controls on pages S03 does not touch still draw none (F30); that is a known limit on Mac and iPad with keyboards (section 16).
+
+Keyboard (hardware keyboard on Mac, iPad and Android tablet; the modifier is Cmd on Apple platforms and Ctrl on Android). Shortcuts are inactive while a text field has focus, except Esc, and while a modal surface is open only Esc and Tab work.
+
+| Shortcut | Action |
+|---|---|
+| Cmd/Ctrl + 1 to 5 | Go to Home, Workouts, Scan, Progress, Profile (the order of the navigation list) |
+| Cmd/Ctrl + Shift + R | Record: idle opens the Record sheet (S-5); while the strip shows it opens the strip destination. In S03 nothing is started or stopped by it (no recorder exists, F18); when the recorder sprints land, the same key starts and stops, with a confirmation before stopping. Reserved now so it does not change later |
+| Cmd/Ctrl + Shift + M | Open the mode switcher (S-3) |
+| Cmd/Ctrl + [ | Back, with the same result as system Back (F3) |
+| Esc | Precedence: (1) close the top-most open sheet, popover or dialog; (2) otherwise close a focused popup or leave a focused text field; (3) otherwise nothing. Esc never navigates back |
+| Selected destination activated again | Scrolls that page to the top (no route change) |
+| Cmd + , (Mac and iPad) | Open Settings |
+| Tab and Shift + Tab | Move focus; order in section 12 |
+| Arrow keys | Move within the rail, the chooser grid and the switcher rows |
+| Enter and Space | Activate the focused control |
+| Page Up, Page Down, Home, End | Scroll the focused page; Home and End act on the rail only while keyboard focus is inside the rail |
+
+Conflict check: UNGROUNDED. The shortcut set was NOT checked against macOS, iPadOS or VoiceOver defaults in this revision (no Apple system is available to the author). Known risks to verify: Cmd+1 to 5 and Cmd+, are conventional on macOS; Cmd+Shift+M and Cmd+Shift+R may collide with system or app-level commands in some contexts; Cmd+[ is the usual Back in browsers. The a11y-architect and a Mac check decide the final set (DQ-15). VoiceOver uses Control+Option as its modifier, so the Cmd combinations above are not expected to collide with it (INFERENCE, not verified).
+
+Menu bar (macOS only, PROPOSED, built together with the macOS target through the platform menu API; not in S03 code): App menu with About and Settings (Cmd+,); File with Record (Cmd+Shift+R) and Close Window; View with the five destinations (Cmd+1 to 5) and a Mode submenu (Train, Ride, Explore, Body; Ride and Explore disabled and labelled "Coming later"; the submenu title opens S-3 with Cmd+Shift+M); the standard Window and Help menus. Menu items enable and disable with the same availability rules as the app, and no function exists only in the menu.
+
+Trackpad back swipe on Mac: not provided (Cmd+[ and the visible Back control are the paths).
 
 ## 11. Data honesty and copy rules
 1. Unknown is "No data"; zero only when the source reports zero.
@@ -568,7 +802,8 @@ Wrapping rather than extending is used only where a primitive cannot express the
 4. Sync/cloud words appear only with `ACTIVITY_CLOUD_STREAMS` on.
 5. Never say "merged", "deduplicated" or "synced with Health Connect".
 6. No body-shaming, medical claim or streak pressure; BODY copy reuses existing strings.
-7. Errors are plain sentences with a next step, never exception text; tone models: `errorServiceUnavailable`, `foodDiaryError` + `foodDiaryErrorBody`. "Not available" states are neutral statements, not errors, and never offer a retry that cannot succeed.
+7. (Revision 3.) Retention wording. Any copy about how long GPS history is kept in the cloud offers exactly three expiry choices, 90 days, 365 days and 730 days (2 years), with 730 days as the default; "never" is NOT offered anywhere (S02 answer of 2026-10-16). The S03 screens do not contain a retention control (the consent centre does, OD-8), but any text or test fixture in S03 that names retention uses these values, and a text search of S03 ARB additions finds no "never keep" or "forever" wording. Lengthening a setting does not bring back expired history, shortening applies at the next purge (S02 5.3).
+8. Errors are plain sentences with a next step, never exception text; tone models: `errorServiceUnavailable`, `foodDiaryError` + `foodDiaryErrorBody`. "Not available" states are neutral statements, not errors, and never offer a retry that cannot succeed.
 
 ## 12. Accessibility
 
@@ -583,10 +818,16 @@ Target: WCAG 2.2 AA on the new surfaces, validated by the independent a11y revie
 | Announcements | Use `SemanticsService.announce` (repo precedent F22), polite: mode change ("Mode changed to Ride"), strip transitions (started, paused, resumed, ended: a removed node cannot hold a live region), question step ("Question 1 of 2"), save failure the user just triggered. NOT announced: the ticking time, the chooser description (finding A7: the description is the card hint), loading placeholders. |
 | Contrast | Floor 4.5:1 for text and 3:1 for non-text/icons against the effective surface. Dark theme: all `HudTokens` text tiers pass over `base` (audit table). Light theme (finding A8/A9): accent `#4B7A00` is 4.51:1 with no margin and so is NOT used as text on new surfaces (selection dot and icons only, with the word "Selected" carrying the meaning); `warning` (1.50) and `danger` (2.69) are never text or sole signal; the nav inactive ink 4.40 is a recorded pre-existing exception, not changed here. Surfaces over the sky photo use the `dense` tier; panel-over-photo contrast is unmeasured (17.8). |
 | Colour independence | Selection = ink + dot + word; status = word + icon. |
-| Reduced motion | Uses `context.hudMotionDuration`; no looping animation anywhere in S03 and no indeterminate progress indicator (finding A5): loading states are static (outlines, text "Checking"/"Saving"). New full-screen routes (S-1, S-8) are built with a page builder that returns a no-transition page when `disableAnimations` is true, because the router's `_fadeThrough` ignores reduced motion (audit section 8). |
+| Reduced motion | Uses `context.hudMotionDuration`; no looping animation anywhere in S03 and no indeterminate progress indicator (finding A5): loading states are static (outlines, text "Checking"/"Saving"). Every new sheet, dialog and popover route (S-3, S-5, Coming-later, S-10, Day-3) also gets a no-transition or opacity-only transition when `disableAnimations` is true (AC-WS-14). New full-screen routes (S-1, S-8) are built with a page builder that returns a no-transition page when `disableAnimations` is true, because the router's `_fadeThrough` ignores reduced motion (audit section 8). |
 | Text scale | Layouts hold at 2.0 (section 10). Russian is the default locale (F20) so every check below runs in `ru` first. |
 | Keyboard | Controls activate with Enter/Space; cards reachable by Tab/arrow; Esc closes sheets. |
 | Charts | None introduced; no table alternative needed until S15. |
+| Large screens (revision 3) | Reading and focus order follow the layout: rail (Record slot, then the five destinations), then the main column, then the side pane (Home, Progress, Sources, chooser detail panel). Visual order and focus order never disagree; the side pane is never first. A class change keeps focus on the same control or the same destination (WS-3). The rail is one landmark labelled "Main navigation" (the bar gets the same label); the content pane is the main landmark. |
+| Rail semantics | Mechanism in 10.4: a container `Semantics` labelled "Main navigation" (no "n of 5" position hint, loss accepted). Each destination: button, `selected`, label (not upper-cased in the tree, as the bar, F4); Record slot: button with the accessible name "Record" or the strip label; compact-rail icons carry a tooltip with the same name; the extended form's visible label equals the accessible name. |
+| Pointer (revision 3) | Hover and cursor on every enabled control (10.9); hover state is not the only indication of anything; targets stay 48 dp; tooltips repeat names only; no drag, swipe, long-press or pinch is required anywhere in S03 (WCAG 2.5.1 pointer gestures, 2.5.7 dragging alternatives). |
+| Keyboard, full (revision 3) | Everything reachable by Tab; focus ring on keyboard focus for all new controls; arrow-key groups for the rail, the chooser grid and the switcher; shortcuts of 10.9 never trap focus and never fire inside a text field or a modal; Esc closes the top-most surface; a popover opens focus on its title and returns it to the opener. No keyboard trap (WCAG 2.1.2). |
+| Per family | Android: TalkBack, system Back, font scale. iPhone and iPad: VoiceOver, Dynamic Type, Full Keyboard Access, Reduce Motion, Switch Control (design intent; no Apple build exists, so these are NOT_RUN until OD-12 is answered and the targets are built). Mac: VoiceOver, keyboard navigation, Reduce Motion. The Flutter semantics tree is the same on all families; the contract does not claim Apple screen-reader behaviour was observed. |
+| Reflow and zoom | At 400 percent equivalent (a 320 dp window at text scale 2.0, or a window narrowed to 480 dp on Mac) every S03 screen reflows to the Compact layout without horizontal scrolling (WCAG 1.4.10). |
 
 ## 13. Localization (finding A2: Russian is the default locale)
 
@@ -605,8 +846,12 @@ Target: WCAG 2.2 AA on the new surfaces, validated by the independent a11y revie
 | Sheet row title / description | 28 / 60 | description wraps |
 | Strip title | 24 | wraps to a second line |
 | Section headers | 28 | wraps |
-| Nav labels | unchanged (Option A) | existing one-line ellipsis |
+| Nav labels in the bottom bar | unchanged (five-tab shell) | existing one-line ellipsis |
+| Nav labels in the side rail (revision 3) | 11 in the compact form (96 dp), 18 in the extended form (240 dp) | never truncated; at text scale 1.3 and above or window 1200 dp and above the extended form is used |
+| Side pane section titles (Home, Progress, Sources) | 28 | wraps; side panes are 320-340 dp wide, so a title of 28 Russian characters at scale 1.0 must fit in two lines |
+| Detail panel description (chooser, Expanded) | 60 | wraps in the 320 dp panel, never ellipsised |
 
+- Large screens (revision 3): Russian stays the default and first-checked locale. The rail and the side panes are the narrowest places Russian text must fit: the rail's compact form holds a label of up to 11 characters (FACT per the lead agent's reading of `mobile/lib/l10n/app_ru.arb`, closed after the review of revision 3: the five Russian labels are Главная, Тренировки, Скан, Прогресс, Профиль; the longest is "Тренировки" at 10 characters, so the 11-character budget holds at scale 1.0; the pixel width in the rail is measured by AC-WS-3, not assumed); side panes are 320-340 dp wide. Each large-screen test runs `ru` first, at scale 1.0 and 2.0, at 1100 dp wide.
 - Verification mechanism: a test runs each new screen in `ru` at scale 2.0 and, for each contract key listed in section 7, asserts `RenderParagraph.didExceedMaxLines == false` for status chip words, chip text, button labels and headers; where the budget allows ellipsis (blurb) it asserts the first 24 characters are visible. A pseudo-locale run (every string length x1.6 with accents) is added for keys whose Russian value is not yet authored.
 - Number, date, duration formatting through `intl` with the resolved locale (`AppLanguage.resolvedLocaleCode`). Units are metric only in S03; no units setting exists (F20, DQ-4); strings carry no hard-coded "km".
 - Mode names are stable product vocabulary; the Russian equivalents are decided in the translation pass and recorded in the ARB.
@@ -615,7 +860,7 @@ Target: WCAG 2.2 AA on the new surfaces, validated by the independent a11y revie
 
 Per-screen criteria are in section 7. Cross-cutting criteria (all observable in widget tests; a test never depends on a real OS dialog):
 
-- AC-SH-1 (Option A). The shell nav configuration list has exactly five entries with paths `/home`, `/workouts`, `/scan`, `/progress`, `/profile` in that order and labels from the keys `homeHome`, `navWorkouts`, `navScan`, `progressProgress`, `profileProfile`.
+- AC-SH-1. The shell nav configuration list has exactly five entries with paths `/home`, `/workouts`, `/scan`, `/progress`, `/profile` in that order and labels from the keys `homeHome`, `navWorkouts`, `navScan`, `progressProgress`, `profileProfile`.
 - AC-SH-2. Back from any non-home tab ends at `/home`; Back on `/home` pops out (F3 unchanged; reuse the existing shell test).
 - AC-SH-3. The nav bar is built from the configuration list; changing the list changes the bar (test with a 4-item list).
 - AC-SH-4. Switching mode changes neither the router location nor `HudNavBar.selectedIndex`.
@@ -625,7 +870,7 @@ Per-screen criteria are in section 7. Cross-cutting criteria (all observable in 
 - AC-REG-2. `isDemoGatedPath` behaviour for `/community`, `/celebrity-plans`, `/contribute`, `/moderate`, `/team/*` is unchanged.
 - AC-REG-3. [flag off] Existing Home and Progress widget tests pass unchanged with default providers.
 - AC-REG-4. With `ACTIVITY_CLOUD_STREAMS` off no sync wording is present in the S03 widgets (text search of the pumped trees).
-- AC-A11Y-1. (Rewritten, findings A1, A3.) For each new interactive control (C-1, C-2, C-8, C-9, sheet buttons, strip) use `tester.getSemantics(find.byKey(...))` and assert with `matchesSemantics`: role (`isButton`), non-empty `label`, expected `hint`, `isSelected`/`isEnabled` where specified, `hasTapAction`, and a size of at least 48x48 from `tester.getSize` of the tappable ancestor (the hit region, not only the painted box).
+- AC-A11Y-1. (Rewritten, findings A1, A3.) For each new interactive control (C-1, C-2, C-8, C-9, sheet buttons, strip, and, after the review of revision 3, the five rail destinations and `shell.rail.record`, with the rail's "Main navigation" container, see AC-WS-11) use `tester.getSemantics(find.byKey(...))` and assert with `matchesSemantics`: role (`isButton`), non-empty `label`, expected `hint`, `isSelected`/`isEnabled` where specified, `hasTapAction`, and a size of at least 48x48 from `tester.getSize` of the tappable ancestor (the hit region, not only the painted box).
 - AC-A11Y-2. Headers: `isHeader` is true for the titles of S-1, S-3, S-5, S-7b ("All activity"), S-8.
 - AC-A11Y-3. Focus: sending Tab key events on S-1 visits the four cards, Continue, Decide later in that order; opening S-3 from `home.modeChip` and closing it returns focus to `home.modeChip`; the first focused node inside a sheet is its header.
 - AC-A11Y-4. Announcements: capture messages on the accessibility channel (the transport of `SemanticsService.announce`); a mode change emits one message containing the new mode name; strip transitions started, paused, resumed, ended each emit one; advancing a fake clock by 30 seconds emits none and the strip's semantics label is unchanged until the minute boundary.
@@ -634,7 +879,60 @@ Per-screen criteria are in section 7. Cross-cutting criteria (all observable in 
 - AC-A11Y-7. RTL: S-1 and S-4 pump in `TextDirection.rtl` without overflow.
 - AC-A11Y-8. Contrast: the new components use only `HudTokens` text tiers (static test greps new files for `Color(0x` and `Colors.`; none allowed) and no use of `warning`/`danger`/zone colours as a text style.
 
-Test seams the build must provide (contract items, not code): keys listed per screen; `home.section.<name>` keys on existing Home children; an injectable clock for week/today; an injectable journal availability; injectable timer providers (already providers); an in-memory settings store for `selectedMode` and `chooserStatus`.
+Large-screen, size-class, pointer, keyboard and per-family criteria (revision 3). Each is a widget test with a set window size (`tester.view.physicalSize` with a device pixel ratio of 1.0), a set text scale and, where stated, a faked `TargetPlatform`; none needs a device. "Window WxH" means logical dp.
+
+Window-size model and navigation (10.1, 10.4):
+- AC-WS-1. The class provider returns compact at 599 wide, medium at 600 and 839, expanded at 840 (any height of 480 or more). At 700x420 the class is medium and the short flag is true; at 500x420 the class is compact and short.
+- AC-WS-2. Navigation presentation: 360x800 and 700x900 show `shell.bottomBar` and no `shell.rail`; 700x420, 900x400 and 1100x800 show `shell.rail` and no `shell.bottomBar`. At 700x900 the bar is at most 560 dp wide.
+- AC-WS-3. Rail form (rewritten after review; GPT-PM gate round 1, MINOR-01: the measured-width rule is authoritative for the whole criterion). The rule of 10.4: the rail is 240 dp wide (extended form) when the window is 1200 dp wide or more, or when the widest of the five upper-cased labels, measured with a `TextPainter` in the nav-label style at the current text scale and locale, plus 16 dp is more than 96 dp; otherwise it is 96 dp (compact form). The test computes the expected form from that rule and asserts that `shell.rail` has exactly the width the rule predicts and that no label overflows in either form. Cases: in `ru` and in `en`, at 1100x800 and text scales 1.0, 1.15 and 1.29 (the `ru` labels are Главная, Тренировки, Скан, Прогресс, Профиль); at 1200x800 and scale 1.0 the rail is 240 dp whatever the measurement says; at 1100x800 and scale 2.0 the measurement must select the extended form (the test fails and prints the measured width if it does not). The test never hard-codes 96 dp for a case where the measured width exceeds the threshold.
+- AC-WS-10. Rail vertical fit: at 640x360 and 800x360, text scales 1.0, 1.3 and 2.0, locale `ru`: no `RenderFlex` overflow; the five destinations and `shell.rail.record` are all reachable by Tab (and the five by arrow keys); each destination's hit height from `tester.getSize` is at least 48 dp; a destination focused by Tab is fully inside the window (scrolled into view); `shell.rail.record` keeps the same top `Rect` while the list scrolls.
+- AC-WS-11. Rail semantics: with `matchesSemantics` the rail container has the label "Main navigation" and is a container node; each destination is a button with a non-empty label, `isSelected` true only for the current tab, and `hasTapAction`; the same holds for the bottom bar's container and tabs; `shell.rail.record` is a button with the label "Record" (idle) or the strip label (running).
+- AC-WS-12. Stable rail geometry: at 1100x800, the top `Rect` of the Progress destination is identical on all five tabs (`/home`, `/workouts`, `/scan`, `/progress`, `/profile`) with idle timers and with a running set timer; `shell.rail.record` exists and is enabled on all five tabs in the idle state.
+- AC-WS-13. Compact-rail running state: at 1100x800, text scale 1.0, `ru`, with a set timer running then paused, the visible text nodes inside `shell.rail.record` (state word, minutes) exist, differ between running and paused, and raise no overflow; the idle slot shows the visible label "Record".
+- AC-WS-14. Reduced motion for surfaces: with `disableAnimations` true, opening S-3 and S-5 reaches the final state after one `pump` (no `pumpAndSettle` needed); resizing 360x800 to 1100x800 with S-3 open changes it from a bottom sheet to a popover, focus stays on the surface title, and the scroll offset of the sheet is kept.
+- AC-WS-4. Rail content: `shell.rail` contains five destination nodes in the order of AC-SH-1, plus `shell.rail.record` above them; the same list drives the bar (AC-SH-3) and the rail (a 4-item test list gives 4 rail destinations).
+- AC-WS-5. Live swap: pump at 1100x800 on `/progress` with the rail, resize to 360x800 then back; the router location stays `/progress`, `HudNavBar.selectedIndex` equals the rail selection (3), a fake running timer state is unchanged, and the focused destination is the Progress one in both presentations (WS-3).
+- AC-WS-6. Rail visibility follows the shell: on a pushed route (`/workout/:id`, `/settings`) at 1100x800 neither `shell.rail` nor `shell.bottomBar` exists.
+- AC-WS-7. Rail Record slot (rewritten after review): at 1100x800 with idle timers `shell.rail.record` is the enabled Record button on all five tabs; with `setTimerProvider` running it is the strip on all five tabs; the dock `shell.dock` does not exist in the rail presentation. Tapping it opens S-5 as an anchored popover (`recordSheet.popover`) at 1100x800, as a bottom sheet of at most 560 dp at 700x420 (Medium with rail) and as a bottom sheet at 360x800 (bar presentation, where AC-ST-1 still holds: pill only on Home, Workouts, Progress). The Record shortcut on `/scan` at 1100x800 opens S-5 and the popover `Rect` lies fully inside the window.
+- AC-WS-8. Bottom clearance: with the rail, the last child of a scrollable tab ends at most 24 dp plus the bottom inset above the window bottom (no dock space reserved) and the first child starts at least rail width + 12 + 16 from the start edge.
+- AC-WS-9. Orientation: 800x360 and 360x800 pump every tab without overflow; no call to a preferred-orientation channel is made by the app (the mocked `SystemChrome` channel records none).
+
+Screens by class (10.5):
+- AC-LS-9. Narrow-pane fallback (review of revision 3): Home, Progress, Sources and the mode chooser at 840x800 and 900x800, at text scales 1.0, 1.3 and 2.0, locale `ru`: no overflow, no horizontal scroll (the scroll extent on the horizontal axis is zero), and below each minimum of the two-pane table (pane under 880 dp; chooser window under 840 dp) the key order equals the Compact order and neither `home.pane.side`, the Progress right column nor `modeChooser.detailPanel` exists (the chooser has its detail panel at exactly 840 and wider). Also: Home at 1100x800 has two panes at scale 1.0 (pane 980 dp) and ONE column at scale 1.3 in `ru` (the extended rail that AC-WS-3 expects there when the measured label width exceeds 80 dp, pane 836 dp; if the measurement says the compact rail still fits, the pane is 980 dp and two panes apply, so this assertion follows the measured form of AC-WS-3); at 1200x800 (extended rail, pane 936 dp) two panes; Progress tiles use the tile-column rule (never narrower than 160 dp: assert every tile width at least 160 dp at 360x800, 700x900 and 1100x800).
+- AC-LS-10. Scroll anchors (WS-3, review of revision 3): scroll Home so that `home.section.upcoming` is the first visible section, resize 700x900 to 1100x800 and back; the section is still on screen after each change. The same for Progress with `progress.recent`.
+- AC-LS-11. Chooser idle state: at 1100x800 on first run `modeChooser.detailPanel` shows `modeDetailIdle`, `modeChooser.continue` is disabled and no card `isSelected`; a touch tap on `modeChooser.card.body` (no hover event) selects it and the panel shows the body description; no illustration placeholder node exists.
+- AC-LS-1. Home at 1100x800 and text scale 1.0: `home.pane.main` and `home.pane.side` exist side by side, the side pane is 340 dp wide, the content width does not exceed 1120 dp, and the union of `home.section.*` keys equals the Compact key set (nothing removed). At 700x900 and 360x800 neither pane key exists and the order equals the Compact order.
+- AC-LS-2. Home lens at 1100x800: with the BODY lens `home.section.bodyScan` and `home.section.nutrition` precede `home.section.quickScan` in the main-then-side reading order; with TRAIN they equal the pre-S03 relative order.
+- AC-LS-3. Home at 900x800 with text scale 2.0: the side pane is below the main column (single column) and no overflow is raised.
+- AC-LS-4. Progress at 1100x800 with a journal holding one session: `progress.allActivity` is in the left column, the body-scan card in the right column (compare `Rect.left`), tile columns equal clamp(floor((available + 12) / 172), 1, 3) for the left column's available width (3 per row at 1100x800 with scale 1.0); at 700x900 one column with the same rule applied to the 640 dp column; at 360x800 the order is exactly AC-PR-3.
+- AC-LS-5. Progress states at 1100x800: journal `failedToOpen` shows `progress.journalError` and `progress.journalRetry` in the left column; zero sessions shows only `progress.slot.sources` (right column) and no `progress.allActivity`; an offline fake changes nothing; loading shows the Sources row first. The same assertions as AC-PR-1 to AC-PR-3 hold with columns instead of order.
+- AC-LS-6. Sources at 1100x800: the main column holds all `sources.row.*`, the side pane holds `sources.dedupNote`, the width does not exceed 880 dp, and AC-SRC-1 to AC-SRC-7 still pass. At 700x900 and below it is one column.
+- AC-LS-7. Chooser: AC-CH-9 to AC-CH-14.
+- AC-LS-8. Surfaces by class (10.6): S-3 is a bottom sheet at 360x800, a bottom sheet of at most 560 dp wide at 700x900, and a popover (`modeSwitcher.popover`) whose rectangle lies inside the window and below `home.modeChip` at 1100x800. The Coming-later and sign-out surfaces are centred dialogs of at most 480 dp at 700x900 and 1100x800. Esc closes each of them with no write to any fake store, and focus returns to the opening control.
+
+Pointer, keyboard and focus (10.9, section 12):
+- AC-KB-1. Shortcuts at 1100x800 with a faked Apple platform (Cmd) and a faked Android platform (Ctrl): the modifier + 1 to 5 reach `/home`, `/workouts`, `/scan`, `/progress`, `/profile`; modifier + Shift + M opens `modeSwitcher.sheet` or popover; modifier + Shift + R opens the Record surface (or, with a running timer, pushes the strip destination); modifier + `[` behaves like system Back (AC-SH-2). None of them fires while a `TextField` is focused or a modal is open (assert no navigation). Extended after review: modifier + `,` pushes `/settings` on Apple platforms (faked iOS and macOS) and does nothing on faked Android; Esc precedence: with a popover open Esc closes only the popover; with a focused popup menu or field open Esc closes that first; with nothing open Esc does NOT navigate back (Esc-as-Back is dropped, 10.8); modifier + `[` on a non-home tab goes to `/home`, on a pushed page pops it; re-selecting the selected destination (click or Enter) scrolls its page to the top, with no route change; on a pushed page at 1100x760 under the faked macOS platform a visible Back control exists (AC-KB-8). Home and End move rail focus only while focus is inside `shell.rail`; with focus in a page they scroll it.
+- AC-KB-2. Rail arrows: with focus on the first destination, Down moves focus to the next destination, End to the last, Home to the first; Enter selects (router location changes); Tab leaves the rail to the content.
+- AC-KB-3. Focus ring: for each new control (rail destinations, `shell.rail.record`, `home.modeChip`, chooser cards, sheet rows) focus moved by a Tab key event shows the 2 px outline (the focused node paints the ring: find the `showFocusRing` decoration), and a pointer tap does not.
+- AC-KB-4. Hover and cursor: a test mouse gesture hovering an enabled `modeChooser.card.train` sets the pointing-hand cursor (the `MouseRegion` cursor) and the hover style; a disabled control shows the basic cursor; hovering changes no selection and no semantics label.
+- AC-KB-5. Scroll and scrollbar: a mouse-wheel `PointerScrollEvent` over Home, Progress and Sources scrolls them; at 1100x800 a `Scrollbar` exists on each main scroll view.
+- AC-KB-6. No gesture-only path: a static check over the new S03 files finds no `onLongPress`, `onHorizontalDrag*`, `onScale*`, `Dismissible` or `onPan*` handler; every interaction in S-1 to S-8 is operable with taps, keys and clicks only.
+- AC-KB-8. Visible Back on Apple desktop (10.8): UNGROUNDED whether HUD pages already show a Back control (not read). Contract: under the faked macOS platform every pushed page that S03 touches or frames (S-1, S-2, S-8, and framed pages if DQ-12 is yes) exposes a Back control found by `find.byKey(Key('shell.back'))` with a button role and the label "Back"; pages that S03 does not touch are listed in section 16 as not guaranteed.
+- AC-KB-9. Contrast of rail ink (review of revision 3, token-level test): the rail's inactive ink (text-secondary tier) over the rail surface reaches at least 4.5:1 and the selected ink (text-primary) at least 4.5:1, in the light and dark `HudTokens` (computed from the token values with a contrast function, not from pixels); the selected accent dot reaches at least 3:1; if the literal bar ink is kept for the rail the test instead asserts the recorded 4.40 exception value and fails if it worsens.
+- AC-KB-7. Windows without a pointer: the same flows at 360x800 with touch events only pass unchanged (shortcuts and hover are additive).
+
+Per family (10.8; Apple cases use a faked `TargetPlatform` and are widget tests only, no Apple build exists):
+- AC-FAM-1. `TargetPlatform.android` at 360x800 and at 1100x800: system Back on a non-home tab goes to `/home` (F3); the S-4 and S-5 criteria pass.
+- AC-FAM-2. `TargetPlatform.iOS` at 390x844 and `TargetPlatform.macOS` at 1100x760: the identical key sets, copy and semantics of the Android run (compare the sets of keyed nodes and their labels); no `Cupertino*` widget appears (static check); the Apple Health row is absent in S03 (AC-SRC list unchanged).
+- AC-FAM-3. Safe areas: with `MediaQuery.padding` set to a top of 59 and a bottom of 34 (iPhone-like) and to a bottom of 0 and a top of 28 (Mac title area) the dock or rail, the first and the last child do not overlap the insets (compare `Rect`s).
+- AC-FAM-4. Text scale: S-1, S-3, S-5, S-6, S-7, S-8 and the rail at scale 2.0 in `ru` and `en` at 360x800, 700x900 and 1100x800: no overflow and `didExceedMaxLines == false` for status words, chip texts, button labels, headers and rail labels (extends AC-A11Y-5 to the three classes).
+- AC-FAM-5. Haptics: selecting a mode and tapping Continue call the haptic channel once each on the faked mobile platforms and do not fail when the channel is absent (the Mac case).
+- AC-FAM-6. Reduced motion and RTL on large windows: S-1 at 1100x800 with `disableAnimations` has no animation; with `TextDirection.rtl` the rail sits on the right and the detail panel on the left, with no overflow (extends AC-A11Y-6 and AC-A11Y-7).
+
+Retention copy (section 11 rule 7):
+- AC-RET-1. S03 has NO screen that shows the retention choice (the consent centre does, OD-8), so what is testable in S03 is only: (a) a text search of the S03 ARB additions (the keys added by this sprint, listed in the sprint's change record) finds no "never keep", "forever", "indefinitely" or "never" in a retention sentence; (b) if any S03 widget, fixture or constant names a retention value, a static check asserts its allowed set is exactly {90, 365, 730} and the default is 730; (c) the S-8 Sources screen contains no retention text. A UI test of the retention control itself belongs to the consent-centre sprint.
+
+Test seams the build must provide (contract items, not code): window-size injection (`windowSizeClass` provider overridable, plus the real `tester.view` size); keys `shell.bottomBar`, `shell.rail`, `shell.rail.record`, `shell.back`, `modeDetailIdle` text, a `TextPainter`-measurable nav-label style, `home.pane.main`, `home.pane.side`, `modeChooser.grid`, `modeChooser.detailPanel`, `modeSwitcher.popover`, `recordSheet.popover`, `signOut.warningSheet`; an injectable `TargetPlatform`; an injectable text scale; keys listed per screen; `home.section.<name>` keys on existing Home children; an injectable clock for week/today; an injectable journal availability; injectable timer providers (already providers); an in-memory settings store for `selectedMode` and `chooserStatus`.
 
 Real-device checks (focus ring visibility, TalkBack reading order, actual contrast over photographs) are NOT_RUN by the test agents and go to the independent a11y review.
 
@@ -642,12 +940,13 @@ Real-device checks (focus ring visibility, TalkBack reading order, actual contra
 
 Each states the decision in words, the default, and what each answer does. Owner is the operator unless noted.
 
-OD-1 (open question U-1). Replace the Scan tab with a context-sensitive Record action, or keep five tabs?
-- "Keep five tabs, Record as a shell action" (Option A, recommended, default): the gym QR scan stays one tap and nothing moves for Phase 1 users; a running workout is shown in a strip on all five tabs. The bar has no Ride, Explore or Body entry, and Record is a pill above the bar, not the centre button.
-- "Replace Scan with Record" (Option B): the bar looks like the film's mock with a centre Record button, but the gym scan becomes two taps and leaves the bar; for the whole R2 alpha the centre button acts only in Train and Body; tests and deep links that assume the third tab are touched.
-- Needed before approval of this contract. No answer = Option A.
+ANSWERED by the operator on 2026-10-16 (kept for the record, no longer open):
 
-OD-2 (open question U-2). Tablet and large layouts now or later? Default later: phone only; S-9 stays a drawing. "Now" adds a responsive chooser, a side rail and a large-screen Progress to S03 (estimate UNKNOWN) and a large-screen variant to every later contract.
+- OD-1 (question U-1: replace the Scan tab with a Record tab, or keep five tabs?). ANSWERED 2026-10-16: keep five tabs, Record is a button over the screen (a pill above the bar, or the Record slot of the side rail). Section 5.
+- OD-2 (question U-2: tablet and large layouts now or later?). ANSWERED 2026-10-16: NOW, for Android phone, iPhone, iPad, Android tablet and MacBook. Section 10. Consequence for effort: S03 grows by the window-size provider, the rail, large-screen Home, Progress, Sources and chooser, and pointer and keyboard support; the effort estimate is UNKNOWN and belongs to the sprint planner.
+- OD-9 (question: does the on-device activity history open in the default build?). ANSWERED 2026-10-16: yes, always, whatever the cloud flag says; story S03-0 stays in scope. Section 4.4.
+- Retention (S02 question: which expiry values for cloud GPS history?). ANSWERED 2026-10-16: 90, 365 or 730 days; default 730 days (2 years); "never" is not offered. Section 11 rule 7. Privacy wording status (updated after the review of revision 3, reported by the lead agent, not re-verified by this author): the retention text was DONE in the revision of 2026-10-16: the wording moved to `scripts/legal/legal_text.py` and "or never" was removed from the page and from the ARB key `legalPrivacyBody` (`app_en.arb`, `app_ru.arb`). Remaining: the Russian S02 paragraphs are still missing, and the whole privacy wording is still a DRAFT pending the operator's approval (OD-11). This document does not edit that text.
+- One app (answer 1). ANSWERED 2026-10-16: Phase 2 is an update of the same app with one application id (F26), not a second app.
 
 OD-3 (decision D-9). Are any modes or features paid or gated? Default: no paywall, no lock icons. Any gating needs a locked card state and an upsell path, neither designed here.
 
@@ -661,7 +960,14 @@ OD-7. (Changed.) A running gym workout lives on its own pushed page (`/workout/:
 
 OD-8. Scope of the consent centre and the sign-out warning. S02 assigned the consent centre UI to S03 and left the sign-out warning UI to a UI story, but the S03 roadmap row lists only EP-1..EP-4. Recommended: S03 builds the Sources panel and, if agreed, the sign-out sheet (J10); the full consent centre becomes its own design sprint before S04. If neither is built, the S02 sign-out hooks stay unused and signing out has no warning for data held only on the device.
 
-OD-9. (NEW, finding U1.) Open the on-device activity history in the default build? Today the journal is opened only when the cloud flag is on (default off), so in the default build the new dashboard has nothing to read. Recommended: add a story S03-0 that opens and recovers the local journal at app start whatever the cloud flag says, keeping every cloud piece behind the flag; needs architect and operator confirmation because it changes the S02 statement that with the flag off no journal is opened. If YES: the default build can show the real empty state and, from S05, recorded sessions; the app does one extra file recovery pass at start. If NO: in the default build the "All activity" block never appears and the Sources panel says "Activity history is not active in this build"; the new dashboard can then only be exercised in builds with the cloud flag on or in tests with overrides, and shipping the alpha without it means the dashboard skeleton is invisible to users.
+Still-open decisions (the operator decides; each states what changes). New items carry the next free numbers; OD-3 to OD-8 above are unchanged in meaning.
+
+- OD-10. First-release region: in which countries or stores does the first Phase 2 release ship? The operator decides the list; a narrower list (for example one region) reduces the languages, legal pages and store listings to prepare and the privacy review scope, a wider list adds them. The design does not depend on it except Russian-first copy (section 13). UNGROUNDED: the roadmap wording of this decision was not re-read for this revision.
+- OD-11. Privacy wording approval: who approves the changed privacy page text (retention 90/365/730 days, no "never") and when. Technically the generator source `scripts/legal/legal_text.py` and its outputs (the public pages and the ARB legal keys) were already updated on 2026-10-17 and no longer offer "never", so the page and this contract agree. Still open: the wording as a whole is a DRAFT that needs the operator's approval, and the Russian counterpart of the S02 paragraphs does not exist yet.
+- OD-3 (monetisation per mode, roadmap decision D-9) is STILL OPEN and is listed once, above in this section; its default stands: all new modes behind flags and no new paywall.
+- OD-13. Fate of the master branch name: whether the repository's main branch keeps its current name or is renamed. It changes nothing in the UI; it decides branch and release-note wording and tooling paths. (Mapped from the coordinator's list; the roadmap register code for it was not re-read: UNGROUNDED.)
+- OD-14. Legal status of the third-party dossier: whether the third-party material gathered for Phase 2 may be used or quoted. If yes, the sources and the Sources-panel wording can reference it; if no, S03 copy refers to no third-party source. S03 copy as written makes no such reference. (Mapped from the coordinator's list; register code not re-read: UNGROUNDED.)
+- OD-12. When Apple build targets are created: iOS, iPadOS and macOS targets do NOT exist (F26) and are NOT created in S03. The operator decides when (never in Phase 2, with S03, or in a later sprint) and whether store accounts and signing are arranged. Earlier means the Apple criteria of 10.8, 10.9 and AC-FAM become runnable on simulators and devices and need a Mac for building; later means they stay widget tests with a faked platform. The layouts need no redesign either way. Nothing is promised about Apple stores, accounts or signing.
 
 Items below are product-ux or architecture questions (owner given), listed so none is decided silently:
 - DQ-1 CLOSED by 4.2 (single `chooserStatus` field, migration at start, `pending` written at onboarding finish, chooser shown from Home).
@@ -675,6 +981,11 @@ Items below are product-ux or architecture questions (owner given), listed so no
 - DQ-9 (product-ux): photos on cards wait for U-3 (default: licensed photography only, none exists); lime corner wedges (U-5) not used in app UI.
 - DQ-10 (architect): align the "week" rule of S-7b (Monday, device zone) with the existing Home week section.
 - DQ-11 (architect): confirm that `ActiveSessionStatus` can be built from `setTimerProvider`, `restTimerProvider` plus the new destination provider with no other app-level workout flag.
+- DQ-12 (architect): does S03 include the shared frame that caps the width of pushed pages it does not redesign (10.5), or are they left stretched on wide windows? Assumed: the frame is included for non-camera pages.
+- DQ-13 (product-ux): do Apple builds keep the bundled fonts (assumed) or switch to the system font? Decide before the Apple targets are built.
+- DQ-14 (architect): rail-form switch at text scale 1.3 and window 1200 dp, rail-over-landscape-phone rule (width 600+ and height under 480), and the Mac minimum window 480 x 600 are PROPOSED values; confirm or change.
+- DQ-16 (operator, assumptions added after the review of revision 3): (a) the rail shows an enabled Record button on all five tabs, including Scan and Profile, where the bar shows no pill (chosen to keep the rail from jumping); the alternative is a disabled slot with a reason, which wastes the slot; (b) Esc never means Back; (c) two-pane layouts need a content pane of at least 880 dp, so a 1100 dp window with large text shows one column; (d) rail form switches by measured label width, not by a fixed scale; (e) compact-rail running state shows a short state word and minutes, not the extended form.
+- DQ-15 (a11y-architect and product-ux): the keyboard shortcut set of 10.9 (Cmd/Ctrl+1-5, +Shift+M, +Shift+R, +[) is PROPOSED; confirm no conflict with system or screen-reader shortcuts.
 
 ## 16. Known limits of the current app (not fixed by S03)
 - Existing HUD controls show no focus indicator; legacy-scaffold pages remain; raw exception text still appears on Home, Settings, Login and Onboarding errors; Progress cannot tell loading from empty for its existing blocks; the router's page transition ignores reduced motion (only the new routes are patched, section 12).
@@ -683,6 +994,9 @@ Items below are product-ux or architecture questions (owner given), listed so no
 - The set timer and rest timer are global, not keyed by exercise: opening another exercise's page while one runs shows the same timer (existing behaviour).
 - The nav bar's one-line labels truncate at large text and in Russian (existing).
 - No chart-to-table alternative exists; none is added.
+- (Revision 3.) About 45 pushed pages are not redesigned for large windows (10.5); at best they get the width-cap frame (DQ-12). Full-bleed camera pages (scanner, form coach, body-scan capture) on tablets and Mac windows were never run (UNGROUNDED).
+- Existing HUD controls draw no focus ring (F30), so keyboard users on Mac, iPad and Android tablets see none on legacy controls; only the new S03 controls do.
+- Apple targets do not exist; every Apple criterion is a widget test with a faked platform, not a device observation.
 
 ## 17. What could not be grounded in the repository
 1. (CLOSED for onboarding finish: F24.) Still open: whether `/onboarding/edit` is the only second entry into the same finish code.
@@ -698,15 +1012,49 @@ Items below are product-ux or architecture questions (owner given), listed so no
 11. Behaviour at 200 percent text on any existing screen was never run.
 12. Whether `GlassAppBar` accepts actions (irrelevant now: Progress has no chip).
 13. Whether another app-level "workout in progress" flag exists beyond the two timers (DQ-11).
+14. (Revision 3.) The window-size breakpoints (600 and 840 dp) follow Material 3 large-screen guidance that is not in the repository; typical device window sizes in 10.2 are from general knowledge, not repository facts.
+15. Apple specifics: Stage Manager and Split View minimum widths, Dynamic Type maximum scale, macOS traffic-light overlap, iPad multitasking declaration, macOS minimum window size and menu bar API behaviour. No Apple target exists to check them.
+16. Whether the manifest allows free resizing on Android 16 and later (no `resizeableActivity` attribute, `targetSdk` 36), and whether the app overrides scroll physics.
+17. Hover and press tokens: the exact accent-wash value and where it lives (10.9).
+18. How the shell publishes bottom clearance and start inset to `HudScreenBody` and the Progress list for the rail (10.4), extending item 5.
+19. CLOSED (review of revision 3): the Russian navigation labels are Главная, Тренировки, Скан, Прогресс, Профиль (longest 10 characters, from `app_ru.arb` as reported by the lead agent). Still unmeasured: their pixel widths in the rail, covered by AC-WS-3.
+20. How the wallpaper crops on wide windows, and how pushed pages and camera pages look on wide windows (10.1 WS-5, 10.5).
+21. Whether HUD pages show a visible Back control (needed on Mac and iPad, 10.8); not read.
+22. CLOSED (review of revision 3): the privacy wording moved to `scripts/legal/legal_text.py` and "or never" was removed (lead agent's report, section 15); still open: the missing Russian S02 paragraphs and operator approval (OD-11). The phrase had been added only to the hand-edited public page (the generator source and the ARB files did not contain the S02 wording), which is why a search of `app_en.arb` found nothing; commit 849abd5e ported the wording into its real source and removed it.
+23. The roadmap register entries behind OD-10, OD-13 and OD-14 were not re-read; their descriptions come from the coordinator's message.
 
 ## 18. Review handoff
-- product-ux-reviewer: re-check J1-J10, S-4 "running" table, S-7 placement and demotion, OD-5/6/7/9 wording.
-- a11y-architect: sections 9.1, 12, 13, 14 (AC-A11Y-1..8).
-- architect: DQ-2, DQ-10, DQ-11, OD-9 (S03-0), the nav configuration list (5.4), dock inset plumbing (17.5), the primitive extensions (9.1).
-- GPT-PM: whole contract after those reviews; OD-1..OD-9 go to the operator in plain Russian, not decided here.
-- Build gate: S03 starts only when this contract is approved, OD-1 and OD-9 are answered.
+- product-ux-reviewer: re-check section 10 (window-size model, rail, per-class Home, Progress, Sources, chooser), J1-J10 (J10 no longer conditional), S-4 with the rail Record slot, S-9 merge into S-1, OD-5/6/7/8 wording, section 15 plain-words sentences.
+- a11y-architect: sections 9.1 (hover, cursor, focus ring), 12 (large screens, pointer, keyboard, per family, reflow), 13 (rail and side pane budgets), 14 (AC-WS, AC-LS, AC-KB, AC-FAM, AC-A11Y-1..8), the shortcut set of 10.9.
+- architect: DQ-2, DQ-10, DQ-11, DQ-12, DQ-14, S03-0 (journal always opens and the changed S02 statement), the nav configuration list (5.3) shared by bar and rail, `ShellLayout` and inset plumbing (10.4, 17.5, 17.18), manifest resizability (17.16), the primitive extensions (9.1).
+- GPT-PM: whole contract after those reviews; the still-open decisions OD-3, OD-8, OD-10 to OD-14 go to the operator in plain Russian, not decided here.
+- Build gate: S03 starts when this contract is approved. U-1, U-2 and OD-9 are answered and no longer gate it; OD-12 (Apple targets) does not gate S03.
 
-## 19. Review disposition (revision 2)
+## 19. Review disposition (revisions 2 and 3)
+
+### Changed sections in revision 3 (for the reviewers)
+Header and "Applied in revision 3" note; 2 (new facts F26-F30); 3 (principles 2 and 6); 4.4 (journal always opens); 5 (rewritten: five-tab shell is the contract, 5.3 build requirement); J10 and S-10 (no longer conditional); S-1 (pointer to the large-window layout), S-4 and S-5 (rail Record slot, presentation by class), S-8 (Apple Health row wording), S-9 (merged into S-1, new layouts and AC-CH-9 to 14); 9.1 and 9.2 (hover, cursor, focus ring; C-13 rail, C-14 window class, C-15 adaptive surface); 10 (rewritten: window-size model, rail, per-class Home, Progress, Sources, surfaces, platform families, Mac and pointer input); 11 (rule 7 retention); 12 (large screens, rail semantics, pointer, keyboard, per family, reflow); 13 (rail and side-pane budgets); 14 (AC-WS, AC-LS, AC-KB, AC-FAM, AC-RET, test seams; AC-PR-1 and AC-SRC-2 wording); 15 (answered items, new open items OD-10 to OD-14, DQ-12 to DQ-15); 16, 17, 18 (extended); 19 (this table).
+
+### Revision 3 disposition
+
+| # | Change | Operator answer | Why |
+|---|---|---|---|
+| R3-1 | Header, "Applied in revision 3" note, status "not approved", F26 (one application id) | 1 (one app) and all | The text assumed no second app; the single id `com.fitnessapp.fitness_app.sptr` is the fact (F26). No wording of the document assumed two apps, so nothing else was removed |
+| R3-2 | Section 5 rewritten as the five-tab contract; Option B dropped with a two-line rejected note; "Option B delta" lines and the recommendation framing removed; 5.3 one configuration list for bar and rail | 2 (U-1 answered: five tabs) | U-1 is decided; the document must not present it as open |
+| R3-3 | Section 10 rewritten as the window-size model: Compact under 600 dp, Medium 600 to 839, Expanded 840 and up, plus a "short" rule (height under 480) that moves a landscape phone of 600 dp or more to the rail; live-resize rules WS-1 to WS-5; situation table for phone, foldable, tablet, split-screen, Stage Manager, Mac | 3 (U-2 answered: large layouts now) | Width of the window, not device type, makes split-screen, Stage Manager, Mac windows and foldables work with one rule |
+| R3-4 | S-1 and S-9 merged into one responsive chooser; criteria AC-CH-9 to AC-CH-14 | 3 | S-9 was a design-only drawing; it now has acceptance criteria per size class |
+| R3-5 | Side rail (10.4, C-13) replaces the bottom bar and dock on Expanded and on short Medium windows; Record slot; swap rules; rail forms (96 dp or 240 dp) | 3 | Dock space is wasted on wide or short windows; rail form switches avoid truncating long Russian labels |
+| R3-6 | Home, Progress, Sources layouts for Medium and Expanded (10.5) with all states kept; sheets, dialogs and popovers by class (10.6) | 3 | Columns, max widths and side panes requested; nothing removed from Compact content |
+| R3-7 | Platform families (10.8): identical versus adaptive per family; Apple conventions for back, sheets, safe areas, text scale, haptics; fonts stay bundled | 3 and 4 | Requested per-family conventions; the theme bundles fonts so system fonts are not assumed (DQ-13) |
+| R3-8 | Pointer, keyboard, trackpad, Mac window, shortcuts and menu bar (10.9); hover, cursor and focus ring primitive extensions; no gesture-only path | 3 | Requested Mac and tablet input support; the repository has no hover, cursor, shortcut or focus-ring code (F28, F30) |
+| R3-9 | Apple builds stated as design only: no iOS, iPadOS or macOS target in S03 (F26); OD-12 open; Apple criteria are widget tests with a faked platform; no store, account or signing promise | 4 | The repository has only an `android` platform folder |
+| R3-10 | Section 4.4, principle 6, J10, S-10, AC-PR-1, AC-SRC-2: journal always opens; `notEnabled` kept only as a test and override state; J10 and S-10 no longer labelled conditional | 5 (OD-9 answered) | S03-0 is in scope. J10's condition was actually OD-8 (who builds the sign-out hooks), so OD-8 stays open and S-10 is ASSUMED built in S03 |
+| R3-11 | Retention rule 7 in section 11, AC-RET-1, section 15 note about the privacy wording generator (`scripts/legal/build_legal.py`, ARB key `legalPrivacyBody`) | 6 | 90, 365 or 730 days, default 730, no "never"; the privacy page change is outside this document |
+| R3-12 | Sections 12, 13, 14: large-screen, pointer, keyboard, rail and per-family criteria and budgets; test seams | 3 | Each new criterion is a widget test with a set window size and text scale |
+| R3-13 | Section 15: U-1, U-2, OD-9, retention and one-app marked ANSWERED 2026-10-16; open items OD-3, OD-10 to OD-14 each with a plain-words consequence; DQ-12 to DQ-15 added | 1 to 6 | Answered items leave the open list; still-open decisions stay visible |
+| R3-14 | Sections 16, 17, 18 updated | 3 and 4 | New known limits and ungrounded items; reviewer handoff re-aimed at the delta |
+
+### Revision 2 disposition
 
 All cited facts were re-read in the repository before editing; every finding is factually correct. None is rejected. Where a finding was partly adopted differently, the row says so.
 
@@ -732,3 +1080,32 @@ All cited facts were re-read in the repository before editing; every finding is 
 | A8 coming-later enabled, contrast floor | Accepted | C-1, S-1 states, 12 contrast |
 | A9 greeting wrap, dock in landscape, light-theme nav exception | Accepted | S-6 change 1, S-4 compaction, 12 contrast, 10 |
 | A10 RTL | Accepted | 10, AC-A11Y-7 |
+
+### Revision 3 review disposition
+
+Sources: UX = product-ux-reviewer (4 MAJOR, 6 MINOR); A11Y = a11y-architect (3 MAJOR, 6 MINOR). Both converge on items 1 to 3. All twelve items were applied; none rejected.
+
+| # | Finding (source, severity) | How fixed |
+|---|---|---|
+| 1 | Rail overflows a 360 dp high landscape window (UX and A11Y, MAJOR) | 10.4: pinned Record slot, scrollable destinations list, 48 dp items under 480 dp height, focus scrolled into view; AC-WS-10 |
+| 2 | Two-pane arithmetic wrong; no narrow-pane fallback (UX and A11Y, MAJOR) | 10.1 arithmetic corrected; 10.5 two-pane rule from content pane width with minimums (880 dp; chooser 840 dp), worked examples, tile-column rule (160 dp minimum); AC-LS-4 rewritten, AC-LS-9 |
+| 3 | S-5 contradicts 10.6; two "short" thresholds (UX MAJOR, A11Y minor) | S-5 paragraph replaced by a pointer to 10.6, form by size class only; S-3 text aligned; Day-3 aligned; one threshold (480 dp) in S-1 and 10.7 |
+| 4 | Rail Record slot appears and vanishes per tab (UX M1) | 10.4 reserved slot on all five tabs; S-4 visibility by presentation; anchor and Mac menu rules in 10.6; AC-WS-7 rewritten, AC-WS-12 |
+| 5 | Compact rail hides running state; icon-only Record (UX M2, A11Y m2) | 10.4 two-line state word and minutes, visible "Record" label, tooltip rule (WCAG 1.4.13); AC-WS-13 |
+| 6 | Scroll position promise too strong (UX M4) | WS-3 weakened to a keyed first-visible-section anchor; AC-LS-10 |
+| 7 | Chooser idle state undefined (UX m3) | S-9: `modeDetailIdle` text, Continue disabled, no illustration slot, touch tap updates the panel; AC-LS-11 |
+| 8 | Back, Esc, keyboard gaps (UX m5, A11Y m5) | Esc precedence and Esc-as-Back dropped (10.8, 10.9); Home/End only inside the rail; tab re-select scroll-to-top; visible Back on Mac pushed pages (AC-KB-8); AC-KB-1 extended; shortcut conflict check recorded as UNGROUNDED |
+| 9 | Housekeeping (UX m6, A11Y m3) | OD-3 listed once; privacy wording status reworded as done/draft; AC-RET-1 made testable for what S03 contains; Russian labels closed from `app_ru.arb`; AC-WS-3 measured with `TextPainter` at 1.0, 1.15, 1.29 |
+| 10 | Rail semantics unnamed (A11Y m1) | 10.4 container `Semantics` labelled "Main navigation", `selected` flag, position hint loss accepted; AC-A11Y-1 extended; AC-WS-11 |
+| 11 | Contrast of rail ink (A11Y m4) | 10.4 text-secondary tier or recorded 4.40 exception, dot 3:1; AC-KB-9 token-level test |
+| 12 | Reduced motion for new routes (A11Y m6) | 10.4 and section 12: no-transition or opacity-only for every new sheet, dialog, popover; AC-WS-14 includes the open-surface resize test |
+
+Not fixed: nothing. Unverified and left UNGROUNDED: the shortcut set against macOS, iPadOS and VoiceOver defaults; whether HUD pages already have a visible Back control; the Russian pixel widths in the rail (measured by AC-WS-3 in the build).
+
+### GPT-PM gate round 1 disposition (head 5302915e returned MODIFY: 1 MAJOR, 2 MINOR)
+
+| # | Finding | Fix |
+|---|---|---|
+| G1-1 | MAJOR-01: short-window chooser constraints incompatible (4 cards of at least 200 dp need 836 dp against a 640 dp cap; 4 cards of at least 140 dp need 560 dp in a 360 dp Compact window). Verified against the contract text before fixing | S-1 grid rule: columns decided by the available grid width, not the window height alone; 4x1 only on a short window with a grid width of at least 4 x 136 + 3 x 12 = 580 dp, otherwise 2x2 with vertical scroll; card floor 136 dp (200 dp in the Medium 2x2 grid; the old 140 dp floor was 2 dp wrong at 320 dp wide: (320 - 32 - 12) / 2 = 138); S-1 layout table, 10.7 table and AC-CH-10 updated, with new cases 360x420, 600x400, 640x360 and 700x420 |
+| G1-2 | MINOR-01: AC-WS-3 hard-coded a 96 dp rail before applying the measured-width rule | AC-WS-3 rewritten: the expected form is computed from the 10.4 rule (window 1200 dp or more, or measured widest label + 16 dp above 96 dp); the test never hard-codes 96 where the measurement exceeds it; the scale-1.3 Home assertion and the 601 arithmetic note now follow the measured form |
+| G1-3 | MINOR-02: OD-11 status stale | OD-11 now says the generator source and outputs were already updated technically on 2026-10-17 and no longer offer "never"; open: operator approval of the wording as a DRAFT and the missing Russian S02 paragraphs |

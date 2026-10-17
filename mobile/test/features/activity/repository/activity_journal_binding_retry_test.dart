@@ -261,19 +261,19 @@ void main() {
 
     test('no raw uid in any log line, even when the error message holds it',
         () async {
-      const secret = 'uid-secret-7f3a91';
+      const sentinel = 'uid-sentinel-7f3a91';
       journal.script
-        ..add(StateError('failed for $secret'))
+        ..add(StateError('failed for $sentinel'))
         ..addAll(List<Object>.filled(8, false));
       make();
-      await emit(_user(secret));
+      await emit(_user(sentinel));
       for (var i = 0; i < 5; i++) {
         await fireLast();
       }
       expect(logs, isNotEmpty, reason: 'positive control: something was logged');
       expect(logs.any((l) => l.contains('bind failed')), isTrue);
       for (final l in logs) {
-        expect(l.contains(secret), isFalse, reason: 'leaked in: $l');
+        expect(l.contains(sentinel), isFalse, reason: 'leaked in: $l');
       }
     });
   });

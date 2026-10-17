@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../helpers/test_app.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/modes/data/mode_models.dart';
+import 'package:fitness_app/features/modes/state/mode_providers.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
@@ -26,6 +28,14 @@ import 'package:fitness_app/features/workouts/data/mock_scheduled_session_reposi
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
 import 'package:fitness_app/shared/widgets/hud/hud_scaffold.dart';
+
+/// A settled TRAIN mode state: Home shows only the greeting while the mode is
+/// unknown (S03), so a signed-in user needs a settled mode to see the sections.
+class _SettledMode extends ModeNotifier {
+  @override
+  Future<ModeState> build() async => ModeState(
+      selectedMode: AppMode.train, chooserStatus: ChooserStatus.resolved);
+}
 
 /// Holds a training-context answer in memory (no SharedPreferences, no uid).
 class _FakeTrainingContext extends TrainingContextNotifier {
@@ -118,6 +128,7 @@ Widget _buildApp({
       // from provider through card to navigation.
       if (catalog != null)
         forYouExercisesProvider.overrideWith((_) async => catalog),
+      modeStateProvider.overrideWith(() => _SettledMode()),
       ...extraOverrides,
       trainingContextProvider
           .overrideWith(() => _FakeTrainingContext(contextAnswer)),

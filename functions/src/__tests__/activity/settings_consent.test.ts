@@ -4,7 +4,8 @@ jest.mock("firebase-functions/logger", () => require("./support/fakes").loggerMo
 
 import { handleDeleteAllActivityStreams } from "../../activity_streams/delete_all_streams";
 import {
-  ALLOWED_STREAM_RETENTION_DAYS, STREAM_RETENTION_NEVER_OFFERED, isValidStreamRetentionDays, parseSettingsRequest,
+  ALLOWED_STREAM_RETENTION_DAYS, DEFAULT_STREAM_RETENTION_DAYS, STREAM_RETENTION_NEVER_OFFERED, effectiveStreamRetentionDays,
+  isValidStreamRetentionDays, parseSettingsRequest,
   planSettingsChange,
 } from "../../activity_streams/settings";
 import {
@@ -47,13 +48,34 @@ describe("F13 settings validation", () => {
   test("the allowed set is exactly 90, 365 and 730", () => {
     expect([...ALLOWED_STREAM_RETENTION_DAYS]).toEqual([90, 365, 730]);
   });
-  test("'never' (null) is consistent between the exported flag and the validator (PENDING operator decision DQ-7)", async () => {
-    expect(isValidStreamRetentionDays(null)).toBe(STREAM_RETENTION_NEVER_OFFERED);
-    if (STREAM_RETENTION_NEVER_OFFERED) {
-      expect((await settings({ streamRetentionDays: null })).streamRetentionDays).toBeNull();
-    } else {
-      await expectHttpsError(settings({ streamRetentionDays: null }), "invalid-argument", "invalid_retention");
-    }
+  test("'never' (null) is NOT offered (operator decision 2026-10-16, DQ-7): flag false, validator false, parser refuses, callable refuses and writes nothing", async () => {
+    expect(STREAM_RETENTION_NEVER_OFFERED).toBe(false);
+    expect(isValidStreamRetentionDays(null)).toBe(false);
+    expect(() => parseSettingsRequest({ streamRetentionDays: null })).toThrow("invalid_retention");
+    const err = await expectHttpsError(settings({ streamRetentionDays: null }), "invalid-argument", "invalid_retention");
+    expect(err.message).toBe("invalid_retention");
+    expect(store.has(SETTINGS_PATH)).toBe(false);
+    expect(settingsWrites()).toEqual([]);
+  });
+  test("a refused null does not change an existing setting or its generation", async () => {
+    seedConsent(UID, { streamRetentionDays: 90, settingsGeneration: 3 });
+    const before = settingsWrites().length;
+    await expectHttpsError(settings({ streamRetentionDays: null }), "invalid-argument", "invalid_retention");
+    expect(settingsWrites().length).toBe(before);
+    expect(settingsOf(UID)).toMatchObject({ streamRetentionDays: 90, settingsGeneration: 3 });
+  });
+  test("a stored null (legacy or forged document) is treated as the default 730 days, never as 'never'", () => {
+    expect(effectiveStreamRetentionDays({ streamRetentionDays: null })).toBe(730);
+    expect(effectiveStreamRetentionDays({ streamRetentionDays: null })).toBe(DEFAULT_STREAM_RETENTION_DAYS);
+    expect(effectiveStreamRetentionDays({})).toBe(730);
+    expect(effectiveStreamRetentionDays(undefined)).toBe(730);
+    expect(effectiveStreamRetentionDays({ streamRetentionDays: 91 })).toBe(730);
+    for (const d of [90, 365, 730]) expect(effectiveStreamRetentionDays({ streamRetentionDays: d })).toBe(d);
+  });
+  test("the planner never yields a null retention: a stored null plans as 730 and a granted request keeps it", () => {
+    const plan = planSettingsChange({ streamRetentionDays: null, settingsGeneration: 1 }, { cloudStreamsGranted: true }, T0);
+    expect(plan.streamRetentionDays).toBe(730);
+    expect(plan.retentionChanged).toBe(false);
   });
   test.each([
     [{}, "invalid_request"], [null, "invalid_request"], ["x", "invalid_request"], [[1], "invalid_request"],
