@@ -833,3 +833,9 @@ Rule next time: the ARB parity test (S03-18) must check plural forms and select 
 Kind: SUCCESS.
 Facts: lane L10 wrote the interface files first and reported its deviations: the Back shortcut does nothing on the home route (a key must not quit the app), and a matching key is consumed even when a guard stops the action. Two go_router APIs it uses (`routerDelegate.navigatorKey`, `currentConfiguration.uri`) were not checked against the pinned version.
 Rule next time: the test agents prove the guards (no shortcut in a text field, none while a surface is open, tab shortcuts only on shell routes, Esc never navigates back) and compile-check the two router API uses first.
+
+## 2026-10-17 - Commit: feat(app): mount the window scope and the shortcuts and refresh the digests on resume
+
+Kind: NEUTRAL.
+Facts: main.dart now wraps the router content in WindowSizeScope and AppShortcuts and refreshes the activity digests on app resume without a second lifecycle observer. Unverified: how AppShortcuts finds a navigator context above the router navigator (internal to app_shortcuts.dart).
+Rule next time: the test agents pump FitnessApp once and prove that shortcuts reach the router and that the window class rebuilds only on a class change (DT-02-3, DT-17-x).

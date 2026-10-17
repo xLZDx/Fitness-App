@@ -57863,3 +57863,7 @@ Decision: new lane L13 (localization) is the only lane that edits mobile/lib/l10
 ## 2026-10-17 - Commit: feat(shell): add keyboard shortcuts, the visible Back control and scroll helpers
 
 Decision: shortcuts use Cmd on iOS and macOS and Ctrl elsewhere; tab shortcuts act only on the five shell paths and not on the tab already shown; Record on Shift+R opens the running session when one exists, otherwise the Record sheet through the opener provider (null until lane L6); the Back button renders only on macOS unless forced; Back shortcut on the home route does nothing (deviation from 'same as system Back', recorded); scroll-to-top on re-selecting a tab is not wired (needs a hook in main_shell.dart, owned by lane L4a). The splice into main.dart follows in a separate commit. Nothing was run. Evidence: core/changes/2026-10-17-s03-l10-input-shortcuts-back.md.
+
+## 2026-10-17 - Commit: feat(app): mount the window scope and the shortcuts and refresh the digests on resume
+
+Decision: WindowSizeScope is the outer and AppShortcuts the inner wrapper of the MaterialApp.router builder, both below the app ProviderScope; the resume refresh of activityDigestsProvider is unawaited inside try/catch. Nothing was run. Evidence: core/changes/2026-10-17-s03-main-window-scope-shortcuts.md.

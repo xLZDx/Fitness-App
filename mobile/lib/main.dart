@@ -48,7 +48,11 @@ import 'features/form_check/data/tts_voice_coach.dart';
 import 'features/form_check/state/form_check_providers.dart';
 import 'features/marketplace/data/coach_marketplace_service.dart';
 import 'features/marketplace/state/marketplace_providers.dart';
+import 'features/activity/state/activity_dashboard_providers.dart'
+    show activityDigestsProvider;
 import 'features/modes/state/mode_providers.dart' show modeWarmUpProvider;
+import 'shared/widgets/app_shortcuts.dart' show AppShortcuts;
+import 'shared/widgets/window_size.dart' show WindowSizeScope;
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
 import 'features/profile/data/device_health_profile_repository.dart';
@@ -662,6 +666,12 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       unawaited(drainEquipmentIdentityTelemetryOutbox(ref));
       // Queued body scans continue after the app comes back.
       resumeBodyScanRunner(ref);
+      // S03: refresh the activity digests on resume; must never throw.
+      try {
+        unawaited(ref.read(activityDigestsProvider.notifier).refresh());
+      } catch (e) {
+        debugPrint('activity digest refresh on resume failed (${e.runtimeType})');
+      }
     }
   }
 
@@ -703,8 +713,12 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _GlassScrollBehavior(),
-      builder: (context, child) => _InputTraceListener(
-        child: AuroraBackground(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => WindowSizeScope(
+        child: AppShortcuts(
+          child: _InputTraceListener(
+            child: AuroraBackground(child: child ?? const SizedBox.shrink()),
+          ),
+        ),
       ),
     );
   }
