@@ -208,9 +208,13 @@ class RecorderController extends Notifier<RecorderState> {
   bool _startCollection(RecordingMeta meta, {RecoveredRecording? recovered}) {
     try {
       final env = ref.read(recorderEnvironmentProvider);
-      final location = _location = ref.read(locationSourceProvider);
-      final journal = _journalPort = ref.read(recordingJournalPortProvider);
-      final watcher = _watcher = ref.read(permissionRevocationWatcherProvider);
+      final LocationSource location = ref.read(locationSourceProvider);
+      final RecordingJournalPort journal = ref.read(recordingJournalPortProvider);
+      final PermissionRevocationWatcher watcher =
+          ref.read(permissionRevocationWatcherProvider);
+      _location = location;
+      _journalPort = journal;
+      _watcher = watcher;
       final battery = ref.read(batteryMonitorProvider);
 
       final pipeline = RecorderPipeline(autoPauseEnabled: meta.autoPauseEnabled);
@@ -342,7 +346,8 @@ class RecorderController extends Notifier<RecorderState> {
 
   Future<void> _sealAndHandOff(
       String id, StopReason reason, int? off, AutoStopNotice? notice) async {
-    final journal = _journalPort ?? ref.read(recordingJournalPortProvider);
+    final RecordingJournalPort journal =
+        _journalPort ?? ref.read<RecordingJournalPort>(recordingJournalPortProvider);
     try {
       final stopEvent = journalStopEventFor(reason);
       if (stopEvent != null && off != null) {
@@ -380,7 +385,8 @@ class RecorderController extends Notifier<RecorderState> {
       await _releaseAll(finishOffset: _offsetOrNull());
       if (id != null) {
         try {
-          await (_journalPort ?? ref.read(recordingJournalPortProvider))
+          await (_journalPort ??
+                  ref.read<RecordingJournalPort>(recordingJournalPortProvider))
               .decideDelete(id);
         } catch (_) {
           // The recording stays on disk and is offered by the next check.
@@ -423,7 +429,8 @@ class RecorderController extends Notifier<RecorderState> {
       }
       await _releaseAll(finishOffset: off);
       if (id == null) return;
-      final journal = _journalPort ?? ref.read(recordingJournalPortProvider);
+      final RecordingJournalPort journal =
+        _journalPort ?? ref.read<RecordingJournalPort>(recordingJournalPortProvider);
       try {
         await journal.appendEvent(
             JournalEvent(JournalEventKind.permissionRevoked, off));

@@ -62,17 +62,16 @@ import 'features/recording/journal/recording_journal_providers.dart'
     show recordingJournalPortOverride, registerRecordingPreUnbindHook;
 import 'features/recording/l10n/recording_log.dart'
     show logRecorderError, recorderLogSink;
-import 'features/recording/location/fix.dart' show Fix;
+import 'features/recording/location/geolocator_location_source.dart'
+    show GeolocatorLocationSource;
 import 'features/recording/location/location_providers.dart'
     show locationSourceProvider;
-import 'features/recording/location/location_source.dart'
-    show LocationRequest, LocationSource;
 import 'features/recording/safety/recorder_safe_error.dart'
     show sanitizeForGlobalHandler;
 import 'features/recording/state/battery_monitor.dart' show FakeBatteryMonitor;
 import 'features/recording/state/recorder_environment.dart'
     show RecorderEnvironment;
-import 'features/recording/state/recorder_phase.dart' show StopReason;
+import 'features/recording/state/recorder_phase.dart' show RecorderPhaseX, StopReason;
 import 'features/recording/state/recorder_providers.dart'
     show
         batteryMonitorProvider,
@@ -195,27 +194,6 @@ bool _gpsRecorderWired(ActivityJournal? journal) =>
     !kIsWeb &&
     defaultTargetPlatform == TargetPlatform.android &&
     journal is AccountScopedJournal;
-
-/// Placeholder until the geolocator adapter file replaces its `.pending` name.
-/// Starting it fails with a content-free error, so the recorder refuses to
-/// collect instead of recording nothing.
-class _UnsupportedLocationSource implements LocationSource {
-  @override
-  Stream<Fix> start(LocationRequest request) =>
-      Stream<Fix>.error(UnsupportedError('location source is not available'));
-
-  @override
-  Future<void> stop() async {}
-
-  @override
-  Future<void> setInterval(int seconds) async {}
-
-  @override
-  Stream<void> get engineDetached => const Stream<void>.empty();
-
-  @override
-  int get activeSubscriptions => 0;
-}
 
 /// Reads every precondition live from the app providers (design 5.4).
 class _AppRecorderEnvironment implements RecorderEnvironment {
@@ -594,8 +572,7 @@ Future<void> main() async {
               .overrideWith((ref) => _AppRecorderEnvironment(ref)),
           // No battery plugin is chosen (D-14): no reading, no battery rules.
           batteryMonitorProvider.overrideWith((_) => FakeBatteryMonitor()),
-          // The geolocator adapter is still `.pending`; Start fails visibly.
-          locationSourceProvider.overrideWith((_) => _UnsupportedLocationSource()),
+          locationSourceProvider.overrideWith((_) => GeolocatorLocationSource()),
         ],
         // Auth + profile + subscriptions
         authRepositoryProvider.overrideWith((_) => FirebaseAuthRepository()),

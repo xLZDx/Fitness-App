@@ -204,7 +204,7 @@ class _MainShellState extends State<MainShell> {
                 // open recording page does not speak (it is not on screen).
                 if (ref.watch(gpsRecorderEnabledProvider)) {
                   ref.listen<RecorderPhase>(recorderPhaseProvider,
-                      (RecorderPhase prev, RecorderPhase next) {
+                      (RecorderPhase? prev, RecorderPhase next) {
                     final AppLocalizations l10n = AppLocalizations.of(c);
                     final String? text;
                     if (next == RecorderPhase.pausedAuto) {

@@ -58089,3 +58089,7 @@ Decision: the DECISION file uses the documented exclusive-create fallback under 
 ## 2026-10-17 - Commit: feat(s04): add the recording screens, sign-out guard, app wiring and routes behind the GPS_RECORDER flag (lanes R7, R9, R13)
 
 Decision: everything is behind the GPS_RECORDER flag and Android, off by default so behaviour equals S03; the pre-unbind hook uses stopAutomatically(account) because the recorder has no releaseAll; /record/manual redirects to /workouts until a manual-entry page exists. Evidence: core/changes/2026-10-17-s04-lanes-r7-r9-r13.md.
+
+## 2026-10-17 - Commit: fix(s04): make the S04 code compile and wire the real geolocator source
+
+Decision: the real GeolocatorLocationSource replaces the unsupported placeholder in main.dart (still behind GPS_RECORDER); the battery monitor stays a fake and manual entry stays a redirect until their stories are built. Evidence: core/changes/2026-10-17-s04-compile-pass.md.

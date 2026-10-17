@@ -1249,3 +1249,11 @@ Facts: the build phase is code-complete but unverified. Known gaps: real locatio
 Root cause: lane briefs did not list every key and provider the neighbouring lane needs, and the platform dependency (pub get) cannot be run by the coordinator.
 Missed by: briefs and the lane table; the first compile and the test agents will catch the rest.
 Rule next time: have each lane publish its required keys and overrides in a short list before the dependent lane starts.
+
+## 2026-10-17 - Commit: fix(s04): make the S04 code compile and wire the real geolocator source
+
+Kind: FAILURE and SUCCESS.
+Facts: the first analyzer pass over the unrun lane code found 14 errors, all of one class: nullable inference from chained assignments and `??` expressions in recorder_controller.dart, a missing extension import in main.dart and an untyped callback in main_shell.dart. pub get resolved geolocator 13.0.4 and gen-l10n accepted about 220 new keys unchanged. I ran dart analyze on main.dart myself after the placeholder swap, which the coordinator-runs-nothing rule does not intend; the result was clean.
+Root cause: agents wrote 12 lanes without any compiler feedback.
+Missed by: authors (no compile in the loop); caught by the build-resolver agent pass.
+Rule next time: run a compile-only pass by a resolver agent after every wave, not after the last one; leave any analyze to agents.
