@@ -278,8 +278,18 @@ class _ActivityBindController {
   int _lost = 0;
 
   /// A new auth value: new generation, everything resets, the attempt for
-  /// [target] (null = unbind) starts at once.
+  /// [target] (null = unbind) starts at once. A generation is one distinct
+  /// uid, not one auth emission: a re-emission for the uid already being
+  /// bound (token refresh, profile reload) keeps the generation, the timer,
+  /// the backoff schedule and the phase. Only a uid change, a sign-out, or a
+  /// re-emission after `gaveUp` restarts.
   void onAuthValue(String? target) {
+    if (target != null &&
+        target == _uid &&
+        _state != _BindState.none &&
+        _state != _BindState.gaveUp) {
+      return;
+    }
     _generation++;
     _cancelTimer();
     _inFlight = false;

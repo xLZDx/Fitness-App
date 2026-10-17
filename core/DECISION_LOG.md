@@ -57939,3 +57939,7 @@ Decision: step 2 tests are committed after a green complete run at e35a3f66; the
 ## 2026-10-17 - Commit: test(dashboards): add the functional tests for the activity aggregates, Home, Progress, Sources and the sign-out warning
 
 Decision: step 4 tests and the findings file are committed after a green complete run (242 passed, 0 failed, 2 skipped) at head 3bf9d24c; STATE.md now states that the build is complete and the verify phase is in progress. Plan versus code differences are recorded in the findings file and carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md, core/changes/2026-10-17-s03-test-step-4.md.
+
+## 2026-10-17 - Commit: fix(wiring): ignore a repeated auth value for the same account in the journal bind controller
+
+Decision: onAuthValue returns early when the target uid equals the current uid and the state is neither none nor gaveUp; a generation is now one distinct uid. A repeated value after gaveUp still restarts the bind (kept deliberately). The related minor review findings (timer dropped during account deletion, no timeout on a hung open, no reaction to an external unbind, no busy feedback on Try again) are not fixed in this commit and are carried to the review consensus. Nothing was run by the coordinator; a test for the re-emission is added by the test agent. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-7.md.

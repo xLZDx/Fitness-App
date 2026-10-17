@@ -970,3 +970,11 @@ Facts: the step 4 test agent wrote six files (aggregates, dashboard providers, H
 Why it caught them: the tests measure a stable heading below the change, not a literal scroll offset.
 Open and carried: DT-16-3 and DT-16-8 skipped in code; DT-13-23 and DT-14-8 are measure-only gates for step 7; no offline seam for AC-LS-5; DT-13-19 is tested in the reachable form (SourceKind.parse fallback to file import); the plan said Apple Health for the health platform row but the code says Health platform; the sign-out sheet has an extra keep-data action.
 Rule next time: any production change that alters the first frame gets a grep for existing tests that sign in a user, before the commit, not after the test run.
+
+## 2026-10-17 - Commit: fix(wiring): ignore a repeated auth value for the same account in the journal bind controller
+
+Kind: FAILURE (design defect, found by the reliability reviewer, not by any test).
+Facts: the bind controller restarted the whole bind (new generation, reset schedule, state back to the first attempt) for every auth value, including repeated values for the same uid. The auth provider is built on userChanges(), which also fires on token refresh, profile reload, email verification and account linking, so a bound journal flapped to binding (dashboards flashed loading), a failing bind restarted its 5/15/60/300/300 s schedule without end, and a given-up bind was cleared silently. I confirmed it by reading activity_wiring.dart (onAuthValue has no uid comparison) and firebase_auth_repository.dart (userChanges).
+Root cause: the design sentence "a generation is one auth value" was written against sign-in and sign-out only; nobody listed the other events the stream emits (author of the design, which I am; design reviewers; the 140 tests had no re-emission case).
+Layer: author and tests missed it; the reliability review caught it.
+Rule next time: for every stream a state machine listens to, list all event kinds the source emits before defining what starts a new generation, and add a re-emission test row.
