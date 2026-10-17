@@ -121,6 +121,10 @@ class ModeSwitcherSheet extends ConsumerWidget {
     final TrainingContextAnswer tc = ref.watch(trainingContextProvider).valueOrNull ??
         TrainingContextAnswer.skipped;
 
+    final double chipMaxWidth = (104 * MediaQuery.textScalerOf(context).scale(1.0))
+        .clamp(0.0, MediaQuery.sizeOf(context).width * 0.4)
+        .toDouble();
+
     final List<Widget> rows = <Widget>[];
     for (final AppMode m in AppMode.values) {
       final bool available =
@@ -147,10 +151,10 @@ class ModeSwitcherSheet extends ConsumerWidget {
                 ? (current
                     ? Icon(Icons.check_rounded, color: t.accent)
                     : const SizedBox.shrink())
-                // Bounded and wrapping: a wide chip at large text must not
-                // overflow the row.
+                // Wrapping, with a cap that grows with the text scale (so the
+                // longest word fits) up to 40% of the window width.
                 : ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 104),
+                    constraints: BoxConstraints(maxWidth: chipMaxWidth),
                     child: HudChip(
                       label: l10n.modeComingLater,
                       selected: false,

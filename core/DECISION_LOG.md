@@ -57991,3 +57991,7 @@ Decision: the Record sheet semantic title uses selectedModeProvider and the neut
 ## 2026-10-17 - Commit: fix(modes): let the Coming-later chip wrap on the chooser cards and bound it in the switcher row
 
 Decision: lane L12 batch 13 fixes only the two candidates S03 introduced: the chooser card chip (Expanded with end alignment and two lines) and the switcher row chip (max width 104, two lines; the 104 is a guess to be confirmed by the conformance run). The four pre-S03 candidates are carried in S03_CARRIED_ITEMS.md as findings in base code: bottom bar labels clipped by design (accepted comment in hud_scaffold.dart), Home total cards, Home adaptive plan at 360x640 and scale 2.0, eligibility notice label in Russian on wide windows. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-13.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md.
+
+## 2026-10-17 - Commit: fix(modes): drop the Coming-later chip under the icon on narrow cards and scale its cap with the text size
+
+Decision: card header is a Wrap (icon and chip on one line while they fit, otherwise the chip under the icon); the switcher chip cap is 104 dp times the text scale, at most 40 percent of the window width. If the step 6 run still shows a clip or a narrowed title, the next step is a chip on its own line below the title, which needs a change to the shared setting row and is then a carried item. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-14.md.

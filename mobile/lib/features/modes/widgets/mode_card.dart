@@ -138,31 +138,28 @@ class _ModeCardState extends State<ModeCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Row(
+            // One line (icon at the start, chip at the end) while both fit;
+            // otherwise the chip drops under the icon with the full width.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
               children: <Widget>[
                 Icon(
                   modeIconOf(widget.mode),
                   size: 26,
                   color: widget.selected ? t.accent : t.textPrimary,
                 ),
-                const SizedBox(width: 8),
-                // The chip takes all the room left of the icon and wraps
-                // instead of being cut (a Spacer would halve its width).
-                Expanded(
-                  child: chipWord == null
-                      ? const SizedBox.shrink()
-                      : Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: HudChip(
-                            label: chipWord,
-                            selected: widget.selected,
-                            minHeight: 24,
-                            maxLines: 2,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                          ),
-                        ),
-                ),
+                if (chipWord != null)
+                  HudChip(
+                    label: chipWord,
+                    selected: widget.selected,
+                    minHeight: 24,
+                    maxLines: 2,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  ),
               ],
             ),
             const SizedBox(height: 10),

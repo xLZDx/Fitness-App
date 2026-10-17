@@ -1063,3 +1063,11 @@ Facts: the conformance matrix (four window classes, text scale 1.0 and 2.0, en a
 Root cause: authors (lanes L6) tested nothing at large text because nothing could run; the reviewers read the layout code but not at scale 2.0.
 Layer: author; the step 6 conformance tests caught it.
 Rule next time: a layout row with a chip or a trailing label gets an explicit width rule (Expanded with wrap, or a max width) in the first version; conformance runs are scheduled right after wave 1 for layout, not at the end.
+
+## 2026-10-17 - Commit: fix(modes): drop the Coming-later chip under the icon on narrow cards and scale its cap with the text size
+
+Kind: SHORTCOMING (my fix in the previous commit used a guessed constant and was not enough).
+Facts: the first chip fix kept a fixed 104 dp cap in the switcher row; at text scale 2.0 the inner width after padding (about 72 dp) was narrower than the word, so the chip was still clipped (5 conformance cells). Batch 14 turns the card header into a Wrap (the chip drops under the icon when it does not fit) and derives the cap in the switcher row from the text scale, limited to 40% of the window width.
+Root cause: I told the fix agent a number-free approach in the second message but accepted its guessed number in the first; the measurement only existed at test time.
+Layer: coordinator accepted a constant without a measurement; caught by the step 6 tests.
+Rule next time: when a fix depends on a measured size, require the layout to derive it (wrap or scale), never a constant; the test run confirms.
