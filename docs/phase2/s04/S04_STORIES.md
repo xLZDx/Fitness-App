@@ -123,9 +123,10 @@ Format: story, priority, size (INFERENCE), requirements, depends on, then number
 
 **S04-12 Recovery offer and resume** (P0, M). Req: S04-R-016. Depends: S04-11.
 - AC-1: Given a non-empty journal after a kill, when the app next starts, then Resume, Save as finished and Discard are offered before any other recording can start.
-- AC-2: Given each choice, when chosen, then the stored result matches: Resume continues the same activity with a gap marker (gap not moving time, not interpolated); Save stores the session; Discard deletes the journal and a file listing shows no sample left.
+- AC-2: Given each choice, when chosen, then the stored result matches: Resume continues the same activity with a gap marker (gap not moving time, not interpolated) and enters `acquiring` for every origin (recording, manual pause, auto pause; Z1), with the pause origin preserved in the journal and the interrupted interval adding neither moving time nor distance (a `restart` gap pair); Save stores the session; Discard deletes the journal and a file listing shows no sample left.
 - AC-3: Given the recovery text, when reached, then the "recovered" string is reachable only after a verified recovery (links to S04-24 AC-4).
 - AC-4 (Round 1, UX1): Given a recovery Resume that is still in `acquiring`, when the user taps Stop, then the kept time is shown and the only exits are Finish or Discard; the recovered data is never discarded as "nothing recorded".
+- AC-6 (Z1): Given recordings killed in the paused manual state and in the paused auto state, when each is recovered with Resume, then the state is `acquiring` (never `paused`), the preserved pause-origin and counter values are unchanged, and one `restart` gap pair exists; a test that expects a return into the paused state fails.
 - AC-5 (Round 1, X1, X7): Given consent withdrawn, when Resume is chosen, then Resume is refused with the reason and Save as finished and Discard stay available.
 
 **S04-13 Recovery failed is honest** (P0, S). Req: S04-R-017. Depends: S04-11.
@@ -139,7 +140,7 @@ Format: story, priority, size (INFERENCE), requirements, depends on, then number
 - AC-3: Given a hand-off failure, when it occurs, then the journal stays and recovery is offered again.
 
 **S04-15 Journal lifecycle and owner-only storage** (P0, S). Req: S04-R-019, -045. Depends: S04-11.
-- AC-1: Given an explicit sign-out or account deletion, when it completes, then the journal is removed per X1 (sign-out: only after the stop, seal and hand-off or the 30-day-expiry fallback of S04-30; deletion: the `recording/` directory is wiped after the recorder is shut down). The sequencing is proved in S04-30.
+- AC-1: Given an explicit sign-out or account deletion, when it completes, then the journal is removed per X1 (sign-out: hand-off first and then delete; the 30-day fallback of S04-30 AC-3 applies only when the hand-off failed and the user was told; deletion: the `recording/` directory is wiped after the recorder is shut down). The sequencing is proved in S04-30.
 - AC-2: Given the Android backup and device-transfer rules, when checked against the real directory the factory creates (not a hand-copied name list), then the journal path is excluded.
 - AC-3: Given an account switch, when the other user signs in, then the first user's journal and any recovery offer are hidden; the file lives in app-private storage.
 
@@ -160,9 +161,11 @@ Format: story, priority, size (INFERENCE), requirements, depends on, then number
 - AC-2 (branch B only, if the operator or the device test requires it): Given foreground granted, when the first recording starts, then background is requested separately, only at a Start tap, with educational UI; declared set equals used set.
 
 **S04-19 Revocation mid-recording** (P0, S). Req: S04-R-024. Depends: S04-04, S04-17.
-- AC-1: Given the fake permission service flips to denied mid-run, when detected, then the subscription count is 0 within 2 s and the session is saved with the flag permission revoked.
-- AC-2: Given the revoked session, when shown, then Keep (seals and hands off the recording as a finished partial activity whose data up to the revocation is readable, Y1) and Delete (removes the recording) are offered, with no Export (X3); quarantine (file untouched, clears the strip and the Start block) applies only to `recoveryFailed` (S04-13), and the request count is unchanged (no re-request). A pending revoked decision has a durable home (strip row and Home card) and the screen states whether Start is blocked (UX3).
+- AC-1: Given the fake permission service flips to denied mid-run, when detected, then the subscription count is 0 within 2 s and collection stops (Z2).
+- AC-1b (Z2): Given a revocation, when it is detected, then the partial recording is durably SEALED in the recording journal in the display state `permissionRevoked` (pending decision, listed by `listUnfinished`, survives a kill); no S02 hand-off has happened yet and the stale internal reason `stoppedRevoked` is not used.
+- AC-2: Given the revoked session, when shown, then Keep (the ordered, idempotent, owner-checked S02 hand-off as a finished partial activity whose data up to the revocation is readable, Y1, Z2) and Delete (the ordered delete with the `DISCARDING` marker; the recording is never resurrected) are offered, with no Export (X3); quarantine (file untouched, clears the strip and the Start block) applies only to `recoveryFailed` (S04-13), and the request count is unchanged (no re-request). A pending revoked decision has a durable home (strip row and Home card) and the screen states whether Start is blocked (UX3).
 - AC-3: Given the reference phone, when permission is revoked in system settings, then the result is recorded as PASS, FAIL or NOT_RUN (Study section 7 item 4).
+- AC-4 (Z2, fault injection): Given a fault injected at each of: revocation, seal, process death, Keep, hand-off, Delete, when the app restarts, then exactly one consistent durable state exists, either the pending-decision sealed recording or the finished activity (never both, never twice, no duplicated activity), and a Delete that was interrupted completes and never resurrects the recording.
 
 **S04-20 Notification permission** (P1, S) - CONDITIONAL. Req: S04-R-025. Depends: S04-04.
 - Question in words: when the user denies notifications, may the recorder run without a visible notification, or must it refuse to record? Default branch: refuse with a reason (safe); the final choice depends on the device test (Study 3.12) and the operator (Req item 3).
@@ -237,8 +240,9 @@ Story ids S04-30 to S04-38 are appended so existing ids stay stable. Requirement
 
 **S04-30 Sign-out, account switch and account deletion with a recording** (P0, L). Req: S04-R-019 (reworded per X1), S04-R-043; source X1, X2, ARCH1 to ARCH3, SEC1, SEC2. Depends: S04-11, S04-14, S04-15; architect decision on tombstone and ordering.
 - AC-1: Given a recording running, when the auth stream emits a transient null or a loading state, then nothing stops, nothing is written to another scope and the subscription count stays 1.
-- AC-2: Given a recording running, when a confirmed different non-null uid appears or an explicit sign-out or deletion event arrives, then the bind controller in `activity_wiring.dart` awaits the registered recorder pre-unbind hook (bounded, PROPOSED 5 s) before it unbinds, and the hook stops, seals and hands off into the owner's store with an owner check against the scope captured at `begin()`; if the hook times out or fails, the unsealed recording stays in its scope with the 30-day expiry (Y2). While the scope is unbound after a transient null, appends go to a bounded in-memory buffer (PROPOSED 120 s) and flush after the same uid rebinds; past the bound the recording stops with the reason `account` (Y3).
-- AC-3: Given the hand-off is impossible, when sign-out completes, then the unsealed recording stays in its own scope with a PROPOSED 30-day expiry and is invisible to every other account (links to S04-15 AC-3).
+- AC-2: Given a recording running, when a confirmed different non-null uid appears or an explicit sign-out or deletion event arrives, then the bind controller in `activity_wiring.dart` awaits the registered recorder pre-unbind hook (bounded, PROPOSED 5 s) before it unbinds, and the hook stops, seals and hands off into the owner's store with an owner check against the scope captured at `begin()`; on the strict path the hand-off completes first and only then is the recording journal deleted (Z3); only if the hook times out or the hand-off fails does the unsealed recording stay encrypted in its scope under the 30-day fallback of AC-3 (Y2). While the scope is unbound after a transient null, appends go to a bounded in-memory buffer (PROPOSED 120 s) and flush after the same uid rebinds; past the bound the recording stops with the reason `account` (Y3).
+- AC-3 (Z3): Given the hand-off cannot complete, when sign-out proceeds, then the user is told at sign-out with explicit text, and the unsealed recording stays encrypted in its own account scope for at most a PROPOSED 30 days; it is deleted on expiry, on account deletion or after recovery, and is never readable by another account (links to S04-15 AC-3). This is the only case where a recording journal outlives a sign-out. It amends S01 GPS-PRIV-014 (journal deleted on sign-out or deletion) as a PROPOSED clarification; the alternative is strict deletion with silent loss on hand-off failure, an operator question carried in the requirements.
+- AC-8 (Z3, lifecycle rows, one test row each): (a) successful hand-off: the activity exists once and the recording journal is deleted; (b) failed hand-off: the recording stays in its scope, the notice was shown, nothing is readable by another account; (c) explicit sign-out: the strict path of AC-2 runs; (d) account deletion: the `recording/` directory is empty and nothing is resurrected (AC-4); (e) expiry: at 30 days the fallback recording is deleted and a clock test at 29 days 23 h keeps it; (f) subsequent sign-in: the same owner sees the unfinished recording offered for recovery before the expiry, a different account sees nothing, and after expiry nobody sees it.
 - AC-4: Given account deletion, when it runs, then the order is: recorder shutdown, recording journal close and refuse-after-wipe (shared wiped-uid tombstone), then the S02 wipe, and then the `recording/` directory is empty; a fault injected between any two steps never leaves a resurrected key or a readable journal.
 - AC-5: Given every recording step (append, seal, hand-off `put`, recovery, delete), when the scope is no longer bound or has been wiped, then the step writes nothing and keeps the recording (X2).
 - AC-6: Given an active or unfinished recording, when the user opens sign-out, then the sign-out guard counts it and the warning sheet names it; the guard path uses the same pre-unbind hook as AC-2; when the guard cannot check, then it shows the reason with explicit text and "Sign out anyway" stays allowed, because the user can always leave (Y5); the outcome is never silent.
@@ -468,7 +472,7 @@ Source: `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md`, applied in one batch to
 
 Not done here (belongs to other authors or later steps): UX and A11Y copy and layout fixes outside the listed ACs, the requirements text for S04-R-052 to -058, design changes for ARCH3 to ARCH5 and ARCH11, and ARCH12 to ARCH14 and the remaining MINOR items; they are carried to the owners of the design, contract and requirements. Open: whether the operator accepts the proposed S04-38 owners and the 30-day and 10 s and 30 min values (PROPOSED).
 
-## 12. Round 2 remediation log
+## 12. Round 2 remediation log (see also section 13)
 
 Source: section 3 of `S04_REVIEW_FINDINGS_ROUND1.md` (decisions Y1 to Y11, findings K1 to K10 and minors); only items touching this file are applied. This is the last internal batch; the documents then go to the external gate.
 
@@ -485,3 +489,15 @@ Source: section 3 of `S04_REVIEW_FINDINGS_ROUND1.md` (decisions Y1 to Y11, findi
 | Y11 | S04-32 AC-1 and AC-3, S04-35 AC-3: owner-visible versus generic version; tap opens recording screen, Finish opens stop panel, one reading |
 | Stale lines | S04-11 AC-1 wording fixed; "S04-D not written" and "R-052..058 not read" lines replaced; S04-38 now cites requirements section 12 (it has no S04-R id) |
 | Not done here | Contract items C1 to C8 and design items K7 to K9 belong to their authors; the 10 s manual-pause and 30 min values remain PROPOSED |
+
+## 13. GPT-PM gate round 1 remediation log
+
+Source: section 4 of `S04_REVIEW_FINDINGS_ROUND1.md` (head 535ae9e4, verdict MODIFY, 3 MAJOR, 1 MINOR); only items touching this file are applied.
+
+| Item | Change in this file |
+|---|---|
+| Z1 (M1) | S04-12 AC-2 reworded and new AC-6: Resume enters `acquiring` for every origin, pause origin preserved, `restart` gap pair, recovery from both paused states asserted |
+| Z2 (M2) | S04-19 AC-1 (collection stops), new AC-1b (durable SEALED pending-decision state `permissionRevoked`), AC-2 (hand-off on Keep, ordered delete on Delete), new AC-4 (fault injection at revocation, seal, process death, Keep, hand-off, Delete; one consistent state, no duplicate); stale name `stoppedRevoked` not used |
+| Z3 (M3) | S04-30 AC-2 (strict path: hand-off then delete), AC-3 (30-day fallback only on failed hand-off, user told, amends S01 GPS-PRIV-014 as a PROPOSED clarification, strict deletion is the alternative), new AC-8 (six lifecycle rows: successful hand-off, failed hand-off, explicit sign-out, account deletion, expiry, subsequent sign-in); S04-15 AC-1 wording aligned |
+| Z4 (m1) | Test-plan item, not this file |
+| Open | The Z3 amendment and the 30-day value are the operator's to confirm (default applied) |

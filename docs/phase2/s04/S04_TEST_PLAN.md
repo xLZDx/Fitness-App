@@ -1,8 +1,8 @@
 # S04 test plan: GPS recorder without a map
 
-Status: DRAFT revision 3 (revision 2 plus the Round 2 batch: decisions Y1 to Y11 of the review findings, the Round 2 additions of the Contract (105 criteria) and of the Design (16.2); revision 2 was one batch for the revised inputs: requirements S04-R-001 to S04-R-058, stories S04-01 to S04-38, Contract revision 2 with 98 criteria (105 after Round 2), and the design answers to the revision 1 findings TP-S04-1 to TP-S04-15). Date: 2026-10-17. Branch `phase2/s04-docs`. Plan only: no test code exists and no test was run for this document. Every result column is empty by design; results are recorded later by the test agents in `docs/phase2/s04/S04_TEST_FINDINGS_EPIC_<letter>.md` and `S04_TEST_FINDINGS_FINAL.md`. The S04-D contract and the S04 design may still receive a fix pass: this plan cites ids (S04-R-nnn, AC-D4-x-n, DT-xx-n, design section numbers), never line numbers. A row tagged DEPENDS-ON-DESIGN states only the contract-level invariant; the exact value is read from the final design.
+Status: DRAFT revision 4 (revision 3 plus the GPT-PM documentation gate findings Z1 to Z4; revision 3 was revision 2 plus the Round 2 batch: decisions Y1 to Y11 of the review findings, the Round 2 additions of the Contract (108 criteria) and of the Design (16.2); revision 2 was one batch for the revised inputs: requirements S04-R-001 to S04-R-058, stories S04-01 to S04-38, Contract revision 2 with 98 criteria (108 after Round 2 and the gate), and the design answers to the revision 1 findings TP-S04-1 to TP-S04-15). Date: 2026-10-17. Branch `phase2/s04-docs`. Plan only: no test code exists and no test was run for this document. Every result column is empty by design; results are recorded later by the test agents in `docs/phase2/s04/S04_TEST_FINDINGS_EPIC_<letter>.md` and `S04_TEST_FINDINGS_FINAL.md`. The S04-D contract and the S04 design may still receive a fix pass: this plan cites ids (S04-R-nnn, AC-D4-x-n, DT-xx-n, design section numbers), never line numbers. A row tagged DEPENDS-ON-DESIGN states only the contract-level invariant; the exact value is read from the final design.
 
-Inputs read: `S04_REQUIREMENTS.md` (Req), `S04_STORIES.md` (Stories, 38 stories S04-01 to S04-38, acceptance criteria AC-n per story), `S04_DESIGN.md` (Design, including section 16.1 Round 2 additions), `S04D_UI_DESIGN_CONTRACT.md` (Contract revision 2 and its Round 2 additions, 105 criteria AC-D4-*), `S04_ANDROID_PLATFORM_STUDY.md` (Study), and, for format and rules, `docs/phase2/s03/S03_TEST_PLAN.md`.
+Inputs read: `S04_REQUIREMENTS.md` (Req), `S04_STORIES.md` (Stories, 38 stories S04-01 to S04-38, acceptance criteria AC-n per story), `S04_DESIGN.md` (Design, including section 16.1 Round 2 additions), `S04D_UI_DESIGN_CONTRACT.md` (Contract revision 2 and its Round 2 additions, 108 criteria AC-D4-*), `S04_ANDROID_PLATFORM_STUDY.md` (Study), and, for format and rules, `docs/phase2/s03/S03_TEST_PLAN.md`.
 
 Tags: FACT (read in a file), PROPOSED (choice of this plan), DEPENDS-ON-DESIGN (cannot be finalised until the named design item is settled), NOT_RUN (needs a device, a build or an operator decision; never PASS without an artifact).
 
@@ -18,7 +18,7 @@ Plain-words glossary:
 
 ### 1.1 Scope and non-goals
 
-In scope: every requirement S04-R-001 to S04-R-058 (each maps to at least one row, or is explicitly NOT_RUN in whole or in part with the reason, section 7.1), every AC of the 38 stories, all 105 AC-D4 ids (section 7.2), the three retro rules (section 4) and the device-lab and battery protocol (section 5). Out of scope: map, EXPLORE and RIDE, sharing, privacy-zone editor, heart rate, GPX/FIT, upload, consent centre, iOS (rows read NOT_RUN, never PASS), mutation runs, repo-wide runs.
+In scope: every requirement S04-R-001 to S04-R-058 (each maps to at least one row, or is explicitly NOT_RUN in whole or in part with the reason, section 7.1), every AC of the 38 stories, all 108 AC-D4 ids (section 7.2), the three retro rules (section 4) and the device-lab and battery protocol (section 5). Out of scope: map, EXPLORE and RIDE, sharing, privacy-zone editor, heart rate, GPX/FIT, upload, consent centre, iOS (rows read NOT_RUN, never PASS), mutation runs, repo-wide runs.
 
 Operator rules that bind this plan (FACT, global contract): the coordinator runs no test; test-writing agents (`functional-test-reviewer`, `e2e-runner`, `tdd-guide` for pure seams, `performance-optimizer` for S04-26) write detailed functional scripts for EVERY epic and run the COMPLETE set of files they wrote after each epic, and once more after the last epic on the exact head to be approved; no CI, no analyzer as a gate, no mutation run, no full suite. A green test counts only if its assertion would fail when the guarded behaviour breaks; the column "Fails when" states that assertion in words (no mutation was run to prove it).
 
@@ -146,7 +146,7 @@ Columns: Id | Covers | Lvl | N | Sev | Fixture and steps | Expected | Fails when
 
 | Id | Covers | Lvl | N | Sev | Fixture and steps | Expected | Fails when |
 |---|---|---|---|---|---|---|---|
-| DT-03-1 | S04-R-004; AC-D4-S-2; S04-03 AC-1 | U | 1 | H | table-driven over the legal phase transitions of Design 5.2 (idle, preparing, acquiring, recording, pausedManual, pausedAuto, stopping, restoring, recoveryFailed, finished, stoppedRevoked) | each legal transition is accepted and yields exactly the table's target | a legal transition is rejected or goes elsewhere |
+| DT-03-1 | S04-R-004; AC-D4-S-2; S04-03 AC-1 | U | 1 | H | table-driven over the legal phase transitions of Design 5.2 (idle, preparing, acquiring, recording, pausedManual, pausedAuto, stopping, restoring, recoveryFailed, finished, permissionRevoked) | each legal transition is accepted and yields exactly the table's target | a legal transition is rejected or goes elsewhere |
 | DT-03-2 | S04-R-004; AC-D4-S-2 | U | 1 | H | every ordered pair of phases NOT in the table (121 minus the legal ones) | each is rejected with no state change and no side effect (subscription count, write spy and service start unchanged) | an undefined transition is accepted |
 | DT-03-3 | S04-R-004; AC-D4-S-1; S04-03 AC-2 | U | 1 | H | the display-state function `displayState(phase, flags)` over all reachable inputs | its set of outputs equals, as an ordered list, the 13 names `idle, acquiring, recording, poorAccuracy, offline, pausedManual, pausedAuto, background, restoring, recoveryFailed, batteryCritical, permissionRevoked, finished` | a display state is renamed, dropped or added without the contract |
 | DT-03-4 | S04-R-004; AC-D4-S-1 | K | 1 | M | parse the backticked name list of the Contract section "The 13 states" and compare with the code list (DEPENDS-ON-DESIGN: the Contract may be reworded; the test finds the list by its heading, not by line) | equal | code and contract drift apart |
@@ -156,7 +156,7 @@ Columns: Id | Covers | Lvl | N | Sev | Fixture and steps | Expected | Fails when
 | DT-03-8 | S04-R-004; retro rule 6 | U | 1 | M | repeated and equal events: Pause while pausedManual, Resume while recording, Stop twice, Start while recording or stopping, Resume from restoring twice | idempotent or rejected, never a second event frame, never a second service start | a double tap changes state twice |
 | DT-03-9 | S04-R-004; Contract 5.1 | U | 1 | M | flags: `poorAccuracy` set in idle or pausedManual; `offline`, `background`, `batteryCritical` set in idle | `poorAccuracy` only while recording; the others only while acquiring, recording or paused; set in other phases they are ignored and cleared on entering idle | a stale flag survives into the next recording |
 | DT-03-10 | S04-R-004; AC-D4-S-4 (state half) | U | 1 | M | transitions pausedAuto to pausedManual (legal), pausedManual to pausedAuto (illegal), Pause in acquiring (illegal) | as stated | Pause is accepted before the first fix |
-| DT-03-11 | S04-R-004 | U | 1 | M | for every arrow of the Contract diagram (including recording to idle on Discard and restoring to acquiring on Resume) find a path in the Design table whose projection matches | a path exists for every arrow and none shows a name outside the 13 (TP-S04-3 resolved by the Design 5.2 mapping paragraph: `preparing`, `stopping` and `stoppedRevoked` project onto the 13 names) | the two documents describe different machines |
+| DT-03-11 | S04-R-004 | U | 1 | M | for every arrow of the Contract diagram (including recording to idle on Discard and restoring to acquiring on Resume) find a path in the Design table whose projection matches | a path exists for every arrow and none shows a name outside the 13 (TP-S04-3 resolved by the Design 5.2 mapping paragraph: `preparing` and `stopping` project onto the 13 names; the old internal name `stoppedRevoked` is replaced by the display state `permissionRevoked`) | the two documents describe different machines |
 | DT-03-12 | S04-R-004, S04-R-009; AC-D4-S-12 | U | 1 | M | `poorAccuracy` flag set while the phase is `pausedManual` or `pausedAuto` | the headline is never `poorAccuracy` in those phases; the signal indicator still shows the real signal word | a paused recording shows a signal-problem headline |
 | DT-03-13 | S04-R-004; AC-D4-S-15 | U | 1 | H | the full overlap table of Contract 5.3: every phase crossed with every condition (`poorAccuracy`, `offline`, `background`, `batteryCritical`) | each possible cell yields the headline, banner and chips of the priority channels; each impossible cell (for example `poorAccuracy` in idle) is rejected | an impossible overlap is accepted or a possible one is lost |
 
@@ -290,7 +290,7 @@ Ordered-write points FP-1 to FP-12 are in section 4.3; rows cite them.
 | DT-12-1 | S04-R-016; AC-D4-R-2; S04-12 AC-1 | I | 2 | H | `/offer`, `/start-blocked`: journal from a killed run (NEW scope over the same file system); app start | `restoring` then the three choices; `requestStart` refuses while an unfinished recording exists | another recording can start over an unfinished one |
 | DT-12-2 | S04-R-016; AC-D4-R-4; S04-12 AC-2; FP-6, FP-9 | I | 3 | H | `/resume` (same recording uuid, new segment, `restart` event, gap pair with offsets, time and distance across the gap not counted; the phase becomes `acquiring`, never straight `recording`), `/save-as-finished` (seal and hand-off; exactly one session), `/discard` (directory removed; file listing empty). The discard entry injects a crash after EACH file deletion of the discard | stored results as stated; after a crash in the middle of a discard no leftover is offered as a recording (order fixed by Design 4.5, TP-S04-8 resolved; the per-step rows are DT-12-13) | a discarded recording comes back, or a sample stays on disk |
 | DT-12-3 | S04-R-016; Design 4.5 | I | 1 | M | readable journal with no kept fix | silent delete, no offer | the user is asked about an empty recording |
-| DT-12-4 | S04-R-013; F18 | I | 2 | H | `/killed-while-manual-paused`, `/killed-while-auto-paused` | after recovery the recorder re-enters the paused state, not recording | a paused recording resumes as moving |
+| DT-12-4 | S04-R-013; AC-D4-R-10; F18; Z1 | I | 2 | H | `/killed-while-manual-paused`, `/killed-while-auto-paused`; recover with a NEW object, choose Resume | Resume enters `acquiring` (never straight `recording` and never the earlier paused phase); the pause origin (manual or auto, pause offsets) is preserved in the journal; the accumulated moving time and distance values are unchanged by the recovery; a `restart` gap pair is journaled and adds neither moving time nor distance | the recorder resumes straight into recording or into the paused state, loses the preserved values, or counts the interrupted interval |
 | DT-12-5 | S04-R-016; D-7 | I | 2 | M | `/gap-5-min`, `/gap-2-hours` | resume offered whatever the gap; the age is shown; gap markers have offsets; no distance or moving time for the gap | a long gap is refused, interpolated or counted |
 | DT-12-6 | S04-R-016, S04-R-023; AC-D4-R-6 | I | 2 | H | `/permission-denied`, `/services-off` at Resume | Resume opens S4-1 at the matching denial panel; the request counter is unchanged | Resume starts a service without permission or re-requests by itself |
 | DT-12-7 | S04-R-039; AC-D4-R-3 | I | 2 | H | `/fix-arrives`, `/no-fix-arrives` after Resume | `gpsAnnResumedRecovered` emitted only after the first kept fix and only on the verified path; not emitted when no fix arrives | the word "resumed" or "recovered" is claimed before verification |
@@ -345,6 +345,8 @@ Ordered-write points FP-1 to FP-12 are in section 4.3; rows cite them.
 | DT-15-7 | S04-R-019; FP-8 | I | 1 | H | a flush in flight (completer); `wipe(uid)`; release the write | no file or directory is recreated after the wipe | a late write resurrects location data |
 | DT-15-8 | S04-R-045 | I | 1 | M | the factory root | under the app-private support directory, not external storage or cache | wrong storage class |
 | DT-15-R | S04-R-019 regression | I | 0 | M | run existing S02 journal tests and backup tests UNCHANGED (list found with Glob) after the S02 touches (wipe list, `put` CPU move) | green, no edit | the S02 touches broke S02 |
+| DT-15-9 | S04-R-019; AC-D4-R-11; Z3; GPS-PRIV-014 | I | 6 | H | lifecycle on a real temp tree with two real scopes; the state is asserted after EACH step: `/successful-hand-off-then-the-recording-journal-is-deleted`, `/failed-hand-off-the-unsealed-recording-stays-encrypted-in-its-own-scope`, `/explicit-sign-out-hands-off-first-then-deletes-and-names-the-leftover-with-gpsSignOutNotice-30-days-PROPOSED-when-hand-off-failed`, `/account-deletion-deletes-the-leftover`, `/expiry-at-30-days-deletes-the-leftover`, `/subsequent-sign-in-of-the-same-account-offers-recovery-and-another-account-sees-nothing` | as stated; never readable by another account | an unhanded recording leaks, never expires, or is lost silently |
+| DT-15-10 | S04-R-019; Z3 | K | 2 | M | `/privacy-contract-carries-the-proposed-clarification-note-next-to-GPS-PRIV-014`, `/requirements-record-the-operator-question-strict-deletion-versus-the-30-day-leftover` | both notes exist, marked PROPOSED | the amendment is silent |
 
 #### S04-16 Storage full (R-020, SHOULD)
 
@@ -396,7 +398,7 @@ Ordered-write points FP-1 to FP-12 are in section 4.3; rows cite them.
 
 | Id | Covers | Lvl | N | Sev | Fixture and steps | Expected | Fails when |
 |---|---|---|---|---|---|---|---|
-| DT-19-1 | S04-R-024; AC-D4-V-1; S04-19 AC-1 | I | 4 | H | status flipped to denied in `/acquiring`, `/recording`, `/pausedManual`, `/pausedAuto` | `activeSubscriptions` 0 within 2 s; session saved and flagged `permission revoked`; phase `stoppedRevoked`; request counter unchanged; S4-6 offers Keep and Delete only (no Export), focus on the S4-6 headline read by focus with zero `announce` calls for the same text | collection continues, data is lost, or the app re-requests |
+| DT-19-1 | S04-R-024; AC-D4-V-1; S04-19 AC-1 | I | 4 | H | status flipped to denied in `/acquiring`, `/recording`, `/pausedManual`, `/pausedAuto` | `activeSubscriptions` 0 within 2 s; session saved and flagged `permission revoked`; phase `permissionRevoked`; request counter unchanged; S4-6 offers Keep and Delete only (no Export), focus on the S4-6 headline read by focus with zero `announce` calls for the same text | collection continues, data is lost, or the app re-requests |
 | DT-19-2 | S04-R-024; Design 6.1 | I | 4 | H | detection channels `/poll-per-fix`, `/stream-error`, `/stream-closed-unexpectedly`, `/app-resume` | each channel detects within 2 s of fake time and takes the same path | revocation is seen on one channel only |
 | DT-19-3 | S04-R-024; Design 6.1 (T3) | I | 1 | M | process restart with no observed revocation | recovery path with copy "interrupted", not "revoked" | the app claims a revocation it did not observe |
 | DT-19-4 | S04-R-024; retro rule 6 | I | 1 | M | sequence denied, denied, granted, denied | one save, one announcement; granting again does not auto-resume | repeated events double-save or resume by themselves |
@@ -407,6 +409,8 @@ Ordered-write points FP-1 to FP-12 are in section 4.3; rows cite them.
 | DT-19-9 | AC-D4-Y-3 | W | 1 | M | revocation while the app is `/in-the-background` | `gpsAnnRevoked` (assertive) only where focus does not move; zero `announce` calls when S4-2 turns into S4-6 (the focus move is read) | a double reading, or silence |
 | DT-19-10 | AC-D4-V-4; S04-R-024, S04-R-037 | W | 3 | M | a pending revoked decision: `/strip-row-on-five-tabs-and-home-card`, `/start-not-blocked`, `/keep-and-delete-each-clear-both` | `gpsStripRevoked` on all five tabs and the Home card until Keep or Delete; Start works and the pending item is excluded from the unfinished-recording precondition; both decisions clear both | a pending decision is invisible, or blocks recording |
 | DT-19-11 | S04-R-024, S04-R-018; D-19 | I | 2 | H | `/keep-hands-off-as-finished-partial` (one session stored under the owner scope, journal deleted after confirmed hand-off), `/delete-removes-all` (journal gone, file listing empty) | as stated | Keep quarantines readable data, or Delete leaves samples |
+| DT-19-12 | S04-R-024, S04-R-018; AC-D4-V-5; Z2; FP-18 | I | 6 | H | a recording revoked mid-run, a fault or a kill injected at each step of the canonical sequence: `/fault-at-revocation`, `/fault-after-seal` (the partial recording is durably SEALED as a pending decision), `/process-death-while-pending`, `/fault-during-keep`, `/fault-during-hand-off`, `/fault-during-delete`; NEW objects after each fault | collection is stopped; the pending decision is listed by `listUnfinished`, survives a kill and is not offered as a normal Resume; Keep runs the ordered, idempotent, owner-checked hand-off; Delete runs the ordered delete (`DISCARDING` marker); after every fault the durable state is exactly one of: pending decision, or one finished activity (never both, never two activities) | a revoked recording is lost, duplicated, or comes back after Delete |
+| DT-19-13 | S04-R-024; Z2 | I | 3 | H | `/keep-repeated-and-keep-after-restart-give-one-activity`, `/delete-after-a-started-hand-off-never-resurrects`, `/pending-decision-does-not-block-start-and-is-not-listed-for-another-uid` | one activity; no resurrection; no leak across accounts | a second Keep creates a second activity, or Delete is undone by a retry |
 
 #### S04-20 Notification permission (R-025) - CONDITIONAL (default branch: refuse)
 
@@ -440,7 +444,7 @@ Ordered-write points FP-1 to FP-12 are in section 4.3; rows cite them.
 
 | Id | Covers | Lvl | N | Sev | Fixture and steps | Expected | Fails when |
 |---|---|---|---|---|---|---|---|
-| DT-22-1 | S04-R-030; AC-D4-B-1, B-3, B-4; S04-22 AC-1 | I | 4 | H | `/10`, `/9`, `/3`, `/2` percent unplugged on a recording | at 10 and 9: `batteryCritical`, banner with percentage, request interval 5 s, flush 1 s; at 3 and 2: finish and save with the stop reason `stoppedBattery` and `gpsReasonBattery` on S4-4 | a threshold is off by one on either side |
+| DT-22-1 | S04-R-030; AC-D4-B-1, AC-D4-B-3, AC-D4-B-4; S04-22 AC-1 | I | 6 | H | `/10`, `/9`, `/3`, `/2` percent unplugged on a recording, plus `/11` and `/4` (the other side of each boundary) | at 11 no critical state; at 10 and 9: `batteryCritical`, banner with percentage, request interval 5 s, flush 1 s; at 4 critical and still recording; at 3 and 2: finish and save with the stop reason `stoppedBattery` and `gpsReasonBattery` on S4-4 | a threshold is off by one on either side |
 | DT-22-2 | S04-R-030; AC-D4-B-2; S04-22 AC-2 | I | 5 | H | `/charging-at-8`, `/charging-starts-after-critical`, `/exit-at-12`, `/oscillate-and-repeat-equal` (9, 10, 11, 12, 10, 10, 10), `/jump-15-to-2` | charging at 8 does not enter; charging or 12 percent exits and restores 1 s; no chatter on repeated equal values; a jump from 15 to 2 still finishes and saves | missed thresholds on a jump, or flapping |
 | DT-22-3 | AC-D4-B-1; AC-D4-G-3; S04-22 AC-3 | W | 3 | H | `/not-a-dialog` (route observer), `/not-dismissible`, `/percentage-updates-once-per-percent` | banner only; no `DialogRoute` or sheet | a modal while recording |
 | DT-22-4 | S04-R-030; AC-D4-B-3 | I | 2 | H | `/reason-visible-and-stored`, `/save-fails-at-3-percent` | the reason is stored and shown; with a failed save the journal stays and the reason is still shown | a silent stop |
@@ -606,6 +610,7 @@ Ordered-write points FP-1 to FP-12 are in section 4.3; rows cite them.
 | DT-00-1 | retro rule 1; Stories 6.2 | K | 2 | H | `/compile-smoke` (one test file importing every library under `lib/features/recording/**` and the changed shell files; its only assertion is that it loads), `/exhaustive-switch` (iterates every `ActiveSessionState` and `ActiveSessionKind` through the dock word, rail word and icon functions) | loads and runs | a new enum value breaks a switch (Design 7.2) or a lane left code that does not compile |
 | DT-00-2 | convention 8 | K | 1 | M | scan-set resolver | minimum file count; anchor files present; no empty scanned directory | a scan passes vacuously |
 | DT-00-3 | retro rule 2; Design 7.3 | K | 1 | H | call sites of `requestStart` | equal to the enumerated entry points of section 4.2; none from boot or launch | a new start entry point without a row |
+| DT-00-4 | Z4; set comparison | K | 2 | M | `/ac-d4-ids` (every `AC-D4-<family>-<n>` id found in the Contract appears in full in this plan), `/s04-r-ids` (every `S04-R-nnn` id of the requirements appears) | both sets equal or the missing ids are listed | a criterion or requirement has no trace |
 
 ### 3.11 EP-J Round 1 additions (S04-30 to S04-38; lane R13 new)
 
@@ -767,6 +772,8 @@ Each point is a sequence in which an earlier durable write must precede a later 
 | FP-15 | the bind controller awaits the recorder pre-unbind hook (5 s) before it unbinds | hook fails or times out | DT-30-10 |
 | FP-16 | the durable wiped marker versus a late write after a restart | restart between wipe and write | DT-30-12 |
 | FP-17 | `segmentBreak` as the first frame of every segment after an unclean close | crash, write error, resume | DT-11-18 |
+| FP-18 | revocation: collection stops, partial recording SEALED as a pending decision, Keep hands off, Delete removes | fault or kill after each step | DT-19-12, DT-19-13 |
+| FP-19 | lifecycle: hand-off then delete, failed hand-off leftover, sign-out, deletion, expiry, sign-in | state after each step | DT-15-9 |
 
 ### 4.4 Rule 6: events of every source stream (all kinds, including repeated and equal values)
 
@@ -858,12 +865,12 @@ DT-04-8, DT-04-9, DT-04-10 (notification, 60 min screen off, location indicator)
 | 016 | DT-12-1 to DT-12-14, DT-33-3 | |
 | 017 | DT-13-1 to DT-13-5, DT-13-7, DT-13-8, DT-11-17 | |
 | 018 | DT-14-1 to DT-14-8 | |
-| 019 | DT-15-1 to DT-15-3, DT-15-7, DT-30-1 to DT-30-13, DT-13-7 | real Auto Backup behaviour: NOT_RUN |
+| 019 | DT-15-1 to DT-15-3, DT-15-7, DT-15-9, DT-15-10, DT-30-1 to DT-30-13, DT-13-7 | real Auto Backup behaviour: NOT_RUN |
 | 020 | DT-16-1 to DT-16-6, DT-35-1 | free-space early warning only if D-9 option B |
 | 021 | DT-17-1, DT-17-2, DT-17-3, DT-01-6 | |
 | 022 | DT-04-1, DT-04-11, DT-18-1, DT-18-2 | merged manifest: NOT_RUN; branch B only if chosen |
 | 023 | DT-17-4 to DT-17-18, DT-12-6 | |
-| 024 | DT-19-1 to DT-19-11, DT-24-18 | latency on a phone: NOT_RUN |
+| 024 | DT-19-1 to DT-19-13, DT-24-18 | latency on a phone: NOT_RUN |
 | 025 | DT-17-3, DT-20-1 to DT-20-6 | device outcome: NOT_RUN; conditional |
 | 026 | DT-21-1 to DT-21-5, DT-21-7, DT-21-8, DT-21-10, DT-33-1, DT-33-5, DT-33-7 | |
 | 027 | DT-21-6, DT-21-9 | |
@@ -942,7 +949,7 @@ All 58 requirements have at least one row; the parts that need a phone are expli
 | T-3 | DT-25-19 | T-4 | DT-25-20 |
 | T-5 | DT-25-21, DT-04-7 | | |
 
-Contract revision 2 adds 27 ids and changes the wording of others; the table above keeps the revision 1 mapping and this supplement adds the rest. Family totals after Round 2: P 23, S 15, G 7, B 4, T 7, R 9, V 4, N 4, H 8, Z 3, Y 12, W 3, C 6 = 105. The Round 2 ids map as follows: P-21 DT-34-2; P-22 DT-21-10, DT-33-7; P-23 DT-17-22; H-8 DT-24-18; Z-3 DT-33-7; Y-12 DT-25-53 (NOT_RUN); C-6 DT-25-54, DT-25-55. Round 2 also changed the wording of G-1 (classes at most 8, at most 10 with the Details label and the gym-timer row) DT-25-10; T-5 (focus only, zero announce) DT-32-4, DT-25-21; T-6 (sample cap and consent reasons, `gpsRevokedNotif` for revoked) DT-35-1; V-1 and Y-3 (focus-only rule, offline once, suppressed state announced when the window ends) DT-19-1, DT-25-25; V-4 (pending item excluded from the precondition) DT-19-10; Z-2 (`gpsReasonConsent`) DT-33-4; P-16 (15 s from the service-start call) DT-34-3.
+Contract revision 2 adds 27 ids and changes the wording of others; the table above keeps the revision 1 mapping and this supplement adds the rest. Family totals after Round 2: P 23, S 15, G 7, B 4, T 7, R 11, V 5, N 4, H 8, Z 3, Y 12, W 3, C 6 = 108. The Round 2 ids map as follows: P-21 DT-34-2; P-22 DT-21-10, DT-33-7; P-23 DT-17-22; H-8 DT-24-18; Z-3 DT-33-7; Y-12 DT-25-53 (NOT_RUN); C-6 DT-25-54, DT-25-55. Round 2 also changed the wording of G-1 (classes at most 8, at most 10 with the Details label and the gym-timer row) DT-25-10; T-5 (focus only, zero announce) DT-32-4, DT-25-21; T-6 (sample cap and consent reasons, `gpsRevokedNotif` for revoked) DT-35-1; V-1 and Y-3 (focus-only rule, offline once, suppressed state announced when the window ends) DT-19-1, DT-25-25; V-4 (pending item excluded from the precondition) DT-19-10; Z-2 (`gpsReasonConsent`) DT-33-4; P-16 (15 s from the service-start call) DT-34-3.
 
 | New AC | Rows | New AC | Rows |
 |---|---|---|---|
@@ -961,7 +968,7 @@ Contract revision 2 adds 27 ids and changes the wording of others; the table abo
 | G-7 | DT-25-48 | T-6 | DT-35-1, DT-35-3 |
 | T-7 | DT-25-49 | | |
 
-Ids whose wording changed in revision 2 and the rows that now carry the changed part: P-2 (precise line and privacy line in one view) DT-17-2; S-4 (`gpsPauseDisabledHint`) DT-25-3; G-1 (per-class caps, at most 8 in total) DT-25-10; G-3 (observer scoped to the `/record/gps` route) DT-25-12; T-5 (Finish... action and tap, focus and one announcement) DT-32-3, DT-32-4, DT-25-21, DT-04-7; V-1 (Keep and Delete only, focus, assertive announcement) DT-19-1, DT-19-6; Y-3 (user kinds always announced, focus-moving transitions) DT-25-25, DT-25-49; Y-5 (S4-1 to S4-7, automatic swaps) DT-25-27; Y-7 (S4-1 to S4-7, strip, rail slot) DT-25-29; N-1 (public version set explicitly) DT-32-1, DT-32-6, DT-04-8; Z-1 DT-28-9; C-1 (withdrawn ids) DT-25-34; C-3 DT-25-35; R-5 DT-13-1. Every one of the 105 ids has a row; the ids that need a phone (N-1, V-3, P-19, Y-10, Y-12 and the device half of T-2) are marked NOT_RUN in their rows.
+Ids whose wording changed in revision 2 and the rows that now carry the changed part: P-2 (precise line and privacy line in one view) DT-17-2; S-4 (`gpsPauseDisabledHint`) DT-25-3; G-1 (per-class caps, at most 8 in total) DT-25-10; G-3 (observer scoped to the `/record/gps` route) DT-25-12; T-5 (Finish... action and tap, focus and one announcement) DT-32-3, DT-32-4, DT-25-21, DT-04-7; V-1 (Keep and Delete only, focus, assertive announcement) DT-19-1, DT-19-6; Y-3 (user kinds always announced, focus-moving transitions) DT-25-25, DT-25-49; Y-5 (S4-1 to S4-7, automatic swaps) DT-25-27; Y-7 (S4-1 to S4-7, strip, rail slot) DT-25-29; N-1 (public version set explicitly) DT-32-1, DT-32-6, DT-04-8; Z-1 DT-28-9; C-1 (withdrawn ids) DT-25-34; C-3 DT-25-35; R-5 DT-13-1. Set comparison (Z4): a grep of every `AC-D4-<family>-<n>` id in the Contract against the full ids in this plan found exactly one id missing, AC-D4-B-4 (it was written in the short form `B-3, B-4`); it is now written in full in DT-22-1, and DT-00-4 repeats the comparison mechanically. Late additions to the map: R-10 DT-12-4; R-11 DT-15-9; V-5 DT-19-12, DT-19-13. Every one of the 108 ids has a row; the ids that need a phone (N-1, V-3, P-19, Y-10, Y-12 and the device half of T-2) are marked NOT_RUN in their rows.
 
 ### 7.3 Story to rows (every AC of every story)
 
@@ -981,11 +988,11 @@ Ids whose wording changed in revision 2 and the rows that now carry the changed 
 | S04-12 | AC-1 DT-12-1; AC-2 DT-12-2; AC-3 DT-12-7, DT-24-6 | |
 | S04-13 | AC-1 DT-13-1; AC-2 DT-13-2; AC-3 DT-13-3 | |
 | S04-14 | AC-1 DT-14-1; AC-2 DT-14-2; AC-3 DT-14-3 | |
-| S04-15 | AC-1 DT-15-1; AC-2 DT-15-2; AC-3 DT-15-4, DT-15-5, DT-15-8 | |
+| S04-15 | AC-1 DT-15-1; AC-2 DT-15-2; AC-3 DT-15-4, DT-15-5, DT-15-8 (plus DT-15-9, DT-15-10) | |
 | S04-16 | AC-1 DT-16-6; AC-2 DT-16-1, DT-16-2 | AC-1 only if D-9 option B |
 | S04-17 | AC-1 DT-17-1; AC-2 DT-17-2, DT-17-3; AC-3 DT-17-4 to DT-17-9 | |
 | S04-18 | AC-1 DT-18-1; AC-2 DT-18-2 | CONDITIONAL |
-| S04-19 | AC-1 DT-19-1; AC-2 DT-19-6; AC-3 DT-19-8 | |
+| S04-19 | AC-1 DT-19-1; AC-2 DT-19-6; AC-3 DT-19-8 (plus DT-19-9 to DT-19-13) | |
 | S04-20 | AC-1 DT-20-1; AC-2 DT-20-2; AC-3 DT-20-3, DT-20-4 | CONDITIONAL |
 | S04-21 | AC-1 DT-21-1; AC-2 DT-21-2; AC-3 DT-21-6 | |
 | S04-22 | AC-1 DT-22-1; AC-2 DT-22-2; AC-3 DT-22-3, DT-22-4 | |
@@ -1034,12 +1041,12 @@ N is the number of test entries. DT-15-R and DT-24-R (regression evidence, N=0) 
 | S04-12 | D | 0 | 10 | 23 | 0 | 0 | 33 |
 | S04-13 | D | 0 | 4 | 13 | 1 | 0 | 18 |
 | S04-14 | D | 0 | 0 | 23 | 0 | 0 | 23 |
-| S04-15 | D | 0 | 3 | 7 | 1 | 0 | 11 |
+| S04-15 | D | 0 | 3 | 13 | 3 | 0 | 19 |
 | S04-16 | D | 0 | 2 | 5 | 0 | 0 | 7 |
 | S04-17 | E | 0 | 44 | 7 | 0 | 1 | 52 |
-| S04-19 | E | 0 | 7 | 16 | 0 | 2 | 25 |
+| S04-19 | E | 0 | 7 | 25 | 0 | 2 | 34 |
 | S04-21 | E | 4 | 0 | 18 | 0 | 0 | 22 |
-| S04-22 | F | 0 | 5 | 15 | 0 | 0 | 20 |
+| S04-22 | F | 0 | 5 | 17 | 0 | 0 | 22 |
 | S04-23 | F | 0 | 0 | 0 | 3 | 0 | 3 |
 | S04-24 | G | 3 | 22 | 23 | 2 | 0 | 50 |
 | S04-25 | G | 0 | 131 | 1 | 12 | 2 | 146 |
@@ -1054,17 +1061,17 @@ N is the number of test entries. DT-15-R and DT-24-R (regression evidence, N=0) 
 | S04-35 | J | 2 | 2 | 7 | 0 | 1 | 12 |
 | S04-36 | J | 1 | 3 | 7 | 0 | 0 | 11 |
 | S04-38 | J | 0 | 0 | 0 | 6 | 0 | 6 |
-| DT-00 | cross | 0 | 0 | 0 | 4 | 0 | 4 |
-| Unconditional total | | 76 | 259 | 379 | 51 | 18 | 783 |
+| DT-00 | cross | 0 | 0 | 0 | 6 | 0 | 6 |
+| Unconditional total | | 76 | 259 | 396 | 55 | 18 | 804 |
 | S04-16 DT-16-6 (D-9 option B) | D | 0 | 0 | 1 | 0 | 0 | 1 |
 | S04-18 | E | 0 | 3 | 0 | 2 | 0 | 5 |
 | S04-20 | E | 0 | 9 | 0 | 0 | 1 | 10 |
 | S04-29 | I | 0 | 0 | 0 | 3 | 9 | 12 |
 | S04-37 | J | 0 | 0 | 5 | 0 | 1 | 6 |
 | Conditional total | | 0 | 12 | 6 | 5 | 11 | 34 |
-| Grand total | | 76 | 271 | 385 | 56 | 29 | 817 |
+| Grand total | | 76 | 271 | 402 | 60 | 29 | 838 |
 
-Note on S04-16 in the unconditional rows: DT-16-6 is excluded from the S04-16 line (7 entries, rows DT-16-1 to DT-16-5) and counted as conditional. DT-15-6 (moved to S04-30), DT-15-R and DT-24-R (regression evidence) add no entries (N=0). S04-37 is conditional on the device test T2. Revision 1 totals were 568 unconditional and 596 with the conditional stories; revision 2 had 747 and 781; Round 2 (revision 3) adds 36 unconditional entries: DT-05-11 +2, DT-11-18 +4, DT-12-13 +2, DT-17-22 +1, DT-21-10 +2, DT-24-18 and DT-24-19 +4, DT-25-25 +2, DT-25-53 to DT-25-55 +3, DT-30-10 to DT-30-13 +13, DT-33-7 +2, DT-34-5 +1. Per epic (unconditional): A 74, B 47, C 39, D 129, E 99, F 23, G 196, H 40, J 132, cross-cutting 4 = 783. Level shares of the unconditional total: U 10, W 33, I 48, K 7, D 2 percent (rounded). Device-only entries: 18 unconditional plus 11 conditional = 29, all NOT_RUN until a phone exists.
+Note on S04-16 in the unconditional rows: DT-16-6 is excluded from the S04-16 line (7 entries, rows DT-16-1 to DT-16-5) and counted as conditional. DT-15-6 (moved to S04-30), DT-15-R and DT-24-R (regression evidence) add no entries (N=0). S04-37 is conditional on the device test T2. Revision 1 totals were 568 unconditional and 596 with the conditional stories; revision 2 had 747 and 781; revision 3 had 783 and 817; the gate batch (revision 4) adds 21 unconditional entries: DT-15-9 and DT-15-10 +8, DT-19-12 and DT-19-13 +9, DT-22-1 +2 (the other side of each boundary), DT-00-4 +2. Per epic (unconditional): A 74, B 47, C 39, D 137, E 108, F 25, G 196, H 40, J 132, cross-cutting 6 = 804. Level shares of the unconditional total: U 10, W 33, I 48, K 7, D 2 percent (rounded). Device-only entries: 18 unconditional plus 11 conditional = 29, all NOT_RUN until a phone exists.
 
 ### 8.2 Focused commands (per step; run from `mobile/`; PROPOSED file lists, final names set by the test agents)
 
@@ -1111,6 +1118,10 @@ Status of the revision 1 findings against the revised Design (section 16.1 Round
 | TP-S04-18 | RESOLVED: S04-38 cites requirements section 12 (release gate); DT-38-x trace to it | DT-38-1 to DT-38-3 |
 | TP-S04-19 | RESOLVED (Y5): the "cannot check" path keeps Sign out anyway with explicit text; Story AC-6 and Req S04-R-019 follow the design | DT-30-6 |
 | TP-S04-20 | NEW: the Contract still lists assertive announcements (`gpsAnnRevoked`, `gpsAnnRecoveryFailed`) next to the focus-only rule C6 (no announce when focus moves to the new headline); the tests assert zero announce calls when focus moves and the announcement only where focus does not move | DT-13-6, DT-19-9, DT-25-25 |
+| Z1 | RESOLVED: Resume after a kill enters `acquiring` for every origin; pause origin and values preserved; a `restart` gap pair adds nothing | DT-12-4 |
+| Z2 | RESOLVED: on revocation the partial recording is durably SEALED as a pending decision; Keep hands off (ordered, idempotent, owner-checked); Delete uses the ordered delete; the stale name `stoppedRevoked` is replaced by `permissionRevoked` | DT-03-1, DT-19-1, DT-19-12, DT-19-13 |
+| Z3 | RESOLVED as a PROPOSED clarification of GPS-PRIV-014 plus an operator question (alternative: strict deletion) | DT-15-9, DT-15-10 |
+| Z4 | RESOLVED: AC-D4-B-4 written in full and covered on both sides of each boundary; mechanical set comparison | DT-22-1, DT-00-4 |
 
 Original wording of revision 1 (kept for traceability; where it says DEPENDS-ON-DESIGN for a RESOLVED item, the table above wins):
 
@@ -1119,7 +1130,7 @@ Original wording of revision 1 (kept for traceability; where it says DEPENDS-ON-
 |---|---|---|
 | TP-S04-1 | The speed gate compares each fix with the previous KEPT fix and the design defines no recovery: one wrong first fix with a good accuracy can make every later fix fail the speed rule forever. | DT-05-11 |
 | TP-S04-2 | Design 5.1 proposes ONE priority order that includes `batteryCritical`; the Contract 5.3 uses three channels (headline, banner, chips) and puts battery in the banner. The tests follow the Contract. | DT-03-5, DT-25-9 |
-| TP-S04-3 | Design phases `preparing`, `stopping`, `stoppedRevoked` have no name among the Contract's 13 states, and the diagrams differ (for example Contract: recording to idle on Discard; Design: via `stopping`). | DT-03-3, DT-03-11 |
+| TP-S04-3 | Design phases `preparing`, `stopping`, `stoppedRevoked` (old name, now `permissionRevoked`, Z2) have no name among the Contract's 13 states, and the diagrams differ (for example Contract: recording to idle on Discard; Design: via `stopping`). | DT-03-3, DT-03-11 |
 | TP-S04-4 | Design 1.2 and 7.3 say no notification action buttons; Contract 17 and DN-7 define Pause/Resume and Stop actions. | DT-04-7, DT-25-21 |
 | TP-S04-5 | Req S04-R-012 sets auto-pause on for walk, run and ride; the Contract offers Walk, Run, Hike, Ride; the default for hike is undefined. | DT-07-4 |
 | TP-S04-6 | A single GPS altitude outlier would add its full height to ascent (hysteresis alone does not filter a one-sample spike). | DT-10-5 |

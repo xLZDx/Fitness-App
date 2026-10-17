@@ -1163,3 +1163,11 @@ Facts: four internal reviews (UX, accessibility, architecture, security) found 0
 Root cause: four authors edited four documents in parallel from one findings list that left cross-document values (timeouts, set of automatic stops, notification content, Keep meaning) undecided until the second round.
 Missed by: authors and round 1 remediation; caught by the verification reviewers and the test-plan author, who listed 20 input conflicts.
 Rule next time: decide every cross-document constant (timeouts, sets, names) in the findings file BEFORE fan-out to authors, and give each author a turn-budget-friendly brief (grep, large edits, write the report first).
+
+## 2026-10-17 - Commit: docs(s04): fix the documentation gate findings on recovery phase, revocation sequence and sign-out retention
+
+Kind: FAILURE.
+Facts: the GPT-PM documentation gate on 535ae9e4 returned MODIFY with 3 MAJOR and 1 MINOR: the test plan row DT-12-4 contradicted the design and contract about the phase after recovery from a pause, three documents persisted a revoked recording at different moments (revocation vs Keep), and the sign-out 30-day fallback contradicted GPS-PRIV-014 of the S01 privacy contract. AC-D4-B-4 was missing from the plan.
+Root cause: round 1 and round 2 fixes were applied document by document; the recovery phase, the persistence moment and the S01 rule were not listed as cross-document constants (the same class as the timeouts of round 2), and the id comparison between contract and plan was done before the contract was final.
+Missed by: authors, two internal review rounds and the test-plan author; caught by the external gate.
+Rule next time: run a mechanical id and constant comparison (grep set comparison) AFTER the last edit of every document, and read the cited upstream rule (here GPS-PRIV-014) in its original file before writing an exception to it.
