@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 154072 |
+| `core/LESSONS_LOG.md` | Lessons log | 154746 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -322,6 +322,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s03/S03_CARRIED_ITEMS.md` | S03 carried items, deviations and accepted risks | 7078 |
 | `docs/phase2/s03/S03_CODE_MAP.md` | S03 code map | 33748 |
 | `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 194349 |
+| `docs/phase2/s03/S03_SPRINT_REPORT.md` | S03 sprint report and retrospective: shell, mode chooser, dashboard skeleton (E2) | 21441 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 19733 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md` | S03 test findings, step 3 (EP-2: S03-08 to S03-11) | 16460 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md` | S03 test findings, step 4 (EP-3 and EP-4) | 19364 |
@@ -330,10 +331,12 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md` | S03 test findings, epic 5C (S03-18 conformance to the UI design contract) | 16769 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md` | S03 final test summary | 4908 |
 | `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 174368 |
+| `docs/phase2/s04/S04_ANDROID_PLATFORM_STUDY.md` | S04 Android platform study (GPS recorder without a map) | 27999 |
 | `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21323 |
+| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 43937 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 14232 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 14013 |
 | `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13362 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |

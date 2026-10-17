@@ -1148,3 +1148,10 @@ Kind: SUCCESS.
 Facts: 9 write-order tests and 12 foreign-session Record tests were added by the test agents; the Record tests failed once on a real layout shift in my first fix (recorded in the previous entry) and are green on 85f88bb2 (243 passed); mode tests 94 passed, 2 skipped in code.
 Why it worked: the test agent asserted neighbouring positions and focus, not only the missing control, and kept the red test red instead of weakening it.
 Rule next time: keep applying that: a failing test found by a test agent is fixed in production, not relaxed.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 requirements and Android platform study, the S03 sprint report, and close S03 in STATE
+
+Kind: SUCCESS and SHORTCOMING.
+Facts: three documentation agents ran in parallel on separate files (requirements 51 items, platform study 169 lines, S03 report 157 lines). The S03 report records that no complete test run exists on the approved head 1e56d651, only targeted runs of the gate fixes.
+Shortcoming: the same evidence gap as S02 repeated (the complete run was on an earlier head than the approved one).
+Rule next time: after the last gate fix, schedule one complete run of all test sets on the exact head that goes to the gate.

@@ -58035,3 +58035,7 @@ Decision: the foreign-owner rail slot lays out the idle control invisibly (no se
 ## 2026-10-17 - Commit: test(s03): regression tests for the code gate findings on foreign sessions and mode write order
 
 Decision: after this commit the code gate is requested again from GPT-PM on the new exact head as a verification round (the two MAJOR findings and regressions caused by their fixes only). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md section 1a, core/changes/2026-10-17-s03-gate-fix-tests.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 requirements and Android platform study, the S03 sprint report, and close S03 in STATE
+
+Decision: the operator answered yes to merging PR 11 (merged as f605cf3e) and to starting S04 documentation. S04 documentation proceeds on branch phase2/s04-docs with the readiness-note defaults (Android only, consent rows built inside S04, cloud upload off, S04-D produced as a separate contract in this phase); every invented number is PROPOSED. Evidence: docs/phase2/s04/S04_REQUIREMENTS.md section 3, core/changes/2026-10-17-s04-docs-wave1.md.
