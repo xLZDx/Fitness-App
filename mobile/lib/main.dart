@@ -48,6 +48,7 @@ import 'features/form_check/data/tts_voice_coach.dart';
 import 'features/form_check/state/form_check_providers.dart';
 import 'features/marketplace/data/coach_marketplace_service.dart';
 import 'features/marketplace/state/marketplace_providers.dart';
+import 'features/modes/state/mode_providers.dart' show modeWarmUpProvider;
 import 'features/moments/data/prefs_moment_repository.dart';
 import 'features/moments/state/moment_providers.dart';
 import 'features/profile/data/device_health_profile_repository.dart';
@@ -675,6 +676,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     ref.watch(activityJournalBindingProvider);
     // Activity summary sync at start (flag-gated; a no-op when off).
     ref.watch(activityCloudSyncWiringProvider);
+    // S03 mode state + migration warm-up (one provider; never rebuilds on a mode choice).
+    ref.watch(modeWarmUpProvider);
     final settings = ref.watch(settingsControllerProvider);
     // Resolved, never nullable: one source of truth shared with the exercise
     // catalog. Passing `null` here would hand resolution to Flutter alone and

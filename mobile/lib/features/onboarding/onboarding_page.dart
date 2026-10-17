@@ -8,6 +8,9 @@ import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+import '../modes/state/mode_providers.dart'
+    show InitSource, modeStateProvider;
 import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
 import 'data/step_answered.dart';
@@ -189,6 +192,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       );
       return;
     }
+    // S03 (RV-1): record the first chooser status before leaving onboarding.
+    // A no-op for /onboarding/edit (status already set). Never blocks '/home'.
+    try {
+      await ref.read(modeStateProvider.future);
+      if (!mounted || !context.mounted) return;
+      await ref
+          .read(modeStateProvider.notifier)
+          .initIfAbsent(InitSource.onboarding);
+    } catch (e) {
+      debugPrint('mode onboarding hook failed (${e.runtimeType})');
+    }
+    if (!mounted || !context.mounted) return;
     context.go('/home');
   }
 

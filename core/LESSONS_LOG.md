@@ -768,3 +768,10 @@ Kind: SUCCESS.
 Facts: lane L1 run 2 replaced the retry closure by a controller class with one state machine (single flight, busy result, preserved deadline after a failed manual attempt, generation-owned timer, stale completions touch nothing) and a bind-status notifier; the retry schedule and the existing log strings are unchanged. Recovery counts come from an optional read-only interface, so existing fakes keep working. The agent recorded nine decisions, including that status writes during provider build are deferred by a microtask.
 Why it worked: the state machine was specified once as numbered rules before the build and the independent reliability review had already run on the text.
 Rule next time: the controller is the highest-risk piece of the sprint; the reliability reviewer reads it against the seven rules before the code gate, and the test agents drive real controllers with the injected timer factory (DT-0-11 to DT-0-16).
+
+## 2026-10-17 - Commit: feat(modes): record the onboarding choice and start the mode warm-up at the app root
+
+Kind: SUCCESS.
+Facts: lane L2 run 3 added exactly the two wiring edits the brief allowed: one awaited `initIfAbsent(onboarding)` call before `context.go('/home')` in the onboarding page, and one `ref.watch(modeWarmUpProvider)` line plus one import in `main.dart`. `_FitnessAppState` and its resume callback are untouched and no second `WidgetsBindingObserver` was added.
+Why it worked: the wiring was kept for the last run, after the state layer existed, and each edit was specified to the line in the brief.
+Rule next time: the test agents prove the three facts that matter here: a new user gets `pending` before `/home`, a failure never blocks the navigation, and `/onboarding/edit` for an onboarded user writes nothing (DT-01-12, DT-01-13, F-7). One small behaviour change to watch: if the page is unmounted during the awaited call, navigation is skipped (it was unguarded before).
