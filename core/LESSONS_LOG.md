@@ -1291,3 +1291,11 @@ Facts: the previous remediation fixed the named rows but left sibling rows (FT-1
 Root cause: rows were fixed by id from the finding, not by searching every row that asserts the same command, source or state.
 Missed by: author; caught by the external gate.
 Rule next time: for each fixed row, grep the contract keyword (command name, source value, state name, error code) across 04a and 04b and re-derive every hit in the same batch.
+
+## 2026-10-18 - Commit: docs(ai-coach): sync gate state with verification round 2 remediation
+
+Kind: SHORTCOMING.
+Facts: after commit 9ced50ab (verification round 2 remediation) the AI Coach current-phase line in docs/sdlc/STATE.md still named the round on 2a31a3f0 as the latest state and said the next remediation was pending; found on 2026-10-18 by comparing git log with STATE.md (the line is written in STATE.md, see the change record core/changes/2026-10-18-ai-coach-state-sync.md).
+Root cause: the remediation commits updated the change record and the sibling test rows but no step required the STATE.md phase line to be rewritten in the same commit.
+Missed by: author; not caught by tests or reviewers (documentation has no state check).
+Rule next time: every gate remediation commit rewrites the current-phase line of its STATE.md section in the same commit, naming the new head and what the next gate is; compare the last commit subject with that line before reporting status.
