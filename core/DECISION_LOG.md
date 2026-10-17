@@ -57931,3 +57931,7 @@ Decision: Progress compensates by the arriving block height minus the Sources sl
 ## 2026-10-17 - Commit: test(activity): add the functional tests for the journal availability, the mode state and the account-switch wipe
 
 Decision: step 1 test files and the findings file are committed after a green complete run (140 of 140). Partial rows stay open: the real-app first Home frame part of the chooser-offer row, and the dashboard-widget part of one availability row. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1.md.
+
+## 2026-10-17 - Commit: test(shell): add the functional tests for the window class, the rail, the dock, the surfaces and the session strip
+
+Decision: step 2 tests are committed after a green complete run at e35a3f66; the session owner stays set when another account signs in (the foreign-owner provider hides the strip and pill), so the provider-level row asserts hiding and owner retention. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, core/changes/2026-10-17-s03-test-step-2.md.

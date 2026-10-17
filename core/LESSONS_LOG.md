@@ -955,3 +955,10 @@ Rule next time: scroll compensation is the net height change above the anchor; t
 Kind: SUCCESS and SHORTCOMING.
 Facts: the step 1 test agent wrote 13 files with 140 tests (journal availability, flags, mode state, migration, onboarding hook, timer isolation, UI seams, wipe on account deletion) and ran the complete set in the tree: 140 passed, 0 failed; the existing Home tests (82) pass unchanged. The first run found six production compile errors and two behaviour defects (wrong-mode flash on Home, assertion on a stale notifier), all fixed in earlier commits. Shortcoming: the first re-run collided with another agent's flutter test on the shared build cache; it was repeated.
 Rule next time: test agents run in sequence when they share the build cache, or use separate output dirs; partial rows (real-app first Home frame, dashboard widget part of the availability test) are carried to acceptance.
+
+## 2026-10-17 - Commit: test(shell): add the functional tests for the window class, the rail, the dock, the surfaces and the session strip
+
+Kind: SUCCESS with open items.
+Facts: the step 2 test agent wrote 133 tests in 7 files plus a shell harness and ran them with three existing files (96 more): all pass at e35a3f66. The tests found five real production defects (compile errors in the surface file, no rail focus ring, focus lost on rail to bar swap, Record pill shown for another account, dock not compact at large text scale), each with a failing test before the fix. The agent hit its 25-turn limit once and was resumed.
+Open: MainShell has no seam to inject a destination list, so three rows are covered only at widget level; real tab pages at 640x360 are not covered; the ru variant of one HUD row was not recorded.
+Rule next time: give shell widgets an injectable destination list when a test plan needs one (carried as a refactor note).
