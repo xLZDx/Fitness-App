@@ -1,33 +1,29 @@
 # S03 test findings: EP-5 foundations (step 2)
 
-Head revision under test: e35a3f66 (branch phase2/s03d-ui-design-contract). History: first run 5bb24fcc (compile blocker D-0), runs at 8a5c7474, fe67291b, 0969258b (6 failures D-1..D-4), final full run at e35a3f66 below. Nothing was committed by the test agent.
+Head revision under test: 7888326b (earlier: 9b42ef53) (branch phase2/s03d-ui-design-contract). History: 5bb24fcc (compile blocker D-0, then D-1..D-4), e35a3f66 (all green), 9b42ef53 below. Nothing was committed by the test agent.
 
-Flutter: `D:lutterinlutter` (`flutter.bat`), Flutter 3.27.1 stable, Dart 3.6.0. From `mobile/`:
-`flutter test --timeout 60s test/shared/widgets/window_size_test.dart test/shared/widgets/hud_primitives_extension_test.dart test/shared/widgets/nav_config_test.dart test/shared/widgets/hud_side_rail_test.dart test/shared/widgets/adaptive_surface_test.dart test/shared/widgets/dock_strip_test.dart test/features/workouts/active_session_status_test.dart test/router/back_navigation_test.dart test/shared/widgets/hud/hud_components_test.dart test/shared/widgets/shell_insets_test.dart`
+Flutter: `D:lutterinlutter`, Flutter 3.27.1, Dart 3.6.0. From `mobile/`: `flutter test --timeout 60s` on window_size_test, hud_primitives_extension_test, nav_config_test, hud_side_rail_test, adaptive_surface_test, dock_strip_test (all under test/shared/widgets/), test/features/workouts/active_session_status_test.dart, plus the existing test/router/back_navigation_test.dart, test/shared/widgets/hud/hud_components_test.dart and test/shared/widgets/shell_insets_test.dart. No PathExistsException occurred.
 
-## Result at e35a3f66: 0 failures
+## Final result at 7888326b: all green
+
+Head revision 7888326b. Command: `flutter test --timeout 60s` from `mobile/` on the 7 files I wrote plus the 3 existing files (list above). No PathExistsException.
 
 | File | Entries | Pass | Fail |
 |---|---|---|---|
-| shared/widgets/window_size_test.dart (S03-02) | 8 | 8 | 0 |
-| shared/widgets/nav_config_test.dart (S03-04) | 10 | 10 | 0 |
-| shared/widgets/hud_primitives_extension_test.dart (S03-03) | 18 | 18 | 0 |
-| shared/widgets/hud_side_rail_test.dart (S03-05) | 34 | 34 | 0 |
-| shared/widgets/adaptive_surface_test.dart (S03-06) | 19 | 19 | 0 |
-| shared/widgets/dock_strip_test.dart (S03-07, incl. 2 announcement tests) | 35 | 35 | 0 |
-| features/workouts/active_session_status_test.dart (S03-07) | 9 | 9 | 0 |
-| existing, unchanged: router/back_navigation_test.dart | 10 | 10 | 0 |
-| existing, unchanged: shared/widgets/hud/hud_components_test.dart | 66 | 66 | 0 |
-| existing, unchanged: shared/widgets/shell_insets_test.dart | 20 | 20 | 0 |
+| window_size_test.dart | 8 | 8 | 0 |
+| nav_config_test.dart | 10 | 10 | 0 |
+| hud_primitives_extension_test.dart | 18 | 18 | 0 |
+| hud_side_rail_test.dart | 34 | 34 | 0 |
+| adaptive_surface_test.dart | 19 | 19 | 0 |
+| dock_strip_test.dart | 36 | 36 | 0 |
+| active_session_status_test.dart | 9 | 9 | 0 |
+| existing back_navigation_test.dart | 10 | 10 | 0 |
+| existing hud_components_test.dart | 66 | 66 | 0 |
+| existing shell_insets_test.dart | 20 | 20 | 0 |
 
-Written by this agent: 133 entries (7 files) plus `mobile/test/support/s03_shell_harness.dart`; 133 pass.
+Written by this agent: 134 entries, 134 pass. Existing: 96 of 96 pass.
 
-Test-side changes after e35a3f66: rail focus nodes are now labelled `shell.destination.N` (was `shell.rail.item.N`); AC-ST-9 accessible-name checks look for a labelled Semantics inside the pill/strip; DT-07-8 re-worded to the owner-kept decision (foreign-owner provider true, status/strip/pill hidden, owner kept, owner account sees the session again); new AC-A11Y-4 tests: started / paused / resumed / ended announcements for the signed-in owner, no announcement from the 30 s tick, and silence on an account switch (captured on the `flutter/accessibility` channel).
-
-## Production defects
-
-Open: none found by the tests at e35a3f66.
-Closed since the first run: D-0 `adaptive_surface.dart` compile errors (8a5c7474); D-1 rail destinations had no focus ring (`hud_side_rail.dart` `_RailTile`); D-2 focus lost on rail/bar swap (`main_shell.dart`); D-3 pill shown / owner handling for another account (`active_session_status.dart`, `main_shell.dart`); D-4 dock compaction at 360x480 scale 2.0 (`main_shell.dart` `compactDock`). Each had a failing test before its fix and passes now.
+Production defects: none open. History: D-0 (adaptive_surface compile), D-1 (rail focus ring), D-2 (focus across swap), D-3 (foreign-owner pill/owner), D-4 (dock compaction) and D-5 (`mode_switcher_sheet.dart:127` compile error from 9b42ef53, fixed in 7888326b) were each found by a failing run and are closed.
 
 ## Per test id (grouped)
 

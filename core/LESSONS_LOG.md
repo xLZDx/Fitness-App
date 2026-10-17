@@ -1023,3 +1023,9 @@ Rule next time: after every batch that edits code the agents cannot compile, ask
 Kind: SUCCESS.
 Facts: the step 1 test agent added tests for the review fixes (selected mode is null while loading and after an account switch, the raw stored mode survives writes after a flag rollback and is replaced by an explicit choice, a retry timer firing during account deletion is re-armed with the same index) and ran the complete set: 150 passed, 0 failed at head 7888326b. The same run cycle found the compile error of the previous batch, so the tests also served as the compile gate.
 Rule next time: the tests for a review fix are written by the test agent in the same cycle as the fix, which is what happened here.
+
+## 2026-10-17 - Commit: test(shell): add tests for rest-only announcements and the surface depth on an account change
+
+Kind: SUCCESS.
+Facts: the step 2 test agent added tests for the review fixes (nothing is announced when only a rest timer runs, pause and resume still announce; the open-surface depth stays when the account changes and drops when the surface closes) and ran the complete set at head 7888326b: 134 new-set entries and 96 existing entries all pass, including back_navigation_test.dart, which had been blocked by the compile error of the previous batch.
+Rule next time: none new; the run after a fix batch is also the compile gate.

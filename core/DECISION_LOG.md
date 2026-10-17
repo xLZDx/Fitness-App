@@ -57967,3 +57967,7 @@ Decision: the switcher sheet reads the mode state in build (initial state while 
 ## 2026-10-17 - Commit: test(modes): add tests for the selected mode, the rollback write and the retry during account deletion
 
 Decision: step 1 additions are committed after a green complete run (150 of 150). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1-review-fixes.md.
+
+## 2026-10-17 - Commit: test(shell): add tests for rest-only announcements and the surface depth on an account change
+
+Decision: step 2 additions are committed after a green complete run at head 7888326b. Rows that need an injectable destination list in the shell stay partial and are carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, core/changes/2026-10-17-s03-test-step-2-review-fixes.md.

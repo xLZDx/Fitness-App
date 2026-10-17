@@ -405,7 +405,8 @@ void main() {
             f.auth.add(kUserB);
             await t.pump();
             await t.pump();
-            expect(f.depth, 0, reason: 'reset at once by the account change');
+            expect(f.depth, 1,
+                reason: 'an account change must not zero the depth while the surface is open');
             await t.binding.handlePopRoute();
         }
         await t.pump();

@@ -554,6 +554,32 @@ void announcementTests() {
       expect(said.length, n + 1);
     });
 
+    testWidgets('a rest-only status announces neither started nor ended, but pause and resume', (t) async {
+      final l10n = await _en();
+      final said = _captureAnnouncements();
+      final clock = TestClock();
+      final f = await pumpShell(t, clock: clock, overrides: realTimerOverrides(clock));
+      final rest = f.container.read(restTimerProvider.notifier);
+      rest.start(const Duration(seconds: 60));
+      await t.pump();
+      expect(find.byKey(_strip), findsOneWidget);
+      expect(said, isEmpty, reason: 'resting must not announce "started": $said');
+      rest.pause();
+      await t.pump();
+      expect(said, [l10n.stripPaused]);
+      rest.resume();
+      await t.pump();
+      expect(said.last, l10n.stripSessionResumed);
+      final n = said.length;
+      clock.advance(const Duration(seconds: 61));
+      await t.pump(const Duration(seconds: 61));
+      expect(find.text(l10n.stripRestDone), findsOneWidget);
+      clock.advance(const Duration(minutes: 11));
+      await t.pump(const Duration(minutes: 11));
+      expect(find.byKey(_strip), findsNothing);
+      expect(said.length, n, reason: 'rest finished/ended must not announce: $said');
+    });
+
     testWidgets('an account switch announces nothing', (t) async {
       final said = _captureAnnouncements();
       final clock = TestClock();
