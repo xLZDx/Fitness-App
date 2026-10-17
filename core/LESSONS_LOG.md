@@ -962,3 +962,11 @@ Kind: SUCCESS with open items.
 Facts: the step 2 test agent wrote 133 tests in 7 files plus a shell harness and ran them with three existing files (96 more): all pass at e35a3f66. The tests found five real production defects (compile errors in the surface file, no rail focus ring, focus lost on rail to bar swap, Record pill shown for another account, dock not compact at large text scale), each with a failing test before the fix. The agent hit its 25-turn limit once and was resumed.
 Open: MainShell has no seam to inject a destination list, so three rows are covered only at widget level; real tab pages at 640x360 are not covered; the ru variant of one HUD row was not recorded.
 Rule next time: give shell widgets an injectable destination list when a test plan needs one (carried as a refactor note).
+
+## 2026-10-17 - Commit: test(dashboards): add the functional tests for the activity aggregates, Home, Progress, Sources and the sign-out warning
+
+Kind: SUCCESS and FAILURE (one defect in my own earlier fix).
+Facts: the step 4 test agent wrote six files (aggregates, dashboard providers, Home mode lens, Progress dashboard, Sources panel, sign-out warning) with a support file and ran them with the nine existing Home and Progress files: 242 passed, 0 failed, 2 skipped in code. Run history: the first run found six production compile errors; the existing Home test then broke because of the greeting-only first frame I added (adapted on the test side); the scroll compensation I had added for Progress moved the Last 8 weeks heading 116 dp because the Sources slot disappeared in the same frame (fixed in d0b3ad54).
+Why it caught them: the tests measure a stable heading below the change, not a literal scroll offset.
+Open and carried: DT-16-3 and DT-16-8 skipped in code; DT-13-23 and DT-14-8 are measure-only gates for step 7; no offline seam for AC-LS-5; DT-13-19 is tested in the reachable form (SourceKind.parse fallback to file import); the plan said Apple Health for the health platform row but the code says Health platform; the sign-out sheet has an extra keep-data action.
+Rule next time: any production change that alters the first frame gets a grep for existing tests that sign in a user, before the commit, not after the test run.

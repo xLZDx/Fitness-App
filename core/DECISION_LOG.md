@@ -57935,3 +57935,7 @@ Decision: step 1 test files and the findings file are committed after a green co
 ## 2026-10-17 - Commit: test(shell): add the functional tests for the window class, the rail, the dock, the surfaces and the session strip
 
 Decision: step 2 tests are committed after a green complete run at e35a3f66; the session owner stays set when another account signs in (the foreign-owner provider hides the strip and pill), so the provider-level row asserts hiding and owner retention. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, core/changes/2026-10-17-s03-test-step-2.md.
+
+## 2026-10-17 - Commit: test(dashboards): add the functional tests for the activity aggregates, Home, Progress, Sources and the sign-out warning
+
+Decision: step 4 tests and the findings file are committed after a green complete run (242 passed, 0 failed, 2 skipped) at head 3bf9d24c; STATE.md now states that the build is complete and the verify phase is in progress. Plan versus code differences are recorded in the findings file and carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md, core/changes/2026-10-17-s03-test-step-4.md.
