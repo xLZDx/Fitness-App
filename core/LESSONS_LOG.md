@@ -880,3 +880,10 @@ Rule next time: the test agents prove: no write on opening or closing any sheet 
 Kind: NEUTRAL.
 Facts: the three stub pages of the S03 router splice were replaced by the real pages (three separate lanes edited the same router file one after another, each touching only its own line, and the unused stubs and the unused route list were then deleted). The mode switcher and Record sheet openers are wired as provider overrides in main.dart; tear-offs with an extra optional named parameter are assumed assignable to the one-argument typedefs (not compiled).
 Rule next time: when several lanes must edit one file, serialise them and give each exact lines; the first compile of the test agents confirms the tear-off assignment.
+
+## 2026-10-17 - Commit: feat(progress): add the all-activity block, the journal error panel and the Sources slot to Progress
+
+Kind: SHORTCOMING (resolved in the same lane) and SUCCESS.
+Facts: lane L8 stopped once at the turn limit and was resumed. Its first version needed six ARB keys and hard-coded the distance unit and reused the time wording for the distance hint; the keys were added (7 per language, lane L13 run 3) and the code switched to them. Its report listed deviations: tile keys use walk (not walkHike) to match the test plan; failedToOpen has no Try again (same documented deviation as AC-PR-2); the staleness refresh runs from a post-frame callback; the recovery notice also shows in the demoted slot when the lost count is above zero (design silent).
+Root cause: design section 6.7 did not list the tile labels, the stale and incomplete notices or a distance unit (design author).
+Rule next time: the existing progress_page_test.dart is at risk (headline text counts); the test agents run it first and report. Distance wording and the new Russian texts need product review.

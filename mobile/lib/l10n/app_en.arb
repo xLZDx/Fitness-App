@@ -4863,5 +4863,46 @@
   "signOutDeleted": "Activity deleted from this device.",
   "@signOutDeleted": {
     "description": "Shown only after the wipe returned normally."
+  },
+  "activityStaleNotice": "Showing data from {time}",
+  "@activityStaleNotice": {
+    "description": "Progress line after a failed refresh; time is a formatted date or time.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMayBeIncomplete": "Totals may be incomplete",
+  "@activityMayBeIncomplete": {
+    "description": "Marker on totals while recovered or lost activities exist."
+  },
+  "activityTileSessions": "Sessions",
+  "@activityTileSessions": {
+    "description": "Label of the sessions row in an activity tile."
+  },
+  "activityTileTime": "Time",
+  "@activityTileTime": {
+    "description": "Label of the time row in an activity tile."
+  },
+  "activityTileDistance": "Distance",
+  "@activityTileDistance": {
+    "description": "Label of the distance row in an activity tile."
+  },
+  "activityDistanceFrom": "{n, plural, one{Distance from {k} of {n} session} other{Distance from {k} of {n} sessions}}",
+  "@activityDistanceFrom": {
+    "description": "Note that a distance total covers k of n sessions.",
+    "placeholders": {
+      "k": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "activityUnitKm": "km",
+  "@activityUnitKm": {
+    "description": "Kilometre unit label."
   }
 }

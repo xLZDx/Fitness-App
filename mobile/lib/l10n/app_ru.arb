@@ -2966,5 +2966,12 @@
   "signOutAnyway": "Всё равно выйти",
   "signOutPlain": "Выйти",
   "signOutErrorTitle": "Не удалось экспортировать или удалить. Вы всё ещё в аккаунте.",
-  "signOutDeleted": "Активность удалена с этого устройства."
+  "signOutDeleted": "Активность удалена с этого устройства.",
+  "activityStaleNotice": "Показаны данные от {time}",
+  "activityMayBeIncomplete": "Итоги могут быть неполными",
+  "activityTileSessions": "Тренировки",
+  "activityTileTime": "Время",
+  "activityTileDistance": "Дистанция",
+  "activityDistanceFrom": "{n, plural, one{Дистанция по {k} из {n} тренировки} few{Дистанция по {k} из {n} тренировок} many{Дистанция по {k} из {n} тренировок} other{Дистанция по {k} из {n} тренировки}}",
+  "activityUnitKm": "км"
 }
