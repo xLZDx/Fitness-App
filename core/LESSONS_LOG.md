@@ -1203,3 +1203,11 @@ Facts: GPT-PM round 4 on 68766a70 returned MODIFY with 2 MAJOR and 1 MINOR: the 
 Root cause: each fix of the DECISION protocol introduced a new absolute statement ("never", "ever") without checking it against the other lifecycle paths (KEEP cleanup, other processes).
 Missed by: authors and the author-run id comparison (it checks ids, not rules); caught by the external gate.
 Rule next time: state an invariant with its exact exceptions the first time (who may remove it and when), and list every lifecycle path (DELETE, KEEP cleanup, crash, second process) against it before writing it.
+
+## 2026-10-17 - Commit: docs(s04): make KEEP cleanup one atomic rename and split the journal lock from the publication mutex
+
+Kind: FAILURE.
+Facts: GPT-PM round 5 on bd95a54a returned MODIFY with 2 MAJOR: multi-step KEEP cleanup deleted the owner metadata that recovery needed, and the process-lifetime journal lock was also used as a short-lived writer-completion signal.
+Root cause: each protocol fix was checked for the named failure only; crash points inside the new cleanup sequence and the lifetime of each lock were not enumerated.
+Missed by: authors and the id comparisons; caught by the external gate (fifth round on one mechanism).
+Rule next time: for any multi-step durable sequence enumerate a crash after every step before writing it, prefer one atomic rename as the commit point, and give every lock one stated lifetime and one purpose.
