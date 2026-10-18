@@ -286,7 +286,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/10_GPTPM_GATE_RECORD_ROUND5.md` | AI Coach documentation: GPT-PM gate-record consistency round 5 | 1697 |
 | `docs/ai-coach/11_GPTPM_FULL_DOCUMENTATION_REVIEW.md` | GPT-PM full documentation review — Phase 9 | 3978 |
 | `docs/ai-coach/12_GPTPM_PHASE9_REMEDIATION_APPROVAL.md` | GPT-PM Phase 9 remediation review | 3205 |
-| `docs/ai-coach/13_PHASE9_OQ_TECHNICAL_REVIEW.md` | Phase 9 technical review of selected open questions | 11465 |
+| `docs/ai-coach/13_PHASE9_OQ_TECHNICAL_REVIEW.md` | Phase 9 technical review of selected open questions | 13453 |
 | `docs/ai-coach/14_PHASE9_FINAL_EXACT_HEAD_REVIEW.md` | Phase 9 final exact-head documentation review | 2216 |
 | `docs/ai-coach/15_PHASE9_CURRENT_EVIDENCE_APPROVAL.md` | Phase 9 focused current-evidence approval | 2052 |
 | `docs/ai-coach/16_PHASE9_OWNERSHIP_SOURCE_APPROVAL.md` | Phase 9 ownership-source review approval | 2089 |
@@ -294,7 +294,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md` | Phase 9 remote ownership-source check | 4579 |
 | `docs/ai-coach/19_PHASE9_REMOTE_OWNER_SOURCE_REVIEW.md` | Phase 9 remote owner-source evidence review | 2457 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 39738 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 40205 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |

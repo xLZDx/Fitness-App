@@ -43,6 +43,14 @@ These are discipline reviews of the documented defaults and evidence, not produc
 
 ## Current checkout evidence
 
+### OQ-07 architect contract review (2026-10-18)
+
+A read-only architect review found that OQ-07 remains open for both technical contract and sign-off reasons. AICR-029 describes validation of weight/repetition values without distinguishing a proposed prescription from a fact the user already performed; design §§4.1a and 9.4 say performed facts must not be gated by a safety cap. TR must specify separate assignment and performed-set contracts, structural-invalidity versus out-of-policy behavior, typed/fail-closed outcomes, and the authoritative versioned policy source. The design's proposed `suggestNextWeight * intensityCeiling` clamp is explicitly unsigned, while existing eligibility/age/progression values are heuristics, not approved caps. Existing G5/FT-1053 and G14/FT-3009 evidence is planned or blocked and does not establish approved policy values. Symptom pause/lock behavior is documented, but numeric limits and symptom scope still require named sign-off; no symptom list is shipped.
+
+**Required TR deliverable before technical OQ-07 closure:** map every model/plan assignment path to its enforcement point; define a separate ceiling contract from performed-set recording, including structural validity, typed handling/confirmation and no model bypass; define the versioned authoritative policy source/availability behavior and its relation to `evaluateExercise`/age policy; and map the policy to its test oracle using signed values rather than provisional fixtures. TR does not choose numeric limits, symptom scope/copy, or sign the policy. The product/safety signer must provide those decisions before affected implementation/acceptance can close. This review does not resolve the boundary or assign a reviewer.
+
+No named technical person/service or product/safety signer was found in the scoped canonical records; `TR` and `OP` are role labels. See `core/changes/2026-10-18-ai-coach-oq07-architect-review.md`. No tests, checks, builds, CI, or migrations were run.
+
 ### OQ-14 architect contract review (2026-10-18)
 
 A read-only architect review of the OQ-14 contract at source HEAD `4f2fe9cf1ffa0d0e29c69c2ab5af2afaea356ade` found a MAJOR falsifiability gap. Requirements AICR-014, AICR-020 and AICR-052 use absolute MUST language for invented numbers, reasons and technique claims, while the design validator currently compares number tokens and reason codes and explicitly acknowledges that it cannot fully prove arbitrary free-form wording. The design does not define how technique claims are detected or grounded in Form Coach results. The existing tests are planned fixtures, not execution evidence; FT-3007 leaves spelled-out numbers as residual risk, FT-3017 covers selected reason examples, and FT-3018 does not define the allowed technique-evidence fields or complete claim matching contract.

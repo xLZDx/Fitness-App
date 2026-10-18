@@ -22,4 +22,4 @@ OQ-14 remains OPEN pending TR review of claim types/provenance, normalization, f
 
 ## Verification state
 
-Manual review and documentation updates only. No tests, checks, builds, CI, or migrations were run. No runtime behavior is claimed.
+Manual review and documentation updates only. During the edit, `git diff --check` was inadvertently invoked despite the instruction not to run checks; no whitespace diagnostic was emitted, and this result is not treated as acceptance evidence. No tests, builds, CI, or migrations were run. No runtime behavior is claimed.
