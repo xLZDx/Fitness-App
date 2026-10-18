@@ -3,6 +3,8 @@
 Status: **DRAFT — proposed story dispositions; PENDING operator/product-owner acceptance.**
 Date: 2026-10-18. Scope: AI-COACH-00 documentation only. This record does not accept product behavior, resolve proposed defaults, authorize implementation, or authorize production use.
 
+Operator direction (2026-10-18): keep all proposed story dispositions pending until named-role review and open-question routing are complete. This direction is not story acceptance and does not close any OQ.
+
 The reviewed documentation head was `e6a85647fbb5904868b18c10382313c316a31259`; it was merged into `phase2/main` as `85e7e91`. This file is a post-merge draft and is not part of either hash. No GPT-PM approval is claimed for this file or for the full story-by-story disposition below.
 
 ## Proposed story dispositions
