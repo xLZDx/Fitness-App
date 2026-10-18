@@ -74,7 +74,7 @@ Writing or changing any Dart, TypeScript, rules or manifest file; running any te
 | OQ-05 | Per-user daily and monthly AI cost cap and behaviour at the limit | Hard daily cap then manual mode; no number proposed |
 | OQ-06 | Keep transcripts or not | No transcripts |
 | OQ-07, OQ-20 | Load limits, dangerous-symptom list and who signs it | Symptom stop cannot ship until signed |
-| OQ-19 | May any health-derived data reach the model | Nothing leaves the phone except what the user speaks |
+| OQ-19 | May app-derived health data reach the model; spoken input may itself contain health information | **Superseded on 2026-10-18:** the earlier shorthand was “Nothing leaves the phone except what the user speaks.” Current proposed default excludes app-derived restriction/screening fields and reason codes; a remote model turn sends the user's utterance, which may itself be health-bearing, only with current server-confirmed consent. This is not a zero-health-data-transfer guarantee; operator approval remains open under OQ-08. See [current OQ-19](01_REQUIREMENTS.md) and [acceptance](acceptance.md). |
 | OQ-08 | Consent text and Play declaration | Prepared in AI-COACH-00, operator approves |
 | OQ-09..12 | Device matrix, battery budget, accessibility target, SLO numbers | Measured in spikes |
 | OQ-13 | Where the flag lives | Server per-feature flag plus build switch, default OFF |

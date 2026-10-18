@@ -279,7 +279,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 216703 |
 | `docs/ai-coach/04b_E2E_AND_DEVICE_PLAN.md` | Live AI Coach - E2E and Device Acceptance Plan (SDLC phase 4b) | 291986 |
 | `docs/ai-coach/05_REVIEW_ROUND1.md` | AI Coach documentation: review round 1 findings | 26090 |
-| `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 28577 |
+| `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 29081 |
 | `docs/ai-coach/07_REVIEW_ROUND2.md` | AI Coach documentation: review round 2 (verification of round 1 fixes) | 14666 |
 | `docs/ai-coach/08_GPTPM_GATE_ROUND1.md` | AI Coach documentation: GPT-PM documentation gate, round 1 | 6437 |
 | `docs/ai-coach/09_GPTPM_VERIFICATION_ROUND4.md` | AI Coach documentation: GPT-PM focused verification round 4 | 1956 |
