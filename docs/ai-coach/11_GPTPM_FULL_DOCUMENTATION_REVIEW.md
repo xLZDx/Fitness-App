@@ -25,4 +25,4 @@ Date: 2026-10-18. Review type: adversarial documentation sweep; no implementatio
 
 ## Scope boundary
 
-The review did not accept stories on the operator/product owner's behalf and did not authorize implementation, product tests, production, migration, or push. Its source head predates the remediation described here; the fixes require a fresh exact-head review. Historical Phase 8 approvals retain their original narrower scopes.
+The review did not accept stories on the operator/product owner's behalf and did not authorize implementation, product tests, production, migration, or push. Its source head predates the remediation described here. A later targeted follow-up marked F-01..F-06 fixed and APPROVED the supplied package at source identity `57bd7092163d60f40bdc37bfd0dc7a6f824ddc5e`; see [the correlated follow-up record](12_GPTPM_PHASE9_REMEDIATION_APPROVAL.md). Historical Phase 8 approvals retain their original narrower scopes.
