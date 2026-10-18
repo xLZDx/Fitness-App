@@ -105,3 +105,19 @@ To close this record, route each open question according to its source owner lab
 ### Ownership-source audit (2026-10-18)
 
 The repository has no root `CODEOWNERS` file. The inspected `core/DECISION_LOG.md` and `core/review/OPERATOR_DECISIONS.md` do not assign a named technical or service owner to OQ-18 or ACS-100. Accordingly, this record keeps `TR` as a role label and does not invent an assignee. Under `D:\Repo\AGENTS.md`, the operator remains the accountable owner of this delegated task and Codex is its executor; that does not make either the technical owner. The next ownership step is to route the OQ-18 contract and ACS-100 alert-owner deliverable to a named technical or service owner through the project's assignment process. No such person is identified in current repository evidence.
+
+### Broader technical-owner source audit (2026-10-18)
+
+The ownership check was extended across the AI Coach OQ review and adjacent routing/governance sources so the `TR` labels are not mistaken for named technical owners:
+
+| Source | What it records | Named AI Coach technical/service owner established? |
+|---|---|---|
+| Root, `.github/`, and `docs/` `CODEOWNERS` paths | No applicable `CODEOWNERS` file exists at these paths. | No. |
+| `docs/ai-coach/13_PHASE9_OQ_TECHNICAL_REVIEW.md` | Assigns review/actions to disciplines and role labels such as `TR`, `TR/security`, `TR/server`, and `Android TR`; reviewers are agent roles, not accountable service owners. | No. |
+| `core/DECISION_LOG.md` AI Coach entries | Records design decisions, proposals, and open operator questions; does not assign a named person/service to the TR follow-ups. | No. |
+| `core/review/OPERATOR_DECISIONS.md` | Its current/historical decisions concern other gates; it contains no AI Coach technical-owner assignment. | No. |
+| `core/agent-engine-v2.3.1/GOVERNANCE_OWNERSHIP.md` | Lists human-owner categories with `REQUIRED` placeholders for its release conditions; it does not name an AI Coach assignee. | No. |
+| `core/agent-engine-v2.3.1/ROUTING_MATRIX.md` | Maps cases to expert-agent roles; it is a reviewer routing guide, not a project ownership registry. | No. |
+| AI Coach backlog and acceptance | Uses OP/TR responsibility labels and states where technical sign-off is required. | No named person/service. |
+
+This scoped audit found no named human or service owner for the TR-routed AI Coach OQ follow-ups in the inspected sources. It does not imply that no such owner exists outside repository evidence. The operator remains accountable for this delegated task; Codex is the executor, and neither is thereby assigned technical ownership. See [the expanded ownership audit record](../../core/changes/2026-10-18-ai-coach-phase9-expanded-owner-audit.md).

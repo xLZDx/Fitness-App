@@ -290,7 +290,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/14_PHASE9_FINAL_EXACT_HEAD_REVIEW.md` | Phase 9 final exact-head documentation review | 2216 |
 | `docs/ai-coach/15_PHASE9_CURRENT_EVIDENCE_APPROVAL.md` | Phase 9 focused current-evidence approval | 2052 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 28249 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 30190 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
