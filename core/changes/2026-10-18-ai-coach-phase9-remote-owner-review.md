@@ -6,7 +6,7 @@ Date: 2026-10-18. Documentation-only review evidence update.
 
 - Added `docs/ai-coach/19_PHASE9_REMOTE_OWNER_SOURCE_REVIEW.md` to preserve the correlated PM Bridge decision and its narrow scope.
 - Updated acceptance, AI Coach README, and SDLC state to distinguish the new review from the underlying remote-source audit and retain the review's evidence limitation.
-- Regenerated `docs/DOCUMENT_REGISTRY.md`; the generator reported 368 documents after adding the review artifact and change record.
+- Regenerated `docs/DOCUMENT_REGISTRY.md` after adding the review artifact; the generator reported 368 registered documents. The per-commit change record is intentionally excluded from the registry, as its header states.
 
 ## Affected contracts and paths
 
