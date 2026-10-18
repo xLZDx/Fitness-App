@@ -153,7 +153,7 @@ Sprint 00 DoD additions: documents only; no file under `mobile/` changes; every 
 ### Epic E00-E Review round 1 additions (added 2026-10-17)
 
 **ACS-100 Observability sink, alerts and owners** (P0; AICR-112, 079)
-- AC-1 Given the observability design, then the sink is named and alerts exist with a named accountable owner for recovery failure rate, persist-failed rate, sessions stuck below server-confirmed over 24 h, reservation leaks and reconnect time; thresholds are marked OPEN (OQ-28). A provisional operator escalation is not evidence that a named on-call owner has been assigned.
+- AC-1 Given the observability design, then the sink is named and alerts exist with a named accountable owner for recovery failure rate, persist-failed rate, sessions stuck below server-confirmed over 24 h, reservation leaks and reconnect time; thresholds are marked OPEN (OQ-28). By the operator's direct instruction on 2026-10-18, the project operator is the interim accountable owner of the target AI Coach runtime and its human escalation recipient for ACS-100. The deployed service identifier, configured endpoint/rotation, and alert delivery remain proof obligations.
 - AC-2 Given each alert, then a test event that triggers it is specified.
 
 **ACS-101 Contracts for review round 1 decisions** (P0; AICR-085, 086, 087, 098, 100, 105, 106)
