@@ -44,7 +44,7 @@ Open questions in plain words (used above and in the per-sprint sections):
 - OQ-15 which spoken languages the MVP supports.
 - OQ-16 whether the coach must serve minors or seniors beyond the existing age policy (default: reuse the existing policy unchanged).
 - OQ-17 how this line relates to the Phase 2 sprint numbering and branch policy (default: separate track, Phase 2 plans untouched).
-- OQ-18 interface facts for `ai_planner`, `training_context`, `recovery`, and `visual_equipment` were re-read on 2026-10-18 and recorded in `01b_CODE_MAP.md`. They are mobile-side inputs, not an existing Live Coach integration. A deterministic multi-week composer and the source of weekly sets/reps/rest remain new TR design work.
+- OQ-18 interface facts for `ai_planner`, `training_context`, `recovery`, and `visual_equipment` were re-read on 2026-10-18 and recorded in `01b_CODE_MAP.md`. They are mobile-side inputs, not an existing Live Coach integration. A deterministic multi-week composer boundary is proposed in `03_DESIGN.md` §13.1; TR review of its policy/snapshot/persistence contract remains open, and weekly prescription values remain open under OQ-07.
 - OQ-19 (added 2026-10-17) whether app-derived restrictions, screening values or reason codes may reach the model. They stay excluded from model context; a remote turn still sends the user's utterance, which may itself contain health information, only under current server-confirmed consent. This is not a zero-health-data-transfer guarantee; OP must decide whether spoken health content is acceptable and approve privacy/consent wording under OQ-08.
 - OQ-20 who signs the dangerous-symptom list and its stop scopes. Default: the symptom stop cannot ship until signed.
 - OQ-21 where the set effort is stored. Default: in the journal only.
@@ -439,7 +439,7 @@ Exit: a full demo workout without manual control after start (E2E-01, E2E-11 on 
 ## 8. Sprint AI-COACH-03 - Planner and memory (PLANNED, NOT AUTHORISED)
 
 Sprint goal: the coach builds, explains and adapts safe 1-4 week plans from the confirmed profile and history, reproducibly and without inventing facts.
-Exit: reproducible, safe decisions on a fixed set of profiles. Blocked by: OQ-06 (how long memory is kept, transcripts or not), OQ-14 (how invented-fact checks are verified), OQ-18 (real interfaces of the existing planner and context modules).
+Exit: reproducible, safe decisions on a fixed set of profiles. Blocked by: OQ-06 (how long memory is kept, transcripts or not), OQ-14 (how invented-fact checks are verified), OQ-18 (TR approval of the deterministic composer contract and its policy/input/persistence interfaces).
 
 ### Epic E03-A Context and history
 
