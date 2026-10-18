@@ -1,6 +1,6 @@
 # OQ-07 limit-free technical contract proposal
 
-Status: proposed; the exact-tree architect review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending the findings recorded in `core/changes/2026-10-18-ai-coach-phase9-contract-review.md`. Remediation is in progress. This proposal assigns no clinical values and closes neither the product decision nor the safety sign-off. Date: 2026-10-18.
+Status: proposed; the initial exact-tree architect review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending the findings recorded in `core/changes/2026-10-18-ai-coach-phase9-contract-review.md`. The revisions were re-reviewed at `ea5b997ca4df8ba3e5712d5ca7bb180bf9152317`; no BLOCKER/MAJOR findings remain, while the reviewer confirms that the contract, owner assignments, and clinical sign-off remain open. GPT-PM disposition of the detailed proposal is pending. This proposal assigns no clinical values and closes neither the product decision nor the safety sign-off. Date: 2026-10-18.
 
 ## Goal and constraints
 
