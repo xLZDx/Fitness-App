@@ -1,6 +1,6 @@
 # AI Coach code map: draft claims versus the real code
 
-Source: code-explorer run on 2026-10-17 over `origin/phase2/main` at `14513a87` (worktree `Fitness_App_aicoach`). Read-only; git state of the explorer run was not captured by the agent. Paths are relative to the repo root. Every row was cited by the agent with file and line; lines may drift after later commits, re-verify before relying on them.
+Initial source: code-explorer run on 2026-10-17 over `origin/phase2/main` at `14513a87` (worktree `Fitness_App_aicoach`). Read-only; git state of that explorer run was not captured. Relevant interfaces below were re-read on 2026-10-18 at source head `bdf089c83b23ef35569ec09fc8ff117ac52b1194`. Paths are relative to the repo root; line numbers can drift as files change.
 
 ## Verified facts
 
@@ -54,6 +54,14 @@ Source: code-explorer run on 2026-10-17 over `origin/phase2/main` at `14513a87` 
 10. The `aiCoachAdvice` callable pattern (auth, App Check, non-anonymous, kill switch, quota, parse, generate).
 11. Rules templates: `rev` fence, `planVersion + 1`, closed-schema helpers, wildcard carve-out convention.
 12. `functionsForRegion` helper and App Check activation.
+
+## Interface facts rechecked 2026-10-18 (OQ-18)
+
+- **`ai_planner`** — `buildPlan` in `mobile/lib/features/ai_planner/data/plan_builder.dart` is a pure synchronous function. Required inputs are a candidate exercise pool, weekly deficit map, `DeloadVerdict` and `SafetyContext`; optional inputs include cycle state/self-report, target minutes, recommendation hints and `TrainingContext`. It returns `PlanReady(GeneratedPlan)` or `PlanRefused`; `GeneratedPlan` is a single session with exercises, intensity factor and typed reasons, not a multi-week plan. `generatedPlanProvider` in `mobile/lib/features/ai_planner/state/ai_planner_providers.dart` resolves auth/profile, safety, deficit, deload, context and equipment repository inputs before calling it.
+- **`training_context`** — `mobile/lib/features/training_context/data/training_context.dart` defines gym, outdoor-minimal, home and yoga contexts; pure helpers derive equipment access, narrow candidates, preserve safety fields and apply shared eligibility. `mobile/lib/features/training_context/state/training_context_providers.dart` stores the user's answer in per-UID SharedPreferences and exposes Riverpod providers. This is local context/filtering, not a server or model API.
+- **`recovery`** — `detectDeload` in `mobile/lib/features/recovery/data/deload_detector.dart` takes recent workout logs, scheduled sessions and optional HRV averages/time, and returns a typed verdict with signal codes and a volume factor. `deloadVerdictProvider` in `mobile/lib/features/recovery/state/recovery_providers.dart` currently supplies logs and scheduled sessions but no HRV. A separate explicit `acceptNext7Days` action changes eligible pending scheduled sessions; the action is not part of the pure detector.
+- **`visual_equipment`** — `VisualEquipmentService.classifyFile` in `mobile/lib/features/visual_equipment/data/visual_equipment_service.dart` accepts a file path and optional top-K limit and returns `VisualMatch` values (catalog equipment id, confidence, optional label and source). The controller can combine printed-text recognition, classifier fallback and a separate describer. This is equipment-photo recognition; no current live-coach API or caller was found in the reviewed interfaces.
+- **Integration limit** — these are existing mobile seams, not proof of a live-coach integration. A multi-week deterministic composer and its weekly progression/set-rep-rest rules remain new design work; do not assign that selection to the model or infer it from `buildPlan`.
 
 ## Risks and gaps
 
