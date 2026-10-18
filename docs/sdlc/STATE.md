@@ -94,3 +94,5 @@ Agents and models actually run so far (historical project records; Sonnet 5.5): 
 ### Phase 9 post-review state
 
 The focused PM Bridge follow-up request `d44ad37b-97e5-4938-9cc4-2dc61d5f644f` targeted ancestor `fb9f94f53ef4d4548c8dfce8c1bbf6078c0c4da6` and failed before send with `ATTACHMENT_NOT_LANDED`; it produced no user turn, reply, or generation lease. The later ownership-source audit is commit `196658b278adca0fd450d711d411323bb27e53b0`, outside that request's source head. No GPT-PM verdict covers that audit or its descendants. The failure is not an in-progress review; the current acceptance remains a draft pending exact-head review and operator acceptance.
+
+A local read-only `doc-updater` review of exact commit `9efddb3f9ae7513fe31c215772e7df1034b1a0c2` found no issue in the review-head coverage correction and its supporting links/registry sizes. This local review is not GPT-PM approval and does not extend to later commits; see `core/changes/2026-10-18-ai-coach-phase9-current-review-head-doc-review.md`.
