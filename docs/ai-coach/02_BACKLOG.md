@@ -45,7 +45,7 @@ Open questions in plain words (used above and in the per-sprint sections):
 - OQ-16 whether the coach must serve minors or seniors beyond the existing age policy (default: reuse the existing policy unchanged).
 - OQ-17 how this line relates to the Phase 2 sprint numbering and branch policy (default: separate track, Phase 2 plans untouched).
 - OQ-18 the real interfaces of `ai_planner`, `training_context`, `recovery`, `visual_equipment` (not yet read).
-- OQ-19 (added 2026-10-17) whether any health-derived data may reach the model. Default: no, nothing leaves the phone except what the user speaks.
+- OQ-19 (added 2026-10-17) whether app-derived restrictions, screening values or reason codes may reach the model. They stay excluded from model context; a remote turn still sends the user's utterance, which may itself contain health information, only under current server-confirmed consent. This is not a zero-health-data-transfer guarantee; OP must decide whether spoken health content is acceptable and approve privacy/consent wording under OQ-08.
 - OQ-20 who signs the dangerous-symptom list and its stop scopes. Default: the symptom stop cannot ship until signed.
 - OQ-21 where the set effort is stored. Default: in the journal only.
 - OQ-22 whether abandoned sessions show in History. Default: kept on the phone, not in History.
@@ -54,7 +54,7 @@ Open questions in plain words (used above and in the per-sprint sections):
 - OQ-25 emergency number per locale, who signs the table, and a call action on the locked-screen notification. Default: signed table, no call action.
 - OQ-26 exact-alarm permission for the rest backstop. Default: no, normal notification.
 - OQ-27 listening default after the gym trial. Default: tap-to-talk.
-- OQ-28 numeric limits introduced by review round 1 (lease length, turn caps, journal bounds, sync limits, per-turn deadline). Default: measured in spikes, none invented.
+- OQ-28 operating bounds introduced by review round 1 (reservation lease/heartbeat, per-session turns, per-turn deadline/output, journal size/count, sync attempts/backlog age). TR specifies each invariant and measurement method separately; numeric values remain open pending spike/load/fault evidence. Cost caps stay under OP-owned OQ-05; session/export policy stays proposed under OQ-31.
 
 ## 3. Global Definition of Ready (every story)
 
