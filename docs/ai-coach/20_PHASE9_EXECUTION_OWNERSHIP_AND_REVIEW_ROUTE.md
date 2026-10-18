@@ -72,3 +72,9 @@ GPT-PM is assigned product accountability for ensuring ACS-100 is routed to an a
 - **Still pending by operator direction:** final acceptance or revision of all 13 story dispositions on the then-current acceptance-file revision.
 
 No tests, checks, builds, CI, migrations, runtime actions, alert configuration, production changes, push or merge were performed for this documentation record.
+
+## Latest owner-resolution follow-up (2026-10-18)
+
+The operator authorized recovery of the existing PM Bridge lineage without changing its payload or creating a duplicate. Health was OK; cancellation by the original idempotency key left the durable job unchanged and active. The transcript provided the original text and attachment paths, but local reconstruction did not match the persisted payload hash, so no retry was issued. The safe-only restart path was not applicable because the daemon was healthy and not wedged. See [the detailed recovery record](../../core/changes/2026-10-18-ai-coach-owner-resolution-followup.md).
+
+A read-only GitHub check confirmed default branch `master`, with 404 for root and `.github/CODEOWNERS`; issue searches for ACS-100, OQ-07 and AI Coach on-call found no matches. No canonical TR owner, runtime service/on-call recipient, or qualified clinical signer was found in the scoped sources. GPT-PM remains product owner/signatory; the detailed product dispositions remain NOT_RECORDED because the request was not sent. No alert was configured or clinically bounded behavior enabled.
