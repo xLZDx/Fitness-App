@@ -1,10 +1,10 @@
 # OQ-07 limit-free technical contract proposal
 
-Status: proposed; the initial exact-tree architect review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending the findings recorded in `core/changes/2026-10-18-ai-coach-phase9-contract-review.md`. The revisions were re-reviewed at `ea5b997ca4df8ba3e5712d5ca7bb180bf9152317`; no BLOCKER/MAJOR findings remain, while the reviewer confirms that the contract, owner assignments, and clinical sign-off remain open. GPT-PM disposition of the detailed proposal is pending. This proposal assigns no clinical values and closes neither the product decision nor the safety sign-off. Date: 2026-10-18.
+Status: proposed; the initial exact-tree architect review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending the findings recorded in `core/changes/2026-10-18-ai-coach-phase9-contract-review.md`. The revisions were re-reviewed at `ea5b997ca4df8ba3e5712d5ca7bb180bf9152317`; no BLOCKER/MAJOR findings remain in that historical review. Under the later operator instruction, Codex owns and self-reviews the current task-local technical contract. GPT-PM disposition of the detailed proposal is pending. This proposal assigns no clinical values and closes neither the product decision nor the safety sign-off. Date: 2026-10-18.
 
 ## Goal and constraints
 
-Specify the technical boundary between assigning a proposed prescription and recording a performed workout fact, while keeping the system fail-closed when approved policy is missing. This is documentation only: it does not authorize implementation, runtime use, or numeric limits. The operator is accountable for the delegated task; Codex is the task-local technical author/executor; GPT-PM is the product decision owner/signatory; `architect` is the independent technical reviewer. No implementation service owner or qualified clinical signer is identified by those assignments.
+Specify the technical boundary between assigning a proposed prescription and recording a performed workout fact, while keeping the system fail-closed when approved policy is missing. This is documentation only: it does not authorize implementation, runtime use, or numeric limits. The operator is accountable for the delegated task; Codex is the task-local technical owner/author/executor/self-reviewer; GPT-PM is the product decision owner/signatory. No implementation service owner or qualified clinical signer is identified by those assignments.
 
 ## Non-goals
 
@@ -65,6 +65,6 @@ No rollout is authorized. Keep prescription behavior unavailable until GPT-PM re
 | Open item | Owner / executor | Closure evidence |
 |---|---|---|
 | Product-level fail-closed assignment boundary | GPT-PM, assigned product decision owner/signatory | Correlated disposition on the exact proposal/commit; original product request `26649707-679f-4962-8d26-e3b2a2ff36b2` remains failed before send and is not represented as a correlated reply |
-| Technical contract review | `architect` reviewer; Codex executes revisions | Exact-tree review with BLOCKER/MAJOR findings resolved or explicitly carried; review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending the recorded corrections |
+| Technical contract ownership and review | Codex, by operator delegation, as task-local technical owner/author/executor/self-reviewer | Codex's review of the current exact tree; historical review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected the earlier version and the recorded corrections remain documented |
 | Actual numeric limits and symptom scope | Authorized qualified human clinical/safety signer; no named signer identified | Signed limits, scope and policy provenance before use |
 | Implementation/runtime ownership | Owning service is not identified | Canonical service assignment and separately reviewed implementation evidence |
