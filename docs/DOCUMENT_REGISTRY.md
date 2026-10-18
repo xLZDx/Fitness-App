@@ -269,7 +269,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
-| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 7786 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 8099 |
 | `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 87585 |
 | `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 11493 |
 | `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 67096 |

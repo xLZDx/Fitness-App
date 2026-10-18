@@ -40,7 +40,7 @@ Nothing in it has been built, run or measured. Realtime provider availability an
 | Daily and monthly AI cost cap per user and what happens at the limit | Hard daily cap, then manual mode; no number proposed | Whether the sprint 02 server work can be sized |
 | Keep transcripts or not | No transcripts | Privacy text and storage |
 | Who signs the dangerous-symptom list and the load limits | Symptom stop cannot ship until signed | The safety stop and AICR-053 stay blocked |
-| May any health-derived data reach the model | Nothing leaves the phone except what the user says aloud | Consent text, privacy policy |
+| May app-derived health data reach the model, and can spoken input itself contain health data? | App-derived restrictions, screening values and reason codes stay out of model context. A remote turn sends the user's utterance, which may contain health information, only with current server-confirmed consent. Operator acceptance and privacy wording remain open (OQ-08/OQ-19). | Consent text, privacy policy, model-bound payload/logging verification |
 | Consent wording and the Play declaration | Prepared in AI-COACH-00, operator approves | The first build that calls the server |
 | Device matrix, battery budget, accessibility target, latency numbers | Measured in spikes | Acceptance thresholds |
 | Where the feature flag lives | Server per-feature flag plus build switch, default OFF | Rollout and rollback |
