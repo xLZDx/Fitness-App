@@ -22,6 +22,6 @@ No retry, cancellation, lease release, payload change, or replacement request wa
 
 - `core/changes/2026-10-18-ai-coach-owner-resolution-followup.md`
 - `core/changes/2026-10-18-ai-coach-pm-bridge-recovery-eligibility.md`
-- `docs/DOCUMENT_REGISTRY.md` regenerated; expected to include this record.
+- `python scripts/dev/gen_document_registry.py` ran and reported 371 documents. The generated tracked registry remained unchanged and does not list this change record.
 
 No tests, checks, builds, CI, migrations, runtime actions, alert changes, push, or merge were performed. This was a read-only source inspection plus documentation update.
