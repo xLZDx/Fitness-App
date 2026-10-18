@@ -1,8 +1,8 @@
 # Live AI Coach (TDD-001): documentation package
 
-Status as of 2026-10-17: documentation program for sprint AI-COACH-00 only. Implementation, production deployment and user-data migration are NOT authorised. Branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints and changes none of them.
+Status as of 2026-10-18: AI-COACH-00 documentation gate is approved and merged. PR #13 merged into `phase2/main` as `85e7e91` from exact reviewed head `e6a85647`. The programme remains documentation-only; implementation, production deployment and user-data migration are NOT authorised. This line is separate from the Phase 2 sprints and changes none of them.
 
-Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is remediated in commit `0965349a`. Round 2 (four reviewers verifying the fixes; 23 new MAJOR, 0 BLOCKER) is remediated in the next commit; its findings are in `07_REVIEW_ROUND2.md`. The GPT-PM documentation gate round 1 returned MODIFY (14 MAJOR, 6 MINOR; `08_GPTPM_GATE_ROUND1.md`) and is remediated; the focused verification round returned MODIFY (4 MAJOR, 5 MINOR contradictions between new contracts and old test rows), remediated in the next commit; a second focused verification follows. Gate state is recorded in `docs/sdlc/STATE.md` under the AI Coach section. Nothing in this package is approved until that section says so.
+Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) and round 2 (four reviewers, 23 new MAJOR, 0 BLOCKER) are recorded in `05_REVIEW_ROUND1.md` and `07_REVIEW_ROUND2.md`; the remediation decisions are in `06_REMEDIATION_DECISIONS.md`. GPT-PM documentation gate round 1 returned MODIFY (14 MAJOR, 6 MINOR; `08_GPTPM_GATE_ROUND1.md`). Focused rounds 2 and 3 returned MODIFY and were remediated. Round 4 approved the final three affected test rows on exact head `e9a93808`; rounds 5 and 6 approved the gate-record and state consistency updates on their respective exact heads. PR #13 then merged as `85e7e91`. Decision records are `09_GPTPM_VERIFICATION_ROUND4.md` and `10_GPTPM_GATE_RECORD_ROUND5.md`; round 6 is recorded in PM Bridge under request `f1da6121-7598-4b45-9e5f-0a81b2886d47`. Current phase and remaining artifacts are in `docs/sdlc/STATE.md`.
 
 ## Reading order
 
@@ -21,6 +21,8 @@ Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) is re
 | 11 | `06_REMEDIATION_DECISIONS.md` | The decisions applied after rounds 1 and 2 and the questions that stay open |
 | 12 | `07_REVIEW_ROUND2.md` | Round 2 verification findings |
 | 13 | `08_GPTPM_GATE_ROUND1.md` | GPT-PM documentation gate round 1: verdict MODIFY and its findings |
+| 14 | `09_GPTPM_VERIFICATION_ROUND4.md` | Focused approval for FT-2017, FT-1190 and FT-1175 |
+| 15 | `10_GPTPM_GATE_RECORD_ROUND5.md` | Focused review of gate/state evidence |
 
 ## What the package decides, in one paragraph
 
@@ -47,8 +49,6 @@ Nothing in it has been built, run or measured. Realtime provider availability an
 | Emergency number per locale; call button on the locked-screen notification | Table signed by operator; no call button | Safety stop copy |
 | Always-listening or tap-to-talk after the gym trial | Tap-to-talk | Battery, privacy, noise robustness |
 
-## Next gates
+## Current phase and next gates
 
-1. Round 2 reviewer verdicts and the fixes for any new BLOCKER or MAJOR.
-2. GPT-PM documentation gate on the exact final head.
-3. Only after approval: the push of this branch as one pull request. Code starts with sprint AI-COACH-01 and needs its own authorisation.
+Phase 8 (documentation gate) is complete and PR #13 is merged. Phase 9 requires `acceptance.md` and `release-notes.md`; neither artifact exists yet. The SDLC roster calls for `product-owner` and `technical-writer`, but the current Codex agent host rejects both profile names (`unknown agent_type`). The configured subagent model is `gpt-6-luna`; those two profiles are absent from the installed Codex profile list. Phase 9 remains pending until the authoring roles are available and operator product acceptance is recorded. Later sprint AI-COACH-01 remains unauthorised and requires its own explicit go-ahead.
