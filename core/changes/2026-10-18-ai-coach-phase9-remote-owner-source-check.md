@@ -6,7 +6,7 @@ Date: 2026-10-18. Documentation-only evidence update.
 
 - Added `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md` to record read-only GitHub checks for ownership files and issue records relevant to OQ-18 and ACS-100.
 - Updated acceptance, AI Coach README, and SDLC state with the bounded result: no owner assignment was found in the queried refs/results, which does not prove no assignment exists elsewhere.
-- Regenerated `docs/DOCUMENT_REGISTRY.md` after adding the source-check record.
+- Regenerated `docs/DOCUMENT_REGISTRY.md` after adding the source-check record; generation reported 367 documents.
 
 ## Affected contracts and paths
 
