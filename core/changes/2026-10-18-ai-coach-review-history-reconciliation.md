@@ -21,7 +21,7 @@ The correlated full six-finding inline review at supplied HEAD `2895df87d6adc959
 - PM Bridge job `bf8d5415-e03e-4ef0-bdb5-f58361522fe7` (`d1a93a45-06ac-4c15-b3c4-998d74f6b0ad`) failed before send after two attempts with `ATTACHMENT_NOT_LANDED`, no turn/reply; eight requested files were missing.
 - PM Bridge job `07205ac2-7ec4-443c-8604-5314a7328e42` (`f1a51c49-827c-4fe4-bd75-a1474b670ee7`) failed before send with `ATTACHMENT_NOT_LANDED`, no turn/reply; four requested files were missing.
 - PM Bridge request `b9918270-2f03-4260-b5e9-78efb829d617` returned a narrow `APPROVE` for AICR-024 and directly related supplied contracts only. It does not approve the full Phase 9 package or later commits.
-- The full-package review therefore remains without an unqualified current-head approval. These records do not accept proposed stories or close OQs.
+- At the time this reconciliation was made, the full-package review remained without an unqualified current-head approval. The subsequent F-04 follow-up outcome is recorded separately and does not accept proposed stories or close OQs.
 
 ## Verification state
 
