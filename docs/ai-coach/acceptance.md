@@ -69,6 +69,18 @@ The defaults below are copied or faithfully condensed from [01_REQUIREMENTS.md](
 - Round 4 approved only FT-2017, FT-1190 and FT-1175 plus direct consistency in `04a_FUNCTIONAL_TEST_PLAN.md`, on exact head `e9a93808759dd1e4340c626a655fa209bd53f2ec` (request `b3e7a9d1-4c2f-4e8a-9f61-7d0a2c5e8b34`). Round 5 approved consistency records at `b11213dc3b762e0b6a3cd91c9763b53a5a4278ac` (request `a13d8f42-0cf6-4f6a-8b1d-e72c964ad5c1`). Round 6 approved state/milestone consistency at `e6a85647fbb5904868b18c10382313c316a31259` (request `f1da6121-7598-4b45-9e5f-0a81b2886d47`). These are separate scopes; none approves this post-merge draft.
 - Product tests, builds, analyzers, device runs and runtime measurements: **NOT_RUN** for this documentation sprint. [04a_FUNCTIONAL_TEST_PLAN.md](04a_FUNCTIONAL_TEST_PLAN.md) and [04b_E2E_AND_DEVICE_PLAN.md](04b_E2E_AND_DEVICE_PLAN.md) explicitly say their scenarios are planned and not executed. No runtime outcome, latency, battery, cost, or device compatibility is claimed.
 
+### Documentation-only falsifiable review checklist
+
+These are manual document checks, not product tests. They were reviewed against the files in this worktree on 2026-10-18; they do not substitute for the missing named-role reviews or operator acceptance.
+
+| Check | Falsifiable criterion | Result and evidence |
+|---|---|---|
+| D-1 Story accounting | Every AI-COACH-00 story ID ACS-001..011 plus ACS-100 and ACS-101 appears exactly once in Proposed story dispositions. | REVIEWED: the acceptance table contains all 13 IDs. |
+| D-2 Open-question accounting | OQ-01 through OQ-31 each has a question, proposed default, and owner label; proposal language does not state those defaults are accepted. | REVIEWED: the OQ table includes all 31 IDs and explicitly labels defaults as proposals. |
+| D-3 Evidence scope | Every cited GPT-PM round is tied to its exact source head/scope, and the text does not claim those approvals cover this post-merge file. | REVIEWED: rounds 4–6 and exact heads are listed above; this file is identified as added after those heads. |
+| D-4 Release boundary | Release notes identify a documentation-only package and disclaim product behavior, tests, implementation, deployment, and migration. | REVIEWED: see [release notes](release-notes.md), sections “Release type” and “Not included in this release.” |
+| D-5 Registry coverage | The derived registry lists the acceptance and release-note files. | REVIEWED: both entries are present in [DOCUMENT_REGISTRY.md](../DOCUMENT_REGISTRY.md), generated from the repository. |
+
 ## Acceptance required to close this record
 
 The operator/product owner must review the proposed story dispositions and open-question defaults, change any disposition or default that is not accepted, and record acceptance of this exact file revision. Until then, this record remains a draft; the historical documentation gate remains approved/merged, while this new acceptance artifact is not yet accepted.
