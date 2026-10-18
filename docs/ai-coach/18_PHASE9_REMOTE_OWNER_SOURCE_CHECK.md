@@ -33,3 +33,28 @@ The same bounded checks were repeated read-only through the connected GitHub MCP
 - Issue search query `repo:xLZDx/Fitness-App ACS-100` returned `issues: []`.
 
 These are connector-normalized results, not a raw HTTP archive. Branch queries were exact-name searches and do not enumerate all branches. The results remain bounded to these refs, paths and query strings; they do not establish global owner absence.
+
+## Default-branch and returned-branch sweep
+
+Repository metadata returned `default_branch: master`. A read-only request to `GET /repos/xLZDx/Fitness-App/branches?per_page=100` returned these 16 branch names and commit prefixes:
+
+| Branch | Commit |
+|---|---|
+| `docs/add-english-readme-20261010` | `b8320e835c0c` |
+| `docs/ai-coach-tdd-001` | `e6a85647fbb5` |
+| `feature/body-scan-nutrition-coach` | `cd9d7c3ac2b7` |
+| `master` | `42d1b8491a56` |
+| `phase1/main` | `0eee9ca2b829` |
+| `phase1/s00-docs-index` | `e309e5ba9c85` |
+| `phase2/main` | `85e7e91ed042` |
+| `phase2/s00-split-docs` | `48ad73a72fcf` |
+| `phase2/s00b-sync-alias` | `b5a6f7520b95` |
+| `phase2/s01-contracts` | `d16a5b65f593` |
+| `phase2/s02-unified-activity` | `72cc3803c635` |
+| `phase2/s03d-ui-design-contract` | `1e56d65142f1` |
+| `phase2/s04-docs` | `a94c42a539dc` |
+| `sprint/hardening-followups-2026-10` | `f4b30c8739c7` |
+| `sprint/product-hardening-2026-10` | `e219df3be619` |
+| `sprint/tail-closure-2026-10-13` | `8b4b23af4625` |
+
+The five ownership paths listed in Scope and method were fetched at every branch name in this response (80 fetches); all returned GitHub API `NOT_FOUND` / HTTP `404`, with no tool-call errors and no files found. This includes the default `master` and `docs/ai-coach-tdd-001`. The branch response contained 16 entries for this request, but the connector did not expose HTTP pagination headers; the result is not asserted as a timeless or organization-wide inventory. The checked refs and paths still do not cover external assignment systems or prove that no owner exists elsewhere.
