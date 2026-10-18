@@ -46,7 +46,7 @@ The defaults below are copied or faithfully condensed from [01_REQUIREMENTS.md](
 | OQ-11 | Accessibility requirements | Follow existing app rules; always provide text conversation view. | OP |
 | OQ-12 | Reconnect, interruption-stop and P95 sample-size targets | Measure in AI-COACH-02 and propose SLO values after first trial. | TR |
 | OQ-13 | Location of `live_ai_coach_enabled` | Server-controlled per-feature flag read at startup, default OFF, plus server kill switch. | TR |
-| OQ-14 | Verification of no invented numbers, reasons or technique claims | Validator compares model-output numbers/reason codes against context; fixture dialogues in tests. | TR |
+| OQ-14 | Verification of no invented numbers, reasons or technique claims | **OPEN.** The current design proposes checking number tokens and reason codes, but explicitly treats free-form wording as residual risk. It does not define grounded technique-claim detection, allowed Form Coach evidence fields, ambiguous-claim behavior, or a contract that substantiates the absolute AICR-014/020/052 requirements for arbitrary model prose. The proposed fixture dialogues are test-plan coverage, not execution evidence. A read-only architect review records the exact contract deliverable and residual risk in [13_PHASE9_OQ_TECHNICAL_REVIEW.md](13_PHASE9_OQ_TECHNICAL_REVIEW.md#oq-14-architect-contract-review). | TR review role; no named person/service owner identified in the scoped records. |
 | OQ-15 | MVP spoken languages | English plus current primary app language, to be named by operator. | OP |
 | OQ-16 | Minors/seniors scope | Reuse current age policy unchanged; no relaxation. | OP |
 | OQ-17 | Relationship to Phase 2 plans/branching | Separate AI-COACH track; do not edit Phase 2 plans. | OP |
