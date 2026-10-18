@@ -1,10 +1,12 @@
 # OQ-07 limit-free technical contract proposal
 
-Status: proposed; the initial exact-tree architect review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending the findings recorded in `core/changes/2026-10-18-ai-coach-phase9-contract-review.md`. The revisions were re-reviewed at `ea5b997ca4df8ba3e5712d5ca7bb180bf9152317`; no BLOCKER/MAJOR findings remain in that historical review. Under the later operator instruction, Codex owns and self-reviews the current task-local technical contract. GPT-PM disposition of the detailed proposal is pending. This proposal assigns no clinical values and closes neither the product decision nor the safety sign-off. Date: 2026-10-18.
+Status: bounded OQ-07 proposal ACCEPTED by correlated GPT-PM response `a4c457f7-e16b-4727-8189-6a452b394020` for the attached file at supplied commit `c980cfc7`; this is product-direction acceptance, not TR-contract closure or clinical sign-off. PM Bridge job `ec016c68-9ca7-414b-b6cf-f5254f75d6c0` correlated user turn `24f59e1c-a7b0-4e67-9b6d-0a39ff1c5699` and reply `e20d9e5a-e677-4365-aab9-618c89b69f0c`. The attached file SHA-256 was independently matched to the local file, and its Git blob matches HEAD `c980cfc7432f386ea46537a240ba84c3835fa808`; GPT-PM did not independently authenticate repository ancestry. The initial exact-tree architect review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected adoption pending corrections; the revisions were re-reviewed at `ea5b997ca4df8ba3e5712d5ca7bb180bf9152317`, with no BLOCKER/MAJOR findings. Codex owns and self-reviews the task-local technical contract. Actual policy source, numeric limits, symptom scope and qualified-human signature remain unavailable and are not invented here. Date: 2026-10-18.
 
 ## Goal and constraints
 
 Specify the technical boundary between assigning a proposed prescription and recording a performed workout fact, while keeping the system fail-closed when approved policy is missing. This is documentation only: it does not authorize implementation, runtime use, or numeric limits. The operator is accountable for the delegated task; Codex is the task-local technical owner/author/executor/self-reviewer; GPT-PM is the product decision owner/signatory. No implementation service owner or qualified clinical signer is identified by those assignments.
+
+**Codex self-review (2026-10-18):** no BLOCKER/MAJOR was found in the bounded technical boundary. The proposal continues to withhold numeric limits and symptom scope and preserves fail-closed behavior until a qualified-human signature exists. This is a documentation self-review, not TR closure, implementation evidence or clinical approval. Detailed scope and remaining dependencies are in the [self-review record](../../core/changes/2026-10-18-ai-coach-phase9-codex-tr-self-review.md).
 
 ## Non-goals
 
@@ -64,7 +66,7 @@ No rollout is authorized. Keep prescription behavior unavailable until GPT-PM re
 
 | Open item | Owner / executor | Closure evidence |
 |---|---|---|
-| Product-level fail-closed assignment boundary | GPT-PM, assigned product decision owner/signatory | Correlated disposition on the exact proposal/commit; original product request `26649707-679f-4962-8d26-e3b2a2ff36b2` remains failed before send and is not represented as a correlated reply |
+| Product-level fail-closed assignment boundary | **ACCEPTED** by correlated GPT-PM request `a4c457f7-e16b-4727-8189-6a452b394020`; the original product request `26649707-679f-4962-8d26-e3b2a2ff36b2` remains failed before send and is not represented as a correlated reply | Bounded disposition is recorded in the linked change record. This does not close the technical contract or provide a clinical signature |
 | Technical contract ownership and review | Codex, by operator delegation, as task-local technical owner/author/executor/self-reviewer | Codex's review of the current exact tree; historical review at `862a864a6164920844115d6c9ac3edf45e0217cf` rejected the earlier version and the recorded corrections remain documented |
 | Actual numeric limits and symptom scope | Authorized qualified human clinical/safety signer; no named signer identified | Signed limits, scope and policy provenance before use |
 | Implementation/runtime ownership | Owning service is not identified | Canonical service assignment and separately reviewed implementation evidence |
