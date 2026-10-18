@@ -288,7 +288,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/12_GPTPM_PHASE9_REMEDIATION_APPROVAL.md` | GPT-PM Phase 9 remediation review | 3205 |
 | `docs/ai-coach/13_PHASE9_OQ_TECHNICAL_REVIEW.md` | Phase 9 technical review of selected open questions | 8317 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 22990 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 23552 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
@@ -362,7 +362,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191253 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 19488 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 19822 |
 | `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13464 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
