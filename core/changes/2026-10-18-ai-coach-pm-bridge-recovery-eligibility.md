@@ -13,10 +13,11 @@ Added source-grounded recovery eligibility to `core/changes/2026-10-18-ai-coach-
 - `D:\Repo\pm-bridge\src\jobLedger.js` `forceReleaseAmbiguousLease` permits release only for a held generation lease with `status=uncertain`, `sendPhase=sending`, no send snapshot, and supplied reason plus conversation-scoped evidence. The AI Coach job meets none of the state predicates needed for this escape hatch. Calling it would be rejected and would not resolve the failed lineage, so no request was made.
 - `reserveJob` computes the signature over operation, project, request ID, and payload; the existing request may reopen only when its same idempotency identity and payload hash match. The status/cancel MCP tools do not expose persisted payload bytes or a recovery/release operation for this failed pre-send state.
 - Health remains `OK`; queue depth and active jobs are zero. Restart is not a recovery path for this state and was not attempted.
+- PM Bridge repository ownership-source search: GitHub returned 404 for root `CODEOWNERS`, `.github/CODEOWNERS`, `MAINTAINERS`, and `CONTRIBUTING.md`; issue search found no items for `ATTACHMENT_NOT_LANDED`, `acceptance.md` composer failure, or attachment recovery. Repository metadata identifies `xLZDx` as owner with `admin`/`maintain` permissions. That establishes a repository escalation route, not a formal PM Bridge service-maintainer assignment.
 
 ## Decision and remaining dependency
 
-No retry, cancellation, lease release, payload change, or replacement request was made. The safe next action requires the PM Bridge maintainer to recover the original immutable payload or provide a supported same-lineage recovery procedure. The responsible maintainer is not identified in the available records. After the original payload hash is verifiably reproduced, retry only with the original request ID and idempotency key; otherwise do not send.
+No retry, cancellation, lease release, payload change, or replacement request was made. The safe next action is to ask the PM Bridge repository owner account (`xLZDx`, admin/maintain permission) for the formal maintainer and a supported same-lineage recovery procedure; the available sources do not establish that account as the service maintainer. After the original payload hash is verifiably reproduced, retry only with the original request ID and idempotency key; otherwise do not send.
 
 ## Affected paths and verification
 
