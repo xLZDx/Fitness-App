@@ -1,0 +1,32 @@
+# AI Coach documentation: GPT-PM documentation gate, round 1
+
+Date: 2026-10-17. Reviewed exact head: `d60cb979066e939ff68e2664af446ddafe462cb2` (base `14513a87`). Transport: PM Bridge, request `3f6d2a14-8b7e-4c1a-9d52-6e0a7b9c4f21`. Reviewer: GPT-PM. Verdict: **MODIFY**. 14 MAJOR, 6 MINOR, 0 BLOCKER. Push of the documentation package is WITHHELD for this head. Product direction and architecture are acceptable; implementation and production remain not authorised. GPT-PM states it checked only the 11 supplied documents, not the repository. The findings below are GPT-PM claims until the remediation batch verifies each against the documents; labels FACT / INFERENCE are GPT-PM's.
+
+Not raised as findings by GPT-PM (declared owners or downstream gates): operator budgets (OQ-05), signed safety limits and symptom list (OQ-07, OQ-20), realtime provider choice (OQ-03, OQ-04), the Android hands-free spike (S-A1), real-device measurements, absence of executed tests.
+
+Next gate: one focused verification round on F-01..F-14 and their direct regressions (no new independent review panel).
+
+## Findings and the decision applied (decisions D-batch 3 are in `06_REMEDIATION_DECISIONS.md` section E)
+
+| ID | Sev | Claim (summary) | Required change |
+|---|---|---|---|
+| F-01 | MAJOR (FACT) | Set id format in FT-1021 and E2E-01 is `<session>:<seq>` while design 5.1/5.3 and AICR-120 require `<session>:<owner_epoch>:<seq>` | Epoch-bearing format in both test plans; one authoritative definition; same assertion in FT-1021, E2E-01, FT-1174, X-19 |
+| F-02 | MAJOR (FACT) | FT-1042 and ACS-023 AC-3 still require `restTimerProvider` or wrapping SetPhase/SetCue, but the Runtime owns restEndsAt (AICR-032 amended) | Rewrite FT-1042 and ACS-023 AC-3 against the Runtime's restEndsAt, HUD and shell strip; fake-clock equality |
+| F-03 | MAJOR (FACT) | finish/abandon during a whole safety stop: design says user-only, UI permits spoken confirmation; no single definition of trusted origin | Define the trusted confirmation mechanism per scope including locked screen; separate Runtime command source from the voice confirmation channel; same rule in design, UI table, backlog, tests |
+| F-04 | MAJOR (INFERENCE) | Account-deletion fence: export offer then wipe has no deterministic state machine (app backgrounded, offline, export dismissed or failing) | Deletion-fence state machine with retry limits and a final mandatory wipe policy; tests for foreground, background, offline, restart |
+| F-05 | MAJOR (FACT) | AICR-085 promises stale-owner writes are rejected, while AICR-120/design allow a cooperative-only fallback if the rules call budget is exceeded | Make server-enforced epoch validation a requirement or downgrade the guarantee with operator acceptance; emulator test with the real schema and batch size |
+| F-06 | MAJOR (INFERENCE) | Projection to workout_sessions is an upsert with a deterministic id and no ownership or revision fence; a stale device could replace the final history document around a takeover | Fenced projection protocol tied to session and epoch, lost-ack handling, order of the durable projected marker; takeover-between-validation-and-write test |
+| F-07 | MAJOR (INFERENCE) | Dispatch step 0 applies safety_stop before session/epoch/envelope validation; unauthorised callers could affect a session | Separate the trusted local emergency input from external command envelopes; define what an unauthorised envelope can do before step 0; separate tests |
+| F-08 | MAJOR (INFERENCE) | Safety marker vs journal precedence and recovery ordering unspecified (marker durable, journal ends in RESTING; replay could emit a rest cue or transient active state) | Marker precedence: load and enforce before exposing recovered state or emitting cues; treatment of unpersisted internal commands; kill at every boundary test |
+| F-09 | MAJOR (FACT/INFERENCE) | Ordinary commands roll back on PERSIST_FAILED but the UI manual-only mode keeps sets in memory with different semantics | A typed volatile state and explicit in-memory queue, never the normal Saved confirmation; full-disk record/correct/void then kill test |
+| F-10 | MAJOR (FACT) | ACS-076 AC-1 still quarantines on max attempts or backlog age; AICR-122 says only permanent server denial | Align ACS-076; separate tests for transient retry exhaustion, backlog age, permanent denial |
+| F-11 | MAJOR (FACT) | ACS-082 AC-2 says a deadline-exceeded turn consumes no quota; AICR-125 says an invoked call is charged | Update ACS-082 and any remaining superseded cost assertion; separate client deadline from server-observed invocation |
+| F-12 | MAJOR (INFERENCE) | Session-count bound (AICR-132) is only a scheduled sweep, no creation-time admission limit | Creation-time admission (transactional counter or reservation) separate from retention sweep; bounded behaviour for unfinished, expired, abandoned, parked sessions; concurrency test |
+| F-13 | MAJOR (FACT) | Older rows (FT-1019, FT-1021, FT-1042, E2E-01) are written against pre-remediation contracts; E2E-01 delegates its oracle to a future ACS-001 table | One canonical transition and event matrix from design rev 3; each test row states its own expected states, events, revisions and ack boundaries; zero mismatches report |
+| F-14 | MAJOR (FACT/INFERENCE) | Consent: offline local consent in the UI vs server-required consent; platform recogniser may process audio outside the app | Consent state machine (local, pending, server-confirmed, stale, withdrawn); which capture is allowed in each; offline consent must not authorise remote processing |
+| M-01 | MINOR | 03b 4.3 Sync blocked row still treats age/attempt exhaustion as permanent refusal | Align with the stale-sync state |
+| M-02 | MINOR | 03b J9 mentions Resume listening in the notification; 04b E2E-05 requires it absent | One notification contract |
+| M-03 | MINOR | 01 C-02 and 01b D7 still describe Firebase AI Logic as active | Mark as historical; current path is Vertex via server callables |
+| M-04 | MINOR | 04a header says revision 2 and old inputs though it holds revision 3 rows | Update revision and normative inputs |
+| M-05 | MINOR | ACS-070 AC-3 performed-facts list omits void_set | Reference the amended list and the independent oracle |
+| M-06 | MINOR | UI J6 promises the original exercise is visible in History; the legacy projected model keeps only the replacement | Define a compatible representation or narrow the claim |

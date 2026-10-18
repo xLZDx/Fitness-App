@@ -69,3 +69,24 @@ Current phase: 9 Accept and 10 Report (S03 is merged: PR #11 into `phase2/main` 
 | 8 Gate | done | GPT-PM APPROVE on `1e56d651`; one push, PR #11 merged as `f605cf3e` |
 | 9 Accept | open | product acceptance and release notes; texts drafted by agents need product review (carried items file section 3) |
 | 10 Report | in progress | `docs/phase2/s03/S03_SPRINT_REPORT.md` (reporting-analyst) on branch `phase2/s04-docs` |
+
+## AI Coach line: TDD-001 Live AI Coach (documentation program)
+
+Updated 2026-10-17. Worktree `D:\Repo\Fitness_App_aicoach`, branch `docs/ai-coach-tdd-001`, base `origin/phase2/main` at `14513a87`. This line is separate from the Phase 2 sprints (S00 to S04) and does not close or change any of them. Input: `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` (operator draft, translated). Status of the draft: design review pending; implementation and production are not authorized.
+
+Current phase: 8 Gate (GPT-PM documentation gate round 1 returned MODIFY on `d60cb979`; remediated in `2a31a3f0`; the focused verification round on `2a31a3f0` returned MODIFY with four MAJOR test-versus-contract contradictions and five MINOR leftovers, remediated in `db4b826a`; the second focused verification of `db4b826a` returned MODIFY with three MAJOR test-wording items V3-01..V3-03, remediated in `9ced50ab`; the third focused verification on `d12d00e8` returned MODIFY with three MAJOR sibling rows still on old contracts (FT-2017, FT-1190, FT-1175), remediated in `e9a93808`; focused verification round 4 returned APPROVE on exact head `e9a93808` (request `b3e7a9d1-4c2f-4e8a-9f61-7d0a2c5e8b34`), with 0 BLOCKER and 0 MAJOR in scope. The gate-record consistency check round 5 returned APPROVE on exact head `b11213dc` (request `a13d8f42-0cf6-4f6a-8b1d-e72c964ad5c1`); its record is `docs/ai-coach/10_GPTPM_GATE_RECORD_ROUND5.md`. PR #13 was advanced from `e9a93808` to `b11213dc` after that approval. A previous review attempt for the state synchronization (request `d9301f56-2fa1-49c3-8eb5-b37c3a8bb914`) failed before send because `STATE.md` did not land in the composer; it is not an approval or rejection. Merge of PR #13 remains pending operator instruction. All approvals are documentation-only; implementation/production are not authorized.)
+
+| # | Phase | Status | Artifacts |
+|---|---|---|---|
+| 1 Discovery | done | `docs/ai-coach/01_REQUIREMENTS.md`, `docs/ai-coach/01b_CODE_MAP.md` |
+| 2 Backlog | done | `docs/ai-coach/02_BACKLOG.md` |
+| 3 Design | done | `docs/ai-coach/03_DESIGN.md`, `03a_ADR_PROPOSALS.md`, `03b_UI_SPEC.md` |
+| 4 Docs + test plan | done | `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md`, `04b_E2E_AND_DEVICE_PLAN.md` (all rows PLANNED) |
+| 5 Doc review | done for the documentation package | `05_REVIEW_ROUND1.md` (97 claims, 2 BLOCKER), `07_REVIEW_ROUND2.md` (23 new MAJOR, 0 BLOCKER), `06_REMEDIATION_DECISIONS.md` (sections A to E); design revision 4; gate findings and focused remediations through `09_GPTPM_VERIFICATION_ROUND4.md` |
+| 6 Build | not authorized / not started | implementation requires a later explicit gate |
+| 7 Verify | not started | documentation rows remain PLANNED; no implementation tests were run |
+| 8 Gate | documentation gate approved; merge pending | GPT-PM rounds 4 and 5 approved their respective exact heads (`e9a93808`, `b11213dc`); PR #13 was advanced to `b11213dc` and remains open. Later commits require their own exact-head review. |
+| 9 Accept + release | not started | product acceptance and release documentation follow implementation gates; no implementation/production authorization |
+| 10 Report + retro | not started | after later delivery phases |
+
+Agents and models actually run so far (Sonnet 5.5): business-analyst, code-explorer, product-owner, technical-writer, ui-designer. GPT-PM focused documentation verification round 4 ran through PM Bridge; see the linked decision record for scope and request ID.
