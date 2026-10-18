@@ -21,3 +21,15 @@ These checks found no owner assignment in the listed paths at `phase1/main` or `
 The existing ownership-source conclusion remains: no named technical/service owner for OQ-18 or named alert/on-call owner for ACS-100 is evidenced in the inspected records. The operator is accountable for this delegated task; Codex is its executor; neither is thereby the technical/service owner. The next step is an actual assignment through the project process.
 
 No stories or OQs were accepted or decided. No files were written to GitHub, and no code, tests, checks, builds, CI, migrations, production actions, push, or merge were performed.
+
+## Connector response transcript (repeat observation)
+
+The same bounded checks were repeated read-only through the connected GitHub MCP connector on 2026-10-18 to preserve the normalized response evidence alongside the earlier recorded audit:
+
+- Branch search query `phase1/main` returned `branches: [{"branch":"phase1/main"}]`.
+- Branch search query `phase2/main` returned `branches: [{"branch":"phase2/main"}]`.
+- `fetch_file` for each of the five paths above at each of the two refs returned GitHub API error code `NOT_FOUND`, HTTP status `404`, and normalized response message `Not Found` (10 responses total).
+- Issue search query `repo:xLZDx/Fitness-App OQ-18` returned `issues: []`.
+- Issue search query `repo:xLZDx/Fitness-App ACS-100` returned `issues: []`.
+
+These are connector-normalized results, not a raw HTTP archive. Branch queries were exact-name searches and do not enumerate all branches. The results remain bounded to these refs, paths and query strings; they do not establish global owner absence.
