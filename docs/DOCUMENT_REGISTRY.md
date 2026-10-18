@@ -269,7 +269,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
-| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 8996 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 9385 |
 | `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 88635 |
 | `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 12647 |
 | `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 67987 |
@@ -289,7 +289,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/13_PHASE9_OQ_TECHNICAL_REVIEW.md` | Phase 9 technical review of selected open questions | 9529 |
 | `docs/ai-coach/14_PHASE9_FINAL_EXACT_HEAD_REVIEW.md` | Phase 9 final exact-head documentation review | 2216 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 24604 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 25173 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
@@ -363,7 +363,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191253 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 19634 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 19950 |
 | `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13464 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
