@@ -380,7 +380,7 @@ Owner key: OP = operator (product/legal/budget decision); TR = technical review 
 
 | ID | Question | Owner | Blocks | Proposed default |
 |---|---|---|---|---|
-| OQ-01 | How is the set record extended given `WorkoutSession` persists only weight and reps (F-04)? Embedded additive fields on sets, or a separate journal collection linked by session id? | TR | AI-COACH-00 | Additive optional fields on sets plus a separate append-only journal; old documents unchanged (ADR-007). |
+| OQ-01 | How is the richer set record stored given `WorkoutSession` persists only weight and reps (F-04)? | TR | AI-COACH-00 | Use the separate append-only live-session journal/replica linked by session id; preserve the serialized `WorkoutSession`/`SetCapture` shape in MVP. The earlier additive optional set-field default is superseded by design §5.1 and is not approved. |
 | OQ-02 | How is `expected_revision` enforced when `WorkoutSessionRepository.save` has no revision parameter (F-05)? | TR | AI-COACH-01 | Revision lives in the journal/session document and is checked in a Firestore transaction or Cloud Function. |
 | OQ-03 | Which voice path for MVP: Mode A realtime or Mode B STT-LLM-TTS (ADR-001)? | TR, then OP for cost | AI-COACH-02 | Build Mode B first as the command fallback; run a Mode A latency/cost spike in AI-COACH-00. |
 | OQ-04 | Which provider and transport; where do short-lived credentials come from (ADR-001/002/003)? | TR (security) | AI-COACH-00 | Server-issued short-lived credentials via Cloud Functions; no key in the app. |

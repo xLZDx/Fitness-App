@@ -86,13 +86,13 @@ Out of scope: any implementation, ADR options not needed for P0 (avatar renderer
 ### Epic E00-A Runtime and data contracts
 
 **ACS-001 Workout Runtime and command contract** (P0; AICR-024, 025, 045, 046, 047, 042, 023, 030)
-- AC-1 Given the draft state machine, when the contract is written, then it lists every allowed and every rejected transition for the ten workout states and the 15 commands, each with the typed refusal reason.
+- AC-1 Given the current runtime contract, when reviewed, then it lists allowed and rejected transitions for the nine persisted states, identifies `NEXT_EXERCISE` as a derived view rather than a persisted state, and covers the current closed command set with typed refusal reasons; the canonical transition/event matrix in design §4.1b is the acceptance oracle.
 - AC-2 Given the command envelope, when reviewed, then the five fields, idempotency rule (repeat returns original result), atomic command+result write and stale-revision rule are each stated with one worked example and one counter-example.
 - AC-3 Given the set record, when reviewed, then all fields (set_id, exercise_id, session_id, repetitions, weight_kg, effort, completed_at, source, command_id) have type, range and owner stated, and `effort` mapping to `DifficultyRating` (assumption A-08) is confirmed or changed.
 - Depends on: OQ-01 (set record storage), OQ-02 (revision enforcement). DoR note: both need a proposed answer from technical review before acceptance.
 
 **ACS-002 Event journal and WorkoutSession compatibility (ADR-005, ADR-007, ADR-009)** (P0; AICR-028, 042, 043, 044, 070, 022, 074)
-- AC-1 Given the existing `WorkoutSession` JSON (weight and reps only), when the extension is specified, then every new field is optional and additive, and a table shows old document -> new reader and new document -> old reader outcomes.
+- AC-1 Given the existing `WorkoutSession`/`SetCapture` JSON shape (weight and reps only), when compatibility is specified, then MVP adds no fields to either serialized type; a table shows existing documents read by the new code and projected MVP documents read by old code, while rich set records remain in the separate live-session journal/replica and are not exposed to old readers. Any later additive-field proposal requires a separate reader audit and decision.
 - AC-2 Given the journal, when specified, then store choice, durability point ("acknowledged" means persisted), ordering, retention and crash-replay procedure are documented, with the offline-safe command subset (ADR-009) listed.
 - AC-3 Given reconnect, when specified, then the sequence check-session / restore / sync unconfirmed / dedupe / refresh context is stated step by step with the conflict outcome for each.
 
@@ -106,7 +106,7 @@ Out of scope: any implementation, ADR options not needed for P0 (avatar renderer
 **ACS-004 Safety policy** (P0; AICR-048, 049, 050, 051, 052, 053, 029, 012, 066)
 - AC-1 Given the existing eligibility decision point (fact F-08), when the policy is written, then it states which decisions are reused, which new checks are added (load cap, rep range, symptom stop) and that no parallel rule table exists.
 - AC-2 Given OQ-07, when the limits and symptom list are written, then each carries a named sign-off owner; any number without sign-off is marked UNSIGNED and not used by later sprints.
-- AC-3 Given fail-closed, when specified, then the blocked-versus-allowed table lists the four safe helper actions (explain interface, view history, stop timer, finish session) and the dangerous-symptom flow ends in PAUSED or ABANDONED with no auto-continue.
+- AC-3 Given fail-closed behavior, when specified, then the acceptance references the shared allowed-action rules in design §§4.1a–4.1b and the dangerous-symptom flow: `safety_stop` produces locked PAUSED and never automatically abandons or resumes the session.
 - AC-4 Given typed reasons, when specified, then the refusal enum is listed and mapped to `BlockReason` values.
 
 **ACS-005 Privacy and consent policy** (P0; AICR-009, 076, 077, 060, 058)
@@ -140,7 +140,7 @@ Out of scope: any implementation, ADR options not needed for P0 (avatar renderer
 
 **ACS-010 Dependency map, Phase 2 relationship and document registry** (P0 enabling; AICR-032, 036, 037, 074, 075; constraints C-05, C-06)
 - AC-1 Given OQ-17 and OQ-18, when completed, then the interfaces of `ai_planner`, `training_context`, `recovery`, `visual_equipment` are recorded as facts with file paths, and the track relationship to Phase 2 is stated with the default if undecided.
-- AC-2 Given draft section 4, when reviewed, then the `features/live_coach/` folder layout is confirmed or corrected against the current Phase 2 branch.
+- AC-2 Given the proposed section 4 layout, when reviewed, then it is explicitly distinguished from the current Phase 2 snapshot: record the exact branch commit and existing feature directory contents, and state whether `features/live_coach/` exists there.
 - AC-3 Given the registry rule, when the sprint closes, then `governance/DOCUMENT_REGISTRY.md` (or the docs equivalent) lists every new document.
 
 **ACS-011 Design review gate and acceptance** (P0 gate)
@@ -153,7 +153,7 @@ Sprint 00 DoD additions: documents only; no file under `mobile/` changes; every 
 ### Epic E00-E Review round 1 additions (added 2026-10-17)
 
 **ACS-100 Observability sink, alerts and owners** (P0; AICR-112, 079)
-- AC-1 Given the observability design, then the sink is named and alerts exist with a named owner for recovery failure rate, persist-failed rate, sessions stuck below server-confirmed over 24 h, reservation leaks and reconnect time; thresholds are marked OPEN (OQ-28).
+- AC-1 Given the observability design, then the sink is named and alerts exist with a named accountable owner for recovery failure rate, persist-failed rate, sessions stuck below server-confirmed over 24 h, reservation leaks and reconnect time; thresholds are marked OPEN (OQ-28). A provisional operator escalation is not evidence that a named on-call owner has been assigned.
 - AC-2 Given each alert, then a test event that triggers it is specified.
 
 **ACS-101 Contracts for review round 1 decisions** (P0; AICR-085, 086, 087, 098, 100, 105, 106)
@@ -210,7 +210,7 @@ Exit: all critical runtime tests pass (per-epic tests by the test agents). Block
 **ACS-027 Safety engine** (P0; AICR-048, 049, 050, 051, 053, 012)
 - AC-1 Given a stub issuing arbitrary actions, when an unsafe action arrives, then the engine refuses it with a typed reason and a refusal event is recorded.
 - AC-2 Given the safety source faulted, when load or exercise recommendations are requested, then they are refused while the four safe helper actions succeed.
-- AC-3 Given a reported dangerous symptom, when processed, then the Runtime moves to PAUSED or ABANDONED and no continue action is accepted until an explicit user restart (E2E-08).
+- AC-3 Given a reported dangerous symptom, when processed, then `safety_stop` moves the Runtime to PAUSED with `safetyLock` set and `safetyScope` recorded; it never moves automatically to ABANDONED. No resume is accepted until the user-only `restart_after_safety` flow allows it (E2E-08; design §§4.1a, 4.1b and 9.3).
 - AC-4 Given unfinished screening, when start is requested, then it is refused with a typed reason and helper actions still work.
 - AC-5 Given the same inputs through the engine and through the existing eligibility decision, then the decisions are equal (no parallel rule set).
 

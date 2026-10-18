@@ -31,7 +31,7 @@ Initial source: code-explorer run on 2026-10-17 over `origin/phase2/main` at `14
 | D7 | Firebase AI Logic is in the stack | Client calls removed; callables to Vertex only; `firebase_ai` unused |
 | D8 | ai_planner builds 1 to 4 week plans | Deterministic single-session builder; TrainingPlan hierarchy is new |
 | D9 | ai_coach can carry dialogue | One-shot, 512 tokens, 40 per day, "deliberately not a chat" |
-| D10 | `features/live_coach/` | Does not exist; no name clash, but `ai_coach`, `marketplace` (holds `coach_marketplace_service.dart`; corrected 2026-10-17, the first version of this map named a non-existent `coach_marketplace` folder), `form_check/coach_*` exist |
+| D10 | `features/live_coach/` | Does not exist in the locally available `origin/phase2/main` snapshot `85e7e91ed042b0395b7442839868a35975b62905` checked for Phase 9 on 2026-10-18. The existing `features/ai_coach/` directory contains `ai_coach_context.dart`, `ai_coach_service.dart`, `ai_coach_sheet.dart`, `ai_exercise_generator.dart`, and `generated_exercise_repository.dart`. The proposed `live_coach/` layout is new design intent, not a current repository layout. Other neighbors: `marketplace` (holds `coach_marketplace_service.dart`; corrected 2026-10-17), `form_check/coach_*`. |
 | D11 | Feature flag `live_ai_coach_enabled` | No client flag mechanism; only a global server AI kill switch |
 | D12 | Android foreground service, Bluetooth recovery | None exist; new native work plus Play declaration |
 | D13 | Safety Engine stops on chest pain, dizziness | Safety is profile-based eligibility only |
