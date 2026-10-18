@@ -291,7 +291,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/15_PHASE9_CURRENT_EVIDENCE_APPROVAL.md` | Phase 9 focused current-evidence approval | 2052 |
 | `docs/ai-coach/16_PHASE9_OWNERSHIP_SOURCE_APPROVAL.md` | Phase 9 ownership-source review approval | 2089 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 30946 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 31102 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
