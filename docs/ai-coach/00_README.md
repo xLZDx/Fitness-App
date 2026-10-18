@@ -76,3 +76,5 @@ A correlated PM Bridge review approved the bounded remote owner-source evidence 
 A later read-only connector repeat recorded normalized results for the same limited checks: ten 404 owner-path responses and empty issue-search results; the two exact branch queries returned the requested branch. It is not a raw HTTP archive or full branch inventory; see `18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md`.
 
 A follow-up recorded the repository default branch (`master`) and 16 entries from a branch-list request; all five standard owner paths were checked on each returned ref (80 `404` results). The connector did not expose pagination headers, and the search remains limited to repository refs and these paths; see `18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md`.
+
+Default-branch code searches for `OQ-18`, `ACS-100`, and `AI-COACH-00 alert owner` returned no indexed matches. This does not rule out assignments in non-default, external, or unindexed sources; see `18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md`.

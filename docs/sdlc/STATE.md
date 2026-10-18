@@ -112,3 +112,5 @@ A correlated PM Bridge review approved the supplied owner-source evidence bundle
 A repeat read-only GitHub connector observation is recorded in `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md`: ten scoped owner-file fetches returned 404, two exact branch searches returned their named refs, and two issue searches returned no matches. The transcript is connector-normalized and source-bounded; it neither establishes global owner absence nor a complete branch inventory.
 
 A follow-up GitHub metadata/branch response identified `master` as the default branch and returned 16 branch entries. The five standard ownership paths were checked on each returned ref (80 fetches; all 404). Pagination headers were unavailable, so this is a bounded response record, not a claim of timeless or global owner absence. See `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md`.
+
+Default-branch GitHub code searches for `OQ-18`, `ACS-100`, and `AI-COACH-00 alert owner` returned no results. Search coverage is limited to indexed default-branch content; external and unindexed assignments remain outside this evidence. See `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md`.

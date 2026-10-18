@@ -58,3 +58,5 @@ Repository metadata returned `default_branch: master`. A read-only request to `G
 | `sprint/tail-closure-2026-10-13` | `8b4b23af4625` |
 
 The five ownership paths listed in Scope and method were fetched at every branch name in this response (80 fetches); all returned GitHub API `NOT_FOUND` / HTTP `404`, with no tool-call errors and no files found. This includes the default `master` and `docs/ai-coach-tdd-001`. The branch response contained 16 entries for this request, but the connector did not expose HTTP pagination headers; the result is not asserted as a timeless or organization-wide inventory. The checked refs and paths still do not cover external assignment systems or prove that no owner exists elsewhere.
+
+GitHub code searches constrained to repository `xLZDx/Fitness-App` (the connector searches the default branch) were also run for `OQ-18`, `ACS-100`, and `AI-COACH-00 alert owner`. Each returned an empty `results` array. This supplements the empty issue searches but does not cover non-default branches beyond the explicit path fetches above, external systems, or unindexed records.
