@@ -58131,3 +58131,7 @@ Read-only Drive searches for `OQ-07`, `OQ-14`, `ACS-100`, `OQ-07 AI Coach`, and 
 ## 2026-10-18 — Connected Drive ownership-search follow-up
 
 Metadata-only document searches for `OQ-18` and `OQ-07 clinical safety signature` returned no results; a repeat search for `ACS-100 on-call` also returned none. Together with the prior exact searches, this did not identify technical owners, a runtime/on-call owner, or a clinical signer. This bounded evidence does not establish global absence and creates no assignment. Evidence: `core/changes/2026-10-18-ai-coach-drive-owner-search-followup.md`.
+
+## 2026-10-18 — PM Bridge message-log recheck
+
+The latest-50 read-only project message-log result contained no outbound entry for the original failed request, and its durable job row still has no send snapshot or correlated reply. The separate correlated ownership request is not the original payload. No original text/attachment bytes or matching hash were recovered; do not retry until authoritative payload recovery and exact hash reproduction are achieved. Evidence: `core/changes/2026-10-18-ai-coach-pm-bridge-message-log-recheck.md`.

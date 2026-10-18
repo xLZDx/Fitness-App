@@ -162,3 +162,7 @@ GitHub metadata confirmed `master` as default branch. Root `CODEOWNERS` and `.gi
 ### Connected Drive ownership-source search (2026-10-18)
 
 Read-only connected Google Drive searches for `OQ-07`, `OQ-14`, `OQ-18`, `ACS-100`, `OQ-07 AI Coach`, `OQ-07 clinical safety signature`, and `ACS-100 on-call` returned no results. A broader `AI Coach runtime service` query returned unrelated documents, not canonical Fitness_App ownership evidence. This bounded search does not establish global owner absence. The correlated GPT-PM ownership result remains `UNAVAILABLE`; the operator-designated engineering lead/team and a qualified clinical signer are still not identified. Details: [initial search](../../core/changes/2026-10-18-ai-coach-connected-drive-ownership-search.md) and [follow-up](../../core/changes/2026-10-18-ai-coach-drive-owner-search-followup.md).
+
+### PM Bridge message-log recheck (2026-10-18)
+
+The latest-50 project message-log read contains no original outbound for request `26649707-679f-4962-8d26-e3b2a2ff36b2`; it contains the separate ownership-routing request, which references the original ID but is not its payload. The original durable job remains pre-send with no send snapshot, and its payload hash is still unreproduced. The bounded log result is not evidence that older logs do not exist. Details: [message-log recheck](../../core/changes/2026-10-18-ai-coach-pm-bridge-message-log-recheck.md).
