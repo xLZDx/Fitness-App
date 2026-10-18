@@ -9,8 +9,9 @@ Date: 2026-10-18. Documentation-only record of the attempted exact-head follow-u
 - Status: `failed`; `sendPhase=not-started`; `attempts=2`; no `userTurnId` or `replyId`.
 - Error: `ATTACHMENT_NOT_LANDED`: the ChatGPT composer did not receive the pending attachments; nothing was sent.
 - PM Bridge health was `OK` and its queue was empty. A `gpt_send` attempt with the same request ID was refused because that ID already owns a `send-and-await` sending lineage. No new request ID was created and no review message was sent.
+- Recovery through `gpt_await_reply` with the same ID was also refused: `No durable successful send baseline exists`. The job still has no send baseline, `userTurnId` or `replyId`; this is not a generation that can be awaited.
 
-The first and same-ID retry both failed before the send boundary. One retry used a consolidated UTF-8 package, but the durable job returned the original `ATTACHMENT_NOT_LANDED` result. The job remains failed with no reply; this is not a pending GPT generation.
+The first and same-ID retry both failed before the send boundary. A later identical retry returned the durable `ATTACHMENT_NOT_LANDED` failure without incrementing attempts; a changed one-file payload did not replace the durable payload. The job remains failed with no reply; this is not a pending GPT generation. Neither sending nor awaiting has a supported recovery path for this lineage as currently exposed by PM Bridge.
 
 ## Scope requested
 
