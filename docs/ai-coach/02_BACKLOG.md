@@ -33,7 +33,7 @@ Open questions in plain words (used above and in the per-sprint sections):
 - OQ-04 which AI provider and transport are used and where short-lived credentials come from, so no long-lived key is in the app.
 - OQ-05 the AI cost budget per user per day/month and what happens at the limit (operator sets the number).
 - OQ-06 how long coach memory is kept and whether any transcript is stored at all (operator decision).
-- OQ-07 the safety limits (maximum load, reps) and the dangerous-symptom list, and who signs them off; none are given in the draft.
+- OQ-07 the safety limits (maximum load, reps) and the dangerous-symptom list, and who signs them off. Existing eligibility, age-policy and progression sources were read on 2026-10-18; they contain product heuristics and next-weight suggestions, not signed AI Coach hard limits. OP/TR review and a named symptom-list signer are still required; see `01_REQUIREMENTS.md` §6.
 - OQ-08 voice-data consent text and the store (Play) permission and data-safety declaration for the microphone.
 - OQ-09 the exact Android device and OS matrix beyond Samsung Galaxy S23 and Android 13-16, and whether a real gym trial group exists.
 - OQ-10 the battery budget for a hands-free hour (default: measure first, then set).
