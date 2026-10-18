@@ -134,7 +134,7 @@ Format: ID | Level | Pri | Source | Requirement and acceptance statement.
 | ID | Lvl | Pri | Src | Requirement / Acceptance |
 |---|---|---|---|---|
 | AICR-023 | MUST | P0 | 6 | The user can move to next/previous exercise and ask for the current one (`get_current_exercise`, `complete_exercise`). Acceptance: each phrase changes only the current-exercise pointer and emits one journal event. |
-| AICR-024 | MUST | P0 | 6 | The Workout Runtime state machine is NOT_STARTED, PREPARING, ACTIVE_EXERCISE, SET_IN_PROGRESS, SET_RECORDED, RESTING, NEXT_EXERCISE, PAUSED, COMPLETED, ABANDONED. Acceptance: transition-table unit test rejects every disallowed transition and leaves state unchanged. |
+| AICR-024 | MUST | P0 | 6 | The Workout Runtime has exactly nine persisted states: NOT_STARTED, PREPARING, ACTIVE_EXERCISE, SET_IN_PROGRESS, SET_RECORDED, RESTING, PAUSED, COMPLETED and ABANDONED. `NEXT_EXERCISE` is a derived view, not a persisted state. Acceptance: the transition-table unit test covers the nine persisted states, rejects every disallowed transition and leaves persisted state unchanged. |
 
 **AC-008 Record sets and reps**
 

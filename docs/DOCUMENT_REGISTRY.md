@@ -270,7 +270,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
 | `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 13343 |
-| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 88635 |
+| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 88747 |
 | `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 12647 |
 | `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 67987 |
 | `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 128629 |
@@ -294,7 +294,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md` | Phase 9 remote ownership-source check | 4579 |
 | `docs/ai-coach/19_PHASE9_REMOTE_OWNER_SOURCE_REVIEW.md` | Phase 9 remote owner-source evidence review | 2457 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 35264 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 35492 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
