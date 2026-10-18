@@ -285,7 +285,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/09_GPTPM_VERIFICATION_ROUND4.md` | AI Coach documentation: GPT-PM focused verification round 4 | 1956 |
 | `docs/ai-coach/10_GPTPM_GATE_RECORD_ROUND5.md` | AI Coach documentation: GPT-PM gate-record consistency round 5 | 1697 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 15961 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 16079 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |

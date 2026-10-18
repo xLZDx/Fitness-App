@@ -48,7 +48,7 @@ The defaults below are copied or faithfully condensed from [01_REQUIREMENTS.md](
 | OQ-15 | MVP spoken languages | English plus current primary app language, to be named by operator. | OP |
 | OQ-16 | Minors/seniors scope | Reuse current age policy unchanged; no relaxation. | OP |
 | OQ-17 | Relationship to Phase 2 plans/branching | Separate AI-COACH track; do not edit Phase 2 plans. | OP |
-| OQ-18 | Multi-week composition contract over `ai_planner`, `training_context`, `recovery`, and `visual_equipment` | Existing interface facts were read and recorded in [01b_CODE_MAP.md](01b_CODE_MAP.md#interface-facts-rechecked-2026-10-18-oq-18). Treat these as mobile-side inputs only; define a deterministic multi-week composer and source of weekly sets/reps/rest in technical design. | TR |
+| OQ-18 | Multi-week composition contract over `ai_planner`, `training_context`, `recovery`, and `visual_equipment` | Existing interface facts were read and recorded in [01b_CODE_MAP.md](01b_CODE_MAP.md#interface-facts-rechecked-2026-10-18-oq-18). Treat these as mobile-side inputs only; they do not prove a live-coach integration. Define a deterministic multi-week composer and source of weekly sets/reps/rest in technical design; the model must not add exercises outside the composer's candidate output. | TR |
 | OQ-19 | Whether health-derived restrictions/screening data may reach model | No; nothing leaves the phone except what the user speaks (decision A6.2 wording). | OP |
 | OQ-20 | Signer and stop scopes for dangerous-symptom list | Symptom stop cannot ship until signed. | OP |
 | OQ-21 | Storage for per-set effort | Journal only. | TR, OP |
