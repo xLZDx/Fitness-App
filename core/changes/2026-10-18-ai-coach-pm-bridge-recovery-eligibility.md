@@ -15,10 +15,11 @@ Added source-grounded recovery eligibility to `core/changes/2026-10-18-ai-coach-
 - A separate read-only SQLite inspection (`mode=ro`) confirmed `jobs` stores `payload_hash`, send/status fields, and `send_snapshot_json`, but no payload bytes or attachment content field. The target row has `send_snapshot_json=null`; `job_events` contains lifecycle events, not the source payload. The stored hash cannot be used to reconstruct the payload.
 - Health remains `OK`; queue depth and active jobs are zero. Restart is not a recovery path for this state and was not attempted.
 - PM Bridge repository ownership-source search: GitHub returned 404 for root `CODEOWNERS`, `.github/CODEOWNERS`, `MAINTAINERS`, and `CONTRIBUTING.md`; issue search found no items for `ATTACHMENT_NOT_LANDED`, `acceptance.md` composer failure, or attachment recovery. Repository metadata identifies `xLZDx` as owner with `admin`/`maintain` permissions. That establishes a repository escalation route, not a formal PM Bridge service-maintainer assignment.
+- Opened GitHub issue [xLZDx/PM_Bridge#2](https://github.com/xLZDx/PM_Bridge/issues/2), assigned to `xLZDx`, asking for the formal maintainer and a supported recovery of this exact failed lineage. The issue explicitly prohibits payload changes, a new GPT request, and ineligible lease release. This is an escalation record, not a duplicate PM Bridge/GPT-PM request and not evidence that `xLZDx` is the service maintainer.
 
 ## Decision and remaining dependency
 
-No retry, cancellation, lease release, payload change, or replacement request was made. The safe next action is to ask the PM Bridge repository owner account (`xLZDx`, admin/maintain permission) for the formal maintainer and a supported same-lineage recovery procedure; the available sources do not establish that account as the service maintainer. After the original payload hash is verifiably reproduced, retry only with the original request ID and idempotency key; otherwise do not send.
+No retry, cancellation, lease release, payload change, or replacement request was made. The recovery question is open in GitHub issue `xLZDx/PM_Bridge#2`, assigned to the repository owner account (`xLZDx`, admin/maintain permission). The available sources do not establish that account as the service maintainer. After the original payload hash is verifiably reproduced, retry only with the original request ID and idempotency key; otherwise do not send.
 
 ## Affected paths and verification
 
