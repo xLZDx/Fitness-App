@@ -8,23 +8,41 @@ Status: DRAFT for review. Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Inp
 - Sprints AI-COACH-01..05 are PLANNED here so that dependencies and open questions are visible. They are NOT authorised. No implementation, no manifest change, no deployment, no production use and no user-data migration is authorised by this file. Each later sprint needs its own explicit operator go-ahead after the previous sprint is accepted.
 - Story ids are `ACS-nnn`. Acceptance criteria inside a story are numbered `AC-1`, `AC-2`... and are unrelated to the draft's function ids AC-001..020 (voice dialogue etc.), which the requirements file already uses.
 - Priorities P0/P1/P2 are inherited from the requirements. Where a story says "contract" the deliverable is a document; where it says "build" it is code (not authorised outside AI-COACH-00).
+- Scope correction (2026-10-19): the operator wants voice as another way to invoke the existing workout flow. The original AI-COACH-01/02 story blocks below are superseded drafts and MUST NOT be implemented as written. They assume an independent Workout Runtime/store before demonstrating that the current workout actions cannot be reused. The replacement acceptance below is a documentation-only rebase; it does not authorize implementation.
 
 ## 1. Prioritisation rule
 
-Order = (1) dependency (nothing is built on an undecided contract), then (2) risk reduction: the draft's critical risks first (duplicated sets, lost results, dangerous AI advice, data leak), then (3) value to the main scenario (arrive at the gym, start by voice, train hands-free), then (4) cost of learning (measure battery, latency, cost early). The deterministic runtime comes before voice because a voice layer on top of an unproven runtime would fail the draft's own "0 lost / 0 duplicated sets" target. P1 work (avatar, memory depth) comes after the P0 vertical slice. P2 is unscheduled.
+Order = (1) trace the existing workout screen/action/provider/repository path; (2) decide from that evidence whether a narrow shared-action adapter or a minimal extension to the current session model is needed; (3) add voice as another input to those same operations; then (4) measure device behavior after implementation is authorized. Do not build a parallel runtime or store by default. P1 work (avatar, memory depth) remains later; P2 is unscheduled.
 
 ## 2. Sprint overview and dependency order
 
 | Sprint | Goal (one sentence) | Depends on | Blocked by open questions (plain words) | Status |
 |---|---|---|---|---|
 | AI-COACH-00 | Approve one consistent set of design documents and contracts for the Live AI Coach so later code has nothing left to guess. | none | OQ-01, OQ-04, OQ-13, OQ-17 must be answered or defaulted at design review; OQ-05, OQ-07, OQ-08, OQ-11 need operator input or a recorded default | AUTHORISED (documents only) |
-| AI-COACH-01 | A deterministic, crash-safe Workout Runtime with a safety engine that records every confirmed set exactly once, with no AI involved. | 00 approved | OQ-02, OQ-07, OQ-16 | PLANNED, not authorised |
-| AI-COACH-02 | A user can start a demo workout by voice and finish it hands-free on a real Android phone with the screen locked. | 01 accepted | OQ-03, OQ-08, OQ-12, OQ-15 | PLANNED, not authorised |
+| AI-COACH-01 | Trace existing workout actions and document the smallest shared operation boundary and any proven data-model gaps. | 00 approved; scope rebase and code-path map | Safety/OQ-07 and exact set semantics | REBASE REQUIRED; original story block below is superseded; not authorised |
+| AI-COACH-02 | Add a voice input adapter that invokes the same authorized existing workout operations as touch. | 01 accepted and explicit sprint go-ahead | Microphone consent, language, device and voice-path evidence | REBASE REQUIRED; original story block below is superseded; not authorised |
 | AI-COACH-03 | The coach builds, explains and adapts safe 1-4 week plans from the confirmed profile and history, reproducibly. | 01 accepted (02 for spoken delivery) | OQ-06, OQ-14, OQ-18 | PLANNED, not authorised |
 | AI-COACH-04 | An optional avatar that reflects coach state without slowing voice or the workout runtime. | 02 accepted | OQ-10 | PLANNED, not authorised |
 | AI-COACH-05 | Evidence from real devices and a real gym, security and reliability reviews, cost validation and a rollback plan, ending in a pilot readiness decision. | 02, 03, 04 accepted | OQ-05, OQ-09, OQ-10, OQ-12 | PLANNED, not authorised |
 
 Dependency order: 00 -> 01 -> 02 -> (03 and 04 may run in parallel after 02) -> 05. Post-MVP (unscheduled): AICR-063..065.
+
+### 2.1 Replacement acceptance for the scope rebase (documentation only)
+
+**AI-COACH-01 — existing-operation trace**
+
+- AC-1: for each intended voice intent (start/enter workout, start or finish a set, enter weight/reps, start/skip rest, navigate exercise, finish/cancel), cite the current UI entry point, action/controller/provider, repository call and persistence/result boundary. Mark unsupported or unverified operations `NOT_FOUND` / `NOT_VERIFIED` instead of inventing an API.
+- AC-2: identify which existing operations can be called directly and which are private widget callbacks; propose a shared action seam only where the trace proves one is needed. Touch and voice must reach the same validation and persistence path.
+- AC-3: compare required set semantics with the current persisted model and all relevant readers. If the current one-set-per-exercise shape is insufficient, specify the smallest extension to the existing model/repository and its compatibility work; do not propose a parallel tracker/store as the default.
+- AC-4: preserve current safety, screening, authorization, duplicate-write and honest-save behavior; voice must not announce success before the existing operation confirms it. List unresolved defects as explicit gaps rather than hiding them behind a new runtime.
+
+**AI-COACH-02 — voice adapter (planned; not authorized)**
+
+- AC-1: only after AI-COACH-01 is accepted and a separate sprint GO exists, capture a user-initiated utterance, parse a finalized command and route it to the same application action as the touch control.
+- AC-2: duplicate/partial/ambiguous transcripts do not execute; commands that can finish/cancel or materially change a workout use the existing confirmation/safety path.
+- AC-3: spoken acknowledgement is generated from the operation's actual success or refusal result, not from an AI claim.
+- AC-4: no new workout collection, independent lifecycle or second source of truth is added unless a specific AI-COACH-01 gap is accepted first.
+- AC-5: device/background, microphone permission, privacy, accessibility, language and recovery acceptance are measured by the test owners only after implementation is authorized.
 
 Open questions in plain words (used above and in the per-sprint sections):
 - OQ-01 how the richer set record (set id, effort, time, source, command id) is stored when the current `WorkoutSession` saves only weight and reps.
@@ -161,7 +179,9 @@ Sprint 00 DoD additions: documents only; no file under `mobile/` changes; every 
 - AC-2 Given D1..D17, then each has a status RESOLVED, RESOLVED PENDING SIGN-OFF or OPEN WITH DEFAULT and the list gating AI-COACH-01 is stated.
 - AC-3 Given the privacy deliverable, then the utterance is declared a health-bearing channel and the privacy policy and Play data-safety prerequisite for any `liveCoach*` build is stated (wording is the operator's).
 
-## 6. Sprint AI-COACH-01 - Workout runtime foundation (PLANNED, NOT AUTHORISED)
+## 6. Superseded draft: Sprint AI-COACH-01 - Workout runtime foundation (DO NOT IMPLEMENT)
+
+The stories in this legacy block are retained for history only. They are superseded by §2.1's existing-operation trace and cannot be treated as acceptance criteria or authority to create a new runtime, journal, collection or repository.
 
 Sprint goal: a deterministic, crash-safe Workout Runtime and independent safety engine that record every confirmed set exactly once and run entirely without AI, behind a flag that is off.
 Exit: all critical runtime tests pass (per-epic tests by the test agents). Blocked by: OQ-02 (stale-write guard), OQ-07 (signed-off safety limits), OQ-16 (age policy scope).
@@ -332,7 +352,9 @@ Exit: all critical runtime tests pass (per-epic tests by the test agents). Block
 - AC-1 Given design section 4.1b, then every functional and E2E row that mentions state, set id, journal sequence or timer ownership cites matrix rows, and a mapping report shows zero mismatches.
 - AC-2 Given a fake clock, then the Runtime, the HUD and the shell strip show the same remaining rest; FT-1019 tests the separately journaled `preparing_done`; E2E-01 fixes its command sequence.
 
-## 7. Sprint AI-COACH-02 - Voice vertical slice (PLANNED, NOT AUTHORISED)
+## 7. Superseded draft: Sprint AI-COACH-02 - Voice vertical slice (DO NOT IMPLEMENT)
+
+The stories in this legacy block are retained for history only. They are superseded by §2.1's voice-adapter criteria and cannot be treated as authority to create parallel workout operations or storage.
 
 Sprint goal: a user can start a demo workout by voice and finish it hands-free on a real phone with the screen locked, with manual fallback always available.
 Exit: a full demo workout without manual control after start (E2E-01, E2E-11 on the Samsung Galaxy S23). Blocked by: OQ-03 (which voice path), OQ-08 (consent text and store declaration for the microphone), OQ-12 (reconnect and interrupt time targets), OQ-15 (languages).

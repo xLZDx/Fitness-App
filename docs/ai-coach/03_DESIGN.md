@@ -12,9 +12,17 @@ Revision-2 summary: section 4 (single owner, journaled timer commands, shared al
 
 Conventions: FACT = I opened the cited file in this phase. DECISION = design choice proposed here (still subject to design review). OPEN = not decided, tied to an OQ, default stated. UNKNOWN = the repository cannot answer. UNVERIFIED-EXTERNAL = depends on Android/Play/provider behaviour I did not check against live documentation; verify in AI-COACH-00 review or the first spike. Paths are relative to the repo root; line numbers may drift.
 
+## 0. Operator scope correction (2026-10-19) — controls this document
+
+The operator clarified the product boundary: add voice as an input to the existing Fitness App workout flow so it can perform the same operations as touch. Keep one workout flow, one source of truth and the existing application validation/persistence. Do not build a second workout tracker or assume a separate lifecycle/store is required.
+
+GPT-PM returned `MODIFY`: the revision-4 architecture below is superseded as an implementation baseline wherever it introduces a new authoritative `Workout Runtime`, `live_workout_sessions`, independent command journal/projector or duplicate workout lifecycle. Those are unapproved proposals and remain `NOT APPROVED — REQUIRES GAP EVIDENCE`. This correction does not authorize implementation, a migration, a deployment or production changes.
+
+The current-checkout trace in `01b_CODE_MAP.md` finds existing workout player actions and `WorkoutSessionRepository`, plus a pure voice parser with no production caller and a declared but unused speech-recognition dependency. It also finds that the current persistence model stores at most one captured set per exercise. Consequently, the next design input is an evidence-backed map from voice intents to existing screen actions, providers and repository methods, followed by a minimal gap list. Any confirmed set-model gap must be evaluated as an extension of the existing model and its readers before any separate storage is proposed.
+
 ## 1. Design principles
 
-1. The Workout Runtime (Dart, deterministic, no network) is authoritative for workout state. The model proposes; the device approves and executes.
+1. The existing Fitness App workout operations and persistence are the authority. Voice and touch must invoke the same actions and validation; a separate Workout Runtime is not approved absent a demonstrated gap.
 2. Health data is device-only (FACT `firestore.rules:209-250` strips it; `features/profile/data/local_sensitive_store.dart` keeps it in SharedPreferences). Nothing health-derived is sent to a server or written to Firestore unless the operator decides so (section 9, OQ-19).
 3. A live (unfinished) session is invisible to history, totals, streaks, volume and progression until the user finishes it (section 5).
 4. Every choice must accommodate iOS later (section 18): platform code only behind Dart interfaces.
