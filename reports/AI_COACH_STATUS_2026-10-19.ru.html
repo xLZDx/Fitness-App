@@ -35,7 +35,7 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App_aicoach</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; docs/ai-coach-tdd-001 @ 0155bda8</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; docs/ai-coach-tdd-001 @ fb80dd06</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -64,9 +64,19 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <section><h2>Короткий вывод</h2>
 <div class="callout"><b>Текущий запрос: голосовой помощник как второй способ управлять существующей тренировкой.</b> Он должен вызывать те же действия, проверки, состояние и сохранение, что и кнопки приложения. Отдельный трекер, lifecycle, хранилище или авторитетный runtime не нужны без доказанного пробела в существующих интерфейсах. В текущем коде такой голосовой путь не реализован: есть экран одноразового совета и не подключённый parser команд.</div>
-<p>GPT-PM ответил <b>MODIFY</b>: исправить архитектурный scope и сначала сопоставить каждую команду с существующими UI/action/provider/repository путями. Это не разрешение на реализацию. Кодовый разбор выявил точный разрыв: <code>WorkoutSessionExercise.sets</code> уже является списком, но текущий player при записи заменяет его максимум одним <code>SetCapture</code>. <code>asLogEntries()</code> показывает лучший подход, а прямые метрики считают все. Нужно закончить карту операций и сверить эти reader-контракты.</p>
+<p>GPT-PM ответил <b>MODIFY</b>: исправить архитектурный scope и сначала сопоставить каждую команду с существующими UI/action/provider/repository путями. Это не разрешение на реализацию. Прочитанная в этом продолжении карта показывает: player записывает максимум один capture на упражнение; <code>SetCaptureSheet</code> спрашивает повторения до подхода, а в завершённую запись попадает тот же <code>reps</code>; операция логирования пока находится в private widget callback. Это документированные разрывы, а не основание строить параллельный runtime.</p>
 <p>Документы Phase 9 содержат технические предложения и ограниченные решения GPT-PM, но не закрывают все контракты. Все 13 story dispositions остаются <b>PENDING</b>. ACS-100 получил точное условное решение по alert, однако создание policy заблокировано отсутствием свежих service-specific метрик. OQ-07 не имеет подписанных клинических значений.</p>
 <div class="grid">
 <div class="card"><b>Live Coach roadmap</b><span class="pill open">00 — документация; 01–05 — план, не разрешены</span></div>
@@ -121,14 +131,17 @@
 <section><h2>Запрос оператора: голос вместо нажатий в существующей тренировке</h2>
 <div class="callout warn"><b>Ответ на вопрос «это уже описано или сделано?»</b> Нет. Голосовое управление существующей тренировкой не реализовано. Было описано отдельное runtime-предложение, и GPT-PM потребовал его скорректировать. Текущий <code>aiCoachAdvice</code> — одноразовый текстовый совет, не голосовой помощник и не workout command API.</div>
 <div class="table-wrap"><table><thead><tr><th>Операция</th><th>Существующий путь</th><th>Что делает голосовой путь сейчас</th><th>Остаток</th></tr></thead><tbody>
-<tr><td>Выбрать/перейти к упражнению</td><td>Workout route и player меняют выбранное упражнение.</td><td>Parser содержит next/previous, но у parser нет production caller.</td><td>Связать речь с тем же action/provider и подтвердить feedback.</td></tr>
-<tr><td>Ввести вес и повторения</td><td>SetCaptureSheet пишет значения в текущий capture provider.</td><td>Parser распознаёт weight/reps intent, но не передаёт данные UI.</td><td>Существующая команда/валидация; подтвердить конфликтующие значения.</td></tr>
-<tr><td>Запустить/закончить подход и отдых</td><td>SetTimerCard запускает таймер; успешный log сохраняет WorkoutSession и затем запускает существующий rest timer.</td><td>Parser содержит часть set/rest intents, без микрофона и dispatch.</td><td>Использовать тот же timer/controller/repository путь и его подтверждение результата.</td></tr>
-<tr><td>Завершить/отменить тренировку</td><td>В проверенных player/route путях целое-workout finish/cancel действие не найдено.</td><td>В parser нет startWorkout/finishWorkout.</td><td>Расширить существующий UI action только если broader map подтвердит его; сейчас статус NOT_FOUND IN REVIEWED PATHS.</td></tr>
-<tr><td>Повторные подходы</td><td><code>WorkoutSessionExercise.sets</code> уже хранит список; текущий player при записи заменяет его нулём или одним подходом.</td><td>Голос не меняет persistence.</td><td>Сверить writer/reader semantics; менять только существующий action/projection при необходимости, без второго хранилища.</td></tr>
+<tr><td>Войти в тренировку</td><td>Кнопка ExercisePage, Home/Workouts, planner ведёт на <code>/workout/:id[?day=]</code>; route открывает WorkoutPlayerPage. Вход в экран не создаёт WorkoutSession.</td><td>В parser нет <code>startWorkout</code>; workout-level start action в просмотренных путях не найден.</td><td>Путь к упражнению есть; старт целой тренировки — <code>NOT_FOUND IN THE REVIEWED PATHS</code>. Ссылки: <code>exercise_page.dart:66-71</code>, <code>app_router.dart:474-485</code>.</td></tr>
+<tr><td>Запустить/поставить на паузу/сбросить таймер подхода</td><td>Primary/stop кнопки SetTimerCard.</td><td><code>setTimerProvider</code> → SetTimerController; перед свежим стартом UI может открыть SetCaptureSheet и сохранить ввод в <code>setLoadProvider</code>. Окончание таймера само по себе не записывает подход.</td><td>Parser содержит <code>startSet</code>, но production caller отсутствует. <code>doneSet</code> должен вызывать отдельную запись, а не трактоваться как timer expiry. Ссылки: <code>set_timer_card.dart:50-69,200-239</code>.</td></tr>
+<tr><td>Ввести вес и повторения</td><td>SetCaptureSheet перед запуском подхода для упражнений с нагрузкой.</td><td>Форма возвращает SetCapture в <code>setLoadProvider</code>; parser только выдаёт числовые <code>logWeight/logReps</code>, получателя нет.</td><td>В planning режиме поле подписано «повторения в цели» до подхода, но сохраняется в то же поле <code>reps</code>. Нельзя считать его подтверждёнными выполненными повторениями. Ссылка: <code>set_capture_sheet.dart:50-60,154-185</code>.</td></tr>
+<tr><td>Закончить/записать подход</td><td>Кнопка completion в WorkoutPlayerPage.</td><td>Её <code>_MarkCompleteButton.onTap</code> приватен; строит WorkoutSession и вызывает <code>logSessionActionProvider.notifier.log</code>. Provider проверяет конкурентную запись и вызывает repository.</td><td>Firestore пишет <code>users/{uid}/workout_sessions/{id}</code> через <code>doc(id).set</code>; таймаут 4 секунды возвращается как успех даже если сервер позже отклонит запись. Snackbar доказывает возврат операции без ошибки, не серверный ACK. Запись ставит status=completed и заменяет set list на 0/1 capture. Ссылки: <code>workout_player_page.dart:669-780</code>, <code>workout_session_providers.dart:85-110</code>, <code>firestore_workout_session_repository.dart:61-70</code>.</td></tr>
+<tr><td>Начать/поставить на паузу/продолжить/пропустить отдых</td><td>После успешного результата логирования player автоматически запускает RestTimer; кнопки таймера вызывают тот же provider.</td><td><code>RestTimerController</code> поддерживает start/pause/resume/addTime/skip. Это transient state; repository не вызывается.</td><td>Parser содержит <code>startRest/skipRest</code>, но caller отсутствует. Standalone start-rest touch entry в player не найден. Ссылки: <code>workout_player_page.dart:748-780</code>, <code>rest_timer.dart:180-219</code>.</td></tr>
+<tr><td>Следующее/предыдущее упражнение / «что дальше?»</td><td>В сессии дня day strip заменяет route текущего exercise на выбранный. Для одиночного упражнения перехода next/previous в просмотренных путях нет.</td><td>Навигация — callback виджета через GoRouter, не общий workout action/provider.</td><td>Parser содержит эти intents, production caller нет. Для scheduled day есть путь; для single-exercise — <code>NOT_FOUND IN THE REVIEWED PATHS</code>. Ссылка: <code>workout_player_page.dart:493-505</code>.</td></tr>
+<tr><td>Закончить/отменить целую тренировку</td><td>Такого touch action в проверенных player/route путях не найдено; summary — чтение результата.</td><td>Parser имеет generic <code>cancel</code>, но он не связан ни с action, ни с отменой тренировки. Сброс таймера не равен отмене тренировки.</td><td><code>NOT_FOUND IN THE REVIEWED PATHS</code>; не назначать generic «stop/cancel» на timer reset или completion упражнения.</td></tr>
+<tr><td>Повторные подходы и читатели</td><td>Модель уже хранит <code>WorkoutSessionExercise.sets</code> как список.</td><td>Player заменяет список на 0/1 capture. <code>asLogEntries()</code> выбирает лучший capture на упражнение; workoutSessionHistoryProvider consumers (Home/progress/suggestions/recovery/personalisation/equipment history/last-session) and export читают этот projection. DayResult, session volume, personal records и weekly volume читают все set entries.</td><td>При требовании полного набора фактических подходов — добавлять их в существующий список и сохранить best-set projection для его текущих потребителей, пока продукт отдельно не решит изменить эти поверхности. Не вводить второе хранилище. Репетиции нужно писать как фактически выполненные после подхода, а не копировать предустановленную цель. Ссылки: <code>workout_session.dart:339-398</code>, <code>day_result.dart:86-129</code>, <code>progress_charts.dart:70-76,151-166</code>, <code>volume_ledger.dart:96-133</code>, <code>data_export_providers.dart:80-96</code>.</td></tr>
 </tbody></table></div>
 <p><b>Подтверждённое направление продукта:</b> один workout flow и один источник истины, с голосом и touch как двумя входами. Безопасность и подтверждение сохраняются; неоднозначную/неподтверждённую команду нельзя считать выполненной. Кодовый источник: <a href="../core/changes/2026-10-19-ai-coach-existing-workout-voice-scope.md">scope/code evidence record</a>, <a href="../docs/ai-coach/01b_CODE_MAP.md">CODE_MAP.md</a>, <a href="../docs/ai-coach/03_DESIGN.md">DESIGN.md</a>.</p>
-<p><b>Следующий разрешённый шаг:</b> завершить только read-only карту всех операций и читателей, обновить контракт существующего flow, затем дождаться отдельного разрешения на кодовый спринт. В этой работе новые workout APIs, speech adapter, хранилище и runtime не создавались; тесты не запускались.</p></section>
+<p><b>Результат карты:</b> действующие touch paths, private logging callback, граница записи/результата и найденные reader-контракты задокументированы в <a href="../docs/ai-coach/01b_CODE_MAP.md">CODE_MAP</a>. Voice остаётся <b>NOT IMPLEMENTED</b>. Предложение контракта записано в <a href="../docs/ai-coach/03_DESIGN.md">03_DESIGN.md §0.1</a>; следующий шаг — GPT-PM product disposition. Код не разрешён без acceptance и отдельного sprint GO.</p></section>
 <section><h2>PM Bridge: что было и чего не было отправлено</h2><div class="callout danger"><b>Исправление истории:</b> request <code>7f2a3e91-6d40-4c81-9b56-2f8a7d13c904</code> завершился failed после двух транспортных попыток, обе до send: ATTACHMENT_NOT_LANDED (в composer отсутствовал acceptance.md), sendPhase=not-started, send snapshot и userTurnId отсутствуют. Решения GPT-PM по нему нет. После этого создали новый чат и успешно отправили новые запросы.</div>
 <div class="table-wrap"><table><thead><tr><th>Request</th><th>Факт транспорта</th><th>Результат</th></tr></thead><tbody>
 <tr><td><code>7f2a3e91-6d40-4c81-9b56-2f8a7d13c904</code></td><td>Failed after 2 transport attempts, both pre-send: ATTACHMENT_NOT_LANDED (missing acceptance.md); no send snapshot or user turn.</td><td><span class="pill blocked">NOT SENT — не решение</span></td></tr>
@@ -141,11 +154,11 @@
 <li>Исправлена точность истории отправки: сохранены отдельно not-sent отказ и два фактически отправленных/коррелированных ответа GPT-PM.</li>
 <li>Acceptance и README дополнены текущим ACS-100 решением, всеми восемью gates и свежестью метрики.</li>
 <li>Собраны русская и английская HTML-картины: спринты, все 13 историй, все 31 OQ, кодовый статус и ACS-100.</li>
-<li>Проверены текущие workout action/repository paths и parser; установлено, что voice dispatch отсутствует и сохраняется максимум один set на exercise.</li>
+<li>Составлена карта каждого workout intent к touch entry, state/action seam, записи и результату; включены private callback и найденные set-list readers. Voice dispatch отсутствует; player пишет не более одного capture, а reps вводятся до подхода.</li>
 <li>Повторно запрошены readiness metrics read-only: новый 17-минутный интервал пуст, 7-дневная история по-прежнему заканчивается 16 Oct 11:32Z; production ресурсы не менялись.</li>
 </ul><h3>Что не выполнялось</h3><p>Не менялись функции, alert policy, notification channel или production/runtime. Не отправлялись synthetic AI calls и тестовые уведомления; не выполнялись tests, project checks, build, CI, migrations, push или merge. Это документальный/read-only статусный срез, не runtime acceptance.</p></section>
 <section><h2>Упорядоченные следующие действия</h2><ol>
-<li><b>Завершить read-only карту voice-команд в существующие действия и читатели WorkoutSession.</b> Голос не реализован; не создавать отдельный tracker/store. После этого обновить contract и ждать отдельный GO на code sprint.</li>
+<li><b>Просмотреть proposal в 03_DESIGN.md §0.1.</b> GPT-PM фиксирует product disposition; оператор остаётся accountable owner. Код не разрешён; после acceptance нужен отдельный sprint GO.</li>
 <li><b>Повторно прочитать readiness series, когда появятся естественные samples.</b> Codex — исполнитель read-only проверки; оператор — accountable owner задачи. До свежих точек health считать UNKNOWN; не создавать synthetic AI запросы для получения метрики.</li>
     <li><b>Закрыть G7 до deployment.</b> Привязку FA-D1 к будущей policy нужно подтвердить при подготовке configuration; G5 по 60s/ALIGN_MAX/trigger уже проверен по descriptor и API docs. GPT-PM gate пока запрещает создание production policy из-за G2.</li>
 <li><b>После fresh data и полного прохода gates применить policy только после отдельного разрешения на production mutation.</b> Затем отдельно доказать targeting и controlled non-AI delivery; получить acknowledgement через FA-D1. До этого ACS-100 открыт.</li>
@@ -161,10 +174,20 @@
 <tr><td>ACS-100 readiness alert</td><td>Candidate APPROVED; deployment BLOCKED</td><td>Requests 266…36b3 / 2ec…44a1; metric API and Cloud docs</td><td>Fresh samples; G7 binding; delivery/ack; broader reliability requirements.</td><td>Codex — technical owner/executor по прямому назначению; GPT-PM — product owner; оператор accountable за делегированную задачу; FA-D1 — одобренный interim route.</td><td>Повторно читать метрики при естественном появлении свежих точек; до снятия G2 deployment заблокирован GPT-PM.</td></tr>
 <tr><td>Текущий runtime</td><td>aiCoachAdvice ACTIVE; Live Coach runtime не доказан</td><td>Firebase/Cloud Run metadata; source review</td><td>Voice/persistence/planner roadmap не реализован в Phase 9 scope.</td><td>Fitness_App AI Coach; Codex технический исполнитель.</td><td>Начинать после принятия дизайна и разрешения спринта.</td></tr>
 <tr><td>Тесты/runtime proof</td><td>NOT_RUN / NOT_PROVEN</td><td>Плановые test docs; read-only cloud observation</td><td>Нет тестовой, alert delivery или clinical acceptance evidence.</td><td>Фаза тестирования не начата.</td><td>Только после завершения кодирования и перехода в test phase.</td></tr>
-<tr><td>Голос в существующем workout</td><td>NOT IMPLEMENTED</td><td>Карта кода и voice parser: parser без production caller; текущие player/repository остаются источником истины.</td><td>Полная карта команд/читателей; безопасный voice dispatch в те же actions; сверить writer/reader semantics: список уже есть, но player заменяет его максимум одним подходом; история показывает лучший, прямые метрики считают все.</td><td>Оператор — accountable owner; Codex — технический исполнитель; GPT-PM — владелец продуктовых решений.</td><td>Завершить read-only mapping, обновить контракт, затем отдельный GO на код.</td></tr>
+<tr><td>Голос в существующем workout</td><td>Operation map документирована; voice dispatch NOT IMPLEMENTED</td><td><code>01b_CODE_MAP.md</code> §Intent-to-existing-operation map; текущие player/provider/repository и reader source paths.</td><td>Общий action для private logging callback; цель vs факт повторений; фактические повторные captures; server ACK semantics. Whole-workout start/finish/cancel и single-exercise next/previous — NOT_FOUND в просмотренных путях.</td><td>Оператор — accountable owner задачи; Codex — технический исполнитель; GPT-PM — продуктовые решения.</td><td>Record product disposition on 03_DESIGN §0.1; code requires a separate sprint GO.</td></tr>
 </tbody></table></div></section>
 <p class="footer">Сокращения: OQ — открытый вопрос; TR — технический контракт/проверка; ACS — story ID; FA-D1 — существующий production notification channel; PENDING — acceptance не принято; UNKNOWN — данных недостаточно. Детальные источники указаны внутри разделов.</p>
 </main>
+
+
+
+
+
+
+
+
+
+
 
 
 
