@@ -33,7 +33,7 @@ Dependency order: 00 -> 01 -> 02 -> (03 and 04 may run in parallel after 02) -> 
 
 - AC-1: for each intended voice intent (start/enter workout, start or finish a set, enter weight/reps, start/skip rest, navigate exercise, finish/cancel), cite the current UI entry point, action/controller/provider, repository call and persistence/result boundary. Mark unsupported or unverified operations `NOT_FOUND` / `NOT_VERIFIED` instead of inventing an API.
 - AC-2: identify which existing operations can be called directly and which are private widget callbacks; propose a shared action seam only where the trace proves one is needed. Touch and voice must reach the same validation and persistence path.
-- AC-3: compare required set semantics with the current persisted model and all relevant readers. If the current one-set-per-exercise shape is insufficient, specify the smallest extension to the existing model/repository and its compatibility work; do not propose a parallel tracker/store as the default.
+- AC-3: compare required set semantics with the existing `WorkoutSessionExercise.sets` list and all relevant readers. The current player writer replaces that list with zero or one capture, `asLogEntries()` projects the best set, and direct volume readers consume all sets. Specify the smallest compatible writer/action change and preserve or deliberately reconcile these reader contracts; do not propose a parallel tracker/store as the default.
 - AC-4: preserve current safety, screening, authorization, duplicate-write and honest-save behavior; voice must not announce success before the existing operation confirms it. List unresolved defects as explicit gaps rather than hiding them behind a new runtime.
 
 **AI-COACH-02 — voice adapter (planned; not authorized)**

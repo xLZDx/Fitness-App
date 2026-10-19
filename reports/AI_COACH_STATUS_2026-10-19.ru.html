@@ -35,7 +35,7 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App_aicoach</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; docs/ai-coach-tdd-001 @ f7aeddc1</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; docs/ai-coach-tdd-001 @ fcf90ca7</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -54,9 +54,13 @@
 
 
 
+
+
+
+
 <section><h2>Короткий вывод</h2>
 <div class="callout"><b>Текущий запрос: голосовой помощник как второй способ управлять существующей тренировкой.</b> Он должен вызывать те же действия, проверки, состояние и сохранение, что и кнопки приложения. Отдельный трекер, lifecycle, хранилище или авторитетный runtime не нужны без доказанного пробела в существующих интерфейсах. В текущем коде такой голосовой путь не реализован: есть экран одноразового совета и не подключённый parser команд.</div>
-<p>GPT-PM ответил <b>MODIFY</b>: исправить архитектурный scope и сначала сопоставить каждую команду с существующими UI/action/provider/repository путями. Это не разрешение на реализацию. Кодовый разбор выявил конкретное ограничение: существующий player сохраняет максимум один <code>SetCapture</code> на упражнение; до выбора минимального исправления нужно закончить карту операций и проверить все читатели существующей модели.</p>
+<p>GPT-PM ответил <b>MODIFY</b>: исправить архитектурный scope и сначала сопоставить каждую команду с существующими UI/action/provider/repository путями. Это не разрешение на реализацию. Кодовый разбор выявил точный разрыв: <code>WorkoutSessionExercise.sets</code> уже является списком, но текущий player при записи заменяет его максимум одним <code>SetCapture</code>. <code>asLogEntries()</code> показывает лучший подход, а прямые метрики считают все. Нужно закончить карту операций и сверить эти reader-контракты.</p>
 <p>Документы Phase 9 содержат технические предложения и ограниченные решения GPT-PM, но не закрывают все контракты. Все 13 story dispositions остаются <b>PENDING</b>. ACS-100 получил точное условное решение по alert, однако создание policy заблокировано отсутствием свежих service-specific метрик. OQ-07 не имеет подписанных клинических значений.</p>
 <div class="grid">
 <div class="card"><b>Live Coach roadmap</b><span class="pill open">00 — документация; 01–05 — план, не разрешены</span></div>
@@ -105,7 +109,7 @@
 <tr><td>Safety/content</td><td>Текущий prompt — свободный тренировочный совет (техника/ошибки/начальный объём; stop при резкой боли); это не Phase 9 typed factual claim contract и не подписанная клиническая политика.</td><td><span class="pill open">Manual source review; runtime semantics не доказана</span></td></tr>
 <tr><td>Экран тренировки и сохранение</td><td>Существующий player собирает вес/повторения, сохраняет через WorkoutSessionRepository и запускает таймер отдыха после успешного сохранения; приложение использует Firestore repository.</td><td><span class="pill blue">Существующий путь проверен; поведение не менялось</span></td></tr>
 <tr><td>Голосовой ввод и dispatch</td><td><code>voice_command.dart</code> — только parser без production caller; в <code>mobile/lib</code> нет используемого speech-to-text adapter; команды не вызывают workout actions.</td><td><span class="pill blocked">Голосовое управление НЕ РЕАЛИЗОВАНО</span></td></tr>
-<tr><td>Модель подхода</td><td>Player хранит один <code>SetCapture</code> на упражнение; multi-set должен решаться через существующие session/repository и readers.</td><td><span class="pill open">Подтверждённый gap совместимости</span></td></tr>
+<tr><td>Модель подхода</td><td><code>WorkoutSessionExercise.sets</code> уже сериализует список <code>SetCapture</code>; текущий player writer заменяет его нулём или одним захваченным подходом. <code>asLogEntries()</code> сворачивает список до лучшего подхода, прямые метрики считают все.</td><td><span class="pill open">Модель уже есть; writer/reader semantics требуют сверки</span></td></tr>
 <tr><td>AI advice endpoint</td><td><code>aiCoachAdvice</code> возвращает один текстовый ответ; не управляет операциями тренировки.</td><td><span class="pill done">Существующая функция только для советов</span></td></tr>
 </tbody></table></div><p>Код: <a href="../mobile/lib/features/ai_coach/ai_coach_context.dart">ai_coach_context.dart</a>, <a href="../mobile/lib/features/ai_coach/ai_coach_service.dart">ai_coach_service.dart</a>, <a href="../functions/src/ai_coach_advice.ts">ai_coach_advice.ts</a>, <a href="../mobile/lib/features/voice/data/voice_command.dart">voice_command.dart</a>, <a href="../mobile/lib/features/equipment/workout_player_page.dart">workout_player_page.dart</a>.</p></section>
 <section><h2>Запрос оператора: голос вместо нажатий в существующей тренировке</h2>
@@ -155,6 +159,10 @@
 </tbody></table></div></section>
 <p class="footer">Сокращения: OQ — открытый вопрос; TR — технический контракт/проверка; ACS — story ID; FA-D1 — существующий production notification channel; PENDING — acceptance не принято; UNKNOWN — данных недостаточно. Детальные источники указаны внутри разделов.</p>
 </main>
+
+
+
+
 
 
 
