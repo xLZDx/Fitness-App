@@ -269,10 +269,10 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
-| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 27149 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 28899 |
 | `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 90258 |
 | `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 33761 |
-| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 76337 |
+| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 77875 |
 | `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 152685 |
 | `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revisio | 30273 |
 | `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 147630 |
@@ -294,10 +294,10 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md` | Phase 9 remote ownership-source check | 4579 |
 | `docs/ai-coach/19_PHASE9_REMOTE_OWNER_SOURCE_REVIEW.md` | Phase 9 remote owner-source evidence review | 2457 |
 | `docs/ai-coach/20_PHASE9_EXECUTION_OWNERSHIP_AND_REVIEW_ROUTE.md` | Phase 9 execution ownership and alternative review route | 28503 |
-| `docs/ai-coach/21_PHASE9_OQ14_OQ18_TR_CONTRACT_PROPOSAL.md` | OQ-14 and OQ-18 bounded TR contract proposal | 34848 |
-| `docs/ai-coach/22_PHASE9_OQ07_TR_CONTRACT_PROPOSAL.md` | OQ-07 limit-free technical contract proposal | 13494 |
+| `docs/ai-coach/21_PHASE9_OQ14_OQ18_TR_CONTRACT_PROPOSAL.md` | OQ-14 and OQ-18 bounded TR contract proposal | 38683 |
+| `docs/ai-coach/22_PHASE9_OQ07_TR_CONTRACT_PROPOSAL.md` | OQ-07 limit-free technical contract proposal | 16448 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 77771 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 78327 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |

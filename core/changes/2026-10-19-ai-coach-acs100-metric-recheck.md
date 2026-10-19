@@ -33,3 +33,9 @@ The latest point in the seven-day result was `2026-10-16T11:32:00Z`, revision `a
 ## Verification limits
 
 The API request succeeded and returned the results above. No tests, project checks, builds, CI, migrations or production mutations were run. This observation is a point-in-time snapshot and must be refreshed before the ACS-100 deployment gate is reconsidered.
+
+## Current-turn natural-metric recheck
+
+On 2026-10-19, Codex repeated the same read-only Cloud Monitoring API query for the 24-hour interval `2026-10-18T17:44:35Z`–`2026-10-19T17:41:35Z` UTC, ending three minutes before the query to account for the documented ingest delay. The API returned HTTP 200 and zero matching `cloud_run_revision` time series for `service_name=aicoachadvice`, `location=europe-west1`, and `run.googleapis.com/container/instance_count_with_readiness`. No callable was invoked, no synthetic traffic was generated, and no policy/channel/resource was changed. This remains `NO_POINTS` / `OBSERVABILITY UNKNOWN`; the service is not inferred healthy or unhealthy, and freshness gate G2 remains BLOCKED. The bearer token was held in process memory and was not printed or recorded.
+
+Exact query window and result were produced in this turn by a read-only GET to `projects/fitness-app-korostelev/timeSeries` using the in-session `gcloud` credential. The first PowerShell JSON inspection attempt returned an unexpected abbreviated body and was not used as evidence; a second request parsed the response with Python's standard-library JSON/HTTP client and independently reported `HTTP 200`, `series_count=0` for the same interval and filter.
