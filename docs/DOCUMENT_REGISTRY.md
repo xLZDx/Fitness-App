@@ -269,11 +269,11 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
-| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 26362 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 27149 |
 | `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 90258 |
 | `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 33761 |
-| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 75849 |
-| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 145100 |
+| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 76337 |
+| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 152685 |
 | `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revisio | 30273 |
 | `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 147630 |
 | `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 219294 |

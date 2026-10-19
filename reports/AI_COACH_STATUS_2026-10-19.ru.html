@@ -35,7 +35,7 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App_aicoach</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; docs/ai-coach-tdd-001 @ b7f4a6bd</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; docs/ai-coach-tdd-001 @ 2556ff7d</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -88,9 +88,15 @@
 
 
 
+
+
+
+
+
+
 <section><h2>Короткий вывод</h2>
 <div class="callout"><b>Текущий запрос: голосовой помощник как второй способ управлять существующей тренировкой.</b> Он должен вызывать те же действия, проверки, состояние и сохранение, что и кнопки приложения. Отдельный трекер, lifecycle, хранилище или авторитетный runtime не нужны без доказанного пробела в существующих интерфейсах. В текущем коде такой голосовой путь не реализован: есть экран одноразового совета и не подключённый parser команд.</div>
-<p>GPT-PM сначала вернул <b>MODIFY</b> по запросу <code>2b85df8c-9ec7-41ad-9d41-4aecbf8d9c80</code>. После исправления design/backlog коррелированный follow-up <code>3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d</code> получил <b>ACCEPT — PRODUCT/DESIGN CONTRACT ONLY</b>: B-01..B-05 и M-01..M-04 закрыты на уровне продуктового контракта. Это не техническая верификация и не code-sprint GO. Runtime не реализован; concurrency/retry механизм, pending/unknown recovery, historical-reps provenance и action parity остаются техническими prerequisites. Подробнее: <a href="../docs/ai-coach/03_DESIGN.md">03_DESIGN.md §§0.2–0.3</a>.</p>
+<p>GPT-PM сначала вернул <b>MODIFY</b> по запросу <code>2b85df8c-9ec7-41ad-9d41-4aecbf8d9c80</code>. После исправления design/backlog коррелированный follow-up <code>3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d</code> получил <b>ACCEPT — PRODUCT/DESIGN CONTRACT ONLY</b>: B-01..B-05 и M-01..M-04 закрыты на уровне продуктового контракта. Codex подготовил конкретный вариант §0.4: транзакция свежего WorkoutSession, стабильный set ID и явное несохранение offline, чтобы не терять изменения. Это меняет offline UX и требует решения GPT-PM до реализации. Новый запрос <code>e0b7b888-d2a4-4dfd-a3b9-f73e52a38fed</code> не отправлен: job <code>0be741fe-3e0b-4792-b962-7a098942453b</code>, <code>ATTACHMENT_NOT_LANDED</code>, <code>sendPhase=not-started</code>, не найден вложенный <code>03_DESIGN.md</code>, turn/reply отсутствуют. Это не техническая верификация и не code-sprint GO. Runtime не реализован; pending/unknown recovery, historical-reps provenance и action parity остаются prerequisites. Подробнее: <a href="../docs/ai-coach/03_DESIGN.md">03_DESIGN.md §§0.2–0.4</a>.</p>
 <p>Документы Phase 9 содержат технические предложения и ограниченные решения GPT-PM, но не закрывают все контракты. Все 13 story dispositions остаются <b>PENDING</b>. ACS-100 получил точное условное решение по alert, однако создание policy заблокировано отсутствием свежих service-specific метрик. OQ-07 не имеет подписанных клинических значений.</p>
 <div class="grid">
 <div class="card"><b>Live Coach roadmap</b><span class="pill open">00 — документация; 01–05 — план, не разрешены</span></div>
@@ -173,11 +179,11 @@
 <li>Собраны русская и английская HTML-картины: спринты, все 13 историй, все 31 OQ, кодовый статус и ACS-100.</li>
 <li>Составлена карта каждого workout intent к touch entry, state/action seam, записи и результату; включены private callback и найденные set-list readers. Voice dispatch отсутствует; player пишет не более одного capture, а reps вводятся до подхода.</li>
 <li>После correlated GPT-PM <code>MODIFY</code> обновлены design/backlog и RU/EN status report; fact-check M-04 подтвердил raw <code>workoutSessions</code> в account export и явную truncation.</li>
-<li>Отправлен distinct review request <code>3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d</code> и получен коррелированный <code>ACCEPT — PRODUCT/DESIGN CONTRACT ONLY</code> по B-01..B-05/M-01..M-04. Это не code GO; code/runtime не запускались.</li>
+<li>Отправлен distinct review request <code>3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d</code> и получен коррелированный <code>ACCEPT — PRODUCT/DESIGN CONTRACT ONLY</code> по B-01..B-05/M-01..M-04. Это не code GO; code/runtime не запускались.</li><li>Подготовлен §0.4 с transaction-based вариантом против stale writes и replay; отдельное решение GPT-PM по потере durable offline-сохранения запрошено, но запрос не отправлен из-за <code>ATTACHMENT_NOT_LANDED</code> (нет turn/reply).</li>
 <li>Повторно запрошены readiness metrics read-only: новый 17-минутный интервал пуст, 7-дневная история по-прежнему заканчивается 16 Oct 11:32Z; production ресурсы не менялись.</li>
-</ul><h3>Что не выполнялось</h3><p>Не менялись функции, alert policy, notification channel или production/runtime. Не отправлялись synthetic AI calls и тестовые уведомления; не выполнялись tests, project checks, build, CI, migrations, push или merge. Это документальный/read-only статусный срез, не runtime acceptance.</p></section>
+</ul><h3>Что не выполнялось</h3><p>Не менялись функции, alert policy, notification channel или production/runtime. Не отправлялись synthetic AI calls и тестовые уведомления; не выполнялись tests, project checks, build, CI, migrations, push или merge. По ошибке был запущен git diff --check вопреки предыдущему ограничению: whitespace-ошибок не сообщил, вывел только предупреждения LF/CRLF; повторно не запускался. Это документальный/read-only статусный срез, не runtime acceptance.</p></section>
 <section><h2>Упорядоченные следующие действия</h2><ol>
-<li><b>Подготовить техническое решение для реализации.</b> Product/design contract принят GPT-PM; до кодирования остаются решения по concurrency/retry, pending/unknown recovery, historical-reps compatibility и shared-action lifecycle. Codex — технический владелец/исполнитель; оператор — accountable owner.</li>
+<li><b>Восстановить отправку запроса к GPT-PM.</b> Вариант с Firestore transaction предотвращает потерю stale-snapshot обновлений, но убирает durable offline запись. Запрос <code>e0b7b888-d2a4-4dfd-a3b9-f73e52a38fed</code> остановился до send: не приложился <code>03_DESIGN.md</code>, ответа нет. Владелец PM Bridge attachment transport в документах проекта не установлен.</li><li><b>Завершить implementation contract после product-решения.</b> Уточнить transaction/retry/ack, historical reps и parity общего action/provider. Codex — technical owner/executor; оператор — accountable owner; GPT-PM принимает product tradeoff.</li>
 <li><b>Начинать code sprint только по явному GO и после определения технических prerequisites.</b> GPT-PM acceptance не является code GO; voice runtime не реализован.</li>
 <li><b>Повторно прочитать readiness series, когда появятся естественные samples.</b> Codex — исполнитель read-only проверки; оператор — accountable owner задачи. До свежих точек health считать UNKNOWN; не создавать synthetic AI запросы для получения метрики.</li>
     <li><b>Закрыть G7 до deployment.</b> Привязку FA-D1 к будущей policy нужно подтвердить при подготовке configuration; G5 по 60s/ALIGN_MAX/trigger уже проверен по descriptor и API docs. GPT-PM gate пока запрещает создание production policy из-за G2.</li>
@@ -194,10 +200,16 @@
 <tr><td>ACS-100 readiness alert</td><td>Candidate APPROVED; deployment BLOCKED</td><td>Requests 266…36b3 / 2ec…44a1; metric API and Cloud docs</td><td>Fresh samples; G7 binding; delivery/ack; broader reliability requirements.</td><td>Codex — technical owner/executor по прямому назначению; GPT-PM — product owner; оператор accountable за делегированную задачу; FA-D1 — одобренный interim route.</td><td>Повторно читать метрики при естественном появлении свежих точек; до снятия G2 deployment заблокирован GPT-PM.</td></tr>
 <tr><td>Текущий runtime</td><td>aiCoachAdvice ACTIVE; Live Coach runtime не доказан</td><td>Firebase/Cloud Run metadata; source review</td><td>Voice/persistence/planner roadmap не реализован в Phase 9 scope.</td><td>Fitness_App AI Coach; Codex технический исполнитель.</td><td>Начинать после принятия дизайна и разрешения спринта.</td></tr>
 <tr><td>Тесты/runtime proof</td><td>NOT_RUN / NOT_PROVEN</td><td>Плановые test docs; read-only cloud observation</td><td>Нет тестовой, alert delivery или clinical acceptance evidence.</td><td>Фаза тестирования не начата.</td><td>Только после завершения кодирования и перехода в test phase.</td></tr>
-<tr><td>Голос в существующем workout / GPT-PM contract</td><td>Product/design contract ACCEPT; implementation prerequisites OPEN; voice dispatch NOT IMPLEMENTED</td><td>Коррелированные запросы <code>2b85df8c-9ec7-41ad-9d41-4aecbf8d9c80</code> (MODIFY) и <code>3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d</code> (ACCEPT); <code>03_DESIGN.md §§0.2–0.3</code>.</td><td>Точный механизм concurrency/retry/ack; pending/unknown recovery; неопределённое происхождение historical reps; conformance общего action/provider lifecycle. Product acceptance не закрывает инженерные/runtime gates.</td><td>Оператор — accountable owner; Codex — технический владелец/исполнитель; GPT-PM — product decision owner.</td><td>Codex готовит implementation contract; до кода/runtime получить отдельный code-sprint GO.</td></tr>
+<tr><td>Голос в существующем workout / GPT-PM contract</td><td>Product/design contract ACCEPT; technical tradeoff PENDING; implementation prerequisites OPEN; voice dispatch NOT IMPLEMENTED</td><td>Коррелированные <code>2b85df8c-9ec7-41ad-9d41-4aecbf8d9c80</code> (MODIFY), <code>3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d</code> (ACCEPT); §0.4; failed pre-send job <code>0be741fe-3e0b-4792-b962-7a098942453b</code>.</td><td>Offline no-save tradeoff not accepted; then transaction/retry/ack recovery, historical reps provenance and shared action/provider lifecycle. Product acceptance is not implementation approval.</td><td>Оператор — accountable owner; Codex — технический владелец/исполнитель; GPT-PM — product decision owner. PM attachment transport owner: UNKNOWN.</td><td>Resolve attachment delivery and obtain GPT-PM's product choice; then finish technical contract and get explicit code-sprint GO.</td></tr>
 </tbody></table></div></section>
 <p class="footer">Сокращения: OQ — открытый вопрос; TR — технический контракт/проверка; ACS — story ID; FA-D1 — существующий production notification channel; PENDING — acceptance не принято; UNKNOWN — данных недостаточно. Детальные источники указаны внутри разделов.</p>
 </main>
+
+
+
+
+
+
 
 
 
