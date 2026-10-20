@@ -1,0 +1,452 @@
+/* ==========================================================================
+   SPTR marketing prototype — internal Marketing R&D build
+   One shell, three concept variants. Only the message layer changes.
+   ========================================================================== */
+
+/* --- tokens --------------------------------------------------------------- */
+:root {
+  --paper:      #FAF9FC;
+  --surface:    #FFFFFF;
+  --tint:       #F3F0FA;
+  --ink:        #17092E;
+  --ink-soft:   #3D3151;
+  --muted:      #635C74;
+  --line:       #E4DFEE;
+  --line-soft:  #EFEBF6;
+  --brand:      #5B21B6;
+  --brand-deep: #2E1065;
+  --lime:       #C2F562;
+  --lime-ink:   #17092E;
+  --shadow:     0 1px 2px rgba(23,9,46,.05), 0 12px 32px -12px rgba(23,9,46,.14);
+  --shadow-lg:  0 2px 4px rgba(23,9,46,.06), 0 40px 80px -32px rgba(23,9,46,.28);
+
+  --shell: 1180px;
+  --r:  14px;
+  --r-lg: 22px;
+
+  --step--1: clamp(13px, .82rem + .1vw, 14px);
+  --step-0:  clamp(16px, .98rem + .12vw, 17.5px);
+  --step-1:  clamp(18px, 1.05rem + .3vw, 21px);
+  --step-2:  clamp(22px, 1.2rem + .8vw, 30px);
+  --step-3:  clamp(28px, 1.4rem + 1.9vw, 46px);
+  --step-4:  clamp(36px, 1.6rem + 4.2vw, 78px);
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #0C0716;
+    --surface:    #150D26;
+    --tint:       #110A1F;
+    --ink:        #F1ECFF;
+    --ink-soft:   #D5CBEC;
+    --muted:      #9B92B0;
+    --line:       #2A1F3E;
+    --line-soft:  #221839;
+    --brand:      #BFA0FA;
+    --brand-deep: #E6DBFF;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 12px 32px -12px rgba(0,0,0,.6);
+    --shadow-lg:  0 2px 4px rgba(0,0,0,.5), 0 40px 80px -32px rgba(0,0,0,.8);
+  }
+}
+
+/* --- base ----------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Segoe UI Variable Display", "Segoe UI", -apple-system,
+               BlinkMacSystemFont, Roboto, "Helvetica Neue", system-ui, sans-serif;
+  font-size: var(--step-0);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; line-height: 1.05; letter-spacing: -.028em; font-weight: 700; text-wrap: balance; }
+h3 { font-size: var(--step-1); line-height: 1.25; letter-spacing: -.015em; }
+p  { margin: 0; }
+img { max-width: 100%; height: auto; display: block; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+em { font-style: normal; color: var(--brand); font-weight: 600; }
+
+a { color: inherit; }
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.shell { width: 100%; max-width: var(--shell); margin: 0 auto; padding: 0 24px; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 50;
+  background: var(--ink); color: var(--paper);
+  padding: 12px 18px; border-radius: 0 0 var(--r) 0; text-decoration: none;
+}
+.skip:focus { left: 0; }
+
+.eyebrow {
+  font-size: var(--step--1); font-weight: 700;
+  letter-spacing: .13em; text-transform: uppercase;
+  color: var(--brand); margin-bottom: 14px;
+}
+
+.lede { font-size: var(--step-1); color: var(--muted); max-width: 60ch; line-height: 1.55; }
+
+/* --- variant gate --------------------------------------------------------- */
+[data-for] { display: none; }
+html[data-concept="a"] [data-for="a"],
+html[data-concept="b"] [data-for="b"],
+html[data-concept="c"] [data-for="c"] { display: block; }
+
+/* --- nav ------------------------------------------------------------------ */
+.nav {
+  position: sticky; top: 0; z-index: 30;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.nav-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 68px; }
+
+/* min-width:0 lets a flex child shrink below its content's natural width --
+   without it a flex item is floored at that width, which is what let a
+   debug-mode badge (an ::after appended to .mark-sub) blow the nav bar out
+   past the viewport on narrow screens even after CTA buttons were excluded
+   from the same badge system. General fix rather than an exclusion list, so
+   it holds for any future badge added inside a nav flex child. */
+.mark { display: flex; flex-direction: column; gap: 1px; text-decoration: none; min-width: 0; }
+.mark-word {
+  font-size: 21px; font-weight: 800; letter-spacing: .04em;
+  line-height: 1; color: var(--ink);
+}
+.mark-x {
+  display: inline-block;
+  max-width: 1.2em; opacity: 1;
+  transition: max-width .5s cubic-bezier(.2,.7,.2,1) .55s, opacity .3s ease .55s;
+  overflow: hidden; vertical-align: bottom;
+}
+.mark-word.tight .mark-x { max-width: 0; opacity: 0; }
+.mark-sub {
+  font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600;
+}
+
+/* --- buttons -------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: inherit; cursor: pointer;   /* <button> inherits neither */
+  padding: 14px 26px; border-radius: 999px;
+  background: var(--lime); color: var(--lime-ink);
+  font-weight: 700; font-size: var(--step-0); letter-spacing: -.01em;
+  text-decoration: none; border: 1px solid transparent;
+  box-shadow: var(--shadow);
+  transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn:active { transform: translateY(0); }
+.btn-sm { padding: 9px 18px; font-size: var(--step--1); }
+.btn-big { padding: 18px 40px; font-size: var(--step-1); }
+.btn-ghost {
+  background: transparent; color: var(--ink);
+  border-color: var(--line); box-shadow: none;
+}
+.btn-ghost:hover { border-color: var(--brand); color: var(--brand); box-shadow: none; }
+
+/* --- hero ----------------------------------------------------------------- */
+.hero { position: relative; padding: clamp(46px, 7vw, 96px) 0 clamp(40px, 6vw, 86px); overflow: hidden; }
+.hero::before {
+  content: ""; position: absolute; inset: -30% 40% 40% -20%;
+  background: radial-gradient(60% 60% at 50% 50%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 70%);
+  pointer-events: none; z-index: -1;
+}
+.hero-in {
+  display: grid; gap: clamp(34px, 5vw, 64px);
+  grid-template-columns: 1fr; align-items: center;
+}
+@media (min-width: 900px) { .hero-in { grid-template-columns: 1.08fr .92fr; } }
+
+.hero-h { font-size: var(--step-4); max-width: 15ch; }
+.hero-h-steps span { display: inline-block; margin-right: .28em; }
+.hero-h-steps span:nth-child(2) { color: var(--brand); }
+.hero-sub {
+  margin-top: 22px; font-size: var(--step-1);
+  color: var(--ink-soft); max-width: 46ch; line-height: 1.5;
+}
+.hero-act { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+
+/* device framing */
+.hero-media { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.phone {
+  width: min(100%, 372px);
+  padding: 11px;
+  border-radius: 42px;
+  background: linear-gradient(160deg, #2A2140, #100A1E);
+  box-shadow: var(--shadow-lg);
+}
+.phone-shot {
+  position: relative; border-radius: 32px; overflow: hidden;
+  aspect-ratio: 3 / 4; background: #0B0716;
+}
+.phone-shot img { width: 100%; height: 100%; object-fit: cover; }
+
+.reticle { position: absolute; inset: 17% 12%; }
+.reticle i {
+  position: absolute; width: 30px; height: 30px;
+  border: 2.5px solid rgba(255,255,255,.92);
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.5));
+}
+.reticle i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+.reticle i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+.reticle i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+.reticle i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+
+.media-note {
+  font-size: var(--step--1); color: var(--muted);
+  text-align: center; max-width: 40ch; line-height: 1.45;
+}
+
+/* --- bands ---------------------------------------------------------------- */
+.band { padding: clamp(56px, 8vw, 118px) 0; }
+.band-tint { background: var(--tint); border-block: 1px solid var(--line-soft); }
+
+.sec-head { margin-bottom: clamp(30px, 4vw, 52px); max-width: 68ch; }
+.sec-head h2 { font-size: var(--step-3); margin-bottom: 18px; max-width: 20ch; }
+.sec-head .lede { margin: 0; }
+
+/* --- cards / steps -------------------------------------------------------- */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 26px 26px 30px;
+  box-shadow: var(--shadow);
+}
+.steps { display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+.step-n {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--lime); color: var(--lime-ink);
+  font-weight: 800; font-size: 15px; margin-bottom: 16px;
+}
+.card h3 { margin-bottom: 9px; }
+.card p { color: var(--muted); font-size: var(--step-0); }
+
+/* --- split sections ------------------------------------------------------- */
+.split {
+  display: grid; gap: clamp(32px, 5vw, 64px);
+  grid-template-columns: 1fr; align-items: center;
+}
+@media (min-width: 900px) {
+  .split { grid-template-columns: 1.05fr .95fr; }
+  .split-rev .split-copy { order: 2; }
+}
+.split-copy h2 { font-size: var(--step-3); margin-bottom: 18px; }
+.split-copy .lede { margin-bottom: 26px; }
+.split-media { margin: 0; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.framed { border-radius: var(--r-lg); box-shadow: var(--shadow-lg); }
+
+.ticks { display: grid; gap: 13px; margin-bottom: 26px; }
+.ticks li { position: relative; padding-left: 32px; color: var(--ink-soft); }
+.ticks li::before {
+  content: ""; position: absolute; left: 0; top: .52em;
+  width: 17px; height: 9px; border-left: 2.5px solid var(--brand);
+  border-bottom: 2.5px solid var(--brand); transform: rotate(-45deg);
+}
+
+.provenance {
+  border-left: 3px solid var(--lime); padding: 4px 0 4px 18px;
+  color: var(--ink-soft); max-width: 52ch;
+}
+.provenance strong { color: var(--ink); }
+
+/* --- ui illustration cards ------------------------------------------------ */
+.stack-cards { width: min(100%, 420px); display: grid; gap: 14px; }
+.ui-card {
+  display: grid; gap: 3px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 17px 20px; box-shadow: var(--shadow);
+}
+.ui-k { font-size: var(--step--1); color: var(--muted); font-weight: 600; letter-spacing: .01em; }
+.ui-v { font-size: var(--step-2); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.ui-m { font-size: var(--step--1); color: var(--muted); }
+.ui-mono { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: var(--step-1); letter-spacing: 0; }
+.ui-card-wide { width: 100%; }
+
+/* --- proof pairing -------------------------------------------------------- */
+.proof {
+  display: grid; gap: 12px; justify-items: center;
+  margin: 30px 0; padding: 24px;
+  background: var(--tint); border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.band-tint .proof { background: var(--surface); }
+.proof-photo { margin: 0; width: 100%; display: grid; gap: 8px; justify-items: center; }
+.proof-photo img { border-radius: 10px; box-shadow: var(--shadow); width: 100%; }
+.proof-photo figcaption { font-size: var(--step--1); color: var(--muted); }
+.proof-arrow { font-size: 22px; color: var(--brand); line-height: 1; }
+.restraint { color: var(--muted); max-width: 54ch; }
+
+/* --- flow (unknown machine) ----------------------------------------------- */
+.flow { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: stretch; }
+@media (min-width: 860px) {
+  .flow { grid-template-columns: 1fr 26px 1fr 26px 1fr; align-items: center; }
+}
+.flow-sep { display: none; }
+@media (min-width: 860px) {
+  .flow-sep { display: block; height: 2px; background: var(--line); position: relative; }
+  .flow-sep::after {
+    content: ""; position: absolute; right: -1px; top: -4px;
+    border: 5px solid transparent; border-left-color: var(--line);
+  }
+}
+.wide-photo { margin: clamp(30px, 4vw, 52px) 0 0; }
+.wide-photo img {
+  border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  width: 100%; max-height: 460px; object-fit: cover; object-position: 50% 42%;
+}
+
+/* --- facts ---------------------------------------------------------------- */
+.facts { display: grid; gap: 26px; grid-template-columns: 1fr; }
+@media (min-width: 800px) { .facts { grid-template-columns: repeat(3, 1fr); } }
+.fact { padding-top: 20px; border-top: 2px solid var(--ink); }
+.fact h3 { margin-bottom: 9px; }
+.fact p { color: var(--muted); }
+
+/* --- cta ------------------------------------------------------------------ */
+.cta {
+  padding: clamp(60px, 9vw, 130px) 0;
+  background: linear-gradient(155deg, var(--brand-deep) 0%, #1B0B3A 55%, #0C1233 100%);
+  color: #F1ECFF;
+}
+.cta-in { display: grid; justify-items: center; text-align: center; gap: 18px; }
+.cta h2 { font-size: var(--step-3); max-width: 18ch; }
+.cta p { color: rgba(241,236,255,.74); max-width: 52ch; }
+.cta .btn-big { margin-top: 12px; }
+.cta-fine { font-size: var(--step--1); color: rgba(241,236,255,.5); }
+
+/* --- footer --------------------------------------------------------------- */
+.foot { padding: 34px 0; border-top: 1px solid var(--line); background: var(--paper); }
+.foot-in { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 26px; }
+.foot-mark { font-weight: 800; letter-spacing: .06em; }
+.foot-links { display: flex; gap: 20px; }
+.foot-links a { color: var(--muted); text-decoration: none; font-size: var(--step--1); }
+.foot-links a:hover { color: var(--brand); text-decoration: underline; }
+.foot-note { margin-left: auto; font-size: var(--step--1); color: var(--muted); }
+
+/* --- scroll reveal -------------------------------------------------------- */
+.reveal { opacity: 0; transform: translateY(16px); }
+.reveal.in {
+  opacity: 1; transform: none;
+  transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1);
+}
+
+/* --- debug ---------------------------------------------------------------- */
+/* An author `display` would otherwise beat the UA rule for [hidden]. */
+.debug[hidden] { display: none; }
+.debug {
+  position: fixed; right: 14px; bottom: 14px; z-index: 60;
+  display: grid; gap: 8px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); box-shadow: var(--shadow-lg);
+  font-size: 12px;
+}
+/* The concept/lang switchers are <fieldset>+<legend> rather than a plain
+   span label, so a screen-reader user tabbing through the buttons hears the
+   group name instead of just "A button, B button..." with no context
+   (a11y finding from the Gate A/B/C review). Reset fieldset's default
+   border/padding/margin and legend's own box model so this still lays out
+   exactly like the flat .debug-row it replaced. */
+.debug-row { display: flex; align-items: center; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.debug-l, legend.debug-l { width: 54px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: 10px; padding: 0; float: none; }
+.debug button {
+  font: inherit; font-weight: 700; cursor: pointer;
+  padding: 4px 11px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink);
+}
+.debug button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.debug-key { gap: 5px; flex-wrap: wrap; }
+.debug-key span { padding: 2px 7px; border-radius: 3px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+/* Two independent axes: what is TRUE (state) vs what may be SAID PUBLICLY
+   (gate). A claim can be exists+blocked or committed+internal-only — the two
+   never collapse into one lookup, so they get two separate badge families. */
+.k-exists,     html[data-debug] [data-claim-state="exists"]::after     { background: #DDEBE2; color: #1D5B3A; }
+.k-committed,  html[data-debug] [data-claim-state="committed"]::after  { background: #F4E8D3; color: #8A5A0B; }
+.k-hypothesis, html[data-debug] [data-claim-state="hypothesis"]::after { background: #DEE6F1; color: #2E4E7E; }
+.k-never,      html[data-debug] [data-claim-state="never"]::after      { background: #F5DEDB; color: #9B2A20; }
+
+.k-allowed,       html[data-debug] [data-public-gate="allowed"]::before       { background: #DDEBE2; color: #1D5B3A; }
+.k-qualify,       html[data-debug] [data-public-gate="qualify"]::before       { background: #F4E8D3; color: #8A5A0B; }
+.k-blocked,       html[data-debug] [data-public-gate="blocked"]::before       { background: #F5DEDB; color: #9B2A20; }
+.k-internal-only, html[data-debug] [data-public-gate="internal-only"]::before { background: #E3DCF4; color: #5B21B6; }
+
+/* `.btn` is excluded from every debug badge below: a pseudo-element child
+   inside an inline-flex button (the CTAs are data-nonclaim="cta-label")
+   forces the flex box to grow around it, which overflowed the nav bar on
+   narrow viewports. CTA buttons are self-evidently non-claims by their own
+   styling, so the annotation adds nothing there and only risks layout. */
+html[data-debug] [data-claim-state]:not(.btn) { position: relative; }
+html[data-debug] [data-claim-state]:not(.btn)::after {
+  content: attr(data-claim-state);
+  display: inline-block; margin-left: 8px; vertical-align: middle;
+  padding: 2px 7px; border-radius: 3px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; overflow-wrap: anywhere;
+}
+html[data-debug] [data-public-gate]:not(.btn)::before {
+  content: "gate:" attr(data-public-gate);
+  display: inline-block; margin-left: 8px; vertical-align: middle;
+  padding: 2px 7px; border-radius: 3px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; overflow-wrap: anywhere;
+}
+/* A nonclaim node gets a quiet grey tag too, so debug mode accounts for
+   100% of data-i18n nodes with no silent gaps. */
+html[data-debug] [data-nonclaim]:not(.btn) { position: relative; }
+html[data-debug] [data-nonclaim]:not(.btn)::after {
+  content: "nonclaim:" attr(data-nonclaim);
+  display: inline-block; margin-left: 6px; vertical-align: middle;
+  padding: 2px 6px; border-radius: 3px;
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; overflow-wrap: anywhere;
+  background: var(--sunk); color: var(--muted);
+}
+/* Debug-only qualify disclosure, inserted by site.js next to any
+   qualify-gated claim: a real focusable button + visible text rather than a
+   hover-only title tooltip (a11y review finding). */
+.qualify-toggle {
+  font: inherit; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer; margin-left: 6px; padding: 2px 7px; border-radius: 3px; vertical-align: middle;
+  border: 1px solid var(--brand); background: transparent; color: var(--brand);
+}
+.qualify-toggle[aria-expanded="true"] { background: var(--brand); color: var(--paper); }
+.qualify-detail {
+  display: block; margin-top: 6px; padding: 8px 11px;
+  background: var(--sunk); border-left: 3px solid var(--brand); border-radius: 0 6px 6px 0;
+  font-size: 12.5px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--soft);
+}
+html[data-debug] [data-media]::before {
+  content: attr(data-media);
+  display: block; margin-bottom: 6px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* --- motion preference ---------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  /* Skip the reveal, land on the final mark rather than the long word. */
+  .mark-x { max-width: 0 !important; opacity: 0 !important; }
+  .btn:hover { transform: none; }
+}

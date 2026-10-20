@@ -1,0 +1,445 @@
+<title>Закрытие MVP — M0 / MVP-1 / MVP-3 / MVP-2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#F7F8F4; --surface:#FFFFFF; --surface-alt:#EEF1E7; --border:#DBE2CF;
+    --text:#1B1F16; --text-dim:#565F4E; --text-faint:#8A9380;
+    --accent:#6B8F00; --accent-ink:#FFFFFF; --accent-soft:#E6F0C8;
+    --violet:#6B4FD6; --violet-soft:#EBE6FA;
+    --ok:#2E7D46; --ok-soft:#E1F2E4;
+    --warn:#9A6B00; --warn-soft:#FBEFCE;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(20,30,10,.06), 0 8px 24px -12px rgba(20,30,10,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1210; --surface:#161A13; --surface-alt:#1E2318; --border:#2A3122;
+      --text:#EDF2E4; --text-dim:#A6AF98; --text-faint:#6E7864;
+      --accent:#C9FF47; --accent-ink:#10140A; --accent-soft:#243213;
+      --violet:#B29CFF; --violet-soft:#241E3D;
+      --ok:#4ADE80; --ok-soft:#152A1C;
+      --warn:#FBBF24; --warn-soft:#2E2508;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 28px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1210; --surface:#161A13; --surface-alt:#1E2318; --border:#2A3122;
+    --text:#EDF2E4; --text-dim:#A6AF98; --text-faint:#6E7864;
+    --accent:#C9FF47; --accent-ink:#10140A; --accent-soft:#243213;
+    --violet:#B29CFF; --violet-soft:#241E3D;
+    --ok:#4ADE80; --ok-soft:#152A1C;
+    --warn:#FBBF24; --warn-soft:#2E2508;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 28px -12px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:56px 24px 96px}
+  header{padding-bottom:28px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin:0 0 10px}
+  h1{font-size:clamp(28px,4vw,38px);line-height:1.15;margin:0 0 12px;font-weight:700;
+    text-wrap:balance;letter-spacing:-.01em}
+  .lede{color:var(--text-dim);font-size:16px;max-width:62ch;margin:0}
+  h2{font-size:20px;margin:0 0 4px;font-weight:700;letter-spacing:-.005em}
+  h2 .num{font-family:var(--mono);color:var(--text-faint);font-weight:500;margin-right:8px}
+  h3{font-size:15px;margin:22px 0 8px;font-weight:600;color:var(--text)}
+  section.block{margin-top:44px}
+  .sub{color:var(--text-faint);font-size:13px;margin:0 0 20px}
+  p{margin:0 0 12px;max-width:70ch}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px 22px;box-shadow:var(--shadow)}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+  @media (max-width:760px){.grid4{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 16px 14px;box-shadow:var(--shadow)}
+  .stat .label{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--text-faint);margin-bottom:8px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;
+    font-weight:600;letter-spacing:.02em;padding:3px 9px;border-radius:999px}
+  .pill.ok{background:var(--ok-soft);color:var(--ok)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.info{background:var(--violet-soft);color:var(--violet)}
+  .stat .name{font-weight:600;font-size:14.5px;margin-top:8px}
+  .stat .note{color:var(--text-dim);font-size:12.5px;margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--surface);box-shadow:var(--shadow)}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--text-faint);font-weight:600;background:var(--surface-alt)}
+  tr:last-child td{border-bottom:none}
+  code,.hash{font-family:var(--mono);font-size:.92em;background:var(--surface-alt);
+    padding:1px 6px;border-radius:5px;color:var(--text)}
+  .hash{color:var(--accent);font-weight:600}
+  ul{margin:0 0 14px;padding-left:22px}
+  li{margin-bottom:6px;max-width:68ch}
+  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 var(--radius) var(--radius) 0;
+    padding:14px 18px;margin:16px 0}
+  .callout p{margin:0;max-width:none}
+  .decision{border-left:3px solid var(--violet);background:var(--violet-soft);border-radius:0 var(--radius) var(--radius) 0;
+    padding:14px 18px;margin:16px 0}
+  .decision p{margin:0 0 8px;max-width:none}
+  .decision p:last-child{margin-bottom:0}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:18px 0;font-family:var(--mono);
+    font-size:13px}
+  .flow .step{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+    padding:6px 12px;box-shadow:var(--shadow)}
+  .flow .step.done{border-color:var(--ok);color:var(--ok)}
+  .flow .step.next{border-color:var(--accent);color:var(--accent);font-weight:700}
+  .flow .arrow{color:var(--text-faint)}
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--border);
+    color:var(--text-faint);font-size:12.5px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; статус-отчёт &middot; 2026-08-19</p>
+    <h1>Закрытие MVP: разведка, два блокера и одна коррекция скоупа</h1>
+    <p class="lede">После курс-смены оператора на MVP-first четыре коммита закрыли оба реальных
+      дефекта честности auth-restore, найденных в текущем коде, и решили открытый вопрос скоупа
+      на основе доказательств, а не предположения. Отчёт покрывает путь от Gate M0 до
+      реклассификации MVP-2 — точку, где список MVP BLOCKER и MVP REQUIRED оба пусты.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness_App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ e5d462b</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <section class="block">
+    <div class="grid4">
+      <div class="stat">
+        <div class="label">Gate M0</div>
+        <span class="pill ok">DONE</span>
+        <div class="name">Разведка MVP</div>
+        <div class="note">4 параллельных агента, текущее дерево, 10-точечный north star</div>
+      </div>
+      <div class="stat">
+        <div class="label">MVP-1</div>
+        <span class="pill ok">ЗАКРЫТ</span>
+        <div class="name">Слой провайдеров</div>
+        <div class="note">6 leaf-провайдеров, BLOCKER</div>
+      </div>
+      <div class="stat">
+        <div class="label">MVP-3</div>
+        <span class="pill ok">ЗАКРЫТ</span>
+        <div class="name">Слой навигации</div>
+        <div class="note">Гонка splash / router, REQUIRED</div>
+      </div>
+      <div class="stat">
+        <div class="label">MVP-2</div>
+        <span class="pill warn">РЕКЛАССИФИЦИРОВАН</span>
+        <div class="name">Слой экранов</div>
+        <div class="note">→ POST-MVP, с доказательствами</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">01</span>Что на самом деле было сломано</h2>
+    <p class="sub">Один класс дефекта, найден один раз, затем прослежен через три слоя приложения.</p>
+    <p><code>authUserProvider</code> — поток, на котором построена любая реактивная поверхность в
+      этом приложении, — реально находится в состоянии <code>AsyncLoading</code> при каждом
+      холодном старте, для каждого пользователя, пока Firebase не завершит восстановление
+      сохранённой сессии с диска. Это не крайний случай и не окно враждебного тайминга — это
+      происходит при каждом реальном запуске. Код, читавший <code>.valueOrNull</code> в этом окне,
+      схлопывал две разные истины — «ещё восстанавливается» и «действительно вышел из аккаунта» —
+      в одно и то же <code>null</code>, и уверенно отрисовывал ветку «не авторизован» как
+      установленный факт.</p>
+    <div class="callout">
+      <p>Разведка Gate M0 прошла по текущему рабочему дереву против 10-точечного north-star-флоу и
+        нашла этот паттерн достижимым на трёх отдельных слоях: сами провайдеры данных (MVP-1),
+        экраны, которые их отрисовывают (заскоуплено как MVP-2), и решение роутера о навигации
+        (MVP-3). Всё остальное по чек-листу north star — онбординг, путь
+        сканирование&rarr;распознавание&rarr;контент, safety-critical-гейтинг, изоляция аккаунтов,
+        собираемость, честность маркетинговых заявлений — прошло разведку чисто; других
+        MVP BLOCKER не всплыло.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">02</span>MVP-1 — слой провайдеров, BLOCKER, закрыт</h2>
+    <p class="sub">Коммит <span class="hash">f7279ca</span> &middot; запушен, remote SHA подтверждён</p>
+    <p>Шесть leaf-провайдеров читали <code>ref.watch(authUserProvider).valueOrNull</code> и
+      возвращали жёсткий дефолт в тот момент, когда получали <code>null</code> — достижимо при
+      каждом холодном старте с валидными сохранёнными credentials, а не только под враждебным
+      таймингом. Возвращающийся пользователь с реальной историей видел её как будто стёртой
+      каждый раз при открытии приложения — на всё время окна восстановления.</p>
+    <ul>
+      <li><code>workoutSessionsProvider</code> / <code>workoutSessionTotalsProvider</code> —
+        <code>workout_session_providers.dart</code></li>
+      <li><code>currentProfileProvider</code> — <code>profile_providers.dart</code> (показывал
+        «Sign in to sync» уже авторизованному пользователю)</li>
+      <li><code>programmesProvider</code> — <code>programme_providers.dart</code></li>
+      <li><code>generatedPlanProvider</code> — <code>ai_planner_providers.dart</code></li>
+      <li><code>scheduledSessionsProvider</code> — <code>scheduled_session_providers.dart</code>
+        (обнаружен как живой только после того, как независимое ревью оспорило исходный подсчёт разведки)</li>
+    </ul>
+    <p>Паттерн фикса: <code>await ref.watch(authUserProvider.future)</code> вместо чтения
+      <code>.valueOrNull</code> — уже доказан трижды в этом же кодбейзе до этого гейта. Test-first
+      на всём протяжении, по собственному требованию оператора «не чинить гипотезу»: для каждого
+      провайдера сначала писался регрессионный тест, который падал на живом баге
+      (<code>StreamController</code>, ещё ничего не эмитивший, моделирует настоящий разрыв
+      восстановления — мок-репозиторий эмитит синхронно и не может его воспроизвести), и только
+      затем применялся фикс.</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Проверка</th><th>Результат</th></tr>
+        <tr><td>Новые / расширенные тесты</td><td>8 (3 + 1 + 1 + 2 + 1 в пяти файлах)</td></tr>
+        <tr><td>Полный набор тестов</td><td>2506 / 2506</td></tr>
+        <tr><td><code>flutter analyze</code></td><td>7 проблем — прежний бейзлайн, ни одной новой</td></tr>
+        <tr><td>Независимое ревью</td><td>flutter-reviewer + type-design-analyzer, параллельно, без перекрёстного посева</td></tr>
+      </table>
+    </div>
+    <h3>Коррекция скоупа ревью, проверено, а не принято на веру</h3>
+    <p>BLOCKER-находка type-design-analyzer гласила, что разведка недосчитала живые инстансы —
+      верно, в результате был исправлен <code>scheduledSessionsProvider</code>. Та же находка
+      также назвала <code>workoutLogsProvider</code>/<code>workoutTotalsProvider</code> живыми,
+      сославшись на внутренний вызов <code>ref.invalidate</code> как на доказательство внешнего
+      вызывающего кода. Проверено напрямую grep-ом по всему репозиторию: этот вызов — собственная
+      ссылка файла на самого себя, внешних вызывающих нет вообще, и файл — действительно мёртвый
+      код, вытесненный <code>workout_session_providers.dart</code> согласно его же doc-комментарию
+      — оставлен нетронутым, а не исправлен по непроверенной цитате.</p>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">03</span>MVP-3 — слой навигации, REQUIRED, закрыт</h2>
+    <p class="sub">Коммит <span class="hash">68cef87</span> &middot; запушен, remote SHA подтверждён</p>
+    <p>Найдено самостоятельно при проверке ревью MVP-1, ни одним из ревьюеров: redirect в
+      <code>app_router.dart</code> читает <code>authRepo.currentUser</code> — синхронный геттер
+      Firebase с той же самой холодностартовой неоднозначностью — а не через разрешённый
+      stream-контракт. Реальный авторизованный пользователь, достигший этой точки до завершения
+      восстановления, был бы отброшен на <code>/login</code>. На практике смягчено фиксированным
+      таймером splash-экрана в 1300мс, но структурно не закрыто.</p>
+    <p>Фикс: <code>SplashPage</code> теперь ждёт настоящую первую эмиссию
+      <code>authUserProvider</code> параллельно с уже существующим таймером выдержки
+      (<code>Future.wait</code>, поэтому тайминг обычного пути не меняется), прежде чем вообще
+      покинуть <code>/splash</code>, с ограничением в 5 секунд, чтобы сломанный или зависший
+      auth-поток не мог оставить пользователя на чёрном экране навсегда.</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Проверка</th><th>Результат</th></tr>
+        <tr><td>Новые тесты</td><td>2 (всё ещё восстанавливается дольше выдержки; safety-таймаут при зависшем потоке)</td></tr>
+        <tr><td>Полный набор тестов</td><td>2508 / 2508</td></tr>
+        <tr><td><code>flutter analyze</code></td><td>7 проблем — прежний бейзлайн</td></tr>
+        <tr><td>Независимое ревью</td><td>flutter-reviewer — <strong>APPROVE</strong>, 2 MINOR, обе устранены</td></tr>
+      </table>
+    </div>
+    <h3>Тест, который сначала соврал, — пойман до того, как ему поверили</h3>
+    <p>Первый черновик теста-репродукции использовал один большой вызов
+      <code>pump(Duration(seconds: 3))</code> и дал <strong>ложное прохождение</strong> на
+      неисправленном коде — проверка должна была упасть (старый splash на таймере должен был
+      навигировать вне зависимости от состояния auth), но не упала, потому что один большой pump
+      не settle-ит надёжно многошаговую цепочку async-переход-затем-роутинг. Исправлено переходом
+      на ту же многошаговую последовательность pump, на которую уже опирался существующий
+      splash-тест; повторный запуск корректно воспроизвёл баг, а после реального фикса — корректно
+      прошёл.</p>
+    <h3>Две находки ревью, обе закрыты</h3>
+    <p><strong>Тихий путь отказа.</strong> Ветки таймаута/ошибки были полностью нелогируемыми — не
+      соответствует собственной конвенции этого кодбейза для boot-time-guard'ов. Исправлено: обе
+      ветки теперь вызывают <code>debugPrint</code> и защитно обёрнутый в try/catch
+      <code>FirebaseCrashlytics.instance.recordError(..., fatal: false)</code>. Дополнительно
+      проверено, что вызов Crashlytics из виджета не бросает исключение в тестовой песочнице —
+      явно отмеченный, ранее непроверенный риск: ни один существующий тест в этом кодбейзе до
+      этого изменения не вызывал Crashlytics из виджета.</p>
+    <p><strong>Непроверенная предпосылка об очерёдности.</strong> Фикс предполагает, что
+      <code>authRepo.currentUser</code> уже синхронизирован к моменту эмиссии потока. Проверено
+      напрямую по закреплённому исходнику <code>firebase_auth_platform_interface</code> 8.1.9, а не
+      оставлено предположением: <code>instance.currentUser</code> всегда присваивается раньше, чем
+      соответствующее событие достигает stream-контроллера, в обеих ветках — и signed-in, и
+      signed-out. Зафиксировано doc-комментарием на <code>FirebaseAuthRepository.currentUser</code>.</p>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">04</span>MVP-2 — реклассифицирован в POST-MVP, не реализован</h2>
+    <p class="sub">Коммит <span class="hash">e5d462b</span> &middot; запушен, remote SHA подтверждён &middot; код не менялся</p>
+    <p>MVP-2 был заскоуплен во время ревью MVP-1: около 13 точек вызова на уровне экранов
+      (<code>progress_page.dart</code>, <code>home_dashboard_providers.dart</code>,
+      <code>programme_providers.dart</code> и другие) читали уже корректно загружающиеся
+      провайдеры через <code>.valueOrNull ?? default</code> — обычный синхронный
+      <code>Provider</code> не может сам представлять «загрузку», поэтому молча отрисовывал тот же
+      ложный дефолт на один шаг ниже фикса MVP-1. На момент скоупинга это было достижимо, потому
+      что splash-экран всё ещё навигировал по фиксированному таймеру независимо от состояния auth.</p>
+    <div class="decision">
+      <p><strong>Пересчитано после закрытия MVP-3, а не до него.</strong> Riverpod
+        <code>StreamProvider</code>, однажды эмитивший значение, остаётся <code>AsyncData</code>
+        до конца сессии — он не возвращается в загрузку самопроизвольно. MVP-3 заставляет
+        <code>/splash</code> ждать настоящую первую эмиссию, прежде чем вообще будет достигнут
+        <code>/home</code>, а redirect роутера пропускает мимо <code>/login</code> только когда
+        <code>isSignedIn</code> истинно. Собственное ревью MVP-3 подтвердило, что нигде в
+        приложении нет точки входа через OS-level deep-link или восстановление состояния, которая
+        обходила бы <code>/splash</code>.</p>
+      <p>Таким образом, окно, которое MVP-2 должен был закрыть — пользователь достигает этих
+        экранов, пока auth ещё реально восстанавливается — больше не достижимо ни одним путём в
+        приложении. То, что остаётся в этих точках вызова — обычная задержка Firestore-запроса
+        после того, как auth уже разрешился: нормальное мерцание загрузки, какое есть в любом
+        приложении, а не дефект честности auth-restore, который называет критерий MVP.</p>
+      <p><strong>Решение:</strong> реклассифицирован в POST-MVP. Фикс на
+        <code>.isLoading</code>-гейтинге (по образцу уже существующего корректного паттерна в
+        <code>entitlementStatusProvider</code>) всё ещё стоит сделать как UX-полировку — скелетон
+        лучше мелькнувшего нуля — но это не блокер релиза. Полный список точек вызова и обоснование
+        сохранены в плановом документе, а не отброшены.</p>
+    </div>
+    <h3>Тот же вызов, сделан ещё раз: <code>questionnaireDraftProvider</code></h3>
+    <p>Отмечен как MINOR при ревью MVP-1 — та же форма дефекта, но внутри синхронного
+      <code>Notifier.build()</code>, куда паттерн <code>.future</code> не встаёт как есть.
+      Проверено напрямую: <code>/onboarding</code> сам по себе достижим только когда
+      <code>isSignedIn</code> истинно, поэтому <code>build()</code> этого провайдера никогда не
+      может выполниться, пока auth для авторизованного пользователя ещё реально восстанавливается.
+      <strong>Принято как смягчённое гейтингом роутера из MVP-3 — это не отложено, уязвимого окна
+      просто не существует.</strong> Изменений кода не потребовалось.</p>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">05</span>Журнал коммитов</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Коммит</th><th>Гейт</th><th>Суть</th><th>Push</th></tr>
+        <tr>
+          <td><span class="hash">2348ea2</span></td>
+          <td>M0</td>
+          <td>План закрытия MVP + разведка Gate M0 записаны в <code>core/plans/</code></td>
+          <td><span class="pill ok">подтверждён</span></td>
+        </tr>
+        <tr>
+          <td><span class="hash">f7279ca</span></td>
+          <td>MVP-1</td>
+          <td>Схлопывание auth-restore исправлено на уровне провайдеров, 6 провайдеров, 8 новых тестов</td>
+          <td><span class="pill ok">подтверждён</span></td>
+        </tr>
+        <tr>
+          <td><span class="hash">68cef87</span></td>
+          <td>MVP-3</td>
+          <td>Splash ждёт реального auth-restore перед выходом из <code>/splash</code></td>
+          <td><span class="pill ok">подтверждён</span></td>
+        </tr>
+        <tr>
+          <td><span class="hash">e5d462b</span></td>
+          <td>MVP-2</td>
+          <td>Реклассифицирован в POST-MVP с доказательствами; <code>questionnaireDraftProvider</code> принят как смягчённый</td>
+          <td><span class="pill ok">подтверждён</span></td>
+        </tr>
+      </table>
+    </div>
+    <p style="margin-top:14px" class="sub">За каждым коммитом сразу следовал <code>git push</code> и
+      сверка local-HEAD с remote-HEAD по SHA — по постоянному правилу оператора на этот этап;
+      непроталкнутому коммиту ни разу не дали накопиться.</p>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">06</span>Где сейчас находится MVP</h2>
+    <p>Списки MVP BLOCKER и MVP REQUIRED оба пусты. По порядку выполнения из планового документа
+      следующие шаги — прогон release-гейта на эмуляторе/устройстве и финальное ревью
+      dream-team только по вопросу MVP, а не ещё один кодовый гейт.</p>
+    <div class="flow">
+      <span class="step done">M0</span><span class="arrow">&rarr;</span>
+      <span class="step done">MVP-1</span><span class="arrow">&rarr;</span>
+      <span class="step done">MVP-3</span><span class="arrow">&rarr;</span>
+      <span class="step done">MVP-2 заскоуплен</span><span class="arrow">&rarr;</span>
+      <span class="step next">Release-гейт</span><span class="arrow">&rarr;</span>
+      <span class="step">Dream-team ревью</span><span class="arrow">&rarr;</span>
+      <span class="step">MVP READY</span>
+    </div>
+    <h3>Отложено в POST-MVP с доказательствами, а не молча выброшено</h3>
+    <ul>
+      <li>~13 точек вызова MVP-2 на <code>.isLoading</code>-гейтинге (UX-полировка)</li>
+      <li>Gate I — привязка памяти о тренировках к конкретному залу (память по типу оборудования уже покрывает честное минимальное заявление)</li>
+      <li>Нет rate-limit на ручные тапы распознавания (риск по затратам, не проблема корректности)</li>
+      <li>Тегирование противопоказаний в каталоге сверх 81% (уже честно раскрыто вживую)</li>
+      <li><code>SharedPreferences</code> не очищается при выходе из аккаунта (гигиена хранения, хранилище уже ключуется по uid)</li>
+      <li>Дисклеймеры маркетингового сайта за debug-гейтом — предусловие для публикации сайта, не пункт MVP приложения</li>
+    </ul>
+  </section>
+
+  <footer>
+    SPTR &middot; статус закрытия MVP &middot; четыре коммита, от M0 до MVP-2 &middot; сформировано 2026-08-19
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -1,0 +1,594 @@
+<title>Статус гейтов D и E</title>
+<meta name="description" content="Отчёт о статусе по четырём незадокументированным коммитам: прототип маркетингового сайта SPTR, его governance-доработка и два готовых продуктовых гейта (D: память по типу оборудования, E: общий контракт неопределённости).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #17201d;
+    --ink-soft: #3c453f;
+    --muted: #5b665f;
+    --paper: #eef1ec;
+    --surface: #ffffff;
+    --surface-2: #e4e8e1;
+    --line: #d4d8ce;
+    --accent: #b06b1f;
+    --accent-ink: #ffffff;
+    --accent-2: #2f665c;
+    --ok: #2f7a4f;
+    --warn: #a15b12;
+    --blocker: #a3311f;
+    --shadow: 0 1px 2px rgba(23,32,29,0.06), 0 8px 24px -12px rgba(23,32,29,0.18);
+    --radius: 10px;
+    --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eef1ec;
+      --ink-soft: #c7cec7;
+      --muted: #93a196;
+      --paper: #121613;
+      --surface: #191f1b;
+      --surface-2: #212822;
+      --line: #2c342d;
+      --accent: #e0a252;
+      --accent-ink: #17201d;
+      --accent-2: #6bab9d;
+      --ok: #63c084;
+      --warn: #e0a252;
+      --blocker: #e2695a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eef1ec;
+    --ink-soft: #c7cec7;
+    --muted: #93a196;
+    --paper: #121613;
+    --surface: #191f1b;
+    --surface-2: #212822;
+    --line: #2c342d;
+    --accent: #e0a252;
+    --accent-ink: #17201d;
+    --accent-2: #6bab9d;
+    --ok: #63c084;
+    --warn: #e0a252;
+    --blocker: #e2695a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+  }
+
+  header {
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(30px, 4.6vw, 44px);
+    line-height: 1.1;
+    margin: 12px 0 10px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  section { margin-top: 48px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 25px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .gate-num {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    margin: 22px 0 8px;
+    color: var(--ink-soft);
+  }
+
+  p { margin: 0 0 14px; }
+  .lede { color: var(--ink-soft); margin-bottom: 20px; }
+
+  code, .path, .hash {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+    word-break: break-word;
+  }
+
+  ul.findings { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-direction: column; gap: 10px; }
+  ul.findings li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .sev {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    height: fit-content;
+    white-space: nowrap;
+  }
+  .sev.blocker { background: color-mix(in srgb, var(--blocker) 16%, transparent); color: var(--blocker); }
+  .sev.major { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .sev.minor { background: color-mix(in srgb, var(--accent-2) 16%, transparent); color: var(--accent-2); }
+  .finding-body p { margin: 0; }
+  .finding-body .fixed {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ok);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 20px 0 8px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    display: block;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .table-wrap table { border: none; }
+  .table-wrap th:first-child, .table-wrap td:first-child { padding-left: 16px; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ok) 16%, transparent);
+    color: var(--ok);
+  }
+
+  .gate-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .banner {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 22px;
+  }
+  .banner h3 { margin-top: 0; color: var(--ink); }
+  .banner ul { margin: 0; padding-left: 20px; }
+  .banner li { margin-bottom: 4px; }
+
+  .next-card {
+    border-left: 4px solid var(--accent-2);
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  a { color: var(--accent-2); }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Fitness App &middot; Реализация продукта</div>
+  <h1>Гейты D и E готовы, маркетинговый сайт под контролем</h1>
+  <p class="dek">Четыре коммита с момента последнего отчёта: прототип маркетингового сайта SPTR, доработка governance, закрывшая два реальных дефекта в собственном инструменте проверки заявлений, и два продуктовых гейта — память по типу оборудования и общий контракт неопределённости — каждый прошёл независимое ревью и mutation-тестирование перед коммитом.</p>
+  <div class="meta-row">
+    <span>2026-08-19</span>
+    <span>4 коммита</span>
+    <span>2 продуктовых гейта готовы</span>
+    <span>0 push &middot; 0 деплоев</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness_App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ 105f9d4</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="stat-row">
+    <div class="stat"><span class="n">4</span><span class="l">коммита, только локально</span></div>
+    <div class="stat"><span class="n">2459</span><span class="l">тестов проходят (полный набор)</span></div>
+    <div class="stat"><span class="n">6</span><span class="l">реальных дефектов найдено и исправлено до коммита</span></div>
+    <div class="stat"><span class="n">22/22</span><span class="l">маркетинговых заявлений проходят lint</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">01</span> Маркетинговый сайт SPTR — прототип и governance</h2>
+  </div>
+  <p class="lede">Два коммита: сборка и исправление. Покрывают гейты A/B/C постоянной инструкции по реализации продукта.</p>
+
+  <div class="card">
+    <h3>dd12695 — внутренний прототип сайта SPTR, три концептуальные ячейки</h3>
+    <p>Статическая оболочка добавлена в существующий корень Firebase Hosting (<code>public/</code>) с тремя равноценными по качеству концепциями лендинга, переключаемыми через <code>?concept=a|b|c</code>, плюс <code>?lang=en|ru</code> и <code>?debug=1</code> как внутренние управляющие параметры. Финальный герой не выбран — для ранжирования ячеек нужны реальные респонденты, поэтому сайт выпущен как инструмент R&amp;D, а не как продакшн-актив. Только добавления; семь ранее существовавших файлов в <code>public/</code> не тронуты.</p>
+    <p>Каждое классифицированное предложение несёт атрибут состояния заявления прямо в исходнике (на момент коммита: 12 <code>exists</code>, 4 <code>committed</code>, 1 <code>hypothesis</code>). Все четыре изображения продукта — кадры из собственных фотографий оператора в зале; никаких вымышленных доказательств.</p>
+    <p>Проверено в Chrome через Playwright по 3 концепциям &times; 2 языкам &times; 2 вьюпортам: один видимый герой на ячейку, ноль горизонтального переполнения, ноль внешних запросов, ноль ошибок в консоли, пути reduced-motion и клавиатурной навигации целы, 67/67 ключей перевода на месте, 142 КБ начальной загрузки одинаково для всех трёх ячеек.</p>
+  </div>
+
+  <div class="card">
+    <h3>9db5902 — разделение класса заявления на «правда» и «право на публикацию», добавлен fail-closed lint</h3>
+    <p>Ревью прототипа после реализации нашло два дефекта governance: единственная ось классификации смешивала <em>«это правда»</em> и <em>«можно ли показывать именно эту формулировку публично»</em>, а неклассифицированное заявление могло незаметно исчезнуть из вручную регенерируемого реестра вместо провала проверки.</p>
+    <p>Заменено на две независимые оси для каждого классифицированного предложения — <code>data-claim-state</code> (exists / committed / hypothesis / never) и <code>data-public-gate</code> (allowed / qualify / blocked / internal-only) — с <code>core/marketing/claim_register.json</code> как единственным источником истины и <code>scripts/marketing/claim_lint.py</code>, падающим при расхождении. Все 22 заявления были пересмотрены по отдельности, а не мигрированы массово, что выявило реальное завышение: фраза <em>«у большинства тренажёров есть собственное название на корпусе»</em> не была подтверждена измерением в поле (~28 из 69), исправлена на <em>«у многих… когда SPTR может»</em> на обоих языках.</p>
+    <h3>Находки независимого ревью (безопасность + доступность, до коммита)</h3>
+    <ul class="findings">
+      <li>
+        <span class="sev blocker">BLOCKER</span>
+        <div class="finding-body">
+          <p>Lint сканировал только теги <code>data-i18n</code> — <code>&lt;title&gt;</code> и <code>&lt;meta name="description"&gt;</code>, дословно повторяющие заявления hero-a/hero-b, попадали на страницу неклассифицированными и непроверенными.</p>
+          <div class="fixed">Исправлено и перепроверено до коммита.</div>
+        </div>
+      </li>
+      <li>
+        <span class="sev major">MAJOR</span>
+        <div class="finding-body">
+          <p>Значок debug-режима, добавленный на <code>.mark-sub</code>, вернул тот же класс бага с переполнением навигации, уже однажды исправленный для <code>.btn</code>.</p>
+          <div class="fixed">Исправлено и перепроверено до коммита.</div>
+        </div>
+      </li>
+      <li>
+        <span class="sev minor">MINOR &times;3</span>
+        <div class="finding-body">
+          <p>Расхождение текста qualify между HTML и реестром; тултип заголовка недоступен с клавиатуры/для АТ; безымянные группы debug-кнопок.</p>
+          <div class="fixed">Исправлено и перепроверено до коммита.</div>
+        </div>
+      </li>
+    </ul>
+    <p><code>claim_lint.py --self-test</code> доказывает, что валидатор реально падает на 9 настоящих мутациях, а не просто существует. Полная QA-проверка отрисовки повторена начисто: развёртка 3 &times; 2 &times; 2, 0px переполнения в диапазоне 280–390px, 0 внешних запросов, 0 ошибок консоли. Заявления о приватности перепроверены против <code>photo_key_store.dart</code>, <code>aes_photo_cipher.dart</code>, XML правил бэкапа Android и <code>gemini_equipment_service.dart</code>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">02</span> Гейт D — память по типу оборудования</h2>
+    <span class="pill">готово</span>
+  </div>
+  <p class="lede"><span class="hash">2cc271b</span> &middot; MRD-01/02 (срез уровня типа)</p>
+  <div class="card">
+    <p>Показывает последнюю зафиксированную тренировку для распознанного <strong>типа</strong> оборудования на странице деталей оборудования — <em>«Ваш последний жим ногами: 45 кг &times; 10»</em> — никогда конкретный зал или физический тренажёр; это остаётся отложенным до MRD-02/03/04. Сопоставление происходит на клиенте с уже наблюдаемой оконной историей сессий и существующей картой exercise&rarr;equipmentId в каталоге: ноль новых чтений из Firestore, ноль изменений схемы. Промах внутри действительно полного окна читается как подтверждённое «это оборудование никогда не использовалось»; промах внутри усечённого окна читается как «не найдено в недавних тренировках» — эти два случая никогда не смешиваются.</p>
+
+    <h3>Независимое ревью (flutter-reviewer, type-design-analyzer, silent-failure-hunter — параллельно, без переноса мнений между агентами)</h3>
+    <ul class="findings">
+      <li>
+        <span class="sev major">MAJOR</span>
+        <div class="finding-body">
+          <p>Проверка усечения сравнивала количество строк-упражнений с количеством сессий. Многоупражненческие сессии (начиная с R11e) могли заставить усечённое окно истории незаметно читаться как полное.</p>
+          <div class="fixed">Исправлено: считается количество уникальных session-id, а не сырых строк. Проверено mutation-тестом.</div>
+        </div>
+      </li>
+      <li>
+        <span class="sev major">MAJOR</span>
+        <div class="finding-body">
+          <p>Набор совпадающих exercise-id читал только вендоренный каталог, постоянно пропуская 11 из 48 типов оборудования, которые попадают в AI-сгенерированные упражнения.</p>
+          <div class="fixed">Исправлено: объединяется с кэшированными AI-сгенерированными exercise-id. Проверено mutation-тестом.</div>
+        </div>
+      </li>
+      <li>
+        <span class="sev minor">MINOR</span>
+        <div class="finding-body">
+          <p>Гонка порядка загрузки могла на миг показать ложное «не найдено» до прихода первого снапшота потока сессий.</p>
+          <div class="fixed">Исправлено: блокируется на состоянии загрузки потока. Проверено mutation-тестом.</div>
+        </div>
+      </li>
+    </ul>
+    <p>Полные находки, доказательства и mutation-подтверждение по каждому исправлению: <code class="path">core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md</code>.</p>
+    <p>Маркетинговое заявление <code>memory-last-lift</code> переклассифицировано <code>committed/internal-only</code> &rarr; <code>exists/qualify</code> в соответствии с изменением; <code>claim_lint</code> по-прежнему 22/22 чисто. <code>flutter analyze</code> чисто; полный набор тестов <strong>2445/2445</strong> (2439 + 6 новых регрессионных тестов, каждый подтверждён mutation-тестом «откат — красный тест — восстановление»).</p>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">03</span> Гейт E — общий контракт неопределённости</h2>
+    <span class="pill">готово</span>
+  </div>
+  <p class="lede"><span class="hash">105f9d4</span> &middot; MRD-06</p>
+  <div class="card">
+    <p><code>Answer&lt;T, R&gt;</code> (<code class="path">mobile/lib/shared/uncertainty/answer.dart</code>) — sealed-тип с проверкой исчерпывающести для «уверенного значения либо явной, закрытого множества причины, почему нет, определяемой доменом». Это форма, которую три независимые существующие системы (<code>ScanOutcome</code>, <code>PoseGateVerdict</code>, <code>VideoFailureReason</code>) уже переизобрели, никогда не ссылаясь друг на друга — именно это совпадение, а не какая-то одна система, оправдало формализацию общего слоя.</p>
+    <p>Сознательно <strong>не</strong> числовая оценка уверенности: в кодовой базе уже есть две несравнимые шкалы «уверенности» 0–1 внутри одной фичи, одна из них явно задокументирована как «не вероятность» — прямое доказательство против универсальной числовой модели.</p>
+    <p>Поставляет только тип-контракт. <strong>Не</strong> внедряет его в пять существующих зрелых систем неопределённости (визуальное распознавание оборудования, проверка формы, скрининг безопасности, захват подхода, ошибки видео) в рамках этого гейта — каждая калибруется индивидуально и связана с безопасностью или доверием, и ни один из null-возвращающих случаев сейчас не несёт явной причины, так что внедрение контракта там означало бы изобретение новых таксономий причин как незапрошенного побочного эффекта. Ни один существующий продакшн-файл не тронут.</p>
+
+    <h3>Независимое ревью (type-design-analyzer)</h3>
+    <ul class="findings">
+      <li>
+        <span class="sev major">MAJOR</span>
+        <div class="finding-body">
+          <p>Неограниченные <code>T</code>/<code>R</code> позволяли инстанцировать <code>T</code> как nullable, заново открывая ровно ту неоднозначность, для устранения которой существует тип — <code>Answer&lt;String?, R&gt;.confident(null)</code> становился неотличим от неопределённого ответа через <code>valueOrNull</code>.</p>
+          <div class="fixed">Исправлено: <code>Answer&lt;T extends Object, R extends Object&gt;</code>. Проверено временным пробником, вызывающим ошибку компиляции; далее исправление обеспечивается самим компилятором.</div>
+        </div>
+      </li>
+      <li>
+        <span class="sev minor">MINOR</span>
+        <div class="finding-body">
+          <p>Асимметрия equality/hashCode по фантомному <code>R</code> на уверенной ветке.</p>
+          <div class="fixed">Отложено по собственной рекомендации ревьюера — сегодня нет ни одного места вызова.</div>
+        </div>
+      </li>
+    </ul>
+    <p>Полная разведка и обоснование: <code class="path">core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md</code>.</p>
+    <p><code>flutter analyze</code> чисто; полный набор тестов <strong>2459/2459</strong> (2445 + 14 новых); два mutation-подтверждения (<code>valueOrNull</code> протекает <code>bestGuess</code>, <code>isConfident</code> захардкожен в true), оба пойманы набором тестов, подтверждено откатом каждого и повторным прогоном.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="gate-num">04</span> Сводка проверки</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Коммит</th><th>Что</th><th class="num">Файлы</th><th>Тесты</th><th>Ревью</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="hash">dd12695</td>
+          <td>Прототип сайта SPTR</td>
+          <td class="num">16 изменено</td>
+          <td>Playwright, развёртка 3&times;2&times;2</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="hash">9db5902</td>
+          <td>Исправление governance</td>
+          <td class="num">8 изменено</td>
+          <td><code>claim_lint --self-test</code> (9 мутаций)</td>
+          <td>безопасность + доступность, 1 BLOCKER + 1 MAJOR + 3 MINOR исправлено</td>
+        </tr>
+        <tr>
+          <td class="hash">2cc271b</td>
+          <td>Гейт D</td>
+          <td class="num">10 изменено</td>
+          <td>2445/2445, 6 новых (mutation-доказано)</td>
+          <td>3 специалиста параллельно, 2 MAJOR + 1 MINOR исправлено</td>
+        </tr>
+        <tr>
+          <td class="hash">105f9d4</td>
+          <td>Гейт E</td>
+          <td class="num">4 изменено</td>
+          <td>2459/2459, 14 новых (mutation-доказано)</td>
+          <td>1 специалист, 1 MAJOR исправлено, 1 MINOR отложено</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="banner">
+  <h3>Статус деплоя</h3>
+  <ul>
+    <li><strong>PUSH НЕ ВЫПОЛНЕН</strong> — все четыре коммита только локальные.</li>
+    <li><strong>ДЕПЛОЙ НЕ ВЫПОЛНЕН</strong> — ничего из обслуживаемого через Firebase Hosting не изменилось.</li>
+    <li>В <code>core/DECISION_LOG.md</code> есть полная запись по каждому коммиту выше.</li>
+  </ul>
+</div>
+
+<section>
+  <div class="card next-card">
+    <h3 style="margin-top:0">Далее — гейт F, в процессе</h3>
+    <p style="margin-bottom:0">MRD-02, идентификация зала (поле <code>gymId</code>, существовавшее в двух моделях, но всегда равное <code>"unknown"</code> и никогда не заполнявшееся). Реализация, тесты и mutation-подтверждения готовы; независимое ревью (flutter-reviewer, type-design-analyzer) выполняется сейчас. Гейты G и H (память о физическом экземпляре тренажёра и измерение конвейера вклада) последуют автоматически согласно постоянной инструкции после закрытия гейта F.</p>
+  </div>
+</section>
+
+<footer>
+  Отчёт покрывает коммиты с dd12695 по 105f9d4. Автономная сессия реализации продукта, продолжена согласно постоянной инструкции.
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

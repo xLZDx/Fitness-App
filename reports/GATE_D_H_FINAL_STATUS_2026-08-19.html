@@ -1,0 +1,577 @@
+<title>Gates D&ndash;H Final Status</title>
+<meta name="description" content="Final consolidated report for the completed Gate D-H product-implementation run: five shipped slices, five independent review rounds, twelve real defects found and fixed, all mutation-tested.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #17201d;
+    --ink-soft: #3c453f;
+    --muted: #5b665f;
+    --paper: #eef1ec;
+    --surface: #ffffff;
+    --surface-2: #e4e8e1;
+    --line: #d4d8ce;
+    --accent: #b06b1f;
+    --accent-ink: #ffffff;
+    --accent-2: #2f665c;
+    --ok: #2f7a4f;
+    --warn: #a15b12;
+    --blocker: #a3311f;
+    --shadow: 0 1px 2px rgba(23,32,29,0.06), 0 8px 24px -12px rgba(23,32,29,0.18);
+    --radius: 10px;
+    --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eef1ec;
+      --ink-soft: #c7cec7;
+      --muted: #93a196;
+      --paper: #121613;
+      --surface: #191f1b;
+      --surface-2: #212822;
+      --line: #2c342d;
+      --accent: #e0a252;
+      --accent-ink: #17201d;
+      --accent-2: #6bab9d;
+      --ok: #63c084;
+      --warn: #e0a252;
+      --blocker: #e2695a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eef1ec;
+    --ink-soft: #c7cec7;
+    --muted: #93a196;
+    --paper: #121613;
+    --surface: #191f1b;
+    --surface-2: #212822;
+    --line: #2c342d;
+    --accent: #e0a252;
+    --accent-ink: #17201d;
+    --accent-2: #6bab9d;
+    --ok: #63c084;
+    --warn: #e0a252;
+    --blocker: #e2695a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+  }
+
+  header {
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 46px);
+    line-height: 1.08;
+    margin: 12px 0 10px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 66ch;
+    margin: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  section { margin-top: 48px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 25px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .gate-num {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    margin: 22px 0 8px;
+    color: var(--ink-soft);
+  }
+
+  p { margin: 0 0 14px; }
+  .lede { color: var(--ink-soft); margin-bottom: 20px; }
+
+  code, .path, .hash {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+    word-break: break-word;
+  }
+
+  ul.findings { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-direction: column; gap: 10px; }
+  ul.findings li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .sev {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    height: fit-content;
+    white-space: nowrap;
+  }
+  .sev.blocker { background: color-mix(in srgb, var(--blocker) 16%, transparent); color: var(--blocker); }
+  .sev.major { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .sev.minor { background: color-mix(in srgb, var(--accent-2) 16%, transparent); color: var(--accent-2); }
+  .finding-body p { margin: 0; }
+  .finding-body .fixed {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ok);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 20px 0 8px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    display: block;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 16px; }
+  .table-wrap table { border: none; }
+  .table-wrap th:first-child, .table-wrap td:first-child { padding-left: 16px; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ok) 16%, transparent);
+    color: var(--ok);
+    white-space: nowrap;
+  }
+  .pill.approx { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+
+  .gate-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .banner {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 22px;
+  }
+  .banner h3 { margin-top: 0; color: var(--ink); }
+  .banner ul { margin: 0; padding-left: 20px; }
+  .banner li { margin-bottom: 4px; }
+
+  .close-card {
+    border-left: 4px solid var(--ok);
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  a { color: var(--accent-2); }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Fitness App &middot; Product Implementation &middot; Run Closed</div>
+  <h1>Gates D&ndash;H shipped: five slices, five independent reviews, zero pushed</h1>
+  <p class="dek">The standing Gate D&ndash;H product-implementation instruction is complete. Five independently reviewed and mutation-tested slices, each committed locally in sequence: equipment-type workout memory, a shared uncertainty contract, gym identity, setup-note memory, and a contribution-measurement report. Twelve real defects were found across five review rounds and fixed before commit &mdash; none discovered after the fact.</p>
+  <div class="meta-row">
+    <span>2026-08-19</span>
+    <span>5 gates &middot; 5 commits</span>
+    <span>2498 Flutter tests + 28 Python tests passing</span>
+    <span>0 pushed &middot; 0 deployed</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness_App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ 0f3bcf3</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="stat-row">
+    <div class="stat"><span class="n">5</span><span class="l">gates shipped, D through H</span></div>
+    <div class="stat"><span class="n">12</span><span class="l">real defects found &amp; fixed pre-commit</span></div>
+    <div class="stat"><span class="n">2498</span><span class="l">Flutter tests passing (full suite)</span></div>
+    <div class="stat"><span class="n">28</span><span class="l">Python tests passing (Gate H)</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">01</span> Gate D &mdash; Level-1 equipment-type workout memory</h2>
+    <span class="hash">2cc271b</span>
+  </div>
+  <p class="lede">Shows a recognized equipment TYPE's prior workout context ("Your last leg press: 45&nbsp;kg &times; 10") &mdash; never a claim about the exact physical machine. Client-side matching over data already fetched for other screens; zero new Firestore reads, zero schema change.</p>
+
+  <div class="card">
+    <p>Reconnaissance corrected mid-gate: D0 initially targeted the legacy <code>workoutLogsProvider</code> path before discovering it stopped receiving writes at F3.3/F3.4; corrected to <code>workoutSessionHistoryProvider</code> before any code was written. Truncated-window honesty was a deliberate design point: a miss inside a full window reads as a confirmed "never done this equipment," a miss inside a truncated window reads as "not found in your recent workouts" &mdash; never conflated.</p>
+    <h3>Independent review &mdash; flutter-reviewer, type-design-analyzer, silent-failure-hunter (3 parallel, no cross-seeding)</h3>
+    <ul class="findings">
+      <li><span class="sev blocker">BLOCKER/MAJOR</span><div class="finding-body"><p>The truncation check compared exercise-<em>row</em> count against the all-time <em>session</em> count, so a multi-exercise-session user could see a truncated window silently reported as complete.</p><p class="fixed">Fixed &mdash; count distinct sessionIds instead of raw rows.</p></div></li>
+      <li><span class="sev major">HIGH</span><div class="finding-body"><p>Exercise-id matching only read the vendored catalog; 11 of 48 registry machines have no vendored exercises and fall through to AI generation, so a workout logged under a generated id could never match &mdash; permanently, not a race.</p><p class="fixed">Fixed &mdash; union in cached generated-exercise ids.</p></div></li>
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>The card gated only on the totals fetch, not the session stream's own loading state, so it could flash a false "not found" before the stream's first snapshot arrived.</p><p class="fixed">Fixed &mdash; also gate on the stream's AsyncValue.</p></div></li>
+    </ul>
+    <p>One MINOR type-hardening applied (private constructor + <code>.found()</code>/<code>.notFound()</code> factories). One MEDIUM finding (an auth-restore-race in a shared totals provider) deliberately deferred as a candidate for a dedicated cross-consumer hardening pass, not widened into this gate.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">2445/2445</span><span class="l">full suite passing</span></div>
+    <div class="stat"><span class="n">3/3</span><span class="l">fixes mutation-tested</span></div>
+    <div class="stat"><span class="n">clean</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">02</span> Gate E &mdash; shared uncertainty contract (MRD-06)</h2>
+    <span class="hash">105f9d4</span>
+  </div>
+  <p class="lede"><code>Answer&lt;T, R&gt;</code> &mdash; a Dart&nbsp;3 sealed, exhaustiveness-checked type formalizing a pattern three independent systems (<code>ScanOutcome</code>, <code>PoseGateVerdict</code>, <code>VideoFailureReason</code>) had each reinvented without referencing one another: a confident value, or a domain-owned closed-set reason for not having one.</p>
+
+  <div class="card">
+    <p>A universal numeric confidence score was explicitly rejected on the codebase's own evidence, not just instruction &mdash; two existing confidence fields in the same feature are already non-comparable 0..1 scales, one explicitly documented as "not a probability." Contract type shipped standalone; deliberately not retrofitted onto the five mature, individually-calibrated systems it could unify &mdash; doing so would mean inventing new reason taxonomies inside safety-adjacent code as an unrequested side effect. Zero existing production files touched.</p>
+    <h3>Independent review &mdash; type-design-analyzer (1 specialist, proportionate to a zero-call-site change)</h3>
+    <ul class="findings">
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>Unbounded <code>T</code>/<code>R</code> let <code>T</code> be instantiated as nullable, reopening the exact ambiguity the type exists to close &mdash; <code>Answer&lt;String?, R&gt;.confident(null)</code> became indistinguishable from an uncertain answer through <code>valueOrNull</code>.</p><p class="fixed">Fixed &mdash; <code>Answer&lt;T extends Object, R extends Object&gt;</code>, enforced by the compiler itself; verified with a temporary probe confirming <code>type_argument_not_matching_bounds</code>, then removed.</p></div></li>
+    </ul>
+    <p>One MINOR (phantom-R equality/hashCode asymmetry) explicitly deferred per the reviewer's own recommendation &mdash; zero call sites today.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">2459/2459</span><span class="l">full suite passing</span></div>
+    <div class="stat"><span class="n">2</span><span class="l">mutation proofs (valueOrNull, isConfident)</span></div>
+    <div class="stat"><span class="n">clean</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">03</span> Gate F &mdash; gym identity (MRD-02)</h2>
+    <span class="hash">41d5b23</span>
+  </div>
+  <p class="lede">A free-text <code>gymId</code> field on <code>EquipmentAccess</code>, wired into onboarding and the equipment-report Cloud Function call site. Composite with <code>gyms/{gymId}</code>, which already existed server-side as a business/operator-provisioned namespace with a real consumer (<code>reportEquipment</code>'s Slack webhook lookup).</p>
+
+  <div class="card">
+    <h3>Independent review &mdash; flutter-reviewer, type-design-analyzer (parallel, no cross-seeding)</h3>
+    <ul class="findings">
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>The onboarding field trimmed on every keystroke; because <code>GlassTextField</code> is a controlled widget that force-resyncs whenever its value prop disagrees with the displayed text, this silently deleted the space after every word as the user typed &mdash; "Iron Temple Gym" became "IronTempleGym."</p><p class="fixed">Fixed &mdash; trim only at the one consumption boundary that needs a normalized value, not inside <code>onChanged</code>. A first version of the regression test (precomputed target-prefix substrings) did not catch this; rewritten to append each character to the field's actual live-displayed text, it reproduced the exact corruption.</p></div></li>
+    </ul>
+    <p>One MINOR noted and deliberately left undocumented-in-code: <code>EquipmentAccess.gymId</code> and a dead-code <code>BuddyProfile.gymId</code> share a bare name with no cross-reference &mdash; harmless today, deferred to whichever future gate revives <code>BuddyProfile</code>.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">16</span><span class="l">new tests (9 model + 7 widget)</span></div>
+    <div class="stat"><span class="n">3</span><span class="l">mutation proofs</span></div>
+    <div class="stat"><span class="n">clean</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">04</span> Gate G &mdash; setup-note memory (MRD-03/04/05)</h2>
+    <span class="hash">8dabc20</span>
+  </div>
+  <p class="lede">Reconnaissance's own conclusion was "invent new schema/policy" &mdash; correct as far as it went, but it weighed only two options. A third was found: compose Gate F's <code>gymId</code> with the equipment catalog's existing TYPE <code>equipmentId</code> into a composite key approximating "physical machine instance," disclosed honestly as type-level (a gym with two identical units shares one note). No new backend schema or rules change &mdash; the existing per-user wildcard rule already covered a brand-new subcollection.</p>
+
+  <div class="card">
+    <h3>Independent review &mdash; flutter-reviewer, type-design-analyzer (parallel, no cross-seeding)</h3>
+    <ul class="findings">
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>Flutter-reviewer: <code>save()</code> never invalidated the read provider &mdash; a plain non-autoDispose <code>FutureProvider.family</code> &mdash; so a note saved once and the page revisited within the same session showed blank again, defeating the feature's entire purpose and risking a second Save silently overwriting the real note with a stale blank draft.</p><p class="fixed">Fixed &mdash; <code>ref.invalidate(...)</code> after save; reproduced with a test sharing one ProviderContainer across two independently-keyed widget instances (a fresh ProviderScope per pumpWidget would not have caught this).</p></div></li>
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>Type-design-analyzer (2 findings): the model's "gymId never empty" doc comment was unenforced &mdash; <code>fromJson</code>'s old fallback let a corrupted document silently construct a note with an empty gymId, which the shared id-slug function would then fold into a collision-prone empty-input fallback shared with an unrelated feature.</p><p class="fixed">Fixed three ways &mdash; a constructor assert, the id function itself throwing on blank gymId, <code>fromJson</code> now returning null for a corrupted document; plus a forward-reference doc comment and a pinning test on the shared slug function.</p></div></li>
+    </ul>
+    <p>One MINOR (a cosmetic save-confirmation race, no data corruption) left as-is per the reviewer's own not-blocking read.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">2498/2498</span><span class="l">full suite passing (2470 + 28 new)</span></div>
+    <div class="stat"><span class="n">27</span><span class="l">new tests (18 model/repo + 9 widget)</span></div>
+    <div class="stat"><span class="n">clean</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">05</span> Gate H &mdash; contribution-pipeline measurement (MRD-07)</h2>
+    <span class="hash">0f3bcf3</span>
+  </div>
+  <p class="lede">Reconnaissance found no reader of <code>MachineCard</code> data anywhere in the codebase despite three doc comments claiming a collection-group read was "possible," no defined audience or cadence for one, and &mdash; the strongest reason to stop short &mdash; nothing in the shipped app ever writes the status transition a ranking would help trigger. Shipped exactly the read-only slice the evidence supports: <code>scripts/ops/machine_card_contribution_report.py</code>, a hand-run REST collection-group query mirroring an existing migration script's auth pattern, ranking unrecognised equipment by cross-user sighting count. No write path, no schema/rules change, no scheduled job.</p>
+
+  <div class="card">
+    <h3>Independent review &mdash; security-reviewer, python-reviewer (parallel, no cross-seeding)</h3>
+    <p>security-reviewer: clean, no BLOCKER/MAJOR. Two MINOR hardening suggestions applied &mdash; narrow the REST query's field selection so free-text/model-guess fields never cross the wire; confirmed direct test coverage of the never-print-uid privacy guarantee.</p>
+    <ul class="findings">
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p>python-reviewer: <code>_decode_value</code> had no <code>timestampValue</code> branch, though the model's own read side documents Firestore-native Timestamps as a real possibility for date fields &mdash; such a document would silently decode to null.</p><p class="fixed">Fixed &mdash; added the branch.</p></div></li>
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p>Date comparison used raw lexicographic string ordering; Dart's <code>toIso8601String()</code> omits the microsecond suffix when zero, so the same instant can appear at two different string widths and sort backwards.</p><p class="fixed">Fixed &mdash; parse into real datetimes first via new <code>_earlier</code>/<code>_later</code>/<code>_parse_iso</code> helpers. A naive/aware datetime hazard in an early draft was caught and avoided before any test run, by re-reading the code.</p></div></li>
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p><code>isinstance(times_seen, int)</code> accepted Python booleans (<code>bool</code> is an <code>int</code> subclass) &mdash; a hand-edited boolean <code>timesSeen</code> would silently contribute a phantom sighting.</p><p class="fixed">Fixed &mdash; explicit bool exclusion.</p></div></li>
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p>The fixed-width name column truncated silently &mdash; two machines whose names agree for the first 32 characters could print as identical rows with no signal they differ.</p><p class="fixed">Fixed &mdash; visible trailing marker on truncation; ranking still always keys on the untruncated id.</p></div></li>
+    </ul>
+    <p>Two defects self-caught before any external review: a tiebreak test that happened to pass against its own mutation because the fixture names sorted correctly by coincidence (renamed to expose it); a resolved/unresolved property with backwards boolean logic, caught while naming its own test.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">28/28</span><span class="l">pytest passing (19 original + 9 new)</span></div>
+    <div class="stat"><span class="n">5</span><span class="l">mutation proofs, all caught as predicted</span></div>
+    <div class="stat"><span class="n">clean</span><span class="l">py_compile</span></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="gate-num">&mdash;</span> MRD status after this run</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>MRD</th><th>Description</th><th>Status</th><th>Gate</th></tr></thead>
+      <tbody>
+        <tr><td>&mdash;</td><td>Level-1 equipment-TYPE workout memory</td><td><span class="pill">shipped</span></td><td class="num">D &middot; 2cc271b</td></tr>
+        <tr><td>MRD-02</td><td>Gym identity (free-text gymId)</td><td><span class="pill">shipped</span></td><td class="num">F &middot; 41d5b23</td></tr>
+        <tr><td>MRD-03</td><td>Physical-machine-instance memory</td><td><span class="pill approx">approximated</span></td><td class="num">G &middot; 8dabc20</td></tr>
+        <tr><td>MRD-04</td><td>Setup-note memory</td><td><span class="pill">shipped</span></td><td class="num">G &middot; 8dabc20</td></tr>
+        <tr><td>MRD-05</td><td>Setup-note context retrieval</td><td><span class="pill">shipped</span></td><td class="num">G &middot; 8dabc20</td></tr>
+        <tr><td>MRD-06</td><td>Shared uncertainty contract</td><td><span class="pill">shipped</span></td><td class="num">E &middot; 105f9d4</td></tr>
+        <tr><td>MRD-07</td><td>Contribution-pipeline measurement</td><td><span class="pill approx">read-only slice</span></td><td class="num">H &middot; 0f3bcf3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede">"Approximated" and "read-only slice" are not gaps in execution &mdash; they are the deliberate, evidence-bounded scope each gate's own reconnaissance supported, documented in that gate's D0 note. MRD-03 approximates a physical machine as <code>(equipmentId, gymId)</code>, not a true single-unit identity. MRD-07 ships measurement only; the status transition a ranking would act on has no writer anywhere in the app today, and building a dashboard or notification loop around it would mean inventing an audience/cadence decision with no evidence behind it.</p>
+</section>
+
+<div class="banner">
+  <h3>Known gaps carried forward</h3>
+  <ul>
+    <li>Firestore-backed repositories across Gates D&ndash;H have no direct read/write test &mdash; a repo-wide boundary (no <code>fake_cloud_firestore</code>/mocking dependency), shared rather than introduced by this run.</li>
+    <li>MRD-03's composite-key approximation means a gym with two identical units shares one setup note &mdash; disclosed in the model's doc comment and the UI copy, not silently assumed away.</li>
+    <li>Gate D's MEDIUM finding (an auth-restore-race in a shared totals provider used by Home/Progress) was deliberately deferred to a dedicated cross-consumer hardening pass, not fixed in-gate.</li>
+    <li>Gate H's script has not been run against real production data as part of this run &mdash; verified only against synthetic fixtures; the operator should run it once by hand before relying on its output.</li>
+    <li>No Gate I is defined anywhere in this repo's evidence. This run closes the standing Gate D&ndash;H instruction; further product work needs a fresh scoping pass, not an assumed continuation.</li>
+  </ul>
+</div>
+
+<div class="banner close-card">
+  <h3>Push and deployment</h3>
+  <p style="margin-bottom:0">All five gates are committed locally only, in sequence: <code>2cc271b</code> &rarr; <code>105f9d4</code> &rarr; <code>41d5b23</code> &rarr; <code>8dabc20</code> &rarr; <code>0f3bcf3</code>. <strong>PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.</strong></p>
+</div>
+
+<footer>
+  Full per-gate evidence: <code>core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md</code>, <code>GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md</code>, <code>GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md</code>, <code>GATE_G_SETUP_MEMORY_D0_NOTE_2026-08-19.md</code>, <code>GATE_H_CONTRIBUTION_MEASUREMENT_D0_NOTE_2026-08-19.md</code> &mdash; and the full narrative in <code>core/DECISION_LOG.md</code>.
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -1,0 +1,577 @@
+<title>Итоговый статус гейтов D&ndash;H</title>
+<meta name="description" content="Итоговый сводный отчёт по завершённому циклу product-implementation гейтов D-H: пять поставленных слайсов, пять независимых раундов ревью, двенадцать реальных дефектов найдено и исправлено, всё покрыто mutation-тестами.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #17201d;
+    --ink-soft: #3c453f;
+    --muted: #5b665f;
+    --paper: #eef1ec;
+    --surface: #ffffff;
+    --surface-2: #e4e8e1;
+    --line: #d4d8ce;
+    --accent: #b06b1f;
+    --accent-ink: #ffffff;
+    --accent-2: #2f665c;
+    --ok: #2f7a4f;
+    --warn: #a15b12;
+    --blocker: #a3311f;
+    --shadow: 0 1px 2px rgba(23,32,29,0.06), 0 8px 24px -12px rgba(23,32,29,0.18);
+    --radius: 10px;
+    --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eef1ec;
+      --ink-soft: #c7cec7;
+      --muted: #93a196;
+      --paper: #121613;
+      --surface: #191f1b;
+      --surface-2: #212822;
+      --line: #2c342d;
+      --accent: #e0a252;
+      --accent-ink: #17201d;
+      --accent-2: #6bab9d;
+      --ok: #63c084;
+      --warn: #e0a252;
+      --blocker: #e2695a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eef1ec;
+    --ink-soft: #c7cec7;
+    --muted: #93a196;
+    --paper: #121613;
+    --surface: #191f1b;
+    --surface-2: #212822;
+    --line: #2c342d;
+    --accent: #e0a252;
+    --accent-ink: #17201d;
+    --accent-2: #6bab9d;
+    --ok: #63c084;
+    --warn: #e0a252;
+    --blocker: #e2695a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+  }
+
+  header {
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 46px);
+    line-height: 1.08;
+    margin: 12px 0 10px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 66ch;
+    margin: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  section { margin-top: 48px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 25px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .gate-num {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    margin: 22px 0 8px;
+    color: var(--ink-soft);
+  }
+
+  p { margin: 0 0 14px; }
+  .lede { color: var(--ink-soft); margin-bottom: 20px; }
+
+  code, .path, .hash {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+    word-break: break-word;
+  }
+
+  ul.findings { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-direction: column; gap: 10px; }
+  ul.findings li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .sev {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    height: fit-content;
+    white-space: nowrap;
+  }
+  .sev.blocker { background: color-mix(in srgb, var(--blocker) 16%, transparent); color: var(--blocker); }
+  .sev.major { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .sev.minor { background: color-mix(in srgb, var(--accent-2) 16%, transparent); color: var(--accent-2); }
+  .finding-body p { margin: 0; }
+  .finding-body .fixed {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ok);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 20px 0 8px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    display: block;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 16px; }
+  .table-wrap table { border: none; }
+  .table-wrap th:first-child, .table-wrap td:first-child { padding-left: 16px; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ok) 16%, transparent);
+    color: var(--ok);
+    white-space: nowrap;
+  }
+  .pill.approx { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+
+  .gate-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .banner {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 22px;
+  }
+  .banner h3 { margin-top: 0; color: var(--ink); }
+  .banner ul { margin: 0; padding-left: 20px; }
+  .banner li { margin-bottom: 4px; }
+
+  .close-card {
+    border-left: 4px solid var(--ok);
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  a { color: var(--accent-2); }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Fitness App &middot; Product Implementation &middot; Цикл закрыт</div>
+  <h1>Гейты D&ndash;H поставлены: пять слайсов, пять независимых ревью, ноль push</h1>
+  <p class="dek">Постоянная инструкция product-implementation по гейтам D&ndash;H выполнена полностью. Пять независимо проревьюженных и покрытых mutation-тестами слайсов, каждый закоммичен локально по порядку: память о типе оборудования, общий контракт неопределённости, идентичность зала, память о заметках по настройке машины и отчёт об измерении вклада пользователей. За пять раундов ревью найдено и исправлено до коммита двенадцать реальных дефектов &mdash; ни один не был обнаружен постфактум.</p>
+  <div class="meta-row">
+    <span>2026-08-19</span>
+    <span>5 гейтов &middot; 5 коммитов</span>
+    <span>2498 Flutter-тестов + 28 Python-тестов проходят</span>
+    <span>0 запушено &middot; 0 задеплоено</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness_App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ 0f3bcf3</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="stat-row">
+    <div class="stat"><span class="n">5</span><span class="l">гейтов поставлено, D&ndash;H</span></div>
+    <div class="stat"><span class="n">12</span><span class="l">реальных дефектов найдено и исправлено до коммита</span></div>
+    <div class="stat"><span class="n">2498</span><span class="l">Flutter-тестов проходят (полный набор)</span></div>
+    <div class="stat"><span class="n">28</span><span class="l">Python-тестов проходят (Гейт H)</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">01</span> Гейт D &mdash; память о ТИПЕ оборудования, уровень 1</h2>
+    <span class="hash">2cc271b</span>
+  </div>
+  <p class="lede">Показывает контекст предыдущей тренировки для распознанного ТИПА оборудования ("Ваш последний жим ногами: 45&nbsp;кг &times; 10") &mdash; никогда не утверждение о конкретной физической машине. Сопоставление на клиенте по данным, уже загруженным для других экранов; ноль новых чтений Firestore, ноль изменений схемы.</p>
+
+  <div class="card">
+    <p>Разведка была скорректирована в процессе: изначально D0 нацеливался на устаревший путь <code>workoutLogsProvider</code>, пока не выяснилось, что он перестал получать записи начиная с F3.3/F3.4; исправлено на <code>workoutSessionHistoryProvider</code> до написания кода. Честность в отношении усечённого окна была осознанным решением дизайна: промах внутри полного окна читается как подтверждённое "с этим оборудованием никогда не работал", промах внутри усечённого окна &mdash; как "не найдено в недавних тренировках", без смешения этих случаев.</p>
+    <h3>Независимое ревью &mdash; flutter-reviewer, type-design-analyzer, silent-failure-hunter (3 параллельно, без перекрёстного заражения)</h3>
+    <ul class="findings">
+      <li><span class="sev blocker">BLOCKER/MAJOR</span><div class="finding-body"><p>Проверка усечения сравнивала количество <em>строк</em>-упражнений со счётчиком <em>сессий</em> за всё время, поэтому пользователь с многоупражненческими сессиями мог увидеть усечённое окно, тихо помеченное как полное.</p><p class="fixed">Исправлено &mdash; считать уникальные sessionId вместо сырых строк.</p></div></li>
+      <li><span class="sev major">HIGH</span><div class="finding-body"><p>Сопоставление id упражнений читало только вендорный каталог; у 11 из 48 машин реестра нет вендорных упражнений, и они переходят на генерацию ИИ, поэтому тренировка, записанная под сгенерированным id, никогда не могла совпасть &mdash; постоянно, не как гонка состояний.</p><p class="fixed">Исправлено &mdash; объединить с кэшированными сгенерированными id упражнений.</p></div></li>
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>Карточка блокировалась только на загрузке итогов, но не на собственном состоянии загрузки потока сессий, поэтому могла на миг показать ложное "не найдено" до прихода первого снапшота потока.</p><p class="fixed">Исправлено &mdash; блокировать также на AsyncValue потока.</p></div></li>
+    </ul>
+    <p>Применено одно MINOR усиление типа (приватный конструктор + фабрики <code>.found()</code>/<code>.notFound()</code>). Одна находка MEDIUM (гонка восстановления авторизации в общем провайдере итогов) осознанно отложена как кандидат для отдельного прохода усиления по всем потребителям, а не расширена в рамках этого гейта.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">2445/2445</span><span class="l">полный набор проходит</span></div>
+    <div class="stat"><span class="n">3/3</span><span class="l">исправления покрыты mutation-тестами</span></div>
+    <div class="stat"><span class="n">чисто</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">02</span> Гейт E &mdash; общий контракт неопределённости (MRD-06)</h2>
+    <span class="hash">105f9d4</span>
+  </div>
+  <p class="lede"><code>Answer&lt;T, R&gt;</code> &mdash; sealed-тип Dart&nbsp;3 с проверкой исчерпываемости, формализующий паттерн, который три независимые системы (<code>ScanOutcome</code>, <code>PoseGateVerdict</code>, <code>VideoFailureReason</code>) каждая изобрела заново, не ссылаясь друг на друга: уверенное значение либо принадлежащая домену закрытая причина его отсутствия.</p>
+
+  <div class="card">
+    <p>Универсальная числовая оценка уверенности была явно отклонена на основании собственных данных кодовой базы, а не только инструкции &mdash; два существующих поля уверенности в одной и той же фиче уже являются несравнимыми шкалами 0..1, одна из которых явно задокументирована как "не вероятность". Тип контракта поставлен отдельно; осознанно не встроен в пять зрелых, индивидуально откалиброванных систем, которые он мог бы объединить &mdash; это означало бы изобретение новых таксономий причин внутри кода, смежного с безопасностью, как незапрошенный побочный эффект. Ни один существующий продакшн-файл не тронут.</p>
+    <h3>Независимое ревью &mdash; type-design-analyzer (1 специалист, соразмерно изменению без точек вызова)</h3>
+    <ul class="findings">
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>Неограниченные <code>T</code>/<code>R</code> позволяли инстанцировать <code>T</code> как nullable, вновь открывая ту самую неоднозначность, для устранения которой существует тип &mdash; <code>Answer&lt;String?, R&gt;.confident(null)</code> становился неотличим от неуверенного ответа через <code>valueOrNull</code>.</p><p class="fixed">Исправлено &mdash; <code>Answer&lt;T extends Object, R extends Object&gt;</code>, обеспечивается самим компилятором; проверено временным зондом, подтвердившим <code>type_argument_not_matching_bounds</code>, затем удалённым.</p></div></li>
+    </ul>
+    <p>Одна находка MINOR (асимметрия equality/hashCode фантомного R) осознанно отложена по собственной рекомендации ревьюера &mdash; сегодня ноль точек вызова.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">2459/2459</span><span class="l">полный набор проходит</span></div>
+    <div class="stat"><span class="n">2</span><span class="l">mutation-проверки (valueOrNull, isConfident)</span></div>
+    <div class="stat"><span class="n">чисто</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">03</span> Гейт F &mdash; идентичность зала (MRD-02)</h2>
+    <span class="hash">41d5b23</span>
+  </div>
+  <p class="lede">Свободнотекстовое поле <code>gymId</code> в <code>EquipmentAccess</code>, подключённое к онбордингу и к месту вызова Cloud Function для отчётов об оборудовании. Составлено с <code>gyms/{gymId}</code>, которое уже существовало на сервере как пространство имён, предоставляемое бизнесом/оператором, с реальным потребителем (поиском Slack-вебхука в <code>reportEquipment</code>).</p>
+
+  <div class="card">
+    <h3>Независимое ревью &mdash; flutter-reviewer, type-design-analyzer (параллельно, без перекрёстного заражения)</h3>
+    <ul class="findings">
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>Поле онбординга обрезалось (trim) при каждом нажатии клавиши; поскольку <code>GlassTextField</code> &mdash; управляемый виджет, принудительно пересинхронизирующий состояние всякий раз, когда его value не совпадает с отображаемым текстом, это тихо удаляло пробел после каждого слова во время ввода &mdash; "Iron Temple Gym" превращалось в "IronTempleGym".</p><p class="fixed">Исправлено &mdash; обрезать только в единственной точке потребления, где нужно нормализованное значение, а не внутри <code>onChanged</code>. Первая версия регрессионного теста (заранее вычисленные подстроки-префиксы) этого не поймала; переписана так, чтобы дописывать каждый символ к реально отображаемому тексту поля, и воспроизвела точную порчу.</p></div></li>
+    </ul>
+    <p>Одна находка MINOR отмечена и осознанно оставлена незадокументированной в коде: <code>EquipmentAccess.gymId</code> и мёртвый код <code>BuddyProfile.gymId</code> имеют одинаковое голое имя без перекрёстной ссылки &mdash; сегодня безвредно, отложено до того будущего гейта, который оживит <code>BuddyProfile</code>.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">16</span><span class="l">новых тестов (9 модель + 7 виджет)</span></div>
+    <div class="stat"><span class="n">3</span><span class="l">mutation-проверки</span></div>
+    <div class="stat"><span class="n">чисто</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">04</span> Гейт G &mdash; память о заметках по настройке (MRD-03/04/05)</h2>
+    <span class="hash">8dabc20</span>
+  </div>
+  <p class="lede">Собственный вывод разведки был "изобрести новую схему/политику" &mdash; верно настолько, насколько это заходило, но взвешивались лишь два варианта. Найден третий: составить <code>gymId</code> из Гейта F с уже существующим TYPE <code>equipmentId</code> каталога оборудования в составной ключ, приближающий "экземпляр физической машины", честно раскрытый как приближение на уровне типа (зал с двумя одинаковыми тренажёрами делит одну заметку). Никакой новой серверной схемы или изменения правил &mdash; уже существующее пользовательское wildcard-правило уже покрывало новую подколлекцию.</p>
+
+  <div class="card">
+    <h3>Независимое ревью &mdash; flutter-reviewer, type-design-analyzer (параллельно, без перекрёстного заражения)</h3>
+    <ul class="findings">
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>flutter-reviewer: <code>save()</code> никогда не инвалидировал провайдер чтения &mdash; обычный non-autoDispose <code>FutureProvider.family</code> &mdash; поэтому однажды сохранённая заметка при повторном посещении страницы в той же сессии снова показывалась пустой, сводя на нет весь смысл фичи и рискуя тем, что повторное сохранение тихо перезапишет реальную заметку устаревшим пустым черновиком.</p><p class="fixed">Исправлено &mdash; <code>ref.invalidate(...)</code> после сохранения; воспроизведено тестом, разделяющим один ProviderContainer между двумя независимо ключированными экземплярами виджета (свежий ProviderScope при каждом pumpWidget этого бы не поймал).</p></div></li>
+      <li><span class="sev major">MAJOR</span><div class="finding-body"><p>type-design-analyzer (2 находки): комментарий модели "gymId никогда не пуст" не был обеспечен принудительно &mdash; старый fallback в <code>fromJson</code> позволял повреждённому документу тихо создать заметку с пустым gymId, который общая функция слага id затем сворачивала в подверженный коллизиям пустой fallback, разделяемый с несвязанной фичей.</p><p class="fixed">Исправлено тремя способами &mdash; assert в конструкторе, сама функция id теперь выбрасывает исключение на пустом gymId, <code>fromJson</code> теперь возвращает null для повреждённого документа; плюс комментарий с опережающей ссылкой и закрепляющий тест на общей функции слага.</p></div></li>
+    </ul>
+    <p>Одна находка MINOR (косметическая гонка подтверждения сохранения, без порчи данных) оставлена как есть по собственной оценке ревьюера "не блокирует".</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">2498/2498</span><span class="l">полный набор проходит (2470 + 28 новых)</span></div>
+    <div class="stat"><span class="n">27</span><span class="l">новых тестов (18 модель/репозиторий + 9 виджет)</span></div>
+    <div class="stat"><span class="n">чисто</span><span class="l">flutter analyze</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="gate-header">
+    <h2><span class="gate-num">05</span> Гейт H &mdash; измерение конвейера вклада пользователей (MRD-07)</h2>
+    <span class="hash">0f3bcf3</span>
+  </div>
+  <p class="lede">Разведка не нашла нигде в кодовой базе читателя данных <code>MachineCard</code>, несмотря на три комментария в коде, утверждающих, что чтение по группе коллекций "возможно"; не нашла определённой аудитории или периодичности для такого чтения; и &mdash; главная причина остановиться, не заходя дальше &mdash; ничто в поставленном приложении никогда не записывает переход статуса, на который опирался бы рейтинг. Поставлен именно тот read-only слайс, который подтверждается данными: <code>scripts/ops/machine_card_contribution_report.py</code>, запускаемый вручную REST-запрос по группе коллекций, повторяющий паттерн авторизации существующего миграционного скрипта, ранжирующий нераспознанное оборудование по числу наблюдений разных пользователей. Ни пути записи, ни изменения схемы/правил, ни планового задания.</p>
+
+  <div class="card">
+    <h3>Независимое ревью &mdash; security-reviewer, python-reviewer (параллельно, без перекрёстного заражения)</h3>
+    <p>security-reviewer: чисто, ни одного BLOCKER/MAJOR. Применены два MINOR усиления &mdash; сузить набор полей REST-запроса, чтобы поля со свободным текстом/догадкой модели никогда не попадали в трафик; подтверждено прямое тестовое покрытие гарантии никогда-не-печатать-uid.</p>
+    <ul class="findings">
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p>python-reviewer: у <code>_decode_value</code> не было ветки для <code>timestampValue</code>, хотя собственная сторона чтения модели документирует нативные Firestore Timestamp как реальную возможность для полей дат &mdash; такой документ тихо декодировался бы в null.</p><p class="fixed">Исправлено &mdash; добавлена ветка.</p></div></li>
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p>Сравнение дат использовало сырое лексикографическое сравнение строк; <code>toIso8601String()</code> в Dart опускает суффикс микросекунд, когда он нулевой, поэтому один и тот же момент может выглядеть как строки разной ширины и сортироваться в обратном порядке.</p><p class="fixed">Исправлено &mdash; сначала парсить в настоящие datetime через новые хелперы <code>_earlier</code>/<code>_later</code>/<code>_parse_iso</code>. Опасность сравнения naive/aware datetime в раннем черновике была замечена и устранена до какого-либо запуска тестов, повторным чтением кода.</p></div></li>
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p><code>isinstance(times_seen, int)</code> принимал булевы значения Python (<code>bool</code> &mdash; подкласс <code>int</code>) &mdash; вручную отредактированный булев <code>timesSeen</code> тихо добавил бы фантомное наблюдение.</p><p class="fixed">Исправлено &mdash; явное исключение bool.</p></div></li>
+      <li><span class="sev minor">MINOR</span><div class="finding-body"><p>Колонка имён фиксированной ширины обрезалась молча &mdash; две машины, чьи имена совпадают в первых 32 символах, могли отобразиться как одинаковые строки без сигнала о различии.</p><p class="fixed">Исправлено &mdash; видимый маркер на конце при обрезке; ранжирование по-прежнему всегда ключуется по необрезанному id.</p></div></li>
+    </ul>
+    <p>Два дефекта пойманы самостоятельно до какого-либо внешнего ревью: тест на разрешение ничьей, который случайно проходил против собственной мутации, потому что имена фикстур совпадали по алфавиту (переименован, чтобы это выявить); свойство resolved/unresolved с перевёрнутой булевой логикой, замеченное при именовании собственного теста.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><span class="n">28/28</span><span class="l">pytest проходит (19 исходных + 9 новых)</span></div>
+    <div class="stat"><span class="n">5</span><span class="l">mutation-проверок, все пойманы как предсказано</span></div>
+    <div class="stat"><span class="n">чисто</span><span class="l">py_compile</span></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="gate-num">&mdash;</span> Статус MRD после этого цикла</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>MRD</th><th>Описание</th><th>Статус</th><th>Гейт</th></tr></thead>
+      <tbody>
+        <tr><td>&mdash;</td><td>Память о ТИПЕ оборудования, уровень 1</td><td><span class="pill">поставлено</span></td><td class="num">D &middot; 2cc271b</td></tr>
+        <tr><td>MRD-02</td><td>Идентичность зала (свободнотекстовый gymId)</td><td><span class="pill">поставлено</span></td><td class="num">F &middot; 41d5b23</td></tr>
+        <tr><td>MRD-03</td><td>Память об экземпляре физической машины</td><td><span class="pill approx">приближено</span></td><td class="num">G &middot; 8dabc20</td></tr>
+        <tr><td>MRD-04</td><td>Память о заметке по настройке</td><td><span class="pill">поставлено</span></td><td class="num">G &middot; 8dabc20</td></tr>
+        <tr><td>MRD-05</td><td>Извлечение контекста заметки по настройке</td><td><span class="pill">поставлено</span></td><td class="num">G &middot; 8dabc20</td></tr>
+        <tr><td>MRD-06</td><td>Общий контракт неопределённости</td><td><span class="pill">поставлено</span></td><td class="num">E &middot; 105f9d4</td></tr>
+        <tr><td>MRD-07</td><td>Измерение конвейера вклада пользователей</td><td><span class="pill approx">read-only слайс</span></td><td class="num">H &middot; 0f3bcf3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede">"Приближено" и "read-only слайс" &mdash; это не пробелы в исполнении, а осознанные, ограниченные фактами рамки, которые подтвердила собственная разведка каждого гейта, задокументированная в его D0-заметке. MRD-03 приближает физическую машину как <code>(equipmentId, gymId)</code>, а не истинную идентичность единственного экземпляра. MRD-07 поставляет только измерение; переход статуса, на который опирался бы рейтинг, сегодня нигде в приложении не записывается, а построение дашборда или цикла уведомлений вокруг него означало бы изобретение решения об аудитории/периодичности без каких-либо данных в его пользу.</p>
+</section>
+
+<div class="banner">
+  <h3>Известные пробелы, переносимые дальше</h3>
+  <ul>
+    <li>Репозитории на Firestore во всех гейтах D&ndash;H не имеют прямого теста чтения/записи &mdash; это ограничение на уровне всего репозитория (нет зависимости <code>fake_cloud_firestore</code>/mocking), разделяемое, а не введённое этим циклом.</li>
+    <li>Приближение MRD-03 через составной ключ означает, что зал с двумя одинаковыми тренажёрами делит одну заметку по настройке &mdash; раскрыто в комментарии модели и в тексте интерфейса, а не тихо проигнорировано.</li>
+    <li>Находка MEDIUM Гейта D (гонка восстановления авторизации в общем провайдере итогов, используемом Home/Progress) осознанно отложена для отдельного прохода усиления по потребителям, а не исправлена в рамках гейта.</li>
+    <li>Скрипт Гейта H не запускался на реальных продакшн-данных в рамках этого цикла &mdash; проверен только на синтетических фикстурах; оператору стоит запустить его вручную один раз, прежде чем полагаться на результат.</li>
+    <li>Нигде в данных этого репозитория не определён Гейт I. Этот цикл закрывает постоянную инструкцию по гейтам D&ndash;H; дальнейшая продуктовая работа требует нового прохода по определению рамок, а не предполагаемого продолжения.</li>
+  </ul>
+</div>
+
+<div class="banner close-card">
+  <h3>Push и деплой</h3>
+  <p style="margin-bottom:0">Все пять гейтов закоммичены только локально, по порядку: <code>2cc271b</code> &rarr; <code>105f9d4</code> &rarr; <code>41d5b23</code> &rarr; <code>8dabc20</code> &rarr; <code>0f3bcf3</code>. <strong>PUSH НЕ ВЫПОЛНЕН. ДЕПЛОЙ НЕ ВЫПОЛНЕН.</strong></p>
+</div>
+
+<footer>
+  Полные данные по каждому гейту: <code>core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md</code>, <code>GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md</code>, <code>GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md</code>, <code>GATE_G_SETUP_MEMORY_D0_NOTE_2026-08-19.md</code>, <code>GATE_H_CONTRIBUTION_MEASUREMENT_D0_NOTE_2026-08-19.md</code> &mdash; и полное повествование в <code>core/DECISION_LOG.md</code>.
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

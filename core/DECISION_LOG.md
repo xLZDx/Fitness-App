@@ -20470,6 +20470,163 @@ specific gate with the operator.
 part of the Subgate B salvage classification above -- classified PRODUCT_REQUIRED, not superseded
 by anything on master. Entry text below is the original, unedited.**
 
+## 2026-08-19 — first SPTR marketing site: one shell, three concept cells, no hero selected
+
+**Operator decision (Marketing R&D gate).** After eleven rounds of positioning review consolidated
+into Decision Pack v1.0, the operator authorised implementation of an internal marketing prototype
+and explicitly forbade selecting a hero before real respondents exist. The site is therefore the
+R&D instrument, not a launch asset: one shell with three equal-quality concept cells switched by
+`?concept=a|b|c`, plus `?lang=en|ru` and `?debug=1`.
+
+**Static-first, inside existing hosting.** `firebase.json` already serves `public/` with
+`cleanUrls: true` and seven pre-existing legal/checkout/coach files live there. Added
+`public/index.html`, `public/assets/sptr/{site.css,site.js,favicon.svg,media/}` — additions only,
+nothing modified or deleted, no second frontend stack introduced for a landing page.
+
+**Claim classes are in the markup.** Every classified sentence carries
+`data-claim-class="exists|committed|hypothesis"`; `?debug=1` renders inline badges. 17 claims: 12
+exists, 4 committed, 1 hypothesis. The four `committed` claims are rendered in this internal build
+and may not go public until built — they depend on MRD-01/03/04/05, the machine-identity chain that
+does not exist yet (`grep -c equipmentId workout_log.dart` = 0; recognition history is keyed by
+catalogue type, not physical unit).
+
+**No fabricated product evidence.** The repository contains no usable app footage: the only
+screenshots present are debugging artefacts from 2026-07-30, one of which shows the old on-device
+classifier calling two flat benches a treadmill at 100% confidence. None were used. All four site
+images are crops from the operator's own gym photographs, chosen to exclude identifiable people. The
+evidence section uses a real Nautilus placard reading PEC FLY / REAR DELT — the actual mechanic,
+documented rather than illustrated. Four slots still need real footage before public use.
+
+**Verified:** Chrome via Playwright, three concepts x two languages x two viewports — exactly one
+visible hero per cell, zero horizontal overflow, zero external requests, zero console errors,
+`/privacy` and `/terms` 200 through cleanUrls, reduced-motion leaves nothing hidden, keyboard path
+intact, 67/67 translation keys covered, initial transfer 142 KB identical across all three cells
+(objective parity proof). Six defects found and fixed in review, including an author `display:grid`
+that beat the UA `[hidden]` rule and left the internal debug switcher visible to every visitor.
+
+**Not done deliberately:** no hero selected, no deployment, no push, pre-public truth gate not run.
+Full detail in `core/marketing/SPTR_MARKETING_SITE_{IMPLEMENTATION,CLAIM_REGISTER,QA}_2026-08-19.md`.
+
+## 2026-08-19 — SPTR site: claim governance split into two axes, fail-closed lint added (Gates A/B/C)
+
+**Operator decision (post-implementation review of `dd12695`).** Two governance defects found: the
+single `data-claim-class` axis conflated product truth with public-publishability, and an
+unclassified claim silently vanished from the hand-regenerated register instead of failing a check.
+A third item (`noindex, nofollow` is not access control) needed only documentation.
+
+**Two independent axes, every claim re-adjudicated.** `data-claim-state` (exists/committed/
+hypothesis/never) and `data-public-gate` (allowed/qualify/blocked/internal-only) now ride
+separately on all 22 classified sentences in `public/index.html`; `exists` was never auto-mapped to
+`allowed`. Re-deriving both caught a real overclaim: "Most machines have their own name printed on
+them" is not supported by the ~28-of-69 registry bound from a prior round's field measurement —
+corrected to "Many machines… when SPTR can use those words," in both languages, and marked
+`qualify` rather than `allowed`. Four claims total came out `exists` + `qualify` (injury filtering,
+suggested weight, nameplate prevalence, progress-photo encryption) — each true, each needing a named
+condition before it can go public. 45 non-claim nodes (headlines, eyebrows, CTA labels, framing,
+illustration examples, disclosures) now carry explicit `data-nonclaim="reason"` instead of no
+metadata at all.
+
+**`scripts/marketing/claim_lint.py` is fail-closed, and proves it.** Fails on unclassified marketing
+copy, invalid enums, a `committed`/`hypothesis` claim marked `allowed`, `never` rendering at all,
+duplicate IDs, and drift against `core/marketing/claim_register.json` (now the single source of
+truth; the human-readable register is generated from it, not hand-maintained).
+`--self-test` applies real mutations in memory and asserts the lint catches every one — 9 cases,
+including two added after independent review (below). The register's own build caught a bug in
+itself: the attribute regex `data-[a-z-]+` didn't match `data-i18n` (digits in "i18n"), so every
+claim reported as unclassified on the first run.
+
+**Independent review of this remediation before commit** (security-reviewer + a11y-architect, run
+in parallel): found one real BLOCKER — the lint only ever scanned tags carrying `data-i18n`, so
+`<title>` and `<meta name="description">` (live copy restating hero-a/hero-b claims) rendered
+unclassified with zero errors. Fixed by broadening node discovery to match any claim-system
+attribute regardless of `data-i18n`, plus a hardcoded check that those two specific tags must be
+classified. Also found: three of four `qualify` texts had silently diverged between the HTML
+tooltip and the JSON register (new `QUALIFY TEXT DRIFT` lint rule now catches this); a debug-mode
+badge on `.mark-sub` reintroduced the same nav-overflow bug class already fixed once for `.btn`
+(root-caused to `white-space: nowrap` on generated content forcing a flex-item minimum width — fixed
+site-wide with `overflow-wrap: anywhere` instead of a growing `:not()` exclusion list, re-swept
+280–390px clean); and a debug-only qualify tooltip used `el.title`, unreachable by keyboard/touch/AT
+— replaced with a focusable `<button aria-expanded>` disclosure. All fixed, all re-verified.
+
+**Full render QA re-run clean**: 3 concepts × 2 languages × 2 viewports, 0px overflow, 0 external
+requests, 0 console errors. Privacy claims independently cross-checked against
+`photo_key_store.dart`, `aes_photo_cipher.dart`, Android backup-rules XML, and
+`gemini_equipment_service.dart` — match source exactly.
+
+**Deliberately out of scope:** product implementation (Level-1 equipment memory, MRD-01…07) touches
+the live Flutter app's data models and is not attempted in this change — flagged as needing its own
+scoped plan rather than folding a schema-affecting scope expansion into a governance fix.
+
+Full detail: `core/marketing/SPTR_MARKETING_SITE_GOVERNANCE_REMEDIATION_2026-08-19.md`.
+
+## 2026-08-19 14:26 local / 11:26 UTC — Gate D: Level-1 equipment-type workout memory shipped
+
+**Operator decision.** After Gates A/B/C (governance remediation) landed, the operator explicitly
+rejected stopping there: the original GO already authorized the subsequent product gates (D–H), and
+Gate D — showing a recognized equipment TYPE's prior workout context ("Your last leg press: 45 kg ×
+10", never "this exact machine") — was in scope without a fresh confirmation. Gym entity, physical
+machine instance, and any Firestore migration were explicitly ruled out of this gate's scope by the
+operator up front (deferred to MRD-02/03/04).
+
+**Reconnaissance correction, mid-gate.** D0 initially targeted the legacy `workoutLogsProvider` /
+`workout_logs` path before discovering, while reading `workout_player_page.dart`'s own suggested-
+weight chip, that `workout_logs` stopped receiving writes at F3.3/F3.4 — the current path is
+`workoutSessionHistoryProvider` / `workoutSessionTotalsProvider` over `workout_sessions`. Corrected
+before any code was written; full evidence trail in
+`core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md`.
+
+**Minimal seam chosen deliberately over the obvious schema fix.** `exerciseId → equipmentId` cardinality
+is high enough (up to 254 exercises for one equipment type) that a Firestore `whereIn` query — capped
+at ~30 values — cannot serve this directly, and adding a denormalized `equipmentId` field to every
+`WorkoutLogEntry` would be a write-path/backfill change the operator explicitly said not to assume.
+Instead: match client-side, over data already fetched for other screens (the windowed session
+history, the exact-count `totals()` used to detect window truncation) — zero new Firestore reads,
+zero schema change. Truncated-window honesty (D3): a miss inside a full window is a confirmed
+"never done this equipment," a miss inside a *truncated* window is reported as "not found in your
+recent workouts," never conflated.
+
+**Independent review (D7) found and fixed three real defects before commit**, run as three parallel
+specialists (flutter-reviewer, type-design-analyzer, silent-failure-hunter), no cross-seeding:
+1. **BLOCKER/MAJOR** (two reviewers independently) — the truncation check compared exercise-*row*
+   count (`WorkoutSession.asLogEntries()` emits one row per exercise since R11e) against the all-time
+   *session* count, so a multi-exercise-session user could see a truncated window silently reported
+   as complete. Fixed by counting distinct `sessionId`s instead of raw rows.
+2. **HIGH** (silent-failure-hunter) — the new exercise-id-matching set only read the vendored catalog;
+   11 of 48 registry machines have no vendored exercises and fall through to AI generation, so a
+   workout logged under a generated `ai::equipmentId::i` id could never match, permanently and
+   deterministically (not a race) — indistinguishable from "never used this equipment." Fixed by
+   unioning in cached (never freshly-generated, to avoid a spurious billed call) generated-exercise ids.
+3. **MAJOR** (flutter-reviewer) — the card gated only on the totals fetch, not the session stream's
+   own loading state, so it could flash a false "not found" before the stream's first snapshot arrived.
+   Fixed by also gating on the stream's `AsyncValue`.
+
+One MINOR type-hardening applied (private constructor + `.found()`/`.notFound()` factories, so the
+invalid "match found but marked truncated" combination is unrepresentable). One MEDIUM finding
+(`workoutSessionTotalsProvider`'s `authUserProvider.valueOrNull` auth-restore-race zero-collapse, a
+shared provider also used by Home/Progress) deliberately **not** fixed in this gate — flagged as a
+candidate for a dedicated cross-consumer hardening pass rather than widened here. Full findings,
+evidence, and fixes: `core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md`.
+
+**Marketing claim reclassified.** `memory-last-lift` (site copy: "What you lifted on this equipment
+last time, and when") moved `committed`/`internal-only` → `exists`/`qualify` in
+`core/marketing/claim_register.json`, with a qualify condition naming the two real bounds
+(equipment-TYPE only, not physical-machine; matched against the recent window, not literal all-time).
+The site's illustration card for this claim was split from the still-unbuilt "setup you saved" card
+and re-labelled to say the feature now exists rather than "not built yet" — no fabricated screenshot;
+attempting a real pixel capture via `RenderRepaintBoundary.toImage()` under `flutter test`'s headless
+VM platform hung for the full 10-minute suite timeout (a known Flutter/Windows engine limitation, not
+a Gate D code defect) and was abandoned in favor of the honest text-only disclosure.
+`claim_lint.py --self-test` and the real lint both still pass (22/22 claims reconciled).
+
+**Verification:** `flutter analyze` clean on every touched file; full suite 2445/2445 (was 2439 before
+this gate's own tests); 4 pure-function tests + 5 formatter tests + regression tests for all three D7
+fixes, each proven by reverting the fix and confirming its test fails, then restoring and confirming
+it passes (mutation evidence, not just green-suite claims).
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+## 2026-08-19 15:40 local / 12:40 UTC — Gate E: shared uncertainty contract (MRD-06) shipped
+
 **Reconnaissance first, evidence-driven scope.** An Explore agent inventoried every place the app
 already expresses uncertainty (six categories: equipment recognition, rep/weight withholding,
 AI-content labels, injury-screening safety levels, form-check/posture scoring, video-failure
@@ -20688,6 +20845,16 @@ closure is a new gate, not a continuation of this one.
 
 **No app runtime code changed by this entry** -- same scope as round 3 (legal copy + governance
 ledger + one operator-facing doc).
+---
+
+## 2026-08-19 — status report published for the D/E + marketing-governance commits
+
+House HTML-report format applied to the four commits accumulated since the last report (dd12695,
+9db5902, 2cc271b, 105f9d4) — the operator's mechanical stop-hook check
+(`report_conform.py --check`) flagged the gap. `reports/GATE_D_E_STATUS_2026-08-19.{html,ru.html}`:
+same content both languages, provenance block and copy-button injected via `report_conform.py`,
+Russian version published as an artifact and linked to the operator. Documentation only — no code
+changed by this entry.
 
 ---
 
@@ -58294,3 +58461,701 @@ Read-only `pm_bridge_job_status` was called for both new-chat request IDs. `2664
 ## 2026-10-20 - Commit: Integrate docs/ai-coach-tdd-001 (AI Coach phase 9 documents)
 
 Decision: merge the phase 9 AI Coach documentation branch; registry regenerated; voice_command.dart comment-only change accepted. See docs/commits/2026-10-20-integrate-aicoach-phase9.md.
+## 2026-08-19 — final consolidated status report published for the Gate D-H run
+
+House HTML-report format applied to the full, now-closed Gate D-H run:
+`reports/GATE_D_H_FINAL_STATUS_2026-08-19.{html,ru.html}` — commit hashes, per-gate test/mutation
+evidence, independent-review summaries, MRD status table, known gaps carried forward. Same content
+both languages, provenance block and copy-button injected via `report_conform.py`, Russian version
+published as an artifact and linked to the operator. Documentation only — no code changed by this
+entry.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-19 — operator course change: MVP FIRST, push-on-every-commit, Gate M0 recon
+
+**Operator directive, full text preserved in session context, summarized here.** The
+open-ended "close every valid seam" mode (Gates D-H) is superseded for now by a strict
+MVP-first sequence: MINIMAL MVP → RELEASE-READY → VALIDATE, then POST-MVP → FULL PRODUCT.
+Two durable new rules: (1) **push immediately after every commit** from now on — `git push`,
+or `git push -u origin HEAD` if no upstream, then verify local HEAD == remote branch HEAD
+before proceeding; local commits must not accumulate unpushed. (2) Every candidate change now
+requires an explicit MVP-need classification (BLOCKER / REQUIRED / POST-MVP / FULL PRODUCT)
+and a cheapest-alternative check before any code is written.
+
+**Phase 0 — push the accumulated Gate D-H branch.** `marketing/site-prototype-2026-08-19` had
+9 local commits never pushed (`dd12695` through `2a2d2cb`, diverged from `origin/master` at
+`78b24dc`). No existing remote branch of that name. Pushed with `git push -u origin HEAD`;
+verified `git rev-parse HEAD` == `git rev-parse origin/marketing/site-prototype-2026-08-19` ==
+`2a2d2cb05b42213db2ad8cfc2853f304688a2654`. Match confirmed.
+
+**Gate M0 — MVP closure reconnaissance.** Four parallel read-only agents swept the current
+working tree (not old reports) against the operator's 10-point north-star MVP flow:
+onboarding, scan→recognition→content, safety-critical gating, account isolation, auth/session
+honesty, buildability, and marketing truth. Full plan: `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+
+**Finding: one real MVP BLOCKER.** `workoutSessionTotalsProvider` /
+`workoutSessionsProvider` (`mobile/lib/features/workouts/state/workout_session_providers.dart:23-29,43-48`)
+collapse "auth still restoring" and "genuinely signed out" into the same `.valueOrNull == null`
+branch, returning a hard zero. Confirmed **provably reachable on every cold start with valid
+persisted credentials** — `authUserProvider` genuinely sits in `AsyncLoading` on every launch
+until Firebase finishes session restore, not merely under adversarial timing. `deriveProgress`
+renders this as "0 workouts, 0-day streak" for a real user with real history. Same root cause,
+same reach, also confirmed live in `currentProfileProvider` ("Sign in to sync" shown to an
+already-signed-in user), `programmesProvider`, `generatedPlanProvider`. The legacy
+`workoutLogsProvider`/`workoutTotalsProvider` have the identical shape but are confirmed dead
+code (no UI reference found) — excluded from scope. The fix pattern is already proven three
+times elsewhere in this exact codebase (`screeningProfileProvider`,
+`currentSubscriptionProvider`, the photo-store providers): `await ref.watch(authUserProvider.future)`
+instead of sampling `.valueOrNull`. This becomes **MVP-1**, the next gate, starting with a
+reproduction test before any fix (operator's explicit "не чинить гипотезу").
+
+**No MVP REQUIRED items found.** Everything else on the north-star checklist recon'd clean:
+onboarding's minimal skip-through path works and persists correctly; the scan→recognition→content
+path handles all three outcomes honestly with no dead ends and a real offline fallback; injury
+and pose-check gating are both genuinely enforced and fail closed by trace; Firestore rules and
+local storage are correctly uid-scoped with no cross-account leak found; a real signed Android
+release build is achievable today (`key.properties` + keystore both present, real Firebase
+config, working `build_release.ps1` + CI); every publicly-showable marketing claim spot-checked
+against code is true and `claim_lint.py` passes clean.
+
+**Re-ruled: Gate I (gym-scoped workout memory) is POST-MVP**, per direct operator instruction —
+its own evidence, gathered the prior turn, is preserved in the plan doc and this log rather than
+discarded. Equipment-TYPE memory (Gate D) already covers the honest minimal claim; gym-scoping
+is retention/correctness polish, not a truthfulness requirement.
+
+**Four items logged as POST-MVP, not started**, each with a one-line reason in the plan doc: no
+rate-limit on manual recognition taps (cost, not correctness — no automatic-loop risk found);
+catalog contraindication tagging beyond the current 81% (content work, already honestly
+disclosed live); SharedPreferences not wiped on sign-out (retention hygiene, not a mixing bug —
+storage is uid-keyed); `mobile/README.md` still Flutter boilerplate (cosmetic).
+
+**One item flagged as a hard pre-condition for a different, separate release gate — not the app
+MVP.** The marketing site's `gate:"qualify"` disclaimers (e.g. "not personalised coaching, you
+make the final call") only render to a visitor when `?debug=1` is set
+(`public/assets/sptr/site.js:180-217`); an ordinary visitor sees the unqualified claim. This
+would be a real overclaim-by-omission **if the site were shown publicly today**, but the site
+was built and has always been scoped as an internal R&D prototype, never the MVP's launch
+surface (Gate A/B/C decision-log entries: "ships as an R&D instrument, not a launch asset").
+Not an app-MVP blocker; tracked as a precondition the site-publication gate must clear
+whenever that separate decision is made.
+
+Full per-surface evidence (file:line for every claim above) lives in the four recon agents'
+transcripts for this turn and is condensed into `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+
+**PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
+
+---
+
+## 2026-08-19 — MVP-1: auth-restore false-state collapse fixed at the provider layer
+
+**Test-first, per the operator's explicit "не чинить гипотезу".** For each of six providers,
+wrote a regression test overriding `authUserProvider` with a `StreamController<AuthUser?>` that
+has not yet emitted (modeling a genuine cold-start restore window — `MockAuthRepository` replays
+synchronously and cannot reproduce this), ran it against the live (unfixed) code to confirm it
+failed with the exact predicted symptom, applied the fix, re-ran to confirm it passed. Fixed:
+`workoutSessionsProvider`, `workoutSessionTotalsProvider`
+(`mobile/lib/features/workouts/state/workout_session_providers.dart`), `currentProfileProvider`
+(`profile_providers.dart`), `programmesProvider` (`programme_providers.dart`),
+`generatedPlanProvider` (`ai_planner_providers.dart`), `scheduledSessionsProvider`
+(`scheduled_session_providers.dart`) — all six now `await ref.watch(authUserProvider.future)`
+instead of sampling `.valueOrNull`, matching the pattern already proven three times in this
+codebase before this gate (`screeningProfileProvider`, `currentSubscriptionProvider`, the
+photo-store providers). New/extended tests: `workout_session_providers_test.dart` (new, 3),
+`scheduled_session_providers_test.dart` (new, 1), `profile_providers_test.dart` (+1),
+`programme_providers_test.dart` (+1), `ai_planner_providers_test.dart` (new, 2) — 8 new tests.
+Full suite 2506/2506 (2498 + 8). `flutter analyze`: 7 issues, unchanged baseline, none introduced
+by this diff.
+
+**Independent review (flutter-reviewer, type-design-analyzer, parallel, no cross-seeding).**
+Both agents' first responses returned no plain-text result (only a tool-call trace); each had to
+be resumed twice via `SendMessage` asking explicitly for a plain-text restatement before a usable
+report arrived — noted here as a process observation, not a finding.
+
+type-design-analyzer: the fix itself is the correct type-level fix in all four then-changed
+files, matching the two precedents exactly — no defect. **BLOCKER**: recon had undercounted live
+instances; `scheduledSessionsProvider` was still live and unfixed, with 7+ real downstream
+consumers, and two of the files this gate had already touched (`programme_providers.dart`'s
+`activeProgrammeProgressProvider`, `ai_planner_providers.dart`'s `generatedPlanProvider` via
+`deloadVerdictProvider`) transitively depended on it — so the race survived inside the gate's own
+output. Fixed (see above). The same finding also named `workoutLogsProvider`/`workoutTotalsProvider`
+as live, citing `ref.invalidate(workoutTotalsProvider)` — checked directly rather than trusted:
+that call is `LogWorkoutAction.log`'s own internal reference to its sibling provider **inside the
+same file**, and a repo-wide grep found zero external callers of `workoutLogsProvider`,
+`workoutTotalsProvider`, or `logWorkoutActionProvider`/`LogWorkoutAction` — confirmed genuinely
+dead code (superseded by `workout_session_providers.dart` per that file's own doc comment),
+correcting this part of the finding rather than fixing unreferenced code. One MINOR
+(`questionnaireDraftProvider` has the same defect shape in a synchronous `Notifier.build()`,
+where the `.future` pattern doesn't drop in as-is) and two lower-severity notes (a harmless
+double-await already mirrored by an existing precedent; `GeneratedPlan` lacking value equality,
+unlike its siblings `WorkoutLogTotals`/`Programme`) deferred — see MVP-3/backlog below.
+
+flutter-reviewer: no defect in the five call sites changed at the time of its review or their
+tests — sound, correctly modeling the cold-start window, covering both the loading-window and
+genuinely-signed-out halves of the bug class. **MAJOR** (its own words: "not a regression," but a
+real gap): most of the real screens that display this data read the now-correctly-loading
+providers through a `.valueOrNull ?? default` collapse one hop downstream (a plain synchronous
+`Provider` cannot itself suspend), so the fix does not yet visibly change what Progress, Home,
+Programmes, or Profile actually show during the restore window. Verified concretely, not taken on
+trust: `progress_page.dart:29-36` reads `workoutSessionHistoryProvider` (`.valueOrNull ?? []`) and
+`workoutSessionTotalsProvider.valueOrNull` directly; `deriveProgress`'s own two branches for
+"no logs" (`totals == null` → `ProgressStats.empty`; `totals != null` → real totals,
+`progress_stats.dart:66-78`) currently render **identical zeros** either way during the window —
+this gate's fix changes the provider's honesty, not yet the pixel the user sees. Logged as
+**MVP-2**, its own gate, not folded into this diff (touches 10+ files across Home/Progress/
+Programmes/workout-player/form-check/etc., a materially different, larger-blast-radius change
+than a provider-definition swap).
+
+**A further finding, found by me while verifying the review's scope, not by either reviewer**:
+`app_router.dart`'s `redirect` (`:233-240`) reads `authRepo.currentUser` — a synchronous Firebase
+getter with the identical cold-start ambiguity, not a resolved-stream contract — so a real
+signed-in user reached before restore completes would be redirected to `/login`. Mitigated in
+practice by `splash_page.dart`'s fixed 1300ms wait before ever navigating past `/splash` (local
+session restore is a disk/keychain read, normally well inside that window), but not structurally
+closed. `questionnaireDraftProvider` has the same defect shape and is entangled with this same
+path (onboarding is only reachable once `isSignedIn` resolves). Logged as **MVP-3**.
+
+**MVP scope-pressure-test applied explicitly, per the operator's own required format:**
+MVP-1 (provider layer) — BLOCKER, no cheaper alternative, an existing screen was lying about
+existing data. MVP-2 (screen layer) — REQUIRED, same criterion 8, cheapest alternative is gating
+the affected screens on `.isLoading` rather than restructuring; not folded into MVP-1 because of
+its size. MVP-3 (router/navigation layer) — REQUIRED but lower practical likelihood than MVP-1
+given the splash buffer; cheapest alternative is making the splash wait for the real first auth
+emission rather than a fixed timer, not a router redesign.
+
+Full plan updated: `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+
+**PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
+
+---
+
+## 2026-08-19 — MVP-3: splash screen no longer races the router's auth-restore read
+
+**Test-first, per the operator's "не чинить гипотезу".** Two new widget tests in
+`splash_page_test.dart`, both overriding `authUserProvider` with a `StreamController<AuthUser?>`
+that has not yet emitted (the same reproduction pattern as MVP-1 — `MockAuthRepository` replays
+synchronously and cannot model a genuine restore gap). First version of the "does not hand off
+while restoring" test used one large `tester.pump(Duration(seconds: 3))` settle call and produced
+a **false pass** against the unfixed code (the old fixed-1300ms-timer splash should have navigated
+regardless of auth state, so `findsNothing` should have failed — it didn't). Root cause: a single
+large pump does not reliably settle a multi-hop async-chain-then-route-transition; fixed by using
+the same multi-step pump sequence (`pump(1500ms); pump(600ms); pump(more)`) the pre-existing "hands
+off after the splash delay" test already relied on. Re-run against the unfixed code then correctly
+reproduced the failure; re-run against the fix then correctly passed.
+
+**Fix** (`splash_page.dart`): `SplashPage`/`_SplashPageState` converted from `StatefulWidget`/
+`State` to `ConsumerStatefulWidget`/`ConsumerState`. `_proceed()` now runs
+`Future.wait([authWait, Future.delayed(_minDwell)])` — the real first `authUserProvider` emission
+raced against the existing 1300ms minimum-dwell timer, taking the max of the two rather than the
+timer alone — before ever calling `context.go('/home')`. A broken/hung stream cannot strand the
+user: `_maxAuthWait` (5s) bounds the wait via `.timeout()`, and a genuine stream error is caught
+via `.then(onError:)`; both fall back to `null` and proceed exactly as before. Local session
+restore is a disk/keychain read, not a network call, so 5s is a generous safety margin, not an
+expected wait — the fast/mock path still resolves in well under 1300ms, so normal-path timing is
+unchanged (verified: the two pre-existing splash tests still pass unmodified).
+
+**Independent review (flutter-reviewer).** First response returned no plain-text result (only a
+tool-call trace); needed one `SendMessage` restatement request, including a self-correction of its
+own file-path citations (resolved relative to the wrong root on the first pass). **VERDICT:
+APPROVE** — closes the race for every currently-reachable cold-start path; correctly scoped given
+`initialLocation` is hardcoded to `/splash` and no OS-level deep-link/state-restoration entry point
+exists anywhere in the app (grepped: no `uni_links`/`app_links`/`RestorationMixin`/custom
+`RouteInformationParser`). No BLOCKER/MAJOR. Two MINOR findings:
+
+1. The auth-wait's error/timeout path was completely silent (no debug/Crashlytics signal),
+   inconsistent with this codebase's own established `main.dart` logging discipline for boot-time
+   guards — a genuinely broken restore path on some devices would be indistinguishable from
+   "signed out" in Crashlytics. **Fixed**: both the `.then(onError:)` and `.timeout(onTimeout:)`
+   branches now route through a `_reportAuthWaitFailure` helper —
+   `debugPrint('MVP-3: $reason, proceeding to /home anyway: $error')` followed by a
+   defensively try/catch-wrapped `FirebaseCrashlytics.instance.recordError(error, st, fatal: false)`
+   (Crashlytics itself failing must not be a second silent failure; matches `main.dart`'s own
+   pattern for exactly this "diagnostic call might itself fail" case). Re-verified: all 4 splash
+   tests still pass with this change in place, including confirming `FirebaseCrashlytics.instance`
+   does not throw when called from a widget in the test sandbox (an explicitly flagged, previously
+   unverified risk — no prior test in this codebase called Crashlytics from a widget).
+
+2. The fix's core premise — that once `authUserProvider`'s stream emits, `authRepo.currentUser`
+   (the sync getter the router's `redirect` reads) is already synchronized to the same user — was
+   asserted but not verified against the pinned SDK source, unlike a neighboring comment in the
+   same file that did verify a related claim. **Verified directly, not left as a documentation
+   gap**: read the pinned `firebase_auth_platform_interface` 8.1.9 method-channel source
+   (`method_channel_firebase_auth.dart:179-193`, `_handleIdTokenChangesListener`) — `instance.currentUser`
+   is assigned **before** the corresponding event is pushed onto the `userChanges()`/
+   `idTokenChanges()` stream controller, in both the signed-in and signed-out branches, never the
+   reverse. The premise holds. Recorded as a doc comment on `FirebaseAuthRepository.currentUser`
+   (`firebase_auth_repository.dart`), matching this file's own existing standard for this class of
+   claim, rather than left implicit.
+
+Third finding (forward-looking, not a defect): if the app ever adds OS-level deep linking that
+bypasses `/splash`, that entry path would reopen the original race. No action taken — reviewer's
+own words, "not a request to change this diff"; nothing in this codebase does that today.
+
+**Full suite / analyze after all fixes**: see commit message for exact counts (run immediately
+before this commit). `flutter analyze`: reintroduced then removed one new `unnecessary_import`
+lint (`flutter/foundation.dart` fully shadowed by `flutter/material.dart` once both are imported in
+the same file) — caught by `flutter analyze` itself before commit, fixed by dropping the redundant
+import; final count matches the unchanged 7-issue baseline.
+
+**MVP-3 CLOSED.** Per the plan doc's execution order, MVP BLOCKER + both MVP REQUIRED items
+(MVP-1, MVP-3) are now closed. **MVP-2** (the same collapse one hop downstream, at the
+screens/derived-providers — Progress, Home, Programmes, etc.) remains scoped and evidenced in the
+plan doc but not started; whether to pursue it in full, in part, or reclassify further given that
+MVP-1+MVP-3 now close the actual "confident lie" risk (the remaining downstream collapse is largely
+ordinary async-loading flicker, not the same defect class) is an explicit scoping decision to make
+before starting that gate, not assumed.
+
+**PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
+
+---
+
+## 2026-08-19 — MVP-2 reclassified POST-MVP; `questionnaireDraftProvider` accepted as mitigated
+
+**The scoping decision flagged above, made explicitly rather than left open**, per the operator's
+own required MVP scope-pressure-test format. Re-examined MVP-2 (the ~13 `.valueOrNull ?? default`
+downstream call sites listed in the plan doc) against the state of the app *after* MVP-3 closed,
+not against the state it was originally scoped in (which still had a fixed-timer splash screen).
+
+**Reasoning, checked structurally rather than assumed**: MVP-3 makes `/splash` wait for
+`authUserProvider`'s real first emission before ever navigating to `/home`. A Riverpod
+`StreamProvider` that has emitted once caches that value as `AsyncData` for every subsequent
+watch — it does not spontaneously re-enter `AsyncLoading` mid-session. `app_router.dart`'s
+redirect (`:62-92`) only allows a route past `/login` when `isSignedIn`
+(`authRepo.currentUser != null`), and MVP-3's own independent review confirmed there is no
+OS-level deep-link or state-restoration entry point anywhere in this app that bypasses `/splash`
+(`initialLocation` hardcoded to `/splash`; grepped, no `uni_links`/`app_links`/`RestorationMixin`).
+So the window MVP-2 was scoped to close — a user reaching Progress/Home/Programmes/etc. while
+`authUserProvider` is still genuinely restoring — is no longer reachable by any path in this app.
+What remains at those ~13 call sites is ordinary Firestore-fetch latency *after* auth has already
+resolved: normal loading-flicker every app has, not the auth-restore truthfulness defect the
+north-star criterion (`no data leaks or lies... across the auth-restore window`) names.
+
+**Decision: MVP-2 reclassified to POST-MVP** — the `.isLoading`-gating fix is still worth doing
+(a skeleton beats a flashed zero during a real fetch) but as UX polish, not a release blocker.
+Full re-scoring and file list preserved in the plan doc rather than discarded, so the POST-MVP
+gate has real evidence to start from when it's picked up.
+
+**`questionnaireDraftProvider`** (`questionnaire_notifier.dart:16-18`, carried open out of MVP-3):
+same reasoning applies more directly — `/onboarding` is itself only reachable once `isSignedIn`
+is true, so `QuestionnaireDraft.build()` can never run while `authUserProvider.valueOrNull` would
+still be null for a signed-in user. **Decision: accept as mitigated by MVP-3's router-gating,
+no separate code change.** Unlike MVP-2 (a real gap just deprioritized), this one's specific
+defect shape is not reachable at all given the current router, so there is nothing left to fix,
+not merely something deferred.
+
+**No code changed by this entry — plan-doc-only.** Per the plan's own execution order, this
+closes out every open MVP-REQUIRED/undecided item: MVP BLOCKER (MVP-1) and both MVP REQUIRED
+instances (MVP-3 fixed; MVP-2 reclassified with the same evidence bar as a fix would have needed)
+are now resolved. Next step per the plan: the **release gate** (device/emulator pass), then the
+**final MVP-only dream-team review**, then **MVP READY** — not a fourth code gate.
+
+---
+
+## 2026-08-19 — house-format report for the M0→MVP-2 run
+
+Bilingual status report (`reports/SPTR_MVP_M0_1_3_2_STATUS_2026-08-19.{html,ru.html}`) covering
+the four commits above: Gate M0 recon, MVP-1 close, MVP-3 close, MVP-2 reclassification. Required
+by the operator's own house-report rule (any closed-gate/status work gets both files, provenance
+block, copy button — enforced mechanically by `report_conform.py`, verified `--check` clean).
+Russian published as an artifact and linked to the operator; English committed as the durable
+in-repo record. No code or scope decisions in this entry — reporting only.
+
+---
+
+## 2026-08-19 — release gate: real-device pass, partial (auth-restore fix confirmed live)
+
+**Built and ran the actual app** (`flutter build apk --debug`, installed on a booted
+`Pixel_API_34` AVD, `emulator-5554`, package `com.fitnessapp.fitness_app.sptr.debug`) rather than
+relying on unit/widget tests alone for the release-gate checklist in the plan doc — per the global
+instruction to actually exercise a UI change before calling it done, applied here to the
+auth-restore fix specifically since it is exactly the class of bug unit tests can model but not
+fully prove on a real Android auth stack.
+
+**The one check this pass exists to make, made directly**: force-stopped the app (`am force-stop`,
+a true process kill, not backgrounding) after establishing a signed-in anonymous session, cleared
+logcat, relaunched. By ~4s the app landed directly on Home showing the same restored session
+("Спортсмен") — no bounce through `/login`, no flash of a wiped/zeroed state. Logcat for the
+relaunch had no `MVP-3:` line (the `_reportAuthWaitFailure` log added this session) and no
+`FATAL`/`AndroidRuntime` crash — meaning the real first `authUserProvider` emission won the race
+against the 5s safety timeout on genuine hardware-adjacent conditions, exactly the intended
+fast-path behavior, not merely in a controlled `StreamController` test.
+
+**Broad smoke coverage, all clean, no `FATAL`/`AndroidRuntime` crash at any point**: cold install
++ first launch (RU locale, correct welcome copy) · anonymous sign-in · onboarding skip-through (8
+steps) to Workouts tab · Home / Progress / Profile tabs, each rendering an honest empty state for
+a fresh account, not a false default · scan screen (camera UI, the "Экспериментально" ambiguity
+disclaimer, and the Gemini/on-device privacy disclosure all render correctly) · Android system
+photo-picker opens without error from the scan screen's gallery button · Home and Scan both
+render correctly with `svc wifi disable` + `svc data disable` (no crash, no infinite spinner, no
+misleading state), re-enabled after.
+
+**Environment noise, checked and attributed, not silently ignored**: `FirebaseCrashlytics`
+settings fetch and `FirebaseSessions` remote-config fetch both failed with
+`CertPathValidatorException: Trust anchor for certification path not found`, and several
+`GoogleApiManager`/`FlagStore` warnings referencing Play Services Phenotype. Consistent with this
+specific bare AVD image lacking a signed-in Google account / current CA store — anonymous
+sign-in itself (a direct Identity Toolkit call, not routed through GMS) succeeded seconds later on
+the same run, confirming these are this AVD's own Play-Services gaps, not an app defect. One
+`tflite` warning (`tensor.data.raw != nullptr was not true`) logged once at boot with no repeat and
+no crash — read as a benign interpreter warm-up probe, not confirmed further given no reachable
+recognition round-trip in this pass (see below); flagged rather than dismissed.
+
+**Not covered by this pass — explicitly unverified, not assumed passing**: full scan
+recognition round-trip (known/ambiguous/unknown equipment) — this AVD has no camera passthrough
+(the preview renders black) and no gym-equipment photo was available to feed through the
+photo-picker, so only the screen/disclaimer/picker-launch layer was exercised, not an actual
+Gemini/on-device recognition call; EN locale (device stayed on its default RU); true
+airplane-mode radio state (used `svc` service toggles instead, which disable the interfaces but
+are not identical to the OS airplane-mode UI path); account-switch isolation (would need a second
+real account, not exercised); the health/injury questionnaire's own screen content (the entry
+tile was confirmed present on Profile, but a mistap navigated back to Home before its content was
+captured — not re-attempted this pass). These remain open items before the release-gate checklist
+in `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md` can be marked fully closed.
+
+**No code changed by this entry.** Screenshots retained in the session scratchpad
+(`release_gate/`), not committed — ephemeral verification evidence, not a repo artifact.
+
+**Follow-up in the same pass — injury/safety filtering entry point.** The Profile page's "Анкета
+о здоровье" (health questionnaire) tile routed to `/onboarding` and bounced straight back to
+`/home` twice in a row when tapped — briefly suspected as a new navigation regression, checked
+before assuming so: `injuries_page.dart:14-27`'s own doc comment documents this exact dead end as
+pre-existing and already the reason a separate `InjuriesPage` (`/injuries`) exists — `ProfileRepository.save()`'s
+only real editable surface, deliberately built around the questionnaire tile's redirect dead end
+rather than patching `resolveRedirect` (documented as the larger, rejected option). Not a
+regression from this session's work. Tapped the correct "Травмы" tile instead
+(`profile_page.dart:103-119`): the injuries screen loads correctly, with an honest empty state
+("Вы не указали ни одной травмы") and working copy explaining the filter's purpose — confirms the
+plan doc's existing claim that injury filtering is genuinely wired up, not just present in name.
+
+**Further follow-up — exercise/instruction path and EN locale.** Library → exercise detail
+(`Прыжки с поворотом на 180 градусов`) loads correctly: level/equipment/type tags, muscle diagram,
+"why this matters" copy, and an honest degraded state for the missing video asset on this AVD
+("Ссылка на ролик недоступна") rather than a silent failure or broken player. Attempted an EN
+locale check via `adb shell cmd locale set-app-locales ... --locales en-US` — the OS confirmed the
+per-app locale as applied (`cmd locale get-app-locales` reported `[en-US]`), but the app kept
+rendering Russian after a force-stop + relaunch. Not chased further: most likely a
+locale-propagation timing quirk between Android's per-app-language mechanism and
+`deviceLocalesProvider` (which reads `PlatformDispatcher.instance.locales` once at provider
+creation, `settings_providers.dart:79-81`) under this AVD/launch method, not evidence of an app
+defect — the cost of root-causing an adb/AVD locale-timing quirk outweighs its value here.
+Indirect evidence stands in: the full suite's default test locale is English
+(`kTestLocale = Locale('en')`, `test/helpers/test_app.dart:15`), and it passed 2508/2508 in
+English, including every test touched this session. A live on-device EN check remains open.
+
+**Release-gate checklist after this pass**: 10 of 12 items confirmed with direct on-device
+evidence (install/build, first launch, auth/restore, persistence, offline behavior, privacy
+truth, marketing truth, no critical crashes, injury filtering, exercise/instruction). Still open:
+full scan-recognition round-trip (needs camera passthrough or a seeded photo), account-switch
+isolation (needs a second account), and EN locale confirmed live on a real device rather than via
+the test suite alone. Given the remaining items each need either different tooling (a seeded gym
+photo, a second account) or a real device rather than this bare AVD, further progress here is
+better spent as a scoped follow-up than continued ad hoc adb probing — reporting current status
+to the operator rather than declaring the release gate closed on partial evidence.
+
+---
+
+## 2026-08-19 — house-format report for the release-gate device pass
+
+Bilingual status report (`reports/SPTR_MVP_RELEASE_GATE_PASS_2026-08-19.{html,ru.html}`) covering
+the three release-gate commits above, with six embedded screenshots from the actual device pass
+(first launch, the force-stop/relaunch auth-restore proof, scan screen, injuries screen, exercise
+detail, offline scan). Required by the operator's house-report rule. Russian published as an
+artifact and linked to the operator; English committed as the durable in-repo record. No code or
+scope decisions in this entry — reporting only.
+
+---
+
+## 2026-08-19 — RG-1/RG-2/RG-3: closing the three open release-gate items with real on-device evidence
+
+Continuation of the same `emulator-5554` (Pixel API 34) debug session, same installed build
+(no source changed since `851083e`). Full raw screenshot set retained in the operator's local
+scratchpad (not committed — same "ephemeral verification evidence" policy as the prior pass);
+canonical captures embedded in the house-format report for this entry.
+
+**Operator correction accepted as FACT**: the prior pass's "10 of 12 items confirmed" line
+undercounted its own listed exceptions. Honest count at that point was 9 FULL, with Scan and
+EN+RU each PARTIAL and account isolation fully OPEN (9 + 2 partial + 1 open = 12). Recorded here
+so the mistake doesn't repeat; see the RG-4 recount below for the corrected table.
+
+### RG-1 — real scan round-trip, real gym-photo corpus (`data/gym_photos_2026-07-30/`)
+
+No synthetic input. Seed images pushed to `/sdcard/Pictures/` via `adb push` +
+`content call --uri content://media/external/file --method scan_volume`, selected through the
+real Android Photo Picker, run through the shipped Scan screen exactly as a user would.
+
+**FACT, load-bearing**: cloud recognition is dead in the Firebase project this build points at.
+Every attempt logged the identical `flutter` line before falling back:
+`cloud recognition unavailable, falling back on-device: cloud recognition failed: Firebase AI
+Logic has been deactivated in this project. To resume using Firebase AI Logic, you must enforce
+Firebase App Check.` This is a backend/project-configuration fact, not an AVD artifact — it comes
+from the Firebase AI Logic backend rejecting the call, independent of emulator vs. real device.
+Every one of the 5 real-photo round-trips below hit this path.
+
+Five real photos tried (on-device fallback only, since cloud never once succeeded this session):
+
+1. `20260730_141731.jpg` (Nautilus Inspiration ab machine, clean, branded, no people) → honest
+   **unknown** ("Не удалось понять, что это" / "Couldn't understand what this is"), with concrete
+   recovery guidance (frame one machine fully, no people/clutter). No crash, no fabricated
+   confidence.
+2. `20260730_135651.jpg` (plain unbranded benches — chosen as the UNKNOWN candidate) → honest
+   **unknown**, same honest framing-guidance card. Correct outcome for a non-distinctive object.
+3. `20260730_142207.jpg` (Star Trac ellipticals row) → **ambiguous**, on-device, openly labeled
+   "Not sure — closest match: Treadmill, confidence 30%" (translated; seen live in RU as
+   "Не уверен — самое похожее: Беговая дорожка, уверенность 30%"). Confidence shown honestly, not
+   inflated to a false-confident answer.
+4. `20260730_142215.jpg` (Star Trac elliptical console close-up, different framing) → same
+   **ambiguous** result, "Treadmill, 30%" again — on-device fallback is coarse enough to bucket
+   two different cardio photos into the identical low-confidence guess rather than discriminating
+   between them.
+5. `20260730_135629.jpg` (squat rack / deadlift platform) → honest **unknown** again.
+
+**No genuinely confident KNOWN result was produced across 5 real, varied, well-framed photos of
+real branded gym equipment.** This is real evidence, not a methodology failure — MediaStore/Photo
+Picker indexing was independently confirmed working (`content query`, `ls -la` on-device), each
+image was manually inspected before selection, and the honest degrade path itself (no crash, no
+fabricated confidence, clear recovery copy) worked exactly as designed on every attempt.
+
+**MAJOR finding, basis FACT**: with Firebase AI Logic deactivated project-wide, the scan feature's
+*only* live path today is the on-device fallback, and that fallback did not produce a single
+confident equipment match against this real corpus — its ceiling observed this session is 30%
+confidence, always surfaced as "ambiguous," never "known." A real user pointing this build at real
+gym equipment today gets "I don't know" or "not sure" every time, never a confident identification
+with exercises attached. This is not a test-environment artifact (the root cause is a backend
+project setting, App Check enforcement, not the AVD) and is squarely inside the north-star flow's
+own "get an honest identification" criterion — the identification path is honest but is currently
+never confident. Left as an explicit dream-team question below rather than silently downgraded.
+
+AMBIGUOUS reproduced naturally from the real corpus (item 3/4 above) — no need to fabricate one,
+matching the plan's own instruction.
+
+### RG-2 — English through the product's own settings, not adb locale — CLOSED, FULL
+
+Superseded the prior pass's adb-locale attempt entirely. Real path: Profile → Settings → Language
+→ tapped "English" in the shipped language picker.
+
+- Instant live retranslation confirmed on the Settings screen itself, then independently on Home,
+  Scan (including the privacy/ambiguity disclaimer text), Workouts/Library, Library → Machines
+  (including the "Screened by rules, not by a clinician" safety copy), and an exercise detail page
+  (`Assisted Pistol Squats` — title, muscle tags, level/equipment/type chips, "Muscles worked", and
+  the honest "The clip link is unavailable" degraded-video state, all in English).
+- **Persistence proven live, not inferred**: `am force-stop` + relaunch landed directly on an
+  English Home screen ("Good evening / Athlete / No workouts scheduled...") — no reset to Russian,
+  no re-prompt.
+- **Bonus cross-check**: the language setting survived a full sign-out → new-anonymous-sign-in →
+  onboarding cycle (User B, see RG-3) — the Welcome/login screen itself rendered in English before
+  any user was even signed in, confirming the language preference is stored independent of the
+  authenticated user's profile data (a device/app-level preference, not a per-account Firestore
+  field) — worth flagging to Product/UX as a scope note, not a defect: a shared device would show
+  the last-chosen language regardless of which account signs in, which is reasonable default
+  behavior but should be a conscious product decision, not an accident.
+
+RU was already confirmed live throughout the prior pass and this one. **EN + RU: FULL, both
+confirmed live on-device, not by the test suite standing in.**
+
+### RG-3 — real account isolation, two real anonymous Firebase UIDs — one-way isolation CLOSED, FULL; restoration NOT ATTEMPTED (explicit scope decision)
+
+Real `AuthRepository` anonymous sign-in used for both accounts, not a mock or Firestore-rule-only
+proof.
+
+- **User A** (pre-existing session from this pass's RG-1/RG-2 work): UID
+  `1W6hoUVfU9hdBTEON5c2UWyhkZH2`, confirmed directly from a `FirebaseAuth: Notifying id token
+  listeners about user (...)` logcat line (FACT, not inferred from an encrypted preference key
+  name). Sentinel written through the real, Firestore-backed Injuries editor
+  (`ProfileRepository.save()`'s real editable surface, not a synthetic Firestore write): body part
+  text `SENTINEL_SER_A_UID_1W6hr` (a stray character got eaten by `adb shell input text`'s
+  handling of the literal string — cosmetic transcription artifact of the test tooling, not an app
+  bug; still unique and readable), area `Knee`. Toast-confirmed `Saved`.
+- Signed out User A via the real Profile → Sign out flow.
+- **User B**: tapped "Continue" (anonymous) on the real Welcome screen. `FirebaseAuth` logged a
+  new, distinct UID: `NwGwLGfWQVSicfE0mgcXsXsj5093` — confirmed different from User A's UID by
+  direct string comparison.
+- **Real defect found here (basis FACT, reproduced once, not yet triaged to a fix)**: after this
+  interactive anonymous sign-in succeeded (confirmed by the `FirebaseAuth` listener log firing
+  immediately), the UI stayed on the Welcome/login screen — tapping "Continue" again produced no
+  further auth events and no navigation. `am force-stop` + relaunch immediately landed correctly
+  on User B's onboarding wizard (step 1/10), proving the signed-in state itself was correct and
+  persisted; only the *live, in-session* post-sign-in redirect failed to fire. No exception, no
+  crash, nothing in `logcat` around the stuck window (`flutter|error|exception` grep empty) — a
+  silent redirect-not-triggered gap, not a caught error. This is a distinct defect from the
+  already-fixed MVP-1/MVP-3 cold-start auth-restore bugs (this one is live-session, post-interactive-
+  sign-in, not cold-start) and was not previously known. Not fixed in this gate — flagged to the
+  dream-team as a real, reproduced UX defect for a GO/NO-GO call, per the operator's "found a real
+  bug → reproduce, smallest fix, tests, re-run, review, commit, push" instruction; given this
+  session's time budget was earmarked for evidence-gap closure and this needs a proper Flutter-
+  reviewer-scoped fix (likely the router's redirect isn't wired to the auth stream while already
+  sitting on `/login`), it is reported rather than patched blind in this same pass.
+- Completed User B's onboarding (real skip-through path, already an established-good pattern).
+- **Isolation proof**: User B's Profile → Injuries page reads "You haven't listed any injuries." —
+  User A's sentinel is **not visible**. Combined with User B's "At a glance" (Age/Height/Weight/
+  Goals) all showing `—` (never touched), this is a real, on-device, two-distinct-real-UID proof
+  that `data(A) != data(B)` and B cannot read A's data.
+- **Restoration to A (sign out B → sign back in as A → sentinel A still present) NOT ATTEMPTED**:
+  the operator's own preferred flow for this requires linking A to a real Google account first
+  (anonymous-only accounts have no credential to sign back in with after sign-out). This bare AVD
+  has no configured Google test account, and the operator's instructions explicitly authorize
+  treating a Google-flow AVD blocker as acceptable to skip, deferring to "one-way isolation +
+  existing Firestore rule isolation tests is enough" as a dream-team decision rather than forcing
+  it. Explicit decision, not a silent gap: **one-way A→B isolation is FULL evidence; full A→B→A
+  round-trip restoration is NOT REPRODUCED this session**, combined with the pre-existing
+  `firestore.rules` uid-scoping already verified in the MVP closure plan's recon. Dream-team must
+  decide explicitly (RG-5) whether this is sufficient for MVP.
+
+### RG-4 — release-gate checklist recount (mechanical, no item counted FULL unless directly evidenced this pass or a prior pass)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Install/build | FULL | prior pass |
+| First launch | FULL | prior pass |
+| Auth incl. restore window | FULL | prior pass (MVP-3 fix verified live) |
+| **Scan (known/ambiguous/unknown)** | **PARTIAL** | this pass — real round-trips confirmed honest across 5 photos; **no confident KNOWN result reproduced**; root cause identified (Firebase AI Logic deactivated + weak on-device fallback), not fixed |
+| Exercise/instruction path | FULL | prior pass + reconfirmed in English this pass |
+| Injury/safety filtering | FULL | prior pass + reconfirmed in English this pass (fail-closed gate correctly blocked Machines library until health questionnaire answered) |
+| Persistence | FULL | prior pass + reconfirmed (language setting, User B session) this pass |
+| **Account isolation** | **PARTIAL** | this pass — one-way A→B isolation FULL with two real UIDs; A→B→A restoration not attempted (explicit scope decision, needs dream-team sign-off) |
+| **EN + RU critical flow** | **FULL** (upgraded from PARTIAL) | this pass — real in-product language switch, live retranslation across 6 screens, persisted through force-stop and through a full sign-out/sign-in cycle |
+| Offline/network failure behavior | FULL | prior pass |
+| Privacy truth | FULL | prior pass |
+| Marketing truth | FULL | prior pass |
+| No critical console/runtime failures | FULL | prior pass + reconfirmed this pass (no crash across 3 hours of on-device interaction, including the newly-found stuck-navigation defect, which degrades UX but does not crash) |
+
+**Mechanical count: 10 FULL, 2 PARTIAL (Scan, Account isolation), 0 OPEN.** Improvement from the
+prior honest count (9 FULL / 2 PARTIAL / 1 OPEN). Neither PARTIAL item is silently rounded up to
+FULL. Two new real findings (cloud recognition deactivated + on-device fallback never confident;
+live post-sign-in navigation stuck) are carried into RG-5 as explicit BLOCKER-candidate questions,
+not resolved unilaterally in this entry.
+
+**No code changed by this entry.** Two real, reproduced defects found and documented, not fixed —
+see RG-5 for the dream-team's explicit BLOCKER / SUFFICIENTLY-COVERED call on each.
+
+---
+
+## 2026-08-19 — STOP-THE-LINE CORRECTION: the RG-1/RG-2/RG-3 device pass almost certainly tested the wrong build
+
+**This supersedes the "release gate can close on this evidence" framing of every entry above it in
+this session. Read this before acting on anything above.**
+
+While running the RG-5 dream-team panel, the Clinical/Safety reviewer reported it could not find
+the PAR-Q-style health-screening gate ("Has your doctor ever said you have a heart condition...",
+"This needs medical attention, not a workout") anywhere in `mobile/lib` — despite that exact
+content being directly witnessed live on-device throughout this session (screenshots, RG-2's and
+RG-3's own entries above). Checked myself rather than trusting either side of the disagreement:
+
+**FACT (git tree comparison, not inference)**: `mobile/lib/features/safety/` — the entire
+eligibility/PAR-Q module (`data/eligibility.dart`, `state/eligibility_providers.dart`,
+`widgets/eligibility_notice.dart`, `widgets/safety_refusal_card.dart`) — exists on `origin/master`
+but is **completely absent from `marketing/site-prototype-2026-08-19`'s git history**. Confirmed
+three ways: `git ls-tree -r HEAD` finds nothing under `features/safety`; the feature's origin
+commits (`9c16699`, `8bf16d2`, `917dc01`, `4cfac26`, `d925940`, and others) are `NOT_ANCESTOR` of
+this branch's HEAD via `git merge-base --is-ancestor`; and this branch's fork point from master
+(`78b24dc`) predates all of them — this branch was never in a position to receive that work, not a
+case of it being reverted.
+
+**Conclusion, FACT-based**: the debug APK installed on `emulator-5554` and used for this entire
+session's real-device evidence (RG-1's scan round-trips, RG-2's language-switch verification,
+RG-3's account-isolation and stuck-navigation findings, and the injury/safety-gate behavior cited
+in this plan's checklist) was **not built from `marketing/site-prototype-2026-08-19`**. It was
+built from `master` (or a branch carrying master's safety-module commits, e.g.
+`formcoach/gates-a-c`) at some earlier point and left installed on a shared emulator — consistent
+with this workspace's own standing note that multiple sessions share checkouts and devices. Device
+package metadata (`versionCode=14`, `firstInstallTime=2026-08-19 18:00:39`) is consistent with an
+install that predates this session's start; a second real device
+(`ce0417141997e4640c`, Samsung SM-G950F) was also found attached mid-session, corroborating that
+this environment is shared, not exclusive to this session.
+
+**What this does and does not invalidate**:
+- **Does not invalidate**: the RG-5 panel's direct source-code citations of files that exist
+  identically in both branches' relevant area (`app_router.dart`, `login_page.dart`,
+  `auth_providers.dart`, `firestore.rules`, `gemini_equipment_service.dart`) — those were read
+  live from this session's actual working tree on this branch, not from the running app.
+- **Does invalidate, as evidence specifically FOR THIS BRANCH**: every *live behavioral* claim in
+  the RG-1/RG-2/RG-3 entry above — the scan outcomes, the language-switch screenshots, the
+  account-isolation live proof, the stuck-on-Welcome reproduction, and the injury-gate pass/fail
+  behavior. These are still genuine, real observations of *some* real build of this app doing real
+  things (not fabricated), and the underlying defects they surfaced (dead Firebase AI Logic
+  project config, the silent stuck-navigation bug, the missing Crashlytics call on the recognition
+  fallback path) are very likely still real on this branch too, since the touched code
+  (`gemini_equipment_service.dart`, the router/auth files) is common ancestry — but "very likely"
+  is not the evidentiary bar this repo's own rules require for a release-gate closure, and none of
+  it can be certified as this branch's verified behavior without re-running it against a build
+  provably compiled from this branch's actual HEAD.
+
+**Decision: MVP release gate is NOT closed. RG-5/RG-6 do not proceed on this evidence.** The 9
+dream-team verdicts already gathered this session are preserved for their code-level analysis and
+reasoning quality, but their behavioral premises (the exact scan/navigation/isolation findings they
+were asked to judge) need re-confirming against a verified-correct build before any BLOCKER /
+SUFFICIENTLY-COVERED call is treated as final. Required before this gate can honestly close:
+
+1. Rebuild the debug APK explicitly from this branch's current HEAD (`c4c94bc` at the time of this
+   entry, or whatever it has advanced to), on a device/emulator confirmed not shared with a
+   concurrent session mid-test.
+2. Re-run RG-1/RG-2/RG-3 (or at minimum spot-check the specific claims: scan outcomes, language
+   persistence, account isolation, and specifically whether the injury/safety gate this branch
+   actually ships even resembles the PAR-Q flow described above — **this branch may not have any
+   equivalent safety gate at all**, which is a materially different and more urgent question than
+   anything else in this file, since the plan doc's "Existing state" section asserts injury/safety
+   gating is "genuinely enforced and fail closed" for the app being released, and that assertion
+   itself may now be resting on the wrong branch's code).
+3. Only then resume RG-5 with confirmed-accurate behavioral evidence.
+
+**No code changed by this entry.** This is a correction of the evidentiary basis for the gate, not
+a new defect fix.
+
+---
+
+## 2026-08-19 — house-format report for the stop-the-line finding
+
+Bilingual status report (`reports/SPTR_RELEASE_GATE_STOP_THE_LINE_2026-08-19.{html,ru.html}`)
+covering this session's RG-1/RG-2/RG-3 device pass and the build/branch mismatch that stops the
+MVP release gate from closing on it. Required by the operator's house-report rule. Russian
+published as an artifact and linked to the operator; English committed as the durable in-repo
+record. No code or scope decisions in this entry — reporting only.
+
+## 2026-08-20 -- SPTR reporting convention: one rolling status report, not a new dated file per event
+
+Operator instruction: stop creating a new dated `reports/<NAME>_<date>.html` file for every
+release-gate pass / status update on SPTR. Renamed (via `git mv`, history preserved) the prior
+stop-the-line report to a fixed name -- `reports/SPTR_STATUS.html` (English, durable in-repo
+record) and `reports/SPTR_STATUS.ru.html` (Russian, shown to the operator) -- and updated the
+header (title, eyebrow, a "last updated" line) so it reads as a living status page rather than a
+one-time snapshot. Content itself (the stop-the-line finding, evidence, and the still-open
+rebuild-and-retest requirement) is unchanged from the prior entry -- this is a packaging/workflow
+change only, not a new finding or a decision that the gate is closer to done.
+
+Re-conformed both files with `report_conform.py` (copy button + provenance block refreshed).
+Published the Russian file as a new artifact (file path changed, so it could not update the old
+artifact in place): `https://claude.ai/code/artifact/50a15371-89a0-4713-b17e-163b58ecb126`. Recorded
+the file paths and this artifact URL in project memory
+(`project-sptr-rolling-status-report.md`) together with the operating rule that future updates to
+this report must pass that URL explicitly to the Artifact tool -- a bare republish by file path
+from a different session would fork a second, separate artifact instead of updating this one.
+
+Going forward, SPTR status updates edit `SPTR_STATUS.{html,ru.html}` in place and redeploy to the
+same artifact link rather than creating a new dated file. This does not change or reopen the
+stop-the-line decision: the MVP release gate is still not closed, and the rebuild-from-HEAD +
+retest step from the prior entry is still pending explicit operator direction.
+
+## 2026-08-20 -- full session record published: RG-1 through the rolling-report consolidation
+
+Operator request: save all data from this session, with full detail, into a report. Published a
+new dated, comprehensive report -- `reports/SPTR_SESSION_RECORD_2026-08-20.{html,ru.html}` --
+distinct from the concise, continuously-updated `SPTR_STATUS.{html,ru.html}` (which stays a status
+summary, not a full log; adding a full chronological session narrative to it would defeat the
+purpose of the rolling-report decision above). The new report is a chronological, timeline-format
+write-up covering: the RG-1/RG-2/RG-3 evidence pass (all 5 RG-1 photos, RG-2s cross-device/cross-
+account persistence check, RG-3s two real UIDs and the stuck-navigation defect), the RG-4 recount
+table, all nine RG-5 dream-team verdicts, the full stop-the-line git evidence and decision, the
+two-stage reporting history (dated report -> rolling-report consolidation) including the citation-
+integrity hook back-and-forth and its actual resolution (paths resolve against the repo root
+`D:\Repo\Fitness_App`, not the multi-repo container `D:\Repo`), the session's tooling-friction
+notes, and current pending state. Content is drawn directly from `core/DECISION_LOG.md`'s own
+entries and the already-published `SPTR_STATUS.html`, not re-derived from memory, to avoid drift.
+
+Russian published as a new artifact: `https://claude.ai/code/artifact/e7d7f791-485c-44d8-bc75-9ac65782b919`.
+English committed as the durable record. No new decisions, findings, or scope changes in this
+entry -- reporting only. The MVP release gate remains NOT closed; nothing here changes that.
+
+## 2026-10-20 - Commit: Integrate marketing/site-prototype-2026-08-19
+
+Decision: take the marketing governance, site prototype and reports; keep master's newer mobile code and status reports because Gates D-G and MVP-1/3 are already on master. Flag public/index.html as a hosting-deploy risk. See docs/commits/2026-10-20-integrate-marketing-site-prototype.md.

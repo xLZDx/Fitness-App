@@ -1,0 +1,491 @@
+<title>SPTR Session Record</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#13181f;
+    --ink-soft:#4a535e;
+    --bg:#eef1ef;
+    --surface:#ffffff;
+    --surface-2:#e5e9e6;
+    --line:#d3d9d3;
+    --accent:#9a6a1c;
+    --accent-soft:#f1e2c4;
+    --structural:#2c5a6b;
+    --structural-soft:#dde9ec;
+    --ok:#2f7a4f;
+    --ok-soft:#dcefe1;
+    --warn:#c26a0c;
+    --warn-soft:#faead4;
+    --crit:#b1372a;
+    --crit-soft:#fbe0dc;
+    --shadow: 0 1px 2px rgba(19,24,31,.06), 0 8px 24px -12px rgba(19,24,31,.18);
+    --font-display:'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+    --font-body:'Source Sans 3', 'Segoe UI', sans-serif;
+    --font-mono:'JetBrains Mono', 'Consolas', monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e9ecef; --ink-soft:#a8b1ba; --bg:#11151b; --surface:#181e26; --surface-2:#1f2731;
+      --line:#2c3540; --accent:#d9a244; --accent-soft:#332711; --structural:#7fb6c9;
+      --structural-soft:#16262b; --ok:#6fc793; --ok-soft:#122a1c; --warn:#e0a850; --warn-soft:#2c2110;
+      --crit:#e2776a; --crit-soft:#301613; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e9ecef; --ink-soft:#a8b1ba; --bg:#11151b; --surface:#181e26; --surface-2:#1f2731;
+    --line:#2c3540; --accent:#d9a244; --accent-soft:#332711; --structural:#7fb6c9;
+    --structural-soft:#16262b; --ok:#6fc793; --ok-soft:#122a1c; --warn:#e0a850; --warn-soft:#2c2110;
+    --crit:#e2776a; --crit-soft:#301613; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:940px; margin:0 auto; padding:0 24px 96px;}
+  header{padding:56px 24px 28px; max-width:940px; margin:0 auto;}
+  .eyebrow{font-family:var(--font-mono); font-size:12.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); font-weight:600; margin:0 0 14px;}
+  h1{font-family:var(--font-display); font-weight:700; font-size:clamp(30px,4.6vw,46px); line-height:1.08; margin:0 0 14px; text-wrap:balance; letter-spacing:-.01em;}
+  .dek{font-size:17.5px; color:var(--ink-soft); max-width:66ch; margin:0; text-wrap:balance;}
+
+  .stopbanner{display:flex; gap:18px; align-items:flex-start; background:var(--crit-soft); border:1px solid var(--crit); border-radius:10px; padding:20px 22px; margin:32px 0 8px; box-shadow:var(--shadow);}
+  .stopbanner .glyph{font-family:var(--font-display); font-weight:700; font-size:13px; letter-spacing:.08em; color:#fff; background:var(--crit); border-radius:6px; padding:8px 10px; white-space:nowrap;}
+  .stopbanner strong{display:block; font-family:var(--font-display); font-weight:600; font-size:19px; margin-bottom:4px;}
+  .stopbanner p{margin:0; color:var(--ink-soft); font-size:15px; max-width:66ch;}
+
+  .timeline{position:relative; margin-top:44px; padding-left:34px; border-left:2px solid var(--line);}
+  .tl-item{position:relative; margin-bottom:52px;}
+  .tl-item:last-child{margin-bottom:0;}
+  .tl-item::before{content:''; position:absolute; left:-41px; top:2px; width:14px; height:14px; border-radius:50%; background:var(--surface); border:3px solid var(--accent);}
+  .tl-item.crit::before{border-color:var(--crit);}
+  .tl-item.ok::before{border-color:var(--ok);}
+  .tl-time{font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px;}
+  h2{font-family:var(--font-display); font-weight:600; font-size:25px; margin:0 0 6px; display:flex; align-items:baseline; gap:10px; text-wrap:balance;}
+  h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:14px; font-weight:600;}
+  .section-lede{color:var(--ink-soft); font-size:15.3px; margin:0 0 20px; max-width:70ch;}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:19px 21px; box-shadow:var(--shadow); margin-bottom:13px;}
+  .card.crit{border-left:4px solid var(--crit);}
+  .card.warn{border-left:4px solid var(--warn);}
+  .card.ok{border-left:4px solid var(--ok);}
+  .card.structural{border-left:4px solid var(--structural);}
+  .card h3{font-family:var(--font-display); font-weight:600; font-size:18.5px; margin:0 0 8px;}
+  .card p{margin:0 0 10px; font-size:14.8px;}
+  .card p:last-child{margin-bottom:0}
+  .card ul, .card ol{margin:8px 0; padding-left:20px; font-size:14.8px;}
+  .card li{margin-bottom:5px;}
+
+  code, .mono{font-family:var(--font-mono); font-size:.92em;}
+  .card code, p code, li code{background:var(--surface-2); border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:.86em;}
+
+  .chip{display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; padding:4px 10px; border-radius:999px; white-space:nowrap;}
+  .chip.crit{background:var(--crit-soft); color:var(--crit); border:1px solid color-mix(in srgb, var(--crit) 40%, transparent);}
+  .chip.warn{background:var(--warn-soft); color:var(--warn); border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);}
+  .chip.ok{background:var(--ok-soft); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 40%, transparent);}
+  .chip.structural{background:var(--structural-soft); color:var(--structural); border:1px solid color-mix(in srgb, var(--structural) 40%, transparent);}
+
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow); margin-bottom:14px;}
+  th, td{text-align:left; padding:10px 13px; border-bottom:1px solid var(--line); vertical-align:top;}
+  thead th{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); background:var(--surface-2); font-weight:600;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td.num, th.num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+
+  .reviewgrid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:13px; margin-top:16px;}
+  .review{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:15px 17px; box-shadow:var(--shadow);}
+  .review .role{font-family:var(--font-display); font-weight:600; font-size:15.5px; margin-bottom:8px;}
+  .review .verdicts{display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+  .review .vline{display:flex; align-items:center; gap:8px; font-size:13px;}
+  .review .vline .what{color:var(--ink-soft); flex:1;}
+  .review p{font-size:13.4px; color:var(--ink-soft); margin:0;}
+
+  .commitlog{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  .commitlog li{display:flex; gap:14px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:11px 15px;}
+  .commitlog .sha{font-family:var(--font-mono); font-size:12.5px; background:var(--structural-soft); color:var(--structural); padding:3px 8px; border-radius:5px; white-space:nowrap; flex-shrink:0;}
+  .commitlog .msg{font-size:14px;}
+  .commitlog .msg .sub{color:var(--ink-soft); font-size:12.5px; display:block; margin-top:2px;}
+
+  .checklist{list-style:none; margin:14px 0 0; padding:0; counter-reset:step;}
+  .checklist li{counter-increment:step; position:relative; padding:11px 15px 11px 50px; background:var(--surface); border:1px solid var(--line); border-radius:8px; margin-bottom:9px; font-size:14.4px;}
+  .checklist li::before{content:counter(step); position:absolute; left:13px; top:50%; transform:translateY(-50%); font-family:var(--font-mono); font-weight:700; font-size:13.5px; color:var(--accent); background:var(--accent-soft); width:25px; height:25px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:14px; margin:10px 0;}
+  .kv dt{color:var(--ink-soft); font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.05em; padding-top:2px;}
+  .kv dd{margin:0;}
+
+  footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--line); color:var(--ink-soft); font-size:13.3px;}
+  footer a{color:var(--structural);}
+
+  @media (max-width:640px){
+    header{padding:40px 20px 20px;}
+    .wrap{padding:0 20px 72px;}
+    .stopbanner{flex-direction:column;}
+    .timeline{padding-left:26px;}
+    .tl-item::before{left:-33px;}
+  }
+</style>
+
+<header>
+  <p class="eyebrow">SPTR &middot; MVP release gate &middot; full session record</p>
+  <h1>Two gates closed, a third caught the whole evidence run on the wrong build</h1>
+  <p class="dek">Complete, chronological record of the 2026-08-19&ndash;20 autonomous session: real on-device closure of two release-gate items, a real defect found in a third, a nine-reviewer panel that instead surfaced a branch/build mismatch invalidating the run, and the reporting workflow set up afterward.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness_App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; marketing/site-prototype-2026-08-19 @ 30163bf</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="wrap">
+
+  <div class="stopbanner">
+    <span class="glyph">STOP</span>
+    <div>
+      <strong>Bottom line: MVP release gate is still NOT closed.</strong>
+      <p>Everything below is real evidence, but the device pass that produced most of it ran against a debug APK built from <code>master</code>, not this branch. See §6. Rebuild-and-retest is required before RG-5/RG-6 can honestly proceed, and has not started &mdash; it is waiting on the operator.</p>
+    </div>
+  </div>
+
+  <section class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-time">00 &middot; scope</div>
+      <h2><span class="num">00</span> What this session was authorized to do</h2>
+      <p class="section-lede">Operator brief, ГО: AUTHORIZED. Close the three remaining MVP release-gate evidence gaps on <code>marketing/site-prototype-2026-08-19</code> (HEAD <code>851083e</code> at start), autonomously, pushing after every commit and verifying local&harr;remote HEAD each time.</p>
+      <div class="card structural">
+        <dl class="kv">
+          <dt>RG-1</dt><dd>Real scan-recognition evidence, real photos from <code>data/gym_photos_2026-07-30/</code>, no synthetic input</dd>
+          <dt>RG-2</dt><dd>EN + RU through the app's own in-product language switch, not <code>adb</code> locale override</dd>
+          <dt>RG-3</dt><dd>Account isolation with two real Firebase UIDs; one-way acceptable as an explicit scope call if Google-linking is AVD-blocked</dd>
+          <dt>RG-4</dt><dd>Mechanical checklist recount &mdash; never round PARTIAL up to FULL</dd>
+          <dt>RG-5</dt><dd>Nine-role dream-team review answering one question: is there a proven MVP blocker</dd>
+          <dt>RG-6</dt><dd>If clean: mark MVP READY, update docs, commit, push, then stop &mdash; no next gate without a fresh instruction</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="tl-item ok">
+      <div class="tl-time">01 &middot; closed clean</div>
+      <h2><span class="num">01</span> RG-2 &mdash; English through the product's own settings</h2>
+      <p class="section-lede">Superseded the prior pass's <code>adb</code>-locale attempt entirely. Real path: Profile &rarr; Settings &rarr; Language &rarr; tapped &ldquo;English&rdquo; in the shipped picker.</p>
+      <div class="card ok">
+        <ul>
+          <li>Instant live retranslation confirmed on Settings itself, then independently on Home, Scan (including the privacy/ambiguity disclaimer), Workouts/Library, Library &rarr; Machines (including the &ldquo;Screened by rules, not by a clinician&rdquo; safety copy), and an exercise detail page (<em>Assisted Pistol Squats</em> &mdash; title, muscle tags, chips, &ldquo;Muscles worked,&rdquo; and the honest &ldquo;The clip link is unavailable&rdquo; degraded state).</li>
+          <li><strong>Persistence proven live, not inferred:</strong> <code>am force-stop</code> + relaunch landed directly on an English Home screen &mdash; no reset to Russian, no re-prompt.</li>
+          <li><strong>Bonus cross-check:</strong> the language setting survived a full sign-out &rarr; new-anonymous-sign-in &rarr; onboarding cycle (User B, see §02). The Welcome/login screen itself rendered in English before any user was signed in &mdash; the preference is device/app-level, not a per-account Firestore field. Flagged as a scope note for Product/UX: reasonable default, but should be a conscious decision, not an accident.</li>
+        </ul>
+        <p><strong>RU was already confirmed live throughout the prior pass and this one. EN + RU: FULL, both confirmed live on-device</strong> &mdash; upgraded from the prior pass's PARTIAL.</p>
+      </div>
+    </div>
+
+    <div class="tl-item ok">
+      <div class="tl-time">02 &middot; closed one-way, real defect found alongside it</div>
+      <h2><span class="num">02</span> RG-3 &mdash; two real Firebase UIDs, account isolation</h2>
+      <p class="section-lede">Real <code>AuthRepository</code> anonymous sign-in for both accounts &mdash; not a mock, not a Firestore-rule-only proof.</p>
+      <div class="card ok">
+        <h3>Isolation proof</h3>
+        <dl class="kv">
+          <dt>User A</dt><dd><code>1W6hoUVfU9hdBTEON5c2UWyhkZH2</code> &mdash; confirmed from a live <code>FirebaseAuth</code> logcat line, not inferred from a preference key</dd>
+          <dt>Sentinel</dt><dd>Written through the real Firestore-backed Injuries editor: body part text <code>SENTINEL_SER_A_UID_1W6hr</code>, area <code>Knee</code>. Toast-confirmed <code>Saved</code>.</dd>
+          <dt>User B</dt><dd><code>NwGwLGfWQVSicfE0mgcXsXsj5093</code> &mdash; new anonymous sign-in, confirmed distinct from A by direct string comparison</dd>
+          <dt>Result</dt><dd>User B's Injuries page reads &ldquo;You haven't listed any injuries.&rdquo; A's sentinel is not visible. B's &ldquo;At a glance&rdquo; fields all read <code>&mdash;</code>, never touched. <code>data(A) != data(B)</code>, on real accounts, on device.</dd>
+        </dl>
+      </div>
+      <div class="card warn">
+        <h3>Real defect found here &mdash; not fixed this pass</h3>
+        <p>After User B's interactive anonymous sign-in succeeded (confirmed immediately by the <code>FirebaseAuth</code> listener log), the UI stayed on the Welcome/login screen. Tapping &ldquo;Continue&rdquo; again produced no further auth events and no navigation. <code>am force-stop</code> + relaunch landed correctly on User B's onboarding wizard (step 1/10) &mdash; the signed-in state was correct and persisted; only the <em>live, in-session</em> post-sign-in redirect failed to fire. No exception, no crash, <code>logcat</code> grep for <code>flutter|error|exception</code> empty around the stuck window.</p>
+        <p>Distinct from the already-fixed MVP-1/MVP-3 cold-start auth-restore bugs (this one is live-session, post-interactive-sign-in). Per the operator's standard "found a real bug &rarr; reproduce, smallest fix, tests, re-run, review, commit, push" instruction, a proper fix needs Flutter-reviewer scoping (likely the router's <code>redirect</code> isn't wired to the auth stream while already sitting on <code>/login</code>) &mdash; reported to the RG-5 panel rather than patched blind, since this session's time budget was earmarked for evidence-gap closure.</p>
+      </div>
+      <div class="card">
+        <h3>Scope decision: restoration not attempted</h3>
+        <p>The A&rarr;B&rarr;A round trip (sign out B, sign back in as A, confirm sentinel A still present) needs Google-account linking &mdash; anonymous-only accounts have no credential to sign back in with after sign-out, and this bare AVD has no configured Google test account. Per the operator's own instructions, this is an acceptable AVD-limitation skip, deferred to the dream-team as an explicit decision rather than forced. <strong>One-way A&rarr;B isolation: FULL. Full round-trip restoration: NOT REPRODUCED this session</strong>, combined with the pre-existing <code>firestore.rules</code> uid-scoping already verified in the closure plan's recon.</p>
+      </div>
+    </div>
+
+    <div class="tl-item warn">
+      <div class="tl-time">03 &middot; real defect surfaced, root-caused</div>
+      <h2><span class="num">03</span> RG-1 &mdash; five real photos, zero confident matches</h2>
+      <p class="section-lede">Seed images pushed to <code>/sdcard/Pictures/</code> via <code>adb push</code> + a media-scanner call, selected through the real Android Photo Picker, run through the shipped Scan screen exactly as a user would. No synthetic input.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Photo</th><th>Subject</th><th>Outcome</th><th class="num">Confidence</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">20260730_141731.jpg</td><td>Nautilus Inspiration ab machine &mdash; clean, branded, no people</td><td>Unknown &mdash; honest, with concrete recovery guidance</td><td class="num">&mdash;</td></tr>
+            <tr><td class="mono">20260730_135651.jpg</td><td>Plain unbranded benches (chosen as the deliberate UNKNOWN candidate)</td><td>Unknown &mdash; correct outcome for a non-distinctive object</td><td class="num">&mdash;</td></tr>
+            <tr><td class="mono">20260730_142207.jpg</td><td>Star Trac ellipticals, row</td><td>Ambiguous &mdash; &ldquo;closest match: Treadmill&rdquo;, openly labeled</td><td class="num">30%</td></tr>
+            <tr><td class="mono">20260730_142215.jpg</td><td>Star Trac elliptical console, close framing</td><td>Ambiguous &mdash; same &ldquo;Treadmill&rdquo; guess, different photo</td><td class="num">30%</td></tr>
+            <tr><td class="mono">20260730_135629.jpg</td><td>Squat rack / deadlift platform</td><td>Unknown &mdash; honest</td><td class="num">&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card warn">
+        <h3>Root cause, confirmed live &mdash; backend, not device</h3>
+        <p>Every attempt logged the identical line before falling back:</p>
+        <p><code class="mono">cloud recognition unavailable, falling back on-device: cloud recognition failed: Firebase AI Logic has been deactivated in this project. To resume using Firebase AI Logic, you must enforce Firebase App Check.</code></p>
+        <p>A Firebase-project configuration fact, not an AVD artifact &mdash; independent of emulator vs. real device. With cloud dead project-wide, the on-device fallback is today's <em>only</em> live scan path, and across 5 real, varied, well-framed photos of real branded gym equipment it never once produced a confident KNOWN match &mdash; its observed ceiling this session is 30% confidence, always surfaced as &ldquo;ambiguous,&rdquo; never &ldquo;known.&rdquo;</p>
+        <p><strong>MAJOR, basis FACT:</strong> a real user pointing this build at real gym equipment today gets &ldquo;I don't know&rdquo; or &ldquo;not sure&rdquo; every time, never a confident identification with exercises attached &mdash; squarely inside the north-star flow's own &ldquo;get an honest identification&rdquo; criterion. The degrade path itself worked exactly as designed on every attempt: no crash, no fabricated confidence, clear recovery copy. MediaStore/Photo Picker indexing was independently confirmed working; each image was manually inspected before selection.</p>
+        <p>Separate, code-confirmed gap: the recognition-fallback catch block is a bare <code>debugPrint</code> at <code>gemini_equipment_service.dart:288</code> &mdash; no Crashlytics record, no analytics event. If this backend state regresses again post-launch, the team gets zero signal.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">04 &middot; mechanical, no rounding up</div>
+      <h2><span class="num">04</span> RG-4 &mdash; release-gate checklist recount</h2>
+      <p class="section-lede">Operator correction accepted as FACT first: the prior pass's &ldquo;10 of 12 confirmed&rdquo; line undercounted its own listed exceptions. Honest starting count was 9 FULL / 2 PARTIAL (Scan, EN+RU) / 1 OPEN (account isolation). No item counted FULL unless directly evidenced this pass or a verified prior pass.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Item</th><th>Status</th><th>Evidence</th></tr></thead>
+          <tbody>
+            <tr><td>Install / build</td><td><span class="chip ok">Full</span></td><td>Prior pass</td></tr>
+            <tr><td>First launch</td><td><span class="chip ok">Full</span></td><td>Prior pass</td></tr>
+            <tr><td>Auth incl. restore window</td><td><span class="chip ok">Full</span></td><td>Prior pass (MVP-3 fix verified live)</td></tr>
+            <tr><td><strong>Scan</strong> (known / ambiguous / unknown)</td><td><span class="chip warn">Partial</span></td><td>This pass &mdash; real round-trips honest across 5 photos; no confident KNOWN reproduced; root cause identified, not fixed</td></tr>
+            <tr><td>Exercise / instruction path</td><td><span class="chip ok">Full</span></td><td>Prior pass + reconfirmed in English this pass</td></tr>
+            <tr><td>Injury / safety filtering</td><td><span class="chip ok">Full</span></td><td>Prior pass + reconfirmed in English (fail-closed gate correctly blocked Machines library until questionnaire answered) &mdash; <em>see §06, this claim is exactly what the stop-the-line finding puts in doubt</em></td></tr>
+            <tr><td>Persistence</td><td><span class="chip ok">Full</span></td><td>Prior pass + reconfirmed (language setting, User B session)</td></tr>
+            <tr><td><strong>Account isolation</strong></td><td><span class="chip warn">Partial</span></td><td>This pass &mdash; one-way A&rarr;B full with two real UIDs; A&rarr;B&rarr;A restoration not attempted, explicit scope decision</td></tr>
+            <tr><td><strong>EN + RU critical flow</strong></td><td><span class="chip ok">Full <span style="opacity:.7">(upgraded)</span></span></td><td>This pass &mdash; real in-product switch, live retranslation across 6 screens, survived force-stop and a full sign-out/sign-in cycle</td></tr>
+            <tr><td>Offline / network failure behavior</td><td><span class="chip ok">Full</span></td><td>Prior pass</td></tr>
+            <tr><td>Privacy truth</td><td><span class="chip ok">Full</span></td><td>Prior pass</td></tr>
+            <tr><td>Marketing truth</td><td><span class="chip ok">Full</span></td><td>Prior pass</td></tr>
+            <tr><td>No critical console / runtime failures</td><td><span class="chip ok">Full</span></td><td>Prior pass + reconfirmed (no crash across 3 hours on-device, including the new stuck-navigation defect, which degrades UX but does not crash)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="section-lede" style="margin-top:2px"><strong>Mechanical count: 10 FULL, 2 PARTIAL (Scan, Account isolation), 0 OPEN</strong> &mdash; improved from the prior honest 9/2/1. Neither PARTIAL item silently rounded to FULL. Two new real findings (dead cloud recognition + never-confident fallback; live post-sign-in navigation stuck) carried into RG-5 as explicit BLOCKER-candidate questions, not resolved unilaterally here.</p>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">05 &middot; nine independent reviewers, round 1</div>
+      <h2><span class="num">05</span> RG-5 &mdash; dream-team panel</h2>
+      <p class="section-lede">Fully independent round: no reviewer seeded with another's opinion. Several agents stopped mid-task on their first pass (Flutter, Silent Failure, Privacy/Security, Clinical/Safety reviewers all returned empty or truncated output initially) and were resumed in place to get a complete verdict rather than re-spawned from scratch. Their code-level citations against this branch's real source stand regardless of the build-provenance issue found next; their behavioral premises need re-confirming against a correct build.</p>
+      <div class="reviewgrid">
+        <div class="review">
+          <div class="role">Product</div>
+          <div class="verdicts">
+            <div class="vline"><span class="chip crit">Blocker</span><span class="what">Scan never confidently identifies real equipment</span></div>
+            <div class="vline"><span class="chip crit">Blocker</span><span class="what">Silent stuck-on-Welcome after sign-in</span></div>
+            <div class="vline"><span class="chip ok">Covered</span><span class="what">One-way account isolation</span></div>
+          </div>
+          <p>An honest &ldquo;I don't know&rdquo; on every scan isn't a minimal version of the feature &mdash; it's the feature not existing, dressed in honest copy.</p>
+        </div>
+        <div class="review">
+          <div class="role">Flutter</div>
+          <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Stuck-on-Welcome, code-level analysis</span></div></div>
+          <p>Same &ldquo;synchronous snapshot instead of awaited stream&rdquo; shape as the already-fixed auth bugs, at a new trigger point never exercised by those fixes. Cites <code>login_page.dart:92</code>, <code>app_router.dart:218</code>.</p>
+        </div>
+        <div class="review">
+          <div class="role">UX</div>
+          <div class="verdicts">
+            <div class="vline"><span class="chip ok">Covered</span><span class="what">Scan's honest failure copy</span></div>
+            <div class="vline"><span class="chip crit">Blocker</span><span class="what">Stuck-on-Welcome, no discoverable recovery</span></div>
+          </div>
+          <p>Browsing the library manually stays reachable when scan disappoints. Nothing rescues a user from a screen with zero signal that anything is wrong.</p>
+        </div>
+        <div class="review">
+          <div class="role">Fitness domain</div>
+          <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Content correctness, both items</span></div></div>
+          <p>The failure mode is withholding, never misleading &mdash; the app never hands out an exercise mismatched to equipment a user doesn't have.</p>
+        </div>
+        <div class="review">
+          <div class="role">Clinical / Safety</div>
+          <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Evidence-integrity, not clinical harm</span></div></div>
+          <p>Couldn't locate the described PAR-Q gate in <code>mobile/lib</code> at all &mdash; the finding that triggered the entire stop-the-line correction in §06.</p>
+        </div>
+        <div class="review">
+          <div class="role">Privacy / Security</div>
+          <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Isolation, verified against firestore.rules directly</span></div></div>
+          <p>A single wildcard rule scopes every per-user collection to its owner &mdash; not an enumerated list that could omit a new one by accident.</p>
+        </div>
+        <div class="review">
+          <div class="role">Release / SRE</div>
+          <div class="verdicts"><div class="vline"><span class="chip warn">Config, not code</span><span class="what">Dead cloud path + missing Crashlytics</span></div></div>
+          <p>A one-line App Check fix, not a rebuild &mdash; but also a confirmed, separate monitoring gap on the fallback's own catch block.</p>
+        </div>
+        <div class="review">
+          <div class="role">Technical product truth</div>
+          <div class="verdicts"><div class="vline"><span class="chip ok">Covered</span><span class="what">Privacy disclosure copy</span></div></div>
+          <p>&ldquo;If that fails, on-device is used&rdquo; already discloses the fallback in both locales (<code>app_ru.arb:495</code>, <code>app_en.arb:1004</code>) &mdash; not a claim of guaranteed cloud success.</p>
+        </div>
+        <div class="review">
+          <div class="role">Silent failure</div>
+          <div class="verdicts"><div class="vline"><span class="chip crit">Blocker</span><span class="what">Zero log, zero user signal, zero recovery UI</span></div></div>
+          <p>Not a swallowed exception &mdash; an absent state-propagation trigger. Harder to trust as rare precisely because its mechanism is still unidentified.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item crit">
+      <div class="tl-time">06 &middot; the finding that stopped the gate</div>
+      <h2><span class="num">06</span> Stop-the-line: the device pass tested the wrong branch</h2>
+      <p class="section-lede">Mid-panel, the Clinical/Safety reviewer reported it could not find the PAR-Q-style health-screening gate (&ldquo;Has your doctor ever said you have a heart condition&hellip;&rdquo;, &ldquo;This needs medical attention, not a workout&rdquo;) anywhere in <code>mobile/lib</code> &mdash; despite that exact content being witnessed live on-device, in both languages, throughout §01&ndash;03. Checked directly against git rather than trusting either side.</p>
+      <div class="card crit">
+        <h3>FACT, git tree comparison &mdash; not inference</h3>
+        <ul>
+          <li><code>mobile/lib/features/safety/</code> (<code>data/eligibility.dart</code>, <code>state/eligibility_providers.dart</code>, <code>widgets/eligibility_notice.dart</code>, <code>widgets/safety_refusal_card.dart</code>) exists on <code>origin/master</code>. <code>git ls-tree -r HEAD</code> on this branch finds nothing under <code>features/safety</code>.</li>
+          <li>The feature's origin commits (<code>9c16699</code>, <code>8bf16d2</code>, <code>917dc01</code>, <code>4cfac26</code>, <code>d925940</code>, and others) confirmed <strong>not ancestors</strong> of this branch's HEAD via <code>git merge-base --is-ancestor</code>.</li>
+          <li>This branch's fork point from master (<code>78b24dc</code>) predates all of them &mdash; not a revert; this branch was never in a position to receive that work.</li>
+        </ul>
+        <p><strong>Conclusion:</strong> the debug APK on <code>emulator-5554</code>, used for the entire session's real-device evidence, was almost certainly built from <code>master</code> (or a branch carrying its safety-module commits, e.g. <code>formcoach/gates-a-c</code>), not from <code>marketing/site-prototype-2026-08-19</code>. Device metadata (<code>versionCode=14</code>, <code>firstInstallTime=2026-08-19 18:00:39</code>) is consistent with an install predating this session's start. A second real device (<code>ce0417141997e4640c</code>, Samsung SM-G950F) was also found attached mid-session, corroborating a shared, not session-exclusive, environment &mdash; consistent with this workspace's own standing note that checkouts and devices are shared across concurrent sessions.</p>
+      </div>
+      <div class="card warn">
+        <h3>What stands and what doesn't</h3>
+        <p><strong>Stands:</strong> every direct source-code citation the reviewers made against this branch's actual working tree &mdash; <code>app_router.dart</code>, <code>login_page.dart</code>, <code>auth_providers.dart</code>, <code>firestore.rules</code>, <code>gemini_equipment_service.dart</code>. Read live from this session's real checkout, not from the running app.</p>
+        <p><strong>Doesn't stand as evidence for this branch:</strong> every live behavioral claim in §01&ndash;03 &mdash; scan outcomes, language-switch screenshots, isolation proof, stuck-on-Welcome reproduction, injury-gate pass/fail behavior. Real observations of a real build doing real things, and the underlying defects (dead Firebase AI Logic config, the silent stuck-navigation bug, the missing Crashlytics call) are very likely still real on this branch too, since the touched code is common ancestry &mdash; but &ldquo;very likely&rdquo; is not this project's own evidentiary bar for a release-gate closure.</p>
+        <p><strong>Most urgent open question this raises:</strong> it is not yet known whether this branch ships <em>any</em> equivalent injury/safety gate at all. The closure plan's &ldquo;Existing state&rdquo; section asserts one is &ldquo;genuinely enforced and fail closed&rdquo; for the app being released &mdash; that assertion itself may be resting on the wrong branch's code.</p>
+      </div>
+      <div class="card">
+        <h3>Decision and required next steps</h3>
+        <p><strong>MVP release gate is NOT closed. RG-5/RG-6 do not proceed on this evidence.</strong> The nine dream-team verdicts already gathered (§05) are preserved for their code-level analysis and reasoning quality; their behavioral premises need re-confirming against a verified-correct build before any BLOCKER / SUFFICIENTLY-COVERED call is treated as final.</p>
+        <ol>
+          <li>Rebuild the debug APK explicitly from this branch's current HEAD, on a device confirmed not shared with a concurrent session mid-test.</li>
+          <li>Re-run RG-1/RG-2/RG-3, or at minimum spot-check: scan outcomes, language persistence, account isolation, and specifically whether this branch's injury/safety gate resembles the PAR-Q flow described above at all.</li>
+          <li>Only then resume RG-5 with confirmed-accurate behavioral evidence.</li>
+        </ol>
+        <p><strong>Not yet started</strong> &mdash; this needs explicit operator direction before an autonomous session begins it, per this gate's own authorization scope.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">07 &middot; reporting and workflow</div>
+      <h2><span class="num">07</span> Publication, then consolidation into one rolling status page</h2>
+      <p class="section-lede">Two separate reporting decisions inside this session, in order.</p>
+      <div class="card">
+        <h3>First: a dated stop-the-line report</h3>
+        <p>Bilingual house-format report published for the finding in §06 &mdash; <code>reports/SPTR_RELEASE_GATE_STOP_THE_LINE_2026-08-19.{html,ru.html}</code>, Russian published as an Artifact, English committed as the durable record. Committed as <code>db4a552</code>, pushed, local&harr;remote HEAD verified matching.</p>
+      </div>
+      <div class="card">
+        <h3>Then: consolidated into a single rolling status report</h3>
+        <p>Operator instruction: stop creating a new dated report file per release-gate pass or status update. Renamed (<code>git mv</code>, history preserved) to a fixed pair &mdash; <code>reports/SPTR_STATUS.{html,ru.html}</code> &mdash; edited in place and redeployed to the same link on every future update, instead of forking a new file and a new URL each time. Header rewritten (title, eyebrow, a &ldquo;last updated&rdquo; line) to read as a living page, content otherwise unchanged. Re-conformed; Russian republished as a <strong>new</strong> artifact (file path changed, so the old artifact could not be updated in place): <code>claude.ai/code/artifact/50a15371&hellip;</code>. The operating rule &mdash; future updates must pass that URL explicitly to the Artifact tool, or a bare republish-by-path from a new session forks a duplicate &mdash; recorded in project memory. Committed as <code>30163bf</code>, pushed, HEAD verified matching.</p>
+      </div>
+      <div class="card">
+        <h3>Citation-integrity correction, twice</h3>
+        <p>The Stop hook flagged a local report link as not resolving from <code>D:\Repo\Fitness_App</code>. First attempt reasoned this was a workspace-root mismatch (VSCode's container root is <code>D:\Repo</code>, one level above this repo) and prefixed the link with <code>Fitness_App/</code> &mdash; which the hook then flagged again, on the corrected pair of links, with the identical &ldquo;does not resolve from <code>D:\Repo\Fitness_App</code>&rdquo; message. That repeat proved the first fix was wrong, not the hook: the hook resolves local citations against the actual repository root, not the multi-repo container above it. Corrected to plain repo-relative paths (<code>reports/SPTR_STATUS.html</code>, no prefix), which is what appears in this session's final handover message.</p>
+      </div>
+      <h3 style="font-family:var(--font-display); font-weight:600; font-size:16.5px; margin:22px 0 8px;">Commits this session, all pushed and HEAD-verified</h3>
+      <ul class="commitlog">
+        <li><span class="sha">c4c94bc</span><span class="msg">RG-1/RG-2/RG-3 real-device evidence closure pass<span class="sub">Local &harr; remote HEAD verified matching after push</span></span></li>
+        <li><span class="sha">21d116d</span><span class="msg">Stop-the-line correction &mdash; wrong-branch build discovered<span class="sub">Local &harr; remote HEAD verified matching after push</span></span></li>
+        <li><span class="sha">db4a552</span><span class="msg">House-format report for the stop-the-line finding<span class="sub">Local &harr; remote HEAD verified matching after push</span></span></li>
+        <li><span class="sha">30163bf</span><span class="msg">Consolidate SPTR status reporting into one rolling report<span class="sub">Local &harr; remote HEAD verified matching after push</span></span></li>
+      </ul>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">08 &middot; operational notes</div>
+      <h2><span class="num">08</span> Tooling friction hit and worked around this session</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Photo Picker not showing freshly pushed images</strong> &mdash; fixed by closing/reopening the picker and, when a new filename didn't sync into the picker's own cache promptly, overwriting an already-indexed filename in place instead.</li>
+          <li><strong>MSYS/Git-Bash path mangling</strong> on <code>adb push</code>/<code>adb shell</code> remote paths (<code>/sdcard/Pictures/&hellip;</code> rewritten to a Windows path) &mdash; fixed with <code>export MSYS_NO_PATHCONV=1</code> before affected commands.</li>
+          <li><strong>Stray taps landing on the wrong screen</strong> during manual UI navigation (onboarding wizard instead of Injuries, back button exiting to the OS launcher) &mdash; fixed by taking a fresh screenshot before each tap and relaunching via <code>monkey -c android.intent.category.LAUNCHER</code> when state became unclear.</li>
+          <li><strong>Codex review gate returned <code>usage_limit_exhausted</code></strong> on the first commit attempt &mdash; a fail-open Codex error still writes a receipt and satisfies the gate per this repo's own rule; the commit was retried and succeeded.</li>
+          <li><strong>Several RG-5 panel agents stopped mid-task</strong> with empty or truncated output on their first pass &mdash; resumed in place via follow-up messages asking explicitly for a final verdict, rather than re-spawned, to avoid losing their partial analysis.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">09 &middot; where this leaves the gate</div>
+      <h2><span class="num">09</span> Current state and what's pending</h2>
+      <div class="card">
+        <dl class="kv">
+          <dt>MVP status</dt><dd><strong>NOT READY</strong> &mdash; not upgraded from the prior state; RG-5/RG-6 explicitly did not run</dd>
+          <dt>Checklist</dt><dd>10 FULL / 2 PARTIAL (Scan, Account isolation) / 0 OPEN, but flagged unverified for this branch pending rebuild (banner added directly to <code>core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md</code>, left in place rather than rolled back so the diff stays visible)</dd>
+          <dt>Blocking on</dt><dd>Operator direction to rebuild the debug APK from this branch's actual HEAD and re-run the evidence pass on a non-shared device</dd>
+          <dt>Reporting</dt><dd>Consolidated onto one rolling status page, <code>reports/SPTR_STATUS.{html,ru.html}</code>, not re-issued per event going forward</dd>
+          <dt>Next phase</dt><dd>&ldquo;Public Website MVP Cut&rdquo; gate explicitly not started &mdash; out of this session's authorized scope</dd>
+        </dl>
+      </div>
+    </div>
+
+  </section>
+
+  <footer>
+    Full narrative source: <code>core/DECISION_LOG.md</code>, entries dated 2026-08-19 (&ldquo;RG-1/RG-2/RG-3&rdquo;, &ldquo;STOP-THE-LINE CORRECTION&rdquo;, both house-format report entries) and 2026-08-20 (&ldquo;SPTR reporting convention&rdquo;). Current living status: <code>reports/SPTR_STATUS.html</code> / <code>.ru.html</code>. Checklist: <code>core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md</code>.
+  </footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

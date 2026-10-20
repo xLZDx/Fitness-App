@@ -1,0 +1,251 @@
+{
+  "$schema_note": "Source of truth for the SPTR marketing site claim register. public/index.html is validated against this file by scripts/marketing/claim_lint.py. Do not hand-edit the generated .md register -- edit this file and regenerate.",
+  "generated_from_commit": "78b24dc",
+  "last_reviewed": "2026-08-19",
+  "states": ["exists", "committed", "hypothesis", "never"],
+  "gates": ["allowed", "qualify", "blocked", "internal-only"],
+  "claims": [
+    {
+      "id": "hero-a-mechanic",
+      "copy_key": "subA",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "Three recognition paths ship (text anchor, cloud, on-device fallback); 69-type catalogue; 1,887 exercises",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "hero-b-evidence",
+      "copy_key": "subB",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "scannerReadOnMachine = \"Read on the machine: {arg0}\", both locales; machine_text_anchor.dart",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "hero-c-recurring",
+      "copy_key": "subC",
+      "state": "committed",
+      "gate": "internal-only",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "grep -c equipmentId workout_log.dart = 0; recognition history keyed by catalogue type, not physical unit",
+      "qualify": null,
+      "blocking_dependency": "MRD-01, MRD-03, MRD-05"
+    },
+    {
+      "id": "hero-media-provenance",
+      "copy_key": "heroCaption",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "Hero image is a crop of data/gym_photos_2026-07-30/20260730_141731.jpg; no app screenshot used anywhere on the page",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "mechanic-no-setup",
+      "copy_key": "s2Lede",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "Recognition has no gym-side dependency: no nameplate stickers required, no gym onboarding flow exists in the codebase",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "mechanic-point",
+      "copy_key": "s2aBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "machine_text_anchor.dart (text reading) + gemini_equipment_service.dart (visual recognition)",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "mechanic-catalogue-size",
+      "copy_key": "s2bBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "equipment.json = 69 records; equipment_aliases.json carries EN and RU aliases for 69/69 ids",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "mechanic-exercise-library",
+      "copy_key": "s2cBody",
+      "state": "exists",
+      "gate": "qualify",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "1,887 exercises, all with >=1 step and a non-empty video reference; 1,527 of 1,887 carry contraindications used by exercise_filter.dart",
+      "qualify": "Injury filtering covers 1,527 of 1,887 exercises and is self-reported, not a medical screen; wording must say so before public use. Video is streamed from a signed URL, not bundled -- must not be phrased as 'works offline'",
+      "blocking_dependency": null
+    },
+    {
+      "id": "memory-last-lift",
+      "copy_key": "s3a",
+      "state": "exists",
+      "gate": "qualify",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "Gate D, 2026-08-19: summarizeEquipmentTypeHistory() in equipment_type_history.dart, wired into LastSessionCard (equipment/widgets/last_session_card.dart) on the equipment detail page. Matches exerciseId -> equipmentId client-side against workoutSessionHistoryProvider's windowed history; no Firestore schema change. See core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md",
+      "qualify": "Equipment-TYPE level only -- the same card shows for every gym's leg press, not one physical machine (that needs MRD-03/MRD-04, not built). Matched against the user's most recent logged workouts; a session older than that window is reported as 'not found in your recent workouts', never as 'no history'",
+      "blocking_dependency": null
+    },
+    {
+      "id": "memory-setup",
+      "copy_key": "s3b",
+      "state": "committed",
+      "gate": "internal-only",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "Recognition history is keyed by catalogue equipmentId, not physical unit -- no per-machine setup storage exists",
+      "qualify": null,
+      "blocking_dependency": "MRD-03, MRD-04"
+    },
+    {
+      "id": "memory-suggested-weight",
+      "copy_key": "s3c",
+      "state": "exists",
+      "gate": "qualify",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "suggestNextWeight() in progression.dart, wired into workout_player_page.dart:1258, tappable to copy the value",
+      "qualify": "Derived from self-logged history, not personalised coaching or a medical recommendation; the app must say the user makes the final call",
+      "blocking_dependency": null
+    },
+    {
+      "id": "memory-provenance",
+      "copy_key": "s3Prov",
+      "state": "committed",
+      "gate": "internal-only",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "Provenance framing for the same unbuilt feature as memory-last-lift / memory-setup",
+      "qualify": null,
+      "blocking_dependency": "MRD-01, MRD-03, MRD-04"
+    },
+    {
+      "id": "evidence-nameplate-prevalence",
+      "copy_key": "s4Lede",
+      "state": "exists",
+      "gate": "qualify",
+      "locales": ["en", "ru"],
+      "verification_route": "source+field-study-pending",
+      "evidence": "Nameplate mechanic verified to exist (machine_text_anchor.dart); prevalence bounded to ~28 of 69 registry types (selectorised strength machines) -- free weights and bodyweight can never carry one",
+      "qualify": "Nameplate prevalence is bounded to ~28 of 69 registry types (selectorised strength machines); free weights and bodyweight equipment can never carry one. Exact prevalence is an open field study in the evidence backlog, not yet measured",
+      "blocking_dependency": null
+    },
+    {
+      "id": "evidence-restraint",
+      "copy_key": "s4Restraint",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "scannerNotSureClosest = \"Not sure -- closest matches\", both locales",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "evidence-photo-provenance",
+      "copy_key": "s4Cap",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "data/gym_photos_2026-07-30/20260730_135643.jpg, filename-dated 30 July 2026",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "unknown-machine-card",
+      "copy_key": "s5aBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "machineCardNotInCatalogYet; machine_card.dart stores the photo and a MachineCardStatus",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "unknown-sighting-count",
+      "copy_key": "s5bBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "machineCardSeenTimes plural form; sightings merge across gyms in machine_card.dart",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "unknown-coverage-queue",
+      "copy_key": "s5cBody",
+      "state": "hypothesis",
+      "gate": "internal-only",
+      "locales": ["en", "ru"],
+      "verification_route": "hypothesis",
+      "evidence": "Mechanism (cards, merged sightings, counts) exists; whether the loop closes depends on user density, which has never been measured -- this is MRD-07",
+      "qualify": null,
+      "blocking_dependency": "MRD-07 (measurement layer)"
+    },
+    {
+      "id": "privacy-progress-photo-encryption",
+      "copy_key": "s6aBody",
+      "state": "exists",
+      "gate": "qualify",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "AES-256-GCM on-device encryption, hardware keystore, Android backup exclusion rules",
+      "qualify": "Verified against source architecture (hardware-backed secure storage, backup exclusion rules); not an independently audited security claim -- wording must not imply a third-party audit",
+      "blocking_dependency": null
+    },
+    {
+      "id": "privacy-recognition-upload",
+      "copy_key": "s6bBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "gemini_equipment_service.dart; disclosed in legalPrivacyBody",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "privacy-no-trackers",
+      "copy_key": "s6cBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "measured",
+      "evidence": "Zero external requests confirmed across all cells and viewports in the render QA pass",
+      "qualify": null,
+      "blocking_dependency": null
+    },
+    {
+      "id": "cta-no-company",
+      "copy_key": "ctaBody",
+      "state": "exists",
+      "gate": "allowed",
+      "locales": ["en", "ru"],
+      "verification_route": "source",
+      "evidence": "legalPrivacyBody: 'There is no company and no nonprofit behind it'; app_en.arb/app_ru.arb both complete (1,101 keys each); PLATFORM_SCOPE.md -- Android supported, iOS not shipped",
+      "qualify": null,
+      "blocking_dependency": null
+    }
+  ]
+}
