@@ -49,6 +49,16 @@ class LocationConsentNotifier extends AsyncNotifier<LocationConsent> {
   /// Tail of the write queue (retro rule 2: ordered writes).
   Future<void> _tail = Future<void>.value();
 
+  /// Monotonic call number, taken synchronously when [grant] or [withdraw] is
+  /// called (before the call is queued), so call order is known even while an
+  /// older write is still in flight.
+  int _callSeq = 0;
+
+  /// The call number of the latest [withdraw] per purpose. A grant whose call
+  /// number is lower is stale and must never publish `granted`.
+  final Map<LocationConsentPurpose, int> _latestWithdrawSeq =
+      <LocationConsentPurpose, int>{};
+
   @override
   Future<LocationConsent> build() async {
     _uid = null;
@@ -65,14 +75,18 @@ class LocationConsentNotifier extends AsyncNotifier<LocationConsent> {
   /// true only when the record was persisted; on false the state is unchanged
   /// and the caller must not make the system permission request (fail closed).
   /// [textVersion] is the version of the wording the user saw; it defaults to
-  /// [kLocationConsentTextVersion].
+  /// [kLocationConsentTextVersion]. A grant that was called before a later
+  /// [withdraw] of the same purpose is stale: it neither persists nor publishes
+  /// `granted` and returns false.
   Future<bool> grant({
     LocationConsentPurpose purpose = LocationConsentPurpose.locationWhileRecording,
     String textVersion = kLocationConsentTextVersion,
   }) {
+    final seq = ++_callSeq;
+    bool superseded() => (_latestWithdrawSeq[purpose] ?? 0) > seq;
     return _enqueue(() async {
       final uid = _ownedUid();
-      if (uid == null) return false;
+      if (uid == null || superseded()) return false;
       final now = _nowMs();
       final next = _current().withRecord(ConsentRecord(
         purpose: purpose,
@@ -82,38 +96,47 @@ class LocationConsentNotifier extends AsyncNotifier<LocationConsent> {
         grantedAtUtcMs: now,
       ));
       if (!await _persist(uid, next)) return false;
-      if (_ownedUid() != uid) return false;
+      if (_ownedUid() != uid || superseded()) return false;
       state = AsyncData(next);
       return true;
     });
   }
 
   /// Withdraws the consent of [purpose]. Nothing is deleted. The withdrawal is
-  /// applied in memory first, a running recording is then stopped and kept
-  /// (reason `consentWithdrawn`), and the record is persisted last. Returns
-  /// true when the record was persisted; the in-memory withdrawal stands either
-  /// way.
+  /// applied in memory synchronously when this is called, before the call joins
+  /// the write queue, so a pending grant write cannot delay it (Start and
+  /// Resume read the in-memory state). A running recording is then stopped and
+  /// kept (reason `consentWithdrawn`), and the record is persisted last, in
+  /// call order. A queued grant that was called earlier does not re-grant.
+  /// Returns true when the record was persisted; the in-memory withdrawal
+  /// stands either way.
   Future<bool> withdraw({
     LocationConsentPurpose purpose = LocationConsentPurpose.locationWhileRecording,
     String textVersion = kLocationConsentTextVersion,
   }) {
+    _latestWithdrawSeq[purpose] = ++_callSeq;
+    final syncUid = _ownedUid();
+    final previous = syncUid == null ? null : _current().recordOf(purpose);
+    final ConsentRecord? withdrawn = syncUid == null
+        ? null
+        : ConsentRecord(
+            purpose: purpose,
+            state: ConsentState.withdrawn,
+            textVersion: previous?.textVersion ?? textVersion,
+            timestampUtcMs: _nowMs(),
+            grantedAtUtcMs: previous?.grantedAtUtcMs,
+          );
+    if (withdrawn != null) {
+      state = AsyncData(_current().withRecord(withdrawn));
+    }
     return _enqueue(() async {
       final uid = _ownedUid();
-      if (uid == null) return false;
-      final previous = _current().recordOf(purpose);
-      final next = _current().withRecord(ConsentRecord(
-        purpose: purpose,
-        state: ConsentState.withdrawn,
-        textVersion: previous?.textVersion ?? textVersion,
-        timestampUtcMs: _nowMs(),
-        grantedAtUtcMs: previous?.grantedAtUtcMs,
-      ));
-      state = AsyncData(next);
+      if (uid == null || withdrawn == null || uid != syncUid) return false;
       if (purpose == LocationConsentPurpose.locationWhileRecording) {
         await _stopRunningRecording();
       }
       if (_ownedUid() != uid) return false;
-      return _persist(uid, next);
+      return _persist(uid, _current().withRecord(withdrawn));
     });
   }
 

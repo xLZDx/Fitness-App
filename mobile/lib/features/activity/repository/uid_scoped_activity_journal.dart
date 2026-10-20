@@ -7,6 +7,7 @@
 /// only closed); only account deletion wipes the deleted account's scope.
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'dart:typed_data';
@@ -146,11 +147,49 @@ class UidScopedActivityJournal
   /// same-uid auth re-emission cannot re-create the deleted account's scope.
   String? _wipedUid;
 
+  /// Longest wait for the owner-checked puts in flight on a delegate before it
+  /// is closed or wiped.
+  static const Duration _kInFlightDrainTimeout = Duration(seconds: 5);
+
+  /// Owner-checked puts that were handed to a bound delegate and have not
+  /// finished yet, per delegate (identity). Each future never completes with an
+  /// error; it only marks the end of the put.
+  final Map<ActivityJournal, Set<Future<void>>> _inFlightPuts =
+      Map<ActivityJournal, Set<Future<void>>>.identity();
+
+  /// Uids whose [wipeForUid] has been called and has not finished: from that
+  /// moment [putForOwner] refuses them.
+  final List<String> _wipingUids = <String>[];
+
+  /// Set when the durable wipe marker of the BOUND uid could not be written:
+  /// the transition is aborted, the old binding is dropped and no other uid
+  /// may be bound until [wipeForUid] of that uid succeeds.
+  String? _wipeBlockedUid;
+
   @override
   String? get boundUid => _boundUid;
 
   @override
   bool get isBound => _bound != null;
+
+  /// Waits (bounded) for the owner-checked puts in flight on [delegate]; on a
+  /// timeout it proceeds and logs a content-free line.
+  Future<void> _drainInFlight(ActivityJournal? delegate) async {
+    if (delegate == null) return;
+    final set = _inFlightPuts[delegate];
+    if (set == null || set.isEmpty) {
+      _inFlightPuts.remove(delegate);
+      return;
+    }
+    try {
+      await Future.wait<void>(set.toList()).timeout(_kInFlightDrainTimeout);
+    } on TimeoutException {
+      debugPrint('activity: in-flight puts not finished (timeout)');
+    } catch (e) {
+      debugPrint('activity: in-flight put drain failed (${e.runtimeType})');
+    }
+    _inFlightPuts.remove(delegate);
+  }
 
   Future<void> _unbind() async {
     final current = _bound;
@@ -158,6 +197,9 @@ class UidScopedActivityJournal
     _boundUid = null;
     _lastReport = null;
     if (current != null) {
+      // New owner-checked puts are refused from here on (`_bound` is null);
+      // the ones already handed to [current] finish before it is closed.
+      await _drainInFlight(current);
       try {
         await current.close();
       } catch (_) {
@@ -177,13 +219,30 @@ class UidScopedActivityJournal
           await _unbind();
           return false;
         }
-        // S04 design 4.7: the DURABLE wiped marker survives a relaunch. It
-        // refuses the wiped scope until an explicit unbind or another uid.
-        if (uid != null &&
-            uid != _boundUid &&
-            await _wipeMarkerExists(activityJournalScopeId(uid))) {
+        if (uid != null && _wipeBlockedUid != null) {
+          // Fail closed: the durable wipe marker of the previous account could
+          // not be written, so the transition was aborted. Bind nothing until
+          // that wipe succeeds.
           await _unbind();
           return false;
+        }
+        // S04 design 4.7: the DURABLE wiped marker survives a relaunch. It
+        // refuses the wiped scope until an explicit unbind or another uid.
+        if (uid != null && uid != _boundUid) {
+          final bool markerPresent;
+          try {
+            markerPresent = await _wipeMarkerExists(activityJournalScopeId(uid));
+          } catch (e) {
+            // Fail closed and retryable: an unreadable marker is never read as
+            // absent.
+            debugPrint('activity: wipe marker not readable (${e.runtimeType})');
+            await _unbind();
+            return false;
+          }
+          if (markerPresent) {
+            await _unbind();
+            return false;
+          }
         }
         // An explicit unbind ends the wiped-uid refusal even when nothing is
         // bound (a wipe of the bound uid already left the journal unbound).
@@ -224,13 +283,23 @@ class UidScopedActivityJournal
       });
 
   @override
-  Future<void> wipeForUid(String uid) => _mutex.run(() async {
+  Future<void> wipeForUid(String uid) {
+    // Owner-checked puts for [uid] are refused from the moment of the call,
+    // not only once the wipe reaches the front of the queue.
+    if (uid.isNotEmpty) _wipingUids.add(uid);
+    return _wipeForUidLocked(uid).whenComplete(() => _wipingUids.remove(uid));
+  }
+
+  Future<void> _wipeForUidLocked(String uid) => _mutex.run(() async {
         if (uid.isEmpty) throw const JournalUnbound();
         // Remembered in BOTH branches and even when the wipe fails: the marker
         // retries the wipe and nothing, not even an already queued
         // `bindUid(uid)`, may re-create the scope or its key afterwards.
         _wipedUid = uid;
         final scopeId = activityJournalScopeId(uid);
+        // The puts already handed to the bound delegate finish (bounded) before
+        // anything of it is wiped.
+        if (uid == _boundUid) await _drainInFlight(_bound);
         // Ordering (S04 design 4.7): (1) the recorder was shut down by the
         // caller; (2) the recording journal drains and refuses writes, and the
         // durable marker is written BEFORE any S02 wipe step; (3) only then the
@@ -243,7 +312,20 @@ class UidScopedActivityJournal
             debugPrint('activity: recording close failed (${e.runtimeType})');
           }
         }
-        await _writeWipeMarker(scopeId, kWipeMarkerWiping);
+        try {
+          await _writeWipeMarker(scopeId, kWipeMarkerWiping);
+        } catch (e) {
+          // Fail closed: without the durable marker a relaunch could not retry
+          // or refuse this wipe. Abort the transition: the old binding becomes
+          // unusable and no other uid may bind until this wipe succeeds. The
+          // caller sees the failure (the existing wipe-incomplete path).
+          debugPrint('activity: wipe marker not written (${e.runtimeType})');
+          if (uid == _boundUid) {
+            _wipeBlockedUid = uid;
+            await _unbind();
+          }
+          rethrow;
+        }
         // The recordings go regardless of whether the S02 scope can be started
         // (review S3).
         try {
@@ -258,7 +340,8 @@ class UidScopedActivityJournal
           } finally {
             await _unbind();
           }
-          await _writeWipeMarker(scopeId, kWipeMarkerWiped);
+          await _writeCompletedMarker(scopeId);
+          if (_wipeBlockedUid == uid) _wipeBlockedUid = null;
           return;
         }
         final other = await _factory(scopeId);
@@ -270,25 +353,33 @@ class UidScopedActivityJournal
             await other.close();
           } catch (_) {}
         }
-        await _writeWipeMarker(scopeId, kWipeMarkerWiped);
+        await _writeCompletedMarker(scopeId);
+        if (_wipeBlockedUid == uid) _wipeBlockedUid = null;
       });
 
-  // ---- durable wiped marker (S04 design 4.7) --------------------------------
-
-  Future<String?> _markerPath(String scopeId) async {
+  /// The `wiped` upgrade of the marker. The `wiping` marker is already durable
+  /// and keeps the scope refused and the wipe retryable, so a failure here is
+  /// only logged.
+  Future<void> _writeCompletedMarker(String scopeId) async {
     try {
-      return '${await _scopesRoot()}/$scopeId$kWipedMarkerSuffix';
-    } catch (_) {
-      return null;
+      await _writeWipeMarker(scopeId, kWipeMarkerWiped);
+    } catch (e) {
+      debugPrint('activity: wipe marker not completed (${e.runtimeType})');
     }
   }
 
-  /// Content-free marker file: temp, fsync, rename. Best effort: a failure is
-  /// logged by type only and never blocks the wipe (the in-memory `_wipedUid`
-  /// still refuses the rebind in this process).
+  // ---- durable wiped marker (S04 design 4.7) --------------------------------
+
+  /// The marker path; throws when the scopes root cannot be resolved (the
+  /// marker is then neither writable nor readable: fail closed, never absent).
+  Future<String> _markerPath(String scopeId) async =>
+      '${await _scopesRoot()}/$scopeId$kWipedMarkerSuffix';
+
+  /// Content-free marker file: temp, fsync, rename. FAIL CLOSED: a failure is
+  /// logged by type only by the caller and RETHROWN, so the wipe transition is
+  /// aborted instead of continuing without a durable marker.
   Future<void> _writeWipeMarker(String scopeId, String content) async {
     final path = await _markerPath(scopeId);
-    if (path == null) return;
     final tmp = '$path$kTempSuffix';
     try {
       await _fs.createDir(path.substring(0, path.lastIndexOf('/')));
@@ -301,23 +392,18 @@ class UidScopedActivityJournal
         await h.close();
       }
       await _fs.rename(tmp, path);
-    } catch (e) {
-      debugPrint('activity: wipe marker not written (${e.runtimeType})');
+    } catch (_) {
       try {
         await _fs.deleteFile(tmp);
       } catch (_) {}
+      rethrow;
     }
   }
 
-  Future<bool> _wipeMarkerExists(String scopeId) async {
-    final path = await _markerPath(scopeId);
-    if (path == null) return false;
-    try {
-      return await _fs.exists(path);
-    } catch (_) {
-      return false;
-    }
-  }
+  /// True when the durable marker exists. THROWS when that cannot be read; the
+  /// caller must not treat an unreadable marker as absent.
+  Future<bool> _wipeMarkerExists(String scopeId) async =>
+      _fs.exists(await _markerPath(scopeId));
 
   /// Removes the markers of COMPLETED wipes (content `wiped`); a marker of a
   /// wipe that did not finish stays so the relaunch path retries it.
@@ -383,10 +469,23 @@ class UidScopedActivityJournal
     JournalSyncState? syncState,
   }) {
     final bound = _bound;
-    if (bound == null || _boundUid != expectedUid) {
+    if (bound == null ||
+        _boundUid != expectedUid ||
+        _wipingUids.contains(expectedUid)) {
       throw const JournalUnbound();
     }
-    return bound.put(session, syncState: syncState);
+    // The owner check and the hand-over to the delegate are one synchronous
+    // step; the put is tracked until it finishes so an unbind or a wipe of this
+    // delegate waits (bounded) for it before closing or wiping it.
+    final Future<JournalEntry> put = bound.put(session, syncState: syncState);
+    final Set<Future<void>> inFlight = _inFlightPuts.putIfAbsent(
+        bound, () => <Future<void>>{});
+    late final Future<void> marker;
+    marker = put.then<void>((_) {}, onError: (Object _) {}).whenComplete(() {
+      inFlight.remove(marker);
+    });
+    inFlight.add(marker);
+    return put;
   }
 
   @override

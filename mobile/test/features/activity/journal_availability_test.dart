@@ -60,7 +60,9 @@ class _Paths extends Fake
 
 /// A journal that counts `bindUid` calls and delegates to the real scoped one.
 class _SpyScoped extends UidScopedActivityJournal {
-  _SpyScoped(ActivityJournalFactory factory) : super(factory: factory);
+  _SpyScoped(ActivityJournalFactory factory,
+      {Future<String> Function()? scopesRoot})
+      : super(factory: factory, scopesRoot: scopesRoot);
   int bindCalls = 0;
 
   @override
@@ -131,7 +133,8 @@ void main() {
       'after it; bindUid called once; construction does no I/O', () async {
     final world = await ScopedJournalWorld.create();
     addTearDown(world.dispose);
-    final spy = _SpyScoped(world.factory);
+    final spy = _SpyScoped(world.factory,
+        scopesRoot: () async => '${world.base}/activity_journal');
     // No flag override: the compile-time default of a test build.
     final c = make(flags: null, journal: spy);
     expect(ActivityFlags.compileTime.journalEnabled, isTrue,
@@ -201,6 +204,9 @@ void main() {
       'retry (not failedToOpen); log has the type only', () async {
     const secret = 'secret-path-/data/user/0/uid-sentinel-9';
     final journal = UidScopedActivityJournal(
+        // A readable (absent) marker location: the failure must come from the
+        // factory, as before the S04 gate 1 fail-closed marker read.
+        scopesRoot: () async => '/s04-no-such-scopes-root',
         factory: (_) async => throw StateError(secret));
     final c = make(flags: _local, journal: journal);
     await emit(_user('uid-sentinel-9'));

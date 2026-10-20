@@ -43,7 +43,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 12566 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 171886 |
+| `core/LESSONS_LOG.md` | Lessons log | 173542 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -347,6 +347,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_E_H.md` | S04 test findings, group EP_E_H (EP-E permission/consent, EP-H privacy guarantees) | 4414 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_F_G_J.md` | S04 test findings, group EP_F_G_J (epics EP-F, EP-G, EP-J) | 4951 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md` | S04 final test run | 4677 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md` | S04 gate 1: functional test findings for the seven external-review fixes | 11673 |
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 190212 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |

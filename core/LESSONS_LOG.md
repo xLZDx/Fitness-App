@@ -1294,3 +1294,12 @@ Rule next time: when a mechanism changes, grep all docs and comments for its old
 
 Kind: NEUTRAL.
 Facts: STATE.md had no S04 section after the docs merge; added with evidence pointers.
+
+## 2026-10-20 - Commit: fix(s04): close the seven external gate findings (stray source line, consent withdraw ordering, sign-out hook, expiry lock, segment rotation, owner-checked puts, wipe marker)
+
+Kind: FAILURE.
+Facts: the external reviewer (GPT-PM) on head 5d5723fa found a stray non-Dart line in geolocator_location_source.dart (a mangled comment after the dependency rename) and six MAJOR items: withdraw queued behind a pending grant write, sign-out skipping the hand-off hook when the counted recordings were zero, the all-scopes expiry sweep running without the foreign scope's lock, list mutation inside the _writePending loop (ConcurrentModificationError at the segment boundary), owner-checked puts still in flight across unbind/wipe, and the wipe marker failing open. The agent-reported 1119 tests were green with all of them present.
+Root cause: the adapter file was never compiled by any test because it was only imported by main.dart wiring; the rotation path was never exercised with more than one segment of pending frames; the other items are interleavings and failure modes that the epic tests did not inject.
+Missed by: author, epic tests, the four earlier static reviews; caught by the external gate.
+Rule next time: every production file needs one test that imports it; any loop that rotates a buffer needs a test that crosses the boundary; for each ordering guarantee write the test with the earlier operation held in flight.
+Note: DT-0-10 (journal_availability_test.dart) fails at head 5d5723fa independently of these fixes (bindUid(null) already looked up the scopes root); recorded as a known issue outside the sprint test set.

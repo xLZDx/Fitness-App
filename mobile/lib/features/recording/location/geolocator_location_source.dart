@@ -2,22 +2,13 @@
 // option A). This is the ONE file allowed to import a location package
 // (S04-R-003).
 //
-// NOTE: `geolocator` is not yet declared in `mobile/pubspec.yaml`, so nothing
-// may import this file until lane R2 adds the dependency and the plugin
-// field names (AndroidSettings / ForegroundNotificationConfig, and that
-// `Position.speed` is -1 / 0 when unavailable) are verified against the version
-// that resolves.
+// `geolocator` ^13.0.4 is declared in `mobile/pubspec.yaml`, and this is the
+// only file under `mobile/lib` allowed to import a location package.
 //
-// All stream lifecycle logic (serialized setInterval/stop, no awaited close in
-// onCancel) lives in the plugin-free `StreamLocationSource` and is unit tested
-// there; this file only builds the plugin stream.
-
-import a location package (S04-R-003). The
-// extension keeps it out of the Dart analysis until the dependency exists.
-//
-// Verify against the version that actually resolves before renaming (design 2.3
-// first steps 2 and 4): AndroidSettings / ForegroundNotificationConfig field
-// names, and that `Position.speed` is -1 / 0 when unavailable.
+// The plugin field names used below (AndroidSettings /
+// ForegroundNotificationConfig, and that `Position.speed` is negative when
+// unavailable) must be re-verified against the version that actually resolves
+// whenever the dependency constraint changes.
 //
 // All stream lifecycle logic (serialized setInterval/stop, no awaited close in
 // onCancel) lives in the plugin-free `StreamLocationSource` and is unit tested

@@ -578,9 +578,16 @@ class FileRecordingJournal
   Future<void> _writePending(_Active a) async {
     if (a.suspectSeg != null) await _rotateAfterError(a);
     var n = a.counter;
+    // `work` is a snapshot that is never structurally modified while it is
+    // iterated (a removal inside a for-in over it throws
+    // ConcurrentModificationError). `done` counts the frames written since the
+    // last durable prune of `a.pending`, which is the offset of the unpruned
+    // head of the snapshot.
     final work = List<_Pending>.of(a.pending);
+    final last = work.isEmpty ? null : work.last;
     var done = 0;
-    for (final p in work) {
+    for (var i = 0; i < work.length; i++) {
+      final p = work[i];
       if (a.handle == null) {
         // The number advances only once the file is open: a failed open (disk
         // full) must not leave a hole in the segment numbering, which the
@@ -594,15 +601,15 @@ class FileRecordingJournal
       await a.handle!.write(encodeFrame(a.cipher, p.build(n)));
       a.segFrames += 1;
       done += 1;
-      if (a.segFrames >= kFramesPerSegment && !identical(p, work.last)) {
+      if (a.segFrames >= kFramesPerSegment && !identical(p, last)) {
         await a.handle!.flush();
         await a.handle!.fsync();
         await _closeHandle(a);
         // Durable: advance the counter and prune per closed segment so a later
-        // failure re-reads against the right frame numbers (review C14).
+        // failure re-reads against the right frame numbers (review C14). Only
+        // `a.pending` shrinks; the snapshot keeps its length.
         a.counter = n;
         a.pending.removeRange(0, done);
-        work.removeRange(0, done);
         done = 0;
       }
     }
@@ -1282,33 +1289,68 @@ class FileRecordingJournal
   /// uid is bound. Needs no key: the marker time is read as plain text with the
   /// file modification time as the other reference, and the delete is the
   /// ordered file delete. The active recording is never touched.
+  ///
+  /// A scope this instance owns (it holds that scope's process-wide lock) is
+  /// swept under the per-recording mutex. A foreign scope is swept only while
+  /// this call holds that scope's own process-wide lock file
+  /// (`recording.lock`, the same mechanism as [_acquireScopeLock]); when the
+  /// lock cannot be taken (another instance or process holds it) the scope is
+  /// skipped and retried on the next start.
   Future<int> sweepExpiredAllScopes() async {
     final base = await _scopesRoot();
     var removed = 0;
     for (final scope in await _fs.list(base)) {
       if (!scope.isDirectory) continue;
       final recDir = '$base/${scope.name}/$kRecordingDirName';
-      for (final e in await _fs.list(recDir)) {
-        if (!e.isDirectory ||
-            e.name.endsWith(kCleanupSuffix) ||
-            !kJournalIdPattern.hasMatch(e.name) ||
-            _isActive(e.name)) {
-          continue;
-        }
-        final dir = '$recDir/${e.name}';
+      final candidates = <String>[
+        for (final e in await _fs.list(recDir))
+          if (e.isDirectory &&
+              !e.name.endsWith(kCleanupSuffix) &&
+              kJournalIdPattern.hasMatch(e.name))
+            e.name,
+      ];
+      if (candidates.isEmpty) continue;
+
+      // A first acquisition of this scope may be in flight: let it finish so
+      // this call does not race it for the same lock file.
+      final pending = _lockFutures[scope.name];
+      if (pending != null) {
         try {
-          final done = await _mutexFor(e.name).run(() async {
-            for (final marker in [kQuarantinedFile, kFallbackFile]) {
-              if (!await _fs.exists('$dir/$marker')) continue;
-              final t = await _markerTime(null, dir, marker) ?? _now();
-              if (!_expired(t)) continue;
-                        await _executeDeleteAt(dir);
-              return true;
-            }
-            return false;
-          });
-          if (done) removed++;
+          await pending;
         } catch (_) {}
+      }
+      Object? foreignLock;
+      if (!_locks.containsKey(scope.name)) {
+        try {
+          foreignLock = await _ops.acquireLock('$recDir/$kRecordingLockFile');
+        } catch (_) {
+          continue; // held elsewhere (or unavailable): retry on the next start
+        }
+      }
+      try {
+        for (final id in candidates) {
+          if (_isActive(id)) continue;
+          final dir = '$recDir/$id';
+          try {
+            final done = await _mutexFor(id).run(() async {
+              for (final marker in [kQuarantinedFile, kFallbackFile]) {
+                if (!await _fs.exists('$dir/$marker')) continue;
+                final t = await _markerTime(null, dir, marker) ?? _now();
+                if (!_expired(t)) continue;
+                await _executeDeleteAt(dir);
+                return true;
+              }
+              return false;
+            });
+            if (done) removed++;
+          } catch (_) {}
+        }
+      } finally {
+        if (foreignLock != null) {
+          try {
+            await _ops.releaseLock(foreignLock);
+          } catch (_) {}
+        }
       }
     }
     return removed;
