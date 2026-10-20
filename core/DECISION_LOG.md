@@ -58121,3 +58121,7 @@ Decision: fixed all seven findings of GPT-PM request 7c1e5a52 on head 5d5723fa. 
 ## 2026-10-20 - Commit: fix(s04): treat unexpected recorder provider read failures at sign-out as cannot-check
 
 Decision: in sign_out_guard.dart only UnimplementedError from recordingJournalPortProvider means the recorder is not wired; any other failure reading the port or the phase provider is cannot-check (existing sheet with the explicit Sign out anyway choice). Applied to both _anyRecordingFiles and _recordingCount. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md Round 2 (sprint set 1164 passed).
+
+## 2026-10-20 - Commit: fix(s04): use an explicit recorder wired flag at sign-out and repair the fixtures broken by the fail-closed wipe marker
+
+Decision: 'recorder not wired' is the explicit recorderWiredProvider (default false, true under the GPS_RECORDER branch of main.dart); when wired, any provider read failure is cannot-check. Fixtures of 55 tests gained an explicit scopesRoot. The two failing tests outside the sprint set (DT-0-10 availability, app_shortcuts same-account) are recorded as known pre-existing issues and not fixed in S04; whether bindUid(null) may resolve the scopes root is a product decision for the operator. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md Round 3 and Round 4 (sprint set 1171 passed; test/features/activity 1629 passed, 1 failed).

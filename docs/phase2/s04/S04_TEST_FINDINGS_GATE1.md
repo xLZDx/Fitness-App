@@ -120,3 +120,69 @@ Commands (from `mobile/`, HEAD 63b03a7a plus the uncommitted guard change):
 - `flutter test test/features/recording test/shared/widgets/gps_strip test/features/activity/gps_signout test/features/activity/repository/s04_gate1_m05_m06_scoped_journal_test.dart --timeout 300s` -> +1164, All tests passed (1155 before + 9 new).
 
 Not covered: mutation runs (not performed by operator decision); a real recorder wiring on a device.
+
+## Round 3: M-02-R3-01
+
+Finding: "recorder not wired" was inferred from the exception type (`UnimplementedError`) thrown by `recordingJournalPortProvider`, which does not prove absence.
+Rule under test (`mobile/lib/features/activity/state/sign_out_guard.dart`, `recorderWiredProvider` in `recorder_ports.dart`, override in `main.dart` under GPS_RECORDER; uncommitted): flag false (default) means 0 recordings / no files, silent fast path, no recorder provider read; flag true means ANY exception reading the port or phase provider, `UnimplementedError` included, is "cannot check" (sheet with explicit "Sign out anyway").
+
+Changed existing tests (flag added only where the test expects a WIRED recorder; no assertion changed):
+- `s04_gate1_m02_signout_hook_test.dart`: `recorderWiredProvider.overrideWithValue(true)` next to the port override (all tests there expect a wired recorder).
+- `gps_signout_test.dart`: flag added under the same `if (!noPort)` condition; the `noPort` test ("recorder not wired at all counts as zero recordings") deliberately keeps the flag false.
+- `s04_gate1_m02r2_provider_failure_test.dart`: flag true for the `throwing` and `working` modes; `unwired` stays flag false. Header comment updated.
+- Checked and left unchanged: `recorder_world.dart`, `recorder_harness.dart`, `gps_sources_test.dart` and the other recording/gps_strip tests override the port but never run `confirmSignOutWithLocalData`; `sign_out_warning_test.dart` and the e2e wipe tests never override the port and correctly use the not-wired path.
+
+New tests in `s04_gate1_m02r2_provider_failure_test.dart` (+7; new modes `wiredUnimplemented` and `unwiredSpy`, the latter counting every read of the port and phase providers):
+Zero activities:
+1. Flag true + port provider default `UnimplementedError`: cannot-check sheet (not a silent true), hook only after "Sign out anyway".
+2. Same, Cancel: result false, hook never runs.
+3. Flag true + working port, phase provider throws: cannot-check.
+4. Flag false, spy overrides: result true, no sheet, no hook, zero reads of port and phase providers, zero listings.
+Account with local activities (count path):
+5. Flag true + `UnimplementedError`: cannot-check (not the warning sheet), hook only after "Sign out anyway".
+6. Same, Cancel: result false, no hook.
+7. Flag false: normal warning sheet, zero provider reads during the count, "Sign out" returns true.
+
+No production defect found; all new tests passed on the first run.
+
+Commands (from `mobile/`, HEAD ea5d1b8e plus uncommitted changes):
+- `flutter test test/features/activity/gps_signout --timeout 300s` -> +53, All tests passed.
+- `flutter test test/features/recording test/shared/widgets/gps_strip test/features/activity/gps_signout test/features/activity/repository/s04_gate1_m05_m06_scoped_journal_test.dart --timeout 300s` -> +1171, All tests passed (1164 before + 7 new).
+- `flutter test test/features/activity/sign_out_warning_test.dart test/features/activity/e2e --timeout 300s` -> +62 ~2 -1. The one failure is `e2e/s02_stale_view_e2e_test.dart` ("A to B with the same activity id"): `expect(await journal.bindUid('B'), isTrue)` at line 72 got false. That file imports none of the changed code (no sign_out_guard, recorder or main.dart) and fails alone with the same error; treated as pre-existing and outside this change (not confirmed on a clean HEAD run).
+
+Not covered: mutation runs (not performed by operator decision); a real recorder wiring on a device; the `main.dart` override itself (no test builds the real app root).
+
+
+## Round 4: whole activity directory
+
+Working tree: HEAD ea5d1b8e plus uncommitted changes. Every run used `--timeout 300s`; no stash/checkout, no mutation runs.
+
+Commands and results (cwd `mobile/`):
+
+| Command | Result |
+|---|---|
+| `flutter test test/features/activity --timeout 300s` (first run) | 1575 passed, 2 skipped, 55 failed |
+| `flutter test test/shared test/core --timeout 300s` | 760 passed, 1 failed |
+| `flutter test <activity_sync_auth_tie, activity_sync_pass_identity, activity_wipe_export_account_bound>` after fixture fix | all passed |
+| `flutter test test/features/activity --timeout 300s` (second run) | 1629 passed, 2 skipped, 1 failed |
+| Sprint set: `test/features/recording test/shared/widgets/gps_strip test/features/activity/gps_signout test/features/activity/repository/s04_gate1_m05_m06_scoped_journal_test.dart` | 1171 passed, 0 failed |
+
+### Failures and classification
+
+1. 54 failures, all `expect(await journal.bindUid(...), isTrue)` -> `Actual: <false>`, in three files:
+   `repository/activity_sync_auth_tie_test.dart` (14), `repository/activity_sync_pass_identity_test.dart` (30), `repository/activity_wipe_export_account_bound_test.dart` (10).
+   Classification: caused by M-06 (journal now fails closed when the wipe-marker location cannot be read: `_wipeMarkerExists` throws, bind returns false). These tests subclass `UidScopedActivityJournal` / `HookJournal` with only a `factory`, so they fell back to `getApplicationSupportDirectory`, which is unavailable in a unit test. Fixture-only defect; the shared `ScopedJournalWorld.journal` already passed a scopesRoot.
+   Fix (assertions unchanged): `_CountingJournal` and `_SpyJournal` constructors take a scopesRoot and pass it to `super`; `_Rec` forwards the optional `scopesRoot` to `HookJournal`; all three call sites pass `() async => '${w.base}/activity_journal'`. All three files pass after the change.
+
+2. `journal_availability_test.dart` DT-0-10 'no file or directory I/O before the bind; availability is binding': `Expected: <0> Actual: <1>` ("no path lookup before the bind").
+   Classification: PRE-EXISTING, not caused by our changes. At 5d5723fa `bindUid(uid == null)` already ran `_clearCompletedWipeMarkers()`, which calls `_scopesRoot()` -> `getApplicationSupportDirectory()` (`git show 5d5723fa:mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart`, lines 192 and 324-326). The test opens the journal through `openActivityJournal` (default scopesRoot), so the signed-out bind(null) performs one path lookup. Our uncommitted changes do not touch the journal file. Note for the owner: the test's invariant (no path lookup while signed out) is genuinely violated by the production code since the wipe-marker commit; not fixed here (no failing-test-proven regression from this round's change; the product decision is whether bind(null) may resolve the scopes root).
+
+3. `shared/widgets/app_shortcuts_test.dart` 'AC-KB-1b/1c ... control: same-account session opens the owner destination, not the sheet': `Expected: '/workout/ex1' Actual: '/workouts'` (line 295). Deterministic (fails alone too).
+   Classification: PRE-EXISTING / unrelated. Neither the test nor `lib/shared/widgets/app_shortcuts.dart` imports `sign_out_guard`, `recorder_ports` or `main.dart` (grep over lib and test/shared); `git diff 5d5723fa HEAD` shows no change in `lib/shared` or `lib/features/workouts`. Our uncommitted diff only touches `sign_out_guard.dart`, `recorder_ports.dart`, `main.dart`. The shortcut path (`_record` -> `openActiveSessionDestination(activeSessionDestinationProvider)`) does not read `recorderWiredProvider`. Root cause not investigated further (not confirmed on a clean HEAD run).
+
+### Unresolved failures
+
+- test/features/activity/journal_availability_test.dart: DT-0-10 (pre-existing, see 2)
+- test/shared/widgets/app_shortcuts_test.dart: AC-KB-1b/1c control: same-account session opens the owner destination (pre-existing, see 3)
+
+No production code was changed in this round. Not covered: mutation runs, device runs, the real app root.

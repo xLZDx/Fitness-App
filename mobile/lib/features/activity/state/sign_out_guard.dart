@@ -125,20 +125,18 @@ Future<bool?> _handleOpen(
 }
 
 /// Active plus unfinished recordings of the bound account; null when they
-/// cannot be counted. 0 ONLY when the recorder is not wired: the default body
-/// of `recordingJournalPortProvider` throws [UnimplementedError] (flag off and
-/// non-Android builds never override it); that is the sole "not wired" signal.
-/// Any other failure reading the port, and any failure reading the recorder
-/// phase once the port was read (the recorder IS wired), is null: cannot check,
-/// never a silent pass. (Riverpod 2.6.1 rethrows the provider's own error, so
-/// no wrapper type has to be unwrapped.) An active recording is normally also
-/// listed as unfinished, so the larger of the two is used, never the sum.
+/// cannot be counted. 0 ONLY when `recorderWiredProvider` is false (flag off and
+/// non-Android builds never override it): that explicit flag is the sole "not
+/// wired" signal and no recorder provider is read. Once wired, ANY failure
+/// reading the port or the recorder phase, [UnimplementedError] included, is
+/// null: cannot check, never a silent pass (an exception type does not prove
+/// absence). An active recording is normally also listed as unfinished, so the
+/// larger of the two is used, never the sum.
 Future<int?> _recordingCount(WidgetRef ref) async {
+  if (!ref.read(recorderWiredProvider)) return 0;
   final RecordingJournalPort port;
   try {
     port = ref.read(recordingJournalPortProvider);
-  } on UnimplementedError {
-    return 0;
   } catch (e) {
     debugPrint('activity: sign-out recording check failed '
         '(code=recording_provider_failed, ${e.runtimeType})');
@@ -165,18 +163,16 @@ Future<int?> _recordingCount(WidgetRef ref) async {
 
 /// True when the recording journal lists any recording of the bound account at
 /// all (every status, including quarantined and permission-revoked pending ones)
-/// or a recording is active; null when that cannot be read. False ONLY when the
-/// recorder is not wired: the default body of `recordingJournalPortProvider`
-/// throws [UnimplementedError], the sole "not wired" signal. Any other failure
-/// reading the port, or any failure reading the recorder phase once the port
-/// was read (the recorder IS wired), is null: cannot check, never a silent
-/// pass (Riverpod 2.6.1 rethrows the provider's own error, no wrapper).
+/// or a recording is active; null when that cannot be read. False ONLY when
+/// `recorderWiredProvider` is false (the explicit "not wired" flag; no recorder
+/// provider is read). Once wired, ANY failure reading the port or the recorder
+/// phase, [UnimplementedError] included, is null: cannot check, never a silent
+/// pass (an exception type does not prove absence).
 Future<bool?> _anyRecordingFiles(WidgetRef ref) async {
+  if (!ref.read(recorderWiredProvider)) return false;
   final RecordingJournalPort port;
   try {
     port = ref.read(recordingJournalPortProvider);
-  } on UnimplementedError {
-    return false;
   } catch (e) {
     debugPrint('activity: sign-out recording check failed '
         '(code=recording_provider_failed, ${e.runtimeType})');

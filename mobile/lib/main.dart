@@ -81,7 +81,8 @@ import 'features/recording/state/recorder_providers.dart'
     show
         batteryMonitorProvider,
         recorderControllerProvider,
-        recorderEnvironmentProvider;
+        recorderEnvironmentProvider,
+        recorderWiredProvider;
 import 'features/recording/widgets/gps_live_widgets.dart'
     show GpsBackgroundReporter;
 import 'features/workouts/state/active_session_status.dart'
@@ -586,6 +587,7 @@ Future<void> main() async {
         // S04 recorder seams; nothing is overridden with the flag off.
         if (gpsRecorderOn) ...[
           gpsRecorderEnabledProvider.overrideWithValue(true),
+          recorderWiredProvider.overrideWithValue(true),
           recordingJournalPortOverride(),
           recorderEnvironmentProvider
               .overrideWith((ref) => _AppRecorderEnvironment(ref)),

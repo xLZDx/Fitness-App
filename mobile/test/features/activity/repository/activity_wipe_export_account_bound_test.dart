@@ -15,7 +15,7 @@ import '../../../support/scoped_journal_world.dart';
 import '../../../support/stale_view_world.dart';
 
 class _Rec extends HookJournal {
-  _Rec(super.f);
+  _Rec(super.f, {super.scopesRoot});
   final List<String> wiped = [];
   int plainWipes = 0;
   Future<void> Function()? onAssess;
@@ -63,7 +63,8 @@ void main() {
 
   setUp(() async {
     w = await ScopedJournalWorld.create();
-    journal = _Rec(w.factory);
+    journal = _Rec(w.factory,
+        scopesRoot: () async => '${w.base}/activity_journal');
   });
   tearDown(() async {
     await journal.close();

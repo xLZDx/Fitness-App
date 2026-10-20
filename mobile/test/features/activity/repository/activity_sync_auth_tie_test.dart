@@ -69,7 +69,8 @@ class _Backend implements ActivitySummaryBackend {
 
 /// Counts and optionally gates `put`.
 class _CountingJournal extends UidScopedActivityJournal {
-  _CountingJournal(ActivityJournalFactory f) : super(factory: f);
+  _CountingJournal(ActivityJournalFactory f, Future<String> Function() root)
+      : super(factory: f, scopesRoot: root);
   int puts = 0;
   _Gate? putGate;
 
@@ -155,7 +156,7 @@ void main() {
 
   setUp(() async {
     w = await ScopedJournalWorld.create();
-    journal = _CountingJournal(w.factory);
+    journal = _CountingJournal(w.factory, () async => '${w.base}/activity_journal');
     backend = _Backend();
     pushes = [];
     timers = [];

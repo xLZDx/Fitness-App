@@ -101,6 +101,7 @@ Future<_W> pump(
   final results = <bool>[];
   await t.pumpWidget(appHost(_Host(results), overrides: [
     ...dashOverrides(journal: journal),
+    if (!noPort) recorderWiredProvider.overrideWithValue(true),
     if (!noPort) recordingJournalPortProvider.overrideWithValue(port),
     recorderPhaseProvider.overrideWithValue(phase),
     activityPreUnbindHookRegistryProvider.overrideWithValue(registry),

@@ -15,6 +15,8 @@ import 'package:fitness_app/core/wiring/activity_wiring.dart';
 import 'package:fitness_app/features/activity/state/sign_out_guard.dart';
 import 'package:fitness_app/features/recording/journal/pre_unbind_hook.dart';
 import 'package:fitness_app/features/recording/state/recorder_phase.dart';
+import 'package:fitness_app/features/recording/state/recorder_ports.dart'
+    show recorderWiredProvider;
 import 'package:fitness_app/features/recording/state/recorder_providers.dart';
 import 'package:fitness_app/features/recording/state/recording_journal_port.dart';
 
@@ -92,6 +94,7 @@ Future<_W> pumpGuard(
   final results = <bool>[];
   await t.pumpWidget(appHost(_Host(results), overrides: [
     ...dashOverrides(journal: journal),
+    recorderWiredProvider.overrideWithValue(true),
     recordingJournalPortProvider.overrideWithValue(port),
     recorderPhaseProvider.overrideWithValue(RecorderPhase.idle),
     activityPreUnbindHookRegistryProvider.overrideWithValue(registry),

@@ -1311,3 +1311,12 @@ Facts: round 2 of the external gate found that my own M-02 fix still returned 'n
 Root cause: the fix handled the failure of the second step (listUnfinished) but copied the original catch-all around the first step; the 'not wired' case was never separated from real failures.
 Missed by: author and my tests (they only injected a throwing listing); caught by the external gate.
 Rule next time: when a fallback means 'feature absent', match the one explicit absence signal (here UnimplementedError) and treat everything else as unknown; test every step of a multi-step read with an injected failure.
+
+## 2026-10-20 - Commit: fix(s04): use an explicit recorder wired flag at sign-out and repair the fixtures broken by the fail-closed wipe marker
+
+Kind: FAILURE.
+Facts: (1) round 3 of the external gate showed that treating UnimplementedError as 'recorder not wired' still fails open for a wired provider that throws it; replaced by an explicit recorderWiredProvider set in main.dart under the same flag branch that overrides the journal port. (2) Our M-06 change (fail-closed wipe marker) broke 55 tests outside the sprint test set: every subclass or construction of UidScopedActivityJournal without scopesRoot (test/features/activity/repository and e2e). The test agent had judged one of them (s02_stale_view_e2e) 'unrelated' without proof.
+Root cause: (1) the second fix again matched an exception type instead of an explicit state; (2) a shared class was changed and only the sprint directory was run, not the directories that use the class.
+Missed by: author, test agent scope, earlier agent classification; caught by running the whole test/features/activity directory.
+Rule next time: when a production class used by other features changes, run the whole directory of every feature that uses it; never classify a failure as pre-existing without reading the diff of the code path it exercises.
+Known unresolved, pre-existing, outside the sprint set: journal_availability_test DT-0-10 (bindUid(null) resolves the scopes root at 5d5723fa) and app_shortcuts_test AC-KB-1b/1c (same-account session opens /workouts, no diff in lib/shared or lib/features/workouts).
