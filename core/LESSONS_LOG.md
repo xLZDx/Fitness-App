@@ -1451,3 +1451,7 @@ Rule: when a gate approval is for an exact head, merge main into the branch only
 ## 2026-10-20 - Integrate origin/phase2/main (s04 gate fixes, PR 14)
 
 Upstream fix commits superseded the uncommitted Phase2_s01 hardening patch (identical output for 4 of 5 files); verify obsolescence by applying the patch to its parent and diffing against the upstream tip.
+
+## 2026-10-20 - Integrate docs/gym-digital-twin-backlog-2026-10-19
+
+Docs-only branches can be verified by name-status plus marker grep without a test run; the registry must still be regenerated.

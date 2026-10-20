@@ -46,7 +46,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 14900 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 190208 |
+| `core/LESSONS_LOG.md` | Lessons log | 190489 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -210,6 +210,14 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/FIGMA_MAKE_REFACTOR_AUDIT_2026-08-05.md` | R0 / Gate 0 — Figma Make → Flutter audit (2026-08-05) | 28296 |
 | `core/plans/FINAL_SCOPE_2026-08-16.md` | Final scope — everything not done, or not finished | 25836 |
 | `core/plans/GATE_V0_REVISED.md` | Gate V0 (revised) + round-1 findings for cross-review | 10039 |
+| `core/plans/GYM_DIGITAL_TWIN/00_README.md` | GYM DIGITAL TWIN — Backlog Package | 4410 |
+| `core/plans/GYM_DIGITAL_TWIN/01_PRODUCT_SCOPE.md` | GYM DIGITAL TWIN — Product Scope and Requirements | 9856 |
+| `core/plans/GYM_DIGITAL_TWIN/02_ARCHITECTURE_CONTRACTS.md` | GYM DIGITAL TWIN — System Architecture and Data Contracts | 11892 |
+| `core/plans/GYM_DIGITAL_TWIN/03_BACKLOG.md` | GYM DIGITAL TWIN — Execution Backlog | 19477 |
+| `core/plans/GYM_DIGITAL_TWIN/04_ACCEPTANCE_TEST_PLAN.md` | GYM DIGITAL TWIN — Acceptance, Benchmark and Test Plan | 11554 |
+| `core/plans/GYM_DIGITAL_TWIN/05_OPEN_SOURCE_REGISTER.md` | GYM DIGITAL TWIN — Open Source Reuse Register | 9220 |
+| `core/plans/GYM_DIGITAL_TWIN/06_RISKS_AND_DECISIONS.md` | GYM DIGITAL TWIN — Risk Register, Devil's Advocate and Decision Log | 10966 |
+| `core/plans/GYM_DIGITAL_TWIN/07_DELIVERY_HANDOFF.md` | GYM DIGITAL TWIN — Sprint Pickup and Delivery Handoff | 8746 |
 | `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md` | HUD migration completion / legacy-glass retirement — fresh census, 2026-08-29 | 38378 |
 | `core/plans/IMPLEMENTATION_PLAN.md` | Fitness App — Roadmap | 16056 |
 | `core/plans/ML_STRATEGY_2026-08-11.md` | ML strategy — from three unvalidated features to programme generation | 15827 |
@@ -344,6 +352,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/commits/2026-10-20-integrate-marketing-site-prototype.md` | Integrate marketing/site-prototype-2026-08-19 (f95e1c88) | 3173 |
 | `docs/commits/2026-10-20-integrate-move-site-prototype.md` | Move the SPTR site prototype out of the Firebase hosting root | 1364 |
 | `docs/commits/2026-10-20-integrate-phase2-main-aicoach-docs.md` | Integrate origin/phase2/main (85e7e91e): AI Coach TDD-001 documentation line | 1038 |
+| `docs/commits/2026-10-20-integrate-phase2-main.md` | Integrate origin/phase2/main (a62d7c4e): PR 14 phase2/s04 gate fixes | 1811 |
 | `docs/commits/2026-10-20-integrate-phase2-s04.md` | Integrate phase2/s04 chain (5d5723fa) | 2238 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
