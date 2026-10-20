@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Coach Phase 9 — status and handoff</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#202733;background:#f4f6f8;--surface:#fff;--surface-2:#f7f8fa;--border:#d8dee7;--accent:#315e91;--text:#202733;--text-3:#657184}
+    body{margin:0;padding:2rem 1rem} .wrap{max-width:1180px;margin:auto;background:var(--surface);padding:clamp(1rem,3vw,2.4rem);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 28px #18253612}
+    h1,h2{line-height:1.2} h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:0 0 .5rem} h2{margin-top:2rem;border-bottom:1px solid var(--border);padding-bottom:.45rem} p,li{line-height:1.6} .lead{font-size:1.1rem;color:#394659}
+    .callout{padding:1rem 1.2rem;border-left:4px solid #b27415;background:#fff8e9;border-radius:6px} .ok{border-color:#26765a;background:#edf8f2}
+    .table-wrap{overflow-x:auto} table{border-collapse:collapse;width:100%;font-size:.92rem} th,td{border:1px solid var(--border);padding:.7rem;vertical-align:top;text-align:left} th{background:#edf1f6} code{overflow-wrap:anywhere} a{color:#175c9b}
+    .small{font-size:.88rem;color:#596578} .tag{font-weight:700} @media(max-width:640px){body{padding:.5rem}.wrap{padding:1rem}table{min-width:760px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Fitness App AI Coach — Phase 9</h1>
+    <p class="lead">Status, work timeline from October 16 to 20, 2026, and next-agent handoff.</p>
+  </header>
+  <section>
+    <h2>Current state</h2>
+    <div class="callout">
+      <strong>Documentation updated and committed locally:</strong> <code>b9622b62d23014db1d96e083389d58e6db79deb9</code>.
+      AI Coach implementation has not been done. GPT-PM's prior exact-scope verdict was <strong>B — CODE NOT AUTHORIZED</strong> (3 BLOCKER, 3 MAJOR).
+      A new full-scope adversarial review of the documentary remediation is awaiting its correlated reply; its result will be recorded when received.
+    </div>
+    <p>The product target is recorded: the voice assistant should invoke existing Fitness App workout operations and use its existing storage/runtime; a second workout tracker is not wanted. The selected product boundary, Option A, uses online transactions for the specified mutation operations and retries with the same operation identity after an uncertain result. This decision does not authorize implementation.</p>
+    <p class="small">Sources: <a href="../docs/ai-coach/24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md">transaction scope</a>, <a href="../docs/ai-coach/23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md">reconciliation</a>, <a href="../docs/ai-coach/acceptance.md">acceptance</a>.</p>
+  </section>
+  <section>
+    <h2>Timeline and evidence</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Recorded work</th><th>Result and evidence limits</th></tr></thead>
+      <tbody>
+        <tr><td>Oct 16</td><td>No AI Coach change record dated this day was found in <code>core/changes/</code>.</td><td>Development on Oct 16 is <strong>NOT_VERIFIED</strong>. A metric sample dated Oct 16 appears in a later report; that is telemetry, not evidence of development work.</td></tr>
+        <tr><td>Oct 17</td><td>Initial documentation foundation: TDD, requirements, code map, backlog/sprints, UI and technical design. The first record lists 80 functional requirements, 15 non-functional requirements, 8 assumptions, 18 questions and 17 discrepancies.</td><td>The first architecture proposed a separate live-workout store; that is historical and superseded. Current drafts list 145 requirements and 31 open questions; all 13 Phase 9 story dispositions remain PENDING.</td></tr>
+        <tr><td>Oct 18</td><td>Technical proposals and reviews for OQ-07/14/18, ownership-source searches and a Phase 9 closure queue.</td><td>Codex is the delegated technical executor; GPT-PM reviews product decisions. No qualified clinical signer is evidenced. OQ-14/18 product values and all 13 story dispositions remain open.</td></tr>
+        <tr><td>Oct 19</td><td>Product scope was corrected to voice control over the existing workout flow. Existing writer/reader/export paths were traced; read-only ACS-100 metric observations and PM Bridge attempts were recorded.</td><td>No production speech adapter was found in the reviewed path. Current touch writers use whole-document <code>.set</code>; a four-second timeout does not prove server acknowledgement. Requests <code>e0b7b888…</code> and <code>8fd23d10…</code> did not reach GPT because attachments did not land.</td></tr>
+        <tr><td>Oct 20</td><td>A new request with eight attachments returned Option A. A separate exact-scope review returned B. Documentary remediation, status handoff and next-agent prompt were prepared.</td><td>Product request <code>4b6238a0…</code> returned <code>5e446c22…</code>. Exact-scope review <code>3e612e9f…</code> returned <strong>3 BLOCKER, 3 MAJOR; CODE NOT AUTHORIZED</strong>. Natural metric query at 10:08:17Z returned HTTP 200 without <code>timeSeries</code>: this proves neither zero traffic nor service health. No synthetic traffic was generated.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section>
+    <h2>Acceptance matrix</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Criterion</th><th>State and evidence</th><th>Remaining work / owner / next action</th></tr></thead>
+      <tbody>
+        <tr><td>Existing workout flow</td><td>Option A product direction accepted by GPT-PM; code/runtime not implemented.</td><td>Needs exact code authorization and proof of a shared voice/touch path. Codex executes; GPT-PM reviews. Next: finish the full remediation review.</td></tr>
+        <tr><td>AI-COACH-01 B-01: identity and receipt</td><td>Documentary proposal defines stable operation/set IDs, payload hash, replay/conflict behavior, retention to parent deletion and a fail-closed no-eviction cap.</td><td>Review the design, then implement only after GO. Owners: Codex / GPT-PM.</td></tr>
+        <tr><td>B-02: legacy clients and Firestore rules</td><td>The broad wildcard may allow full-document writes to <code>workout_sessions</code>; proposal selects a carve-out and server callable.</td><td>Rules and callable were not changed or authorized by the prior review. Requires exact GO, implementation and queued-old-write/rollback evidence. Owners: Codex / GPT-PM.</td></tr>
+        <tr><td>B-03: process-death recovery</td><td>Reservation plus epoch fence and same-ID retry are documented.</td><td>Serialization guarantees and transitions remain unconfirmed by adversarial review; runtime is unproven. Owners: Codex / GPT-PM.</td></tr>
+        <tr><td>B-04/B-05: UI lifecycle and AICR-074</td><td>Before reservation, an unsent capture may be explicitly discarded; submitted/UNKNOWN work cannot be replaced with a new ID. Exception is bounded to CompleteSet/AddEligibleExercise/SetDifficulty.</td><td>Code and functional scenarios are absent. Codex implements; functional-test-reviewer/e2e-runner own tests after code completion.</td></tr>
+        <tr><td>B-06: readers, metrics, exports</td><td>Legacy reps remain unknown; actual reps require confirmation; best-set projection and raw export truncation are documented.</td><td>Reviewer acceptance and implementation conformance remain unproven. Owners: Codex / GPT-PM, then assigned functional/E2E roles.</td></tr>
+        <tr><td>OQ-07: clinical boundary</td><td>Fail-closed direction accepted; no clinical numeric values or signed policy are evidenced.</td><td>Needs a policy artifact, qualified specialist and that specialist's signature. Do not apply clinical limits before then. Codex is not the clinical signer.</td></tr>
+        <tr><td>OQ-14 / OQ-18</td><td>Technical boundaries accepted within their scope; product allowlist, freshness and composer inputs are deferred.</td><td>GPT-PM must decide remaining product inputs; Codex can implement the accepted contract afterward.</td></tr>
+        <tr><td>ACS-100: metrics and alert</td><td>Latest natural read-only query returned no series; no synthetic AI traffic was generated. Alert delivery is not confirmed.</td><td>Wait for natural metrics, establish policy and route, identify a real recipient, and confirm delivery. Codex handles task-local triage; continuous on-call is not evidenced.</td></tr>
+        <tr><td>13 Phase 9 stories</td><td>All dispositions remain PENDING by operator direction.</td><td>Do not change to ACCEPT/REJECT before named-role review and OQ routing. Operator is accountable; Codex prepares evidence.</td></tr>
+        <tr><td>Implementation/runtime</td><td>Not implemented; runtime/test evidence is NOT_RUN.</td><td>Depends on accepted remediation review and exact code/rules authorization. Documentation alone is not completion evidence.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section>
+    <h2>Current review and next steps</h2>
+    <div class="callout ok">Local commit <code>b9622b62</code> contains 11 documentation/handoff/change-record files. The document-registry generator succeeded and wrote 375 documents. This is documentation generation, not a test.</div>
+    <p>New correlated PM Bridge request <code>d4e49bc9-5e5f-49d9-9ce1-dfa1b4929be3</code> was sent as a full-scope adversarial remediation review. The final verdict and exact job/turn/reply IDs will be added after its reply. For B, fix only confirmed findings and review again. For A, record the precise authorization boundaries before coding.</p>
+    <ol>
+      <li>Complete and record the current GPT-PM review.</li>
+      <li>After explicit code GO, implement the approved shared WorkoutSession transaction and rules scope; do not add another workout store/offline queue.</li>
+      <li>After coding, have the designated functional-test-reviewer and e2e-runner handle tests; until then, do not claim test or runtime proof.</li>
+      <li>Do not enable clinical limits without a qualified signature; do not close ACS-100 without natural metrics and delivery confirmation; keep all 13 story dispositions PENDING.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>Verification and limits</h2>
+    <p>This work is documentation-only. No tests, checks, builds, CI, migrations, runtime/Firestore rule changes, alert policies, deployment, push or merge were performed. Unfinished work is labeled NOT_IMPLEMENTED, NOT_RUN or NOT_VERIFIED.</p>
+    <p class="small">Detailed sources: <a href="../docs/ai-coach/25_PHASE9_STATUS_AND_HANDOFF_2026-10-20.md">full timeline and acceptance matrix</a>; <a href="../docs/ai-coach/26_AI_COACH_NEXT_AGENT_PROMPT_2026-10-20.md">full next-agent prompt</a>.</p>
+  </section>
+</main>
+</body>
+</html>

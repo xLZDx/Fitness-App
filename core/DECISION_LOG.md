@@ -59163,3 +59163,7 @@ Decision: take the marketing governance, site prototype and reports; keep master
 ## 2026-10-20 - Commit: Integrate move SPTR site prototype out of hosting root
 
 Decision: place the internal site prototype under marketing/site-prototype/ so a Firebase hosting deploy cannot publish it. See docs/commits/2026-10-20-integrate-move-site-prototype.md.
+
+## 2026-10-20 - Commit: Integrate former-worktree WIP snapshots
+
+Decision: import the aicoach documentation snapshot; keep the Phase2_s01 code hardening only as a reference patch because it breaks 210 existing tests; skip the older Body Scan STATE and the probe test. See docs/commits/2026-10-20-integrate-fitness-wip-snapshots.md.

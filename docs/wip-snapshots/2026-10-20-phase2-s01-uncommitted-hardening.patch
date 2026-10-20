@@ -1,0 +1,601 @@
+diff --git a/mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart b/mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart
+index fa08963f..1267812e 100644
+--- a/mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart
++++ b/mobile/lib/features/activity/repository/uid_scoped_activity_journal.dart
+@@ -7,6 +7,7 @@
+ /// only closed); only account deletion wipes the deleted account's scope.
+ library;
+ 
++import 'dart:async';
+ import 'dart:convert';
+ import 'dart:io' show Platform;
+ import 'dart:typed_data';
+@@ -146,18 +147,59 @@ class UidScopedActivityJournal
+   /// same-uid auth re-emission cannot re-create the deleted account's scope.
+   String? _wipedUid;
+ 
++  /// Longest wait for the owner-checked puts in flight on a delegate before it
++  /// is closed or wiped.
++  static const Duration _kInFlightDrainTimeout = Duration(seconds: 5);
++
++  /// Owner-checked puts that were handed to a bound delegate and have not
++  /// finished yet, per delegate (identity). Each future never completes with an
++  /// error; it only marks the end of the put.
++  final Map<ActivityJournal, Set<Future<void>>> _inFlightPuts =
++      Map<ActivityJournal, Set<Future<void>>>.identity();
++
++  /// Uids whose [wipeForUid] has been called and has not finished: from that
++  /// moment [putForOwner] refuses them.
++  final List<String> _wipingUids = <String>[];
++
++  /// Set when the durable wipe marker of the BOUND uid could not be written:
++  /// the transition is aborted, the old binding is dropped and no other uid
++  /// may be bound until [wipeForUid] of that uid succeeds.
++  String? _wipeBlockedUid;
++
+   @override
+   String? get boundUid => _boundUid;
+ 
+   @override
+   bool get isBound => _bound != null;
+ 
++  /// Waits (bounded) for the owner-checked puts in flight on [delegate]; on a
++  /// timeout it proceeds and logs a content-free line.
++  Future<void> _drainInFlight(ActivityJournal? delegate) async {
++    if (delegate == null) return;
++    final set = _inFlightPuts[delegate];
++    if (set == null || set.isEmpty) {
++      _inFlightPuts.remove(delegate);
++      return;
++    }
++    try {
++      await Future.wait<void>(set.toList()).timeout(_kInFlightDrainTimeout);
++    } on TimeoutException {
++      debugPrint('activity: in-flight puts not finished (timeout)');
++    } catch (e) {
++      debugPrint('activity: in-flight put drain failed (${e.runtimeType})');
++    }
++    _inFlightPuts.remove(delegate);
++  }
++
+   Future<void> _unbind() async {
+     final current = _bound;
+     _bound = null;
+     _boundUid = null;
+     _lastReport = null;
+     if (current != null) {
++      // New owner-checked puts are refused from here on (`_bound` is null);
++      // the ones already handed to [current] finish before it is closed.
++      await _drainInFlight(current);
+       try {
+         await current.close();
+       } catch (_) {
+@@ -177,14 +219,31 @@ class UidScopedActivityJournal
+           await _unbind();
+           return false;
+         }
+-        // S04 design 4.7: the DURABLE wiped marker survives a relaunch. It
+-        // refuses the wiped scope until an explicit unbind or another uid.
+-        if (uid != null &&
+-            uid != _boundUid &&
+-            await _wipeMarkerExists(activityJournalScopeId(uid))) {
++        if (uid != null && _wipeBlockedUid != null) {
++          // Fail closed: the durable wipe marker of the previous account could
++          // not be written, so the transition was aborted. Bind nothing until
++          // that wipe succeeds.
+           await _unbind();
+           return false;
+         }
++        // S04 design 4.7: the DURABLE wiped marker survives a relaunch. It
++        // refuses the wiped scope until an explicit unbind or another uid.
++        if (uid != null && uid != _boundUid) {
++          final bool markerPresent;
++          try {
++            markerPresent = await _wipeMarkerExists(activityJournalScopeId(uid));
++          } catch (e) {
++            // Fail closed and retryable: an unreadable marker is never read as
++            // absent.
++            debugPrint('activity: wipe marker not readable (${e.runtimeType})');
++            await _unbind();
++            return false;
++          }
++          if (markerPresent) {
++            await _unbind();
++            return false;
++          }
++        }
+         // An explicit unbind ends the wiped-uid refusal even when nothing is
+         // bound (a wipe of the bound uid already left the journal unbound).
+         if (uid == null) {
+@@ -224,13 +283,23 @@ class UidScopedActivityJournal
+       });
+ 
+   @override
+-  Future<void> wipeForUid(String uid) => _mutex.run(() async {
++  Future<void> wipeForUid(String uid) {
++    // Owner-checked puts for [uid] are refused from the moment of the call,
++    // not only once the wipe reaches the front of the queue.
++    if (uid.isNotEmpty) _wipingUids.add(uid);
++    return _wipeForUidLocked(uid).whenComplete(() => _wipingUids.remove(uid));
++  }
++
++  Future<void> _wipeForUidLocked(String uid) => _mutex.run(() async {
+         if (uid.isEmpty) throw const JournalUnbound();
+         // Remembered in BOTH branches and even when the wipe fails: the marker
+         // retries the wipe and nothing, not even an already queued
+         // `bindUid(uid)`, may re-create the scope or its key afterwards.
+         _wipedUid = uid;
+         final scopeId = activityJournalScopeId(uid);
++        // The puts already handed to the bound delegate finish (bounded) before
++        // anything of it is wiped.
++        if (uid == _boundUid) await _drainInFlight(_bound);
+         // Ordering (S04 design 4.7): (1) the recorder was shut down by the
+         // caller; (2) the recording journal drains and refuses writes, and the
+         // durable marker is written BEFORE any S02 wipe step; (3) only then the
+@@ -243,7 +312,20 @@ class UidScopedActivityJournal
+             debugPrint('activity: recording close failed (${e.runtimeType})');
+           }
+         }
+-        await _writeWipeMarker(scopeId, kWipeMarkerWiping);
++        try {
++          await _writeWipeMarker(scopeId, kWipeMarkerWiping);
++        } catch (e) {
++          // Fail closed: without the durable marker a relaunch could not retry
++          // or refuse this wipe. Abort the transition: the old binding becomes
++          // unusable and no other uid may bind until this wipe succeeds. The
++          // caller sees the failure (the existing wipe-incomplete path).
++          debugPrint('activity: wipe marker not written (${e.runtimeType})');
++          if (uid == _boundUid) {
++            _wipeBlockedUid = uid;
++            await _unbind();
++          }
++          rethrow;
++        }
+         // The recordings go regardless of whether the S02 scope can be started
+         // (review S3).
+         try {
+@@ -258,7 +340,8 @@ class UidScopedActivityJournal
+           } finally {
+             await _unbind();
+           }
+-          await _writeWipeMarker(scopeId, kWipeMarkerWiped);
++          await _writeCompletedMarker(scopeId);
++          if (_wipeBlockedUid == uid) _wipeBlockedUid = null;
+           return;
+         }
+         final other = await _factory(scopeId);
+@@ -270,25 +353,33 @@ class UidScopedActivityJournal
+             await other.close();
+           } catch (_) {}
+         }
+-        await _writeWipeMarker(scopeId, kWipeMarkerWiped);
++        await _writeCompletedMarker(scopeId);
++        if (_wipeBlockedUid == uid) _wipeBlockedUid = null;
+       });
+ 
+-  // ---- durable wiped marker (S04 design 4.7) --------------------------------
+-
+-  Future<String?> _markerPath(String scopeId) async {
++  /// The `wiped` upgrade of the marker. The `wiping` marker is already durable
++  /// and keeps the scope refused and the wipe retryable, so a failure here is
++  /// only logged.
++  Future<void> _writeCompletedMarker(String scopeId) async {
+     try {
+-      return '${await _scopesRoot()}/$scopeId$kWipedMarkerSuffix';
+-    } catch (_) {
+-      return null;
++      await _writeWipeMarker(scopeId, kWipeMarkerWiped);
++    } catch (e) {
++      debugPrint('activity: wipe marker not completed (${e.runtimeType})');
+     }
+   }
+ 
+-  /// Content-free marker file: temp, fsync, rename. Best effort: a failure is
+-  /// logged by type only and never blocks the wipe (the in-memory `_wipedUid`
+-  /// still refuses the rebind in this process).
++  // ---- durable wiped marker (S04 design 4.7) --------------------------------
++
++  /// The marker path; throws when the scopes root cannot be resolved (the
++  /// marker is then neither writable nor readable: fail closed, never absent).
++  Future<String> _markerPath(String scopeId) async =>
++      '${await _scopesRoot()}/$scopeId$kWipedMarkerSuffix';
++
++  /// Content-free marker file: temp, fsync, rename. FAIL CLOSED: a failure is
++  /// logged by type only by the caller and RETHROWN, so the wipe transition is
++  /// aborted instead of continuing without a durable marker.
+   Future<void> _writeWipeMarker(String scopeId, String content) async {
+     final path = await _markerPath(scopeId);
+-    if (path == null) return;
+     final tmp = '$path$kTempSuffix';
+     try {
+       await _fs.createDir(path.substring(0, path.lastIndexOf('/')));
+@@ -301,23 +392,18 @@ class UidScopedActivityJournal
+         await h.close();
+       }
+       await _fs.rename(tmp, path);
+-    } catch (e) {
+-      debugPrint('activity: wipe marker not written (${e.runtimeType})');
++    } catch (_) {
+       try {
+         await _fs.deleteFile(tmp);
+       } catch (_) {}
++      rethrow;
+     }
+   }
+ 
+-  Future<bool> _wipeMarkerExists(String scopeId) async {
+-    final path = await _markerPath(scopeId);
+-    if (path == null) return false;
+-    try {
+-      return await _fs.exists(path);
+-    } catch (_) {
+-      return false;
+-    }
+-  }
++  /// True when the durable marker exists. THROWS when that cannot be read; the
++  /// caller must not treat an unreadable marker as absent.
++  Future<bool> _wipeMarkerExists(String scopeId) async =>
++      _fs.exists(await _markerPath(scopeId));
+ 
+   /// Removes the markers of COMPLETED wipes (content `wiped`); a marker of a
+   /// wipe that did not finish stays so the relaunch path retries it.
+@@ -383,10 +469,23 @@ class UidScopedActivityJournal
+     JournalSyncState? syncState,
+   }) {
+     final bound = _bound;
+-    if (bound == null || _boundUid != expectedUid) {
++    if (bound == null ||
++        _boundUid != expectedUid ||
++        _wipingUids.contains(expectedUid)) {
+       throw const JournalUnbound();
+     }
+-    return bound.put(session, syncState: syncState);
++    // The owner check and the hand-over to the delegate are one synchronous
++    // step; the put is tracked until it finishes so an unbind or a wipe of this
++    // delegate waits (bounded) for it before closing or wiping it.
++    final Future<JournalEntry> put = bound.put(session, syncState: syncState);
++    final Set<Future<void>> inFlight = _inFlightPuts.putIfAbsent(
++        bound, () => <Future<void>>{});
++    late final Future<void> marker;
++    marker = put.then<void>((_) {}, onError: (Object _) {}).whenComplete(() {
++      inFlight.remove(marker);
++    });
++    inFlight.add(marker);
++    return put;
+   }
+ 
+   @override
+diff --git a/mobile/lib/features/activity/state/sign_out_guard.dart b/mobile/lib/features/activity/state/sign_out_guard.dart
+index c9f881aa..e500e38e 100644
+--- a/mobile/lib/features/activity/state/sign_out_guard.dart
++++ b/mobile/lib/features/activity/state/sign_out_guard.dart
+@@ -6,7 +6,10 @@
+ ///
+ /// Rules:
+ ///  * `notEnabled` and an open journal with no activity: true, no prompt, no
+-///    wipe call.
++///    wipe call. With no activity and no counted recording, the bounded
++///    pre-unbind hook is still run when the recording journal lists any
++///    recording (quarantined, FALLBACK or permission-revoked pending included);
++///    only a journal with no recording files at all skips it.
+ ///  * `binding`, `gaveUp`, `failedToOpen` (and an open journal that cannot be
+ ///    counted): the "cannot check" sheet with Try again (not for
+ ///    `failedToOpen`), Sign out anyway and Cancel. Never a silent pass.
+@@ -105,7 +108,17 @@ Future<bool?> _handleOpen(
+   final int? recordings = await _recordingCount(ref);
+   if (recordings == null) return null; // cannot check: never a silent pass
+   if (!context.mounted) return false;
+-  if (assessment.entryCount == 0 && recordings == 0) return true;
++  if (assessment.entryCount == 0 && recordings == 0) {
++    // Nothing to warn about. The fast path may skip the pre-unbind hook only
++    // when the recording journal lists no recording at all: quarantined,
++    // FALLBACK and permission-revoked pending recordings are not counted above
++    // but still need the bounded hand-off while the scope is bound.
++    final bool? anyFiles = await _anyRecordingFiles(ref);
++    if (anyFiles == null) return null; // cannot check: never a silent pass
++    if (!context.mounted) return false;
++    if (!anyFiles) return true;
++    return _leaveWithRecordings(context, ref, uid);
++  }
+ 
+   return _warnLoop(
+       context, ref, journal, uid, assessment.entryCount, recordings);
+@@ -135,6 +148,29 @@ Future<int?> _recordingCount(WidgetRef ref) async {
+   }
+ }
+ 
++/// True when the recording journal lists any recording of the bound account at
++/// all (every status, including quarantined and permission-revoked pending ones)
++/// or a recording is active; null when that cannot be read. False when the
++/// recorder is not wired at all.
++Future<bool?> _anyRecordingFiles(WidgetRef ref) async {
++  final RecordingJournalPort port;
++  final bool active;
++  try {
++    port = ref.read(recordingJournalPortProvider);
++    active = ref.read(recorderPhaseProvider).isActive;
++  } catch (_) {
++    return false;
++  }
++  try {
++    final List<UnfinishedRecording> list = await port.listUnfinished();
++    return list.isNotEmpty || active;
++  } catch (e) {
++    debugPrint('activity: sign-out recording check failed '
++        '(code=recording_list_failed, ${e.runtimeType})');
++    return null;
++  }
++}
++
+ /// Runs the registered pre-unbind hook for [uid] (bounded, never throws) and
+ /// returns true when the user must be told that a recording stays on the phone
+ /// under the 30-day fallback.
+diff --git a/mobile/lib/features/recording/consent/location_consent_providers.dart b/mobile/lib/features/recording/consent/location_consent_providers.dart
+index ce5f0900..3cdfe135 100644
+--- a/mobile/lib/features/recording/consent/location_consent_providers.dart
++++ b/mobile/lib/features/recording/consent/location_consent_providers.dart
+@@ -49,6 +49,16 @@ class LocationConsentNotifier extends AsyncNotifier<LocationConsent> {
+   /// Tail of the write queue (retro rule 2: ordered writes).
+   Future<void> _tail = Future<void>.value();
+ 
++  /// Monotonic call number, taken synchronously when [grant] or [withdraw] is
++  /// called (before the call is queued), so call order is known even while an
++  /// older write is still in flight.
++  int _callSeq = 0;
++
++  /// The call number of the latest [withdraw] per purpose. A grant whose call
++  /// number is lower is stale and must never publish `granted`.
++  final Map<LocationConsentPurpose, int> _latestWithdrawSeq =
++      <LocationConsentPurpose, int>{};
++
+   @override
+   Future<LocationConsent> build() async {
+     _uid = null;
+@@ -65,14 +75,18 @@ class LocationConsentNotifier extends AsyncNotifier<LocationConsent> {
+   /// true only when the record was persisted; on false the state is unchanged
+   /// and the caller must not make the system permission request (fail closed).
+   /// [textVersion] is the version of the wording the user saw; it defaults to
+-  /// [kLocationConsentTextVersion].
++  /// [kLocationConsentTextVersion]. A grant that was called before a later
++  /// [withdraw] of the same purpose is stale: it neither persists nor publishes
++  /// `granted` and returns false.
+   Future<bool> grant({
+     LocationConsentPurpose purpose = LocationConsentPurpose.locationWhileRecording,
+     String textVersion = kLocationConsentTextVersion,
+   }) {
++    final seq = ++_callSeq;
++    bool superseded() => (_latestWithdrawSeq[purpose] ?? 0) > seq;
+     return _enqueue(() async {
+       final uid = _ownedUid();
+-      if (uid == null) return false;
++      if (uid == null || superseded()) return false;
+       final now = _nowMs();
+       final next = _current().withRecord(ConsentRecord(
+         purpose: purpose,
+@@ -82,38 +96,47 @@ class LocationConsentNotifier extends AsyncNotifier<LocationConsent> {
+         grantedAtUtcMs: now,
+       ));
+       if (!await _persist(uid, next)) return false;
+-      if (_ownedUid() != uid) return false;
++      if (_ownedUid() != uid || superseded()) return false;
+       state = AsyncData(next);
+       return true;
+     });
+   }
+ 
+   /// Withdraws the consent of [purpose]. Nothing is deleted. The withdrawal is
+-  /// applied in memory first, a running recording is then stopped and kept
+-  /// (reason `consentWithdrawn`), and the record is persisted last. Returns
+-  /// true when the record was persisted; the in-memory withdrawal stands either
+-  /// way.
++  /// applied in memory synchronously when this is called, before the call joins
++  /// the write queue, so a pending grant write cannot delay it (Start and
++  /// Resume read the in-memory state). A running recording is then stopped and
++  /// kept (reason `consentWithdrawn`), and the record is persisted last, in
++  /// call order. A queued grant that was called earlier does not re-grant.
++  /// Returns true when the record was persisted; the in-memory withdrawal
++  /// stands either way.
+   Future<bool> withdraw({
+     LocationConsentPurpose purpose = LocationConsentPurpose.locationWhileRecording,
+     String textVersion = kLocationConsentTextVersion,
+   }) {
++    _latestWithdrawSeq[purpose] = ++_callSeq;
++    final syncUid = _ownedUid();
++    final previous = syncUid == null ? null : _current().recordOf(purpose);
++    final ConsentRecord? withdrawn = syncUid == null
++        ? null
++        : ConsentRecord(
++            purpose: purpose,
++            state: ConsentState.withdrawn,
++            textVersion: previous?.textVersion ?? textVersion,
++            timestampUtcMs: _nowMs(),
++            grantedAtUtcMs: previous?.grantedAtUtcMs,
++          );
++    if (withdrawn != null) {
++      state = AsyncData(_current().withRecord(withdrawn));
++    }
+     return _enqueue(() async {
+       final uid = _ownedUid();
+-      if (uid == null) return false;
+-      final previous = _current().recordOf(purpose);
+-      final next = _current().withRecord(ConsentRecord(
+-        purpose: purpose,
+-        state: ConsentState.withdrawn,
+-        textVersion: previous?.textVersion ?? textVersion,
+-        timestampUtcMs: _nowMs(),
+-        grantedAtUtcMs: previous?.grantedAtUtcMs,
+-      ));
+-      state = AsyncData(next);
++      if (uid == null || withdrawn == null || uid != syncUid) return false;
+       if (purpose == LocationConsentPurpose.locationWhileRecording) {
+         await _stopRunningRecording();
+       }
+       if (_ownedUid() != uid) return false;
+-      return _persist(uid, next);
++      return _persist(uid, _current().withRecord(withdrawn));
+     });
+   }
+ 
+diff --git a/mobile/lib/features/recording/journal/file_recording_journal.dart b/mobile/lib/features/recording/journal/file_recording_journal.dart
+index 738e5ca1..dc6ed894 100644
+--- a/mobile/lib/features/recording/journal/file_recording_journal.dart
++++ b/mobile/lib/features/recording/journal/file_recording_journal.dart
+@@ -578,9 +578,16 @@ class FileRecordingJournal
+   Future<void> _writePending(_Active a) async {
+     if (a.suspectSeg != null) await _rotateAfterError(a);
+     var n = a.counter;
++    // `work` is a snapshot that is never structurally modified while it is
++    // iterated (a removal inside a for-in over it throws
++    // ConcurrentModificationError). `done` counts the frames written since the
++    // last durable prune of `a.pending`, which is the offset of the unpruned
++    // head of the snapshot.
+     final work = List<_Pending>.of(a.pending);
++    final last = work.isEmpty ? null : work.last;
+     var done = 0;
+-    for (final p in work) {
++    for (var i = 0; i < work.length; i++) {
++      final p = work[i];
+       if (a.handle == null) {
+         // The number advances only once the file is open: a failed open (disk
+         // full) must not leave a hole in the segment numbering, which the
+@@ -594,15 +601,15 @@ class FileRecordingJournal
+       await a.handle!.write(encodeFrame(a.cipher, p.build(n)));
+       a.segFrames += 1;
+       done += 1;
+-      if (a.segFrames >= kFramesPerSegment && !identical(p, work.last)) {
++      if (a.segFrames >= kFramesPerSegment && !identical(p, last)) {
+         await a.handle!.flush();
+         await a.handle!.fsync();
+         await _closeHandle(a);
+         // Durable: advance the counter and prune per closed segment so a later
+-        // failure re-reads against the right frame numbers (review C14).
++        // failure re-reads against the right frame numbers (review C14). Only
++        // `a.pending` shrinks; the snapshot keeps its length.
+         a.counter = n;
+         a.pending.removeRange(0, done);
+-        work.removeRange(0, done);
+         done = 0;
+       }
+     }
+@@ -1282,34 +1289,69 @@ class FileRecordingJournal
+   /// uid is bound. Needs no key: the marker time is read as plain text with the
+   /// file modification time as the other reference, and the delete is the
+   /// ordered file delete. The active recording is never touched.
++  ///
++  /// A scope this instance owns (it holds that scope's process-wide lock) is
++  /// swept under the per-recording mutex. A foreign scope is swept only while
++  /// this call holds that scope's own process-wide lock file
++  /// (`recording.lock`, the same mechanism as [_acquireScopeLock]); when the
++  /// lock cannot be taken (another instance or process holds it) the scope is
++  /// skipped and retried on the next start.
+   Future<int> sweepExpiredAllScopes() async {
+     final base = await _scopesRoot();
+     var removed = 0;
+     for (final scope in await _fs.list(base)) {
+       if (!scope.isDirectory) continue;
+       final recDir = '$base/${scope.name}/$kRecordingDirName';
+-      for (final e in await _fs.list(recDir)) {
+-        if (!e.isDirectory ||
+-            e.name.endsWith(kCleanupSuffix) ||
+-            !kJournalIdPattern.hasMatch(e.name) ||
+-            _isActive(e.name)) {
+-          continue;
+-        }
+-        final dir = '$recDir/${e.name}';
++      final candidates = <String>[
++        for (final e in await _fs.list(recDir))
++          if (e.isDirectory &&
++              !e.name.endsWith(kCleanupSuffix) &&
++              kJournalIdPattern.hasMatch(e.name))
++            e.name,
++      ];
++      if (candidates.isEmpty) continue;
++
++      // A first acquisition of this scope may be in flight: let it finish so
++      // this call does not race it for the same lock file.
++      final pending = _lockFutures[scope.name];
++      if (pending != null) {
+         try {
+-          final done = await _mutexFor(e.name).run(() async {
+-            for (final marker in [kQuarantinedFile, kFallbackFile]) {
+-              if (!await _fs.exists('$dir/$marker')) continue;
+-              final t = await _markerTime(null, dir, marker) ?? _now();
+-              if (!_expired(t)) continue;
+-                        await _executeDeleteAt(dir);
+-              return true;
+-            }
+-            return false;
+-          });
+-          if (done) removed++;
++          await pending;
+         } catch (_) {}
+       }
++      Object? foreignLock;
++      if (!_locks.containsKey(scope.name)) {
++        try {
++          foreignLock = await _ops.acquireLock('$recDir/$kRecordingLockFile');
++        } catch (_) {
++          continue; // held elsewhere (or unavailable): retry on the next start
++        }
++      }
++      try {
++        for (final id in candidates) {
++          if (_isActive(id)) continue;
++          final dir = '$recDir/$id';
++          try {
++            final done = await _mutexFor(id).run(() async {
++              for (final marker in [kQuarantinedFile, kFallbackFile]) {
++                if (!await _fs.exists('$dir/$marker')) continue;
++                final t = await _markerTime(null, dir, marker) ?? _now();
++                if (!_expired(t)) continue;
++                await _executeDeleteAt(dir);
++                return true;
++              }
++              return false;
++            });
++            if (done) removed++;
++          } catch (_) {}
++        }
++      } finally {
++        if (foreignLock != null) {
++          try {
++            await _ops.releaseLock(foreignLock);
++          } catch (_) {}
++        }
++      }
+     }
+     return removed;
+   }
+diff --git a/mobile/lib/features/recording/location/geolocator_location_source.dart b/mobile/lib/features/recording/location/geolocator_location_source.dart
+index 786a97a9..7d4e97fd 100644
+--- a/mobile/lib/features/recording/location/geolocator_location_source.dart
++++ b/mobile/lib/features/recording/location/geolocator_location_source.dart
+@@ -2,22 +2,13 @@
+ // option A). This is the ONE file allowed to import a location package
+ // (S04-R-003).
+ //
+-// NOTE: `geolocator` is not yet declared in `mobile/pubspec.yaml`, so nothing
+-// may import this file until lane R2 adds the dependency and the plugin
+-// field names (AndroidSettings / ForegroundNotificationConfig, and that
+-// `Position.speed` is -1 / 0 when unavailable) are verified against the version
+-// that resolves.
++// `geolocator` ^13.0.4 is declared in `mobile/pubspec.yaml`, and this is the
++// only file under `mobile/lib` allowed to import a location package.
+ //
+-// All stream lifecycle logic (serialized setInterval/stop, no awaited close in
+-// onCancel) lives in the plugin-free `StreamLocationSource` and is unit tested
+-// there; this file only builds the plugin stream.
+-
+-import a location package (S04-R-003). The
+-// extension keeps it out of the Dart analysis until the dependency exists.
+-//
+-// Verify against the version that actually resolves before renaming (design 2.3
+-// first steps 2 and 4): AndroidSettings / ForegroundNotificationConfig field
+-// names, and that `Position.speed` is -1 / 0 when unavailable.
++// The plugin field names used below (AndroidSettings /
++// ForegroundNotificationConfig, and that `Position.speed` is negative when
++// unavailable) must be re-verified against the version that actually resolves
++// whenever the dependency constraint changes.
+ //
+ // All stream lifecycle logic (serialized setInterval/stop, no awaited close in
+ // onCancel) lives in the plugin-free `StreamLocationSource` and is unit tested

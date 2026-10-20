@@ -46,7 +46,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 14900 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 184029 |
+| `core/LESSONS_LOG.md` | Lessons log | 185000 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -176,6 +176,10 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/equipment_identity/p1/P1_G3_PRECOR_PANATTA_ADAPTERS.md` | P1.G3 — Precor / Panatta official brand adapters | 9388 |
 | `core/equipment_identity/p1/P1_G4_WGER_REFERENCE_INGESTION.md` | P1.G4 -- WGER_REFERENCE_INGESTION | 15599 |
 | `core/equipment_identity/p1/PRE_G5_DIRECT_CORROBORATION_PASS.md` | Pre-P1.G5 direct-corroboration pass | 24662 |
+| `core/marketing/SPTR_MARKETING_SITE_CLAIM_REGISTER_2026-08-19.md` | SPTR Marketing Site -- Claim Register | 7476 |
+| `core/marketing/SPTR_MARKETING_SITE_GOVERNANCE_REMEDIATION_2026-08-19.md` | SPTR Marketing Site — Governance Remediation (Gates A/B/C) | 16434 |
+| `core/marketing/SPTR_MARKETING_SITE_IMPLEMENTATION_2026-08-19.md` | SPTR Marketing Site — Implementation Report | 10469 |
+| `core/marketing/SPTR_MARKETING_SITE_QA_2026-08-19.md` | SPTR Marketing Site — QA Report | 7650 |
 | `core/ml/CT1_CONTENT_QA.md` | CT-1 — Content QA | 30151 |
 | `core/ml/CT_CANDIDATE_DECISION.md` | First continuous-retraining candidate — scored decision | 6785 |
 | `core/ml/METRIC_PROVENANCE.md` | Metric provenance: the claims a locator must not "fix" | 6261 |
@@ -246,6 +250,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/SESSION_HANDOFF_2026-08-15_CATALOG_GATE_E.md` | Session handoff — exercise catalog Gate E, 2026-08-15 | 11299 |
 | `core/plans/SESSION_HANDOFF_2026-08-30_HUD_REDESIGN.md` | Session handoff — HUD/Figma redesign follow-up, 2026-08-30 | 9363 |
 | `core/plans/SESSION_STATE_2026-07-29.md` | Session state — 2026-07-29 (Fitness App) | 5296 |
+| `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md` | SPTR MVP Closure Plan | 22404 |
 | `core/plans/recog_c1_sheets/README.md` | RECOG-C1 — contact sheets, both arms | 1567 |
 | `core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md` | Gate D0 — Reconnaissance note: equipment-TYPE workout history | 15911 |
 | `core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md` | Gate E D0 — Reconnaissance note: shared uncertainty contract (MRD-06) | 9927 |
@@ -327,13 +332,16 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/21_PHASE9_OQ14_OQ18_TR_CONTRACT_PROPOSAL.md` | OQ-14 and OQ-18 bounded TR contract proposal | 41075 |
 | `docs/ai-coach/22_PHASE9_OQ07_TR_CONTRACT_PROPOSAL.md` | OQ-07 limit-free technical contract proposal | 20609 |
 | `docs/ai-coach/23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md` | Phase 9 AI Coach acceptance reconciliation — 2026-10-20 | 28390 |
-| `docs/ai-coach/24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md` | AI-COACH-01 existing-workout transaction scope | 22177 |
+| `docs/ai-coach/24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md` | AI-COACH-01 existing-workout transaction scope | 22884 |
 | `docs/ai-coach/25_PHASE9_STATUS_AND_HANDOFF_2026-10-20.md` | Fitness App AI Coach — Phase 9 status and handoff | 18196 |
 | `docs/ai-coach/26_AI_COACH_NEXT_AGENT_PROMPT_2026-10-20.md` | Next-agent prompt — Fitness App AI Coach Phase 9 | 6778 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 18042 |
 | `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 86721 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2265 |
+| `docs/commits/2026-10-20-integrate-aicoach-phase9.md` | Integrate docs/ai-coach-tdd-001 (b9622b62): AI Coach phase 9 documents | 1112 |
 | `docs/commits/2026-10-20-integrate-hardening-followups.md` | Integrate sprint/hardening-followups-2026-10 (74ba5adc) | 562 |
+| `docs/commits/2026-10-20-integrate-marketing-site-prototype.md` | Integrate marketing/site-prototype-2026-08-19 (f95e1c88) | 3173 |
+| `docs/commits/2026-10-20-integrate-move-site-prototype.md` | Move the SPTR site prototype out of the Firebase hosting root | 1364 |
 | `docs/commits/2026-10-20-integrate-phase2-main-aicoach-docs.md` | Integrate origin/phase2/main (85e7e91e): AI Coach TDD-001 documentation line | 1038 |
 | `docs/commits/2026-10-20-integrate-phase2-s04.md` | Integrate phase2/s04 chain (5d5723fa) | 2238 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |

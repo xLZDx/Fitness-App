@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Coach Phase 9 — статус и передача</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#202733;background:#f4f6f8;--surface:#fff;--surface-2:#f7f8fa;--border:#d8dee7;--accent:#315e91;--text:#202733;--text-3:#657184}
+    body{margin:0;padding:2rem 1rem} .wrap{max-width:1180px;margin:auto;background:var(--surface);padding:clamp(1rem,3vw,2.4rem);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 28px #18253612}
+    h1,h2{line-height:1.2} h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:0 0 .5rem} h2{margin-top:2rem;border-bottom:1px solid var(--border);padding-bottom:.45rem} p,li{line-height:1.6} .lead{font-size:1.1rem;color:#394659}
+    .callout{padding:1rem 1.2rem;border-left:4px solid #b27415;background:#fff8e9;border-radius:6px} .ok{border-color:#26765a;background:#edf8f2}
+    .table-wrap{overflow-x:auto} table{border-collapse:collapse;width:100%;font-size:.92rem} th,td{border:1px solid var(--border);padding:.7rem;vertical-align:top;text-align:left} th{background:#edf1f6} code{overflow-wrap:anywhere} a{color:#175c9b}
+    .small{font-size:.88rem;color:#596578} .tag{font-weight:700} @media(max-width:640px){body{padding:.5rem}.wrap{padding:1rem}table{min-width:760px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Fitness App AI Coach — Phase 9</h1>
+    <p class="lead">Статус, история работ с 16 по 20 октября 2026 года и передача следующему агенту.</p>
+  </header>
+  <section>
+    <h2>Текущее состояние</h2>
+    <div class="callout">
+      <strong>Документы обновлены и закоммичены локально:</strong> <code>b9622b62d23014db1d96e083389d58e6db79deb9</code>.
+      Реализация AI Coach не выполнена. GPT-PM ранее выдал <strong>B — CODE NOT AUTHORIZED</strong> (3 BLOCKER, 3 MAJOR).
+      Новое документальное решение по этим замечаниям отправлено на полный adversarial review; результат будет добавлен после коррелированного ответа.
+    </div>
+    <p>Целевая функция продукта зафиксирована: голосовой помощник должен вызывать существующие операции Fitness App и использовать текущие хранение и runtime; второй трекер тренировок не нужен. Выбранная продуктовая граница Option A: конкретные операции записи выполняются онлайн транзакцией; при неопределённом результате повтор используют ту же идентичность операции. Это решение не является разрешением на реализацию.</p>
+    <p class="small">Источники: <a href="../docs/ai-coach/24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md">transaction scope</a>, <a href="../docs/ai-coach/23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md">reconciliation</a>, <a href="../docs/ai-coach/acceptance.md">acceptance</a>.</p>
+  </section>
+  <section>
+    <h2>Хронология и доказательства</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Дата</th><th>Что зафиксировано</th><th>Результат и предел доказательства</th></tr></thead>
+      <tbody>
+        <tr><td>16 окт.</td><td>В каталоге <code>core/changes/</code> не найден AI Coach change record этой даты.</td><td>Разработка 16 октября <strong>NOT_VERIFIED</strong>. Упоминание метрики с 16 октября в более поздней записи — телеметрия, не доказательство выполненной разработки.</td></tr>
+        <tr><td>17 окт.</td><td>Создана документационная основа: TDD, требования, карта кода, backlog/sprints, UI и технический дизайн. Первичная запись перечисляет 80 функциональных требований, 15 нефункциональных, 8 допущений, 18 вопросов и 17 расхождений.</td><td>Первый вариант предлагал отдельное хранилище активной тренировки; он исторический и позднее заменён. Сейчас требования содержат 145 пунктов, 31 открытый вопрос; 13 историй Phase 9 остаются PENDING.</td></tr>
+        <tr><td>18 окт.</td><td>Подготовлены технические контракты OQ-07/14/18, проверки и маршрут закрытия Phase 9.</td><td>Codex — исполнитель делегированной технической работы; GPT-PM — продуктовый ревьюер. Квалифицированный клинический подписант не установлен. Продуктовые значения OQ-14/18 и все 13 disposition остаются открытыми.</td></tr>
+        <tr><td>19 окт.</td><td>Область продукта скорректирована на голосовое управление существующим workout flow. Исследованы существующие writer/read/export пути; выполнены read-only наблюдения ACS-100 и попытки PM Bridge.</td><td>В проверенном пути не найден production speech adapter. Текущие touch writers используют full-document <code>.set</code>; таймаут 4 секунды не доказывает серверное подтверждение. Запросы <code>e0b7b888…</code> и <code>8fd23d10…</code> не прошли send до GPT из-за отсутствующих вложений.</td></tr>
+        <tr><td>20 окт.</td><td>Новый запрос с 8 приложениями получил решение Option A. Отдельный exact-scope review вернул B. Созданы документальная remediation, статусный handoff и prompt следующему агенту.</td><td>Новый review: <code>4b6238a0…</code>, ответ <code>5e446c22…</code>. Exact-scope review: <code>3e612e9f…</code> → <strong>3 BLOCKER, 3 MAJOR; CODE NOT AUTHORIZED</strong>. Натуральный запрос метрик 10:08:17Z получил HTTP 200 без <code>timeSeries</code>: это не означает ни нулевой трафик, ни здоровый сервис. Синтетический трафик не создавался.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section>
+    <h2>Матрица критериев</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Критерий</th><th>Статус и доказательство</th><th>Остаток / владелец / следующий шаг</th></tr></thead>
+      <tbody>
+        <tr><td>Существующий workout flow</td><td>Направление Option A подтверждено GPT-PM; code/runtime не реализованы.</td><td>Нужно точное разрешение на код и доказательство общего voice/touch пути. Codex — исполнитель, GPT-PM — ревьюер. Следом: завершить полный re-review remediation.</td></tr>
+        <tr><td>AI-COACH-01 B-01: идентичность и receipt</td><td>Документально предложены стабильные operation/set ID, хеш payload, replay/conflict, срок хранения до удаления сессии, лимит и отказ без вытеснения.</td><td>Проверить целостность решения и затем реализовать только после GO. Codex / GPT-PM.</td></tr>
+        <tr><td>B-02: старые клиенты и Firestore rules</td><td>Зафиксирована опасность широкого wildcard, который может дать full-document write в <code>workout_sessions</code>; предложены carve-out и серверный callable.</td><td>Правила и callable не менялись и не разрешены прошлым review. Нужны точный GO, implementation и проверка старых offline-записей. Codex / GPT-PM.</td></tr>
+        <tr><td>B-03: recovery после смерти процесса</td><td>Описан резерв + epoch fence и повтор с прежним ID.</td><td>Сериализационная гарантия и переходы ещё не подтверждены adversarial review; runtime не доказан. Codex / GPT-PM.</td></tr>
+        <tr><td>B-04/B-05: UI lifecycle и AICR-074</td><td>До reservation unsent capture можно явно отбросить; submitted/UNKNOWN нельзя заменить новым ID. Исключение ограничено CompleteSet/AddEligibleExercise/SetDifficulty.</td><td>Код и функциональные сценарии отсутствуют. Codex; тесты принадлежат functional-test-reviewer/e2e-runner после завершения кода.</td></tr>
+        <tr><td>B-06: readers, metrics, exports</td><td>Задокументированы legacy reps как неизвестные, actual reps только после подтверждения, best-set проекция и raw export с truncation.</td><td>Приёмка ревьюера и соответствие в коде не доказаны. Codex / GPT-PM; далее тестовая проверка назначенными ролями.</td></tr>
+        <tr><td>OQ-07: клинические границы</td><td>Принято fail-closed направление; числовых клинических значений и подписанной политики нет.</td><td>Нужны policy artifact, квалифицированный специалист и его подпись. До этого клинические пределы не применять. Codex не является клиническим подписантом.</td></tr>
+        <tr><td>OQ-14 / OQ-18</td><td>Технические границы согласованы в своих пределах; продуктовые allowlist, freshness и composer inputs отложены.</td><td>GPT-PM должен принять недостающие продуктовые значения; затем Codex реализует утверждённый контракт.</td></tr>
+        <tr><td>ACS-100: метрики и алерт</td><td>Последний естественный read-only запрос не вернул series; synthetic AI traffic не генерировался. Доставка алерта не подтверждена.</td><td>Нужно дождаться естественных метрик, установить политику, маршрут, реального получателя и подтвердить доставку. Codex ведёт task-local triage; непрерывный on-call не подтверждён.</td></tr>
+        <tr><td>13 историй Phase 9</td><td>Все disposition остаются PENDING по указанию оператора.</td><td>Не менять на ACCEPT/REJECT до named-role review и маршрутизации OQ. Оператор — accountable owner; Codex готовит evidence.</td></tr>
+        <tr><td>Реализация и runtime</td><td>Не выполнены; runtime/test evidence NOT_RUN.</td><td>Зависит от принятого remediation review и точного разрешения на код/rules. Не объявлять готовым по документам.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section>
+    <h2>Текущее ревью и следующий шаг</h2>
+    <div class="callout ok">В локальном коммите <code>b9622b62</code> находятся 11 файлов документации, handoff/prompt и change record. Скрипт генерации реестра документов завершился успешно и записал 375 документов. Это документационная проверка, не тесты.</div>
+    <p>Новый коррелированный PM Bridge запрос <code>d4e49bc9-5e5f-49d9-9ce1-dfa1b4929be3</code> направлен как adversarial full-sweep remediation review. Окончательный вердикт и точные IDs job/turn/reply будут добавлены здесь после получения ответа. При B — исправить только подтверждённые замечания и повторить ревью; при A — отдельно зафиксировать границы разрешения прежде чем писать код.</p>
+    <ol>
+      <li>Завершить и задокументировать текущий GPT-PM review.</li>
+      <li>После явного code GO реализовать shared WorkoutSession transaction и правила в утверждённой области; не добавлять второй workout store/offline queue.</li>
+      <li>После всего кода передать тесты designated functional-test-reviewer и e2e-runner; до того тесты и runtime не заявлять.</li>
+      <li>Не включать клинические пределы без подписи специалиста; не закрывать ACS-100 без естественных метрик и подтверждения доставки; не менять 13 PENDING историй.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>Проверки и ограничения</h2>
+    <p>Текущая работа документационная. Тесты, checks, builds, CI, migrations, изменения runtime/Firestore rules, алерт-политик, deployment, push и merge не выполнялись. Неисполненное отмечено NOT_IMPLEMENTED, NOT_RUN или NOT_VERIFIED.</p>
+    <p class="small">Подробные источники: <a href="../docs/ai-coach/25_PHASE9_STATUS_AND_HANDOFF_2026-10-20.md">полная хронология и acceptance matrix</a>; <a href="../docs/ai-coach/26_AI_COACH_NEXT_AGENT_PROMPT_2026-10-20.md">полный prompt следующему агенту</a>.</p>
+  </section>
+</main>
+</body>
+</html>

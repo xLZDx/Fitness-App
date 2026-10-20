@@ -1413,3 +1413,7 @@ SHORTCOMING (process): the branch re-ported gates already cherry-picked to maste
 ## 2026-10-20 - Integrate move SPTR site prototype out of hosting root
 
 SHORTCOMING: the previous merge commit placed an internal prototype under the hosting root; I saw the risk in my own note but committed first. Rule: check firebase.json hosting root for newly added static files before committing a merge.
+
+## 2026-10-20 - Integrate former-worktree WIP snapshots
+
+SHORTCOMING: the first pass missed uncommitted work in the former worktrees (aicoach, bodyscan, Phase2_s01). Rule: before moving or retiring a worktree folder, list its uncommitted and untracked files and snapshot them; compare each file to the integrate branch and run the touched test directories before importing code.
