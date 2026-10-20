@@ -46,7 +46,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 14900 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 183854 |
+| `core/LESSONS_LOG.md` | Lessons log | 184029 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -299,23 +299,42 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
-| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 5587 |
-| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 86842 |
-| `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 8685 |
-| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 66433 |
-| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 120352 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 30238 |
+| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 93024 |
+| `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 34613 |
+| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 81277 |
+| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 155360 |
 | `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revisio | 30544 |
 | `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 148560 |
-| `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 217593 |
+| `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 220184 |
 | `docs/ai-coach/04b_E2E_AND_DEVICE_PLAN.md` | Live AI Coach - E2E and Device Acceptance Plan (SDLC phase 4b) | 293220 |
 | `docs/ai-coach/05_REVIEW_ROUND1.md` | AI Coach documentation: review round 1 findings | 26225 |
-| `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 28702 |
+| `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 29206 |
 | `docs/ai-coach/07_REVIEW_ROUND2.md` | AI Coach documentation: review round 2 (verification of round 1 fixes) | 14729 |
 | `docs/ai-coach/08_GPTPM_GATE_ROUND1.md` | AI Coach documentation: GPT-PM documentation gate, round 1 | 6469 |
 | `docs/ai-coach/09_GPTPM_VERIFICATION_ROUND4.md` | AI Coach documentation: GPT-PM focused verification round 4 | 1975 |
 | `docs/ai-coach/10_GPTPM_GATE_RECORD_ROUND5.md` | AI Coach documentation: GPT-PM gate-record consistency round 5 | 1715 |
+| `docs/ai-coach/11_GPTPM_FULL_DOCUMENTATION_REVIEW.md` | GPT-PM full documentation review — Phase 9 | 4006 |
+| `docs/ai-coach/12_GPTPM_PHASE9_REMEDIATION_APPROVAL.md` | GPT-PM Phase 9 remediation review | 3238 |
+| `docs/ai-coach/13_PHASE9_OQ_TECHNICAL_REVIEW.md` | Phase 9 technical review of selected open questions | 13523 |
+| `docs/ai-coach/14_PHASE9_FINAL_EXACT_HEAD_REVIEW.md` | Phase 9 final exact-head documentation review | 2243 |
+| `docs/ai-coach/15_PHASE9_CURRENT_EVIDENCE_APPROVAL.md` | Phase 9 focused current-evidence approval | 2083 |
+| `docs/ai-coach/16_PHASE9_OWNERSHIP_SOURCE_APPROVAL.md` | Phase 9 ownership-source review approval | 2122 |
+| `docs/ai-coach/17_PHASE9_FINAL_HEAD_REVIEW.md` | Phase 9 final-head documentation review | 2327 |
+| `docs/ai-coach/18_PHASE9_REMOTE_OWNER_SOURCE_CHECK.md` | Phase 9 remote ownership-source check | 4641 |
+| `docs/ai-coach/19_PHASE9_REMOTE_OWNER_SOURCE_REVIEW.md` | Phase 9 remote owner-source evidence review | 2485 |
+| `docs/ai-coach/20_PHASE9_EXECUTION_OWNERSHIP_AND_REVIEW_ROUTE.md` | Phase 9 execution ownership and alternative review route | 28629 |
+| `docs/ai-coach/21_PHASE9_OQ14_OQ18_TR_CONTRACT_PROPOSAL.md` | OQ-14 and OQ-18 bounded TR contract proposal | 41075 |
+| `docs/ai-coach/22_PHASE9_OQ07_TR_CONTRACT_PROPOSAL.md` | OQ-07 limit-free technical contract proposal | 20609 |
+| `docs/ai-coach/23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md` | Phase 9 AI Coach acceptance reconciliation — 2026-10-20 | 28390 |
+| `docs/ai-coach/24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md` | AI-COACH-01 existing-workout transaction scope | 22177 |
+| `docs/ai-coach/25_PHASE9_STATUS_AND_HANDOFF_2026-10-20.md` | Fitness App AI Coach — Phase 9 status and handoff | 18196 |
+| `docs/ai-coach/26_AI_COACH_NEXT_AGENT_PROMPT_2026-10-20.md` | Next-agent prompt — Fitness App AI Coach Phase 9 | 6778 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 18042 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 86721 |
+| `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2265 |
 | `docs/commits/2026-10-20-integrate-hardening-followups.md` | Integrate sprint/hardening-followups-2026-10 (74ba5adc) | 562 |
+| `docs/commits/2026-10-20-integrate-phase2-main-aicoach-docs.md` | Integrate origin/phase2/main (85e7e91e): AI Coach TDD-001 documentation line | 1038 |
 | `docs/commits/2026-10-20-integrate-phase2-s04.md` | Integrate phase2/s04 chain (5d5723fa) | 2238 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
@@ -398,7 +417,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191388 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 18766 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 50670 |
 | `reports/ENGLISH_HISTORICAL_REPORTS_INDEX.md` | Fitness App — English Historical Report Directory | 16056 |
 | `reports/citation_verification_report.en.md` | Fitness-App — Historical Source Citation Verification (English) | 2630 |
 | `reports/equipment_identity_citation_review.en.md` | Fitness-App — Equipment Identity Citation Review (English, Historical) | 2515 |

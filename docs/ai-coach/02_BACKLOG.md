@@ -8,53 +8,86 @@ Status: DRAFT for review. Date: 2026-10-17. Branch: `docs/ai-coach-tdd-001`. Inp
 - Sprints AI-COACH-01..05 are PLANNED here so that dependencies and open questions are visible. They are NOT authorised. No implementation, no manifest change, no deployment, no production use and no user-data migration is authorised by this file. Each later sprint needs its own explicit operator go-ahead after the previous sprint is accepted.
 - Story ids are `ACS-nnn`. Acceptance criteria inside a story are numbered `AC-1`, `AC-2`... and are unrelated to the draft's function ids AC-001..020 (voice dialogue etc.), which the requirements file already uses.
 - Priorities P0/P1/P2 are inherited from the requirements. Where a story says "contract" the deliverable is a document; where it says "build" it is code (not authorised outside AI-COACH-00).
+- Scope correction (2026-10-19): the operator wants voice as another way to invoke the existing workout flow. The original AI-COACH-01/02 story blocks below are superseded drafts and MUST NOT be implemented as written. They assume an independent Workout Runtime/store before demonstrating that the current workout actions cannot be reused. This correction also supersedes separate-journal defaults for performed facts or effort; the existing workout record/path remains authoritative. The replacement acceptance below is a documentation-only rebase; it does not authorize implementation.
 
 ## 1. Prioritisation rule
 
-Order = (1) dependency (nothing is built on an undecided contract), then (2) risk reduction: the draft's critical risks first (duplicated sets, lost results, dangerous AI advice, data leak), then (3) value to the main scenario (arrive at the gym, start by voice, train hands-free), then (4) cost of learning (measure battery, latency, cost early). The deterministic runtime comes before voice because a voice layer on top of an unproven runtime would fail the draft's own "0 lost / 0 duplicated sets" target. P1 work (avatar, memory depth) comes after the P0 vertical slice. P2 is unscheduled.
+Order = (1) trace the existing workout screen/action/provider/repository path; (2) decide from that evidence whether a narrow shared-action adapter or a minimal extension to the current session model is needed; (3) add voice as another input to those same operations; then (4) measure device behavior after implementation is authorized. Do not build a parallel runtime or store by default. P1 work (avatar, memory depth) remains later; P2 is unscheduled.
 
 ## 2. Sprint overview and dependency order
 
 | Sprint | Goal (one sentence) | Depends on | Blocked by open questions (plain words) | Status |
 |---|---|---|---|---|
 | AI-COACH-00 | Approve one consistent set of design documents and contracts for the Live AI Coach so later code has nothing left to guess. | none | OQ-01, OQ-04, OQ-13, OQ-17 must be answered or defaulted at design review; OQ-05, OQ-07, OQ-08, OQ-11 need operator input or a recorded default | AUTHORISED (documents only) |
-| AI-COACH-01 | A deterministic, crash-safe Workout Runtime with a safety engine that records every confirmed set exactly once, with no AI involved. | 00 approved | OQ-02, OQ-07, OQ-16 | PLANNED, not authorised |
-| AI-COACH-02 | A user can start a demo workout by voice and finish it hands-free on a real Android phone with the screen locked. | 01 accepted | OQ-03, OQ-08, OQ-12, OQ-15 | PLANNED, not authorised |
+| AI-COACH-01 | Prepare the bounded shared `WorkoutSession` transaction contract and compatibility scope; code remains separately gated. | AI-COACH-00 docs; existing-operation/source map; explicit later code authorization | Exact-scope GPT-PM re-review; authorized callable/rules changes; implementation and designated functional/E2E evidence. OQ-07 clinical behavior remains excluded. | DOCUMENTATION REMEDIATION PREPARED after GPT-PM B-01–B-06; CODE GO NOT AUTHORIZED (request `3e612e9f-1d41-4e78-8ee8-ff9a3886f431`) |
+| AI-COACH-02 | Add a voice input adapter that invokes the same authorized existing workout operations as touch. | 01 accepted and explicit sprint go-ahead | Microphone consent, language, device and voice-path evidence | REBASE REQUIRED; original story block below is superseded; not authorised |
 | AI-COACH-03 | The coach builds, explains and adapts safe 1-4 week plans from the confirmed profile and history, reproducibly. | 01 accepted (02 for spoken delivery) | OQ-06, OQ-14, OQ-18 | PLANNED, not authorised |
 | AI-COACH-04 | An optional avatar that reflects coach state without slowing voice or the workout runtime. | 02 accepted | OQ-10 | PLANNED, not authorised |
 | AI-COACH-05 | Evidence from real devices and a real gym, security and reliability reviews, cost validation and a rollback plan, ending in a pilot readiness decision. | 02, 03, 04 accepted | OQ-05, OQ-09, OQ-10, OQ-12 | PLANNED, not authorised |
 
 Dependency order: 00 -> 01 -> 02 -> (03 and 04 may run in parallel after 02) -> 05. Post-MVP (unscheduled): AICR-063..065.
 
+### 2.1 Replacement acceptance for the scope rebase (documentation only)
+
+**AI-COACH-01 — existing-operation trace**
+
+- AC-1: for each intended voice intent (start/enter workout, start or finish a set, enter weight/reps, start/skip rest, navigate exercise, finish/cancel), cite the current UI entry point, action/controller/provider, repository call and persistence/result boundary. Mark unsupported or unverified operations `NOT_FOUND` / `NOT_VERIFIED` instead of inventing an API.
+- AC-2: identify which existing operations can be called directly and which are private widget callbacks; propose a shared action seam only where the trace proves one is needed. Touch and voice must reach the same validation and persistence path.
+- AC-3: compare required set semantics with the existing `WorkoutSessionExercise.sets` list and all relevant readers. The current player writer replaces that list with zero or one capture, `asLogEntries()` projects the best set, and direct volume readers consume all sets. Specify the smallest compatible writer/action change and preserve or deliberately reconcile these reader contracts; do not propose a parallel tracker/store as the default.
+- AC-4: preserve the existing touch preconditions, exercise resolution, eligibility, authentication and post-action behavior when extracting a shared action. Do not claim that the current `isLoading` guard provides replay idempotency or that the four-second repository timeout proves server acknowledgement; record these as gaps with explicit contract amendments.
+- AC-5: preserve existing exercise-log/session identity and scheduled-day merge/cold-start behavior. Define safe concurrent update/conflict handling, deterministic set identity for new/replayed/corrected commands, and an update path for delayed difficulty ratings that reads current session state. Do not promise a workout-wide in-progress/finished lifecycle.
+- AC-6: map every existing reader and export consumer. Keep the best-set `asLogEntries()` projection for compatibility unless separately approved; define how direct per-set metrics count only valid performed sets. Preserve the existing server account-export raw `workout_sessions` section and its explicit truncation status; do not add duplicate export plumbing. Confirm the user export cannot present a capped raw section as complete.
+- AC-7: unsupported or ambiguous voice commands produce a visible no-mutation/refusal or deterministic clarification. Timer expiry is not set completion; recognition text/model output is not evidence of a persisted action.
+- AC-8: same-document mutation schema and replay contract are as specified in `24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md` §3; operation receipts remain until parent-session deletion and capacity is fail-closed without eviction.
+- AC-9: full-document legacy clients cannot write to `workout_sessions` after cutover; server callable and rules carve-out are an explicit implementation gate, not included in documentation approval.
+- AC-10: process restart recovery fences older in-flight requests with the server-owned session mutation epoch before inspecting reservations/receipts; no new mutation ID is issued while a pending reservation remains.
+- AC-11: preserve the best-set history projection, distinguish legacy/target repetitions from confirmed actual repetitions, count a committed set once, and preserve raw server export plus explicit truncation as specified by the transaction scope matrix.
+
+**Historical evidence status (2026-10-19):** the source map covers route, capture/timer, both widget-level `LogSessionAction` callers, rest, scheduled-day navigation, set projections and readers. GPT-PM returned `MODIFY` on correlated request `2b85df8c-9ec7-41ad-9d41-4aecbf8d9c80`, then `ACCEPT — PRODUCT/DESIGN CONTRACT ONLY` on correlated follow-up `3c4bd141-27da-4e5e-a4f0-7a9c6a3e8b2d`; B-01..B-05/M-01..M-04 are accepted at product/design level and recorded in `03_DESIGN.md` §§0.2–0.3. Local account-export review corrects one review omission: mobile `workoutLogs` are projected, while the server callable also returns raw `workout_sessions` docs under `server.workoutSessions`, with named truncation at row/byte caps. Preserve both views and do not represent a capped raw section as complete. The current four-second timeout returns normally without server acknowledgement; the action reports ordinary data and the widget shows success and starts rest. Other verified gaps include full-snapshot writes, non-durable replay protection, delayed rating from an older snapshot, and first-exercise `completed` semantics. At that checkpoint, §0.4 proposed an online transaction and the offline tradeoff, code GO and current OQ product choices remained unanswered because request `e0b7b888-d2a4-4dfd-a3b9-f73e52a38fed` failed pre-send (`ATTACHMENT_NOT_LANDED`). Whole-workout start/finish/cancel and single-exercise next/previous remained `NOT_FOUND IN THE REVIEWED PATHS`.
+
+**Decision update (2026-10-20):** correlated GPT-PM request `4b6238a0-1c80-4d69-87ba-45a214fc7e31` ACCEPTED Option A for the new shared touch/voice set/add/difficulty action: online transaction only, no durable offline write, `NOT_SENT_OFFLINE` only for demonstrably unsubmitted work, and `UNKNOWN` for ambiguous submission until same-operation server reconciliation. The separate keyed offline-operation representation was rejected. OQ-07's fail-closed product boundary and existing OQ-14/OQ-18 boundaries were accepted; deferred values remain deferred. GPT-PM returned **NOT AUTHORIZED** for code sprint AI-COACH-01. It listed AICR-074/legacy-touch impact, persisted operation identities and payload-conflict semantics, old-client stripping risk, writer/reader/export compatibility, UI lifecycle outcomes and a frozen bounded scope as implementation prerequisites. The detailed prepared scope and compatibility matrix are in `docs/ai-coach/24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md`. No code authorization is inferred from this product decision.
+
+**AI-COACH-02 — voice adapter (planned; not authorized)**
+
+- AC-1: only after AI-COACH-01 is accepted and a separate sprint GO exists, capture a user-initiated utterance, parse a finalized command and route it to the same application action as the touch control.
+- AC-2: replayed, partial or ambiguous transcripts do not mutate state; new set, correction and retry are distinguished with the shared deterministic identity/confirmation contract. Unsupported intents return a visible no-mutation result.
+- AC-3: spoken acknowledgement is generated from the shared operation's actual rejected, local/pending, server-confirmed or unknown result; a timeout or model-generated statement is not server success.
+- AC-4: no new workout collection, independent lifecycle or second source of truth is added unless a specific AI-COACH-01 gap is accepted first.
+- AC-5: preserve route/session identity, timer/capture eligibility, rest ordering and delayed rating behavior; verify every history, metric and export reader, preserve raw server set records, and surface row/byte truncation so a partial export is never represented as complete. Device/background, microphone permission, privacy, accessibility and language are accepted and tested only after implementation is authorized.
+
 Open questions in plain words (used above and in the per-sprint sections):
-- OQ-01 how the richer set record (set id, effort, time, source, command id) is stored when the current `WorkoutSession` saves only weight and reps.
-- OQ-02 how a stale-write guard (`expected_revision`) is enforced when the current repository `save` has no revision parameter.
+- OQ-01 how stable set/operation identity and the required set metadata are stored within the existing authoritative `WorkoutSession` while remaining readable by existing and older clients. Option A is accepted, but physical encoding and mixed-version protection are OPEN.
+- OQ-02 how the accepted fresh-document transaction is implemented with identical replay, changed-payload conflict, ambiguous-acknowledgement reconciliation, bounded retries and honest outcome states. The contract is proposed in `24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md`; code GO remains NOT AUTHORIZED.
 - OQ-03 which voice path is used for the MVP: realtime speech-to-speech (Mode A) or speech-to-text then model then text-to-speech (Mode B).
 - OQ-04 which AI provider and transport are used and where short-lived credentials come from, so no long-lived key is in the app.
 - OQ-05 the AI cost budget per user per day/month and what happens at the limit (operator sets the number).
 - OQ-06 how long coach memory is kept and whether any transcript is stored at all (operator decision).
-- OQ-07 the safety limits (maximum load, reps) and the dangerous-symptom list, and who signs them off; none are given in the draft.
+- OQ-07: GPT-PM product direction ACCEPT is recorded from the operator-provided response artifact: no actionable prescription without a versioned, authoritative policy with qualified-human authorization; fail closed when policy evidence is missing/invalid/expired/unsigned; preserve performed-set facts without silent clamping against an unsigned assignment cap. Exact policy, limits, symptom list, technical enforcement and qualified-human signature remain open. Existing eligibility, age-policy and progression sources are heuristics/suggestions, not signed AI Coach caps; see `01_REQUIREMENTS.md` §6 and the linked decision record.
 - OQ-08 voice-data consent text and the store (Play) permission and data-safety declaration for the microphone.
 - OQ-09 the exact Android device and OS matrix beyond Samsung Galaxy S23 and Android 13-16, and whether a real gym trial group exists.
 - OQ-10 the battery budget for a hands-free hour (default: measure first, then set).
 - OQ-11 accessibility requirements (screen reader, large text, alternative for users who cannot use voice).
 - OQ-12 numeric targets the draft leaves open: voice reconnect time, playback-stop time on interrupt, P95 sample size.
 - OQ-13 where the `live_ai_coach_enabled` flag is stored (remote config, Firestore document or build flag); no client flag mechanism is confirmed.
-- OQ-14 how "no invented numbers / reasons / technique claims" is verified when the model words answers freely.
+- OQ-14 how "no invented numbers / reasons / technique claims" is verified when the model words answers freely. GPT-PM ACCEPTed fail-closed behavior and UTC/offset timestamp semantics in correlated request `bafbb0e5-4c6a-47a4-85fa-bd389e685a9e`; concrete source allowlist, freshness/clock/skew values and locale/template precision remain DEFERRED. Codex recorded a candidate repository source inventory in `21_PHASE9_OQ14_OQ18_TR_CONTRACT_PROPOSAL.md` §2; it is not an approved allowlist.
 - OQ-15 which spoken languages the MVP supports.
 - OQ-16 whether the coach must serve minors or seniors beyond the existing age policy (default: reuse the existing policy unchanged).
 - OQ-17 how this line relates to the Phase 2 sprint numbering and branch policy (default: separate track, Phase 2 plans untouched).
-- OQ-18 the real interfaces of `ai_planner`, `training_context`, `recovery`, `visual_equipment` (not yet read).
-- OQ-19 (added 2026-10-17) whether any health-derived data may reach the model. Default: no, nothing leaves the phone except what the user speaks.
+- OQ-18 bounded product direction ACCEPT is correlated to GPT-PM request `e5024ec8-f0ec-4a15-a3d3-68a8daa7a073` on supplied commit `f54b05c3fec4a8f974385174039cd6fcd41aca7b`: deterministic composer, immutable/versioned snapshots, idempotent persistence, separate observed/projected volume, candidate-only visual matches, and evidence-bounded recovery inference. The correlated non-clinical decision `bafbb0e5-4c6a-47a4-85fa-bd389e685a9e` sets `observed_projected_combination = DISABLED` initially and accepts canonical digest/linearizable create-if-absent as a design target, subject to technical conformance review. It defers per-source freshness/skew, recovery classes/horizon and day-slot policy. The more specific recovery-dependent REFUSE/UNKNOWN direction is also recorded in that correlated response; the older operator-provided artifact for failed request `26649707-679f-4962-8d26-e3b2a2ff36b2` remains uncorrelated. The mobile interfaces remain inputs, not an existing Live Coach integration. TR review of schemas, freshness, recovery horizons, policy and persistence remains open, as do weekly prescription values under OQ-07; see `01_REQUIREMENTS.md` §6 and the linked decision records.
+
+### Historical status addendum (2026-10-19)
+
+At that checkpoint, Codex was the delegated technical owner/executor and GPT-PM owned product decisions. The recorded OQ-18 target reused `ProgrammeRepository` and `ScheduledSessionRepository` with a future atomic create-if-absent coordinator; existing `set` methods were not conformant. ACS-100 identified Fitness_App AI Coach as the project-local component, Codex as task-local technical triage executor and GPT-PM as product escalation owner; this was not continuous monitoring. FA-D1 was not bound to an AI Coach policy, and no delivery, acknowledgement or production rotation was evidenced. The read-only Monitoring query then covered the 24-hour window ending `2026-10-19T17:41:35Z` and returned HTTP 200 with no service-specific time series; readiness was UNKNOWN. The then-current product request for the §0.4 offline tradeoff and code-sprint GO failed before send because attachments did not land. The 13 story dispositions remained PENDING. This is historical evidence; see the [2026-10-20 reconciliation](23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md) for current roles, metric observation, and remaining gates.
+- OQ-19 (added 2026-10-17) whether app-derived restrictions, screening values or reason codes may reach the model. They stay excluded from model context; a remote turn still sends the user's utterance, which may itself contain health information, only under current server-confirmed consent. This is not a zero-health-data-transfer guarantee; OP must decide whether spoken health content is acceptable and approve privacy/consent wording under OQ-08.
 - OQ-20 who signs the dangerous-symptom list and its stop scopes. Default: the symptom stop cannot ship until signed.
-- OQ-21 where the set effort is stored. Default: in the journal only.
+- OQ-21 where the set effort is stored. Default: unresolved; require a compatible solution within the existing authoritative workout path. If the existing model cannot represent required metadata, document the proven gap, affected readers/exports and smallest compatible extension for review. A standalone/parallel journal is not approved.
 - OQ-22 whether abandoned sessions show in History. Default: kept on the phone, not in History.
 - OQ-23 what a second device does during a live session. Default: read-only with explicit takeover.
 - OQ-24 which latency the 2 s target covers. Default: the voice acknowledgement; 300 ms for the local lane.
 - OQ-25 emergency number per locale, who signs the table, and a call action on the locked-screen notification. Default: signed table, no call action.
 - OQ-26 exact-alarm permission for the rest backstop. Default: no, normal notification.
 - OQ-27 listening default after the gym trial. Default: tap-to-talk.
-- OQ-28 numeric limits introduced by review round 1 (lease length, turn caps, journal bounds, sync limits, per-turn deadline). Default: measured in spikes, none invented.
+- OQ-28 operating bounds introduced by review round 1 (reservation lease/heartbeat, per-session turns, per-turn deadline/output, existing workout record and separately approved compatible audit metadata size/count, sync attempts/backlog age). TR specifies each invariant and measurement method separately; numeric values remain open pending spike/load/fault evidence. This does not authorize separate journal storage. Cost caps stay under OP-owned OQ-05; session/export policy stays proposed under OQ-31.
 
 ## 3. Global Definition of Ready (every story)
 
@@ -83,16 +116,18 @@ Sprint goal: approve one consistent set of design documents, ADR decisions and c
 Exit: design review approved (consensus of specialist agents, then GPT APPROVE). Deliverables: refined TDD, voice-engine ADR(s), runtime contracts, event schema, safety policy, privacy policy, flag specification, test plan, dependency map. No code, no manifest change.
 Out of scope: any implementation, ADR options not needed for P0 (avatar renderer ADR-006 detail deferred to 04; provider fallback ADR-010 may be stated as an open decision).
 
-### Epic E00-A Runtime and data contracts
+**Historical Sprint-00 criteria — superseded in part:** The original ACS-001 and ACS-002 entries below preserve the documentation-gate record; they are not current acceptance criteria for a separate Workout Runtime, journal, replica, projector or independent lifecycle. Their controlling current scope is §2.1, “Replacement acceptance for the scope rebase,” with the existing `WorkoutSession`/`SetCapture` path authoritative. The current story recommendations are **CARRIED**, while final dispositions for all 13 stories remain **PENDING**. Do not use the original criteria to authorize implementation or a parallel workout store.
+
+### Epic E00-A Runtime and data contracts (historical criteria; see supersession note above)
 
 **ACS-001 Workout Runtime and command contract** (P0; AICR-024, 025, 045, 046, 047, 042, 023, 030)
-- AC-1 Given the draft state machine, when the contract is written, then it lists every allowed and every rejected transition for the ten workout states and the 15 commands, each with the typed refusal reason.
+- AC-1 Given the current runtime contract, when reviewed, then it lists allowed and rejected transitions for the nine persisted states, identifies `NEXT_EXERCISE` as a derived view rather than a persisted state, and covers the current closed command set with typed refusal reasons; the canonical transition/event matrix in design §4.1b is the acceptance oracle.
 - AC-2 Given the command envelope, when reviewed, then the five fields, idempotency rule (repeat returns original result), atomic command+result write and stale-revision rule are each stated with one worked example and one counter-example.
 - AC-3 Given the set record, when reviewed, then all fields (set_id, exercise_id, session_id, repetitions, weight_kg, effort, completed_at, source, command_id) have type, range and owner stated, and `effort` mapping to `DifficultyRating` (assumption A-08) is confirmed or changed.
 - Depends on: OQ-01 (set record storage), OQ-02 (revision enforcement). DoR note: both need a proposed answer from technical review before acceptance.
 
 **ACS-002 Event journal and WorkoutSession compatibility (ADR-005, ADR-007, ADR-009)** (P0; AICR-028, 042, 043, 044, 070, 022, 074)
-- AC-1 Given the existing `WorkoutSession` JSON (weight and reps only), when the extension is specified, then every new field is optional and additive, and a table shows old document -> new reader and new document -> old reader outcomes.
+- AC-1 Given the existing `WorkoutSession`/`SetCapture` JSON shape (weight and reps only), when compatibility is specified, then MVP adds no fields to either serialized type; a table shows existing documents read by the new code and projected MVP documents read by old code, while rich set records remain in the separate live-session journal/replica and are not exposed to old readers. Any later additive-field proposal requires a separate reader audit and decision.
 - AC-2 Given the journal, when specified, then store choice, durability point ("acknowledged" means persisted), ordering, retention and crash-replay procedure are documented, with the offline-safe command subset (ADR-009) listed.
 - AC-3 Given reconnect, when specified, then the sequence check-session / restore / sync unconfirmed / dedupe / refresh context is stated step by step with the conflict outcome for each.
 
@@ -106,7 +141,7 @@ Out of scope: any implementation, ADR options not needed for P0 (avatar renderer
 **ACS-004 Safety policy** (P0; AICR-048, 049, 050, 051, 052, 053, 029, 012, 066)
 - AC-1 Given the existing eligibility decision point (fact F-08), when the policy is written, then it states which decisions are reused, which new checks are added (load cap, rep range, symptom stop) and that no parallel rule table exists.
 - AC-2 Given OQ-07, when the limits and symptom list are written, then each carries a named sign-off owner; any number without sign-off is marked UNSIGNED and not used by later sprints.
-- AC-3 Given fail-closed, when specified, then the blocked-versus-allowed table lists the four safe helper actions (explain interface, view history, stop timer, finish session) and the dangerous-symptom flow ends in PAUSED or ABANDONED with no auto-continue.
+- AC-3 Given fail-closed behavior, when specified, then the acceptance references the shared allowed-action rules in design §§4.1a–4.1b and the dangerous-symptom flow: `safety_stop` produces locked PAUSED and never automatically abandons or resumes the session.
 - AC-4 Given typed reasons, when specified, then the refusal enum is listed and mapped to `BlockReason` values.
 
 **ACS-005 Privacy and consent policy** (P0; AICR-009, 076, 077, 060, 058)
@@ -140,7 +175,7 @@ Out of scope: any implementation, ADR options not needed for P0 (avatar renderer
 
 **ACS-010 Dependency map, Phase 2 relationship and document registry** (P0 enabling; AICR-032, 036, 037, 074, 075; constraints C-05, C-06)
 - AC-1 Given OQ-17 and OQ-18, when completed, then the interfaces of `ai_planner`, `training_context`, `recovery`, `visual_equipment` are recorded as facts with file paths, and the track relationship to Phase 2 is stated with the default if undecided.
-- AC-2 Given draft section 4, when reviewed, then the `features/live_coach/` folder layout is confirmed or corrected against the current Phase 2 branch.
+- AC-2 Given the proposed section 4 layout, when reviewed, then it is explicitly distinguished from the current Phase 2 snapshot: record the exact branch commit and existing feature directory contents, and state whether `features/live_coach/` exists there.
 - AC-3 Given the registry rule, when the sprint closes, then `governance/DOCUMENT_REGISTRY.md` (or the docs equivalent) lists every new document.
 
 **ACS-011 Design review gate and acceptance** (P0 gate)
@@ -153,7 +188,7 @@ Sprint 00 DoD additions: documents only; no file under `mobile/` changes; every 
 ### Epic E00-E Review round 1 additions (added 2026-10-17)
 
 **ACS-100 Observability sink, alerts and owners** (P0; AICR-112, 079)
-- AC-1 Given the observability design, then the sink is named and alerts exist with a named owner for recovery failure rate, persist-failed rate, sessions stuck below server-confirmed over 24 h, reservation leaks and reconnect time; thresholds are marked OPEN (OQ-28).
+- AC-1 Given the observability design, then the sink is named and alerts exist with a named accountable owner for recovery failure rate, persist-failed rate, sessions stuck below server-confirmed over 24 h, reservation leaks and reconnect time; thresholds are marked OPEN (OQ-28). Per the operator's delegation, Fitness_App AI Coach is the project-local owning runtime component and the project operator is the interim human on-call/escalation recipient; Codex executes route work and GPT-PM owns product decisions. The deployed service identifier, reachable endpoint/rotation, and alert delivery remain proof obligations. ACS-100 stays CARRIED until delivery and acknowledgement are evidenced; see `core/changes/2026-10-18-ai-coach-phase9-runtime-and-oncall-assignment.md`.
 - AC-2 Given each alert, then a test event that triggers it is specified.
 
 **ACS-101 Contracts for review round 1 decisions** (P0; AICR-085, 086, 087, 098, 100, 105, 106)
@@ -161,7 +196,9 @@ Sprint 00 DoD additions: documents only; no file under `mobile/` changes; every 
 - AC-2 Given D1..D17, then each has a status RESOLVED, RESOLVED PENDING SIGN-OFF or OPEN WITH DEFAULT and the list gating AI-COACH-01 is stated.
 - AC-3 Given the privacy deliverable, then the utterance is declared a health-bearing channel and the privacy policy and Play data-safety prerequisite for any `liveCoach*` build is stated (wording is the operator's).
 
-## 6. Sprint AI-COACH-01 - Workout runtime foundation (PLANNED, NOT AUTHORISED)
+## 6. Superseded draft: Sprint AI-COACH-01 - Workout runtime foundation (DO NOT IMPLEMENT)
+
+The stories in this legacy block are retained for history only. They are superseded by §2.1's existing-operation trace and cannot be treated as acceptance criteria or authority to create a new runtime, journal, collection or repository.
 
 Sprint goal: a deterministic, crash-safe Workout Runtime and independent safety engine that record every confirmed set exactly once and run entirely without AI, behind a flag that is off.
 Exit: all critical runtime tests pass (per-epic tests by the test agents). Blocked by: OQ-02 (stale-write guard), OQ-07 (signed-off safety limits), OQ-16 (age policy scope).
@@ -210,7 +247,7 @@ Exit: all critical runtime tests pass (per-epic tests by the test agents). Block
 **ACS-027 Safety engine** (P0; AICR-048, 049, 050, 051, 053, 012)
 - AC-1 Given a stub issuing arbitrary actions, when an unsafe action arrives, then the engine refuses it with a typed reason and a refusal event is recorded.
 - AC-2 Given the safety source faulted, when load or exercise recommendations are requested, then they are refused while the four safe helper actions succeed.
-- AC-3 Given a reported dangerous symptom, when processed, then the Runtime moves to PAUSED or ABANDONED and no continue action is accepted until an explicit user restart (E2E-08).
+- AC-3 Given a reported dangerous symptom, when processed, then `safety_stop` moves the Runtime to PAUSED with `safetyLock` set and `safetyScope` recorded; it never moves automatically to ABANDONED. No resume is accepted until the user-only `restart_after_safety` flow allows it (E2E-08; design §§4.1a, 4.1b and 9.3).
 - AC-4 Given unfinished screening, when start is requested, then it is refused with a typed reason and helper actions still work.
 - AC-5 Given the same inputs through the engine and through the existing eligibility decision, then the decisions are equal (no parallel rule set).
 
@@ -332,7 +369,9 @@ Exit: all critical runtime tests pass (per-epic tests by the test agents). Block
 - AC-1 Given design section 4.1b, then every functional and E2E row that mentions state, set id, journal sequence or timer ownership cites matrix rows, and a mapping report shows zero mismatches.
 - AC-2 Given a fake clock, then the Runtime, the HUD and the shell strip show the same remaining rest; FT-1019 tests the separately journaled `preparing_done`; E2E-01 fixes its command sequence.
 
-## 7. Sprint AI-COACH-02 - Voice vertical slice (PLANNED, NOT AUTHORISED)
+## 7. Superseded draft: Sprint AI-COACH-02 - Voice vertical slice (DO NOT IMPLEMENT)
+
+The stories in this legacy block are retained for history only. They are superseded by §2.1's voice-adapter criteria and cannot be treated as authority to create parallel workout operations or storage.
 
 Sprint goal: a user can start a demo workout by voice and finish it hands-free on a real phone with the screen locked, with manual fallback always available.
 Exit: a full demo workout without manual control after start (E2E-01, E2E-11 on the Samsung Galaxy S23). Blocked by: OQ-03 (which voice path), OQ-08 (consent text and store declaration for the microphone), OQ-12 (reconnect and interrupt time targets), OQ-15 (languages).
@@ -439,7 +478,7 @@ Exit: a full demo workout without manual control after start (E2E-01, E2E-11 on 
 ## 8. Sprint AI-COACH-03 - Planner and memory (PLANNED, NOT AUTHORISED)
 
 Sprint goal: the coach builds, explains and adapts safe 1-4 week plans from the confirmed profile and history, reproducibly and without inventing facts.
-Exit: reproducible, safe decisions on a fixed set of profiles. Blocked by: OQ-06 (how long memory is kept, transcripts or not), OQ-14 (how invented-fact checks are verified), OQ-18 (real interfaces of the existing planner and context modules).
+Exit: reproducible, safe decisions on a fixed set of profiles. Blocked by: OQ-06 (how long memory is kept, transcripts or not), OQ-14 (how invented-fact checks are verified), OQ-18 (TR approval of the deterministic composer contract and its policy/input/persistence interfaces).
 
 ### Epic E03-A Context and history
 
