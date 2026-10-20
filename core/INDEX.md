@@ -30,6 +30,27 @@ agent doing a code task from reading a 776-line nonprofit strategy doc looking f
 
 ---
 
+## English design reference audit
+
+- [Full `core/design` English source inventory](design/ENGLISH_DOCUMENTATION_INDEX.md): all 13 design-source Markdown files language-checked; two unique Russian HUD design documents translated into local English companions for each of the two identical reference directories, preserving historical source hashes and the distinction between simulated Form Coach visuals and production ML.
+
+## English plan translation inventory
+
+- [Complete `core/plans` language index — all 43 historical plans, nine new source-bound English translations](plans/ENGLISH_TRANSLATION_INDEX.md). The index distinguishes substantial Russian narratives from immutable operator quotations and application language/test evidence.
+
+## Source-bound English historical companions (draft)
+
+These files are dated translations for documentation review. They are **not** new acceptance gates or updated implementation evidence. Read the unchanged Russian originals when exact operator quotations, historic code state or consent/approval boundaries matter.
+
+| Original historic document | English companion | Original purpose |
+| --- | --- | --- |
+| [August 11 full audit](AUDIT_REPORT_2026-08-11.md) | [English](AUDIT_REPORT_2026-08-11.en.md) | Historical public-release **BLOCK**, privacy/billing/ML findings and original test counters |
+| [September 25 handoff](HANDOFF_2026-09-25.md) | [English](HANDOFF_2026-09-25.en.md) | Exact dated handoff and original operator/device instructions |
+| [August 1 favorite gyms/news proposal](PLAN_GYMS_AND_NEWS_2026-08-01.md) | [English](PLAN_GYMS_AND_NEWS_2026-08-01.en.md) | Unapproved product proposal, source-rights restrictions and dated cost estimates |
+| [August 14 resume checkpoint](RESUME_2026-08-14.md) | [English](RESUME_2026-08-14.en.md) | Uncommitted R11f-1 consent gate, unresolved review findings and exact STOP/push authority |
+| [August 7 scanner/model session state](SESSION_STATE_2026-08-07.md) | [English](SESSION_STATE_2026-08-07.en.md) | Printed-text provenance and held-out training data, with original owner instructions |
+| [August 8 rolling gate session state](SESSION_STATE_2026-08-08.md) | [English](SESSION_STATE_2026-08-08.en.md) | Chronological G1–R10 progress and original push/approval boundaries, not a current readiness claim |
+
 ## Engineering reference — `core/`
 
 | Doc | What it answers |
