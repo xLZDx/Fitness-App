@@ -39,7 +39,8 @@ void main() {
 
   setUp(() async {
     w = await ScopedJournalWorld.create();
-    journal = HookJournal(w.factory);
+    journal = HookJournal(w.factory,
+        scopesRoot: () async => '${w.base}/activity_journal');
     backend = RecBackend();
     repo = ActivitySyncRepository(
       journal: journal,

@@ -1302,6 +1302,31 @@ SUCCESS: append-only log conflicts are resolved by keeping both sides; no -X opt
 ## 2026-10-20 - Integrate phase2/s04 chain (GPS recording, activity journal, phase1/phase2 docs)
 
 FAILURE (branch): phase2/s04 shipped a source file whose comment lost its // and did not parse; the DT-0-10 test fails on the branch tip itself. Layer that missed it: the branch author's checks. Next time: run dart analyze on the branch tip before merging and compare against the tip's own failures.
+## 2026-10-20 - Commit: fix(s04): close the seven external gate findings (stray source line, consent withdraw ordering, sign-out hook, expiry lock, segment rotation, owner-checked puts, wipe marker)
+
+Kind: FAILURE.
+Facts: the external reviewer (GPT-PM) on head 5d5723fa found a stray non-Dart line in geolocator_location_source.dart (a mangled comment after the dependency rename) and six MAJOR items: withdraw queued behind a pending grant write, sign-out skipping the hand-off hook when the counted recordings were zero, the all-scopes expiry sweep running without the foreign scope's lock, list mutation inside the _writePending loop (ConcurrentModificationError at the segment boundary), owner-checked puts still in flight across unbind/wipe, and the wipe marker failing open. The agent-reported 1119 tests were green with all of them present.
+Root cause: the adapter file was never compiled by any test because it was only imported by main.dart wiring; the rotation path was never exercised with more than one segment of pending frames; the other items are interleavings and failure modes that the epic tests did not inject.
+Missed by: author, epic tests, the four earlier static reviews; caught by the external gate.
+Rule next time: every production file needs one test that imports it; any loop that rotates a buffer needs a test that crosses the boundary; for each ordering guarantee write the test with the earlier operation held in flight.
+Note: DT-0-10 (journal_availability_test.dart) fails at head 5d5723fa independently of these fixes (bindUid(null) already looked up the scopes root); recorded as a known issue outside the sprint test set.
+
+## 2026-10-20 - Commit: fix(s04): treat unexpected recorder provider read failures at sign-out as cannot-check
+
+Kind: FAILURE.
+Facts: round 2 of the external gate found that my own M-02 fix still returned 'no recordings' when reading recordingJournalPortProvider or recorderPhaseProvider threw for any reason, so sign-out could still skip the hand-off hook. The same pattern existed in _recordingCount.
+Root cause: the fix handled the failure of the second step (listUnfinished) but copied the original catch-all around the first step; the 'not wired' case was never separated from real failures.
+Missed by: author and my tests (they only injected a throwing listing); caught by the external gate.
+Rule next time: when a fallback means 'feature absent', match the one explicit absence signal (here UnimplementedError) and treat everything else as unknown; test every step of a multi-step read with an injected failure.
+
+## 2026-10-20 - Commit: fix(s04): use an explicit recorder wired flag at sign-out and repair the fixtures broken by the fail-closed wipe marker
+
+Kind: FAILURE.
+Facts: (1) round 3 of the external gate showed that treating UnimplementedError as 'recorder not wired' still fails open for a wired provider that throws it; replaced by an explicit recorderWiredProvider set in main.dart under the same flag branch that overrides the journal port. (2) Our M-06 change (fail-closed wipe marker) broke 55 tests outside the sprint test set: every subclass or construction of UidScopedActivityJournal without scopesRoot (test/features/activity/repository and e2e). The test agent had judged one of them (s02_stale_view_e2e) 'unrelated' without proof.
+Root cause: (1) the second fix again matched an exception type instead of an explicit state; (2) a shared class was changed and only the sprint directory was run, not the directories that use the class.
+Missed by: author, test agent scope, earlier agent classification; caught by running the whole test/features/activity directory.
+Rule next time: when a production class used by other features changes, run the whole directory of every feature that uses it; never classify a failure as pre-existing without reading the diff of the code path it exercises.
+Known unresolved, pre-existing, outside the sprint set: journal_availability_test DT-0-10 (bindUid(null) resolves the scopes root at 5d5723fa) and app_shortcuts_test AC-KB-1b/1c (same-account session opens /workouts, no diff in lib/shared or lib/features/workouts).
 ## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
 
 Kind: SUCCESS.
@@ -1417,3 +1442,12 @@ SHORTCOMING: the previous merge commit placed an internal prototype under the ho
 ## 2026-10-20 - Integrate former-worktree WIP snapshots
 
 SHORTCOMING: the first pass missed uncommitted work in the former worktrees (aicoach, bodyscan, Phase2_s01). Rule: before moving or retiring a worktree folder, list its uncommitted and untracked files and snapshot them; compare each file to the integrate branch and run the touched test directories before importing code.
+## 2026-10-20 - Commit: merge: bring origin/phase2/main (AI Coach documentation) into phase2/s04 and resolve the documentation conflicts
+
+Kind: NEUTRAL.
+Facts: PR 14 was CONFLICTING because the AI Coach documentation gate landed on phase2/main after the S04 branch point. Only DECISION_LOG, LESSONS_LOG, DOCUMENT_REGISTRY and STATE.md conflicted; both sides of the logs were kept, the registry was regenerated and the S04 gate row of STATE.md was updated.
+Rule: when a gate approval is for an exact head, merge main into the branch only for pure documentation conflicts and show that the code diff is unchanged (git diff 0ee39ba1 HEAD -- mobile is empty).
+
+## 2026-10-20 - Integrate origin/phase2/main (s04 gate fixes, PR 14)
+
+Upstream fix commits superseded the uncommitted Phase2_s01 hardening patch (identical output for 4 of 5 files); verify obsolescence by applying the patch to its parent and diffing against the upstream tip.

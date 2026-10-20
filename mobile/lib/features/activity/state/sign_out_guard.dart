@@ -6,7 +6,10 @@
 ///
 /// Rules:
 ///  * `notEnabled` and an open journal with no activity: true, no prompt, no
-///    wipe call.
+///    wipe call. With no activity and no counted recording, the bounded
+///    pre-unbind hook is still run when the recording journal lists any
+///    recording (quarantined, FALLBACK or permission-revoked pending included);
+///    only a journal with no recording files at all skips it.
 ///  * `binding`, `gaveUp`, `failedToOpen` (and an open journal that cannot be
 ///    counted): the "cannot check" sheet with Try again (not for
 ///    `failedToOpen`), Sign out anyway and Cancel. Never a silent pass.
@@ -105,24 +108,47 @@ Future<bool?> _handleOpen(
   final int? recordings = await _recordingCount(ref);
   if (recordings == null) return null; // cannot check: never a silent pass
   if (!context.mounted) return false;
-  if (assessment.entryCount == 0 && recordings == 0) return true;
+  if (assessment.entryCount == 0 && recordings == 0) {
+    // Nothing to warn about. The fast path may skip the pre-unbind hook only
+    // when the recording journal lists no recording at all: quarantined,
+    // FALLBACK and permission-revoked pending recordings are not counted above
+    // but still need the bounded hand-off while the scope is bound.
+    final bool? anyFiles = await _anyRecordingFiles(ref);
+    if (anyFiles == null) return null; // cannot check: never a silent pass
+    if (!context.mounted) return false;
+    if (!anyFiles) return true;
+    return _leaveWithRecordings(context, ref, uid);
+  }
 
   return _warnLoop(
       context, ref, journal, uid, assessment.entryCount, recordings);
 }
 
 /// Active plus unfinished recordings of the bound account; null when they
-/// cannot be counted. 0 when the recorder is not wired at all (the port provider
-/// throws until it is overridden). An active recording is normally also listed
-/// as unfinished, so the larger of the two is used, never the sum.
+/// cannot be counted. 0 ONLY when `recorderWiredProvider` is false (flag off and
+/// non-Android builds never override it): that explicit flag is the sole "not
+/// wired" signal and no recorder provider is read. Once wired, ANY failure
+/// reading the port or the recorder phase, [UnimplementedError] included, is
+/// null: cannot check, never a silent pass (an exception type does not prove
+/// absence). An active recording is normally also listed as unfinished, so the
+/// larger of the two is used, never the sum.
 Future<int?> _recordingCount(WidgetRef ref) async {
+  if (!ref.read(recorderWiredProvider)) return 0;
   final RecordingJournalPort port;
-  final bool active;
   try {
     port = ref.read(recordingJournalPortProvider);
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  final bool active;
+  try {
     active = ref.read(recorderPhaseProvider).isActive;
-  } catch (_) {
-    return 0;
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
   }
   try {
     final List<UnfinishedRecording> list = await port.listUnfinished();
@@ -131,6 +157,41 @@ Future<int?> _recordingCount(WidgetRef ref) async {
   } catch (e) {
     debugPrint('activity: sign-out recording check failed '
         '(code=recording_count_failed, ${e.runtimeType})');
+    return null;
+  }
+}
+
+/// True when the recording journal lists any recording of the bound account at
+/// all (every status, including quarantined and permission-revoked pending ones)
+/// or a recording is active; null when that cannot be read. False ONLY when
+/// `recorderWiredProvider` is false (the explicit "not wired" flag; no recorder
+/// provider is read). Once wired, ANY failure reading the port or the recorder
+/// phase, [UnimplementedError] included, is null: cannot check, never a silent
+/// pass (an exception type does not prove absence).
+Future<bool?> _anyRecordingFiles(WidgetRef ref) async {
+  if (!ref.read(recorderWiredProvider)) return false;
+  final RecordingJournalPort port;
+  try {
+    port = ref.read(recordingJournalPortProvider);
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  final bool active;
+  try {
+    active = ref.read(recorderPhaseProvider).isActive;
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  try {
+    final List<UnfinishedRecording> list = await port.listUnfinished();
+    return list.isNotEmpty || active;
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_list_failed, ${e.runtimeType})');
     return null;
   }
 }

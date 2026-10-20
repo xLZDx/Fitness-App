@@ -314,7 +314,9 @@ void main() {
     test('recovery (start) throws: false, nothing bound, the half-open '
         'journal is closed', () async {
       final broken = _BrokenStart();
-      final scoped = UidScopedActivityJournal(factory: (_) async => broken);
+      final scoped = UidScopedActivityJournal(
+          scopesRoot: () async => '${w.base}/activity_journal',
+          factory: (_) async => broken);
       expect(await scoped.bindUid('A'), isFalse);
       expect(scoped.boundUid, isNull);
       expect(broken.closes, 1);

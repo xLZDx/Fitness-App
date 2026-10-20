@@ -413,13 +413,17 @@ void main() {
       final n = c.read(locationConsentProvider.notifier);
       prefs.hold = Completer<void>();
       final g = n.grant();
+      await settle(); // the grant's write is now held open inside setString
       final w = n.withdraw();
       await settle();
       expect(prefs.writes, isEmpty, reason: 'first write is held open');
       now = now.add(const Duration(seconds: 1));
       prefs.hold!.complete();
       prefs.hold = null;
-      expect(await g, isTrue);
+      // S04 gate 1 M-01: a grant called before a later withdrawal is stale, so
+      // it reports false (it still reached the disk first, the withdrawal
+      // overwrites it, and it never publishes `granted`).
+      expect(await g, isFalse);
       expect(await w, isTrue);
       expect(prefs.writes.length, 2);
       final first = LocationConsent.decode(prefs.writes.first);

@@ -104,7 +104,8 @@ class _Backend implements ActivitySummaryBackend {
 /// The real scoped journal plus a write log (with the uid bound at the time of
 /// the write) and gates on `read`, `list` and the n-th `listTombstones`.
 class _SpyJournal extends UidScopedActivityJournal {
-  _SpyJournal(ActivityJournalFactory f) : super(factory: f);
+  _SpyJournal(ActivityJournalFactory f, Future<String> Function() root)
+      : super(factory: f, scopesRoot: root);
 
   final List<String> writes = [];
   _Gate? readGate;
@@ -256,7 +257,7 @@ class _Rig {
 
   Future<void> open() async {
     w = await ScopedJournalWorld.create();
-    journal = _SpyJournal(w.factory);
+    journal = _SpyJournal(w.factory, () async => '${w.base}/activity_journal');
   }
 
   Future<void> push(String id, String? expectedUid) async {

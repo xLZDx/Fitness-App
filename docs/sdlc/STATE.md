@@ -77,7 +77,7 @@ Current phase: 9 Accept and 10 Report (S03 is merged: PR #11 into `phase2/main` 
 | 1 to 5 Docs | done | documents approved by GPT-PM on `a94c42a5` (round 7); PR #12 merged as `14513a87` |
 | 6 Build | done | lanes R1 to R9, R11, R13 on branch `phase2/s04` (commits `be03c368`, `1580c428`, `379b5ab1`, `1d76b05e`, `03143df3`) |
 | 7 Verify | done | epic tests by test agents; four independent code reviews (`docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md`); fixes in `a8804f88`; complete set of tests written this sprint: 1119 passed (`docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md`) |
-| 8 Gate | open | GPT-PM request on the exact head not yet sent |
+| 8 Gate | done | GPT-PM: round 1 (`5d5723fa`) MODIFY, round 2 (`63b03a7a`) MODIFY, round 3 (`ea5d1b8e`) MODIFY, round 4 APPROVE on `0ee39ba1`; sprint set 1171 passed (agent-run); PR #14 opened; merge of `origin/phase2/main` into the branch changes documentation files only |
 | 9 Accept | open | device rows on the Samsung S8 NOT_RUN; known gaps listed in the final findings file |
 | 10 Report | open | sprint report after the gate |
 

@@ -46,7 +46,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 14900 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 185000 |
+| `core/LESSONS_LOG.md` | Lessons log | 190208 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -339,6 +339,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 86721 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2265 |
 | `docs/commits/2026-10-20-integrate-aicoach-phase9.md` | Integrate docs/ai-coach-tdd-001 (b9622b62): AI Coach phase 9 documents | 1112 |
+| `docs/commits/2026-10-20-integrate-fitness-wip-snapshots.md` | Integrate former-worktree WIP snapshots (aicoach, bodyscan, Phase2_s01) | 2588 |
 | `docs/commits/2026-10-20-integrate-hardening-followups.md` | Integrate sprint/hardening-followups-2026-10 (74ba5adc) | 562 |
 | `docs/commits/2026-10-20-integrate-marketing-site-prototype.md` | Integrate marketing/site-prototype-2026-08-19 (f95e1c88) | 3173 |
 | `docs/commits/2026-10-20-integrate-move-site-prototype.md` | Move the SPTR site prototype out of the Firebase hosting root | 1364 |
@@ -422,10 +423,11 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_E_H.md` | S04 test findings, group EP_E_H (EP-E permission/consent, EP-H privacy guarantees) | 4451 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_EP_F_G_J.md` | S04 test findings, group EP_F_G_J (epics EP-F, EP-G, EP-J) | 5011 |
 | `docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md` | S04 final test run | 4743 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md` | S04 gate 1: functional test findings for the seven external-review fixes | 21750 |
 | `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191388 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 50670 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 50880 |
 | `reports/ENGLISH_HISTORICAL_REPORTS_INDEX.md` | Fitness App — English Historical Report Directory | 16056 |
 | `reports/citation_verification_report.en.md` | Fitness-App — Historical Source Citation Verification (English) | 2630 |
 | `reports/equipment_identity_citation_review.en.md` | Fitness-App — Equipment Identity Citation Review (English, Historical) | 2515 |

@@ -11,6 +11,12 @@ import 'battery_monitor.dart';
 import 'recorder_environment.dart';
 import 'recording_journal_port.dart';
 
+/// True only when the app overrides the recorder ports (GPS_RECORDER flag on and
+/// Android). The single source of truth for "a recorder is present": callers
+/// that must tell "not wired" from "wired but failing" read this flag, never
+/// the type of an exception thrown by a port provider.
+final recorderWiredProvider = Provider<bool>((ref) => false);
+
 final recordingJournalPortProvider = Provider<RecordingJournalPort>(
   (ref) => throw UnimplementedError(
     'recordingJournalPortProvider must be overridden with a RecordingJournalPort',
