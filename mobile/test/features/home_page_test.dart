@@ -20,10 +20,23 @@ import 'package:fitness_app/features/home/state/home_dashboard_providers.dart';
 import 'package:fitness_app/features/programmes/data/mock_programme_repository.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
+import 'package:fitness_app/features/training_context/data/training_context.dart';
+import 'package:fitness_app/features/training_context/state/training_context_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
 import 'package:fitness_app/shared/widgets/hud/hud_scaffold.dart';
+
+/// Holds a training-context answer in memory (no SharedPreferences, no uid).
+class _FakeTrainingContext extends TrainingContextNotifier {
+  _FakeTrainingContext(this.initial);
+  final TrainingContextAnswer initial;
+  @override
+  Future<TrainingContextAnswer> build() async => initial;
+  @override
+  Future<void> select(TrainingContextAnswer answer) async =>
+      state = AsyncData(answer);
+}
 
 Future<void> _setLargeSurface(WidgetTester tester) async {
   tester.view.physicalSize = const Size(800, 1600);
@@ -64,6 +77,10 @@ Widget _buildApp({
   /// case about what it was about; `an unscreened user gets the refusal, not
   /// an empty state` covers the other side deliberately.
   SafetyContext? safety,
+  // Defaults to skipped so cases about the suggestions list are not hidden
+  // behind the ask-first chooser; pass `unanswered` to see that chooser.
+  TrainingContextAnswer contextAnswer = TrainingContextAnswer.skipped,
+  List<Override> extraOverrides = const [],
 }) {
   final router = GoRouter(
     initialLocation: '/home',
@@ -101,6 +118,9 @@ Widget _buildApp({
       // from provider through card to navigation.
       if (catalog != null)
         forYouExercisesProvider.overrideWith((_) async => catalog),
+      ...extraOverrides,
+      trainingContextProvider
+          .overrideWith(() => _FakeTrainingContext(contextAnswer)),
       if (weekStrip != null)
         weekStripProvider.overrideWithValue(weekStrip),
       safetyContextProvider.overrideWith((_) async =>
@@ -114,8 +134,9 @@ Widget _buildApp({
       localizationsDelegates: kTestLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
-      builder: (context, child) =>
-          AuroraBackground(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => Material(
+          type: MaterialType.transparency,
+          child: AuroraBackground(child: child ?? const SizedBox.shrink())),
     ),
   );
 }
@@ -237,6 +258,67 @@ void main() {
 
       expect(find.text('player_barbell_full_squat'), findsOneWidget,
           reason: 'the card must reach the real exercise, not nothing');
+    });
+
+    testWidgets(
+        'unanswered training context: the selector comes first, no suggestions '
+        'until a choice, then the list regenerates on every change',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(
+        contextAnswer: TrainingContextAnswer.unanswered,
+        extraOverrides: [
+          // One list per context: proves the list is rebuilt for the choice.
+          forYouExercisesInContextProvider.overrideWith((ref, c) async => [
+                if (c == TrainingContext.yoga)
+                  _ex('cobra', 'Cobra Pose', ['back'])
+                else
+                  _ex('goblet', 'Goblet Squat', ['quads']),
+              ]),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('training-context.selector')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byKey(const Key('training-context.skip')), findsOneWidget);
+      expect(find.byKey(const Key('suggestion-goblet')), findsNothing,
+          reason: 'nothing is generated before the question is answered');
+      expect(find.byKey(const Key('suggestions-empty')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('training-context.gymMachines')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byKey(const Key('suggestion-goblet')), 300,
+          scrollable: find.byType(Scrollable).first);
+      expect(find.byKey(const Key('suggestion-goblet')), findsOneWidget);
+      expect(find.byKey(const Key('suggestion-context-goblet')), findsOneWidget,
+          reason: 'the card says the list was built for the chosen context');
+
+      await tester.scrollUntilVisible(
+          find.byKey(const Key('training-context.yoga')), -300,
+          scrollable: find.byType(Scrollable).first);
+      await tester.tap(find.byKey(const Key('training-context.yoga')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byKey(const Key('suggestion-cobra')), 300,
+          scrollable: find.byType(Scrollable).first);
+      expect(find.byKey(const Key('suggestion-cobra')), findsOneWidget);
+      expect(find.byKey(const Key('suggestion-goblet')), findsNothing);
+    });
+
+    testWidgets('a skipped context shows no context line on the card',
+        (tester) async {
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(catalog: [
+        _ex('barbell_full_squat', 'Barbell Full Squat', ['quads']),
+      ]));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Barbell Full Squat'), 300,
+          scrollable: find.byType(Scrollable).first);
+      expect(find.byKey(const Key('suggestion-context-barbell_full_squat')),
+          findsNothing);
     });
 
     testWidgets('an empty catalog shows an honest empty state, not filler',

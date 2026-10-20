@@ -1,0 +1,143 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fitness_App full-project QA — final report</title><style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#555;--line:#d6d6d6;--acc:#0b57d0;--bad:#b3261e;--warn:#8a5a00}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--fg:#ececec;--mut:#aaa;--line:#333;--acc:#8ab4f8;--bad:#f2b8b5;--warn:#f0c36d}}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,Segoe UI,sans-serif;margin:0;padding:16px;max-width:1100px;margin-inline:auto}
+h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.15rem;margin:1.6em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:.2em}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:color-mix(in srgb,var(--fg) 6%,transparent)}.MAJOR{color:var(--bad);font-weight:700}.MEDIUM{color:var(--warn);font-weight:700}.MINOR{color:var(--mut);font-weight:700}
+.wrap{overflow-x:auto}code{font-size:.85em}
+</style></head><body>
+<header><h1>Fitness_App full-project QA — final report</h1><p>2026-10-13</p></header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; sprint/full-project-qa-2026-10-13 @ 8b4b23a</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+<main>
+<p>Nine agents ran over the whole project, full test suites, plus four extra operator tasks. Per the operator&#x27;s &#x27;change nothing&#x27; instruction, NO product code was changed: the implementer agents&#x27; edits are held in a git stash and every finding below is report-only. Branch sprint/full-project-qa-2026-10-13 (branched from the sprint branch; PR #2 awaits merge separately).</p>
+<h2>Test results</h2>
+<div class="wrap"><table><thead><tr><th>Area</th><th>Result</th><th>Note</th></tr></thead><tbody>
+<tr><td>Flutter (full suite)</td><td>4035 passed, 26 failed</td><td>25 are Windows-environment golden tests; 1 was a test defect around overlapping downloads (fixed, 5/5 green). No product defects.</td></tr>
+<tr><td>Cloud Functions</td><td>632 + 515 passed, 0 failed</td><td>functions: 25 suites; equipment-identity: 28 suites. 27 tests added (Stripe webhook, deletion, export). Firestore emulator was not run.</td></tr>
+<tr><td>Python tooling</td><td>catalog 211, ct1 228, ml 93, ops 64, review 219 — all green</td><td>scripts/equipment_identity did not finish (~19%, state unknown). 36 tests added for tools/.</td></tr>
+<tr><td>New ratchet tests</td><td>2 files, passing</td><td>Catalog (scripts/catalog/test_catalog_text_ratchet.py) and 100 profiles (mobile/test/features/personalisation/recommendation_honesty_100_test.dart): they pin today&#x27;s gaps and fail if they grow.</td></tr>
+</tbody></table></div>
+<h2>Review findings (by severity)</h2>
+<div class="wrap"><table><thead><tr><th>#</th><th>Severity</th><th>Where</th><th>Finding</th><th>Basis</th></tr></thead><tbody>
+<tr><td>F1</td><td><span class="MAJOR">MAJOR</span></td><td><code>mobile/lib/core/router/app_router.dart:445-482; main.dart</code></td><td>Social feed, celebrity plans, video contribution, moderation and team feed only have Mock repositories, main.dart does not override them, and their routes are reachable from profile, settings and the exercise reference. A release build shows fake data and what the user submits is never stored.</td><td>FACT (проверено мной / verified by me)</td></tr>
+<tr><td>F2</td><td><span class="MAJOR">MAJOR</span></td><td><code>main.dart:538-545; marketplace_page.dart:156-170</code></td><td>The coach listing is a mock while the booking service is real (Stripe Connect). The booking flow is a stub (fixed time, no payment). The only guard is a demo banner.</td><td>FACT</td></tr>
+<tr><td>F3</td><td><span class="MAJOR">MAJOR</span></td><td><code>functions/src/index.ts:933-1024, 1114; deleteAccount :2214</code></td><td>After account deletion a Stripe webhook can recreate the subscription document (with stripeCustomerId) for the deleted uid and nothing ever sweeps it. The ID token stays valid for up to an hour (revokeRefreshTokens is not called).</td><td>FACT путь / INFERENCE время</td></tr>
+<tr><td>F4</td><td><span class="MAJOR">MAJOR</span></td><td><code>offline_video_providers.dart:95-96</code></td><td>While the schedule is loading or errored, prefetch treats the week as empty and tells a paying user there is nothing to download.</td><td>FACT</td></tr>
+<tr><td>F5</td><td><span class="MAJOR">MAJOR</span></td><td><code>local_notification_service.dart:112</code></td><td>When notification permission is denied the reminder is silently not scheduled; the method returns void so the UI may report success.</td><td>FACT / INFERENCE (UI)</td></tr>
+<tr><td>F6</td><td><span class="MAJOR">MAJOR</span></td><td><code>app_router.dart:299-320</code></td><td>Race: an already-onboarded user can be sent to /onboarding on cold start before the profile has loaded.</td><td>INFERENCE</td></tr>
+<tr><td>F7</td><td><span class="MAJOR">MAJOR</span></td><td><code>AndroidManifest.xml:9; local_notification_service.dart:79,136</code></td><td>USE_EXACT_ALARM is declared while scheduling is inexact and the exact-alarm permission is still requested: Google Play rejection risk and a needless system screen.</td><td>FACT несоответствие / INFERENCE отказ</td></tr>
+<tr><td>F8</td><td><span class="MAJOR">MAJOR</span></td><td><code>platform_health_service.dart:30,222-231</code></td><td>A workout is written with calories but the calorie write permission is not declared: the write may silently fail.</td><td>INFERENCE</td></tr>
+<tr><td>F9</td><td><span class="MAJOR">MAJOR</span></td><td><code>progress_photos_providers.dart:193-194; firestore_*:50-90</code></td><td>On a store failure the photos screen falls back to a demo grid; two repositories read FirebaseAuth outside Riverpod (two ownership models for the current user).</td><td>FACT / INFERENCE</td></tr>
+<tr><td>F10</td><td><span class="MAJOR">MAJOR</span></td><td><code>scripts/ops, scripts/l10n, scripts/catalog</code></td><td>fix_const.py ignores the flutter analyze exit code; verify_clip_signing.py retries without certificate verification while carrying the Authorization token; urlopen has no timeout; firebase_api.py exits 0 after an HTTP error; upload_video_library.py targets the legacy traidingbot-b4061 buckets and reads whole clips into memory.</td><td>FACT</td></tr>
+<tr><td>F11</td><td><span class="MEDIUM">MEDIUM</span></td><td><code>firestore_machine_cards.dart:129; firestore_recognition_history.dart:129</code></td><td>clear() deletes the whole collection in one batch (500-op limit): a user with &gt;500 documents can never clear.</td><td>FACT</td></tr>
+<tr><td>F12</td><td><span class="MEDIUM">MEDIUM</span></td><td><code>scripts/ci/data_lifecycle_policy.json:213-232; account_export.ts</code></td><td>Export and lifecycle policy miss stats/workout_sessions and the server-side equipment-identity sessions/telemetry (policy claims &#x27;no Admin writer&#x27; but one exists).</td><td>FACT / INFERENCE</td></tr>
+<tr><td>F13</td><td><span class="MINOR">MINOR</span></td><td><code>разное / various</code></td><td>Unlogged swallowed errors (streak, health-profile migration, reminder cancel, tier parse → free); booking webhook without existence check; reminder ID from String.hashCode; dead authListenable; unused Bluetooth/FGS permissions; no debug suffix for Wear; bookingOps two-sided delete race; Stripe event order without event.id; no Firestore shape rules; non-atomic json_io; git without timeout in ML scripts.</td><td>FACT / INFERENCE</td></tr>
+</tbody></table></div>
+<h2>Four extra tasks</h2>
+<div class="wrap"><table><thead><tr><th>Operator task</th><th>Outcome</th></tr></thead><tbody>
+<tr><td>1. Exercise descriptions vs videos</td><td>0 of 1887 exercises lack a description (summary and steps filled everywhere, the Russian overlay covers every id). The purpose field is empty for 1484. Video sample: 40 exercises, 36 match, 0 mismatch, 4 unclear. Problems: for 291 exercises the equipment named in the title disagrees with equipmentId (often bench_press on dumbbell/band moves), 83 ids in 38 groups share identical steps, 182 have no muscles, 3 truncated video names, 1 clip missing, 1 quarantined id still in the catalog file. Nothing needs descriptions added where &#x27;missing&#x27; — it is purpose that is missing. Nothing added yet.</td></tr>
+<tr><td>2. 100 accounts and honest selection</td><td>100 deterministic profiles (not real accounts). Determinism: 0 differences. Distinct outputs: plan 32, suggestions 34, programme 70. Contraindication, equipment and level violations: 0. But: age is never read (20 minors and 10 seniors get the same output as a 30-year-old), 32 questionnaire fields change nothing, 89 yoga/stretch cards are labelled &#x27;builds muscle/strength&#x27;, 36 &#x27;filtered N for injury&#x27; texts also count equipment, a rib injury is silently ignored (6), 474 programme rows with bench_press go to home users without a bench (inference), 37 max-effort loads for rehab/mobility goals, 12 with no stretching and 10 with no cardio for such goals, 9 plans exceed the stated 45 minutes. Verdict: recommendations are safe on contraindications but NOT fully honest about age, reasons and goal.</td></tr>
+<tr><td>3. Live coach: ≥10 exercises, one engine</td><td>The engine is already partly data-driven (poseTargetsByTag, MM-Fit measuredRepConfigs, repSignalsByTag); the squat is hard-coded in the default selection, depth signal, classifiers and FormCueKey. Data exists for squat, lunge, overhead press, bicep curl (push-up and crunch are below the 80% bar, the hip-hinge deadlift uses an authored signal). No data for bent-over row, lateral raise, plank, glute bridge, pull-up, step-up, dips; calf raise is excluded (ML Kit has no heel/toe). Needed: a JSON exercise registry, one generic classifier, ru/en message keys. Risks: 2D angles depend on camera view, no spine/rotation landmarks, medical wording. Not implemented.</td></tr>
+<tr><td>4. Body-comparison screen from the video</td><td>The video (2:36) shows a third-party reference app: distance/light/position checks → 3-2-1 countdown → auto shutter → three poses (front, side, back). The before/after view itself is empty in the clip. Fitness_App has encrypted storage, consent, review and ML Kit pose; it lacks auto-shutter, a three-pose sequence, scan history, keypoint alignment, slider/overlay. Plan: 8 steps, about 24–28 days (MVP 12–14), no new packages. The server-side body-composition estimate contradicts &#x27;photos never leave the phone&#x27;. Not implemented.</td></tr>
+</tbody></table></div>
+<h2>State</h2>
+<div class="wrap"><table><thead><tr><th>What</th><th>State</th></tr></thead><tbody>
+<tr><td>Product code</td><td>Unchanged. Branch sprint/full-project-qa-2026-10-13 = commit 8b4b23a plus additive tests only (uncommitted).</td></tr>
+<tr><td>Implementer agents&#x27; fixes</td><td>Unfinished and unverified; held in git stash@{0} &#x27;held-by-operator-2026-10-13&#x27; and as a patch copy in the scratchpad (impl_agents_uncommitted.patch). Restore with git stash pop on your word.</td></tr>
+<tr><td>PR #2</td><td>Open, GPT-PM APPROVE on 8b4b23a (round 3). Not merged.</td></tr>
+<tr><td>GPT-PM review of this QA</td><td>Not requested: there are no fixes to review yet. Request it after the fixes.</td></tr>
+<tr><td>Not run / unverified</td><td>Firestore emulator (rules, e2e); scripts/equipment_identity to completion; scripts/dev/*.tests.py; Kotlin was not compiled; visual check of the girl clips; refactor-cleaner, doc-updater and build-error-resolver were not run (no build errors, and cleaning code before the fixes is premature).</td></tr>
+</tbody></table></div>
+<h2>Decisions needed from you:</h2><ol><li>Allow fixes: &#x27;fix everything&#x27; or a numbered subset of F1–F13 and the four tasks.</li><li>F1: hide demo features in release (my proposal, flag kDemoFeaturesEnabled) or keep them with a &#x27;demo&#x27; banner?</li><li>Body comparison: answers to the 9 questions from the agent report (comparison modes, three poses, camera, voice, reminders, paid gate, re-consent, minors wording, MVP vs full plan).</li><li>Honest selection: what should happen for age &lt;18 and seniors (refuse, cautious path, warning) — a product decision.</li></ol>
+</main>
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body></html>

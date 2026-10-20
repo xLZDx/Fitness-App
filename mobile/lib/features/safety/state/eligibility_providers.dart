@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../equipment/state/equipment_providers.dart';
 import '../../profile/data/profile_models.dart';
+import '../../personalisation/data/recommendation_hints.dart';
+import '../../equipment/data/equipment_models.dart' show ExerciseDifficulty;
+import '../data/age_policy.dart';
 import '../data/eligibility.dart';
 import '../data/par_q.dart';
 
@@ -37,12 +40,7 @@ final safetyContextProvider = FutureProvider<SafetyContext>((ref) async {
   if (profile == null) {
     return SafetyContext(screening: kUnscreened);
   }
-  return SafetyContext(
-    screening: screen(profile.health.screening),
-    injuries: profile.health.injuries,
-    health: profile.health.flags,
-    equipment: profile.equipment,
-  );
+  return safetyContextFor(profile);
 });
 
 /// The same context built from the in-progress questionnaire draft.
@@ -56,9 +54,21 @@ final safetyContextProvider = FutureProvider<SafetyContext>((ref) async {
 /// why the deleted `draftSafetyVerdictProvider` had no consumer: the draft
 /// path was already served, by the version that carries the whole context
 /// rather than the verdict alone.
-SafetyContext safetyContextFor(UserProfile profile) => SafetyContext(
+///
+/// Also carries the age band and the gentle-selection switch, so every surface
+/// that reads this context applies the same cautious policy. [now] exists for
+/// tests; the age is computed from the calendar year.
+SafetyContext safetyContextFor(UserProfile profile, {DateTime? now}) =>
+    SafetyContext(
       screening: screen(profile.health.screening),
       injuries: profile.health.injuries,
       health: profile.health.flags,
       equipment: profile.equipment,
+      ageBand: ageBandForPersonal(
+          profile.personal, (now ?? DateTime.now()).year),
+      gentleSelection: gentleSelectionFor(profile),
+      maxDifficulty: switch (profile.level.tier) {
+        FitnessTier.never || FitnessTier.beginner => ExerciseDifficulty.beginner,
+        _ => null,
+      },
     );

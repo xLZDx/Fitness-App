@@ -45,7 +45,12 @@ jest.mock("firebase-admin", () => {
   firestoreFn.FieldValue = {
     serverTimestamp: jest.fn(() => "__SERVER_TIMESTAMP__"),
   };
-  return { initializeApp: jest.fn(), firestore: firestoreFn };
+  // The webhook checks the Auth user still exists before writing user data.
+  return {
+    initializeApp: jest.fn(),
+    firestore: firestoreFn,
+    auth: jest.fn(() => ({ getUser: jest.fn(async () => ({})) })),
+  };
 });
 
 const constructEvent = jest.fn();

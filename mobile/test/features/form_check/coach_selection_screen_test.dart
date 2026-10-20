@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/form_check/data/coach_phases.dart';
+import 'package:fitness_app/features/form_check/data/coach_registry.dart';
 import 'package:fitness_app/features/form_check/data/pose_detector_service.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
 import 'package:fitness_app/features/form_check/form_check_page.dart';
@@ -73,9 +75,18 @@ Widget _page(ProviderContainer container) => UncontrolledProviderScope(
       ),
     );
 
+/// The registry exactly as shipped, read from the asset file.
+final _realRegistry = CoachRegistry.parse(
+    File('assets/data/coach_exercises.json').readAsStringSync());
+
 ProviderContainer _container(PoseDetectorService svc) {
   final c = ProviderContainer(
-    overrides: [poseDetectorServiceProvider.overrideWithValue(svc)],
+    overrides: [
+      poseDetectorServiceProvider.overrideWithValue(svc),
+      // The real bundled registry (eight beta movements) is what ships, so it
+      // is what the picker is laid out against.
+      coachRegistrySnapshotProvider.overrideWithValue(_realRegistry),
+    ],
   );
   addTearDown(c.dispose);
   return c;
@@ -400,5 +411,110 @@ void main() {
 
     expect(c.read(coachSessionProvider).phase, CoachPhase.selection);
     expect(find.byKey(const Key('coach.selection.start')), findsOneWidget);
+  });
+
+  group('layout with the real registry', () {
+    for (final size in [const Size(360, 640), const Size(400, 1600)]) {
+      for (final scale in [1.0, 1.5]) {
+        testWidgets(
+            'start button is hittable at ${size.width.toInt()}x'
+            '${size.height.toInt()}, text scale $scale', (t) async {
+          t.view.physicalSize = size;
+          t.view.devicePixelRatio = 1.0;
+          addTearDown(t.view.resetPhysicalSize);
+          addTearDown(t.view.resetDevicePixelRatio);
+          t.platformDispatcher.textScaleFactorTestValue = scale;
+          addTearDown(t.platformDispatcher.clearTextScaleFactorTestValue);
+          final svc = _SilentService();
+          final c = _container(svc);
+          await _pumpToSelection(t, c);
+
+          // A registry-only movement is listed, so the picker really is the
+          // long one that used to push the button away.
+          expect(find.byKey(const Key('form_check.exercise.plank')),
+              findsOneWidget);
+          final start = find.byKey(const Key('coach.selection.start'));
+          expect(start, findsOneWidget);
+          // Fully on screen, not merely built.
+          final rect = t.getRect(start);
+          expect(rect.bottom, lessThanOrEqualTo(size.height));
+          expect(rect.top, greaterThanOrEqualTo(0));
+          expect(t.takeException(), isNull);
+
+          // Scrolling the content never moves the button.
+          await t.drag(find.byKey(const Key('coach.selection.scroll')),
+              const Offset(0, -400));
+          await t.pump();
+          expect(t.getRect(start), rect);
+
+          await t.tap(start);
+          await t.pump();
+          await t.pump();
+          expect(svc.startCount, 1,
+              reason: 'the button is hittable, not just visible');
+        });
+      }
+    }
+  });
+
+  group('beta badge', () {
+    testWidgets('a beta movement is badged on the chip and explained',
+        (t) async {
+      _phoneSized(t);
+      final c = _container(_SilentService());
+      await _pumpToSelection(t, c);
+      expect(find.byKey(const Key('form_check.beta_note')), findsNothing,
+          reason: 'squat is not a registry beta row');
+
+      c.read(selectedExerciseProvider.notifier).state = FormExercise.plank;
+      await t.pump();
+      expect(find.byKey(const Key('form_check.beta_note')), findsOneWidget);
+      expect(find.text('Бета'), findsOneWidget);
+      expect(
+          find.textContaining('не медицинская рекомендация'), findsOneWidget);
+      final chip = find.byKey(const Key('form_check.exercise.plank'));
+      expect(
+          find.descendant(of: chip, matching: find.textContaining('· Бета')),
+          findsOneWidget);
+      final squatChip = find.byKey(const Key('form_check.exercise.squat'));
+      expect(
+          find.descendant(
+              of: squatChip, matching: find.textContaining('Бета')),
+          findsNothing);
+    });
+
+    testWidgets('English wording and the note on the live coaching screen',
+        (t) async {
+      _phoneSized(t);
+      final c = _container(_SilentService());
+      c.read(selectedExerciseProvider.notifier).state = FormExercise.pullUp;
+      await t.pumpWidget(UncontrolledProviderScope(
+        container: c,
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const FormCheckPage(),
+        ),
+      ));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const Key('coach.intro.continue')));
+      await t.pump();
+      await t.pump();
+      expect(find.text('Beta'), findsOneWidget);
+      expect(
+          find.text(
+              'Guidance is advisory while we calibrate; not medical advice.'),
+          findsOneWidget);
+
+      await t.tap(find.byKey(const Key('coach.selection.start')));
+      await t.pump();
+      await t.pump();
+      expect(c.read(coachPhaseControllerProvider).phase,
+          CoachPhase.qualityCheck);
+      expect(find.byKey(const Key('form_check.beta_note')), findsOneWidget,
+          reason: 'the live coaching screen carries the same note');
+    });
   });
 }

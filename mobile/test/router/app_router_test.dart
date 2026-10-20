@@ -569,11 +569,112 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
+      // The profile snapshot never arrives in this scenario (no auth event, so
+      // no profile watch), so the router holds the signed-in guest on /splash
+      // instead of guessing "not onboarded" (an onboarded user must not be
+      // bounced through the questionnaire before the profile loads).
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/splash',
+          reason: 'context.go(/home) resolved, but without a profile '
+              'snapshot the router must hold on /splash');
+
+      // After the 5 s bound the router decides with what is cached (nothing:
+      // not onboarded). Fake clock: pump advances the Timer deterministically.
+      await tester.pump(const Duration(seconds: 4));
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/splash',
+          reason: 'still inside the 5 s bound');
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
       expect(router.routerDelegate.currentConfiguration.uri.path, '/onboarding',
-          reason: 'context.go(\'/home\') fires as soon as the awaited '
-              'signInAnonymously() future resolves, independent of the '
-              'authStateChanges() stream this whole investigation started '
-              'from');
+          reason: 'after the bound a never-delivered profile falls back to '
+              'the cached (absent) profile: not onboarded');
+    });
+
+    // Regression: after the profile arrived and the hold was released, the
+    // cancelled 5 s Timer stayed non-null, so `holdTimer ??= Timer(...)` never
+    // armed a new bound on the NEXT hold (sign-out / sign-in with a stalled
+    // profile stream left the user stuck on the splash route).
+    testWidgets(
+        'a second hold after a released one still gets its own 5 s bound',
+        (tester) async {
+      final auth = MockAuthRepository(latency: Duration.zero);
+      final profiles = _GatedProfileRepository();
+      late GoRouter router;
+      String pathOf(GoRouter r) =>
+          r.routerDelegate.currentConfiguration.uri.path;
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(auth.dispose);
+            return auth;
+          }),
+          profileRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(profiles.dispose);
+            return profiles;
+          }),
+        ],
+        child: Consumer(
+          builder: (context, ref, _) {
+            router = ref.watch(appRouterProvider);
+            return MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            );
+          },
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(pathOf(router), '/login');
+
+      // First hold: signed in, profile stream silent -> held on /splash.
+      final first = (await tester.runAsync(auth.signInAnonymously))!;
+      await tester.pump();
+      await tester.pump();
+      router.go('/home');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pathOf(router), '/splash');
+
+      // The profile arrives (absent): the hold is released.
+      profiles.emitAbsent(first.uid);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pathOf(router), '/onboarding');
+
+      // Sign out, sign in as a new guest whose profile stream stays silent.
+      await tester.runAsync(auth.signOut);
+      // Let the sign-out's null snapshot reach the router before the next
+      // sign-in, so it cannot be mistaken for the new user's snapshot.
+      await tester.runAsync(() =>
+          Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pathOf(router), '/login');
+      await tester.runAsync(auth.signInAnonymously);
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump();
+      await tester.pump();
+      router.go('/home');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pathOf(router), '/splash',
+          reason: 'second hold: no snapshot yet for the new uid');
+
+      await tester.pump(const Duration(seconds: 4));
+      expect(pathOf(router), '/splash', reason: 'still inside the 5 s bound');
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pathOf(router), '/onboarding',
+          reason: 'the second hold must arm its own 5 s bound and decide '
+              'with cached data instead of staying on /splash forever');
     });
   });
 
@@ -623,6 +724,31 @@ void main() {
       expect(redirectFor(auth, profiles, '/login'), isNull);
     });
 
+    test('signed-in, profile snapshot not loaded yet: held on /splash',
+        () async {
+      await auth.signInAnonymously();
+      expect(redirectFor(auth, profiles, '/home', profileLoaded: false),
+          '/splash',
+          reason: 'cached() is null before the first snapshot; do not guess '
+              '"not onboarded"');
+    });
+
+    test('signed-in, profile loaded and absent: not onboarded -> /onboarding',
+        () async {
+      await auth.signInAnonymously();
+      expect(redirectFor(auth, profiles, '/home', profileLoaded: true),
+          '/onboarding');
+    });
+
+    test('signed-in, onboarded profile: /home is reachable (loaded or cached)',
+        () async {
+      final guest = await auth.signInAnonymously();
+      await onboard(guest.uid);
+      expect(redirectFor(auth, profiles, '/home', profileLoaded: true), isNull);
+      expect(redirectFor(auth, profiles, '/home', profileLoaded: false), isNull,
+          reason: 'a cached onboarded profile never needs the hold');
+    });
+
     test('a Google user is still bounced off /login', () async {
       final user = (await auth.signInWithGoogle()).user;
       await onboard(user.uid);
@@ -647,6 +773,29 @@ void main() {
           reason: 'once they have a credential, /login has nothing to offer');
     });
   });
+}
+
+/// Profile repository whose `watch` stays silent until the test emits, so the
+/// router's "profile not loaded yet" hold can be held open deterministically.
+class _GatedProfileRepository extends MockProfileRepository {
+  _GatedProfileRepository() : super(latency: Duration.zero);
+  final Map<String, StreamController<UserProfile?>> _gates = {};
+
+  @override
+  Stream<UserProfile?> watch(String uid) => _gates
+      .putIfAbsent(uid, () => StreamController<UserProfile?>.broadcast())
+      .stream;
+
+  /// Delivers "snapshot loaded, no profile document" for [uid].
+  void emitAbsent(String uid) => _gates[uid]?.add(null);
+
+  @override
+  void dispose() {
+    for (final c in _gates.values) {
+      c.close();
+    }
+    super.dispose();
+  }
 }
 
 class _RecordingMockAuth extends MockAuthRepository {

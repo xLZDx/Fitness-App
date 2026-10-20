@@ -296,6 +296,20 @@ class PersonalInfo {
   /// that away silently would be a worse answer than admitting it.
   int? ageAt(int year) => birthYear == null ? _storedAge : year - birthYear!;
 
+  /// The LOWEST age this person can be as of [year], for age-restricted
+  /// decisions (the under-18 policy and the adults-only body scan).
+  ///
+  /// A birth year brackets the age to two values: [ageAt] is the highest (they
+  /// have had their birthday this year) and one less is the lowest (they have
+  /// not yet). Someone born in December 2008 is 17 on 1 January 2026 although
+  /// `2026 - 2008 = 18`, so an age gate that read [ageAt] alone would admit a
+  /// minor for most of the year they turn 18. This is the figure such a gate
+  /// uses, so the boundary year counts as the safer side. A profile that
+  /// predates [birthYear] carries a whole-number age and returns it unchanged,
+  /// and an unknown age stays unknown.
+  int? lowestAgeAt(int year) =>
+      birthYear == null ? _storedAge : year - birthYear! - 1;
+
   int? get age => ageAt(DateTime.now().year);
 
   bool get isComplete =>

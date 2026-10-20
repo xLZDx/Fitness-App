@@ -353,7 +353,8 @@ def main(argv: list[str] | None = None) -> int:
 
     result = audit(args.registry)
     if args.json:
-        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True,
+                         allow_nan=False))
     else:
         print(f"  {result['claims']} quoted metrics in {result['registry']}")
         for verdict in VERDICTS:

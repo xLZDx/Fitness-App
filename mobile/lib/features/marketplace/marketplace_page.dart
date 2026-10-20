@@ -8,6 +8,7 @@ import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/coach_listing.dart';
+import 'data/coach_marketplace_service.dart';
 import 'state/marketplace_providers.dart';
 
 /// Coach marketplace page (TX.5). Lists vetted coaches with their
@@ -21,6 +22,7 @@ class MarketplacePage extends ConsumerWidget {
     final theme = Theme.of(context);
     final listAsync = ref.watch(coachListingsProvider);
     final isDemo = ref.watch(marketplaceListingsAreDemoProvider);
+    final blocked = ref.watch(marketplaceBlockedReasonProvider) != null;
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).marketplaceCoaches),
       body: ListView(
@@ -29,6 +31,12 @@ class MarketplacePage extends ConsumerWidget {
           DemoDataBanner(
             isDemo: isDemo,
             message: AppLocalizations.of(context).marketplaceDemoListings,
+          ),
+          // Real listings but no payment sheet (release): say so explicitly
+          // instead of offering a booking that cannot be paid.
+          DemoDataBanner(
+            isDemo: blocked && !isDemo,
+            message: AppLocalizations.of(context).marketplaceBookingNotAvailable,
           ),
           HudPanel(
             child: Text(
@@ -44,7 +52,7 @@ class MarketplacePage extends ConsumerWidget {
             data: (list) => Column(
               children: [
                 for (final c in list) ...[
-                  _CoachCard(coach: c, bookingDisabled: isDemo),
+                  _CoachCard(coach: c, bookingDisabled: blocked),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -154,12 +162,24 @@ class _CoachCard extends ConsumerWidget {
   }
 
   Future<void> _bookSheet(BuildContext context, WidgetRef ref) async {
-    final svc = ref.read(coachMarketplaceServiceProvider);
+    final svc = ref.read(guardedCoachMarketplaceServiceProvider);
     final scaffoldCtx = context;
-    final result = await svc.bookSession(
-      coachUid: coach.uid,
-      startsAt: DateTime.now().add(const Duration(days: 1)),
-    );
+    final ({String bookingId, String clientSecret, int amountCents}) result;
+    try {
+      result = await svc.bookSession(
+        coachUid: coach.uid,
+        startsAt: DateTime.now().add(const Duration(days: 1)),
+      );
+    } on MarketplaceUnavailableException {
+      // Never report success for a booking the service refused.
+      if (!scaffoldCtx.mounted) return;
+      ScaffoldMessenger.of(scaffoldCtx).showSnackBar(SnackBar(
+        content: Text(
+            AppLocalizations.of(scaffoldCtx).marketplaceBookingNotAvailable),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
     if (!scaffoldCtx.mounted) return;
     ScaffoldMessenger.of(scaffoldCtx).showSnackBar(
       SnackBar(

@@ -4,11 +4,25 @@ import '../../ai_planner/data/plan_builder.dart';
 import '../../ai_planner/data/workout_plan.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../equipment/state/equipment_providers.dart';
+import '../../personalisation/data/recommendation_hints.dart';
 import '../../personalisation/state/personalisation_providers.dart';
 import '../../recovery/state/recovery_providers.dart';
 import '../../safety/state/eligibility_providers.dart';
 import 'questionnaire_notifier.dart';
 
+/// ## Deliberately context-free (no training-context selector here)
+///
+/// The training context (gym / outdoors / home / yoga) is a per-account,
+/// per-session answer asked where a plan is GENERATED for use (AI planner, home
+/// feed, programmes) -- `training_context.dart` says it is asked at
+/// recommendation time precisely because it is not an onboarding fact. The
+/// preview is built from an unsaved draft before any account state exists, and
+/// the questionnaire already asked where and with what the person trains
+/// (`step_equipment.dart`), so the preview keeps using the profile's own
+/// equipment answers, exactly as the unanswered/skipped context does.
+/// Asking again inside a 12-step flow would double the question without
+/// changing what the preview is for.
+///
 /// O10 — the preview at the end of onboarding, built by the REAL generator.
 ///
 /// The spec forbids a fixture here, and this is the reason it can be obeyed:
@@ -51,5 +65,6 @@ final onboardingPlanPreviewProvider =
     deload: deload,
     safety: safety,
     targetMinutes: draft.schedule.sessionMinutes ?? 45,
+    hints: RecommendationHints.fromProfile(draft),
   );
 });

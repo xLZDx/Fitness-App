@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../core/config/demo_features.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
@@ -169,37 +170,43 @@ class ProfilePage extends ConsumerWidget {
                       AppLocalizations.of(context).profileBrowse11Sessions15Fee,
                   onTap: () => context.push('/coaches'),
                 ),
-                _divider(context),
-                _profileTile(
-                  context,
-                  icon: Icons.star_outline,
-                  gradient: AppPalette.tileGradients[4],
-                  title:
-                      AppLocalizations.of(context).celebrityplansCelebrityPlans,
-                  subtitle: AppLocalizations.of(context)
-                      .profileInKindDonatedProgrammes,
-                  onTap: () => context.push('/celebrity-plans'),
-                ),
+                // Demo-backed (Mock repository): hidden in release builds.
+                if (kDemoFeaturesEnabled) ...[
+                  _divider(context),
+                  _profileTile(
+                    context,
+                    icon: Icons.star_outline,
+                    gradient: AppPalette.tileGradients[4],
+                    title: AppLocalizations.of(context)
+                        .celebrityplansCelebrityPlans,
+                    subtitle: AppLocalizations.of(context)
+                        .profileInKindDonatedProgrammes,
+                    onTap: () => context.push('/celebrity-plans'),
+                  ),
+                ],
               ],
             ),
           ),
-          _SectionLabel(l10n.profileSectionCommunity),
-          HudPanel(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _profileTile(
-                  context,
-                  icon: Icons.forum_outlined,
-                  gradient: AppPalette.tileGradients[3],
-                  title: AppLocalizations.of(context).profileCommunity,
-                  subtitle:
-                      AppLocalizations.of(context).profileHevyStyleSocialFeed,
-                  onTap: () => context.push('/community'),
-                ),
-              ],
+          // Demo-backed (Mock repository): hidden in release builds.
+          if (kDemoFeaturesEnabled) ...[
+            _SectionLabel(l10n.profileSectionCommunity),
+            HudPanel(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  _profileTile(
+                    context,
+                    icon: Icons.forum_outlined,
+                    gradient: AppPalette.tileGradients[3],
+                    title: AppLocalizations.of(context).profileCommunity,
+                    subtitle: AppLocalizations.of(context)
+                        .profileHevyStyleSocialFeed,
+                    onTap: () => context.push('/community'),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
           _SectionLabel(l10n.profileSectionMembership),
           HudPanel(
             padding: EdgeInsets.zero,

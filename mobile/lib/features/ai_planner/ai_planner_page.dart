@@ -8,6 +8,8 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../safety/widgets/eligibility_notice.dart';
+import '../training_context/state/training_context_providers.dart';
+import '../training_context/widgets/training_context_selector.dart';
 import 'data/workout_plan.dart';
 import 'plan_reason_text.dart';
 import 'state/ai_planner_providers.dart';
@@ -24,7 +26,12 @@ class AiPlannerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final planAsync = ref.watch(generatedPlanProvider);
+    // Ask BEFORE generating: while the question is unanswered the plan
+    // provider is not read at all.
+    final answered =
+        ref.watch(trainingContextProvider).valueOrNull?.answered ?? false;
+    final planAsync =
+        answered ? ref.watch(generatedPlanProvider) : null;
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).aiplannerTodaySPlan),
@@ -37,8 +44,10 @@ class AiPlannerPage extends ConsumerWidget {
               style: theme.textTheme.bodyMedium,
             ),
           ),
+          const SizedBox(height: 12),
+          const TrainingContextSelector(),
           const SizedBox(height: 16),
-          planAsync.when(
+          if (planAsync != null) planAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(child: CircularProgressIndicator()),

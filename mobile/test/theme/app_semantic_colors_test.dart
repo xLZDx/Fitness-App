@@ -622,8 +622,22 @@ void main() {
     // entries in this ledger are literal whites too: same surface, same
     // reason, and this one is deliberately consistent with them rather than
     // inventing a token for a single string.
+    // 53 -> 69, 2026-10-13 (the body-scan flow and the coach's loading
+    // spinner). The second INCREASE in this ledger, and the same reason as the
+    // first one above: the surface is a live camera preview, an opaque dark
+    // layer whatever theme the app is in, so a theme-following ink is exactly
+    // wrong (under the light theme `textPrimary` is dark, and the countdown,
+    // the readiness chips and the pose hint would be dark-on-video).
+    //
+    // `progress_photos/scan/ui/scan_capture_screen.dart` 0 -> 14: the title,
+    // hint, countdown, readiness chips and buttons drawn over the preview.
+    // `progress_photos/scan/ui/scan_compare_screen.dart` 0 -> 1: the 2 px
+    // divider line of the before/after slider, drawn over two photographs.
+    // `form_check/form_check_page.dart` 9 -> 10: the spinner shown over the
+    // dark camera area while the camera starts, the same colour as the two
+    // spinners already counted in that file. Net: 53 + 14 + 1 + 1 = 69.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 53, reason: 'per file: $whites');
+    expect(total, 69, reason: 'per file: $whites');
   });
 
   group('lerp', () {

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/camera/camera_session.dart';
+import '../../../core/config/demo_features.dart';
 import '../../../core/notifications/notification_providers.dart';
 import '../../../core/settings/state/settings_providers.dart';
 import '../../auth/state/auth_providers.dart';
@@ -122,6 +123,57 @@ class MockProgressPhotosRepository implements ProgressPhotosRepository {
   }
 }
 
+/// Stands in for the real repository in a release build while the disk store
+/// is loading, the user is signed out, or the store failed to open.
+///
+/// The Mock fallback is fine for development, but in a release build it showed
+/// a user with real photos an empty grid and accepted captures into memory
+/// that vanish on restart. This one says what is true instead: while
+/// [loading] it never emits (the page shows its spinner), otherwise [watch]
+/// errors and every write throws, so no caller can believe a photo was kept.
+class UnavailableProgressPhotosRepository implements ProgressPhotosRepository {
+  const UnavailableProgressPhotosRepository({
+    required this.loading,
+    this.cause,
+  });
+
+  /// True while the store is still resolving; false once it is signed out or
+  /// failed for good.
+  final bool loading;
+  final Object? cause;
+
+  StateError get _error => StateError(
+      'Progress photos are unavailable: ${cause ?? 'sign in to use them'}.');
+
+  @override
+  Stream<List<ProgressPhoto>> watch() => loading
+      ? const Stream<List<ProgressPhoto>>.empty()
+      : Stream<List<ProgressPhoto>>.error(_error);
+
+  @override
+  Future<Uint8List?> takeShot() async => throw _error;
+
+  @override
+  Future<ProgressPhoto> save(
+    Uint8List bytes, {
+    required ProgressPhotoAngle angle,
+    double? weightKg,
+    String? note,
+  }) async =>
+      throw _error;
+
+  @override
+  Future<void> delete(String id) async => throw _error;
+
+  @override
+  Future<Uint8List> bytesOf(ProgressPhoto photo) async => throw _error;
+}
+
+/// Whether the Mock repository may stand in while the store is unavailable.
+/// Overridable so tests can model a release build.
+final progressPhotosMockFallbackProvider =
+    Provider<bool>((_) => kDemoFeaturesEnabled);
+
 /// Builds the on-disk store for the SIGNED-IN account, or null when there is
 /// no account to build one for.
 ///
@@ -191,7 +243,15 @@ final progressPhotosRepositoryProvider =
     debugPrint('progress photos: store unavailable — ${async.error}');
   }
   final store = async.valueOrNull;
-  if (store == null) return MockProgressPhotosRepository();
+  if (store == null) {
+    if (ref.watch(progressPhotosMockFallbackProvider)) {
+      return MockProgressPhotosRepository();
+    }
+    return UnavailableProgressPhotosRepository(
+      loading: async.isLoading,
+      cause: async.error,
+    );
+  }
   return LocalProgressPhotosRepository(
     store: store,
     source: CameraSessionPhotoSource(ref.watch(progressPhotoCameraProvider)),
@@ -204,8 +264,11 @@ final progressPhotosRepositoryProvider =
 /// there is no signed-in account to scope it to. The banner has to exist for
 /// both — in either window a capture really does vanish on restart.
 final progressPhotosAreDemoProvider = Provider<bool>((ref) {
-  return ref.watch(progressPhotosRepositoryProvider)
-      is MockProgressPhotosRepository;
+  final repo = ref.watch(progressPhotosRepositoryProvider);
+  // The release stand-in is "not saved" too, except while it is merely
+  // loading, when the spinner is the honest state and a banner would flash.
+  return repo is MockProgressPhotosRepository ||
+      (repo is UnavailableProgressPhotosRepository && !repo.loading);
 });
 
 final progressPhotosProvider = StreamProvider<List<ProgressPhoto>>((ref) {

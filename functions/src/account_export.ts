@@ -256,6 +256,7 @@ export const exportAccountData = onCall(
       profile,
       subscription,
       stats,
+      workoutSessionStats,
       workoutLogs,
       workoutSessions,
       scheduledSessions,
@@ -275,6 +276,9 @@ export const exportAccountData = onCall(
       one(`users/${uid}/profile/main`),
       one(`users/${uid}/subscription/main`),
       one(`users/${uid}/stats/workouts`),
+      // Written by the mobile firestore_workout_session_repository (all-time
+      // session totals). One bounded doc; was deletable but not exportable.
+      one(`users/${uid}/stats/workout_sessions`),
       sub(uid, "workout_logs", truncated),
       sub(uid, "workout_sessions", truncated),
       sub(uid, "scheduled_sessions", truncated),
@@ -317,6 +321,7 @@ export const exportAccountData = onCall(
       profile,
       subscription,
       stats,
+      workoutSessionStats,
       workoutLogs,
       workoutSessions,
       scheduledSessions,

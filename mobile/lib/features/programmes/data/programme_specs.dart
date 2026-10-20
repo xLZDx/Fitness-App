@@ -38,6 +38,7 @@
 /// rather than inline so that stays visible.
 library;
 
+import '../../safety/data/age_policy.dart';
 import 'movement_role.dart';
 import 'programme_builder.dart';
 import 'programme_templates.dart' show kProfileProgrammeId;
@@ -313,6 +314,27 @@ const Map<String, _Dose> _doses = {
       setsPerSlot: 3, minWeeklySetsPerRole: 3, maxWeeklySetsPerRole: 32),
 };
 
+/// What a person's answers change about a programme's structure and dose.
+///
+/// Built from `SafetyContext` + `RecommendationHints` by the enrolment, so the
+/// spec stays a pure function of its inputs.
+class ProgrammeAdaptation {
+  const ProgrammeAdaptation({
+    this.ageBand = AgeBand.adult,
+    this.mobility = false,
+    this.conditioning = false,
+  });
+
+  final AgeBand ageBand;
+
+  /// Add a weekly mobility slot (flexibility / comeback / general-fitness goal,
+  /// or a senior's balance and mobility work).
+  final bool mobility;
+
+  /// Add a weekly conditioning slot (weight-loss / endurance / general fitness).
+  final bool conditioning;
+}
+
 /// The ids this app can build a programme for, in no particular order.
 ///
 /// Exposed for the test that asserts every shipped `ProgrammeTemplate` has an
@@ -331,19 +353,77 @@ Iterable<String> get programmeSpecIds => _doses.keys;
 /// Null when the id is not one this app builds, or when [daysPerWeek] is
 /// outside the range a structure has been declared for. Enrolment reports both
 /// as `ProgrammeFault.noDeclaredStructure`.
-ProgrammeSpec? programmeSpecFor(String templateId, {int daysPerWeek = 4}) {
+///
+/// [adaptation] carries what the person's answers change about the structure
+/// and the dose; the default is the unadapted programme.
+ProgrammeSpec? programmeSpecFor(
+  String templateId, {
+  int daysPerWeek = 4,
+  ProgrammeAdaptation adaptation = const ProgrammeAdaptation(),
+}) {
   final dose = _doses[templateId];
   if (dose == null) return null;
   final shape = _shapeFor(daysPerWeek);
   if (shape == null) return null;
+  // Conservative dose for minors and seniors: one set fewer per slot, floor 2.
+  // The weekly minimum follows so the validator's band stays satisfiable.
+  final sets = adaptation.ageBand.conservativeVolume
+      ? (dose.setsPerSlot - 1 < 2 ? 2 : dose.setsPerSlot - 1)
+      : dose.setsPerSlot;
+  final minSets =
+      dose.minWeeklySetsPerRole < sets ? dose.minWeeklySetsPerRole : sets;
+
+  // Goal-driven slots: mobility closes the last session of the week and
+  // conditioning opens the first, so each is trained once a week. A role with
+  // no eligible exercise is dropped and reported by the builder as usual.
+  var sessions = shape.sessions;
+  if (adaptation.mobility || adaptation.conditioning) {
+    sessions = [
+      for (var i = 0; i < shape.sessions.length; i++)
+        SessionSpec(name: shape.sessions[i].name, slots: [
+          if (adaptation.conditioning && i == 0) MovementRole.conditioning,
+          ...shape.sessions[i].slots,
+          if (adaptation.mobility && i == shape.sessions.length - 1)
+            MovementRole.mobility,
+        ]),
+    ];
+  }
   return ProgrammeSpec(
     id: templateId,
-    sessions: shape.sessions,
-    setsPerSlot: dose.setsPerSlot,
-    minWeeklySetsPerRole: dose.minWeeklySetsPerRole,
+    sessions: sessions,
+    setsPerSlot: sets,
+    minWeeklySetsPerRole: minSets,
     maxWeeklySetsPerRole: dose.maxWeeklySetsPerRole,
     minWeeklyFrequencyPerRole: shape.minFrequency,
     frequencyRoles: shape.frequencyRoles,
     minSurvivingPrimaryRoles: shape.minSurvivingPrimaryRoles,
+  );
+}
+
+/// The spec for a programme built under the YOGA training context.
+///
+/// The strength structure of [programmeSpecFor] is made of squat / hinge / push
+/// / pull slots, none of which a yoga pool can fill, so building it would refuse
+/// every yoga enrolment. Yoga is its own mode (see `TrainingContext.yoga`): every
+/// session is [slotsPerSession] mobility slots, no primary strength role is
+/// required, and no frequency rule applies. Null for an id the app does not
+/// build, or a day count outside what a structure is declared for, exactly like
+/// [programmeSpecFor].
+ProgrammeSpec? yogaProgrammeSpecFor(String templateId,
+    {int daysPerWeek = 4, int slotsPerSession = 5}) {
+  if (_doses[templateId] == null || _shapeFor(daysPerWeek) == null) return null;
+  return ProgrammeSpec(
+    id: templateId,
+    sessions: [
+      for (var i = 0; i < daysPerWeek; i++)
+        SessionSpec(name: 'Y${i + 1}', slots: [
+          for (var s = 0; s < slotsPerSession; s++) MovementRole.mobility,
+        ]),
+    ],
+    setsPerSlot: 1,
+    minWeeklySetsPerRole: 1,
+    maxWeeklySetsPerRole: 1000,
+    frequencyRoles: const <MovementRole>{},
+    minSurvivingPrimaryRoles: 0,
   );
 }

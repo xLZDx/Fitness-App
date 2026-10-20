@@ -1,5 +1,6 @@
 package com.fitnessapp.wear.data
 
+import android.util.Log
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import org.json.JSONObject
@@ -16,7 +17,13 @@ class WearStateListenerService : WearableListenerService() {
     override fun onMessageReceived(event: MessageEvent) {
         if (event.path != "/workout_state") return
         val raw = String(event.data, Charsets.UTF_8)
-        val obj = runCatching { JSONObject(raw) }.getOrNull() ?: return
+        val obj = runCatching { JSONObject(raw) }
+            .onFailure {
+                // Exception class and size only: the payload is workout state.
+                Log.w(TAG, "dropped malformed /workout_state payload " +
+                    "(${it.javaClass.simpleName}, ${event.data.size} bytes)")
+            }
+            .getOrNull() ?: return
         WearStateRepository.update(
             WatchWorkoutState(
                 title = obj.optString("title", "Workout"),
@@ -27,5 +34,9 @@ class WearStateListenerService : WearableListenerService() {
                 isResting = obj.optBoolean("isResting", false),
             )
         )
+    }
+
+    private companion object {
+        const val TAG = "WearStateListener"
     }
 }

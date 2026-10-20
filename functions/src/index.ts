@@ -44,6 +44,7 @@ import * as admin from "firebase-admin";
 import { createHash } from "crypto";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
@@ -63,6 +64,9 @@ import {
   DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
   DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
   DELETE_ACCOUNT_AUTH_DELETE_FAILED,
+  DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+  ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+  ACCOUNT_DELETION_RECONCILE_RUN_FAILED,
 } from "./monitoring/log_signals";
 
 admin.initializeApp();
@@ -926,6 +930,82 @@ function tierFromSubscription(s: Stripe.Subscription): string {
  * the event body, so a replay rewrites the same fields and there is no
  * double-grant -- and this makes that property deliberate rather than lucky.
  */
+const WEBHOOK_EVENT_FOR_DELETED_ACCOUNT = "webhook_event_for_deleted_account";
+const WEBHOOK_BOOKING_ID_MISSING = "webhook_booking_confirm_missing_booking_id";
+const WEBHOOK_BOOKING_DOC_MISSING = "webhook_booking_confirm_booking_doc_missing";
+const DELETE_ACCOUNT_REVOKE_TOKENS_FAILED = "delete_account_revoke_tokens_failed";
+// The alertable account-deletion events (DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+// ACCOUNT_DELETION_RECONCILE_EXHAUSTED, ACCOUNT_DELETION_RECONCILE_RUN_FAILED)
+// are imported from ./monitoring/log_signals, the source of truth the alert
+// definitions share.
+const ACCOUNT_DELETION_RECONCILED = "account_deletion_reconciled";
+const ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED =
+  "account_deletion_reconcile_attempt_failed";
+const WEBHOOK_RACED_WRITE_REMOVED = "webhook_write_for_deleted_account_removed";
+const WEBHOOK_RACED_WRITE_REMOVE_FAILED =
+  "webhook_write_for_deleted_account_remove_failed";
+
+/**
+ * Stripe keeps delivering events for a user whose account was deleted
+ * (deleteAccount cancels the subscriptions, which itself emits events). The
+ * handlers write `users/{uid}/...` with set(merge), which would recreate a
+ * ghost document, including `stripeCustomerId`, that nothing ever sweeps.
+ * Returns false (after a named log) when the Auth user is gone so the caller
+ * answers 200 without writing. Any other lookup failure throws, so the
+ * webhook answers 500 and Stripe retries.
+ */
+async function authUserExistsForWebhook(
+  uid: string,
+  source: string,
+  logWhenGone = true,
+): Promise<boolean> {
+  try {
+    await admin.auth().getUser(uid);
+    return true;
+  } catch (e) {
+    if ((e as { code?: string })?.code === "auth/user-not-found") {
+      if (!logWhenGone) return false;
+      logger.warn(WEBHOOK_EVENT_FOR_DELETED_ACCOUNT, {
+        event: WEBHOOK_EVENT_FOR_DELETED_ACCOUNT,
+        uid,
+        source,
+      });
+      return false;
+    }
+    throw e;
+  }
+}
+
+/**
+ * Post-write recheck: the pre-write guard cannot see a deleteUser that lands
+ * between the guard and the write. If the Auth user is gone now, remove the
+ * document just written so it does not survive the account deletion (best
+ * effort, named log). Lookup errors other than user-not-found still throw so
+ * the webhook answers 500 and Stripe retries.
+ */
+async function removeWriteIfAccountGone(
+  uid: string,
+  source: string,
+  ref: FirebaseFirestore.DocumentReference,
+): Promise<void> {
+  if (await authUserExistsForWebhook(uid, source, false)) return;
+  try {
+    await ref.delete();
+    logger.warn(WEBHOOK_RACED_WRITE_REMOVED, {
+      event: WEBHOOK_RACED_WRITE_REMOVED,
+      uid,
+      source,
+    });
+  } catch (err) {
+    logger.error(WEBHOOK_RACED_WRITE_REMOVE_FAILED, {
+      event: WEBHOOK_RACED_WRITE_REMOVE_FAILED,
+      uid,
+      source,
+      err,
+    });
+  }
+}
+
 async function applySubscription(
   s: Stripe.Subscription,
   eventCreated?: number,
@@ -941,6 +1021,7 @@ async function applySubscription(
     });
     return;
   }
+  if (!(await authUserExistsForWebhook(uid, `subscription:${s.id}`))) return;
 
   const status = mapStatus(s.status);
   const tier = tierFromSubscription(s);
@@ -971,6 +1052,7 @@ async function applySubscription(
     // No clock to compare against -- an internal caller rather than the
     // webhook. Write as before rather than invent an ordering.
     await ref.set(payload, { merge: true });
+    await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
     return;
   }
 
@@ -992,6 +1074,7 @@ async function applySubscription(
       { merge: true },
     );
   });
+  await removeWriteIfAccountGone(uid, `subscription:${s.id}`, ref);
 }
 
 /**
@@ -1009,7 +1092,9 @@ async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
     });
     return;
   }
-  await db.doc(`users/${uid}/subscription/main`).set(
+  if (!(await authUserExistsForWebhook(uid, `lifetime:${pi.id}`))) return;
+  const lifetimeRef = db.doc(`users/${uid}/subscription/main`);
+  await lifetimeRef.set(
     {
       tier,
       status: "active",
@@ -1024,6 +1109,7 @@ async function applyLifetimePayment(pi: Stripe.PaymentIntent) {
     },
     { merge: true },
   );
+  await removeWriteIfAccountGone(uid, `lifetime:${pi.id}`, lifetimeRef);
   logger.info("lifetime payment applied", { uid, tier });
 }
 
@@ -1110,15 +1196,33 @@ export const stripeWebhook = onRequest(
             await applyLifetimePayment(pi);
           } else if (pi.metadata?.kind === "coach_booking") {
             const bookingId = pi.metadata.bookingId;
-            if (bookingId) {
-              await db.doc(`coach_bookings/${bookingId}`).set(
-                {
+            if (!bookingId) {
+              logger.error(WEBHOOK_BOOKING_ID_MISSING, {
+                event: WEBHOOK_BOOKING_ID_MISSING,
+                paymentIntentId: pi.id,
+              });
+            } else {
+              // update() fails on a missing doc instead of creating a stub
+              // {status, confirmedAt}; NOT_FOUND (gRPC code 5) is a data
+              // condition, not a transient failure, so it is acknowledged.
+              try {
+                await db.doc(`coach_bookings/${bookingId}`).update({
                   status: "confirmed",
                   confirmedAt:
                     admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true },
-              );
+                });
+              } catch (e) {
+                const code = (e as { code?: unknown })?.code;
+                if (code === 5 || code === "not-found") {
+                  logger.error(WEBHOOK_BOOKING_DOC_MISSING, {
+                    event: WEBHOOK_BOOKING_DOC_MISSING,
+                    paymentIntentId: pi.id,
+                    bookingId,
+                  });
+                } else {
+                  throw e;
+                }
+              }
             }
           }
           break;
@@ -1888,14 +1992,21 @@ export const reportEquipment = onCall(
  *   1. Cancel Stripe first. Reversible in principle (the operator can
  *      resurrect a cancelled subscription from the Stripe dashboard if this
  *      call is ever made in error); nothing else here is.
+ *   1b. Revoke refresh tokens (non-fatal), only after the cancel succeeded so
+ *      a failed cancel/sweep still lets the user refresh a token and retry.
+ *      This does not invalidate an already-issued ID token (~1 hour).
  *   2. Delete Firestore data. `recursiveDelete` is safe to re-run --
  *      "the provided reference is deleted regardless of whether all deletes
  *      succeeded" (`@google-cloud/firestore` `recursiveDelete` doc) -- so a
  *      partial failure here can be retried without re-running step 1.
- *   3. Delete the Auth user LAST. This is the one truly irreversible step:
+ *   3. Delete the Auth user. This is the one truly irreversible step:
  *      once gone, the uid can never sign back in, by anyone, including this
- *      function on a retry. Doing it last means every earlier failure mode
- *      still leaves an account someone could get back into and try again.
+ *      function on a retry. Doing it after every retryable step means every
+ *      earlier failure mode still leaves an account someone could get back
+ *      into and try again.
+ *   4. One more idempotent sweep after the Auth deletion, to remove anything
+ *      a Stripe webhook re-created between step 2 and step 3. Failure is
+ *      logged, never surfaced (the deletion is complete and not retryable).
  *
  * `firestore.rules` needs no change for this. The plan flagged one, written
  * against a client-driven deletion flow; the Admin SDK this function runs
@@ -2211,6 +2322,136 @@ function bookingOps(
   return ops;
 }
 
+/**
+ * The one definition of "all of this user's Firestore data is removed".
+ * Used by `deleteAccount` (before and after the Auth deletion) and by the
+ * durable reconciler (`reconcileAccountDeletions`), so the three can never
+ * drift apart. Idempotent: every step is a no-op on data that is already gone.
+ *
+ * Covers `users/{uid}` (recursive), the two other uid-keyed top-level
+ * collections (`donor_wall`, `coach_listings`), and the three collections that
+ * only MENTION the uid (see `sweepSharedRecords`).
+ */
+async function sweepAccountData(uid: string): Promise<void> {
+  await Promise.all([
+    db.recursiveDelete(db.collection("users").doc(uid)),
+    db.recursiveDelete(db.collection("donor_wall").doc(uid)),
+    db.recursiveDelete(db.collection("coach_listings").doc(uid)),
+  ]);
+  await sweepSharedRecords(uid);
+}
+
+/**
+ * Durable deletion reconciliation.
+ *
+ * `accountDeletionRetries/{uid}` is the durable INTENT to finish a deletion.
+ * `deleteAccount` writes it (Admin SDK only; firestore.rules denies every
+ * client operation) BEFORE it deletes the Auth user, so a crash, timeout or
+ * kill at any later point still leaves something for the reconciler to find;
+ * if the record cannot be written, the Auth user is NOT deleted and the user
+ * can retry. It holds NO profile, email or payload data: only the uid
+ * (document id), a status, retry bookkeeping and a bare error code.
+ * `reconcileAccountDeletions` re-runs `sweepAccountData` without any user
+ * authentication. A clean final sweep deletes the record, as does a
+ * successful reconciliation, so no uid is retained afterwards. `expireAt` is
+ * the TTL field (firestore.indexes.json `fieldOverrides`) that bounds how
+ * long a terminal record can live.
+ */
+// The collection name is written as a string literal at each collection access
+// below on purpose: scripts/ci/check_data_access_policy.js fails closed on a
+// collection name that is not a literal.
+const RETRY_FIRST_DELAY_MS = 15 * 60 * 1000;
+const RETRY_MAX_DELAY_MS = 6 * 60 * 60 * 1000;
+const RETRY_MAX_ATTEMPTS = 12;
+const RETRY_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+const RECONCILE_BATCH = 50;
+// The reconciler's function timeout is 300 s; stop STARTING new records after
+// 240 s so a run ends cleanly instead of being killed mid-sweep.
+const RECONCILE_RUN_BUDGET_MS = 240 * 1000;
+const ACCOUNT_DELETION_INTENT_FAILED = "delete_account_intent_record_failed";
+const ACCOUNT_DELETION_RECONCILE_SKIPPED_LIVE =
+  "account_deletion_reconcile_skipped_live_account";
+const ACCOUNT_DELETION_RECONCILE_DEADLINE =
+  "account_deletion_reconcile_deadline_reached";
+
+type FinalCleanup = "complete" | "scheduled";
+
+/** A bare error code, never a message: messages can carry user data. */
+function errorCodeOf(err: unknown): string {
+  const code = (err as { code?: unknown } | null | undefined)?.code;
+  const text = typeof code === "string" || typeof code === "number"
+    ? String(code)
+    : "";
+  return /^[A-Za-z0-9_./-]{1,64}$/.test(text) ? text : "unknown";
+}
+
+/** Delay before the next attempt after `attempts` failures: 15 min doubling, capped at 6 h. */
+function retryBackoffMs(attempts: number): number {
+  const exponent = Math.max(0, attempts - 1);
+  return Math.min(RETRY_FIRST_DELAY_MS * 2 ** exponent, RETRY_MAX_DELAY_MS);
+}
+
+/**
+ * Writes the durable deletion intent (`pending`, attempts 0, due in 15 min).
+ * THROWS if it cannot be written: the caller must then abort BEFORE deleting
+ * the Auth user. Idempotent: an existing `pending` record keeps its history
+ * (a client that still holds a valid ID token can call deleteAccount again);
+ * a `failed_terminal` one is replaced by a fresh `pending` record. Returns
+ * the attempts already recorded.
+ */
+async function recordAccountDeletionIntent(uid: string): Promise<number> {
+  const ref = db.collection("accountDeletionRetries").doc(uid);
+  const existing = await ref.get();
+  if (existing.exists && existing.data()?.status === "pending") {
+    return Number(existing.data()?.attempts) || 0;
+  }
+  const now = Date.now();
+  const Timestamp = admin.firestore.Timestamp;
+  await ref.set({
+    uid,
+    status: "pending",
+    attempts: 0,
+    createdAt: Timestamp.fromMillis(now),
+    nextAttemptAt: Timestamp.fromMillis(now + RETRY_FIRST_DELAY_MS),
+    expireAt: Timestamp.fromMillis(now + RETRY_RETENTION_MS),
+  });
+  return 0;
+}
+
+/** Best effort: a failed delete is harmless, the reconciler sweeps and removes it. */
+async function clearAccountDeletionIntent(uid: string): Promise<void> {
+  try {
+    await db.collection("accountDeletionRetries").doc(uid).delete();
+  } catch {
+    // Intentionally ignored; see above.
+  }
+}
+
+/**
+ * Best effort: the record already exists, so even if this update fails the
+ * deletion stays retryable (it is due 15 minutes after it was created).
+ */
+async function noteFinalSweepFailure(
+  uid: string,
+  sweepErr: unknown,
+  priorAttempts: number,
+): Promise<void> {
+  try {
+    await db.collection("accountDeletionRetries").doc(uid).set(
+      {
+        attempts: Math.max(priorAttempts, 1),
+        lastErrorCode: errorCodeOf(sweepErr),
+        nextAttemptAt: admin.firestore.Timestamp.fromMillis(
+          Date.now() + retryBackoffMs(1),
+        ),
+      },
+      { merge: true },
+    );
+  } catch {
+    // Intentionally ignored; see above.
+  }
+}
+
 export const deleteAccount = onCall(
   { ...RARE, serviceAccount: RUNTIME_SA.accountDelete, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
@@ -2291,6 +2532,22 @@ export const deleteAccount = onCall(
       }
     }
 
+    // Step 1b — revoke refresh tokens, only now that the Stripe cancel has
+    // succeeded: if the cancel or the sweep fails the user must still be able
+    // to refresh a token and retry. Revocation stops NEW ID tokens being
+    // minted from the refresh token; it does NOT invalidate an ID token that
+    // was already issued (valid for up to ~1 hour), and Firestore rules only
+    // check request.auth.uid. Non-fatal: deletion must proceed.
+    try {
+      await admin.auth().revokeRefreshTokens(uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_REVOKE_TOKENS_FAILED, {
+        event: DELETE_ACCOUNT_REVOKE_TOKENS_FAILED,
+        uid,
+        err,
+      });
+    }
+
     // Step 2 — delete every document under this uid, plus the two other
     // top-level collections a user can be written into elsewhere in this
     // file: `donor_wall/{uid}` (optInDonorWall) and `coach_listings/{uid}`
@@ -2304,15 +2561,10 @@ export const deleteAccount = onCall(
     // nothing under it (the common case for the two extra collections, and
     // for a retried call against `users/{uid}`) just completes.
     try {
-      await Promise.all([
-        db.recursiveDelete(db.collection("users").doc(uid)),
-        db.recursiveDelete(db.collection("donor_wall").doc(uid)),
-        db.recursiveDelete(db.collection("coach_listings").doc(uid)),
-      ]);
-
-      // The three collections `recursiveDelete` cannot reach, because they
-      // are not keyed by uid -- they only MENTION it. See sweepSharedRecords.
-      await sweepSharedRecords(uid);
+      // Includes the three collections `recursiveDelete` cannot reach,
+      // because they are not keyed by uid -- they only MENTION it. See
+      // sweepSharedRecords.
+      await sweepAccountData(uid);
     } catch (err) {
       logger.error(DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED, {
         event: DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
@@ -2323,6 +2575,29 @@ export const deleteAccount = onCall(
         "internal",
         "Your subscription was cancelled, but some of your data could not " +
           "be deleted. Please try again — this step is safe to repeat.",
+      );
+    }
+
+    // Step 2b — write the durable deletion intent BEFORE the Auth user goes.
+    // Once deleteUser succeeds the user can no longer retry, so anything that
+    // can still go wrong afterwards (the final sweep failing, but also a
+    // crash, timeout or kill of this very invocation) must already have a
+    // server-side record the reconciler can find. If the record cannot be
+    // written the Auth user is deliberately NOT deleted: the user is still
+    // signed in and the whole call is safe to repeat.
+    let priorAttempts = 0;
+    try {
+      priorAttempts = await recordAccountDeletionIntent(uid);
+    } catch (err) {
+      logger.error(ACCOUNT_DELETION_INTENT_FAILED, {
+        event: ACCOUNT_DELETION_INTENT_FAILED,
+        uid,
+        err,
+      });
+      throw new HttpsError(
+        "internal",
+        "Your data was deleted, but we could not finish closing your " +
+          "account. Please try again — this step is safe to repeat.",
       );
     }
 
@@ -2350,6 +2625,33 @@ export const deleteAccount = onCall(
       }
     }
 
+    // Step 4 — final idempotent sweep, AFTER the Auth user is gone. Cancelling
+    // Stripe makes Stripe emit `customer.subscription.deleted`; a webhook
+    // handler that passed its Auth-existence guard between the Step 2 wipe and
+    // the deleteUser above can re-create `users/{uid}/subscription/main`
+    // (with the stripeCustomerId) and nothing would ever sweep it. Events that
+    // arrive after deleteUser are stopped by that Auth existence check, so this
+    // sweep closes the remaining window.
+    //
+    // The Auth user is already gone, so a client retry is impossible. A
+    // failure here is therefore NOT swallowed: the intent record written in
+    // Step 2b stays and the scheduled `reconcileAccountDeletions` finishes the
+    // job; the response says `scheduled` instead of implying everything is
+    // gone. On success the record is removed (best effort).
+    let finalCleanup: FinalCleanup = "complete";
+    try {
+      await sweepAccountData(uid);
+      await clearAccountDeletionIntent(uid);
+    } catch (err) {
+      logger.error(DELETE_ACCOUNT_FINAL_SWEEP_FAILED, {
+        event: DELETE_ACCOUNT_FINAL_SWEEP_FAILED,
+        uid,
+        err,
+      });
+      await noteFinalSweepFailure(uid, err, priorAttempts);
+      finalCleanup = "scheduled";
+    }
+
     // KNOWN, UNCLOSED GAP: a Firebase ID token minted just before this call
     // remains cryptographically valid for up to ~1 hour after the Auth user
     // is deleted above. `onCall`'s built-in token verification
@@ -2363,8 +2665,204 @@ export const deleteAccount = onCall(
     // through every callable's auth verification, which `onCall` does not
     // expose as a per-function option. Recorded here rather than silently
     // shipped as if "irreversible" meant "immediate everywhere."
-    logger.info("account deleted", { uid });
-    return { success: true };
+    logger.info("account deleted", { uid, finalCleanup });
+    return { success: true, finalCleanup };
+  },
+);
+
+/**
+ * Cloud Scheduler worker for `accountDeletionRetries`. Runs with no user
+ * authentication: the Auth user is already gone, the uid in the record is the
+ * only input. Per due record (status `pending`, `nextAttemptAt <= now`,
+ * bounded batch): CLAIM first (`attempts` + 1 and `nextAttemptAt` pushed out
+ * by the backoff, 15 min doubling, capped at 6 h), THEN re-run the shared
+ * sweep. A sweep that hangs, times out or kills the instance has therefore
+ * already used up an attempt, so a poison record reaches `failed_terminal`
+ * within 12 claims, long before its TTL. Success DELETEs the record and logs
+ * `account_deletion_reconciled`; failure logs a warning and stays `pending`;
+ * at 12 attempts the record becomes `failed_terminal` (kept until `expireAt`)
+ * and the ERROR event `account_deletion_reconcile_exhausted` fires -- the
+ * event the source-controlled alert definition
+ * (monitoring/alert_definitions.ts, ACCOUNT_DELETION_RECONCILE_FAILURE_FILTER)
+ * keys on. A record already at 12 attempts (a crash on the last attempt) is
+ * terminated without another sweep. No new record is started after 240 s of
+ * the 300 s timeout. A record whose Auth user still exists (an aborted
+ * deletion) is dropped, never swept.
+ *
+ * `maxInstances: 1` + `concurrency: 1`: single-flight, so two runs never
+ * update the same record. Deploy by name: `firebase deploy --only
+ * functions:reconcileAccountDeletions`, plus `--only firestore:indexes` for
+ * the composite index and the TTL policy.
+ */
+export const reconcileAccountDeletions = onSchedule(
+  {
+    schedule: "every 15 minutes",
+    region: "europe-west1",
+    timeoutSeconds: 300,
+    memory: "256MiB",
+    maxInstances: 1,
+    concurrency: 1,
+    // Same identity as deleteAccount: it already holds the Firestore delete
+    // permission this sweep needs, and nothing else.
+    serviceAccount: RUNTIME_SA.accountDelete,
+  },
+  async () => {
+    const Timestamp = admin.firestore.Timestamp;
+    const nowMs = Date.now();
+    let due: FirebaseFirestore.QuerySnapshot;
+    try {
+      due = await db
+        .collection("accountDeletionRetries")
+        .where("status", "==", "pending")
+        .where("nextAttemptAt", "<=", Timestamp.fromMillis(nowMs))
+        .orderBy("nextAttemptAt")
+        .limit(RECONCILE_BATCH)
+        .get();
+    } catch (err) {
+      // No record was even attempted (missing composite index, Firestore
+      // unreachable): without this alertable event a broken reconciler would
+      // stay silent while pending deletions pile up.
+      logger.error(ACCOUNT_DELETION_RECONCILE_RUN_FAILED, {
+        event: ACCOUNT_DELETION_RECONCILE_RUN_FAILED,
+        errorCode: errorCodeOf(err),
+      });
+      throw err;
+    }
+
+    // Marks a record `failed_terminal` and fires the alertable event. The
+    // record write is best effort; the event is logged either way.
+    const markExhausted = async (
+      doc: FirebaseFirestore.QueryDocumentSnapshot,
+      attempts: number,
+      lastErrorCode?: string,
+    ): Promise<void> => {
+      try {
+        await doc.ref.set(
+          {
+            status: "failed_terminal",
+            attempts,
+            ...(lastErrorCode ? { lastErrorCode } : {}),
+          },
+          { merge: true },
+        );
+      } catch (updateErr) {
+        logger.error(ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED, {
+          event: ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED,
+          uid: doc.id,
+          stage: "record_terminal_update",
+          err: updateErr,
+        });
+      }
+      logger.error(ACCOUNT_DELETION_RECONCILE_EXHAUSTED, {
+        event: ACCOUNT_DELETION_RECONCILE_EXHAUSTED,
+        uid: doc.id,
+        attempts,
+      });
+    };
+
+    for (let i = 0; i < due.docs.length; i++) {
+      // Per-run deadline: stop STARTING records late in the run; the rest are
+      // still due and are picked up by the next run.
+      if (Date.now() - nowMs >= RECONCILE_RUN_BUDGET_MS) {
+        logger.warn(ACCOUNT_DELETION_RECONCILE_DEADLINE, {
+          event: ACCOUNT_DELETION_RECONCILE_DEADLINE,
+          processed: i,
+          remaining: due.docs.length - i,
+        });
+        break;
+      }
+      const doc = due.docs[i];
+      const uid = doc.id;
+      const attemptsBefore = Number(doc.data()?.attempts) || 0;
+
+      // A previous run crashed or timed out during the LAST allowed attempt:
+      // terminate it now, without sweeping again.
+      if (attemptsBefore >= RETRY_MAX_ATTEMPTS) {
+        await markExhausted(doc, attemptsBefore);
+        continue;
+      }
+
+      // CLAIM before sweeping: count the attempt and push nextAttemptAt out
+      // first, so a sweep that hangs, times out or crashes the instance still
+      // consumed an attempt and a poison record can neither starve the queue
+      // nor sit pending until its TTL. Without a durable claim, do not sweep.
+      const attempts = attemptsBefore + 1;
+      const claimedAt = Date.now();
+      try {
+        await doc.ref.set(
+          {
+            attempts,
+            nextAttemptAt: Timestamp.fromMillis(
+              claimedAt + retryBackoffMs(attempts),
+            ),
+          },
+          { merge: true },
+        );
+      } catch (claimErr) {
+        logger.error(ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED, {
+          event: ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED,
+          uid,
+          stage: "claim",
+          err: claimErr,
+        });
+        continue;
+      }
+
+      try {
+        // A record can outlive an aborted deletion (deleteUser failed after
+        // the intent was written, so the account still exists). Never sweep a
+        // live account: drop the stale intent instead; a new deleteAccount
+        // call writes a fresh one.
+        let accountExists = false;
+        try {
+          await admin.auth().getUser(uid);
+          accountExists = true;
+        } catch (authErr) {
+          if ((authErr as { code?: string })?.code !== "auth/user-not-found") {
+            throw authErr;
+          }
+        }
+        if (accountExists) {
+          await doc.ref.delete();
+          logger.warn(ACCOUNT_DELETION_RECONCILE_SKIPPED_LIVE, {
+            event: ACCOUNT_DELETION_RECONCILE_SKIPPED_LIVE,
+            uid,
+          });
+          continue;
+        }
+
+        await sweepAccountData(uid);
+        await doc.ref.delete();
+        logger.info(ACCOUNT_DELETION_RECONCILED, {
+          event: ACCOUNT_DELETION_RECONCILED,
+          uid,
+          attempts,
+        });
+      } catch (err) {
+        logger.warn(ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED, {
+          event: ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED,
+          uid,
+          attempts,
+          err,
+        });
+        if (attempts >= RETRY_MAX_ATTEMPTS) {
+          await markExhausted(doc, attempts, errorCodeOf(err));
+          continue;
+        }
+        try {
+          await doc.ref.set({ lastErrorCode: errorCodeOf(err) }, { merge: true });
+        } catch (updateErr) {
+          // The claim already moved nextAttemptAt, so the next attempt is
+          // scheduled; only the error code was lost.
+          logger.error(ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED, {
+            event: ACCOUNT_DELETION_RECONCILE_ATTEMPT_FAILED,
+            uid,
+            stage: "record_update",
+            err: updateErr,
+          });
+        }
+      }
+    }
   },
 );
 

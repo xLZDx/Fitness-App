@@ -14,7 +14,9 @@ created to hold an ID token is deleted too.
 """
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import pathlib
 import ssl
 import sys
@@ -40,13 +42,17 @@ REGION = "europe-west1"
 # Constraints are not marked critical. OpenSSL 3 rejects that outright, so no
 # CA bundle can rescue it -- the interceptor's certificate is simply malformed.
 #
-# When that is detected the script retries without certificate verification and
-# says so in its output. It is a deliberate, announced, local-only fallback: the
-# thing under test is whether the function signs and the bucket refuses
-# strangers, not whether this laptop's antivirus makes valid certificates. The
-# app on a phone never meets any of this.
+# That is OPT-IN only (`--allow-insecure-tls` or VERIFY_CLIP_ALLOW_INSECURE_TLS=1).
+# Without it a certificate failure is a loud failure. Even with it, the retry is
+# made only for requests that carry NO Authorization header: a bearer token is
+# never sent over a connection whose certificate was not verified, so the
+# admin-token calls (probe upload/delete) always fail loudly on interception.
 _insecure = ssl._create_unverified_context()
 intercepted = False
+allow_insecure = os.environ.get("VERIFY_CLIP_ALLOW_INSECURE_TLS") == "1"
+
+# Seconds, applied to every request: a hung endpoint must not hang the verifier.
+HTTP_TIMEOUT = 60
 
 # The address the Flutter client SDK actually resolves to, so the test exercises
 # the same route the app does rather than a private back door.
@@ -88,20 +94,33 @@ def http(
     if content_type:
         req.add_header("Content-Type", content_type)
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
             return resp.status, resp.read()
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read()
-    except urllib.error.URLError as exc:
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
         if "CERTIFICATE_VERIFY_FAILED" not in str(exc):
             return 0, str(exc).encode()
+        if token:
+            raise CheckFailed(
+                f"TLS certificate verification failed for {url.split('?')[0]} and the "
+                "request carries an Authorization token; refusing to retry without "
+                "verification (the token would be sent to an unverified peer)."
+            ) from None
+        if not allow_insecure:
+            raise CheckFailed(
+                f"TLS certificate verification failed for {url.split('?')[0]}; pass "
+                "--allow-insecure-tls to retry token-less calls without verification."
+            ) from None
         intercepted = True
         try:
-            with urllib.request.urlopen(req, context=_insecure) as resp:
+            with urllib.request.urlopen(
+                req, context=_insecure, timeout=HTTP_TIMEOUT
+            ) as resp:
                 return resp.status, resp.read()
         except urllib.error.HTTPError as exc2:
             return exc2.code, exc2.read()
-        except urllib.error.URLError as exc2:
+        except (urllib.error.URLError, TimeoutError, OSError) as exc2:
             return 0, str(exc2).encode()
 
 
@@ -174,7 +193,17 @@ def call_function(name: str, data: dict, id_token: str | None) -> tuple[int, dic
         return status, {"raw": raw.decode(errors="replace")[:300]}
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    global allow_insecure
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument(
+        "--allow-insecure-tls",
+        action="store_true",
+        help="retry token-less calls without certificate verification when a "
+        "local TLS interceptor breaks verification (never used with a token)",
+    )
+    args = ap.parse_args(argv)
+    allow_insecure = allow_insecure or args.allow_insecure_tls
     api_key = web_api_key()
     admin = access_token()
 

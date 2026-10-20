@@ -4,7 +4,11 @@ import '../../auth/state/auth_providers.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../../equipment/data/exercise_filter.dart';
 import '../../equipment/state/equipment_providers.dart';
+import '../../personalisation/data/recommendation_hints.dart';
 import '../../profile/data/profile_models.dart';
+import '../../safety/data/age_policy.dart';
+import '../../training_context/data/training_context.dart';
+import '../../training_context/state/training_context_providers.dart';
 import '../../workouts/data/scheduled_session.dart';
 import '../../workouts/state/scheduled_session_providers.dart';
 import '../data/mock_programme_repository.dart';
@@ -197,8 +201,25 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       // not shipped: a stored enrolment from an older build, or a row written
       // by hand. "We cannot build this" is a true statement the user can act
       // on; a plausible alphabetical list under a strength title is not.
-      final spec = programmeSpecFor(template.id,
-          daysPerWeek: programme.daysPerWeek);
+      // The chosen training context (gym / outdoors / home / yoga), or null
+      // when skipped or never answered: null leaves every line below exactly as
+      // it was. A chosen context narrows the catalogue by the same rules the
+      // planner and the home feed use (`training_context.dart`), and the
+      // eligibility layer (injuries, age, screening) still runs inside
+      // `buildProgramme` in every context.
+      // A store that cannot be read means "no stated context", the same as
+      // skipped: enrolment must not fail over a session preference.
+      final tc = await ref
+          .read(trainingContextProvider.future)
+          .then<TrainingContext?>((a) => a.context, onError: (_) => null);
+      final buildSafety = safetyContextForTrainingContext(safety, tc);
+      final buildCatalogue = narrowToTrainingContext(safeCatalogue, safety, tc);
+      final spec = tc == TrainingContext.yoga
+          ? yogaProgrammeSpecFor(template.id, daysPerWeek: programme.daysPerWeek)
+          : programmeSpecFor(template.id,
+              daysPerWeek: programme.daysPerWeek,
+              adaptation: programmeAdaptationFor(
+                  safety, RecommendationHints.fromProfile(profile)));
       if (spec == null) {
         throw const ProgrammeNotViable(
           [ProgrammeFinding(ProgrammeFault.noDeclaredStructure)],
@@ -209,8 +230,8 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
         final focus = programme.muscles.toSet();
         final built = buildProgramme(ProgrammeBuildRequest(
           spec: spec,
-          catalogue: safeCatalogue,
-          safety: safety,
+          catalogue: buildCatalogue,
+          safety: buildSafety,
           weeks: programme.weeks,
           daysPerWeek: programme.daysPerWeek,
           // Personalisation, and the only door it comes through: the answer to
@@ -318,10 +339,17 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
       // programme" refuses. Equipment is not a safety rule; this is a safety
       // gate. Found by an independent reviewer and confirmed by measurement,
       // not by re-reading the code that had just been written.
+      //
+      // The age band and gentle-selection switch ARE copied from `resolved`:
+      // they are safety rules about the person, so a minor or senior must not
+      // be able to add a max-effort exercise the plan itself would refuse.
+      // Equipment and maxDifficulty stay out (explicit choice, not a feed).
       final safety = SafetyContext(
         screening: resolved.screening,
         injuries: resolved.injuries,
         health: resolved.health,
+        ageBand: resolved.ageBand,
+        gentleSelection: resolved.gentleSelection,
       );
       // `isAllowed` is the hierarchy's own verdict, so this branch does not
       // enumerate the variants and cannot fall out of step with them. It is
@@ -484,12 +512,32 @@ bool canBuildProgrammeFromProfile(UserProfile? profile) {
 /// questionnaire is the only writer"), so a 0 written by hand into Firestore
 /// would otherwise reach `buildProgrammeSchedule` and produce an enrolment with
 /// no sessions at all, which looks exactly like a bug in the generator.
-int programmeDaysPerWeek(int templateDays, UserProfile? profile) {
-  final answered = profile?.schedule.daysPerWeek;
-  if (answered == null) return templateDays;
-  final wanted = answered < templateDays ? answered : templateDays;
-  return wanted < 1 ? 1 : wanted;
+///
+/// Also lowered by the age band (a minor or a senior gets more recovery spacing)
+/// and, for beginners, by how often they train today
+/// (`level.frequencyPerWeek + 2`, floor 2): see `cappedProgrammeDays`.
+/// `schedule.preferredWeekdays` narrows the count further in
+/// `programmeDayOffsets` / `programmeScheduledDays`, which every enrolment and
+/// the "build from my answers" card apply after this.
+int programmeDaysPerWeek(int templateDays, UserProfile? profile,
+    {DateTime? now}) {
+  final band =
+      ageBandForPersonal(profile?.personal, (now ?? DateTime.now()).year);
+  return cappedProgrammeDays(templateDays, profile, band);
 }
+
+/// The structure/dose adaptation a person's answers ask for.
+///
+/// Mobility is added for a flexibility/comeback/general-fitness goal and for
+/// seniors (balance and mobility inclusion); conditioning for weight-loss,
+/// endurance and general-fitness goals.
+ProgrammeAdaptation programmeAdaptationFor(
+        SafetyContext safety, RecommendationHints hints) =>
+    ProgrammeAdaptation(
+      ageBand: safety.ageBand,
+      mobility: hints.wantsMobility || safety.ageBand.needsBalanceAndMobility,
+      conditioning: hints.wantsConditioning,
+    );
 
 /// The muscles this enrolment targets: the template's own, or — only when the
 /// template names none — the ones the user's focus zones resolve to.

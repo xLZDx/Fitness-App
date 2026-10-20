@@ -6,6 +6,7 @@ import {
   APP_CHECK_EVENT,
   QUOTA_EXCEEDED_EVENT,
   QUOTA_CHECK_FAILED_EVENT,
+  QUOTA_REFUND_FAILED_EVENT,
   AI_GATEWAY_DISABLED_REJECT_EVENT,
   AI_GATEWAY_CONTROL_READ_FAILED_EVENT,
 } from "./monitoring/log_signals";
@@ -352,7 +353,13 @@ export async function refundQuota(
       );
     });
   } catch (e) {
-    logger.warn("quota refund failed", { uid, action, amount, err: String(e) });
+    logger.error(QUOTA_REFUND_FAILED_EVENT, {
+      event: QUOTA_REFUND_FAILED_EVENT,
+      uid,
+      action,
+      amount,
+      err: String(e),
+    });
   }
 }
 

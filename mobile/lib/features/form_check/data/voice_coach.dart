@@ -89,6 +89,7 @@ class CueGate {
   final ClockMs _clock;
 
   FormCueKey? _lastCue;
+  String? _lastCueId;
   int? _lastSpokenAtMs;
 
   /// The last cue actually released to the speaker, or null.
@@ -115,6 +116,8 @@ class CueGate {
   /// same thing. For a "stop, you are about to hurt yourself" cue that is the
   /// worst possible place to lose a message.
   CueDecision peek(FormFeedback feedback) {
+    // Advisory/beta registry rows are on-screen only, whatever severity says.
+    if (feedback.advisory) return CueDecision.suppress;
     if (feedback.severity < minSeverity) return CueDecision.suppress;
     // Identity is the cue KEY, not the rendered sentence: "is this the same
     // fault as last time" must not change answer when the app's language does.
@@ -130,7 +133,7 @@ class CueGate {
     // repeats at a usable cadence instead of stuttering every frame.
     if (feedback.severity >= interruptSeverity) {
       final last = _lastSpokenAtMs;
-      final sameCue = cue == _lastCue;
+      final sameCue = cue == _lastCue && feedback.cueId == _lastCueId;
       if (sameCue && last != null && now - last < interruptGapMs) {
         return CueDecision.suppress;
       }
@@ -138,7 +141,10 @@ class CueGate {
     }
 
     final last = _lastSpokenAtMs;
-    if (cue == _lastCue && last != null && now - last < repeatGapMs) {
+    if (cue == _lastCue &&
+        feedback.cueId == _lastCueId &&
+        last != null &&
+        now - last < repeatGapMs) {
       return CueDecision.suppress;
     }
     if (last != null && now - last < minGapMs) return CueDecision.suppress;
@@ -150,6 +156,7 @@ class CueGate {
   /// speaker has been given something to say.
   void commit(FormFeedback feedback) {
     _lastCue = feedback.cueKey;
+    _lastCueId = feedback.cueId;
     _lastSpokenAtMs = _clock();
   }
 
@@ -157,6 +164,7 @@ class CueGate {
   /// cue from five minutes ago cannot suppress the same cue now.
   void reset() {
     _lastCue = null;
+    _lastCueId = null;
     _lastSpokenAtMs = null;
   }
 }

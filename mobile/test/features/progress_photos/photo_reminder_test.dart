@@ -63,13 +63,13 @@ class _ThrowingNotifications implements NotificationService {
   @override
   Future<bool> ensurePermission() async => true;
   @override
-  Future<void> scheduleReminder(session,
+  Future<ReminderOutcome> scheduleReminder(session,
           {required String title,
           required String body,
           Duration leadTime = const Duration(minutes: 30)}) async =>
       throw UnimplementedError();
   @override
-  Future<void> scheduleAt(String id,
+  Future<ReminderOutcome> scheduleAt(String id,
           {required DateTime fireAt,
           required String title,
           required String body}) async =>

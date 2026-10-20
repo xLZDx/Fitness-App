@@ -1,5 +1,23 @@
 import '../../features/workouts/data/scheduled_session.dart';
 
+/// What a schedule call actually did. Returned instead of void so a refusal is
+/// visible to the caller rather than silent.
+enum ReminderOutcome {
+  /// A reminder is registered with the platform.
+  scheduled,
+
+  /// Notification permission was refused; nothing was registered.
+  denied,
+
+  /// The fire time was already past; any stale entry was cancelled and nothing
+  /// was registered.
+  past,
+
+  /// The platform call threw; the state of the pending reminder is unknown.
+  /// Callers should treat the request as not applied.
+  failed,
+}
+
 /// Cross-platform reminder service. Production uses
 /// `LocalNotificationService` (`flutter_local_notifications`); tests + the
 /// default Riverpod provider use `MockNotificationService` so unit tests
@@ -37,7 +55,7 @@ abstract class NotificationService {
   /// user-facing text, and this class has no `BuildContext` and no business
   /// knowing which language the user reads — building the strings here is why
   /// reminders shouted in English in a Russian app.
-  Future<void> scheduleReminder(
+  Future<ReminderOutcome> scheduleReminder(
     ScheduledSession session, {
     required String title,
     required String body,
@@ -58,7 +76,7 @@ abstract class NotificationService {
   /// Same contract as [scheduleReminder]: replaces any prior reminder with the
   /// same [id], and when [fireAt] is already past it cancels rather than fires.
   /// Cancel with [cancelReminder], which keys on the same string.
-  Future<void> scheduleAt(
+  Future<ReminderOutcome> scheduleAt(
     String id, {
     required DateTime fireAt,
     required String title,

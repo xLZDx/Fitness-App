@@ -17,6 +17,8 @@ the second copy ends up being the one that still has the bug.
 from __future__ import annotations
 
 import json
+import os
+import time
 from pathlib import Path
 
 
@@ -48,5 +50,31 @@ def dump_json(path: Path, data) -> None:
     """Rewrite [path] in the format it already has."""
     path = Path(path)
     indent, newline = detect_format(path)
-    with open(path, "w", encoding="utf-8", newline=newline) as fh:
-        fh.write(json.dumps(data, ensure_ascii=False, indent=indent) + "\n")
+    # Serialise FIRST: a non-serialisable value must not truncate the file.
+    text = json.dumps(data, ensure_ascii=False, indent=indent) + "\n"
+    tmp = path.with_name(path.name + ".tmp")
+    try:
+        with open(tmp, "w", encoding="utf-8", newline=newline) as fh:
+            fh.write(text)
+        replace_with_bounded_retry(tmp, path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def replace_with_bounded_retry(source: Path, target: Path) -> None:
+    """`os.replace`, retried briefly.
+
+    Adapted from `_replace_with_bounded_retry` in
+    `scripts/equipment_identity/capture_terms.py`: on Windows a transient handle
+    from an indexer or virus scanner raises winerror 5/32 on a path that is about
+    to be replaceable. The final error is re-raised, never swallowed.
+    """
+    for attempt in range(5):
+        try:
+            os.replace(source, target)
+            return
+        except OSError:
+            if attempt == 4:
+                raise
+            time.sleep(0.05 * (attempt + 1))

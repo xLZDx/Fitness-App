@@ -34,6 +34,14 @@ enum FormCueKey {
   /// The repetition never reached the shape on screen. Emitted by the
   /// silhouette match rather than by a per-frame rule.
   silhouetteMissed,
+
+  /// Sentinel for feedback produced by a data-driven registry rule
+  /// (`GenericRuleClassifier`). The wording is NOT a function of this key: it
+  /// is [FormFeedback.cueId], resolved by `registryCueText`. Kept last so the
+  /// ordinal of every legacy key is unchanged. [formCueText] returns an empty
+  /// string for it on purpose -- a registry cue that reached a key-only
+  /// resolver is never spoken rather than spoken wrongly.
+  registry,
 }
 
 /// Result of a single rule running on a single frame.
@@ -43,7 +51,19 @@ class FormFeedback {
     required this.severity,
     required this.cueKey,
     this.metric,
+    this.cueId,
+    this.advisory = false,
   });
+
+  /// Registry cue id (see `registry_cue_text.dart`), set only when [cueKey] is
+  /// [FormCueKey.registry]. Null for every legacy rule.
+  final String? cueId;
+
+  /// True for beta/advisory registry rows: shown on screen, never spoken, never
+  /// counted against a rep. Always severity 0 -- enforced by the producer
+  /// (`GenericRuleClassifier`) and by `CueGate.peek`, which refuses to speak an
+  /// advisory row whatever its severity says.
+  final bool advisory;
 
   /// Stable id (e.g. "squat.depth", "pushup.alignment").
   ///
@@ -114,6 +134,20 @@ abstract class FormClassifier {
   bool get canFault;
 
   FormFeedback? evaluate(PoseFrame frame);
+}
+
+/// A classifier that must be gated and evaluated on a frame of its own choosing
+/// rather than on the raw one -- today only `GenericRuleClassifier`, which maps
+/// the better-visible body side into the left slots so that a side view filmed
+/// from the right is judged instead of being refused for a hidden left leg.
+///
+/// A separate interface rather than a new member of [FormClassifier]: that
+/// interface is `implements`-ed by test doubles, and a new abstract member
+/// would break every one of them.
+abstract interface class FrameSelectingClassifier {
+  /// The frame to run the gate on and to hand to [FormClassifier.evaluate].
+  /// Must be idempotent: `frameFor(frameFor(f))` behaves like `frameFor(f)`.
+  PoseFrame frameFor(PoseFrame raw);
 }
 
 /// Squat depth. **Reports; never warns.** Same reason as the hinge rule below,
@@ -393,7 +427,10 @@ GatedEvaluation evaluateGated(
   var somethingScoredIt = false;
 
   for (final c in classifiers) {
-    final verdict = gatePose(frame, c.requiredLandmarks, config: config);
+    final view = c is FrameSelectingClassifier
+        ? (c as FrameSelectingClassifier).frameFor(frame)
+        : frame;
+    final verdict = gatePose(view, c.requiredLandmarks, config: config);
     if (!verdict.isScorable) {
       // Lower priority = more fundamental problem. Reporting "no body" beats
       // reporting "held at a strange angle" when both are true. Priority is an
@@ -406,7 +443,7 @@ GatedEvaluation evaluateGated(
       continue;
     }
     somethingScoredIt = true;
-    final f = c.evaluate(frame);
+    final f = c.evaluate(view);
     if (f != null) feedback.add(f);
   }
 

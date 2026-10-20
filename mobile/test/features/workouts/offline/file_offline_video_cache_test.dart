@@ -124,10 +124,12 @@ void main() {
     test('two overlapping requests for one url fetch once and agree', () async {
       final seen = <String>[];
       final gate = Completer<void>();
+      final started = Completer<void>();
       final cache = FileOfflineVideoCache(
         directory: dir,
         fetch: (url, savePath, {onProgress}) async {
           seen.add(url);
+          if (!started.isCompleted) started.complete();
           await gate.future;
           await File(savePath).writeAsBytes(List.filled(64, 0));
         },
@@ -135,14 +137,19 @@ void main() {
 
       final a = cache.download('clip-a');
       final b = cache.download('clip-a');
-      await pumpEventQueue();
-      expect(seen.length, 1,
-          reason: 'the second caller must join, not start its own transfer');
+      // The fetch is only reached after real file I/O (sweep, dir, exists),
+      // which a bounded pumpEventQueue() cannot wait for under load. Wait on
+      // the fetch actually starting instead of on a number of event-loop turns.
+      await started.future;
+      expect(seen.length, 1);
 
       gate.complete();
       final results = await Future.wait([a, b]);
 
-      expect(seen.length, 1);
+      // Any second transfer would have been recorded by now: both callers have
+      // completed, and a separate run for `b` must go through the same fetch.
+      expect(seen.length, 1,
+          reason: 'the second caller must join, not start its own transfer');
       expect(results[0].path, results[1].path);
       expect(await results[0].exists(), isTrue);
       expect(filesIn(dir).length, 1);

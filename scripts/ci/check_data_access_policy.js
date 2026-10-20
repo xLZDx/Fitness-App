@@ -127,7 +127,7 @@ const PATH_REGISTRIES = [
 const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   {
     file: path.join(REPO_ROOT, 'functions/src/account_export.ts'),
-    line: 64,
+    line: 107,
     arg: '`users/${uid}/${name}`',
     reason: "sub()'s own collection-name PARAMETER (a template literal interpolating a generic helper " +
       'parameter, not a fixed collection name at this call site). Every real call site ' +
@@ -140,7 +140,7 @@ const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/account_export.ts'),
-    line: 100,
+    line: 143,
     arg: 'collection',
     reason: "owned()'s own collection-name PARAMETER -- every real call site passing it a literal " +
       '(coach_bookings, equipment_reports, debug_sessions, ...) is itself discovered by Source B ' +
@@ -148,7 +148,7 @@ const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/account_export.ts'),
-    line: 88,
+    line: 131,
     arg: 'path',
     reason: "one()'s own Firestore-path PARAMETER -- every real call site passes a literal template " +
       '(`users/${uid}/profile/main`, `users/${uid}/subscription/main`, `users/${uid}/stats/workouts`, ' +

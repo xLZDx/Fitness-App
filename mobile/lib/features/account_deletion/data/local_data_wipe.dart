@@ -170,14 +170,21 @@ class LocalWipeIncomplete implements Exception {
 }
 
 class DeviceLocalDataWipe implements LocalDataWipe {
-  DeviceLocalDataWipe({SharedPreferences? prefs, Directory? documentsDir})
-      : _injectedPrefs = prefs,
-        _injectedDir = documentsDir;
+  DeviceLocalDataWipe({
+    SharedPreferences? prefs,
+    Directory? documentsDir,
+    Future<void> Function(String uid)? forgetPhotoKey,
+  })  : _injectedPrefs = prefs,
+        _injectedDir = documentsDir,
+        _forgetPhotoKey = forgetPhotoKey ?? SecurePhotoKeyStore.forget;
 
   final SharedPreferences? _injectedPrefs;
   final Directory? _injectedDir;
+  final Future<void> Function(String uid) _forgetPhotoKey;
 
-  /// Keys that describe a PERSON. Everything under `moment.` is a counter
+  /// Keys erased for every deletion, regardless of who else uses this phone.
+  ///
+  /// Keys that describe a PERSON: everything under `moment.` is a counter
   /// about how this user has used the app, and `settings.tier_override` is a
   /// debug entitlement that must not outlive the account it was set for.
   ///
@@ -186,7 +193,6 @@ class DeviceLocalDataWipe implements LocalDataWipe {
   /// different, still-existing account's blob on a shared phone — deleting
   /// someone else's health data as a side effect of deleting yours. Their own
   /// deletion is what removes theirs.
-  /// Keys erased for every deletion, regardless of who else uses this phone.
   ///
   /// The two pre-A2-sec photo keys are NOT here, because both are conditional
   /// on who owns the legacy data — see [_legacyIsMine].
@@ -249,6 +255,12 @@ class DeviceLocalDataWipe implements LocalDataWipe {
       'profile.sensitive.corrupt.$uid',
       // Per-uid photo consent record (progress_photos/data/photo_consent.dart).
       'progress_photos.consent.v1.$uid',
+      // Per-uid scan reminder toggle (progress_photos/scan/scan_reminder.dart).
+      // The encrypted scan sidecars live under the per-uid photo directory
+      // deleted below, so they need no entry of their own.
+      'progress_photos.scan_reminder.v1.$uid',
+      // Per-uid training-context answer (training_context/state/training_context_providers.dart).
+      'training_context.v1.$uid',
       if (legacyIsMine) _legacyPhotoKey,
       // Only when it names THIS user: it holds a uid, and clearing someone
       // else's would re-arm a migration that has already happened.
@@ -301,7 +313,25 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     // The envelopes are gone; the key that opened them must not outlive them
     // in the Keystore. Best-effort by the same contract as everything else
     // here — it already unlocks nothing.
-    await SecurePhotoKeyStore.forget(uid);
+    try {
+      await _forgetPhotoKey(uid);
+    } catch (e) {
+      debugPrint('local data wipe: could not forget photo key: ${e.runtimeType}');
+      failed.add('photo_key');
+    }
+
+    // Developer coach recordings (joint angles + timestamps only, debug and
+    // profile builds): `<docs>/coach_recordings/<uid>/`. Its own try so a
+    // failure here neither skips nor is skipped by the photo step.
+    try {
+      final dir = _injectedDir ?? await getApplicationDocumentsDirectory();
+      final recordings = Directory('${dir.path}/coach_recordings/$uid');
+      if (await recordings.exists()) await recordings.delete(recursive: true);
+    } catch (e) {
+      debugPrint(
+          'local data wipe: could not delete coach recordings: ${e.runtimeType}');
+      failed.add('coach_recordings');
+    }
 
     // Every step has run by now. The caller logs this and still treats the
     // account as deleted; what it must not do is believe the device is clean.

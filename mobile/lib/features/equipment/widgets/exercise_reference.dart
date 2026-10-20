@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../core/config/demo_features.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart' show HudMotionX;
@@ -837,15 +838,19 @@ class ExerciseNoVideoFallback extends StatelessWidget {
           // in the app linked to — a submission form nobody could open. This
           // is where it belongs: the one moment a user is looking at a gap in
           // the catalog is the moment to ask them to fill it.
-          Align(
-            alignment: Alignment.centerLeft,
-            child: AppTertiaryButton(
-              key: const Key('workout.contribute_video'),
-              onPressed: () => context.push('/contribute'),
-              icon: Icons.add_link,
-              label: AppLocalizations.of(context).catalogContributeAVideo,
+          //
+          // Demo-backed (Mock repository): hidden in release builds, see
+          // `kDemoFeaturesEnabled`.
+          if (kDemoFeaturesEnabled)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppTertiaryButton(
+                key: const Key('workout.contribute_video'),
+                onPressed: () => context.push('/contribute'),
+                icon: Icons.add_link,
+                label: AppLocalizations.of(context).catalogContributeAVideo,
+              ),
             ),
-          ),
         ],
       ),
     );

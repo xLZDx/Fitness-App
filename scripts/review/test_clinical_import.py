@@ -309,10 +309,10 @@ def test_duplicate_tags_are_refused():
 
 
 def test_the_worklist_covers_both_populations():
-    """A worklist of only the 360 untagged rows would answer Q2 by omission --
+    """A worklist of only the 352 untagged rows would answer Q2 by omission --
     'the existing tags are fine, we did not ask'."""
     payload = worklist()
-    assert payload["counts"] == {"total": 1887, "tagged": 1527, "untagged": 360}
+    assert payload["counts"] == {"total": 1887, "tagged": 1535, "untagged": 352}
     assert payload["counts"]["tagged"] + payload["counts"]["untagged"] == 1887
 
 

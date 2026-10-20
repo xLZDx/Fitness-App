@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/notifications/mock_notification_service.dart';
 import 'package:fitness_app/core/notifications/notification_providers.dart';
+import 'package:fitness_app/core/notifications/notification_service.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
@@ -109,6 +110,50 @@ void main() {
 
       expect(container.read(scheduleSessionActionProvider).hasValue, isTrue);
       expect(repo.cached('alice').map((s) => s.id), ['s_x']);
+    });
+
+    test('a denied notification permission is surfaced and the save stands',
+        () async {
+      final repo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(repo.dispose);
+      final notifications = MockNotificationService()..initResult = false;
+      final container = _container(
+        repo: repo,
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+        notifications: notifications,
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container
+          .read(scheduleSessionActionProvider.notifier)
+          .schedule(_s('s_d', DateTime(2099, 6, 5)));
+
+      expect(container.read(scheduleSessionActionProvider).hasValue, isTrue);
+      expect(repo.cached('alice').map((s) => s.id), ['s_d']);
+      expect(container.read(lastReminderOutcomeProvider),
+          ReminderOutcome.denied);
+      expect(notifications.scheduled, isEmpty);
+    });
+
+    test('a granted permission reports the reminder as scheduled', () async {
+      final repo = MockScheduledSessionRepository(latency: Duration.zero);
+      addTearDown(repo.dispose);
+      final notifications = MockNotificationService();
+      final container = _container(
+        repo: repo,
+        user: const AuthUser(uid: 'alice', displayName: 'Alice'),
+        notifications: notifications,
+      );
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container
+          .read(scheduleSessionActionProvider.notifier)
+          .schedule(_s('s_g', DateTime(2099, 6, 5)));
+
+      expect(container.read(lastReminderOutcomeProvider),
+          ReminderOutcome.scheduled);
     });
 
     test('errors when no user is signed in', () async {

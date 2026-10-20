@@ -20,6 +20,54 @@ abstract class CoachMarketplaceService {
   });
 }
 
+/// Thrown by [GuardedCoachMarketplaceService] when an onboarding or booking
+/// action is attempted while the marketplace cannot honour it.
+class MarketplaceUnavailableException implements Exception {
+  const MarketplaceUnavailableException(this.reason);
+  final String reason;
+
+  @override
+  String toString() => 'MarketplaceUnavailableException: $reason';
+}
+
+/// Service-layer guard: refuses onboarding and booking BEFORE the inner
+/// service (and so the backend) is reached. A disabled UI card is not enough;
+/// any other caller of the service must hit the same wall.
+///
+/// [blockedReason] returns null when actions are allowed, otherwise why not.
+/// It is evaluated per call, so the guard follows provider changes.
+class GuardedCoachMarketplaceService implements CoachMarketplaceService {
+  GuardedCoachMarketplaceService(this._inner, this._blockedReason);
+  final CoachMarketplaceService _inner;
+  final String? Function() _blockedReason;
+
+  void _check() {
+    final reason = _blockedReason();
+    if (reason != null) throw MarketplaceUnavailableException(reason);
+  }
+
+  @override
+  Future<String> startOnboarding() async {
+    _check();
+    return _inner.startOnboarding();
+  }
+
+  @override
+  Future<({String bookingId, String clientSecret, int amountCents})>
+      bookSession({
+    required String coachUid,
+    required DateTime startsAt,
+    int durationMinutes = 60,
+  }) async {
+    _check();
+    return _inner.bookSession(
+      coachUid: coachUid,
+      startsAt: startsAt,
+      durationMinutes: durationMinutes,
+    );
+  }
+}
+
 class MockCoachMarketplaceService implements CoachMarketplaceService {
   /// Records every call for asserting on in tests.
   final List<String> onboardings = [];

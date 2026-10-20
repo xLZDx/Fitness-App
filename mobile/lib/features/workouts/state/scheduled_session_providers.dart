@@ -5,6 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/notifications/notification_providers.dart';
+import '../../../core/notifications/notification_service.dart'
+    show ReminderOutcome;
 import '../../../core/settings/state/settings_providers.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/mock_scheduled_session_repository.dart';
@@ -71,12 +73,19 @@ final scheduleSessionActionProvider =
     NotifierProvider<ScheduleSessionAction, AsyncValue<void>>(
         ScheduleSessionAction.new);
 
+/// What the reminder for the most recent [ScheduleSessionAction.schedule] call
+/// did: null when reminders are off, none was attempted yet, or the attempt
+/// threw. `denied` lets the UI say the session is saved but will not remind.
+final lastReminderOutcomeProvider =
+    StateProvider<ReminderOutcome?>((ref) => null);
+
 class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
   Future<void> schedule(ScheduledSession session) async {
     state = const AsyncValue.loading();
+    ref.read(lastReminderOutcomeProvider.notifier).state = null;
     try {
       final user = ref.read(authUserProvider).valueOrNull;
       if (user == null) {
@@ -98,7 +107,7 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
           const leadTime = Duration(minutes: 30);
           final l = await AppLocalizations.delegate
               .load(Locale(ref.read(effectiveLanguageCodeProvider)));
-          await notifications.scheduleReminder(
+          final outcome = await notifications.scheduleReminder(
             session,
             leadTime: leadTime,
             title: l.notificationsWorkoutInMinutes(leadTime.inMinutes),
@@ -112,6 +121,12 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
                 : l.notificationsMin(
                     session.exerciseTitle, session.durationMinutes),
           );
+          // Published for the UI; the save itself already succeeded.
+          ref.read(lastReminderOutcomeProvider.notifier).state = outcome;
+          if (outcome == ReminderOutcome.denied) {
+            debugPrint('reminder not scheduled for ${session.id}: '
+                'notification permission denied');
+          }
         } catch (e) {
           // The user-visible save succeeded, so this must not fail the action.
           // But it is logged: a bare swallow here hid a localization-load
@@ -137,8 +152,9 @@ class ScheduleSessionAction extends Notifier<AsyncValue<void>> {
       try {
         final notifications = ref.read(notificationServiceProvider);
         await notifications.cancelReminder(sessionId);
-      } catch (_) {
-        // Same best-effort treatment as above.
+      } catch (e) {
+        // Same best-effort treatment as above, and logged for the same reason.
+        debugPrint('reminder not cancelled for $sessionId: $e');
       }
       state = const AsyncValue.data(null);
     } catch (e, st) {

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'local_sensitive_store.dart';
 import 'profile_models.dart';
 import 'profile_repository.dart';
@@ -105,11 +107,13 @@ class DeviceHealthProfileRepository implements ProfileRepository {
         _cache[uid] = onServer;
       }
       await _inner.save(stripSensitive(server));
-    } catch (_) {
+    } catch (e) {
       // Offline, or a rules rejection. The user must keep seeing their own
       // injuries either way, so this returns what it already has and lets a
       // later read try again. Rethrowing would take down every screen watching
       // the profile over a housekeeping write.
+      // Logged by exception type only: no health content, no uid.
+      debugPrint('health profile migration failed: ${e.runtimeType}');
       _migrated.remove(uid);
     }
     return mergeSensitive(server, keep);

@@ -92,9 +92,12 @@ class OfflinePrefetchAction extends Notifier<AsyncValue<PrefetchOutcome?>> {
       if (user == null) {
         throw const PrefetchRefused(PrefetchRefusal.signedOut);
       }
-      final sessions = overrideSessions ??
-          ref.read(scheduledSessionsProvider).valueOrNull ??
-          const [];
+      // Awaited, not sampled with `valueOrNull`: a schedule that is still
+      // loading or failed to load would read as an empty week and publish
+      // "nothing scheduled". A load failure throws here and surfaces as the
+      // generic failed line instead.
+      final Iterable<ScheduledSession> sessions = overrideSessions ??
+          (await ref.read(scheduledSessionsProvider.future));
       final now = DateTime.now();
       final cutoff = now.add(const Duration(days: 7));
       final cache = ref.read(offlineVideoCacheProvider);

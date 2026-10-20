@@ -1,0 +1,527 @@
+{
+  "schema": "coach_exercises/v1",
+  "exercises": [
+    {
+      "id": "bentOverRow",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "shoulder",
+        "elbow",
+        "wrist",
+        "hip",
+        "knee"
+      ],
+      "unscored": [
+        "ankle",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "set",
+          "entry": "hinged set, arm extended to pulled"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "shoulder",
+          "elbow",
+          "wrist"
+        ],
+        "direction": "falling",
+        "enter": 110,
+        "exit": 140
+      },
+      "counting": {
+        "mode": "reps"
+      },
+      "rules": [
+        {
+          "id": "hinge",
+          "metric": "hip_angle",
+          "max": 145,
+          "tolerance": 12,
+          "phase": "set",
+          "severity": "minor",
+          "cueId": "bentOverRow.hinge",
+          "advisory": true
+        },
+        {
+          "id": "drift",
+          "metric": "torso_drift",
+          "max": 20,
+          "tolerance": 0,
+          "phase": "set",
+          "severity": "minor",
+          "cueId": "bentOverRow.drift",
+          "advisory": true
+        }
+      ],
+      "safetyWording": false,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "lateralRaise",
+      "aliases": [],
+      "version": 1,
+      "view": "front",
+      "sidePolicy": "both",
+      "tracked": [
+        "shoulder",
+        "elbow",
+        "wrist",
+        "hip"
+      ],
+      "unscored": [
+        "knee",
+        "ankle",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "lowered",
+          "entry": "shoulder angle below exit threshold"
+        },
+        {
+          "name": "raised",
+          "entry": "shoulder angle above enter threshold"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "hip",
+          "shoulder",
+          "wrist"
+        ],
+        "direction": "rising",
+        "enter": 60,
+        "exit": 35
+      },
+      "counting": {
+        "mode": "reps"
+      },
+      "rules": [
+        {
+          "id": "too_high",
+          "metric": "wrist_above_shoulder",
+          "max": 0.25,
+          "tolerance": 0.05,
+          "phase": "raised",
+          "severity": "minor",
+          "cueId": "lateralRaise.too_high",
+          "advisory": true
+        },
+        {
+          "id": "arms_bent",
+          "metric": "elbow_angle",
+          "min": 150,
+          "tolerance": 12,
+          "phase": "raised",
+          "severity": "minor",
+          "cueId": "lateralRaise.arms_bent",
+          "advisory": true
+        }
+      ],
+      "safetyWording": false,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "plank",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "shoulder",
+        "hip",
+        "ankle"
+      ],
+      "unscored": [
+        "elbow",
+        "wrist",
+        "knee",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "hold",
+          "entry": "body held in a line"
+        }
+      ],
+      "signal": {
+        "kind": "lineDeviation",
+        "joints": [
+          "shoulder",
+          "hip",
+          "ankle"
+        ],
+        "normalizeBy": "torso",
+        "direction": "falling",
+        "enter": 0.12,
+        "exit": 0.16
+      },
+      "counting": {
+        "mode": "hold",
+        "minHoldMs": 1500
+      },
+      "rules": [
+        {
+          "id": "sag",
+          "metric": "signal",
+          "max": 0.08,
+          "tolerance": 0.04,
+          "phase": "hold",
+          "severity": "minor",
+          "cueId": "plank.sag",
+          "advisory": true
+        },
+        {
+          "id": "pike",
+          "metric": "signal",
+          "min": -0.08,
+          "tolerance": 0.04,
+          "phase": "hold",
+          "severity": "minor",
+          "cueId": "plank.pike",
+          "advisory": true
+        }
+      ],
+      "safetyWording": false,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "gluteBridge",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "shoulder",
+        "hip",
+        "knee",
+        "ankle"
+      ],
+      "unscored": [
+        "elbow",
+        "wrist",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "lowered",
+          "entry": "hips below the bridge band"
+        },
+        {
+          "name": "lifted",
+          "entry": "shoulder-hip-knee angle in the bridge band"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "shoulder",
+          "hip",
+          "knee"
+        ],
+        "direction": "rising",
+        "enter": 165,
+        "exit": 155
+      },
+      "counting": {
+        "mode": "hold",
+        "minHoldMs": 1500
+      },
+      "rules": [
+        {
+          "id": "lift_hips",
+          "metric": "hip_angle",
+          "min": 165,
+          "tolerance": 8,
+          "phase": "lowered",
+          "severity": "minor",
+          "cueId": "gluteBridge.lift_hips",
+          "advisory": true
+        },
+        {
+          "id": "knee_setup",
+          "metric": "knee_angle",
+          "min": 80,
+          "max": 110,
+          "tolerance": 12,
+          "phase": "lowered",
+          "severity": "minor",
+          "cueId": "gluteBridge.knee_setup",
+          "advisory": true
+        }
+      ],
+      "safetyWording": false,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "pullUp",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "nose",
+        "shoulder",
+        "elbow",
+        "wrist",
+        "hip"
+      ],
+      "unscored": [
+        "knee",
+        "ankle"
+      ],
+      "phases": [
+        {
+          "name": "hang",
+          "entry": "elbow above exit threshold"
+        },
+        {
+          "name": "top",
+          "entry": "elbow below enter threshold"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "shoulder",
+          "elbow",
+          "wrist"
+        ],
+        "direction": "falling",
+        "enter": 75,
+        "exit": 120
+      },
+      "counting": {
+        "mode": "reps"
+      },
+      "rules": [
+        {
+          "id": "partial_rep",
+          "metric": "nose_above_wrist",
+          "min": 0,
+          "tolerance": 0.1,
+          "phase": "top",
+          "severity": "minor",
+          "cueId": "pullUp.partial_rep",
+          "advisory": true
+        }
+      ],
+      "safetyWording": false,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "stepUp",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "shoulder",
+        "hip",
+        "knee",
+        "ankle"
+      ],
+      "unscored": [
+        "elbow",
+        "wrist",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "set",
+          "entry": "working knee from bent to extended"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "hip",
+          "knee",
+          "ankle"
+        ],
+        "direction": "falling",
+        "enter": 120,
+        "exit": 150
+      },
+      "counting": {
+        "mode": "reps"
+      },
+      "rules": [
+        {
+          "id": "lean",
+          "metric": "torso_lean",
+          "max": 30,
+          "tolerance": 12,
+          "phase": "set",
+          "severity": "minor",
+          "cueId": "stepUp.lean",
+          "advisory": true
+        }
+      ],
+      "safetyWording": false,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "tricepDip",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "shoulder",
+        "elbow",
+        "wrist",
+        "hip"
+      ],
+      "unscored": [
+        "knee",
+        "ankle",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "support",
+          "entry": "arms extended"
+        },
+        {
+          "name": "lowered",
+          "entry": "elbow below enter threshold"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "shoulder",
+          "elbow",
+          "wrist"
+        ],
+        "direction": "falling",
+        "enter": 120,
+        "exit": 150
+      },
+      "counting": {
+        "mode": "reps"
+      },
+      "rules": [
+        {
+          "id": "too_deep",
+          "metric": "elbow_angle",
+          "min": 70,
+          "tolerance": 12,
+          "phase": "lowered",
+          "severity": "minor",
+          "cueId": "tricepDip.too_deep",
+          "advisory": true
+        }
+      ],
+      "safetyWording": true,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    },
+    {
+      "id": "goodMorning",
+      "aliases": [],
+      "version": 1,
+      "view": "side",
+      "sidePolicy": "bestVisible",
+      "tracked": [
+        "shoulder",
+        "hip",
+        "knee",
+        "ankle"
+      ],
+      "unscored": [
+        "elbow",
+        "wrist",
+        "nose"
+      ],
+      "phases": [
+        {
+          "name": "standing",
+          "entry": "hip angle above exit threshold"
+        },
+        {
+          "name": "hinged",
+          "entry": "hip angle below enter threshold"
+        }
+      ],
+      "signal": {
+        "kind": "angle",
+        "joints": [
+          "shoulder",
+          "hip",
+          "knee"
+        ],
+        "direction": "falling",
+        "enter": 140,
+        "exit": 165
+      },
+      "counting": {
+        "mode": "reps"
+      },
+      "rules": [
+        {
+          "id": "knees",
+          "metric": "knee_angle",
+          "min": 150,
+          "tolerance": 12,
+          "phase": "hinged",
+          "severity": "minor",
+          "cueId": "goodMorning.knees",
+          "advisory": true
+        },
+        {
+          "id": "too_deep",
+          "metric": "hip_angle",
+          "min": 95,
+          "tolerance": 12,
+          "phase": "hinged",
+          "severity": "minor",
+          "cueId": "goodMorning.too_deep",
+          "advisory": true
+        }
+      ],
+      "safetyWording": true,
+      "provenance": {
+        "kind": "authored",
+        "source": "authored from standard biomechanics ranges (2D image-space angles); no recorded sets yet",
+        "status": "beta"
+      }
+    }
+  ]
+}

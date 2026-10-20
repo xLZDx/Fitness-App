@@ -1,7 +1,9 @@
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../cycle_aware/data/cycle_phase.dart';
+import '../personalisation/data/recommendation_hints.dart' show VolumeCapCause;
 import '../safety/widgets/eligibility_notice.dart';
+import '../training_context/data/training_context.dart' show TrainingContext;
 import 'data/workout_plan.dart';
 
 /// Where a plan's reason codes become sentences.
@@ -49,8 +51,34 @@ String planReasonText(AppLocalizations l10n, PlanReason reason) =>
               : movementRestrictionText(l10n, restriction),
         ),
       InjuryFilterReason(:final count) => l10n.planReasonInjuryFiltered(count),
+      SafetyAdvisoryReason(:final advisory) =>
+        eligibilityReasonText(l10n, advisory),
+      GoalMixReason(:final mix) => switch (mix) {
+          GoalMix.mobility => l10n.planReasonGoalMobility,
+          GoalMix.conditioning => l10n.planReasonGoalConditioning,
+          GoalMix.seniorBalance => l10n.planReasonSeniorBalance,
+        },
+      VolumeCapReason(:final percent, :final cause) => switch (cause) {
+          VolumeCapCause.lowActivity => l10n.planReasonVolumeLowActivity(percent),
+          VolumeCapCause.recovery => l10n.planReasonVolumeRecovery(percent),
+          VolumeCapCause.basics => l10n.planReasonVolumeBasics(percent),
+        },
+      TrainingContextReason(:final context) =>
+        trainingContextReasonText(l10n, context),
       NoHistoryReason() => l10n.planReasonNoHistory,
       DeficitOrderReason() => l10n.planReasonDeficitOrder,
+    };
+
+/// The sentence saying a recommendation was built for a chosen training
+/// context. Shared by the plan's reasons and the home suggestion cards, so both
+/// surfaces say the same true thing about the same choice.
+String trainingContextReasonText(
+        AppLocalizations l10n, TrainingContext context) =>
+    switch (context) {
+      TrainingContext.gymMachines => l10n.planReasonContextGym,
+      TrainingContext.outdoorMinimal => l10n.planReasonContextOutdoor,
+      TrainingContext.home => l10n.planReasonContextHome,
+      TrainingContext.yoga => l10n.planReasonContextYoga,
     };
 
 /// The plan's heading.

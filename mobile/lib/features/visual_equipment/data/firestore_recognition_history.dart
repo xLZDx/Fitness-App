@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'chunked_delete.dart';
 import 'recognition_history.dart';
 
 /// Firestore-backed recognised-machine store. Documents live at
@@ -129,13 +130,17 @@ class FirestoreRecognitionHistoryRepository
   Future<void> clear() async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
-    final snap = await _col(uid).get();
-    if (snap.docs.isEmpty) return;
-    final batch = _db.batch();
-    for (final d in snap.docs) {
-      batch.delete(d.reference);
-    }
-    await batch.commit();
+    // Chunked at 400: `batch.commit()` rejects above 500 operations.
+    await deleteInChunks<QueryDocumentSnapshot<Map<String, dynamic>>>(
+      fetch: (limit) async => (await _col(uid).limit(limit).get()).docs,
+      commit: (docs) async {
+        final batch = _db.batch();
+        for (final d in docs) {
+          batch.delete(d.reference);
+        }
+        await batch.commit();
+      },
+    );
   }
 }
 

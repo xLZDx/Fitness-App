@@ -52,6 +52,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from bundle_layout import canonical_stem, plan_import, split_gender  # noqa: E402
 from match_vendor_list import norm  # noqa: E402
 import vendor_paths  # noqa: E402
+import catalog_corrections  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "mobile" / "assets" / "data" / "exercises_vendor.json"
@@ -429,6 +430,14 @@ def main() -> None:
 
     existing = load_existing()
     rows, dropped = merge_rows(build(), existing)
+    # Corrections survive a rebuild only because they are re-applied here; see
+    # catalog_corrections.py. Idempotent, so a run with nothing new is a no-op.
+    # The Russian overlay is only touched when writing the real catalogue.
+    real_catalogue = OUT.resolve() == catalog_corrections.EN_PATH.resolve()
+    ru_overlay = (json.loads(catalog_corrections.RU_PATH.read_text(encoding="utf-8"))
+                  if real_catalogue and catalog_corrections.RU_PATH.exists() else {})
+    catalog_corrections.apply(rows, ru_overlay, catalog_corrections.load_corrections(),
+                              strict=False)
 
     # Counted on the merged rows, not on `build()`'s output: this is what the
     # file will contain, and the two differ by exactly the curated fields.
@@ -494,6 +503,8 @@ def main() -> None:
         OUT.write_text(
             json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
+        if ru_overlay:
+            catalog_corrections.dump_json(catalog_corrections.RU_PATH, ru_overlay)
         print(f"\nwrote {OUT}  ({OUT.stat().st_size / 1e6:.2f} MB)")
     else:
         print("\nnothing written -- pass --write")

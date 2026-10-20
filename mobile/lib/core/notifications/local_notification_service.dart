@@ -26,9 +26,19 @@ class LocalNotificationService implements NotificationService {
   static const _channelDescription =
       'Lead-time reminders for scheduled workouts.';
 
-  /// Stable 31-bit hash so different sessions never collide on the
-  /// notification id (Android requires int).
-  int _idFor(String sessionId) => sessionId.hashCode & 0x7FFFFFFF;
+  /// Stable 31-bit id (Android requires int). FNV-1a, not `String.hashCode`:
+  /// the latter is not specified to be stable across Dart versions, so an app
+  /// update could leave a pending reminder under an id nothing can cancel.
+  int _idFor(String sessionId) => reminderIdFor(sessionId);
+
+  /// The id earlier builds used. Cancelled alongside the current one so a
+  /// reminder scheduled before the FNV-1a switch does not outlive its session.
+  int _legacyIdFor(String sessionId) => sessionId.hashCode & 0x7FFFFFFF;
+
+  Future<void> _cancelLegacy(String sessionId) async {
+    final legacy = _legacyIdFor(sessionId);
+    if (legacy != _idFor(sessionId)) await _plugin.cancel(legacy);
+  }
 
   @override
   Future<bool> init() async {
@@ -74,15 +84,14 @@ class LocalNotificationService implements NotificationService {
       _permissionGranted = false;
       return false;
     }
-    // Best-effort exact-alarm grant on 12+. The user can still revoke it
-    // manually; we degrade to inexact scheduling later if so.
-    await android.requestExactAlarmsPermission();
+    // No exact-alarm request: reminders use inexactAllowWhileIdle, which
+    // needs neither SCHEDULE_EXACT_ALARM nor USE_EXACT_ALARM.
     _permissionGranted = true;
     return true;
   }
 
   @override
-  Future<void> scheduleReminder(
+  Future<ReminderOutcome> scheduleReminder(
     ScheduledSession session, {
     required String title,
     required String body,
@@ -99,7 +108,7 @@ class LocalNotificationService implements NotificationService {
       );
 
   @override
-  Future<void> scheduleAt(
+  Future<ReminderOutcome> scheduleAt(
     String id, {
     required DateTime fireAt,
     required String title,
@@ -109,11 +118,11 @@ class LocalNotificationService implements NotificationService {
     // about, so a prompt explains itself. Returning early on a denial matters
     // -- scheduling into a channel the OS will not deliver leaves a reminder
     // that exists in our state and nowhere else.
-    if (!await ensurePermission()) return;
+    if (!await ensurePermission()) return ReminderOutcome.denied;
     if (!fireAt.isAfter(DateTime.now())) {
       // Reminder window already passed — clear any stale entry and bail.
       await cancelReminder(id);
-      return;
+      return ReminderOutcome.past;
     }
 
     const androidDetails = AndroidNotificationDetails(
@@ -127,6 +136,9 @@ class LocalNotificationService implements NotificationService {
     const details = NotificationDetails(android: androidDetails);
     final tzWhen = tz.TZDateTime.from(fireAt, tz.local);
 
+    // Drop a reminder an older build registered under the legacy id, or it
+    // would fire next to the new one.
+    await _cancelLegacy(id);
     await _plugin.zonedSchedule(
       _idFor(id),
       title,
@@ -138,15 +150,28 @@ class LocalNotificationService implements NotificationService {
           UILocalNotificationDateInterpretation.absoluteTime,
       payload: id,
     );
+    return ReminderOutcome.scheduled;
   }
 
   @override
   Future<void> cancelReminder(String sessionId) async {
     await _plugin.cancel(_idFor(sessionId));
+    await _cancelLegacy(sessionId);
   }
 
   @override
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
   }
+}
+
+/// 32-bit FNV-1a over the UTF-16 code units of [sessionId], masked to 31 bits.
+/// Deterministic on every platform and Dart version.
+int reminderIdFor(String sessionId) {
+  var h = 0x811C9DC5;
+  for (final unit in sessionId.codeUnits) {
+    h ^= unit;
+    h = (h * 0x01000193) & 0xFFFFFFFF;
+  }
+  return h & 0x7FFFFFFF;
 }

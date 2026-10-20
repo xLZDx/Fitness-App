@@ -1,0 +1,143 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Полный QA проекта Fitness_App — итоговый репорт</title><style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#555;--line:#d6d6d6;--acc:#0b57d0;--bad:#b3261e;--warn:#8a5a00}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--fg:#ececec;--mut:#aaa;--line:#333;--acc:#8ab4f8;--bad:#f2b8b5;--warn:#f0c36d}}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,Segoe UI,sans-serif;margin:0;padding:16px;max-width:1100px;margin-inline:auto}
+h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.15rem;margin:1.6em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:.2em}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:color-mix(in srgb,var(--fg) 6%,transparent)}.MAJOR{color:var(--bad);font-weight:700}.MEDIUM{color:var(--warn);font-weight:700}.MINOR{color:var(--mut);font-weight:700}
+.wrap{overflow-x:auto}code{font-size:.85em}
+</style></head><body>
+<header><h1>Полный QA проекта Fitness_App — итоговый репорт</h1><p>2026-10-13</p></header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; sprint/full-project-qa-2026-10-13 @ 8b4b23a</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+<main>
+<p>Прогон 9 агентов по всему проекту, полные тестовые наборы, 4 дополнительные задачи оператора. По команде оператора «ничего не меняй» продуктовый код НЕ изменён: правки агентов-исполнителей убраны в git stash, все находки ниже — только отчёт. Ветка sprint/full-project-qa-2026-10-13 (от ветки спринта; PR #2 ждёт мёржа отдельно).</p>
+<h2>Результаты тестов</h2>
+<div class="wrap"><table><thead><tr><th>Область</th><th>Результат</th><th>Примечание</th></tr></thead><tbody>
+<tr><td>Flutter (весь набор)</td><td>4035 прошли, 26 упали</td><td>25 — golden-тесты окружения Windows; 1 — дефект теста про перекрывающиеся загрузки (исправлен, 5/5 зелёных). Дефектов продукта нет.</td></tr>
+<tr><td>Cloud Functions</td><td>632 + 515 прошли, 0 упали</td><td>functions: 25 наборов; equipment-identity: 28 наборов. Добавлено 27 тестов (webhook Stripe, удаление, экспорт). Эмулятор Firestore не запускался.</td></tr>
+<tr><td>Python-инструменты</td><td>catalog 211, ct1 228, ml 93, ops 64, review 219 — все зелёные</td><td>scripts/equipment_identity не завершился (~19%, статус неизвестен). Добавлено 36 тестов для tools/.</td></tr>
+<tr><td>Новые тесты-«храповики»</td><td>2 файла, проходят</td><td>Каталог (scripts/catalog/test_catalog_text_ratchet.py) и 100 профилей (mobile/test/features/personalisation/recommendation_honesty_100_test.dart): фиксируют текущие пробелы и падают, если они растут.</td></tr>
+</tbody></table></div>
+<h2>Находки ревью (по убыванию серьёзности)</h2>
+<div class="wrap"><table><thead><tr><th>№</th><th>Серьёзность</th><th>Где</th><th>Находка</th><th>Основание</th></tr></thead><tbody>
+<tr><td>F1</td><td><span class="MAJOR">MAJOR</span></td><td><code>mobile/lib/core/router/app_router.dart:445-482; main.dart</code></td><td>Социальная лента, планы знаменитостей, загрузка видео, модерация и лента команды имеют только Mock-репозитории, main.dart их не переопределяет, а маршруты достижимы из профиля, настроек и справочника упражнений. В релизе пользователь видит фейковые данные, отправленное нигде не сохраняется.</td><td>FACT (проверено мной / verified by me)</td></tr>
+<tr><td>F2</td><td><span class="MAJOR">MAJOR</span></td><td><code>main.dart:538-545; marketplace_page.dart:156-170</code></td><td>Список тренеров — мок, но сервис бронирования реальный (Stripe Connect). Сценарий брони — заглушка (время «сейчас + 1 день», без оплаты). Единственная защита — баннер демо.</td><td>FACT</td></tr>
+<tr><td>F3</td><td><span class="MAJOR">MAJOR</span></td><td><code>functions/src/index.ts:933-1024, 1114; deleteAccount :2214</code></td><td>После удаления аккаунта вебхук Stripe может воссоздать документ подписки (с stripeCustomerId) для удалённого uid; он никогда не удаляется. Токен остаётся валидным до часа (revokeRefreshTokens не вызывается).</td><td>FACT путь / INFERENCE время</td></tr>
+<tr><td>F4</td><td><span class="MAJOR">MAJOR</span></td><td><code>offline_video_providers.dart:95-96</code></td><td>Пока расписание грузится или упало, prefetch считает неделю пустой и пишет «нечего скачивать» платящему пользователю.</td><td>FACT</td></tr>
+<tr><td>F5</td><td><span class="MAJOR">MAJOR</span></td><td><code>local_notification_service.dart:112</code></td><td>При отказе в разрешении на уведомления напоминание молча не планируется, метод возвращает void — интерфейс может показать успех.</td><td>FACT / INFERENCE (UI)</td></tr>
+<tr><td>F6</td><td><span class="MAJOR">MAJOR</span></td><td><code>app_router.dart:299-320</code></td><td>Гонка: уже прошедший онбординг пользователь при холодном старте может быть отправлен на /onboarding, пока профиль не загружен.</td><td>INFERENCE</td></tr>
+<tr><td>F7</td><td><span class="MAJOR">MAJOR</span></td><td><code>AndroidManifest.xml:9; local_notification_service.dart:79,136</code></td><td>Объявлено USE_EXACT_ALARM, а планирование неточное и запрашивается точное разрешение — риск отказа Google Play и лишний системный экран.</td><td>FACT несоответствие / INFERENCE отказ</td></tr>
+<tr><td>F8</td><td><span class="MAJOR">MAJOR</span></td><td><code>platform_health_service.dart:30,222-231</code></td><td>Запись тренировки передаёт калории, а разрешение на запись калорий не объявлено — запись может молча не пройти.</td><td>INFERENCE</td></tr>
+<tr><td>F9</td><td><span class="MAJOR">MAJOR</span></td><td><code>progress_photos_providers.dart:193-194; firestore_*:50-90</code></td><td>При сбое хранилища фото показывается демо-сетка; два репозитория читают FirebaseAuth вне Riverpod (две модели владения текущим пользователем).</td><td>FACT / INFERENCE</td></tr>
+<tr><td>F10</td><td><span class="MAJOR">MAJOR</span></td><td><code>scripts/ops, scripts/l10n, scripts/catalog</code></td><td>fix_const.py игнорирует код возврата flutter analyze; verify_clip_signing.py при ошибке сертификата повторяет запрос без проверки с токеном Authorization; у urlopen нет таймаута; firebase_api.py завершается кодом 0 после HTTP-ошибки; upload_video_library.py ведёт в бакеты старого проекта traidingbot-b4061 и читает клип целиком в память.</td><td>FACT</td></tr>
+<tr><td>F11</td><td><span class="MEDIUM">MEDIUM</span></td><td><code>firestore_machine_cards.dart:129; firestore_recognition_history.dart:129</code></td><td>clear() удаляет всю коллекцию одним батчем (лимит 500) — пользователь с &gt;500 документов не сможет очистить.</td><td>FACT</td></tr>
+<tr><td>F12</td><td><span class="MEDIUM">MEDIUM</span></td><td><code>scripts/ci/data_lifecycle_policy.json:213-232; account_export.ts</code></td><td>Экспорт и политика не покрывают stats/workout_sessions и серверные сессии/телеметрию equipment-identity (политика утверждает «нет Admin-писателя», а он есть).</td><td>FACT / INFERENCE</td></tr>
+<tr><td>F13</td><td><span class="MINOR">MINOR</span></td><td><code>разное / various</code></td><td>Молчаливые ошибки без лога (streak, миграция health-профиля, отмена напоминания, парсинг тарифа → free); вебхук брони без проверки существования; ID напоминания из String.hashCode; мёртвый authListenable; лишние Bluetooth/FGS-разрешения; нет суффикса debug у Wear; бронирование bookingOps — гонка двух удалений; порядок событий Stripe без event.id; нет форм-правил Firestore; json_io не атомарна; git без таймаута в ML-скриптах.</td><td>FACT / INFERENCE</td></tr>
+</tbody></table></div>
+<h2>Четыре дополнительные задачи</h2>
+<div class="wrap"><table><thead><tr><th>Задача оператора</th><th>Итог</th></tr></thead><tbody>
+<tr><td>1. Описания упражнений и видео</td><td>Описаний нет у 0 из 1887 (summary и steps заполнены везде, русский overlay покрывает все id). Поле purpose пусто у 1484. Выборка по видео: 40 упражнений, 36 совпали, 0 не совпали, 4 неясны. Проблемы: у 291 упражнения оборудование в названии не совпадает с equipmentId (часто bench_press на гантелях/лентах), 83 id в 38 группах делят одинаковые шаги, у 182 нет мышц, 3 обрезанных имени видео, 1 клип отсутствует, 1 id в карантине остаётся в файле каталога. Добавлять описания там, где «отсутствует», не требуется — отсутствует purpose. Пока ничего не добавлено.</td></tr>
+<tr><td>2. 100 аккаунтов и честность подбора</td><td>100 детерминированных профилей (не реальные аккаунты). Повторяемость: 0 расхождений. Различающихся выходов: план 32, подсказки 34, программа 70. Нарушений противопоказаний, оборудования, уровня — 0. Но: возраст не читается нигде (20 несовершеннолетних и 10 пожилых получают тот же результат, что и 30-летний), 32 поля анкеты ничего не меняют, 89 карточек йоги/растяжки подписаны «развивает мышцы/силу», 36 текстов «отфильтровано N из-за травмы» считают и оборудование, травма рёбер молча игнорируется (6), 474 строки программы с bench_press отданы домашним пользователям без скамьи (вывод), 37 нагрузок максимального усилия при реабилитации/мобильности, 12 без растяжки и 10 без кардио при такой цели, 9 планов дольше заявленных 45 минут. Вывод: рекомендации безопасны по противопоказаниям, но НЕ полностью честны по возрасту, причинам и цели.</td></tr>
+<tr><td>3. Живой тренер: ≥10 упражнений, единый движок</td><td>Движок уже частично на данных (poseTargetsByTag, measuredRepConfigs из MM-Fit, repSignalsByTag); приседание зашито кодом в выборе по умолчанию, сигнале глубины, классификаторах и FormCueKey. Данные есть для приседа, выпадов, жима над головой, бицепса (отжимания и скручивания — ниже порога 80%, становая по хип-хинджу — авторский сигнал). Данных нет: тяга в наклоне, подъём в стороны, планка, ягодичный мостик, подтягивания, зашагивание, брусья; подъём на носки исключён (нет пятки/носка в ML Kit). Нужен реестр упражнений из JSON, общий классификатор, ключи сообщений ru/en. Риски: 2D-углы зависят от ракурса, нет позвоночника/ротаций, медицинские формулировки. Детали и швы — в карте агента; не реализовано.</td></tr>
+<tr><td>4. Экран сравнения тела по видео</td><td>В видео (2:36) показан сторонний reference-app: проверки расстояния/света/позы → отсчёт 3-2-1 → автозатвор → три позы (спереди, сбоку, сзади). Сам экран «до/после» в ролике пуст. В Fitness_App есть шифрованное хранилище, согласие, просмотр, детектор позы ML Kit; нет автозатвора, последовательности трёх поз, истории сканов, выравнивания по ключевым точкам, слайдера/наложения. План: 8 шагов, около 24–28 дней (MVP 12–14), новых пакетов не нужно. Серверная оценка состава тела противоречит принципу «фото не покидают телефон». Не реализовано.</td></tr>
+</tbody></table></div>
+<h2>Состояние</h2>
+<div class="wrap"><table><thead><tr><th>Что</th><th>Состояние</th></tr></thead><tbody>
+<tr><td>Продуктовый код</td><td>Не менялся. Ветка sprint/full-project-qa-2026-10-13 = коммит 8b4b23a плюс только добавленные тесты (не закоммичены).</td></tr>
+<tr><td>Правки агентов-исполнителей</td><td>Незавершены и не проверены; лежат в git stash@{0} «held-by-operator-2026-10-13» и копией патча в scratchpad (impl_agents_uncommitted.patch). Вернуть: git stash pop по твоей команде.</td></tr>
+<tr><td>PR #2</td><td>Открыт, GPT-PM APPROVE на 8b4b23a (раунд 3). Не смёржен.</td></tr>
+<tr><td>Ревью GPT-PM по этому QA</td><td>Не запрашивалось: исправлений нет, ревьюить нечего. Запросить после исправлений.</td></tr>
+<tr><td>Не запущено / не проверено</td><td>Эмулятор Firestore (rules, e2e); scripts/equipment_identity до конца; scripts/dev/*.tests.py; Kotlin не компилировался; проверка видео по кадрам для женских клипов; refactor-cleaner, doc-updater и build-error-resolver не запускались (нет сборочных ошибок, а чистка кода до исправлений нецелесообразна).</td></tr>
+</tbody></table></div>
+<h2>Решения, которые нужны от тебя:</h2><ol><li>Разрешить исправления: «чини всё» или список по номерам F1–F13 и по четырём задачам.</li><li>F1: скрывать демо-функции в релизе (моё предложение, флаг kDemoFeaturesEnabled) или оставить с баннером «демо»?</li><li>Сравнение тела: ответы на 9 вопросов из отчёта агента (режимы сравнения, три позы, камера, голос, напоминания, платный доступ, повторное согласие, формулировки для несовершеннолетних, MVP или полный план).</li><li>Честность подбора: какой должна быть реакция на возраст &lt;18 и пожилых (отказ, осторожный путь, предупреждение) — это продуктовое решение.</li></ol>
+</main>
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body></html>

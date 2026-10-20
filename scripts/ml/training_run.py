@@ -83,10 +83,10 @@ def _commit_exists(sha: str) -> bool:
     try:
         subprocess.run(
             ["git", "-C", str(REPO), "cat-file", "-e", f"{sha}^{{commit}}"],
-            capture_output=True, check=True,
+            capture_output=True, check=True, timeout=30,
         )
         return True
-    except Exception:
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return False
 
 

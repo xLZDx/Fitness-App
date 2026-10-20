@@ -17,6 +17,7 @@ import 'package:fitness_app/features/workouts/data/prefetch_outcome.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/offline_video_providers.dart';
+import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 
 const _benchUrl = 'https://cdn.example.com/bench.mp4';
 
@@ -394,6 +395,65 @@ void main() {
       // which no translator ever saw.
       expect((error as PrefetchRefused).reason, PrefetchRefusal.planUnknown);
       expect(await cache.sizeBytes(), 0);
+    });
+  });
+
+  group('a schedule that failed to load is not an empty week', () {
+    test('an errored schedule surfaces as an error, not nothingScheduled',
+        () async {
+      final cache = InMemoryOfflineVideoCache();
+      final container = ProviderContainer(overrides: [
+        effectiveTierProvider.overrideWithValue(SubscriptionTier.standard),
+        entitlementStatusProvider.overrideWithValue(EntitlementStatus.resolved),
+        authUserProvider.overrideWith((_) => Stream.value(
+              const AuthUser(uid: 'u1', email: 'a@b.com', displayName: 'T'),
+            )),
+        offlineVideoCacheProvider.overrideWithValue(cache),
+        clipUrlResolverProvider.overrideWithValue(PassthroughClipUrlResolver()),
+        scheduledSessionsProvider.overrideWith(
+            (_) => Stream<List<ScheduledSession>>.error(StateError('offline'))),
+      ]);
+      addTearDown(container.dispose);
+      await container.read(authUserProvider.future);
+
+      await container
+          .read(offlinePrefetchActionProvider.notifier)
+          .prefetchNext7Days();
+
+      final a = container.read(offlinePrefetchActionProvider);
+      expect(a.hasError, isTrue);
+      expect(a.valueOrNull, isNull);
+    });
+
+    test('a schedule still loading is awaited and then used', () async {
+      final cache = InMemoryOfflineVideoCache();
+      final schedule = StreamController<List<ScheduledSession>>();
+      final container = ProviderContainer(overrides: [
+        effectiveTierProvider.overrideWithValue(SubscriptionTier.standard),
+        entitlementStatusProvider.overrideWithValue(EntitlementStatus.resolved),
+        authUserProvider.overrideWith((_) => Stream.value(
+              const AuthUser(uid: 'u1', email: 'a@b.com', displayName: 'T'),
+            )),
+        offlineVideoCacheProvider.overrideWithValue(cache),
+        clipUrlResolverProvider.overrideWithValue(PassthroughClipUrlResolver()),
+        equipmentRepositoryProvider.overrideWithValue(_repoWithVideo()),
+        scheduledSessionsProvider.overrideWith((_) => schedule.stream),
+      ]);
+      addTearDown(container.dispose);
+      addTearDown(schedule.close);
+      await container.read(authUserProvider.future);
+
+      final pending = container
+          .read(offlinePrefetchActionProvider.notifier)
+          .prefetchNext7Days();
+      await Future<void>.delayed(Duration.zero);
+      schedule.add([_sessionInWindow('bench')]);
+      await pending;
+
+      final outcome = container.read(offlinePrefetchActionProvider).value;
+      expect(outcome, isNotNull);
+      expect(outcome!.state, isNot(PrefetchState.nothingScheduled));
+      expect(outcome.requested, greaterThan(0));
     });
   });
 }

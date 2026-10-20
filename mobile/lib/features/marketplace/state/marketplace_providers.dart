@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/demo_features.dart';
 import '../data/coach_listing.dart';
 import '../data/coach_marketplace_service.dart';
 
@@ -81,3 +82,42 @@ final coachListingsProvider =
 
 final coachMarketplaceServiceProvider =
     Provider<CoachMarketplaceService>((_) => MockCoachMarketplaceService());
+
+/// Whether demo-grade flows may run. Overridable so tests can model a release
+/// build; production reads [kDemoFeaturesEnabled].
+final marketplaceDemoFeaturesProvider =
+    Provider<bool>((_) => kDemoFeaturesEnabled);
+
+/// Why onboarding/booking cannot run right now, or null when they can.
+///
+/// Two independent reasons: the listings are mock data (a booking against a
+/// sample coach must never reach the backend), and there is no payment sheet
+/// yet, so a booking in a release build would hand back a PaymentIntent
+/// secret nobody can pay and the UI would still announce success. Debug builds
+/// keep the demo path.
+String? marketplaceBlockedReason({
+  required bool listingsAreDemo,
+  required bool demoFeaturesEnabled,
+}) {
+  if (listingsAreDemo) return 'Coach listings are sample data.';
+  if (!demoFeaturesEnabled) return 'In-app payment is not available yet.';
+  return null;
+}
+
+final marketplaceBlockedReasonProvider = Provider<String?>((ref) {
+  return marketplaceBlockedReason(
+    listingsAreDemo: ref.watch(marketplaceListingsAreDemoProvider),
+    demoFeaturesEnabled: ref.watch(marketplaceDemoFeaturesProvider),
+  );
+});
+
+/// The service every marketplace action must go through. Wraps
+/// [coachMarketplaceServiceProvider] (which `main.dart` binds to Cloud
+/// Functions) in the guard above.
+final guardedCoachMarketplaceServiceProvider =
+    Provider<CoachMarketplaceService>((ref) {
+  return GuardedCoachMarketplaceService(
+    ref.watch(coachMarketplaceServiceProvider),
+    () => ref.read(marketplaceBlockedReasonProvider),
+  );
+});

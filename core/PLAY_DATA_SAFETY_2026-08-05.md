@@ -55,6 +55,18 @@ services"* (firebase.google.com/docs/android/play-data-disclosure).
 | Health info | **Current declared answer: No — current-distributed-build verification pending; 2026-09-16 residue evidence below (GPT-PM review, round 2: "basis re-checked" read as a fresh validation of the Play declaration, when the one fact that actually decides it — currently distributed builds' behavior — was not checked)** | — | — | `sensitive_profile.dart` defines what never leaves the device; `device_health_profile_repository.dart` performs the split and `main.dart` binds it |
 | Fitness info | Yes | Optional | App functionality, Personalization | `profile_models.dart:203-218` (age, gender, height, current/target weight, activity level); workout logs at `firestore_workout_log_repository.dart:18` |
 
+**Health Connect (Android), as requested by the code and the manifest
+(2026-10 correction).** Reads: steps, active calories burned, resting heart
+rate, sleep, heart-rate variability (`platform_health_service.dart`
+`healthReadTypes`). Writes: one workout (exercise session) with estimated
+calories (`writeWorkoutData`). Total calories and distance (read and write) are
+also declared in the manifest only because the `health` 11.1.1 plugin asks for
+those grants together with workout writing (`HealthPlugin.kt` ~L548-L580); the
+app never reads or writes distance and never reads total calories.
+`ACTIVITY_RECOGNITION` is not declared. The readings stay on the device
+(memory only, not sent to servers or AI); the Health Connect declaration form
+must list exactly these types.
+
 **Two separate questions, kept separate on purpose (GPT-PM review, 2026-09-16
 round 1 — an earlier draft of this entry conflated them and was corrected
 before commit):**
@@ -190,6 +202,13 @@ rejection.
 |---|---|---|---|---|
 | Photos | Yes | Optional — only when the user scans a machine | App functionality | `gemini_equipment_service.dart:37-48` sends a resized JPEG to Gemini via Firebase AI Logic |
 
+**Body scan (guided progress scan).** Photos and the pose landmarks computed
+from them are processed and stored on the device only: AES-GCM envelopes under
+`<docs>/progress_photos/<uid>/` with a Keystore key, never uploaded, not used to
+derive body numbers, not available under 18 (`scan_access.dart`
+`ScanAccess.underage`). Answer: not collected (nothing leaves the device). The
+scan reminder is a local notification only.
+
 Tick **"Data is processed ephemerally"**: the photo is sent for recognition and
 not stored by this app — what persists is the identified machine id
 (`firestore_recognition_history.dart:41`).
@@ -262,11 +281,28 @@ here as deliberate "No" answers:
 - Contacts, Calendar, SMS, Call logs — no such permission
 - Web browsing history, Installed apps, Search history
 - Sexual orientation, Race and ethnicity, Political or religious beliefs
-- Audio — the app plays cue sounds, it does not record
+- Audio — the app does not record or transmit audio: the manifest declares no `RECORD_AUDIO`, `speech_to_text` is not imported anywhere in `mobile/lib`, and the form coach's spoken cues are `flutter_tts` output only (`tts_voice_coach.dart`)
 - Videos — the catalog *serves* clips; none are captured from the user
 - Advertising ID — no ad SDK exists in the project
 
 ---
+
+### Console actions the operator must take
+
+This repository document does not mean the Console was updated; nothing has
+been entered there. The operator must:
+
+1. Update the Health Connect permissions declaration to the types above (reads:
+   steps, active calories, resting heart rate, sleep, HRV; writes: exercise
+   session; total calories and distance only as plugin-required grants), with
+   the rationale text matching `public/privacy.html`.
+2. Update the Data Safety rows: Audio = not collected (no microphone); Photos
+   and body-scan landmarks = not collected (device-only), machine-photo row
+   unchanged; Health/fitness rows as above.
+3. Delete the old exact-alarm and foreground-service declarations in the
+   Console if they exist (the manifest no longer declares those permissions).
+4. Re-check the privacy policy URL still serves the regenerated page after
+   hosting is redeployed.
 
 ## 4. Store-listing fields that go with this
 

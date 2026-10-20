@@ -25,6 +25,7 @@ library;
 import '../../equipment/data/equipment_models.dart';
 import '../../equipment/data/exercise_filter.dart';
 import '../../profile/data/profile_models.dart';
+import 'age_policy.dart';
 import 'health_flags.dart';
 import 'par_q.dart';
 
@@ -71,12 +72,39 @@ enum BlockReason {
   /// removes a candidate, because there is nothing to remove it by. It exists
   /// so the surface can say what was not checked.
   unscreenableRestriction,
+
+  /// Withheld because of the user's age band (maximal-effort work for a minor
+  /// or a senior, high-impact work for a senior). A product policy, never a
+  /// statement about any individual's health.
+  agePolicy,
+
+  /// Withheld because the user's goal or stated ability asks for a gentle
+  /// selection (comeback / flexibility goal, "cannot do the basics"): no
+  /// maximal-effort or advanced work.
+  gentlePolicy,
+
+  /// ADVISORY. The user is under 18: conservative selection is on, and they
+  /// are told to train with a qualified adult and to let a guardian know.
+  ageMinorAdvisory,
+
+  /// ADVISORY. The user is 65 or over: cautious selection is on, and they are
+  /// told to check with a clinician when unsure.
+  ageSeniorAdvisory,
+
+  /// ADVISORY. The user reported an injury whose body part matches none of the
+  /// regions the exercise data is tagged with, so nothing could be filtered
+  /// for it. Carries the user's own wording in [EligibilityReason.detail].
+  unscreenableInjury,
 }
 
 /// A machine-readable reason, with enough detail to render a sentence.
 class EligibilityReason {
   const EligibilityReason(this.reason,
-      {this.regionTag, this.restriction, this.question, this.unanswered = false});
+      {this.regionTag,
+      this.restriction,
+      this.question,
+      this.unanswered = false,
+      this.detail});
 
   final BlockReason reason;
 
@@ -98,6 +126,10 @@ class EligibilityReason {
   /// [BlockReason.unscreenableRestriction].
   final MovementRestriction? restriction;
 
+  /// The user's own wording, for [BlockReason.unscreenableInjury]: the body
+  /// part they typed.
+  final String? detail;
+
   @override
   bool operator ==(Object other) =>
       other is EligibilityReason &&
@@ -105,11 +137,12 @@ class EligibilityReason {
       other.regionTag == regionTag &&
       other.restriction == restriction &&
       other.question == question &&
-      other.unanswered == unanswered;
+      other.unanswered == unanswered &&
+      other.detail == detail;
 
   @override
   int get hashCode =>
-      Object.hash(reason, regionTag, restriction, question, unanswered);
+      Object.hash(reason, regionTag, restriction, question, unanswered, detail);
 
   @override
   String toString() => 'EligibilityReason(${reason.name}'
@@ -173,7 +206,28 @@ class SafetyContext {
     this.injuries = const [],
     this.health = HealthFlags.empty,
     this.equipment,
+    this.ageBand = AgeBand.adult,
+    this.gentleSelection = false,
+    this.maxDifficulty,
   });
+
+  /// The age policy band. [AgeBand.adult] when the age is unknown or the
+  /// surface did not supply it, which is the pre-policy behaviour.
+  final AgeBand ageBand;
+
+  /// Goal/ability-driven gentle selection: no maximal-effort or advanced work.
+  /// Set for comeback and flexibility goals and for "cannot do the basics".
+  final bool gentleSelection;
+
+  /// The hardest catalogue difficulty this person is recommended, from their
+  /// stated tier (never / beginner -> beginner), or null for no ceiling. A
+  /// recommendation above the stated level is not an honest "fits your level".
+  ///
+  /// NOT enforced by [evaluateExercise] / [eligibleExercises]: browsing is not
+  /// a recommendation and must keep showing every exercise. Recommendation
+  /// builders (plan, suggestions, programme) apply it through
+  /// [recommendableAtLevel].
+  final ExerciseDifficulty? maxDifficulty;
 
   /// Gate M's verdict.
   final SafetyVerdict screening;
@@ -198,9 +252,20 @@ class SafetyContext {
   ///
   /// A property of the person, not of any exercise, which is why it is here and
   /// not in a per-candidate verdict.
+  ///
+  /// Order: age first (it explains why the selection looks the way it does),
+  /// then restrictions, then injuries no filter can act on.
   List<EligibilityReason> get advisories => [
+        if (ageBand == AgeBand.minor)
+          const EligibilityReason(BlockReason.ageMinorAdvisory),
+        if (ageBand == AgeBand.senior)
+          const EligibilityReason(BlockReason.ageSeniorAdvisory),
         for (final r in health.unenforceableRestrictions)
           EligibilityReason(BlockReason.unscreenableRestriction, restriction: r),
+        for (final i in injuries)
+          if (!injuryIsScreenable(i))
+            EligibilityReason(BlockReason.unscreenableInjury,
+                detail: i.bodyPart),
       ];
 
   /// Whether ANY training may be produced for this person.
@@ -336,6 +401,17 @@ Eligibility evaluateExercise(
     }
   }
 
+  // 3b. Cautious selection: the age band and the gentle-goal switch, through
+  //     the one policy so plan, feed and programme cannot disagree.
+  switch (selectionBlockFor(exercise,
+      ageBand: context.ageBand, gentle: context.gentleSelection)) {
+    case SelectionBlock.maxEffort || SelectionBlock.highImpact:
+      blocks.add(EligibilityReason(context.ageBand.isCautious
+          ? BlockReason.agePolicy
+          : BlockReason.gentlePolicy));
+    case null:
+  }
+
   // 4. Equipment, through the one implementation.
   final access = context.equipment;
   if (access != null && !isAvailableWith(exercise, access)) {
@@ -365,6 +441,18 @@ Eligibility evaluateExercise(
 /// dropping the reason for two of the three refusals the app can now issue.
 List<EligibilityReason> safetyReasonsFrom(SafetyContext context) =>
     List.unmodifiable(context.wholePersonBlocks);
+
+/// Keeps only the candidates at or below the person's stated level, for
+/// RECOMMENDATION surfaces (plan, suggestions, programme). Browse lists must
+/// not call this.
+List<ExerciseItem> recommendableAtLevel(
+        List<ExerciseItem> exercises, SafetyContext context) =>
+    context.maxDifficulty == null
+        ? exercises
+        : [
+            for (final e in exercises)
+              if (e.difficulty.index <= context.maxDifficulty!.index) e
+          ];
 
 /// Every allowed candidate, in input order.
 ///

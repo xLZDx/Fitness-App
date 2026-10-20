@@ -206,9 +206,9 @@ def _git_commit() -> str:
     try:
         return subprocess.run(
             ["git", "-C", str(REPO), "rev-parse", "HEAD"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, check=True, timeout=30,
         ).stdout.strip()
-    except Exception:
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return "UNKNOWN"
 
 

@@ -17,6 +17,8 @@ import '../subscription/state/subscription_providers.dart';
 import 'data/photo_consent.dart';
 import 'data/photo_timeline.dart';
 import 'data/progress_photo.dart';
+import 'scan/scan_access.dart';
+import 'scan/ui/scan_entry_card.dart';
 import 'state/progress_photos_providers.dart';
 import 'widgets/photo_bitmap.dart';
 import 'widgets/photo_capture_sheet.dart';
@@ -65,6 +67,8 @@ class ProgressPhotosPage extends ConsumerWidget {
             const _UpgradeCard(),
             const SizedBox(height: 16),
           ],
+          const ScanEntryCard(key: Key('photos.scanEntry')),
+          const SizedBox(height: 16),
           photosAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 36),
@@ -380,13 +384,13 @@ class _BodyState extends ConsumerState<_Body> {
 }
 
 /// Before/after. Shows the widest same-angle span, or says why it can't.
-class _CompareCard extends StatelessWidget {
+class _CompareCard extends ConsumerWidget {
   const _CompareCard({required this.pair});
 
   final ComparePair? pair;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final p = pair;
@@ -438,6 +442,19 @@ class _CompareCard extends StatelessWidget {
               ),
             ],
           ),
+          // The aligned, multi-view comparison of guided scans, offered only
+          // to users who may use the guided scan.
+          if (ref.watch(scanAccessProvider) == ScanAccess.allowed) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                key: const Key('photos.compare.openScanCompare'),
+                onPressed: () => GoRouter.of(context).push('/photos/compare'),
+                child: Text(l10n.scanEntryCompare),
+              ),
+            ),
+          ],
         ],
       ),
     );
