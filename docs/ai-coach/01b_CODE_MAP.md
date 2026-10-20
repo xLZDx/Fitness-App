@@ -1,5 +1,9 @@
 # AI Coach code map: draft claims versus the real code
 
+## Shared workout transaction decision follow-up (2026-10-20)
+
+The local writer/reader trace below was used to prepare [AI-COACH-01's bounded transaction scope](24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md). GPT-PM accepted the bounded Option A product tradeoff on correlated request `4b6238a0-1c80-4d69-87ba-45a214fc7e31`, but explicitly withheld implementation authorization. The product exception applies only to the new shared set/add/difficulty action; unrelated offline behavior remains required. Exact operation/set identity persistence and protection from old full-document writers remain unresolved. This source map documents behavior and compatibility questions; it is not a code approval or runtime report.
+
 Initial source: code-explorer run on 2026-10-17 over `origin/phase2/main` at `14513a87` (worktree `Fitness_App_aicoach`). Read-only; git state of that explorer run was not captured. Relevant interfaces below were re-read on 2026-10-18 at source head `bdf089c83b23ef35569ec09fc8ff117ac52b1194`. Paths are relative to the repo root; line numbers can drift as files change.
 
 ## Earlier operator-scope verification (2026-10-19; source head as then reported)

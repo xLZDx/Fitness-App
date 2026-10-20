@@ -39,6 +39,14 @@ The focused final review request `d7f2369e-cf3a-4d88-a523-6f3f5ca0ed11` supplied
 
 The request, result, exact changes and limitations are recorded in the [final focused review change record](../../core/changes/2026-10-20-ai-coach-phase9-final-review.md).
 
+### Fresh correlated GPT-PM decision and AI-COACH-01 preparation (2026-10-20)
+
+The earlier offline-tradeoff attempt `8fd23d10-6840-4db1-9ee3-52ef849bf7dc` did not cross the send boundary because attachments failed to land. Codex resent the same decision scope with a new ID and eight Markdown attachments as request `4b6238a0-1c80-4d69-87ba-45a214fc7e31`. Re-read durable job `4176bb29-d3f1-42a8-920c-e7f562f42ee0`: `succeeded`, `sendPhase=sent`, one attempt, `correlated=true`, user turn `313be192-99de-436e-bc12-0ddd545f0a16`, reply `5e446c22-bca5-464f-9fac-c167648855d4`.
+
+Disposition: **PARTIAL ACCEPT — OPTION A APPROVED, IMPLEMENTATION NOT AUTHORIZED.** Option A bounds the offline exception to set/add/difficulty operations migrated into the new shared transaction; unsent work stays unsaved in the active UI, and ambiguous submission is `UNKNOWN` until same-operation server reconciliation. Unrelated offline timer, exercise display, cached-plan and manual/offline functions remain requirements. OQ-07 remains fail-closed with no clinical values or signature. Existing OQ-14/OQ-18 boundaries stand, while deferred inputs remain open.
+
+The prepared [AI-COACH-01 transaction scope](24_PHASE9_AI_COACH_01_TRANSACTION_SCOPE.md) records stable operation/set identity, replay/conflict semantics, acknowledgement and `UNKNOWN` handling, both touch writers, current readers/exports, actual-reps provenance, UI lifecycle, and old-client compatibility. The physical identity/receipt encoding, receipt lifetime/capacity, legacy-client full-document write protection, UI details and later exact-scope authorization remain OPEN. Consequently this preparation does not change AI-COACH-01 from **CODE GO NOT AUTHORIZED**. It also does not alter the 13 PENDING story dispositions, grant clinical approval, establish ACS-100 delivery, or provide runtime evidence.
+
 ## Status matrix
 
 | Workstream | DOCUMENT_CONTRACT | PRODUCT_POLICY | IMPLEMENTATION_CONFORMANCE | CLINICAL_SIGNATURE | LIVE_EVIDENCE | STORY_DISPOSITION |
