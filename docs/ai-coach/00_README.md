@@ -1,6 +1,6 @@
 # Live AI Coach (TDD-001): documentation package
 
-Status as of 2026-10-19: AI-COACH-00 documentation gate is approved and merged. PR #13 merged into `phase2/main` as `85e7e91` from exact reviewed head `e6a85647`. Following the operator's scope clarification and GPT-PM's `MODIFY` disposition, this package is being corrected to describe voice as another input to the existing workout flow. The programme remains documentation-only; implementation, production deployment and user-data migration are NOT authorised. This line is separate from the Phase 2 sprints and changes none of them.
+Status as of 2026-10-20: AI-COACH-00 documentation gate was approved and merged as recorded below; the later Phase 9 acceptance reconciliation is a separate follow-up. GPT review request `c4f2178a-91e4-4d63-a2c8-73c8cc221e50` returned MODIFY (0 BLOCKER, 0 MAJOR, 1 MINOR) for eleven attached, uncommitted documents. Codex corrected the sole backlog-criteria finding afterward by labeling original Sprint-00 ACS-001/ACS-002 criteria historical/superseded and pointing to §2.1. The final clarifying note has not been re-reviewed. Current status axes, the OQ-07/OQ-14/OQ-18 integration map, ACS-100 evidence, corrected provenance, existing-workout architecture, and ordered closure queue are in `23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md`. The review does not grant story acceptance, clinical approval, runtime conformance, production changes, or deployment authority.
 
 ## Operator scope correction (2026-10-19)
 
@@ -31,6 +31,7 @@ Review state: round 1 (five independent reviewers, 97 claims, two BLOCKER) and r
 | 13 | `08_GPTPM_GATE_ROUND1.md` | GPT-PM documentation gate round 1: verdict MODIFY and its findings |
 | 14 | `09_GPTPM_VERIFICATION_ROUND4.md` | Focused approval for FT-2017, FT-1190 and FT-1175 |
 | 15 | `10_GPTPM_GATE_RECORD_ROUND5.md` | Focused review of gate/state evidence |
+| 16 | `23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md` | Current Phase 9 acceptance axes, cross-document status, read-only integration map, ACS-100 evidence, and ordered closure queue |
 
 ## What the package decides, in one paragraph
 
@@ -57,13 +58,15 @@ The requested voice-to-workout control has not been built, run or measured. The 
 | Emergency number per locale; call button on the locked-screen notification | Table signed by operator; no call button | Safety stop copy |
 | Always-listening or tap-to-talk after the gym trial | Tap-to-talk | Battery, privacy, noise robustness |
 
-### Latest ACS-100 responsibility assignment
+### HISTORICAL SNAPSHOT — ACS-100 responsibility assignment (2026-10-19)
 
-The operator's direct role assignment controls: Codex owns and executes technical OQ-contract and ACS-100 work; GPT-PM owns product decisions; the operator remains accountable for the delegated task. This supersedes earlier wording that asked the operator to find a separate technical owner. The deployed target is callable `aiCoachAdvice` / Cloud Run `aicoachadvice`; GPT-PM approved the verified FA-D1 channel as the interim alert destination. The candidate policy is not yet bound to FA-D1 and no delivery/acknowledgement is verified. ACS-100 remains CARRIED/OPEN. No qualified clinical signature is evidenced for OQ-07; Codex/GPT-PM task roles do not imply clinical qualification. See the [current ACS-100 decision record](../../core/changes/2026-10-19-ai-coach-phase9-acs100-gptpm-monitoring-decision.md).
+At this dated checkpoint, task execution and product decision roles were recorded as Codex and GPT-PM. The later direct task instruction makes Codex the task lead and routine technical decision-maker and GPT the reviewer. The deployed target is callable `aiCoachAdvice` / Cloud Run `aicoachadvice`; FA-D1 was approved as a candidate notification destination, but no AI Coach policy was bound to it and no delivery/acknowledgement was verified. This role assignment did not establish continuous on-call coverage or a qualified OQ-07 signer. The current status is in the [2026-10-20 reconciliation](23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md).
 
 GPT-PM later returned correlated `ACCEPT` for the bounded detailed OQ-07/OQ-14/OQ-18 proposals attached at supplied commit `c980cfc7` (request `a4c457f7-e16b-4727-8189-6a452b394020`; exact transport evidence and limits in the linked change record). This accepts product direction only: it does not close the TR contracts, approve numeric/source/recovery policies, sign clinical values, accept stories, or authorize implementation. The actual OQ-07 clinical limits and symptom scope still require a qualified-human signature.
 
-## Current phase and next gates
+## HISTORICAL STATUS SNAPSHOTS — 2026-10-18/19 (superseded by the 2026-10-20 reconciliation)
+
+The dated status paragraphs below preserve their original evidence and scope. They are historical snapshots, not current operational status. Use `23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md` for the controlling current roles, OQ closure axes, ACS-100 metric observation, and remaining gates.
 
 The latest ACS-100 decision is **conditionally approved with deployment blocked**. GPT-PM approved the candidate readiness condition `run.googleapis.com/container/instance_count_with_readiness` filtered to `aicoachadvice` / `europe-west1` / `readiness_status=UNHEALTHY`, threshold `> 0`, duration `0s`, WARNING severity, with the verified FA-D1 channel. Missing or stale samples remain UNKNOWN/non-alerting; no separate absence alert is approved. A read-only recheck on 2026-10-19 found no points in the 17-minute window ending `2026-10-19T09:47:53Z`; the seven-day query returned 132 points across HEALTHY/UNHEALTHY/UNKNOWN series, with the latest point at `2026-10-16T11:32:00Z` and value 0 for each status. This is still stale evidence and does not establish current readiness. Do not create the alert until fresh service-specific samples and alignment/trigger/channel semantics are validated. ACS-100 remains OPEN, all 13 stories PENDING, and no production resources changed. See the [correlated monitoring decision](../../core/changes/2026-10-19-ai-coach-phase9-acs100-gptpm-monitoring-decision.md) and [2026-10-19 read-only recheck](../../core/changes/2026-10-19-ai-coach-acs100-metric-recheck.md).
 
