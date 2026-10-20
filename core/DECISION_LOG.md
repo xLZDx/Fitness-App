@@ -59189,3 +59189,7 @@ Decision: Merge origin/phase2/main; branch fixes kept, logs unioned, registry re
 ## 2026-10-20 - Commit: Integrate docs/gym-digital-twin-backlog-2026-10-19
 
 Decision: Merge the Gym Digital Twin backlog documentation package; clean merge, docs only. See docs/commits/2026-10-20-integrate-gym-digital-twin-docs.md.
+
+## 2026-10-21 - Commit: record inherited defects backlog
+
+Decision: by operator decision the 2026-10-20 integration does not fix inherited defects; they are recorded in docs/BACKLOG_INHERITED_2026-10-21.md with severity guess, evidence, origin and an acceptance test. Docs only, no code changed.

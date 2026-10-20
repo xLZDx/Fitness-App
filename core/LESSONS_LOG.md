@@ -1455,3 +1455,7 @@ Upstream fix commits superseded the uncommitted Phase2_s01 hardening patch (iden
 ## 2026-10-20 - Integrate docs/gym-digital-twin-backlog-2026-10-19
 
 Docs-only branches can be verified by name-status plus marker grep without a test run; the registry must still be regenerated.
+
+## 2026-10-21 - Commit: record inherited defects backlog
+
+Kind: SUCCESS. Facts: inherited failures and open items were collected from the integration state file and change records into one backlog file instead of being fixed inside the integration. Root cause of the approach: the operator rule that integration must not fix bugs. Layer: operator decision. Rule next time: record each inherited defect with evidence and an acceptance test at integration time.

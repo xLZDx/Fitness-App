@@ -46,7 +46,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
 | `core/INDEX.md` | core/ — documentation index | 14900 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 190489 |
+| `core/LESSONS_LOG.md` | Lessons log | 191154 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -279,6 +279,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/screenshots/README.md` | Screenshots | 2654 |
 | `core/state/REVIEW_STATUS_2026-10-07.md` | Fitness App / SPTR — где мы сейчас, 2026-10-07 | 11364 |
 | `core/vendor_requests/legs_2026-08-06.md` | Missing clip request -- Legs | 1344 |
+| `docs/BACKLOG_INHERITED_2026-10-21.md` | Inherited defects backlog (Fitness_App), 2026-10-21 | 3780 |
 | `docs/EXPERIMENTS.md` | Experiments register | 1489 |
 | `docs/README.md` | docs/ — screenshot index | 1737 |
 | `docs/Redisign/DEV_COMPLETION_SCOPE_v1.5.en.md` | Dev Agent — Complete Missing Refactor Scope — v1.5 (English) | 4182 |
@@ -346,14 +347,15 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 18042 |
 | `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 86721 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2265 |
-| `docs/commits/2026-10-20-integrate-aicoach-phase9.md` | Integrate docs/ai-coach-tdd-001 (b9622b62): AI Coach phase 9 documents | 1112 |
-| `docs/commits/2026-10-20-integrate-fitness-wip-snapshots.md` | Integrate former-worktree WIP snapshots (aicoach, bodyscan, Phase2_s01) | 2588 |
-| `docs/commits/2026-10-20-integrate-hardening-followups.md` | Integrate sprint/hardening-followups-2026-10 (74ba5adc) | 562 |
-| `docs/commits/2026-10-20-integrate-marketing-site-prototype.md` | Integrate marketing/site-prototype-2026-08-19 (f95e1c88) | 3173 |
-| `docs/commits/2026-10-20-integrate-move-site-prototype.md` | Move the SPTR site prototype out of the Firebase hosting root | 1364 |
-| `docs/commits/2026-10-20-integrate-phase2-main-aicoach-docs.md` | Integrate origin/phase2/main (85e7e91e): AI Coach TDD-001 documentation line | 1038 |
-| `docs/commits/2026-10-20-integrate-phase2-main.md` | Integrate origin/phase2/main (a62d7c4e): PR 14 phase2/s04 gate fixes | 1811 |
-| `docs/commits/2026-10-20-integrate-phase2-s04.md` | Integrate phase2/s04 chain (5d5723fa) | 2238 |
+| `docs/commits/2026-10-20-integrate-aicoach-phase9.md` | Integrate docs/ai-coach-tdd-001 (b9622b62): AI Coach phase 9 documents | 1120 |
+| `docs/commits/2026-10-20-integrate-fitness-wip-snapshots.md` | Integrate former-worktree WIP snapshots (aicoach, bodyscan, Phase2_s01) | 2615 |
+| `docs/commits/2026-10-20-integrate-gym-digital-twin-docs.md` | Integrate docs/gym-digital-twin-backlog-2026-10-19 (f5073a5d) | 557 |
+| `docs/commits/2026-10-20-integrate-hardening-followups.md` | Integrate sprint/hardening-followups-2026-10 (74ba5adc) | 568 |
+| `docs/commits/2026-10-20-integrate-marketing-site-prototype.md` | Integrate marketing/site-prototype-2026-08-19 (f95e1c88) | 3190 |
+| `docs/commits/2026-10-20-integrate-move-site-prototype.md` | Move the SPTR site prototype out of the Firebase hosting root | 1371 |
+| `docs/commits/2026-10-20-integrate-phase2-main-aicoach-docs.md` | Integrate origin/phase2/main (85e7e91e): AI Coach TDD-001 documentation line | 1046 |
+| `docs/commits/2026-10-20-integrate-phase2-main.md` | Integrate origin/phase2/main (a62d7c4e): PR 14 phase2/s04 gate fixes | 1831 |
+| `docs/commits/2026-10-20-integrate-phase2-s04.md` | Integrate phase2/s04 chain (5d5723fa) | 2250 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
 | `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20755 |
