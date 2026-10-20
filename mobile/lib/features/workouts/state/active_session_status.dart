@@ -40,6 +40,12 @@
 /// `ref.listen` when the session ends; no provider writes to another provider
 /// during `build`.
 ///
+/// ## Prioritised sources (S04-24)
+///
+/// The public status is the highest-priority source that is visible to the
+/// signed-in account (gym timers 10, GPS recording 20); see
+/// [activeSessionSourcesProvider]. Each source has its own owner.
+///
 /// Process death clears both timers (they are in memory); there is no recovery
 /// claim (R-S5, F-12).
 library;
@@ -50,6 +56,10 @@ import 'package:flutter/foundation.dart' show debugPrint, immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/state/auth_providers.dart';
+import '../../recording/state/recorder_display.dart';
+import '../../recording/state/recorder_phase.dart';
+import '../../recording/state/recorder_providers.dart'
+    show recorderControllerProvider, recorderDisplayProvider, recorderPhaseProvider;
 import '../data/set_session.dart' show SetPhase;
 import 'rest_timer_providers.dart';
 import 'set_timer_providers.dart';
@@ -60,11 +70,19 @@ const Duration kRestFinishedVisibleFor = Duration(minutes: 10);
 /// Where the strip opens when the owner holds no destination (AC-ST-5).
 const String kActiveSessionDefaultDestination = '/workouts';
 
-/// What is being recorded. Future sources (GPS recording, S04) add a value and
-/// a producer; the strip itself does not change.
-enum ActiveSessionKind { gymWorkout }
+/// Route of the GPS recording page (S04-D `/record/gps`). Registered by the
+/// router lane; the strip only navigates to it (SH-3).
+const String kGpsRecordingDestination = '/record/gps';
 
-/// The strip state words of contract S-4.
+/// What is being recorded. A new source adds a value here, a producer and an
+/// [ActiveSessionSource] entry (S04 design 7.2).
+enum ActiveSessionKind { gymWorkout, gpsRecording }
+
+/// The one-line banner label shown as the strip's third line for a GPS
+/// recording (S04-D 14.1); never a mode label.
+enum ActiveSessionNote { storageWriteFailing, batteryCritical }
+
+/// The strip state words of contract S-4 and S04-D 14.1.
 enum ActiveSessionState {
   /// A set timer is running: "Workout in progress".
   running,
@@ -77,6 +95,29 @@ enum ActiveSessionState {
 
   /// A rest ran out less than [kRestFinishedVisibleFor] ago: "Rest finished".
   restFinished,
+
+  // GPS recording words (S04-D 14.1). A manual pause reuses [paused].
+
+  /// "Looking for GPS".
+  acquiring,
+
+  /// "Recording".
+  recording,
+
+  /// "Weak GPS signal".
+  weakSignal,
+
+  /// "Auto-paused".
+  autoPaused,
+
+  /// "Unfinished recording" (recovery offer pending).
+  unfinished,
+
+  /// "Recording not restored" (unreadable recording).
+  notRestored,
+
+  /// "Location off: choose" (permission revoked, decision pending; S04-D 14.1).
+  revoked,
 }
 
 /// One running session as the shell shows it.
@@ -91,6 +132,8 @@ class ActiveSessionStatus {
     this.restEndsAt,
     this.destination = kActiveSessionDefaultDestination,
     this.ownerUid = '',
+    this.note,
+    this.countsUp = false,
   });
 
   final ActiveSessionKind kind;
@@ -121,6 +164,13 @@ class ActiveSessionStatus {
   /// Uid that started the session; empty when no owner was recorded.
   final String ownerUid;
 
+  /// Banner label of a GPS recording (third strip line); null for none.
+  final ActiveSessionNote? note;
+
+  /// True when [remaining] is elapsed (moving) time, not time left: the spoken
+  /// label then must not say "left".
+  final bool countsUp;
+
   /// Time left at [now]: [remaining] when set, else the rest deadline minus
   /// [now] (never negative), else null.
   Duration? remainingAt(DateTime now) {
@@ -143,6 +193,8 @@ class ActiveSessionStatus {
       restEndsAt: restEndsAt,
       destination: dest.isEmpty ? kActiveSessionDefaultDestination : dest,
       ownerUid: owner?.uid ?? '',
+      note: note,
+      countsUp: countsUp,
     );
   }
 
@@ -156,7 +208,9 @@ class ActiveSessionStatus {
       other.remaining == remaining &&
       other.restEndsAt == restEndsAt &&
       other.destination == destination &&
-      other.ownerUid == ownerUid;
+      other.ownerUid == ownerUid &&
+      other.note == note &&
+      other.countsUp == countsUp;
 
   @override
   int get hashCode => Object.hash(
@@ -168,6 +222,8 @@ class ActiveSessionStatus {
         restEndsAt,
         destination,
         ownerUid,
+        note,
+        countsUp,
       );
 
   // No content in diagnostics: no title, destination or uid.
@@ -328,19 +384,17 @@ final _activeSessionCoreProvider = Provider<ActiveSessionStatus?>((ref) {
 bool _sameUid(String ownerUid, String? currentUid) =>
     ownerUid == (currentUid ?? '');
 
-/// The strip and pill source. Null means "no session": the shell shows the
-/// Record pill (or the idle rail slot). Also null when the session belongs to
-/// another account (F-11).
-final activeSessionStatusProvider = Provider<ActiveSessionStatus?>((ref) {
+/// The gym timer source: timer-derived status plus its own owner (F-11). The
+/// status carries the owner's uid and destination; the account gate is applied
+/// once, for every source, by [activeSessionStatusProvider].
+final _gymSessionStatusProvider = Provider<ActiveSessionStatus?>((ref) {
   try {
     final core = ref.watch(_activeSessionCoreProvider);
     final owner = ref.watch(activeSessionOwnerProvider);
-    final uid =
-        ref.watch(authUserProvider.select((u) => u.valueOrNull?.uid));
 
-    // Explicit listener, not a write inside build: when the session ends the
-    // owner goes with it, so a later session never inherits a stale route or
-    // uid.
+    // Explicit listener, not a write inside build: when the gym session ends
+    // its own owner goes with it, so a later session never inherits a stale
+    // route or uid. Only the gym owner is touched (S04-R-037 c).
     ref.listen<ActiveSessionStatus?>(_activeSessionCoreProvider,
         (previous, next) {
       if (next == null && ref.read(activeSessionOwnerProvider) != null) {
@@ -349,7 +403,6 @@ final activeSessionStatusProvider = Provider<ActiveSessionStatus?>((ref) {
     });
 
     if (core == null) return null;
-    if (owner != null && !_sameUid(owner.uid, uid)) return null;
     return core.withOwner(owner);
   } catch (e) {
     debugPrint('active_session_status: gate_failed ${e.runtimeType}');
@@ -357,19 +410,221 @@ final activeSessionStatusProvider = Provider<ActiveSessionStatus?>((ref) {
   }
 });
 
-/// True while a session started by another account is still running: the
-/// shell then shows neither the strip nor the Record pill (F-11, DT-07-8).
-/// The owner is kept so the other account's session is never exposed.
-final activeSessionForeignOwnerProvider = Provider<bool>((ref) {
-  final owner = ref.watch(activeSessionOwnerProvider);
-  if (owner == null) return false;
-  final uid = ref.watch(authUserProvider.select((u) => u.valueOrNull?.uid));
-  return !_sameUid(owner.uid, uid);
+final _gymSessionOwnerUidProvider = Provider<String?>(
+    (ref) => ref.watch(activeSessionOwnerProvider)?.uid);
+
+// ---- GPS recording source (S04-24) -------------------------------------------
+
+/// Uid that owned the current recording, captured when the recorder leaves
+/// `idle` and cleared when it returns to `idle`. Never recomputed from the
+/// current auth (same rule as [ActiveSessionOwner], RV-4): an account switch
+/// hides the recording, it does not hand it to the new account. A transient
+/// auth state changes nothing here (X1).
+class GpsRecordingOwnerController extends Notifier<String?> {
+  @override
+  String? build() {
+    ref.listen<RecorderPhase>(recorderPhaseProvider, (previous, next) {
+      if (next == RecorderPhase.idle) {
+        if (state != null) state = null;
+      } else if (state == null) {
+        state = _currentUid();
+      }
+    });
+    // A recording restored at process start is already past idle at first read.
+    return ref.read(recorderPhaseProvider) == RecorderPhase.idle
+        ? null
+        : _currentUid();
+  }
+
+  String _currentUid() => ref.read(authUserProvider).valueOrNull?.uid ?? '';
+}
+
+final gpsRecordingOwnerUidProvider =
+    NotifierProvider<GpsRecordingOwnerController, String?>(
+        GpsRecordingOwnerController.new);
+
+/// Pure projection of the recorder display onto a strip status (S04-D 14.1).
+/// Null for `idle` and `finished`. A pending `permissionRevoked` decision keeps
+/// a strip row until Keep or Delete (S04-D 14.1, SH-9).
+/// [movingSeconds] is the moving time (frozen while paused).
+ActiveSessionStatus? deriveGpsRecordingStatus({
+  required RecorderDisplay display,
+  required int movingSeconds,
+  required String ownerUid,
+}) {
+  ActiveSessionStatus make(ActiveSessionState state,
+          {bool withTime = false, ActiveSessionNote? note}) =>
+      ActiveSessionStatus(
+        kind: ActiveSessionKind.gpsRecording,
+        state: state,
+        remaining: withTime
+            ? Duration(seconds: movingSeconds < 0 ? 0 : movingSeconds)
+            : null,
+        countsUp: withTime,
+        mode: '',
+        destination: kGpsRecordingDestination,
+        ownerUid: ownerUid,
+        note: note,
+      );
+
+  switch (display.headline) {
+    case RecorderDisplayState.acquiring:
+      return make(ActiveSessionState.acquiring);
+    case RecorderDisplayState.poorAccuracy:
+      return make(ActiveSessionState.weakSignal, withTime: true);
+    case RecorderDisplayState.pausedManual:
+      return make(ActiveSessionState.paused, withTime: true);
+    case RecorderDisplayState.pausedAuto:
+      return make(ActiveSessionState.autoPaused, withTime: true);
+    case RecorderDisplayState.restoring:
+      return make(ActiveSessionState.unfinished);
+    case RecorderDisplayState.recoveryFailed:
+      return make(ActiveSessionState.notRestored);
+    case RecorderDisplayState.recording:
+    case RecorderDisplayState.offline:
+    case RecorderDisplayState.background:
+    case RecorderDisplayState.batteryCritical:
+      return make(
+        ActiveSessionState.recording,
+        withTime: true,
+        note: switch (display.banner) {
+          RecorderBanner.storageWriteFailing =>
+            ActiveSessionNote.storageWriteFailing,
+          RecorderBanner.batteryCritical => ActiveSessionNote.batteryCritical,
+          null => null,
+        },
+      );
+    case RecorderDisplayState.permissionRevoked:
+      return make(ActiveSessionState.revoked);
+    case RecorderDisplayState.idle:
+    case RecorderDisplayState.finished:
+      return null;
+  }
+}
+
+/// The GPS recording source: recorder state only, no gym timer, no mode.
+final _gpsRecordingStatusProvider = Provider<ActiveSessionStatus?>((ref) {
+  try {
+    final display = ref.watch(recorderDisplayProvider);
+    // Whole seconds only, so the status changes once per second at most.
+    final seconds = ref.watch(recorderControllerProvider
+        .select((s) => s.totalMovingTimeMs ~/ 1000));
+    final owner = ref.watch(gpsRecordingOwnerUidProvider) ?? '';
+    return deriveGpsRecordingStatus(
+        display: display, movingSeconds: seconds, ownerUid: owner);
+  } catch (e) {
+    debugPrint('active_session_status: gps_derive_failed ${e.runtimeType}');
+    return null;
+  }
 });
 
-/// The route string a tap on the strip opens (AC-ST-5): the owner's
-/// destination, else `/workouts`.
+// ---- Prioritised sources (S04 design 7.2) ------------------------------------
+
+/// Seam: true when the GPS recorder entry points are on (compile-time flag
+/// `GPS_RECORDER` and Android, S04-D 14.2). Default false, so the S03 behaviour
+/// of the Record sheet and shortcut is unchanged. Overridden at the app root
+/// (lane R9) from the flag file of lane R8.
+final gpsRecorderEnabledProvider = Provider<bool>((ref) => false);
+
+/// Priority of the gym timer source.
+const int kGymTimersSourcePriority = 10;
+
+/// Priority of the GPS recording source: it wins when both run (S04-R-038,
+/// option A of D-12; change this one number for option B).
+const int kGpsRecordingSourcePriority = 20;
+
+/// One independent producer of a running session. It has its OWN owner rule:
+/// [ownerUid] null means unowned (always visible); a uid that differs from the
+/// signed-in uid hides the source without clearing it.
+@immutable
+class ActiveSessionSource {
+  const ActiveSessionSource({
+    required this.id,
+    required this.priority,
+    required this.status,
+    required this.ownerUid,
+  });
+
+  final String id;
+
+  /// Higher wins.
+  final int priority;
+  final ProviderListenable<ActiveSessionStatus?> status;
+  final ProviderListenable<String?> ownerUid;
+}
+
+/// The registered sources. Tests override it with fakes.
+final activeSessionSourcesProvider = Provider<List<ActiveSessionSource>>(
+  (ref) => <ActiveSessionSource>[
+    ActiveSessionSource(
+      id: 'gymTimers',
+      priority: kGymTimersSourcePriority,
+      status: _gymSessionStatusProvider,
+      ownerUid: _gymSessionOwnerUidProvider,
+    ),
+    ActiveSessionSource(
+      id: 'gpsRecording',
+      priority: kGpsRecordingSourcePriority,
+      status: _gpsRecordingStatusProvider,
+      ownerUid: gpsRecordingOwnerUidProvider,
+    ),
+  ],
+);
+
+List<ActiveSessionSource> _byPriority(List<ActiveSessionSource> sources) =>
+    List<ActiveSessionSource>.of(sources)
+      ..sort((a, b) => b.priority.compareTo(a.priority));
+
+/// The strip and pill source: the status of the highest-priority source whose
+/// owner matches the signed-in uid and whose status is non-null. Null means
+/// "no session": the shell shows the Record pill (or the idle rail slot). A
+/// source of another account is skipped, never cleared (F-11, S04-R-037).
+final activeSessionStatusProvider = Provider<ActiveSessionStatus?>((ref) {
+  try {
+    final uid =
+        ref.watch(authUserProvider.select((u) => u.valueOrNull?.uid));
+    ActiveSessionStatus? winner;
+    // Every source is watched (also those below the winner), so a change in
+    // any of them recomputes the result.
+    for (final source in _byPriority(ref.watch(activeSessionSourcesProvider))) {
+      final status = ref.watch(source.status);
+      final owner = ref.watch(source.ownerUid);
+      if (winner != null || status == null) continue;
+      if (owner != null && !_sameUid(owner, uid)) continue;
+      winner = status;
+    }
+    return winner;
+  } catch (e) {
+    debugPrint('active_session_status: gate_failed ${e.runtimeType}');
+    return null;
+  }
+});
+
+/// True while a session of another account is running AND no session of the
+/// signed-in account is visible: the shell then shows neither the strip nor
+/// the Record pill (F-11, DT-07-8). A foreign timer beside the own recording
+/// does not hide anything. The owner is kept so the other account's session is
+/// never exposed.
+final activeSessionForeignOwnerProvider = Provider<bool>((ref) {
+  final uid = ref.watch(authUserProvider.select((u) => u.valueOrNull?.uid));
+  var foreign = false;
+  var visible = false;
+  for (final source in ref.watch(activeSessionSourcesProvider)) {
+    final status = ref.watch(source.status);
+    final owner = ref.watch(source.ownerUid);
+    if (owner != null && !_sameUid(owner, uid)) {
+      foreign = true;
+    } else if (status != null) {
+      visible = true;
+    }
+  }
+  return foreign && !visible;
+});
+
+/// The route string a tap on the strip opens (AC-ST-5): the destination of the
+/// winning source (the gym owner's, else `/workouts`; `/record/gps` for a
+/// recording).
 final activeSessionDestinationProvider = Provider<String>((ref) {
-  final dest = ref.watch(activeSessionOwnerProvider)?.destination.trim() ?? '';
+  final dest = ref.watch(activeSessionStatusProvider)?.destination.trim() ?? '';
   return dest.isEmpty ? kActiveSessionDefaultDestination : dest;
 });

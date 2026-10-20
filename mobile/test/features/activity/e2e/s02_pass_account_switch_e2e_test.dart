@@ -110,7 +110,9 @@ class _World {
 
   Future<void> open() async {
     tmp = await Directory.systemTemp.createTemp('s02_pass_switch_');
-    journal = UidScopedActivityJournal(factory: (scope) async {
+    journal = UidScopedActivityJournal(
+        scopesRoot: () async => '${tmp.path.replaceAll(r'\', '/')}/activity_journal',
+        factory: (scope) async {
       return FileActivityJournal(
         rootPath: '${tmp.path.replaceAll('\\', '/')}/activity_journal/$scope',
         keyProvider: _keys.putIfAbsent(

@@ -11,6 +11,11 @@ import '../../core/background/hud_sky.dart';
 import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
 import '../../features/auth/state/auth_providers.dart' show authUserProvider;
+import '../../features/recording/widgets/gps_start_flow.dart'
+    show gpsRecordingPageOpenProvider;
+import '../../features/recording/state/recorder_phase.dart' show RecorderPhase;
+import '../../features/recording/state/recorder_providers.dart'
+    show recorderPhaseProvider;
 import '../../features/workouts/state/active_session_status.dart';
 import 'dock_widgets.dart';
 import 'hud/hud_scaffold.dart';
@@ -162,6 +167,12 @@ class _MainShellState extends State<MainShell> {
                     s.state == ActiveSessionState.restFinished;
                 ref.listen<ActiveSessionStatus?>(activeSessionStatusProvider,
                     (ActiveSessionStatus? prev, ActiveSessionStatus? next) {
+                  // One announcer: the open recording page speaks for its own
+                  // recording (U5).
+                  if ((next ?? prev)?.kind == ActiveSessionKind.gpsRecording &&
+                      ref.read(gpsRecordingPageOpenProvider)) {
+                    return;
+                  }
                   final AppLocalizations l10n = AppLocalizations.of(c);
                   final String text;
                   if (next == null) {
@@ -197,6 +208,31 @@ class _MainShellState extends State<MainShell> {
                   unawaited(SemanticsService.announce(
                       text, Directionality.of(c)));
                 });
+                // S04: one polite announcement for the recorder transitions the
+                // open recording page does not speak (it is not on screen).
+                if (ref.watch(gpsRecorderEnabledProvider)) {
+                  ref.listen<RecorderPhase>(recorderPhaseProvider,
+                      (RecorderPhase? prev, RecorderPhase next) {
+                    if (ref.read(gpsRecordingPageOpenProvider)) return;
+                    final AppLocalizations l10n = AppLocalizations.of(c);
+                    final String? text;
+                    if (next == RecorderPhase.pausedAuto) {
+                      text = l10n.gpsAnnAutoPaused;
+                    } else if (prev == RecorderPhase.pausedAuto &&
+                        next == RecorderPhase.recording) {
+                      text = l10n.gpsAnnAutoResumed;
+                    } else if (prev == RecorderPhase.acquiring &&
+                        next == RecorderPhase.recording) {
+                      text = l10n.gpsAnnStarted;
+                    } else {
+                      text = null;
+                    }
+                    if (text == null) return;
+                    // ignore: deprecated_member_use
+                    unawaited(
+                        SemanticsService.announce(text, Directionality.of(c)));
+                  });
+                }
                 return _frame(c, location, selected, hasSession, ref);
               },
             )

@@ -89,7 +89,9 @@ void main() {
     keys.clear();
     pushes = [];
     retryCallback = null;
-    journal = UidScopedActivityJournal(factory: (scope) async {
+    journal = UidScopedActivityJournal(
+        scopesRoot: () async => '${tmp.path.replaceAll(r'\', '/')}/activity_journal',
+        factory: (scope) async {
       return FileActivityJournal(
         rootPath: '${tmp.path.replaceAll('\\', '/')}/activity_journal/$scope',
         keyProvider: keys.putIfAbsent(scope,

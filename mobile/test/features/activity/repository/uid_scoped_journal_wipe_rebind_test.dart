@@ -337,7 +337,9 @@ void main() {
     test('switching away from a journal whose close throws still binds the '
         'next one', () async {
       late _ThrowingClose first;
-      final scoped = UidScopedActivityJournal(factory: (scopeId) async {
+      final scoped = UidScopedActivityJournal(
+          scopesRoot: () async => '${w.base}/activity_journal',
+          factory: (scopeId) async {
         final real = await w.factory(scopeId);
         final wrapped = _ThrowingClose(real);
         if (scopeId == activityJournalScopeId('A')) first = wrapped;
@@ -354,6 +356,7 @@ void main() {
     test('bindUid(null) with a throwing close unbinds and returns true',
         () async {
       final scoped = UidScopedActivityJournal(
+          scopesRoot: () async => '${w.base}/activity_journal',
           factory: (scopeId) async => _ThrowingClose(await w.factory(scopeId)));
       expect(await scoped.bindUid('A'), isTrue);
       expect(await scoped.bindUid(null), isTrue);
@@ -363,6 +366,7 @@ void main() {
     test('the wipe of a bound journal whose close throws still wipes and '
         'unbinds', () async {
       final scoped = UidScopedActivityJournal(
+          scopesRoot: () async => '${w.base}/activity_journal',
           factory: (scopeId) async => _ThrowingClose(await w.factory(scopeId)));
       expect(await scoped.bindUid('A'), isTrue);
       // The key is created lazily at the first write; create it explicitly.

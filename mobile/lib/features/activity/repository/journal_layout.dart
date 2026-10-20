@@ -22,6 +22,19 @@ const String kJournalDirName = 'journal';
 const String kSourcesDirName = 'sources';
 const String kQuarantineDirName = 'quarantine';
 
+/// S04: the crash-safe recording journal lives in a fourth child of the scope
+/// root: `<scope root>/recording/<recordingUuid>/` (S04 design 4.2). The account
+/// wipe deletes it with the other three.
+const String kRecordingDirName = 'recording';
+
+/// S04 design 4.7: the durable wiped-uid marker is a content-free FILE beside
+/// the scope directory (`<scopes root>/<scopeId>.wiped`), outside every
+/// directory the wipe deletes. Content is [kWipeMarkerWiping] while the wipe
+/// runs and [kWipeMarkerWiped] once it completed.
+const String kWipedMarkerSuffix = '.wiped';
+const String kWipeMarkerWiping = 'wiping';
+const String kWipeMarkerWiped = 'wiped';
+
 /// Files.
 const String kIndexFileName = 'index.jsonl';
 const String kCurrentFileName = 'CURRENT';

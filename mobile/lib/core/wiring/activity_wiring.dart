@@ -27,6 +27,7 @@ import '../../features/activity/repository/uid_scoped_activity_journal.dart';
 import '../../features/activity/state/sync_conflict_presenter.dart';
 import '../../features/auth/data/auth_user.dart';
 import '../../features/auth/state/auth_providers.dart';
+import '../../features/recording/journal/pre_unbind_hook.dart';
 import '../config/activity_flags.dart';
 
 /// Returns the account-scoped journal (UNBOUND, no I/O, cannot fail the app
@@ -47,10 +48,12 @@ Future<ActivityJournal?> openActivityJournal({
 /// behaviour is exactly the pre-S02 one.
 LocalDataWipe activityAwareLocalDataWipe(
   LocalDataWipe inner,
-  ActivityJournal? journal,
-) {
+  ActivityJournal? journal, {
+  PreUnbindHookRegistry? preUnbind,
+}) {
   if (journal == null) return inner;
-  return ActivityAwareLocalDataWipe(inner: inner, journal: journal);
+  return ActivityAwareLocalDataWipe(
+      inner: inner, journal: journal, preUnbind: preUnbind);
 }
 
 /// Provider overrides for the root `ProviderScope`. Empty unless a journal flag
@@ -92,6 +95,13 @@ String? Function() _accountBeingDeletedSupplier(Ref ref) {
 /// The opened journal (only overridden when a journal flag is on).
 final activityJournalProvider = Provider<ActivityJournal?>((_) => null);
 
+/// S04 design 4.7 (Y2): the single registry of the recorder pre-unbind hook. The
+/// bind controller below awaits it (bounded, 5 s) before it unbinds on a
+/// sign-out, a uid change or an account deletion; the recorder wiring registers
+/// its hook, the sign-out guard (lane R13) calls the same registry.
+final activityPreUnbindHookRegistryProvider =
+    Provider<PreUnbindHookRegistry>((_) => PreUnbindHookRegistry());
+
 /// Keep-alive binding of the account-scoped journal (S02 remediation E1):
 /// watch it once from the app root widget. Active whenever a journal flag is on,
 /// independent of `cloudSync`. The signed-in uid (anonymous users included)
@@ -111,9 +121,11 @@ final activityJournalBindingProvider = Provider<void>((ref) {
   // The status Notifier is only WRITTEN to; reading it builds a default state,
   // so the provider needs no override to build.
   final status = ref.read(activityBindStatusProvider.notifier);
+  final hookRegistry = ref.read(activityPreUnbindHookRegistryProvider);
   final controller = _ActivityBindController(
     scoped: scoped,
     timerFactory: timerFactory,
+    preUnbind: hookRegistry.runBounded,
     // The uid this wiring may bind right now: null when no user, an empty uid
     // or the account whose deletion is in progress (never re-create its scope).
     bindableUid: () =>
@@ -135,6 +147,12 @@ final activityJournalBindingProvider = Provider<void>((ref) {
     controller.onAuthValue(_bindableUid(ref, next.value?.uid));
   }, fireImmediately: true);
   controller.building = false;
+  // An account deletion that starts for the bound account shuts the recorder
+  // down through the same hook before the wipe runs (S04-30 AC-4).
+  ref.listen<String?>(accountBeingDeletedUidProvider, (previous, next) {
+    if (next == null || next.isEmpty) return;
+    controller.onAccountDeletionStarted(next);
+  });
 });
 
 /// Result of [ActivityBindStatusNotifier.retryNow] (design 2.1 item 3, D2).
@@ -250,6 +268,7 @@ class _ActivityBindController {
   _ActivityBindController({
     required this.scoped,
     required this.timerFactory,
+    required this.preUnbind,
     required this.bindableUid,
     required this.publishBindingChange,
     required this.sink,
@@ -257,6 +276,10 @@ class _ActivityBindController {
 
   final AccountScopedJournal scoped;
   final ActivityBindRetryTimerFactory timerFactory;
+
+  /// The registered pre-unbind hook, already bounded and non-throwing.
+  final Future<PreUnbindOutcome> Function(String ownerUid, UnbindReason reason)
+      preUnbind;
   final String? Function() bindableUid;
   final void Function() publishBindingChange;
   final void Function(ActivityBindStatus) sink;
@@ -290,6 +313,12 @@ class _ActivityBindController {
         _state != _BindState.gaveUp) {
       return;
     }
+    // The scope that is about to be unbound (sign-out or a different uid) gets
+    // its pre-unbind hook first; a scope that never bound has nothing to hand
+    // off.
+    final previous = _uid;
+    final hookFirst =
+        previous != null && previous != target && _state == _BindState.bound;
     _generation++;
     _cancelTimer();
     _inFlight = false;
@@ -298,7 +327,29 @@ class _ActivityBindController {
     _lost = 0;
     _uid = target;
     _state = target == null ? _BindState.none : _BindState.firstAttempt;
-    unawaited(_run(target, _generation, _AttemptSource.automatic));
+    if (hookFirst) {
+      unawaited(_hookThenRun(previous, target, _generation));
+    } else {
+      unawaited(_run(target, _generation, _AttemptSource.automatic));
+    }
+  }
+
+  /// Awaits the registered hook (bounded by the registry), then continues with
+  /// the normal bind of [target]. A newer auth value or a dispose meanwhile
+  /// drops the continuation.
+  Future<void> _hookThenRun(
+      String previous, String? target, int myGeneration) async {
+    await preUnbind(previous,
+        target == null ? UnbindReason.signOut : UnbindReason.uidChanged);
+    if (_disposed || myGeneration != _generation) return;
+    await _run(target, myGeneration, _AttemptSource.automatic);
+  }
+
+  /// An account deletion started for [uid]: run the hook once (shutdown only);
+  /// the wipe deletes the files afterwards.
+  void onAccountDeletionStarted(String uid) {
+    if (_disposed || _uid != uid || _state != _BindState.bound) return;
+    unawaited(preUnbind(uid, UnbindReason.accountDeleted));
   }
 
   void dispose() {

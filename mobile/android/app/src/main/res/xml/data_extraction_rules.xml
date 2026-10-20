@@ -23,6 +23,10 @@
   per-account tree, plus the legacy `journal`, `sources`, `quarantine`, all under
   `domain="file"`, S02-02 / GPS-PRIV-083) are excluded in BOTH sections for the
   same reason: cloud backup and device transfer must not carry routes.
+
+  The S04 GPS recording journal (`activity_journal/<scopeId>/recording/`) is
+  covered by the `activity_journal` lines in both sections; see
+  `backup_rules.xml` (S04-15).
 -->
 <data-extraction-rules>
     <cloud-backup>

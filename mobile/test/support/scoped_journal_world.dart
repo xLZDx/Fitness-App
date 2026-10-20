@@ -31,7 +31,13 @@ class ScopedJournalWorld {
   Completer<void>? gate;
 
   late final UidScopedActivityJournal journal =
-      UidScopedActivityJournal(factory: factory);
+      UidScopedActivityJournal(
+        factory: factory,
+        // S04 gate 1 M-06: an unreadable wipe marker now fails closed, so the
+        // fixture gives the journal a real scopes root instead of the
+        // path_provider default (which is unavailable in a unit test).
+        scopesRoot: () async => '$base/activity_journal',
+      );
 
   String get base => tmp.path.replaceAll('\\', '/');
 

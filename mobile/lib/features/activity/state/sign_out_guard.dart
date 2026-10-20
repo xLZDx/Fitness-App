@@ -6,7 +6,10 @@
 ///
 /// Rules:
 ///  * `notEnabled` and an open journal with no activity: true, no prompt, no
-///    wipe call.
+///    wipe call. With no activity and no counted recording, the bounded
+///    pre-unbind hook is still run when the recording journal lists any
+///    recording (quarantined, FALLBACK or permission-revoked pending included);
+///    only a journal with no recording files at all skips it.
 ///  * `binding`, `gaveUp`, `failedToOpen` (and an open journal that cannot be
 ///    counted): the "cannot check" sheet with Try again (not for
 ///    `failedToOpen`), Sign out anyway and Cancel. Never a silent pass.
@@ -19,6 +22,14 @@
 ///  * Export or deletion runs BEFORE the sign-out; a failure keeps the user
 ///    signed in with an error sheet and Retry. "Deleted" is announced only after
 ///    the wipe returned normally.
+///  * Recordings (S04-30 AC-6): an active or unfinished recording counts and is
+///    named in the warning sheet. Once the user commits to leaving, the guard
+///    runs the SAME pre-unbind hook as the bind controller (registry
+///    `activityPreUnbindHookRegistryProvider`, bounded) while the scope is still
+///    bound. If the hook timed out or failed, or a recording is still left
+///    afterwards (30-day fallback), the user is told with `gpsSignOutNotice`.
+///    A recording count that cannot be read is the "cannot check" case; "Sign
+///    out anyway" stays allowed.
 ///  * Failures are logged as a fixed message, a content-free code and the
 ///    exception type; never ids, paths or content.
 library;
@@ -33,11 +44,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/wiring/activity_wiring.dart';
+import '../../recording/journal/pre_unbind_hook.dart';
+import '../../recording/state/recorder_phase.dart';
+import '../../recording/state/recorder_providers.dart';
+import '../../recording/state/recording_journal_port.dart';
 import '../repository/activity_journal.dart';
 import '../repository/activity_local_export.dart';
 import '../repository/journal_models.dart' show SignOutAssessment;
 import '../repository/uid_scoped_activity_journal.dart'
-    show activityJournalScopeId;
+    show AccountScopedJournal, activityJournalScopeId;
 import '../widgets/sign_out_warning_sheet.dart';
 import 'journal_availability.dart';
 
@@ -90,9 +105,128 @@ Future<bool?> _handleOpen(
   // The account or the journal state may have moved on while counting.
   final JournalAvailability now = ref.read(journalAvailabilityProvider);
   if (now is! JournalOpen || now.ownerUid != uid) return null;
-  if (assessment.entryCount == 0) return true;
+  final int? recordings = await _recordingCount(ref);
+  if (recordings == null) return null; // cannot check: never a silent pass
+  if (!context.mounted) return false;
+  if (assessment.entryCount == 0 && recordings == 0) {
+    // Nothing to warn about. The fast path may skip the pre-unbind hook only
+    // when the recording journal lists no recording at all: quarantined,
+    // FALLBACK and permission-revoked pending recordings are not counted above
+    // but still need the bounded hand-off while the scope is bound.
+    final bool? anyFiles = await _anyRecordingFiles(ref);
+    if (anyFiles == null) return null; // cannot check: never a silent pass
+    if (!context.mounted) return false;
+    if (!anyFiles) return true;
+    return _leaveWithRecordings(context, ref, uid);
+  }
 
-  return _warnLoop(context, ref, journal, uid, assessment.entryCount);
+  return _warnLoop(
+      context, ref, journal, uid, assessment.entryCount, recordings);
+}
+
+/// Active plus unfinished recordings of the bound account; null when they
+/// cannot be counted. 0 ONLY when `recorderWiredProvider` is false (flag off and
+/// non-Android builds never override it): that explicit flag is the sole "not
+/// wired" signal and no recorder provider is read. Once wired, ANY failure
+/// reading the port or the recorder phase, [UnimplementedError] included, is
+/// null: cannot check, never a silent pass (an exception type does not prove
+/// absence). An active recording is normally also listed as unfinished, so the
+/// larger of the two is used, never the sum.
+Future<int?> _recordingCount(WidgetRef ref) async {
+  if (!ref.read(recorderWiredProvider)) return 0;
+  final RecordingJournalPort port;
+  try {
+    port = ref.read(recordingJournalPortProvider);
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  final bool active;
+  try {
+    active = ref.read(recorderPhaseProvider).isActive;
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  try {
+    final List<UnfinishedRecording> list = await port.listUnfinished();
+    final int unfinished = list.where((r) => r.blocksStart).length;
+    return unfinished > 0 ? unfinished : (active ? 1 : 0);
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_count_failed, ${e.runtimeType})');
+    return null;
+  }
+}
+
+/// True when the recording journal lists any recording of the bound account at
+/// all (every status, including quarantined and permission-revoked pending ones)
+/// or a recording is active; null when that cannot be read. False ONLY when
+/// `recorderWiredProvider` is false (the explicit "not wired" flag; no recorder
+/// provider is read). Once wired, ANY failure reading the port or the recorder
+/// phase, [UnimplementedError] included, is null: cannot check, never a silent
+/// pass (an exception type does not prove absence).
+Future<bool?> _anyRecordingFiles(WidgetRef ref) async {
+  if (!ref.read(recorderWiredProvider)) return false;
+  final RecordingJournalPort port;
+  try {
+    port = ref.read(recordingJournalPortProvider);
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  final bool active;
+  try {
+    active = ref.read(recorderPhaseProvider).isActive;
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_provider_failed, ${e.runtimeType})');
+    return null;
+  }
+  try {
+    final List<UnfinishedRecording> list = await port.listUnfinished();
+    return list.isNotEmpty || active;
+  } catch (e) {
+    debugPrint('activity: sign-out recording check failed '
+        '(code=recording_list_failed, ${e.runtimeType})');
+    return null;
+  }
+}
+
+/// Runs the registered pre-unbind hook for [uid] (bounded, never throws) and
+/// returns true when the user must be told that a recording stays on the phone
+/// under the 30-day fallback.
+Future<bool> _finishRecordings(WidgetRef ref, String uid) async {
+  final PreUnbindOutcome outcome = await ref
+      .read(activityPreUnbindHookRegistryProvider)
+      .runBounded(uid, UnbindReason.signOut);
+  if (outcome == PreUnbindOutcome.noHook) return false;
+  if (outcome != PreUnbindOutcome.completed) return true;
+  try {
+    final List<UnfinishedRecording> left =
+        await ref.read(recordingJournalPortProvider).listUnfinished();
+    return left.any((r) => r.blocksStart);
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Leaves with the strict hand-off first; tells the user when it did not
+/// complete. Always true (the user may always leave).
+Future<bool> _leaveWithRecordings(
+  BuildContext context,
+  WidgetRef ref,
+  String? uid,
+) async {
+  if (uid == null || uid.isEmpty) return true;
+  final bool notify = await _finishRecordings(ref, uid);
+  if (notify && context.mounted) {
+    await showSignOutRecordingNoticeSheet(context);
+  }
+  return true;
 }
 
 Future<bool> _warnLoop(
@@ -100,12 +234,14 @@ Future<bool> _warnLoop(
   WidgetRef ref,
   ActivityJournal journal,
   String uid,
-  int count,
+  int activities,
+  int recordings,
 ) async {
+  final int count = activities + recordings;
   while (true) {
     if (!context.mounted) return false;
-    final SignOutChoice choice =
-        await showSignOutWarningSheet(context, count: count);
+    final SignOutChoice choice = await showSignOutWarningSheet(context,
+        count: activities, recordingCount: recordings);
     if (!context.mounted) return false;
     switch (choice) {
       case SignOutChoice.exportFirst:
@@ -113,7 +249,7 @@ Future<bool> _warnLoop(
         // Back to the warning: the user may now delete, sign out or cancel.
         continue;
       case SignOutChoice.signOutKeep:
-        return true;
+        return _leaveWithRecordings(context, ref, uid);
       case SignOutChoice.signOutAndDelete:
         final SignOutChoice confirm =
             await showSignOutConfirmDeleteSheet(context, count: count);
@@ -130,6 +266,8 @@ Future<bool> _warnLoop(
           if (ref.read(journalAvailabilityProvider) is! JournalOpen) {
             throw StateError('journal is not open');
           }
+          // Recorder shutdown (and hand-off) while the scope is still bound.
+          if (recordings > 0) await _finishRecordings(ref, uid);
           final bool done =
               await ActivityWipeCoordinator(journal).onSignOut(_ConfirmedHooks());
           if (!done) throw StateError('wipe did not complete');
@@ -191,7 +329,13 @@ Future<bool?> _cannotCheck(
   );
   switch (choice) {
     case SignOutChoice.anyway:
-      return true;
+      final JournalAvailability now = ref.read(journalAvailabilityProvider);
+      String? uid = now is JournalOpen ? now.ownerUid : null;
+      if (uid == null) {
+        final ActivityJournal? j = ref.read(activityJournalProvider);
+        uid = j is AccountScopedJournal ? (j as AccountScopedJournal).boundUid : null;
+      }
+      return _leaveWithRecordings(context, ref, uid);
     case SignOutChoice.tryAgain:
       if (availability is! JournalOpen) {
         final RetryResult started =

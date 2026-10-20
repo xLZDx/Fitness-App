@@ -48,6 +48,8 @@ void main() {
       WidgetTester tester, String? Function() auth) async {
     final fs = JournalHarness.memory().mem!;
     final journal = UidScopedActivityJournal(
+      fileSystem: fs,
+      scopesRoot: () async => '/tie',
       factory: (scopeId) async => FileActivityJournal(
         rootPath: '/tie/$scopeId',
         fileSystem: fs,
@@ -89,6 +91,8 @@ void main() {
         () async {
       final fs = JournalHarness.memory().mem!;
       final journal = UidScopedActivityJournal(
+        fileSystem: fs,
+        scopesRoot: () async => '/tie2',
         factory: (scopeId) async => FileActivityJournal(
           rootPath: '/tie2/$scopeId',
           fileSystem: fs,

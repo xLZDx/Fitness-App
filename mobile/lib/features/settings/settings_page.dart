@@ -9,6 +9,9 @@ import '../../core/settings/state/settings_providers.dart';
 import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../data_export/data_export_providers.dart';
+import '../recording/widgets/gps_consent_row.dart' show GpsConsentRow;
+import '../workouts/state/active_session_status.dart'
+    show gpsRecorderEnabledProvider;
 import '../../core/theme/app_semantic_colors.dart';
 
 /// Device preferences. Every control here changes real behaviour:
@@ -188,6 +191,11 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
           ),
+          // S04-33: location consent switch, only with the GPS recorder on.
+          if (ref.watch(gpsRecorderEnabledProvider)) ...[
+            const SizedBox(height: 16),
+            GpsConsentRow(onOpenPrivacyText: () => context.push('/privacy')),
+          ],
           const SizedBox(height: 16),
           // L0c. Structured, textual data only -- profile (incl. injuries),
           // full workout + schedule history, progress-photo metadata. NOT

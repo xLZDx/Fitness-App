@@ -108,7 +108,9 @@ class RecBackend implements ActivitySummaryBackend {
 
 /// The real scoped journal plus a mutation log and hooks.
 class HookJournal extends UidScopedActivityJournal {
-  HookJournal(ActivityJournalFactory f) : super(factory: f);
+  HookJournal(ActivityJournalFactory f,
+      {Future<String> Function()? scopesRoot})
+      : super(factory: f, scopesRoot: scopesRoot);
 
   /// Every mutating call, by name, in order.
   final List<String> mutations = [];

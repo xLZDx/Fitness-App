@@ -58074,6 +58074,57 @@ Decision: Z16 and Z17 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 9
 
 Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup; DELETE stays on DECISION=DELETE, DISCARDING and the ordered 4.5 steps. Evidence: core/changes/2026-10-17-s04-docs-z18.md.
 
+## 2026-10-17 - Commit: docs(s04): add the operator report for the approved S04 documentation gate
+
+Decision: the operator approved the GPS-PRIV-014 sign-out exception (30-day encrypted fallback only if the hand-off fails) and named the Samsung S8 as the S04 reference phone; both are recorded in the report and will be written into the privacy contract and the device-lab document in the first S04 code commits. Evidence: core/changes/2026-10-17-s04-docs-report.md.
+
+## 2026-10-17 - Commit: feat(s04): add the location seam, permission service, calculators pipeline and flag-gated manifest (lanes R1, R2, R3)
+
+Decision: operator approved the GPS-PRIV-014 sign-out exception on 2026-10-17 (the privacy contract note now says APPROVED); geolocator is added at ^13.0.4 because 14.x could not be confirmed against Flutter 3.27.1; the manifest is stripped of location entries when the GPS_RECORDER flag is off by a post-merge Gradle transform. Evidence: core/changes/2026-10-17-s04-lanes-r1-r2-r3.md.
+
+## 2026-10-17 - Commit: feat(s04): add the recorder state machine, journal with recovery, shell strip, copy and consent, and device-lab documents (lanes R4, R5, R6, R8, R11)
+
+Decision: the DECISION file uses the documented exclusive-create fallback under the process-wide journal lock until a native hard-link and directory-fsync implementation of RecordingFileOps exists; R6 treats the revoked-permission strip row as conflicting between design 7.2 (no strip) and contract 14.1 (Location off row) and follows the design; R8 uses draft-1 for the consent text version. Evidence: core/changes/2026-10-17-s04-lanes-r4-r5-r6-r8-r11.md.
+
+## 2026-10-17 - Commit: feat(s04): add the recording screens, sign-out guard, app wiring and routes behind the GPS_RECORDER flag (lanes R7, R9, R13)
+
+Decision: everything is behind the GPS_RECORDER flag and Android, off by default so behaviour equals S03; the pre-unbind hook uses stopAutomatically(account) because the recorder has no releaseAll; /record/manual redirects to /workouts until a manual-entry page exists. Evidence: core/changes/2026-10-17-s04-lanes-r7-r9-r13.md.
+
+## 2026-10-17 - Commit: fix(s04): make the S04 code compile and wire the real geolocator source
+
+Decision: the real GeolocatorLocationSource replaces the unsupported placeholder in main.dart (still behind GPS_RECORDER); the battery monitor stays a fake and manual entry stays a redirect until their stories are built. Evidence: core/changes/2026-10-17-s04-compile-pass.md.
+
+## 2026-10-17 - Commit: test(s04): add epic tests for the recorder core, journal and privacy, with the production bugs they found
+
+Decision: the epic test groups EP-A/B/C, EP-D and EP-E/H are committed with their production fixes; EP-F/G/J is left incomplete and recorded as such, and the project child-agent allowlist hook is not bypassed. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_*.md and core/changes/2026-10-17-s04-epic-tests.md.
+
+## 2026-10-17 - Commit: fix(s04): hold the distance and elevation tolerances found by the epic tests and record the final test run
+
+Decision: distance uses a chord accumulator with a 20 m minimum step and elevation counts a change only after 8 consecutive fixes beyond the 3 m band, to meet the plan tolerances; auto-pause on a provider speed of exactly 0.0 is kept as the design says (plan row DT-07-5 is wrong); the offline chip stays unset because the design gives the recorder no connectivity input. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.
+
+## 2026-10-17 - Commit: fix(s04): close the code-review findings on journal release, recovery classes, expiry, owner check, adapter stop and recorder screens
+
+Decision: accepted all MAJOR findings of docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md; the revoked state now shows a strip row per UI contract 14.1 (design 7.2 loses); the real battery monitor and services-off probe stay unwired and the Start panel states this when the flag is on (gap carried to the sprint report); the hook timeout cancels the hand-off. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.
+
+## 2026-10-17 - Commit: docs(s04): sync design and test plan with the implemented journal and record the security residuals
+
+Decision: stale hard-link wording in the history entries (Z7, Z10, Z14) is kept as history; the 12.1 race row, F2, the 5.2 row and the 4.5 Discard step are recorded as documented deviations until the next doc pass. Security residuals (flag parsing, plugin pinning, lock-screen notification text, Play Services disclosure) go to the release checklist. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md section C.
+
+## 2026-10-17 - Commit: docs(s04): record the S04 code phase state before the gate request
+
+Decision: send the GPT-PM gate request on this exact head; sprint report follows the gate. Evidence: docs/sdlc/STATE.md S04 section.
+
+## 2026-10-20 - Commit: fix(s04): close the seven external gate findings (stray source line, consent withdraw ordering, sign-out hook, expiry lock, segment rotation, owner-checked puts, wipe marker)
+
+Decision: fixed all seven findings of GPT-PM request 7c1e5a52 on head 5d5723fa. A withdrawn consent is denied synchronously and a grant called before a later withdraw is stale; sign-out runs the hand-off hook unless the journal lists no recording at all; foreign-scope expiry takes that scope's lock or skips it; unbind and wipe wait up to 5 s for in-flight owner-checked puts; a wipe marker that cannot be written or read refuses the bind (in-memory block). DT-0-10 is pre-existing and left as a known issue. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md (sprint set 1155 passed).
+
+## 2026-10-20 - Commit: fix(s04): treat unexpected recorder provider read failures at sign-out as cannot-check
+
+Decision: in sign_out_guard.dart only UnimplementedError from recordingJournalPortProvider means the recorder is not wired; any other failure reading the port or the phase provider is cannot-check (existing sheet with the explicit Sign out anyway choice). Applied to both _anyRecordingFiles and _recordingCount. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md Round 2 (sprint set 1164 passed).
+
+## 2026-10-20 - Commit: fix(s04): use an explicit recorder wired flag at sign-out and repair the fixtures broken by the fail-closed wipe marker
+
+Decision: 'recorder not wired' is the explicit recorderWiredProvider (default false, true under the GPS_RECORDER branch of main.dart); when wired, any provider read failure is cannot-check. Fixtures of 55 tests gained an explicit scopesRoot. The two failing tests outside the sprint set (DT-0-10 availability, app_shortcuts same-account) are recorded as known pre-existing issues and not fixed in S04; whether bindUid(null) may resolve the scopes root is a product decision for the operator. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md Round 3 and Round 4 (sprint set 1171 passed; test/features/activity 1629 passed, 1 failed).
 ## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
 
 Decision: the Live AI Coach (TDD-001) is documented as its own line on branch docs/ai-coach-tdd-001, based on origin/phase2/main in a separate worktree, and does not change any Phase 2 sprint or the dirty phase2/s04 checkout. Documentation program only: sprint AI-COACH-00; later sprints are planned but not authorised; implementation and production remain not authorised. Evidence: core/changes/2026-10-17-ai-coach-discovery-backlog.md, docs/ai-coach/01b_CODE_MAP.md.
@@ -58109,3 +58160,7 @@ Decision: a successful deletion-fence export does not wipe at once: EXPORT_DONE 
 ## 2026-10-18 - Commit: docs(ai-coach): record unverified GPT-PM recommendations as not decided
 
 Decision: the open-question recommendations quoted in chat on 2026-10-18 were reconstructed from a compacted summary and are not in the repository; they are not treated as GPT-PM output. Section 6 of docs/ai-coach/01_REQUIREMENTS.md keeps only the proposed defaults until the operator answers. The third GPT-PM verification (V3-01..V3-03 on 9ced50ab) is blocked because PM Bridge reports mode OFF (health verdict DAEMON_DOWN); the assistant does not switch PM Bridge on without the operator. Evidence: core/changes/2026-10-18-ai-coach-state-sync.md (updated in this commit).
+
+## 2026-10-20 - Commit: merge: bring origin/phase2/main (AI Coach documentation) into phase2/s04 and resolve the documentation conflicts
+
+Decision: resolve the PR 14 conflicts by a merge commit that changes documentation files only; the code and test trees stay identical to the head approved by GPT-PM (0ee39ba1). Evidence: git diff 0ee39ba1 HEAD -- mobile is empty.
