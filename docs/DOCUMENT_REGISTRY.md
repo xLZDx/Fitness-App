@@ -296,9 +296,9 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/ai-coach/20_PHASE9_EXECUTION_OWNERSHIP_AND_REVIEW_ROUTE.md` | Phase 9 execution ownership and alternative review route | 28503 |
 | `docs/ai-coach/21_PHASE9_OQ14_OQ18_TR_CONTRACT_PROPOSAL.md` | OQ-14 and OQ-18 bounded TR contract proposal | 40943 |
 | `docs/ai-coach/22_PHASE9_OQ07_TR_CONTRACT_PROPOSAL.md` | OQ-07 limit-free technical contract proposal | 20523 |
-| `docs/ai-coach/23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md` | Phase 9 AI Coach acceptance reconciliation — 2026-10-20 | 23759 |
+| `docs/ai-coach/23_PHASE9_ACCEPTANCE_RECONCILIATION_2026-10-20.md` | Phase 9 AI Coach acceptance reconciliation — 2026-10-20 | 24674 |
 | `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 17900 |
-| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 84560 |
+| `docs/ai-coach/acceptance.md` | AI-COACH-00 Documentation Sprint Acceptance (Draft) | 84939 |
 | `docs/ai-coach/release-notes.md` | AI Coach documentation package — 2026-10-18 | 2243 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
