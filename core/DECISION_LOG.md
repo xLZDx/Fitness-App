@@ -58125,3 +58125,42 @@ Decision: in sign_out_guard.dart only UnimplementedError from recordingJournalPo
 ## 2026-10-20 - Commit: fix(s04): use an explicit recorder wired flag at sign-out and repair the fixtures broken by the fail-closed wipe marker
 
 Decision: 'recorder not wired' is the explicit recorderWiredProvider (default false, true under the GPS_RECORDER branch of main.dart); when wired, any provider read failure is cannot-check. Fixtures of 55 tests gained an explicit scopesRoot. The two failing tests outside the sprint set (DT-0-10 availability, app_shortcuts same-account) are recorded as known pre-existing issues and not fixed in S04; whether bindUid(null) may resolve the scopes root is a product decision for the operator. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md Round 3 and Round 4 (sprint set 1171 passed; test/features/activity 1629 passed, 1 failed).
+## 2026-10-17 - Commit: docs(ai-coach): discovery and backlog for TDD-001
+
+Decision: the Live AI Coach (TDD-001) is documented as its own line on branch docs/ai-coach-tdd-001, based on origin/phase2/main in a separate worktree, and does not change any Phase 2 sprint or the dirty phase2/s04 checkout. Documentation program only: sprint AI-COACH-00; later sprints are planned but not authorised; implementation and production remain not authorised. Evidence: core/changes/2026-10-17-ai-coach-discovery-backlog.md, docs/ai-coach/01b_CODE_MAP.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): design, ADR proposals and UI spec
+
+Decision: design keeps a live workout in a new live_workout_sessions collection with a revision fence and writes workout_sessions only on finish, because totals() and weeklyVolume count every workout_sessions document without a status filter. ADR-001 to 010 stay PROPOSED. Open operator questions OQ-03 to OQ-24 are listed in docs/ai-coach/03_DESIGN.md. Evidence: core/changes/2026-10-17-ai-coach-design.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): test plans, review round 1 and remediation
+
+Decision: the 97 round 1 review claims are applied as one batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md): safety stop is unconditional and never undone by a journal failure; a live session has one owner with an epoch; the journal is encrypted, backup-excluded and never time-deleted; the flag gates only new starts; a privacy-policy update and the Play data-safety form are prerequisites for any build that calls the live coach server functions. Questions that belong to the operator stay OPEN with defaults (cost cap, symptom list signer, voice mode and provider, consent text, device matrix, emergency number table). Evidence: core/changes/2026-10-17-ai-coach-review-round1-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): review round 2 and second remediation batch
+
+Decision: round 2 findings are applied as the second batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md section D): safety stop has a whole or exercise scope and a user-only restart; performed facts are accepted while paused; a parked journal never overwrites history and is reviewed or exported by the user; a turn is charged when the provider is invoked; consent is checked on the server. Residual risk left for the operator: a safety stop lost if the process dies before the safety marker is written (OQ-29). Evidence: core/changes/2026-10-17-ai-coach-review-round2-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): cross-document consistency fixes
+
+Decision: design revision 3 and requirements win over older wording in the backlog, ADRs, UI spec and test plans; seven contradictions fixed (P0 and E2E counts in the backlog gate criterion, recovery independent of the flag, ADR count 13, offline command set in ADR-009, internal commands exempt from rollback, safetyLock field name). Evidence: core/changes/2026-10-17-ai-coach-consistency-fixes.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM gate round 1 remediation
+
+Decision: GPT-PM MODIFY findings F-01..F-14 and M-01..M-06 are applied as one batch (docs/ai-coach/06_REMEDIATION_DECISIONS.md section E). Server-enforced epoch validation is required for AI-COACH-01 (callable fallback; a cooperative-only fence needs operator acceptance, OQ-31). Finish and abandon during a whole safety stop need a trusted on-screen two-step confirmation. Numeric defaults 3 export offers within 7 days and a limit of 5 unfinished sessions are PROPOSED for the operator. Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-round1-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round remediation
+
+Decision: `ui_confirmed` is a local UI confirmation capability, not an envelope source; a journal failure on a performed-fact command yields the typed VOLATILE result, not a failure; `rest_elapsed` is applied in memory first and its cue is deduplicated; deletion-fence tests assert the DETECTED/EXPORT_OFFERED/WIPE_PENDING/WIPED state machine; cooperative-only replica fence is a rejected mode except as a recorded operator exception (OQ-31). Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-verification-remediation.md.
+
+## 2026-10-17 - Commit: docs(ai-coach): GPT-PM verification round 2 remediation
+
+Decision: a successful deletion-fence export does not wipe at once: EXPORT_DONE then WIPE_PENDING, wipe at the next app start; the full-disk outcome is defined per command type; the UI confirmation is always `source=manual` plus the local capability. Evidence: core/changes/2026-10-17-ai-coach-gpt-pm-verification2-remediation.md.
+
+## 2026-10-18 - Commit: docs(ai-coach): record unverified GPT-PM recommendations as not decided
+
+Decision: the open-question recommendations quoted in chat on 2026-10-18 were reconstructed from a compacted summary and are not in the repository; they are not treated as GPT-PM output. Section 6 of docs/ai-coach/01_REQUIREMENTS.md keeps only the proposed defaults until the operator answers. The third GPT-PM verification (V3-01..V3-03 on 9ced50ab) is blocked because PM Bridge reports mode OFF (health verdict DAEMON_DOWN); the assistant does not switch PM Bridge on without the operator. Evidence: core/changes/2026-10-18-ai-coach-state-sync.md (updated in this commit).
+
+## 2026-10-20 - Commit: merge: bring origin/phase2/main (AI Coach documentation) into phase2/s04 and resolve the documentation conflicts
+
+Decision: resolve the PR 14 conflicts by a merge commit that changes documentation files only; the code and test trees stay identical to the head approved by GPT-PM (0ee39ba1). Evidence: git diff 0ee39ba1 HEAD -- mobile is empty.
