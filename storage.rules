@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// Deny-all for the DEFAULT Firebase Storage bucket (design s6.3, D-16).
+//
+// There was no `storage.rules` and `firebase.json` had no `storage` block, so
+// whatever rules were deployed to the default bucket were unknown. The app does
+// not use the `firebase_storage` plugin (VERIFIED absent in mobile/pubspec.yaml)
+// and no client has any business reaching this bucket through the Storage SDK.
+//
+// The Body Scan photos live in a SEPARATE private bucket
+// (`<project>-bodyscan-private`, runbooks/body_scan_bucket.md) that Firebase
+// rules do not govern at all: it is reachable only through V4 signed URLs
+// minted by the callables and through the Admin SDK, with public access
+// prevention enforced. Admin SDK access bypasses these rules, so this file
+// cannot break the server paths.
+//
+// The S02 activity streams (GPS, altitude, speed) live in ANOTHER separate
+// private bucket (`<project>-activity-streams-private`, server setting
+// `ACTIVITY_STREAM_BUCKET`, runbooks/activity_stream_bucket.md). Same model:
+// no Storage-rules grant of any kind, access only through V4 signed URLs minted
+// by the callables and the Admin SDK. The rule below therefore stays the single
+// deny-all; adding any `allow` for `streams/` or `quarantine/` is a defect.
+//
+// Deploying this file OVERWRITES whatever is currently deployed for the default
+// bucket; verify nothing public depends on it first (runbook note).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

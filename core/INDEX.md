@@ -59,6 +59,11 @@ These files are dated translations for documentation review. They are **not** ne
 | [CONVENTIONS.md](CONVENTIONS.md) | The rules a change is reviewed against — feature layout, Riverpod/go_router, iOS portability, injury filtering, testing. **Single source; the reviewer agent and `/fitness-feature` both point here.** |
 | [TECHSTACK.md](TECHSTACK.md) | What frameworks/versions/SDKs does this repo use, plus local toolchain paths |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | What packages are pulled in, and why? (`DEPENDENCIES.csv` is the machine-readable twin) |
+| [ATTRIBUTIONS_NUTRITION.md](ATTRIBUTIONS_NUTRITION.md) | Which data sources, packages and reference projects the nutrition, food-diary and body check-in features use, their licences, and whether any code was copied. Update in the same commit as any new source. |
+| [CURRENT_STATE_BODY_SCAN_NUTRITION.md](CURRENT_STATE_BODY_SCAN_NUTRITION.md) | Honest status of the Body Scan + Nutrition Coach sprint: what is provisional, flag defaults, test results per epic, NOT_RUN list, known limits. (`CURRENT_STATE.md` is a generated gate ledger and is not edited by hand.) |
+| [body_scan_bucket.md](../runbooks/body_scan_bucket.md) | Operator runbook: private body-scan bucket, IAM and canary before `BODY_SCAN_CLOUD` is turned on |
+| [food_lookup.md](../runbooks/food_lookup.md) | Operator steps for food scanning: server flags (`FOOD_AI_ENABLED` and the lookup flag), sources and go-live gates; all off by default |
+| [changes/2026-10-15-*.md](changes/) | Change-record pattern: every commit of the Body Scan + Nutrition sprint has its own record (what, why, contracts, verification state); test evidence records are `*-tests*.md`, `e0-test-evidence`, `e1-tests-*`, `e2-tests-*`. Coverage map: [BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md) |
 | [DEBUGGING.md](DEBUGGING.md) | **Read first for any bug report.** Debug-daemon runbook — captures logs, errors, touches, screencaps per session. |
 | [PHASE_1B_FIREBASE_SETUP.md](PHASE_1B_FIREBASE_SETUP.md) | Firebase project wiring, `google-services.json`, auth setup |
 | [PHASE_4B_STRIPE_SETUP.md](PHASE_4B_STRIPE_SETUP.md) | Stripe **test-mode** price IDs and secret slots |
@@ -79,6 +84,12 @@ Also here: `context_baseline.csv` — measured AI-context cost over time, append
 | [ROADMAP_2026_V2.md](plans/ROADMAP_2026_V2.md) | Sequenced P0/P1/P2 + the 7 Tier-X features |
 | [NEXT_TICKETS.md](plans/NEXT_TICKETS.md) | Concrete, ready-to-pick-up tickets |
 | [IMPLEMENTATION_PLAN.md](plans/IMPLEMENTATION_PLAN.md) | Live phase/sequence roadmap |
+| [BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md) | Body Scan + Nutrition Coach technical design: data model, rules, Cloud Functions, safety clamps, onboarding, food scanning, programme hook, activity model (DESIGN, not implemented) |
+| [BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md](plans/BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md) | Body Scan + Nutrition Coach sprint plan: 27 commits, epics, DoD, verification plan, operator-owned items (PLAN, not implemented) |
+| [BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md](plans/BODY_SCAN_NUTRITION_TEST_COVERAGE_MAP_2026-10-15.md) | Requirements-to-test coverage map: 201 requirements, 126 focused test files, run order (PLAN) |
+| [BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md](plans/BODY_SCAN_REFERENCE_BEHAVIOUR_NOTES_2026-10-15.md) | Own-words distillation of the operator's reference recordings: flows, numbers, formula checks (NOTES) |
+| [PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md](plans/PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md) | Phase 2 research package reconciled with the approved design: story mapping, conflicts, provider status, APK plan (RECONCILIATION) |
+| [PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md](plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md) | Priority Phase 2 backlog: multi-sport tracking, device ecosystem order and effort, nutrition-aware programmes, legal competitive study plan |
 | [PLAN_AI_RESTRUCTURE_2026-07-28.md](plans/PLAN_AI_RESTRUCTURE_2026-07-28.md) | This restructure: gates, baseline, progress tracker |
 | [PLAN_REDESIGN_REMAINDER_2026-08-12.md](plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md) | **Where the redesign block stands and what to pick up next** — prototype screen map with line numbers, why R11h is one gate and not four, the six-point chain R11f's metadata fix has to walk |
 | [PLAN_R11_DECISIONS_2026-08-12.md](plans/PLAN_R11_DECISIONS_2026-08-12.md) | The operator's six answers and the sub-gates they produced — P1 done, P2/P3/P4-lite pending, the O-series that rebuilds onboarding on the Figma design at 7 screens |

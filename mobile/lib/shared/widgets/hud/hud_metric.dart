@@ -666,7 +666,40 @@ class HudSettingRow extends StatelessWidget {
     this.trailing,
     this.divider = true,
     this.tileSize = 40,
+    this.mergeSemantics = false,
+    this.trailingLabel,
+    this.semanticHint,
+    this.enabled,
+    this.selected,
+    this.showFocusRing = false,
+    this.hoverStyle = false,
+    this.cursor = false,
   });
+
+  /// S03-03 (contract 9.1): when true the accessible label is the title plus
+  /// the subtitle (and [trailingLabel]) joined by ", " instead of the title
+  /// alone (today's behaviour, the default).
+  final bool mergeSemantics;
+
+  /// Spoken text for the trailing widget (a value, a badge); appended to the
+  /// label when non-null.
+  final String? trailingLabel;
+
+  /// Spoken hint; null (default) adds none.
+  final String? semanticHint;
+
+  /// `false` announces a disabled button and ignores [onTap]; null (default)
+  /// changes nothing.
+  final bool? enabled;
+
+  /// Exposes `isSelected` when non-null; null (default) sets no flag.
+  final bool? selected;
+
+  /// S03-03 pointer/keyboard extensions, all default off (see
+  /// [HudKeyboardActivation]).
+  final bool showFocusRing;
+  final bool hoverStyle;
+  final bool cursor;
 
   final IconData icon;
   final String title;
@@ -727,14 +760,39 @@ class HudSettingRow extends StatelessWidget {
       ),
     );
 
-    if (onTap == null) return row;
+    final VoidCallback? tap = enabled == false ? null : onTap;
+    if (onTap == null && enabled != false) return row;
+
+    final String label = <String>[
+      title,
+      if (mergeSemantics && subtitle != null) subtitle!,
+      if (trailingLabel != null) trailingLabel!,
+    ].join(', ');
+
+    Widget tappable = InkWell(onTap: tap, child: row);
+    if (tap != null && (showFocusRing || hoverStyle || cursor)) {
+      // The InkWell already activates from the keyboard; the wrapper only
+      // adds the ring, the wash and the cursor.
+      tappable = HudKeyboardActivation(
+        onActivate: tap,
+        handlesKeys: false,
+        showFocusRing: showFocusRing,
+        hoverStyle: hoverStyle,
+        cursor: cursor,
+        child: tappable,
+      );
+    }
+
     // Without ExcludeSemantics the inner Text nodes merge into the outer
     // Semantics and the row is announced twice -- `HudButton`'s doc comment
     // names this exact bug and this row carried an undone instance of it.
     return Semantics(
       button: true,
-      label: title,
-      child: ExcludeSemantics(child: InkWell(onTap: onTap, child: row)),
+      label: label,
+      hint: semanticHint,
+      enabled: enabled,
+      selected: selected,
+      child: ExcludeSemantics(child: tappable),
     );
   }
 }

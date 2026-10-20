@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Дизайн для всех устройств: проверка документации одобрена</title>
+<style>
+  :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,sans-serif; line-height:1.55; padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+  .wrap { max-width:820px; margin:0 auto; padding-block:32px 72px; }
+  h1 { font-size:30px; line-height:1.2; margin:0 0 10px; text-wrap:balance; }
+  h2 { font-size:20px; margin:32px 0 10px; }
+  .lede { color:var(--text-2); font-size:16px; max-width:64ch; margin:0 0 8px; }
+  .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { border-left:4px solid var(--accent); } .warn { border-left:4px solid var(--warn); }
+  .tablewrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border:1px solid var(--border); font-size:14px; }
+  th { background:var(--accent-soft); }
+  code { font-family:Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="lede">Проект Fitness App, Фаза 2</p>
+  <h1>Дизайн для всех устройств и доработка S02: внешняя проверка документации одобрена</h1>
+  <p class="lede">Контракт интерфейса S03-D, ревизия 3: Android-телефон, iPhone, iPad, Android-планшет и MacBook, одно приложение, пять вкладок с кнопкой «Записать». Внешний ревьюер (GPT-PM) одобрил точную версию 45b9184b со второго раунда, после исправления одного существенного замечания. Доработаны и данные спринта S02 по вашим ответам: срок хранения «никогда» убран, текст политики перенесён в настоящий источник, написаны приёмка и релиз-ноты. На GitHub ничего не отправлено.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s03d-ui-design-contract @ 45b9184b</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<h2>Итог</h2>
+<div class="box ok"><ul>
+  <li><b>Внешняя проверка документации одобрена.</b> GPT-PM (внешний ревьюер) принял точную версию <code>45b9184b</code> с второго раунда: блокирующих замечаний 0, существенных 0. В первом раунде он вернул «доработать» (1 существенное, 2 мелких); я проверил каждое по тексту и исправил.</li>
+  <li><b>Существенное замечание было верным.</b> Правило «на низком окне сетка режимов 4×1» противоречило размерам карточек: при ширине 640 dp (dp — условная единица экрана Android) четыре карточки по 200 dp занимают 836 dp, а в окне 360 dp четыре по 140 dp занимают 560 dp. Теперь число колонок определяет ширина сетки, а не только высота окна.</li>
+  <li><b>Что готово.</b> Дизайн-контракт S03-D (экраны, состояния, правила интерфейса) в ревизии 3 покрывает Android-телефон, iPhone, iPad, Android-планшет и MacBook. Доработка спринта S02 по вашим ответам: срок хранения «никогда» убран из кода и текста политики, текст политики перенесён в настоящий источник, написаны приёмка и релиз-ноты S02.</li>
+  <li><b>Ничего не отправлено на GitHub.</b> Ветка <code>phase2/s03d-ui-design-contract</code>, 5 локальных коммитов поверх слияния S02 (<code>2c121242</code>). Отправка и запрос на слияние (PR) делаются в конце спринта S03, как в S02.</li>
+</ul></div>
+
+<h2>Что теперь в дизайн-контракте, простыми словами</h2>
+<div class="box"><ul>
+  <li><b>Одно приложение.</b> Фаза 2 выходит обновлением того же приложения с тем же идентификатором, а не вторым приложением.</li>
+  <li><b>Пять вкладок остаются.</b> «Записать» — кнопка поверх экрана, а не замена вкладки «Скан».</li>
+  <li><b>Размеры окна.</b> Узкое (меньше 600 dp): нижняя панель. Среднее (600–839): нижняя панель с ограничением ширины. Широкое (840 и больше) и невысокое окно (меньше 480 dp высотой, например телефон набок): боковая панель слева, вместо нижней. Класс определяет ширина окна, а не вид устройства, поэтому одинаково работает разделённый экран на iPad и изменение размера окна на Mac.</li>
+  <li><b>Экраны на больших окнах.</b> Главная, Прогресс и «Источники» получают две колонки только когда рабочая область не уже 880 dp (с учётом боковой панели), иначе остаётся одна колонка. Выбор режима на широком окне получает панель описания справа.</li>
+  <li><b>По семействам устройств.</b> Android: Material. iPhone, iPad и Mac: привычные для Apple жесты, листы и подсказки; на Mac дополнительно мышь, наведение, клавиатура и меню (размер окна по умолчанию 1100×760, минимум 480×600).</li>
+  <li><b>Сборки Apple.</b> Пока только дизайн: в репозитории есть лишь папка <code>android</code>. Когда создавать сборки iOS, iPadOS и macOS, вы ещё не решили.</li>
+  <li><b>Журнал тренировок на телефоне</b> открывается всегда, независимо от облачного флага. Сейчас в коде он по умолчанию выключен; включение — первая задача S03 (история S03-0).</li>
+  <li><b>Срок хранения GPS-маршрутов в облаке:</b> 90, 365 или 730 дней, по умолчанию 730 (два года). Варианта «никогда» нет.</li>
+</ul></div>
+
+<h2>Что сделано по спринту S02 после ваших ответов</h2>
+<div class="box"><ul>
+  <li><b>Код:</b> сервер теперь отклоняет «никогда» (константа <code>STREAM_RETENTION_NEVER_OFFERED</code> переключена в <code>false</code>); сохранённое раньше «никогда» считается значением по умолчанию, 730 дней. Тест на это раньше не мог упасть (проверял условие по той же константе), теперь жёсткий.</li>
+  <li><b>Текст политики конфиденциальности:</b> публичная страница в трёх прошлых коммитах правилась вручную, хотя генерируется из <code>scripts/legal/legal_text.py</code>. Один запуск генератора стёр бы формулировки и сломал два теста. Формулировки перенесены в источник, страница отличается от прежней только удалением «or never», добавлен тест, который падает при рассинхроне.</li>
+  <li><b>Документы:</b> запись о приёмке S02 и релиз-ноты; в обоих честно перечислено, что неизвестно и где источники расходятся.</li>
+  <li><b>Тесты</b> писали и запускали тестовые агенты, только точечные. Файлы про срок хранения: 143 теста прошли. Папка активности: 877 прошли, 2 упали — это известный нестабильный тест на 32 МБ, один он проходит. Dart-тесты правовых экранов: 152 прошли. Тест синхронизации политики: 6 прошли. Полные прогоны, линтер и CI не запускались.</li>
+  <li><b>Побочные эффекты, которые я принял:</b> дата «Last updated» на странице условий сместилась на 15 октября (штамп в генераторе общий), около 20 служебных записей в файле строк переформатированы без изменения содержания.</li>
+</ul></div>
+
+<h2>Что я упустил, простыми словами</h2>
+<div class="box warn"><ul>
+  <li><b>Страница политики правилась руками в трёх коммитах</b> (два из них в S02, по моим поручениям, которые не называли источник), хотя её источник — генератор. Я и сам ошибочно считал источником файл строк приложения. Теперь правило: перед правкой файла из <code>public/</code> найти его генератор, а в каждом поручении исполнителю называть файл-источник.</li>
+  <li><b>Противоречие в сетке выбора режима.</b> Два внутренних ревьюера проверили то, что я им указал, но не старое правило из второй ревизии; поймал его только внешний. Теперь для каждого правила «N элементов в ряд» контракт выписывает проверку числами, а ревьюерам поручено пересчитывать и унаследованный текст.</li>
+  <li><b>Исполнители упирались в лимит ходов</b> (14–20) и их приходилось продолжать по 2–4 раза. Поручения теперь дробятся на куски по 3–4 раздела.</li>
+</ul></div>
+
+<h2>Что осталось на вас</h2>
+<div class="box warn">
+<p>Это решения владельца продукта. Для каждого указано, что меняется от ответа.</p>
+<ul>
+  <li><b>Утвердить формулировку политики конфиденциальности.</b> Сейчас это черновик на английском; русских абзацев про активность и маршруты ещё нет. Пока вы не утвердите, облачная загрузка маршрутов остаётся выключенной. Если утвердите как есть — попрошу перевод на русский и вторую проверку; если нужны правки — скажите, что менять.</li>
+  <li><b>Когда создавать сборки iOS, iPadOS и macOS.</b> Вариант «в S03»: сразу видно, как контракт ведёт себя на Apple, но нужны Mac, аккаунт разработчика Apple и сборка занимает время спринта. Вариант «позже»: S03 идёт быстрее на Android, а проверка Apple-раскладок откладывается; дизайн написан так, чтобы потом не переделывать.</li>
+  <li><b>Пять допущений дизайнера</b> (в контракте, раздел 15, список DQ-16 — перечень допущений, требующих вашего решения): кнопка «Записать» в боковой панели на всех пяти вкладках, включая «Скан» и «Профиль»; клавиша Esc никогда не значит «Назад»; на широком окне с крупным шрифтом показывается одна колонка; форма боковой панели выбирается по измеренной ширине подписей; пока идёт тренировка, узкая боковая панель показывает слово состояния и минуты. Если вы ничего не скажете, принимаются как написано.</li>
+  <li><b>Остальные ваши решения без изменений:</b> регион первого релиза; бакет, права доступа, оповещения, окно «мягкого удаления» и отдельный сервисный аккаунт для облачного хранилища; платёжный аккаунт Blaze для проекта Фазы 2; монетизация по режимам (по умолчанию: все новые режимы за флагами, новой платной подписки нет); судьба имени ветки <code>master</code> (по умолчанию остаётся веткой Фазы 1); юридический статус досье чужих приложений (по умолчанию не используется как источник и лежит вне репозитория); срок хранения записей об удалении (предложено 400 дней).</li>
+</ul></div>
+
+<h2>Что дальше</h2>
+<div class="box"><ul>
+  <li>Следующий шаг по правилам — техническая документация спринта S03 (дизайн режима, состояния, тесты по критериям приёмки) и её проверка, затем сама сборка. Контракт интерфейса S03-D для этого уже одобрен.</li>
+  <li>Отправка ветки и один запрос на слияние — после сборки S03, проверок агентами и одобрения внешнего ревьюера на точной версии.</li>
+  <li>Исправление ложного срабатывания сканера секретов (<code>da3279f7</code>) тоже уйдёт с этим запросом на слияние. Тип правила и номер строки в записи я вывел сам; подтвердит только следующий запуск проверки в CI.</li>
+</ul></div>
+</div>
+
+
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

@@ -1265,6 +1265,130 @@
   "focusZoneFullBody": "Full body",
   "onbStepBarriers": "What gets in the way",
   "onbStepPreview": "Your first session",
+  "onbStepNutrition": "Food and activity",
+  "onbNutritionTitle": "Food and activity",
+  "onbNutritionSubtitle": "All optional. This helps us size a calorie range that suits you.",
+  "onbNutritionLockedNotice": "We'll leave food and calorie targets for later. You can add them any time in your nutrition profile.",
+  "@onbNutritionLockedNotice": {
+    "description": "D-75 lock-out copy. Shown instead of every goal, pace and target element while either nutrition safety answer is 'reported' or unanswered. Deliberately names no reason and shows no number."
+  },
+  "onbNutritionGuidanceTitle": "Before we suggest food targets",
+  "onbNutritionGuidancePrompt": "Do any of these apply to you?",
+  "onbNutritionGuidanceOptionSupervised": "A doctor or dietitian supervises or advises what you eat.",
+  "onbNutritionGuidanceOptionRelationship": "You have had a difficult relationship with food or eating, now or in the past.",
+  "onbNutritionGuidanceNone": "None of these",
+  "onbNutritionGuidanceReported": "One or more applies",
+  "onbNutritionGuidanceWhy": "We ask so we only give general targets to people they suit. Your answer stays on this device and is never sent to our servers.",
+  "onbNutritionGuidanceConsequence": "If one applies, we won't show calorie or food targets, and we suggest talking to a professional.",
+  "@onbNutritionGuidanceTitle": {
+    "description": "D-75 nutrition safety question. Product-reviewed wording with no diagnostic words; there is no 'prefer not to say' option because it would be indistinguishable from unanswered, which already locks the coach. The l10n parity test covers every onbNutritionGuidance* key."
+  },
+  "onbNutritionSexAtBirth": "Sex at birth",
+  "onbNutritionSexFemale": "Female",
+  "onbNutritionSexMale": "Male",
+  "onbNutritionSexNeutral": "Use a neutral estimate",
+  "onbNutritionSexHint": "Used only in the energy formula.",
+  "onbNutritionGoal": "Goal direction",
+  "onbNutritionGoalLose": "Lose weight",
+  "onbNutritionGoalMaintain": "Maintain weight",
+  "onbNutritionGoalGain": "Gain weight",
+  "onbNutritionTargetLine": "Target weight: {kg} kg",
+  "@onbNutritionTargetLine": {
+    "description": "Read-only target weight line; the value is asked on the personal screen. kg is a pre-formatted decimal string; the unit is a non-inflecting abbreviation (D-84).",
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "onbNutritionTargetMissing": "No target weight yet. You can add one on the personal screen.",
+  "onbNutritionTargetChange": "Change",
+  "onbNutritionPaceMessage": "At a safe pace of about {kg} kg per week, this takes roughly {weeks, plural, one{1 week} other{{weeks} weeks}}.",
+  "@onbNutritionPaceMessage": {
+    "description": "Realistic-pace line from the plan calculator. Shown only when both safety answers are 'none'. kg is a pre-formatted decimal string; weeks is a whole number (RU has one/few/many/other forms).",
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "onbNutritionPaceBelowRange": "That target weight is below the range this plan supports, so we can't plan towards it. Try a higher target.",
+  "onbNutritionPaceUnderweight": "At your current weight we won't plan a calorie deficit. The plan keeps your weight steady instead.",
+  "onbNutritionTargetBodyFat": "Target body fat (optional)",
+  "onbNutritionTargetBodyFatClear": "No body-fat target",
+  "onbNutritionSteps": "Typical daily steps",
+  "onbNutritionStepsHint": "Connect your health app to use your real steps, or pick the closest range.",
+  "onbNutritionSteps0": "Under 3,000",
+  "onbNutritionSteps1": "3,000-5,000",
+  "onbNutritionSteps2": "5,000-8,000",
+  "onbNutritionSteps3": "8,000-11,000",
+  "onbNutritionSteps4": "11,000 or more",
+  "onbNutritionAllergens": "Allergens to avoid",
+  "onbNutritionAllergenGluten": "Gluten",
+  "onbNutritionAllergenCrustaceans": "Crustaceans",
+  "onbNutritionAllergenEggs": "Eggs",
+  "onbNutritionAllergenFish": "Fish",
+  "onbNutritionAllergenPeanuts": "Peanuts",
+  "onbNutritionAllergenSoy": "Soy",
+  "onbNutritionAllergenMilk": "Milk",
+  "onbNutritionAllergenTreeNuts": "Tree nuts",
+  "onbNutritionAllergenCelery": "Celery",
+  "onbNutritionAllergenMustard": "Mustard",
+  "onbNutritionAllergenSesame": "Sesame",
+  "onbNutritionAllergenSulphites": "Sulphites",
+  "onbNutritionAllergenLupin": "Lupin",
+  "onbNutritionAllergenMolluscs": "Molluscs",
+  "onbNutritionDeviceOnly": "Stays on this device only.",
+  "onbNutritionExcluded": "Foods you don't eat",
+  "onbNutritionExcludedHint": "Add a food",
+  "onbNutritionExcludedAdd": "Add",
+  "onbNutritionExcludedRemove": "Remove {food}",
+  "@onbNutritionExcludedRemove": {
+    "description": "Screen-reader label of an excluded-food chip; tapping removes it.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "onbNutritionExcludedLimit": "You can add up to {max} foods.",
+  "@onbNutritionExcludedLimit": {
+    "description": "Shown instead of the input once the list is full.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "onbNutritionMeals": "Meals per day",
+  "onbNutritionMealsDefault": "If you skip this, we plan for 3 meals.",
+  "onbNutritionOwnership": "Who sets your numbers?",
+  "onbNutritionOwnershipCoached": "Coached",
+  "onbNutritionOwnershipCoachedHint": "We suggest and adjust weekly. You can undo a change.",
+  "onbNutritionOwnershipShared": "Shared",
+  "onbNutritionOwnershipSharedHint": "We suggest, you approve each change.",
+  "onbNutritionOwnershipManual": "Manual",
+  "onbNutritionOwnershipManualHint": "You set the numbers. We only show insights.",
+  "onbNutritionOwnershipDefault": "Coached is the default.",
+  "nutProfileTitle": "Nutrition profile",
+  "nutProfileStepOf": "Step {n} of {total}",
+  "@nutProfileStepOf": {
+    "description": "Progress line of the nutrition profile flow; total counts only the sheets this profile needs (1 to 3).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "nutProfileSafetyTitle": "Two quick questions",
+  "nutProfileSafetyIntro": "We ask these first, so we only suggest food targets that suit you.",
+  "nutProfileBodyTitle": "About you and your goal",
   "onbPreviewTitle": "Here's your first session",
   "onbPreviewSubtitle": "Built from your answers — it changes as you train",
   "onbPreviewLength": "About {minutes} minutes",
@@ -1413,6 +1537,7 @@
   "onbDietDairyFree": "Dairy-free",
   "onbDietHalal": "Halal",
   "onbDietKosher": "Kosher",
+  "onbDietPescatarian": "Pescatarian",
   "onbDietNone": "No restrictions",
   "onbSmoking": "Smoking",
   "onbSmokingNever": "Never",
@@ -1812,6 +1937,7 @@
   "scanReviewBody": "Retake any pose you are not happy with, then save.",
   "scanRetake": "Retake",
   "scanSave": "Save scan",
+  "scanSaving": "Saving",
   "scanSaveFailed": "The scan was not saved: {arg0}",
   "@scanSaveFailed": {
     "placeholders": {
@@ -2110,9 +2236,9 @@
   },
   "settingsDeleteAccount": "Delete account",
   "settingsDeleteAccountSubtitle": "Permanently erase your data and cancel any subscription",
-  "legalPrivacyBody": "## Who is responsible\n\nFitness App is built and run by one independent developer, based in Chisinau, Moldova. There is no company and no nonprofit behind it. Questions about this policy or about your data: korostelevivan@gmail.com.\n\n## The short version\n\n- Your health answers are used to filter exercises away from your injuries. They are never sold, and they are never sent to an AI model.\n- Photos you take of gym machines are sent to Google's Gemini to be recognised. Other people may be in shot.\n- What we hold is stored in Google Cloud data centres in the European Union. The one thing that leaves our systems by design is an equipment report you send to a gym with its own maintenance channel -- see \"Equipment reports\" below.\n- You can export everything we hold, and delete it permanently, from inside the app. A report already forwarded to a gym is outside our systems by then, so deleting your account does not recall it.\n\n## What is collected\n\n**Your account.** You can sign in anonymously or with Google. An anonymous account carries no name and no email address. If you sign in with Google, the app receives the name, email address and profile picture on that Google account.\n\n**Health and fitness answers.** The onboarding questionnaire asks for age, gender, height, current and target weight, and activity level; medical conditions, allergies, medications, injuries, physical limitations, recent surgeries, blood pressure, and anything else you choose to type in; smoking, alcohol, sleep, stress, diet, and how active your work is; and your goals, training experience and equipment access.\n\nUnder the GDPR and most comparable laws, much of that is health data -- a special category with extra protection. It is asked for one purpose: to keep movements that conflict with an injury or condition out of your plan, and to size that plan to you. Every field can be left blank, and the app still works.\n\n**The health answers stay on your phone.** The medical part of that questionnaire -- conditions, allergies, medications, injuries, physical limitations, recent surgeries, blood pressure, your own notes, and your smoking and alcohol answers -- is stored on your device and is not sent to this app's servers. Nothing on the server ever read it, so there was no reason to hold it there.\n\nOne exception, and it is historical rather than current. Accounts that answered the questionnaire before 6 August 2026 had those answers held on the server, because that is where the app kept them at the time. Opening the app moves them down to your device and deletes the server copy, and deleting your account removes them either way -- but an account nobody has opened since may still have a copy sitting there. If that could be yours, opening the app once is enough.\n\nTwo things follow from that, and both are yours to weigh. If you reinstall the app or move to another phone, those answers do not come back on their own; Settings has a passphrase-protected backup that carries them, and a forgotten passphrase cannot be recovered by anyone, us included. And if you have Android's own backup switched on, your device's data -- this included -- is copied to your personal Google account and encrypted with a key derived from your screen lock. That copy is yours, not ours, and we cannot read it.\n\n**What you do in the app.** Completed workouts with sets and weights, statistics, scheduled sessions, machines you have scanned, notes on those machines, and exercises the AI generated for you.\n\n**Payments.** Card details go to Stripe and never reach this app's servers. What is stored here is your subscription tier and status, plus the Stripe customer and subscription identifiers needed to manage it.\n\n**Camera and photos.** To identify a gym machine, the photo is resized and sent to Google's Gemini model. If that call fails, a smaller model running on your phone is used instead. The photo itself is not kept afterwards -- what is kept is which machine was identified. A gym is a shared space, so be aware that other people may be in the frame.\n\nProgress photos are different: they stay on your phone. There is no server-side storage for them at all.\n\n**Body scan.** The guided body scan takes photos with the camera and computes pose landmarks (body-point positions) from them on your phone. The photos and the landmarks stay on your phone, encrypted with a key that does not leave it. They are never uploaded, and never used to calculate body measurements or weight. The scan is not available to people under 18, and it needs your consent. If you turn the scan reminder on, the app schedules a local notification on your phone every two weeks; it is not sent from a server.\n\n**Voice and microphone.** The app does not use the microphone and does not record or send any audio. The form coach's spoken cues are generated by your phone's own text-to-speech engine and only play out loud.\n\n**Equipment reports.** If you report broken or missing equipment and name the gym you are at, that report -- including anything you typed in the note -- goes to this app's own records, and separately to that gym's own maintenance channel, if the gym has registered one. Which system that is depends on which gym you name; it is not one of the two processors below, and this app does not control what that gym does with it afterwards. If the gym you name has not registered a channel, or you leave the field blank, the report only ever reaches this app's own records.\n\n**Health Connect and Apple Health.** If you connect them, the app reads five things: steps, active calories burned, resting heart rate, sleep, and heart rate variability. It writes one thing back: a workout entry (an exercise session with its estimated calories) when you finish a session, so your other apps know you trained. On Android, Health Connect's permission screen for that workout entry also lists total calories and distance, which the Health Connect plugin requests together with workout writing; the app never reads or writes distance, and never reads total calories. The app does not ask for Android's activity-recognition permission.\n\nThose readings never leave your phone. They are held in memory while the app is open, shown to you on the home screen, and used to judge whether to suggest an easier week. They are not written to this app's servers, not included in your account, and not sent to any AI model. Nothing is read until you grant the permission, and revoking it in Health Connect or Apple Health stops the reading immediately -- the app keeps working without it.\n\n**Crash reports.** When the app crashes, Firebase Crashlytics receives the device model, the OS version and the stack trace. It is switched off in development builds.\n\n## What is not done\n\n- Your data is not sold, and never has been.\n- Health answers are never sent to any AI model. The in-app coach receives only the name of the machine you asked about and your language -- nothing else.\n- No advertising identifier is collected, and no third-party analytics or attribution SDK is built into the app.\n\n## Where it is stored, and who else touches it\n\nData lives in Google Cloud's eur3 multi-region, inside the European Union, and the server code that reads it runs in europe-west1. Firestore security rules restrict every document under your account to you alone.\n\nTwo processors handle everything else: Google (Firebase Authentication, Firestore, Crashlytics, App Check, and the Gemini model) and Stripe (payments). A gym you name in an equipment report can be a third recipient of that report's contents, but only that report, and only when that specific gym has registered its own maintenance channel -- see \"Equipment reports\" above. Unlike Google and Stripe, a gym does not act on this app's instructions and nothing here governs what it does with what it receives.\n\n## The supporter wall is public, and only by your own request\n\nIf you opt in, a display name you choose (up to 60 characters) and an optional message (up to 200 characters) become readable by anyone. Leave the name blank and the entry shows as anonymous. Opting out removes it. Nothing else about you is ever published.\n\n## How long it is kept\n\nYour data is kept while your account exists, and goes when you delete it. There is no separate retention timer and no archive copy kept afterwards.\n\nTwo kinds of record are shared with someone else, and those are kept with your identifier removed rather than deleted: a coach booking, which is also the coach's record of a session that really happened, and an equipment report, which is a fault the gym still has to fix. Nothing left in them identifies you, and a booking whose other side has also deleted their account is removed outright. Anything you wrote in the text of a report stays as written, so do not put anything personal in one.\n\nStripe keeps its own payment records for as long as its own legal obligations require. Those are outside this app's control and cannot be deleted from here.\n\n## Your rights\n\n**Export** -- Settings, then \"Export your data\". You get your profile, your health answers, your whole workout history, your schedule and the details of every progress photo, in a machine-readable file. The one thing it does not carry is the progress-photo images themselves: they are encrypted with a key that does not leave your device, so the export lists each photo and says so in the file rather than shipping bytes nothing could open.\n\n**Deletion** -- Settings, then \"Delete account\". This cancels any active subscription, erases every document under your account, and then deletes the account itself. It is irreversible: afterwards there is nothing left to restore, including for us.\n\nIf you are in the EU, the UK, or anywhere with comparable law, you can also object to processing, ask for a correction, and complain to your data protection authority. Write to the address above and it will be acted on.\n\n## Children\n\nAn account of your own requires you to be at least 16, and data is not knowingly collected from anyone younger. If you believe a younger child has an account here, write and it will be deleted.\n\nThe exercises themselves carry no age restriction. A parent or guardian training a younger child from their own account is the intended way to do that -- the limit is on the account, which holds health answers and a payment method, not on who may exercise.\n\n## Changes to this policy\n\nThe date at the top is the version. There is no in-app notification when this text changes -- if that matters to you, this page is where to check.",
+  "legalPrivacyBody": "## Who is responsible\n\nFitness App is built and run by one independent developer, based in Chisinau, Moldova. There is no company and no nonprofit behind it. Questions about this policy or about your data: korostelevivan@gmail.com.\n\n## The short version\n\n- Your health answers are used to filter exercises away from your injuries. They are never sold, and they are never sent to an AI model.\n- Photos you take of gym machines are sent to Google's Gemini to be recognised. Other people may be in shot.\n- What we hold is stored in Google Cloud data centres in the European Union. The one thing that leaves our systems by design is an equipment report you send to a gym with its own maintenance channel -- see \"Equipment reports\" below.\n- You can export everything we hold, and delete it permanently, from inside the app. A report already forwarded to a gym is outside our systems by then, so deleting your account does not recall it.\n- Body scan photos are processed on your phone first; a cloud copy exists only with your consent, has the face blurred on the phone before upload, and by default is deleted right after analysis (always within 48 hours). Meal photos are not stored.\n\n## What is collected\n\n**Your account.** You can sign in anonymously or with Google. An anonymous account carries no name and no email address. If you sign in with Google, the app receives the name, email address and profile picture on that Google account.\n\n**Health and fitness answers.** The onboarding questionnaire asks for age, gender, height, current and target weight, and activity level; medical conditions, allergies, medications, injuries, physical limitations, recent surgeries, blood pressure, and anything else you choose to type in; smoking, alcohol, sleep, stress, diet, and how active your work is; and your goals, training experience and equipment access.\n\nUnder the GDPR and most comparable laws, much of that is health data -- a special category with extra protection. It is asked for one purpose: to keep movements that conflict with an injury or condition out of your plan, and to size that plan to you. Every field can be left blank, and the app still works.\n\n**The health answers stay on your phone.** The medical part of that questionnaire -- conditions, allergies, medications, injuries, physical limitations, recent surgeries, blood pressure, your own notes, and your smoking and alcohol answers -- is stored on your device and is not sent to this app's servers. Nothing on the server ever read it, so there was no reason to hold it there.\n\nOne exception, and it is historical rather than current. Accounts that answered the questionnaire before 6 August 2026 had those answers held on the server, because that is where the app kept them at the time. Opening the app moves them down to your device and deletes the server copy, and deleting your account removes them either way -- but an account nobody has opened since may still have a copy sitting there. If that could be yours, opening the app once is enough.\n\nTwo things follow from that, and both are yours to weigh. If you reinstall the app or move to another phone, those answers do not come back on their own; Settings has a passphrase-protected backup that carries them, and a forgotten passphrase cannot be recovered by anyone, us included. And if you have Android's own backup switched on, your device's data -- this included -- is copied to your personal Google account and encrypted with a key derived from your screen lock. That copy is yours, not ours, and we cannot read it.\n\n**What you do in the app.** Completed workouts with sets and weights, statistics, scheduled sessions, machines you have scanned, notes on those machines, and exercises the AI generated for you.\n\n**Payments.** Card details go to Stripe and never reach this app's servers. What is stored here is your subscription tier and status, plus the Stripe customer and subscription identifiers needed to manage it.\n\n**Camera and photos.** To identify a gym machine, the photo is resized and sent to Google's Gemini model. If that call fails, a smaller model running on your phone is used instead. The photo itself is not kept afterwards -- what is kept is which machine was identified. A gym is a shared space, so be aware that other people may be in the frame.\n\nProgress photos are different: they stay on your phone. There is no server-side storage for them at all.\n\n**Body scan.** The guided body scan takes photos with the camera. The provisional result (pose landmarks and a rough estimate) is computed on your phone, and the photos stay on your phone, encrypted with a key that does not leave it. Cloud analysis is a separate, optional step: it happens only if an analysis provider is switched on in your version of the app, you have given consent on a dedicated screen that names the provider, and you start it. Before any photo leaves your phone, the face area is blurred on the phone and the picture's metadata is removed. The scan is not available to people under 18: that limit uses the birth year in your profile and is checked in the app and again on the server. The scan needs your consent. If you turn the scan reminder on, the app schedules a local notification on your phone every two weeks; it is not sent from a server.\n\n**Cloud copies of scan photos.** A photo sent for cloud analysis is kept in a private storage bucket in the European Union that only this app's server code can read. By default it is deleted right after the analysis; if that deletion fails it is retried and removed within 48 hours. In the scan privacy screen you can instead keep photos for 30, 90 or 365 days, delete one scan's photos with a single tap and a confirmation, delete all cloud photos or all scans at once, and apply a shorter retention to photos already stored. The scan result (measurements, date and the name of the provider) is stored in your account until you delete it.\n\n**Weight, nutrition plan and food diary.** If you log your weight, save a nutrition plan or keep a food diary, that data -- weights with dates, plan targets and weekly review notes, diary entries and foods you saved -- is stored in your account on this app's servers. Body measurements are sensitive personal data, so before the first such entry the app shows a short notice and asks you to acknowledge it once; until then nothing is sent. Allergies, foods you exclude and your answer about whether nutrition guidance suits you stay on your phone, like the other health answers. If the app finds that nutrition guidance is not appropriate for you, it shows a note to talk to a professional and stores no plan.\n\n**Meal and label photos.** If AI food recognition is switched on, a photo of a meal or of a nutrition label, or the text you type to describe a meal, is sent to Google's Vertex AI to recognise the food. This app does not store the photo: only the entry you save in your diary is kept, and any small thumbnail stays on your phone. Nutrition facts for barcodes and searches come from the public Open Food Facts and USDA FoodData Central databases; only the barcode or the search words are sent, and a shared cache keeps those public answers without any personal data. If food recognition is not available in your version of the app, none of this happens.\n\n**Voice and microphone.** The app does not use the microphone and does not record or send any audio. The form coach's spoken cues are generated by your phone's own text-to-speech engine and only play out loud.\n\n**Equipment reports.** If you report broken or missing equipment and name the gym you are at, that report -- including anything you typed in the note -- goes to this app's own records, and separately to that gym's own maintenance channel, if the gym has registered one. Which system that is depends on which gym you name; it is not one of the two processors below, and this app does not control what that gym does with it afterwards. If the gym you name has not registered a channel, or you leave the field blank, the report only ever reaches this app's own records.\n\n**Health Connect and Apple Health.** If you connect them, the app reads five things: steps, active calories burned, resting heart rate, sleep, and heart rate variability. It writes one thing back: a workout entry (an exercise session with its estimated calories) when you finish a session, so your other apps know you trained. On Android, Health Connect's permission screen for that workout entry also lists total calories and distance, which the Health Connect plugin requests together with workout writing; the app never reads or writes distance, and never reads total calories. The app does not ask for Android's activity-recognition permission.\n\nApart from the activity summaries described under \"Activity summaries in your account\" below, those readings never leave your phone. They are held in memory while the app is open, shown to you on the home screen, and used to judge whether to suggest an easier week. They are not written to this app's servers, not included in your account, and not sent to any AI model. Nothing is read until you grant the permission, and revoking it in Health Connect or Apple Health stops the reading immediately -- the app keeps working without it.\n\n**Activity routes (GPS) in the cloud.** Only if you switch on cloud activity streams in the settings, the route of a recorded activity (GPS position, altitude and speed over time) is uploaded to a private storage bucket in the European Union that only this app's server code can read. It is off by default, you can switch it off again, and you can delete one activity or all stored routes at any time. Stored routes expire automatically after the expiry period you choose (90 days, 1 year or 2 years; the default is 2 years), counted from the date of the activity. Heart rate stays on the device: heart rate values are never uploaded. Routes are deleted when you delete your account.\n\n**Activity summaries in your account.** When summary sync is on, a short summary of each activity (sport, start and end time, duration, distance, power, cadence, and steps and calories, including steps and active calories that came from Health Connect or Apple Health) is stored in your account so your activities appear on all your devices. There is no separate switch for this; it follows the activity sync of the app. Heart rate values and routes are not part of the summary. Summaries are deleted when you delete the activity or your account.\n\n**Crash reports.** When the app crashes, Firebase Crashlytics receives the device model, the OS version and the stack trace. It is switched off in development builds.\n\n## What is not done\n\n- Your data is not sold, and never has been.\n- Health answers are never sent to any AI model. The in-app coach receives only the name of the machine you asked about and your language -- nothing else.\n- No advertising identifier is collected, and no third-party analytics or attribution SDK is built into the app.\n- No analytics SDK receives your photos or your body measurements (weights, scan results); crash reports carry no photos and no body values.\n\n## Where it is stored, and who else touches it\n\nData lives in Google Cloud's eur3 multi-region, inside the European Union, and the server code that reads it runs in europe-west1. Firestore security rules restrict every document under your account to you alone.\n\nTwo processors handle everything else: Google (Firebase Authentication, Firestore, Cloud Storage for scan photos, Crashlytics, App Check, and the Gemini and Vertex AI models) and Stripe (payments). A gym you name in an equipment report can be a third recipient of that report's contents, but only that report, and only when that specific gym has registered its own maintenance channel -- see \"Equipment reports\" above. Unlike Google and Stripe, a gym does not act on this app's instructions and nothing here governs what it does with what it receives.\n\n## The supporter wall is public, and only by your own request\n\nIf you opt in, a display name you choose (up to 60 characters) and an optional message (up to 200 characters) become readable by anyone. Leave the name blank and the entry shows as anonymous. Opting out removes it. Nothing else about you is ever published.\n\n## How long it is kept\n\nYour data is kept while your account exists, and goes when you delete it. Scan photos in cloud storage are the exception: they follow the retention you choose (default: deleted right after analysis, always within 48 hours), and a 400-day storage rule exists only as a backstop. Weights, plan, diary and scan results are kept until you delete them or delete the account. There is no archive copy kept afterwards.\n\nTwo kinds of record are shared with someone else, and those are kept with your identifier removed rather than deleted: a coach booking, which is also the coach's record of a session that really happened, and an equipment report, which is a fault the gym still has to fix. Nothing left in them identifies you, and a booking whose other side has also deleted their account is removed outright. Anything you wrote in the text of a report stays as written, so do not put anything personal in one.\n\nStripe keeps its own payment records for as long as its own legal obligations require. Those are outside this app's control and cannot be deleted from here.\n\n## Your rights\n\n**Export** -- Settings, then \"Export your data\". You get your profile, your health answers, your whole workout history, your schedule and the details of every progress photo, in a machine-readable file. The one thing it does not carry is the progress-photo images themselves: they are encrypted with a key that does not leave your device, so the export lists each photo and says so in the file rather than shipping bytes nothing could open. The file also carries your weights, nutrition plan and reviews, food diary, saved foods, scan records and settings, and the list of foods you exclude from your phone. Cloud scan photos are not embedded and no download links are written into the file; the app can create one-hour download links for them on request.\n\n**Deletion** -- Settings, then \"Delete account\". This cancels any active subscription, erases every document under your account, and then deletes the account itself. It is irreversible: afterwards there is nothing left to restore, including for us. It also deletes any scan photos in cloud storage, and the app removes the data it keeps on your phone for that account (photos, scan files, meal thumbnails and the per-account settings).\n\nIf you are in the EU, the UK, or anywhere with comparable law, you can also object to processing, ask for a correction, and complain to your data protection authority. Write to the address above and it will be acted on.\n\n## Children\n\nAn account of your own requires you to be at least 16, and data is not knowingly collected from anyone younger. If you believe a younger child has an account here, write and it will be deleted.\n\nThe exercises themselves carry no age restriction. A parent or guardian training a younger child from their own account is the intended way to do that -- the limit is on the account, which holds health answers and a payment method, not on who may exercise.\n\n## Changes to this policy\n\nThe date at the top is the version. There is no in-app notification when this text changes -- if that matters to you, this page is where to check.",
   "legalTermsBody": "## Who you are agreeing with\n\nFitness App is built and run by one independent developer, based in Chisinau, Moldova. There is no company and no nonprofit behind it. Contact: korostelevivan@gmail.com.\n\nCreating an account, or continuing to use the app, means you accept these terms.\n\n## What this app is, and what it is not\n\nIt is an exercise catalogue, a workout planner and a machine scanner. It is not a medical service, and nothing in it is medical advice, diagnosis or treatment.\n\nExercise carries a real risk of injury. The app screens exercises against the injuries you enter, but that screening is a filter over tags in a catalogue -- it is not an examination and it cannot know your body. **The exercise library has not been reviewed by a physiotherapist.** If you have an injury or a medical condition, or you are unsure, ask a qualified professional before you train, and stop if something hurts.\n\nYou train at your own risk. That is not a formality -- it is the actual arrangement.\n\n## Age\n\nYou need to be at least 16 to have an account of your own.\n\nThat is a limit on the account, not on the exercises. The account holds health answers and a payment method, which is what the age rule is about; nothing in the catalogue is age-restricted, and a parent or guardian is free to train a younger child using their own account.\n\n## Your account\n\nYou can use the app anonymously or sign in with Google. You are responsible for what happens under your account. An anonymous account is tied to that one installation -- sign in with Google if you want it to survive a lost phone.\n\n## Subscriptions and payment\n\nThere is a free tier. The paid tiers are:\n\n- Supporter -- $9.99 per month, or $59.99 per year\n- Supporter, 2 seats -- $14.99 per month\n- Supporter, 4 seats -- $19.99 per month\n- Sustainer -- $19.99 per month, or $119.99 per year\n- Sustainer, lifetime -- $499 once\n\nA 14-day free trial is available once per account.\n\nPayment is handled by Stripe. Subscriptions renew automatically until cancelled. You can cancel at any time from the billing portal inside the app, and access continues to the end of the period you have already paid for. Prices are in US dollars and can change -- a change never applies to a period already paid for.\n\n**These payments are not tax-deductible donations.** There is no nonprofit status and no fiscal sponsor behind this app. \"Supporter\" and \"Sustainer\" are the names of subscription tiers, nothing more.\n\nRefunds are not automatic. If something went wrong, write, and it will be dealt with case by case.\n\n## Coaches\n\nWhere coach booking is available, coaches are independent people rather than employees, and are responsible for their own services and their own qualifications. A platform fee of 15% is taken from each booking. This app is not a party to what happens in a session between you and a coach.\n\n## What you contribute\n\nEquipment reports, machine notes and your supporter-wall message stay yours. By submitting them, you allow them to be stored and shown for the purpose they exist for -- an equipment report to be kept in this app's own records and, when the gym you name has registered a maintenance channel, forwarded there too (see the Privacy Policy's \"Equipment reports\" section), a wall message to appear on the public wall. Do not submit anything unlawful, or anything you have no right to submit.\n\n## Ending it\n\nYou can delete your account at any time from Settings. That cancels any subscription and erases your data irreversibly. Access may be withdrawn from anyone who abuses the service or breaks these terms.\n\n## Limits\n\nThe app is provided as it is. It is a single-developer project: it can have bugs, it can be unavailable, and a recommendation it produces can be wrong for you. To the extent the law allows, no liability is accepted for injury, loss or damage arising from use of the app. Nothing here limits liability that cannot lawfully be limited.\n\n## Law and disputes\n\nThese terms are governed by the law of the Republic of Moldova. If you are a consumer elsewhere, the mandatory consumer protections of your own country still apply to you regardless. Write first -- most things are solvable that way.\n\n## Changes\n\nThe date at the top is the version. There is no in-app notification when these terms change; continuing to use the app after a change means accepting it.",
-  "legalLastUpdated": "Last updated 21 August 2026",
+  "legalLastUpdated": "Last updated 15 October 2026",
   "restTimerTitle": "Rest",
   "restTimerDone": "Rest complete",
   "restTimerSkipped": "Rest skipped",
@@ -2730,7 +2856,7 @@
       }
     }
   },
-  "healthStepProfessionalGuidance": "Are you currently pregnant, or within the first few months after giving birth?",
+  "healthStepProfessionalGuidance": "Are you currently pregnant or breastfeeding, or within the first few months after giving birth?",
   "@healthStepProfessionalGuidance": {
     "description": "F014. The question names the states it asks about, because a user has to understand what they are answering. The STORED value does not -- see ProfessionalGuidanceNeed. Deliberately not asking for a trimester, a due date or a postpartum week: none of those change what the app does, and collecting them would make a medical record out of a product boundary."
   },
@@ -2880,5 +3006,3044 @@
   "equipmentIdentityNeedMoreViewPrompt": "The server needs another angle to confirm this machine. Try scanning again from a different angle.",
   "@equipmentIdentityNeedMoreViewPrompt": {
     "description": "P2.G4: shown instead of the badge when decision is NEED_MORE_VIEW -- a plain re-scan prompt, not the collapsible badge."
+  },
+  "dataNoticeTitle": "How your body and food data is stored",
+  "@dataNoticeTitle": {
+    "description": "Heading of the one-time data notice shown before the first weight entry, nutrition plan save or food diary write."
+  },
+  "dataNoticeBody": "Your weigh-ins, nutrition targets and food diary are stored securely under your account so they stay available if you change phone. Body measurements are sensitive personal data. You can export or delete them at any time, and deleting your account erases them.",
+  "@dataNoticeBody": {
+    "description": "Body of the data notice: what is stored server-side. Shown with the flags off as well."
+  },
+  "dataNoticeBodyFoodAi": "When you scan a meal or a label, or describe a meal in words, the photo or text is sent to Google Cloud's Vertex AI to be analysed. We do not store the photo.",
+  "@dataNoticeBodyFoodAi": {
+    "description": "Extra paragraph of the data notice, shown only when AI food recognition is enabled in this build."
+  },
+  "dataNoticeAcknowledge": "Got it",
+  "@dataNoticeAcknowledge": {
+    "description": "Single-tap acknowledgement button of the data notice."
+  },
+  "scanManualTimerStarted": "Photo in {seconds, plural, one{{seconds} second} other{{seconds} seconds}}",
+  "@scanManualTimerStarted": {
+    "description": "Announced when the manual shutter timer starts.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "scanManualTimerCancel": "Cancel timer",
+  "@scanManualTimerCancel": {
+    "description": "Button that aborts the running manual shutter timer."
+  },
+  "scanAllChecksOk": "All four checks OK, hold still",
+  "@scanAllChecksOk": {
+    "description": "Cue announced and spoken when distance, lighting, position and pose all pass."
+  },
+  "scanRetakePose": "Retake {pose}",
+  "@scanRetakePose": {
+    "description": "Pose-specific retake button on the review screen.",
+    "placeholders": {
+      "pose": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanCompareBaselineOnly": "Your first scan is your baseline. Take a second scan to see a comparison.",
+  "bodyScanCompareTakeSecond": "Take second scan",
+  "bodyScanHistoryTitle": "Scan history",
+  "bodyScanHistoryEmpty": "No scans yet. Your first scan becomes your baseline.",
+  "bodyScanHistoryCount": "{count, plural, one{{count} scan} other{{count} scans}}",
+  "@bodyScanHistoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanHistoryBaseline": "Baseline",
+  "bodyScanHistoryNewEstimator": "New estimator: earlier scans are not compared with this one",
+  "bodyScanHistoryPhotosOnly": "Photos only, no estimate",
+  "bodyScanHistoryBodyFat": "Body fat {value}%",
+  "@bodyScanHistoryBodyFat": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanHistoryWeight": "{value} kg",
+  "@bodyScanHistoryWeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanHistoryChangeNone": "No meaningful change since the previous scan",
+  "bodyScanHistoryChangeDown": "Lower than the previous scan",
+  "bodyScanHistoryChangeUp": "Higher than the previous scan",
+  "bodyScanHistoryDeletePending": "Cloud copy will be deleted when you are online",
+  "bodyScanHistoryMenu": "Scan actions",
+  "bodyScanHistoryActionOpen": "Open result",
+  "bodyScanHistoryActionEditWeight": "Edit weight",
+  "bodyScanHistoryActionDeletePhotos": "Delete photos",
+  "bodyScanHistoryCompareBaseline": "Compare with baseline",
+  "bodyScanHistoryComparePrevious": "Compare with previous scan",
+  "bodyScanEditWeightTitle": "Edit recorded weight",
+  "bodyScanEditWeightHint": "This also updates your weight log for that day.",
+  "bodyScanEditWeightInvalid": "Enter a weight between 30 and 300 kg.",
+  "bodyScanEditWeightSave": "Save",
+  "bodyScanEditWeightSaved": "Weight updated.",
+  "bodyScanEditWeightFailed": "Some changes could not be saved. Please try again.",
+  "bodyScanDeletePhotosTitle": "Delete this scan's photos?",
+  "bodyScanDeletePhotosBody": "The photos are removed from this phone and any cloud copy is deleted too. If you are offline, the cloud copy is deleted when you are back online, and the scan stays here until then.",
+  "bodyScanDeletePhotosConfirm": "Delete photos",
+  "bodyScanDeletePhotosDone": "Photos deleted.",
+  "bodyScanDeletePhotosQueued": "You are offline. The cloud copy will be deleted when you are back online.",
+  "bodyScanDeletePhotosFailed": "The photos could not be deleted. Please try again.",
+  "bodyScanPrivacyTitle": "Photo privacy",
+  "bodyScanPrivacyIntroCloud": "Photos are private by default. Cloud copies are blurred on your phone first, kept only as long as you choose, and deleted within 48 hours of that time.",
+  "bodyScanPrivacyIntroLocal": "Your scan photos stay on this phone. Nothing is uploaded in this version.",
+  "bodyScanPrivacyRetentionTitle": "Keep cloud photos for",
+  "bodyScanRetention0": "Delete after analysis",
+  "bodyScanRetentionDays": "{days, plural, one{{days} day} other{{days} days}}",
+  "@bodyScanRetentionDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanRetentionHonest": "Photos are deleted within 48 hours of the chosen time. Photos kept on this phone are not affected.",
+  "bodyScanPrivacyApply": "Apply to existing photos",
+  "bodyScanPrivacyApplyHelp": "Shortens the keep time of photos already stored. It never makes it longer.",
+  "bodyScanPrivacyApplyDone": "Done. Matching photos will be deleted within 48 hours.",
+  "bodyScanPrivacyConsentOn": "You agreed to cloud photo analysis.",
+  "bodyScanPrivacyConsentOff": "Cloud photo analysis is off. Your photos stay on this phone.",
+  "bodyScanPrivacyWithdraw": "Withdraw agreement",
+  "bodyScanPrivacyDeleteTitle": "Delete cloud data",
+  "bodyScanPrivacyDeleteHelp": "These actions affect cloud copies only. Photos kept on this phone are not removed.",
+  "bodyScanPrivacyDeletePhotos": "Delete all cloud photos",
+  "bodyScanPrivacyDeleteScans": "Delete all cloud scans",
+  "bodyScanPrivacyDeletePhotosTitle": "Delete all cloud photos?",
+  "bodyScanPrivacyDeletePhotosBody": "Every photo stored in the cloud is deleted within 48 hours. Your results stay.",
+  "bodyScanPrivacyDeletePhotosConfirm": "Delete photos",
+  "bodyScanPrivacyDeleteScansTitle": "Delete all cloud scans?",
+  "bodyScanPrivacyDeleteScansBody": "Every cloud scan and its photos are deleted within 48 hours. This cannot be undone.",
+  "bodyScanPrivacyDeleteScansConfirm": "Delete scans",
+  "bodyScanPrivacyDeleteDone": "Deletion started. Photos are deleted within 48 hours.",
+  "bodyScanPrivacyFailed": "That did not work. Please try again.",
+  "bodyScanPrivacyWorking": "Working",
+  "bodyScanPrivacyPause": "Pause tracking",
+  "bodyScanPrivacyPauseHelp": "Hides scan reminders and nudges. Your data stays.",
+  "bodyScanTitle": "Body scan",
+  "bodyScanIntroTitle": "Estimate your body composition",
+  "bodyScanIntroBodyRough": "This version gives a rough estimate from your height, weight and age. It does not measure your body from the photos. The photos stay on this phone.",
+  "bodyScanIntroBodyPhotos": "Three photos are blurred on your phone, then sent to be analysed once you agree. You can delete them at any time.",
+  "bodyScanIntroTime": "The guided capture takes about 20 seconds.",
+  "bodyScanIntroStart": "Start scan",
+  "bodyScanIntroClose": "Close",
+  "bodyScanRoughLabel": "Rough estimate from height, weight and age",
+  "bodyScanMeasurementOnlyNote": "Photos and history only. Goal figures are not shown here.",
+  "bodyScanMeasurementOnlyAsk": "Show my estimate",
+  "bodyScanWeightTitle": "Log your weight first",
+  "bodyScanWeightBodyMissing": "There is no recent weight on file. A current weight makes the estimate more reliable.",
+  "bodyScanWeightBodyStale": "{days, plural, one{Your last weight is {days} day old.} other{Your last weight is {days} days old.}} A current weight makes the estimate more reliable.",
+  "@bodyScanWeightBodyStale": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanWeightLabel": "Weight (kg)",
+  "bodyScanWeightInvalid": "Enter a weight between 20 and 400 kg.",
+  "bodyScanWeightSave": "Save and continue",
+  "bodyScanWeightSkip": "Skip for now",
+  "bodyScanStagePhotos": "Photos secured",
+  "bodyScanStagePhotosLocal": "Photos kept on this device",
+  "bodyScanStageComposition": "Body composition",
+  "bodyScanStagePlausibility": "Plausibility check",
+  "bodyScanStageTrend": "Trend verification",
+  "bodyScanStageSaved": "Result saved",
+  "bodyScanStageDone": "done",
+  "bodyScanStageActive": "in progress",
+  "bodyScanStagePending": "waiting",
+  "bodyScanStageAnnounce": "Step {n} of {total}: {stage}",
+  "@bodyScanStageAnnounce": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanAnalysingTitle": "Analysing your scan",
+  "bodyScanElapsed": "Elapsed: {time}",
+  "@bodyScanElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanSlowNotice": "This is taking longer than usual. You can keep waiting or cancel.",
+  "bodyScanKeepWaiting": "Keep waiting",
+  "bodyScanTimeout": "The analysis timed out. Your photos are safe. Try again.",
+  "bodyScanRetry": "Try again",
+  "bodyScanCancel": "Cancel",
+  "bodyScanResultTitle": "Your scan result",
+  "bodyScanResultNotFound": "This scan could not be found.",
+  "bodyScanResultLoadError": "The result could not be loaded.",
+  "bodyScanLikelyRange": "Likely range: {low}% to {high}%",
+  "@bodyScanLikelyRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanBestGuess": "Best single guess: {value}%",
+  "@bodyScanBestGuess": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanThisReading": "This reading",
+  "bodyScanFromTrend": "From your trend",
+  "bodyScanLimitNote": "Single readings can vary by about 1-2 points even with a good model; the trend matters more than one scan.",
+  "bodyScanConfidence": "Confidence: {level}",
+  "@bodyScanConfidence": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanConfidenceLow": "low",
+  "bodyScanConfidenceMedium": "medium",
+  "bodyScanConfidenceHigh": "high",
+  "bodyScanProvisionalBannerTitle": "Rough estimate",
+  "bodyScanProvisionalBannerBody": "This number comes from your height, weight and age, not from your photos. Treat it as a rough guide and follow your weight trend instead.",
+  "bodyScanChangeNone": "No meaningful change since your last scan.",
+  "bodyScanChangeDown": "Down {pts} points since your last scan.",
+  "bodyScanChangeUp": "Up {pts} points since your last scan.",
+  "@bodyScanChangeDown": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChangeUp": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanNoiseNote": "Changes smaller than {pts} points are within measurement noise.",
+  "@bodyScanNoiseNote": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanPointsToGoal": "{pts} points to your target",
+  "@bodyScanPointsToGoal": {
+    "placeholders": {
+      "pts": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanEtaRange": "About {low} to {high} weeks if the pace holds",
+  "@bodyScanEtaRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanFatMass": "Fat mass",
+  "bodyScanLeanMass": "Lean mass",
+  "bodyScanMassValue": "{value} kg (range {low} to {high})",
+  "@bodyScanMassValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanWeightTrendTitle": "Weight trend",
+  "bodyScanWeightTrendDown": "Down {kg} kg per week",
+  "bodyScanWeightTrendUp": "Up {kg} kg per week",
+  "bodyScanWeightTrendFlat": "Steady, no clear change",
+  "bodyScanWeightTrendNone": "Not enough weigh-ins yet for a trend. Log your weight a few times a week.",
+  "@bodyScanWeightTrendDown": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanWeightTrendUp": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanStrengthTitle": "Strength sessions",
+  "bodyScanStrengthCount": "{count, plural, one{{count} session in the last 4 weeks} other{{count} sessions in the last 4 weeks}}",
+  "@bodyScanStrengthCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanStrengthNone": "No strength sessions logged in the last 4 weeks.",
+  "bodyScanSeePlan": "See your plan",
+  "nutritionKcalSpoken": "{value} kilocalories",
+  "@nutritionKcalSpoken": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderLowLabel": "Lowest daily calories",
+  "nutritionSliderHighLabel": "Highest daily calories",
+  "nutritionSliderMinReached": "Minimum reached, {value}",
+  "@nutritionSliderMinReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderMaxReached": "Maximum reached, {value}",
+  "@nutritionSliderMaxReached": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMin": "Range cannot be narrower than {gap}",
+  "@nutritionSliderGapMin": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSliderGapMax": "Range cannot be wider than {gap}",
+  "@nutritionSliderGapMax": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperDecrease": "{label}: decrease by {step}",
+  "@nutritionStepperDecrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionStepperIncrease": "{label}: increase by {step}",
+  "@nutritionStepperIncrease": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosTitle": "Macros",
+  "nutritionProteinLabel": "Protein",
+  "nutritionFatLabel": "Fat",
+  "nutritionCarbsLabel": "Carbs",
+  "nutritionGramsRange": "{min}–{max} g",
+  "@nutritionGramsRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionProteinAim": "Aim for about {target} g",
+  "@nutritionProteinAim": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionMacrosNote": "These are ranges, not exact targets. Anywhere inside them is fine.",
+  "nutritionStepsTitle": "Daily steps goal",
+  "nutritionStepsValue": "{steps, plural, one{{steps} step} other{{steps} steps}}",
+  "@nutritionStepsValue": {
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsDecrease": "Lower the steps goal by {n}",
+  "@nutritionStepsDecrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionStepsIncrease": "Raise the steps goal by {n}",
+  "@nutritionStepsIncrease": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionOwnershipTitle": "Who adjusts your plan",
+  "nutritionOwnershipCoached": "Coached",
+  "nutritionOwnershipCoachedBody": "The app adjusts your plan weekly within safe limits and tells you. You can undo a change for 7 days.",
+  "nutritionOwnershipShared": "Shared",
+  "nutritionOwnershipSharedBody": "The app suggests changes and you choose whether to accept them.",
+  "nutritionOwnershipManual": "Manual",
+  "nutritionOwnershipManualBody": "You set the numbers. The app only shows insights and never changes your plan.",
+  "nutritionOwnershipNote": "Safety limits apply in every mode. A change takes effect from your next weekly review.",
+  "nutritionAutoTitle": "Automatic adjustments",
+  "nutritionAutoSteps": "Adjust my steps goal",
+  "nutritionAutoKcal": "Adjust my calorie range",
+  "nutritionAutoManualOff": "Off while your plan is Manual.",
+  "nutritionAutoSharedHint": "In Shared mode these become suggestions you can accept.",
+  "nutritionAutoCoachedHint": "Turn one off to keep that part of your plan fixed.",
+  "nutritionProfessionalTitle": "We cannot set nutrition targets for you here",
+  "nutritionProfessionalBody": "For your situation, a doctor or registered dietitian is the right person to set food targets. We will not show calorie or macro numbers. Everything else in the app works as usual.",
+  "reviewReasonOnTrack": "Your weight trend is close to what the plan expects.",
+  "reviewReasonAheadOfPlan": "Your weight is changing a little faster than planned. No change is needed.",
+  "reviewReasonBehindWaiting": "Progress is slower than planned. We wait for one more review before changing anything.",
+  "reviewReasonCooldownActive": "The plan was changed recently, so it stays as it is for now.",
+  "reviewReasonTooFast": "Your weight is changing faster than is comfortable, so energy was raised.",
+  "reviewReasonStepsRaised": "The steps goal was raised first, as it is the gentlest change.",
+  "reviewReasonKcalLowered": "The calorie range was lowered a little.",
+  "reviewReasonKcalRaised": "The calorie range was raised a little.",
+  "reviewReasonAtSafetyLimit": "A further change would leave your safe range, so the plan stays as it is.",
+  "reviewReasonRecomposition": "Body-fat measurements and weight point in different directions, so nothing was changed.",
+  "reviewReasonDriftTooLarge": "Automatic changes have reached their total limit.",
+  "reviewReasonNeedMoreDataPoints": "More weigh-ins are needed first.",
+  "reviewReasonNeedMoreDataSpan": "The weigh-ins need to cover a longer period.",
+  "reviewReasonAutoAdjustOff": "Automatic adjustment is off for this part of your plan.",
+  "trainingReasonDeficitVolumeTrim": "Training volume is a little lower while your calorie range is below your usual intake.",
+  "trainingReasonSurplusVolumeBoost": "Training volume is a little higher while your calorie range is above your usual intake.",
+  "trainingReasonProteinLow": "Your logged protein has been below its range, so training volume stays as it is.",
+  "trainingReasonSleepLow": "Your logged sleep has been short, so intensity is a little lower.",
+  "trainingReasonLossTooFast": "Your weight is changing faster than planned, so training volume is a little lower.",
+  "trainingReasonLowIntakeHighLoad": "Your intake is close to the lowest planned level and you train often. Consider a lighter week.",
+  "trainingReasonRecoveryDeload": "A lighter training week is suggested to give you more recovery time.",
+  "nutritionReviewTitle": "Weekly review",
+  "nutritionReviewNone": "No review yet. The first one appears after about 3 weigh-ins over 2 weeks.",
+  "nutritionReviewDecidedOn": "Reviewed on {date}",
+  "@nutritionReviewDecidedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewWhyTitle": "Why",
+  "nutritionReviewKeep": "Your plan stays as it is.",
+  "nutritionReviewNeedMoreData": "Not enough weigh-ins yet to review your plan.",
+  "nutritionReviewNeedRecalculation": "Your measurements changed enough that the plan should be recalculated.",
+  "nutritionReviewKcalApplied": "{direction, select, down{Calories lowered by {amount} kcal.} other{Calories raised by {amount} kcal.}}",
+  "@nutritionReviewKcalApplied": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalProposed": "{direction, select, down{Suggestion: lower calories by {amount} kcal.} other{Suggestion: raise calories by {amount} kcal.}}",
+  "@nutritionReviewKcalProposed": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewKcalInsight": "{direction, select, down{Insight: calories could go down by {amount} kcal. Your plan is Manual, so nothing changed.} other{Insight: calories could go up by {amount} kcal. Your plan is Manual, so nothing changed.}}",
+  "@nutritionReviewKcalInsight": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsApplied": "Steps goal raised by {amount}.",
+  "@nutritionReviewStepsApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsProposed": "Suggestion: raise the steps goal by {amount}.",
+  "@nutritionReviewStepsProposed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewStepsInsight": "Insight: the steps goal could go up by {amount}. Your plan is Manual, so nothing changed.",
+  "@nutritionReviewStepsInsight": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewBasis": "{points, plural, one{Based on {points} weigh-in} other{Based on {points} weigh-ins}}",
+  "@nutritionReviewBasis": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionReviewTrend": "Weight trend: {slope} kg/week",
+  "@nutritionReviewTrend": {
+    "placeholders": {
+      "slope": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndoUntil": "You can undo this change until {date}.",
+  "@nutritionReviewUndoUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionReviewUndo": "Undo this change",
+  "nutritionReviewAccept": "Accept suggestion",
+  "nutritionPlanTitle": "Nutrition plan",
+  "nutritionEntryRange": "{low}–{high} kcal a day",
+  "@nutritionEntryRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEntryProfessional": "A doctor or dietitian is the right person to set food targets.",
+  "nutritionEntrySetUp": "Set up your plan",
+  "nutritionSaved": "Plan saved.",
+  "nutritionActionConflict": "Your plan changed on another device. We reloaded it, please try again.",
+  "nutritionActionOffline": "You are offline, so the change was not saved.",
+  "nutritionActionRefused": "That change is outside your safe range, so it was not saved.",
+  "nutritionActionFailed": "We could not save that change.",
+  "nutritionNeedsProfileTitle": "Finish your nutrition profile",
+  "nutritionNeedsProfileBody": "A few answers are needed before we can suggest a plan.",
+  "nutritionNeedsProfileAction": "Continue",
+  "nutritionLinkWeightLog": "Weight log",
+  "nutritionLinkHowItAdapts": "How your plan adapts",
+  "nutritionLinkSources": "Data sources and limits",
+  "nutritionCreateTitle": "Create your plan",
+  "nutritionCreateBody": "We use your profile to suggest a daily calorie range. You can change it at any time.",
+  "nutritionCreateAction": "Create my plan",
+  "nutritionPlanLoadError": "We could not load your plan. Try again in a moment.",
+  "nutritionKcalTitle": "Daily calories",
+  "nutritionKcalRangeValue": "{low}–{high} kcal",
+  "@nutritionKcalRangeValue": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionKcalBoundsHint": "Allowed for you: {min}–{max} kcal",
+  "@nutritionKcalBoundsHint": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionEditSharedNote": "If you change the range yourself, your plan becomes Shared: the app suggests changes instead of applying them.",
+  "nutritionWeightHint": "Your first review needs about 3 weigh-ins over 2 weeks. Log your weight in the weight log.",
+  "weightLogCurrent": "Current weight: {kg} kg",
+  "@weightLogCurrent": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogCurrentStale": "Last known weight: {kg} kg (from your profile)",
+  "@weightLogCurrentStale": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "planToneNoDeficit": "At your current weight a calorie deficit is not suggested, so the plan keeps your weight steady.",
+  "planToneTargetRange": "Your target is below the range we plan towards, so no pace is shown.",
+  "planToneFloorBinding": "Your range sits at the lowest level we suggest.",
+  "planToneNoEta": "We do not predict a date. Progress is rarely a straight line, and a slower week is normal.",
+  "planToneScansMonthly": "Body scans work best about once a month; weekly is optional.",
+  "nutritionPauseTitle": "Pause tracking",
+  "nutritionPauseBody": "Hides weekly nudges and the scan reminder until you turn it back on. Your data stays.",
+  "weightLogTitle": "Weight log",
+  "weightLogIntro": "Log your weight whenever you like. The first plan review needs about 3 weigh-ins over 2 weeks.",
+  "weightLogEmpty": "No weigh-ins yet.",
+  "weightLogAdd": "Add weight",
+  "weightLogEdit": "Edit weight",
+  "weightLogDelete": "Delete",
+  "weightLogSave": "Save",
+  "weightLogCancel": "Cancel",
+  "weightLogFieldLabel": "Weight (kg)",
+  "weightLogInvalid": "Enter a weight between 30 and 300 kg.",
+  "weightLogDeleteTitle": "Delete this weigh-in?",
+  "weightLogDeleteBody": "It will no longer count towards your plan.",
+  "weightLogSaved": "Weight saved.",
+  "weightLogDeleted": "Weigh-in deleted.",
+  "weightLogUnavailable": "We could not save that. Check that you are signed in.",
+  "weightLogLoadError": "We could not load your weigh-ins.",
+  "weightLogValue": "{kg} kg",
+  "@weightLogValue": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "weightLogSourceScan": "From a scan",
+  "weightLogSourceManual": "Added by you",
+  "nutritionSourcesTitle": "Data sources and limits",
+  "nutritionSourcesIntro": "Where your numbers come from, and what they cannot tell you.",
+  "nutritionSourcesFormulasTitle": "Formulas",
+  "nutritionSourcesMifflin": "Resting energy uses the Mifflin-St Jeor equation (Mifflin et al., 1990), scaled by an activity factor.",
+  "nutritionSourcesProtein": "Protein ranges follow published sports-nutrition reviews (Jäger 2017, Morton 2018).",
+  "nutritionSourcesEnergyPerKg": "About 7,700 kcal is treated as one kilogram of body mass (Wishnofsky rule), which is a rough average.",
+  "nutritionSourcesFoodTitle": "Food data",
+  "nutritionSourcesUsda": "Generic foods: USDA FoodData Central, Foundation Foods and SR Legacy (public domain, CC0 1.0).",
+  "nutritionSourcesOff": "Packaged foods: Open Food Facts, made available under the Open Database License. Entries are contributed by volunteers and may be incomplete.",
+  "nutritionSourcesLimitsTitle": "Limits",
+  "nutritionSourcesLimitEstimates": "All figures are estimates. Real needs vary from person to person and from week to week.",
+  "nutritionSourcesLimitScan": "A body scan gives a likely range, not an exact measurement. Photos are for your own comparison.",
+  "nutritionSourcesLimitNotMedical": "This app does not give medical advice. If you have a health condition, ask a doctor or dietitian.",
+  "nutritionExplainerTitle": "How your plan adapts",
+  "nutritionExplainerWeeklyTitle": "Each week",
+  "nutritionExplainerWeekly1": "Once a week the app compares your weight trend with what the plan expects.",
+  "nutritionExplainerWeekly2": "A change needs enough weigh-ins, two reviews in a row pointing the same way, and at least 2 weeks since the last change.",
+  "nutritionExplainerWeekly3": "Every review explains why it did or did not change anything.",
+  "nutritionExplainerModesTitle": "Who decides",
+  "nutritionExplainerLimitsTitle": "Safety limits",
+  "nutritionExplainerLimits1": "Your calorie range always stays inside limits worked out from your own data, in every mode.",
+  "nutritionExplainerLimits2": "Automatic changes are small and have a total limit.",
+  "nutritionExplainerLimits3": "The steps goal is raised before calories, because it is the gentler change.",
+  "bodyScanPlanDecisionTitle": "This week's plan",
+  "bodyScanChecksTitle": "Check these",
+  "bodyScanChecksCount": "{count, plural, one{{count} item to check} other{{count} items to check}}",
+  "@bodyScanChecksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyScanChipNeeds": "needs checking",
+  "bodyScanChipResolved": "resolved",
+  "bodyScanChipMarkResolved": "Mark as checked",
+  "bodyScanChipItem": "{item}, {state}",
+  "@bodyScanChipItem": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChecksAllResolved": "All items checked",
+  "bodyScanActionRetake": "Retake photos",
+  "bodyScanActionLogWeight": "Log weight",
+  "bodyScanActionConfirmWeight": "Check weight",
+  "checkCodeProvisionalEstimator": "This is a rough estimate from height, weight and age, not a photo measurement.",
+  "checkCodeManualCapture": "A photo was taken with the manual shutter, so the readiness checks were not all green.",
+  "checkCodePoorLighting": "The lighting was poor. Retake in even light.",
+  "checkCodePartialBody": "Part of your body was out of frame.",
+  "checkCodeLooseClothing": "Loose clothing can hide your shape. Retake in fitted clothing.",
+  "checkCodePoseMismatch": "A pose did not match what was asked.",
+  "checkCodeWeightMissing": "There is no recorded weight for this scan.",
+  "checkCodeWeightStale": "Your recorded weight is more than 7 days old.",
+  "checkCodeWeightJump": "Your weight differs a lot from your last scan. Check it.",
+  "checkCodeWideRange": "The likely range is wide, so this reading is less certain.",
+  "checkCodeEstimateFarFromProfile": "This estimate is far from what your profile suggests. Check your weight and height.",
+  "checkCodeLargeJumpVsTrend": "This reading is far from your trend. One odd reading does not change the trend much.",
+  "checkCodeBlurUnavailable": "Photos could not be anonymised, so nothing was uploaded.",
+  "bodyScanChartTitle": "Body fat trend",
+  "bodyScanChartSummaryDown": "Smoothed trend {value} percent, down {pts} points over {weeks} weeks.",
+  "bodyScanChartSummaryUp": "Smoothed trend {value} percent, up {pts} points over {weeks} weeks.",
+  "bodyScanChartSummaryFlat": "Smoothed trend {value} percent, no meaningful change over {weeks} weeks.",
+  "bodyScanChartSummaryFew": "Smoothed trend {value} percent. More scans are needed to describe a change.",
+  "@bodyScanChartSummaryDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryUp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "pts": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFlat": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "@bodyScanChartSummaryFew": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanChartExpand": "Show data table",
+  "bodyScanChartCollapse": "Hide data table",
+  "bodyScanChartLegend": "Dots are single noisy readings. The line is the smoothed trend.",
+  "bodyScanChartNewEstimator": "New estimator starts here",
+  "bodyScanChartColDate": "Date",
+  "bodyScanChartColReading": "Reading",
+  "bodyScanChartColSmoothed": "Smoothed",
+  "bodyScanChartColOutlier": "Outlier",
+  "bodyScanChartYes": "yes",
+  "bodyScanChartNo": "no",
+  "bodyScanChartRowLabel": "{date}: reading {value} percent, range {low} to {high}, smoothed {smoothed} percent, outlier {outlier}",
+  "@bodyScanChartRowLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      },
+      "smoothed": {
+        "type": "String"
+      },
+      "outlier": {
+        "type": "String"
+      }
+    }
+  },
+  "bodyScanCloudTitle": "Send photos for analysis?",
+  "bodyScanCloudBody": "To analyse your body, three photos are blurred on your phone, stripped of photo details such as location and camera data, and then uploaded. The server cannot verify the blurring, and marks such as tattoos or scars are not blurred. You can delete the scan at any time.",
+  "bodyScanCloudAgree": "Agree and upload",
+  "bodyScanCloudDecline": "Not now",
+  "bodyScanResumeTitle": "Finish your scan",
+  "bodyScanResumeBody": "A scan is waiting to be completed.",
+  "bodyScanResumeAction": "Resume",
+  "bodyScanFailedTitle": "The scan could not be completed",
+  "bodyScanFailedBody": "Your photos are still on this phone. You can try again, keep them here, or delete the scan.",
+  "bodyScanFailedRetry": "Try again",
+  "bodyScanFailedKeep": "Keep on this device",
+  "bodyScanFailedDelete": "Delete scan",
+  "bodyScanSheetClose": "Close",
+  "foodDiaryTitle": "Food diary",
+  "foodDiaryAdd": "Add food",
+  "foodDiaryToday": "Today",
+  "foodDiaryPrevDay": "Previous day",
+  "foodDiaryNextDay": "Next day",
+  "foodDiarySlotBreakfast": "Breakfast",
+  "foodDiarySlotLunch": "Lunch",
+  "foodDiarySlotDinner": "Dinner",
+  "foodDiarySlotSnack": "Snacks",
+  "foodDiarySlotEmpty": "Nothing here yet",
+  "foodDiarySlotAdd": "Add to {slot}",
+  "@foodDiarySlotAdd": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "foodDiaryEmptyTitle": "Nothing logged for this day",
+  "foodDiaryEmptyBody": "Add a meal when you are ready. You do not need to fill every slot.",
+  "foodDiaryLoading": "Loading your diary",
+  "foodDiaryError": "We could not load your diary.",
+  "foodDiaryErrorBody": "Your entries are safe. Check your connection and try again.",
+  "foodDiaryAiOff": "Meal recognition is not available yet. Search and quick log still work.",
+  "foodDiaryNotAvailableYet": "This is not available yet. Search and quick log still work.",
+  "foodDiaryHiddenTitle": "Food diary is not shown",
+  "foodDiaryHiddenBody": "Targets and the food diary are not shown for your answers. A health professional can give advice that fits you.",
+  "foodDiaryNeedsProfileTitle": "Finish your nutrition profile first",
+  "foodDiaryNeedsProfileBody": "A few answers are needed before the diary can compare your day with your targets.",
+  "foodDiaryNeedsProfileAction": "Open nutrition profile",
+  "foodDiarySummaryTitle": "Eaten today",
+  "foodDiaryRingLabel": "About {eaten} kilocalories eaten. Your range is {low} to {high} kilocalories.",
+  "@foodDiaryRingLabel": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "foodDiaryRingLabelNoPlan": "About {eaten} kilocalories eaten.",
+  "@foodDiaryRingLabelNoPlan": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      }
+    }
+  },
+  "foodDiaryRemaining": "Room left in your range: about {kcal} kcal",
+  "@foodDiaryRemaining": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "foodDiaryStatusBelow": "The day is not over. Eat what suits you.",
+  "foodDiaryStatusWithin": "In your range today.",
+  "foodDiaryStatusAbove": "A little above your range today. One day does not change the trend.",
+  "foodDiaryProteinReached": "Protein minimum reached",
+  "foodDiaryDeleteEntry": "Delete entry",
+  "foodDiaryEntryRemoved": "Entry removed",
+  "foodDiaryUndo": "Undo",
+  "foodDiaryWeightLink": "Log your weight",
+  "foodDiaryWeightTitle": "Log your weight",
+  "foodDiaryWeightField": "Weight (kg)",
+  "foodDiaryWeightInvalid": "Enter a weight between 30 and 300 kg.",
+  "foodDiaryWriteFailed": "Could not save. Try again.",
+  "foodMacroProtein": "Protein",
+  "foodMacroCarbs": "Carbs",
+  "foodMacroFat": "Fat",
+  "foodUnitKcal": "{value} kcal",
+  "@foodUnitKcal": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "foodUnitGrams": "{value} g",
+  "@foodUnitGrams": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "foodRangeOf": "{low} to {high}",
+  "@foodRangeOf": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "foodConfidenceLow": "Low confidence",
+  "foodConfidenceMedium": "Medium confidence",
+  "foodConfidenceHigh": "High confidence",
+  "foodSourceOff": "Open Food Facts",
+  "foodSourceUsda": "USDA FoodData Central",
+  "foodSourceEstimate": "Estimate",
+  "foodSourceUser": "Your own food",
+  "foodSourceLabel": "Nutrition label",
+  "foodSourceBadgeLabel": "Source: {name}",
+  "@foodSourceBadgeLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "foodAddTitle": "Add food",
+  "foodAddSearch": "Search foods",
+  "foodAddDescribe": "Describe a meal",
+  "foodAddPhoto": "Photograph a meal",
+  "foodAddBarcode": "Scan a barcode",
+  "foodAddLabel": "Scan a nutrition label",
+  "foodAddQuickLog": "Quick log",
+  "foodAddSaved": "Saved foods",
+  "foodDescribeHint": "For example: two eggs and toast with butter",
+  "foodDescribeSubmit": "Estimate",
+  "foodDescribeWorking": "Estimating",
+  "foodDescribeNothing": "No food was found in that text. Try describing it differently.",
+  "foodDescribeFailed": "The estimate could not finish. Try again, or use search.",
+  "foodQuickTitle": "Quick log",
+  "foodQuickName": "Name",
+  "foodQuickKcal": "Calories (kcal)",
+  "foodQuickProtein": "Protein (g)",
+  "foodQuickCarbs": "Carbs (g)",
+  "foodQuickFat": "Fat (g)",
+  "foodQuickAdd": "Add to diary",
+  "foodQuickInvalid": "Enter a name and calories.",
+  "foodSearchTitle": "Search foods",
+  "foodSearchHint": "Search by food name",
+  "foodSearchSubmit": "Search",
+  "foodSearchTooShort": "Type at least 3 characters.",
+  "foodSearchLoading": "Searching",
+  "foodSearchEmpty": "No foods found. Try another word or use quick log.",
+  "foodSearchError": "Search could not finish. Check your connection and try again.",
+  "foodSearchRateLimited": "You searched a lot just now. Try again in a minute.",
+  "foodSearchNotAvailable": "Packaged-food search is not available yet. Bundled foods still work.",
+  "foodSearchGenericHeading": "Common foods",
+  "foodSearchPackagedHeading": "Packaged foods",
+  "foodSearchSavedHeading": "Saved foods",
+  "foodSearchPartialData": "Some values are missing for this product.",
+  "foodSearchPer100": "per 100 g",
+  "foodDetailTitle": "Add to diary",
+  "foodDetailSlot": "Meal",
+  "foodDetailPortion": "Portion (g)",
+  "foodDetailPortionRange": "Likely between {low} and {high} g",
+  "@foodDetailPortionRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "foodDetailPortionLess": "Less",
+  "foodDetailPortionMore": "More",
+  "foodDetailPortionInvalid": "Enter a portion above zero.",
+  "foodDetailTotals": "About {kcal} kcal, range {low} to {high}",
+  "@foodDetailTotals": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "foodDetailItems": "Items",
+  "foodDetailSave": "Add to diary",
+  "foodDetailSaveFood": "Save this food",
+  "foodDetailFoodSaved": "Food saved",
+  "foodDetailEstimateNote": "These values are an estimate, not a database record.",
+  "foodDetailPer100": "Per 100 g: {kcal} kcal, protein {protein} g, carbs {carbs} g, fat {fat} g",
+  "@foodDetailPer100": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      },
+      "protein": {
+        "type": "String"
+      },
+      "carbs": {
+        "type": "String"
+      },
+      "fat": {
+        "type": "String"
+      }
+    }
+  },
+  "foodCheckHeading": "Check these",
+  "foodCheckCount": "{count, plural, one{{count} item to check} other{{count} items to check}}",
+  "@foodCheckCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "foodCheckNeeds": "Needs checking",
+  "foodCheckDone": "Checked",
+  "foodCheckChipLabel": "{title}, {state}",
+  "@foodCheckChipLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "foodCheckMarkDone": "Mark as checked",
+  "foodCheckPortionUnclear": "Portion size",
+  "foodCheckHiddenIngredients": "Cooking oil or sauce",
+  "foodCheckLiquidUnknown": "What is the drink",
+  "foodCheckCookingMethod": "How it was cooked",
+  "foodCheckMultipleItems": "Several foods",
+  "foodCheckBrandUnknown": "Brand",
+  "foodCheckFoodNotMatched": "Food match",
+  "foodCheckLowConfidenceItem": "Uncertain item",
+  "foodCheckLabelAmbiguous": "Label numbers",
+  "foodCheckDataInconsistent": "Numbers do not add up",
+  "foodCheckScaleMissing": "Serving weight",
+  "foodCheckHelpPortionUnclear": "Change the portion above to what you actually ate.",
+  "foodCheckHelpHiddenIngredients": "Oil and sauce are often not visible. Pick how much was added.",
+  "foodCheckHelpLiquidUnknown": "Check what the drink is and whether it was sweetened.",
+  "foodCheckHelpCookingMethod": "Frying adds fat. Check how this was cooked.",
+  "foodCheckHelpMultipleItems": "Several foods were found. Check the list of items.",
+  "foodCheckHelpBrandUnknown": "A different brand can have different values. Search for the exact product if you know it.",
+  "foodCheckHelpFoodNotMatched": "No close match was found. Search for a better one.",
+  "foodCheckHelpLowConfidenceItem": "This item is a rough guess. Search for a better match.",
+  "foodCheckHelpLabelAmbiguous": "Some label numbers were hard to read. Check them against the pack.",
+  "foodCheckHelpDataInconsistent": "The numbers do not match each other. Check them against the pack.",
+  "foodCheckHelpScaleMissing": "Enter the serving weight in grams from the pack.",
+  "foodOilNone": "No oil",
+  "foodOilTeaspoon": "1 teaspoon (5 g)",
+  "foodOilTablespoon": "1 tablespoon (14 g)",
+  "scanReminderTitle": "Time for a body check-in",
+  "scanReminderBody": "A short check-in keeps your history comparable.",
+  "bodyCheckInTitle": "Body check-in",
+  "bodyCheckInStart": "Start check-in",
+  "bodyCheckInNever": "No check-ins yet.",
+  "bodyCheckInLast": "{days, plural, =0{Last check-in: today} one{Last check-in: {days} day ago} other{Last check-in: {days} days ago}}",
+  "@bodyCheckInLast": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyCheckInHomeAction": "Open",
+  "scanReminderWeeklyLabel": "Weekly reminder",
+  "scanReminderSummary": "Every {when}",
+  "@scanReminderSummary": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "scanReminderChangeTime": "Change time",
+  "scanReminderDayGroup": "Reminder day",
+  "scanReminderPausedLabel": "Pause tracking",
+  "scanReminderPausedHint": "Hides check-in nudges and cancels the reminder.",
+  "scanReminderMeasurementOnlyOff": "The reminder is off by default. You can turn it on.",
+  "foodScanCancel": "Cancel",
+  "foodScanRateLimited": "You have reached the limit for this today. Try search or quick log.",
+  "foodScanNotAllowed": "Sign in to use this.",
+  "foodMealScanTitle": "Photograph a meal",
+  "foodMealScanIntro": "Take or choose a photo of your meal. It is resized on your phone and sent only to make this estimate. The photo is not stored on our servers.",
+  "foodMealTake": "Take a photo",
+  "foodMealPick": "Choose from gallery",
+  "foodMealPreviewLabel": "Meal photo preview",
+  "foodMealNoteHint": "Add a note (optional), for example: this is oat milk",
+  "foodMealThumbSwitch": "Keep a private thumbnail on this phone",
+  "foodMealThumbHint": "Encrypted, stays on this device and is deleted with the entry.",
+  "foodMealAnalyse": "Estimate",
+  "foodMealAnalysing": "Estimating",
+  "foodMealNoFood": "We could not find food in this photo. Try another photo or describe the meal.",
+  "foodMealFailed": "The estimate could not finish. Try again, or use search.",
+  "foodMealImageInvalid": "That image could not be read. Choose another photo.",
+  "foodMealChange": "Choose another photo",
+  "foodBarcodeTitle": "Scan a barcode",
+  "foodBarcodeHint": "Point the camera at the barcode on the pack.",
+  "foodBarcodeCameraError": "The camera is not available. Allow camera access in settings, or type the barcode below.",
+  "foodBarcodeManualField": "Barcode number",
+  "foodBarcodeManualGo": "Look up",
+  "foodBarcodeInvalid": "That is not a valid product barcode.",
+  "foodBarcodeLooking": "Looking up the product",
+  "foodBarcodeNotFound": "This product is not in the database yet. Scan its nutrition label or add it by hand.",
+  "foodBarcodeFailed": "The lookup could not finish. Try again.",
+  "foodBarcodeScanAgain": "Scan again",
+  "foodBarcodeTorch": "Flashlight",
+  "foodLabelTitle": "Scan a nutrition label",
+  "foodLabelIntro": "Photograph the nutrition table on the pack. You will check every number before anything is saved.",
+  "foodLabelRead": "Read the label",
+  "foodLabelReading": "Reading the label",
+  "foodLabelFailed": "The label could not be read. Try again, or enter the values by hand.",
+  "foodLabelConfirmTitle": "Check the label values",
+  "foodLabelConfirmHint": "Values per 100 g. Correct anything that does not match the pack.",
+  "foodLabelNothing": "No values could be read. Enter them by hand or try a clearer photo.",
+  "foodLabelConverted": "Converted from per-serving values using the serving weight.",
+  "foodLabelName": "Product name",
+  "foodLabelServing": "Serving in grams (optional)",
+  "foodLabelInvalid": "Enter a name and numbers between 0 and 1000.",
+  "foodLabelConfirm": "Confirm and save",
+  "nutritionSourcesSoftwareTitle": "Software and references",
+  "nutritionSourcesScanner": "Barcode scanning uses the mobile_scanner package (BSD-3-Clause).",
+  "nutritionSourcesCalorieTracker": "Meal analysis ideas (structured output with per-item confidence) were re-authored from calorie-tracker (MIT). No code was copied.",
+  "nutritionSourcesReferenceOnly": "OpenNutriTracker (GPL-3.0) and calorie-count (licence unclear) were read as design references only. Nothing was copied.",
+  "nutritionSourcesFullList": "The full list with licences is kept in the project file ATTRIBUTIONS_NUTRITION.md.",
+  "activitySyncSheetTitle": "Sync needs your decision",
+  "activitySyncSheetIntro": "These activities were changed on two devices. Nothing is deleted: your data on this device stays as it is until you choose.",
+  "activitySyncEmpty": "Everything is in sync.",
+  "activitySyncConflictTitle": "Different values on two devices",
+  "activitySyncConflictNoFields": "This activity could not be stored in the cloud yet. Your data on this device is kept.",
+  "activitySyncCloudUnavailable": "The cloud values cannot be read right now.",
+  "activitySyncDeviceValue": "This device: {value}",
+  "@activitySyncDeviceValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySyncCloudValue": "Cloud: {value}",
+  "@activitySyncCloudValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySyncKeepDevice": "Keep this device",
+  "activitySyncKeepCloud": "Keep cloud",
+  "activitySyncCandidateTitle": "A newer value is available",
+  "activitySyncCandidateMine": "Your value: {value}",
+  "@activitySyncCandidateMine": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySyncCandidateCloud": "Cloud value: {value}",
+  "@activitySyncCandidateCloud": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySyncCandidateComputed": "New computed value: {value}",
+  "@activitySyncCandidateComputed": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySyncUseComputed": "Use the new computed value",
+  "activitySyncKeepMine": "Keep my value",
+  "activitySyncUseCloud": "Use the cloud value",
+  "activitySyncUseRecalculated": "Use recalculated value",
+  "activitySyncKeepCloudValue": "Keep cloud value",
+  "activitySyncSaveFailed": "Your choice could not be saved right now. Nothing was changed.",
+  "activitySyncFieldMovingTimeS": "Moving time (s)",
+  "activitySyncFieldDistanceM": "Distance (m)",
+  "activitySyncFieldAscentM": "Ascent (m)",
+  "activitySyncFieldDescentM": "Descent (m)",
+  "activitySyncFieldAvgSpeedMps": "Average speed (m/s)",
+  "activitySyncFieldAvgCadence": "Average cadence",
+  "activitySyncFieldAvgPowerW": "Average power (W)",
+  "activitySyncFieldNormalizedPowerW": "Normalized power (W)",
+  "activitySyncFieldActiveEnergyKcal": "Active energy (kcal)",
+  "activitySyncFieldSteps": "Steps",
+  "activitySyncFieldStrokeCount": "Stroke count",
+  "activitySyncFieldPoolLengthM": "Pool length (m)",
+  "activitySyncFieldLapCount": "Laps",
+  "activitySyncFieldAvgSwolf": "Average SWOLF",
+  "activitySyncFieldRouteTrimMeters": "Route trim (m)",
+  "activitySyncFieldOther": "Field: {name}",
+  "@activitySyncFieldOther": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "modeChooserTitle": "What do you want to do?",
+  "@modeChooserTitle": {
+    "description": "Title of the mode chooser screen."
+  },
+  "modeChooserSubtitle": "You can change this any time in two taps.",
+  "@modeChooserSubtitle": {
+    "description": "Subtitle of the mode chooser screen."
+  },
+  "modeTrainName": "Train",
+  "@modeTrainName": {
+    "description": "Name of the Train mode."
+  },
+  "modeRideName": "Ride",
+  "@modeRideName": {
+    "description": "Name of the Ride mode."
+  },
+  "modeExploreName": "Explore",
+  "@modeExploreName": {
+    "description": "Name of the Explore mode."
+  },
+  "modeBodyName": "Body",
+  "@modeBodyName": {
+    "description": "Name of the Body mode."
+  },
+  "modeTrainBlurb": "Gym, plans and technique",
+  "@modeTrainBlurb": {
+    "description": "Short card blurb of the Train mode."
+  },
+  "modeRideBlurb": "Routes and rides",
+  "@modeRideBlurb": {
+    "description": "Short card blurb of the Ride mode."
+  },
+  "modeExploreBlurb": "Walk, run and hike",
+  "@modeExploreBlurb": {
+    "description": "Short card blurb of the Explore mode."
+  },
+  "modeBodyBlurb": "Progress, food and weight",
+  "@modeBodyBlurb": {
+    "description": "Short card blurb of the Body mode."
+  },
+  "modeTrainDesc": "Follow your plan, scan equipment, and check your form.",
+  "@modeTrainDesc": {
+    "description": "Detail panel description of the Train mode."
+  },
+  "modeRideDesc": "Record rides and follow routes.",
+  "@modeRideDesc": {
+    "description": "Detail panel description of the Ride mode."
+  },
+  "modeExploreDesc": "Record walks, runs and hikes.",
+  "@modeExploreDesc": {
+    "description": "Detail panel description of the Explore mode."
+  },
+  "modeBodyDesc": "See your progress, log food and track weight. Estimates are shown as estimates.",
+  "@modeBodyDesc": {
+    "description": "Detail panel description of the Body mode."
+  },
+  "modeDetailIdle": "Pick a mode to see what it does",
+  "@modeDetailIdle": {
+    "description": "Detail panel text before any mode is picked."
+  },
+  "modeComingLater": "Coming later",
+  "@modeComingLater": {
+    "description": "Status chip for a mode that is not available yet."
+  },
+  "modeSelected": "Selected",
+  "@modeSelected": {
+    "description": "Status chip for the selected mode."
+  },
+  "modeContinue": "Continue",
+  "@modeContinue": {
+    "description": "Button that confirms the picked mode."
+  },
+  "modeDecideLater": "Decide later",
+  "@modeDecideLater": {
+    "description": "Button that skips the mode choice."
+  },
+  "modeSaveError": "We could not save your choice on this device. You can continue; we will ask again next time.",
+  "@modeSaveError": {
+    "description": "Error shown when the mode choice could not be stored."
+  },
+  "modeComingLaterSheetTitle": "{mode, select, ride{Ride is coming later} explore{Explore is coming later} other{Coming later}}",
+  "@modeComingLaterSheetTitle": {
+    "description": "Title of the coming-later sheet; mode is ride or explore.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "modeComingLaterSheetBody": "You cannot start this yet. Everything else works as before.",
+  "@modeComingLaterSheetBody": {
+    "description": "Body of the coming-later sheet."
+  },
+  "modeComingLaterSheetAction": "Choose Train for now",
+  "@modeComingLaterSheetAction": {
+    "description": "Action of the coming-later sheet."
+  },
+  "modeSwitcherTitle": "Choose a mode",
+  "@modeSwitcherTitle": {
+    "description": "Title of the mode switcher."
+  },
+  "modeSwitcherSeeAll": "See all modes",
+  "@modeSwitcherSeeAll": {
+    "description": "Link in the mode switcher that opens the chooser."
+  },
+  "modeSwitcherQuestions": "{n, plural, one{{n} quick question} other{{n} quick questions}}",
+  "@modeSwitcherQuestions": {
+    "description": "Count of per-mode questions shown in the mode switcher.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "modeSwitcherCurrent": "Current mode: {mode, select, train{Train} ride{Ride} explore{Explore} body{Body} other{Train}}",
+  "@modeSwitcherCurrent": {
+    "description": "Label of the current mode in the switcher; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "homeModeChipLabel": "Mode: {mode, select, train{Train} ride{Ride} explore{Explore} body{Body} other{Train}}. Change mode",
+  "@homeModeChipLabel": {
+    "description": "Accessible label of the mode chip on Home; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "modeSwitchSaveError": "We could not save this choice on this device.",
+  "@modeSwitchSaveError": {
+    "description": "Snackbar shown when a mode switch could not be stored."
+  },
+  "modeChangedAnnouncement": "Mode changed to {mode, select, train{Train} ride{Ride} explore{Explore} body{Body} other{Train}}",
+  "@modeChangedAnnouncement": {
+    "description": "Screen reader announcement after a mode change; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "modeQuestionTrainWhere": "Where do you train most?",
+  "@modeQuestionTrainWhere": {
+    "description": "Train mode question."
+  },
+  "modeQuestionTrainOptionGym": "Gym",
+  "@modeQuestionTrainOptionGym": {
+    "description": "Train question option."
+  },
+  "modeQuestionTrainOptionAtHome": "At home",
+  "@modeQuestionTrainOptionAtHome": {
+    "description": "Train question option."
+  },
+  "modeQuestionTrainOptionOutdoors": "Outdoors",
+  "@modeQuestionTrainOptionOutdoors": {
+    "description": "Train question option."
+  },
+  "modeQuestionTrainOptionYoga": "Yoga",
+  "@modeQuestionTrainOptionYoga": {
+    "description": "Train question option."
+  },
+  "modeQuestionBodyStart": "What do you want to start with?",
+  "@modeQuestionBodyStart": {
+    "description": "Body mode question."
+  },
+  "modeQuestionBodyOptionPhotos": "Progress photos",
+  "@modeQuestionBodyOptionPhotos": {
+    "description": "Body question option."
+  },
+  "modeQuestionBodyOptionFood": "Food diary",
+  "@modeQuestionBodyOptionFood": {
+    "description": "Body question option."
+  },
+  "modeQuestionBodyOptionWeight": "Weight trend",
+  "@modeQuestionBodyOptionWeight": {
+    "description": "Body question option."
+  },
+  "modeQuestionSkip": "Skip",
+  "@modeQuestionSkip": {
+    "description": "Skip button of a mode question."
+  },
+  "modeQuestionProgress": "Question {n} of {total}",
+  "@modeQuestionProgress": {
+    "description": "Progress label of the mode questions.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "modeQuestionWhatChanges": "{question, select, body{This sets which Body card comes first on Home and in Record.} other{This sets which cards come first on Home.}}",
+  "@modeQuestionWhatChanges": {
+    "description": "Explains what a mode question changes; question is train or body.",
+    "placeholders": {
+      "question": {
+        "type": "String"
+      }
+    }
+  },
+  "modeQuestionSaving": "Saving",
+  "@modeQuestionSaving": {
+    "description": "Shown while an answer is being saved."
+  },
+  "modeQuestionSaveError": "We could not save this. Try again or skip.",
+  "@modeQuestionSaveError": {
+    "description": "Error when an answer could not be saved."
+  },
+  "modeQuestionRetry": "Try again",
+  "@modeQuestionRetry": {
+    "description": "Retry button of a mode question."
+  },
+  "recordPill": "Record",
+  "@recordPill": {
+    "description": "Label of the Record pill in the dock."
+  },
+  "stripWorkout": "Workout in progress",
+  "@stripWorkout": {
+    "description": "Active session strip title."
+  },
+  "stripPaused": "Paused",
+  "@stripPaused": {
+    "description": "Active session strip state."
+  },
+  "stripSessionStarted": "Workout started",
+  "@stripSessionStarted": {
+    "description": "Screen reader announcement when a workout timer session starts."
+  },
+  "stripSessionResumed": "Workout resumed",
+  "@stripSessionResumed": {
+    "description": "Screen reader announcement when a paused workout timer session resumes."
+  },
+  "stripSessionEnded": "Workout ended",
+  "@stripSessionEnded": {
+    "description": "Screen reader announcement when a workout timer session ends."
+  },
+  "stripResting": "Resting",
+  "@stripResting": {
+    "description": "Active session strip state."
+  },
+  "stripRestDone": "Rest finished",
+  "@stripRestDone": {
+    "description": "Active session strip state."
+  },
+  "stripResumeHint": "Tap to resume",
+  "@stripResumeHint": {
+    "description": "Accessibility hint of the active session strip."
+  },
+  "stripModeLabel": "{mode, select, ride{Ride} explore{Explore} body{Body} other{Train}}",
+  "@stripModeLabel": {
+    "description": "Mode name of the active session; mode is train, ride, explore or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "stripSpokenMinutes": "{minutes, plural, one{{minutes} minute} other{{minutes} minutes}}",
+  "@stripSpokenMinutes": {
+    "description": "Spoken form of the minutes left, for screen readers.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "railStateRunning": "Active",
+  "@railStateRunning": {
+    "description": "Rail state word while the session runs."
+  },
+  "railStatePaused": "Paused",
+  "@railStatePaused": {
+    "description": "Rail state word while paused."
+  },
+  "railStateResting": "Rest",
+  "@railStateResting": {
+    "description": "Rail state word while resting."
+  },
+  "railStateRestDone": "Done",
+  "@railStateRestDone": {
+    "description": "Rail state word when the rest is finished."
+  },
+  "railMinutes": "{minutes} min",
+  "@railMinutes": {
+    "description": "Short minutes label on the rail.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "navMainLabel": "Main navigation",
+  "@navMainLabel": {
+    "description": "Accessibility label of the main navigation container."
+  },
+  "shellBack": "Back",
+  "@shellBack": {
+    "description": "Label of the shell back button."
+  },
+  "recordSheetTitle": "{mode, select, body{Record: Body} train{Record: Train} other{Record}}",
+  "@recordSheetTitle": {
+    "description": "Title of the Record sheet; mode is train or body.",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "recordTrainScan": "Scan equipment",
+  "@recordTrainScan": {
+    "description": "Record sheet row."
+  },
+  "recordTrainToday": "Today's workout",
+  "@recordTrainToday": {
+    "description": "Record sheet row."
+  },
+  "recordTrainChoose": "Choose a workout",
+  "@recordTrainChoose": {
+    "description": "Record sheet row."
+  },
+  "recordTrainForm": "Check my form",
+  "@recordTrainForm": {
+    "description": "Record sheet row."
+  },
+  "recordBodyScan": "Body scan",
+  "@recordBodyScan": {
+    "description": "Record sheet row."
+  },
+  "recordBodyMeal": "Add a meal",
+  "@recordBodyMeal": {
+    "description": "Record sheet row."
+  },
+  "recordBodyWeight": "Log weight",
+  "@recordBodyWeight": {
+    "description": "Record sheet row."
+  },
+  "recordNothingHere": "Nothing to start in this mode yet.",
+  "@recordNothingHere": {
+    "description": "Record sheet empty text."
+  },
+  "recordOpenTrain": "Open Train",
+  "@recordOpenTrain": {
+    "description": "Record sheet button that opens Train."
+  },
+  "homeActivityToday": "Activity today",
+  "@homeActivityToday": {
+    "description": "Home section header."
+  },
+  "modeIntroTitle": "New: choose what you want to do",
+  "@modeIntroTitle": {
+    "description": "Title of the mode intro card."
+  },
+  "modeIntroBody": "Train, Ride, Explore and Body now share one history. Pick the one you use most.",
+  "@modeIntroBody": {
+    "description": "Body of the mode intro card."
+  },
+  "modeIntroChoose": "Choose a mode",
+  "@modeIntroChoose": {
+    "description": "Button of the mode intro card."
+  },
+  "modeIntroDismiss": "Not now",
+  "@modeIntroDismiss": {
+    "description": "Dismiss button of the mode intro card."
+  },
+  "homeScheduledGone": "That workout is no longer scheduled",
+  "@homeScheduledGone": {
+    "description": "Snackbar when a scheduled workout was removed."
+  },
+  "progressAllActivity": "All activity",
+  "@progressAllActivity": {
+    "description": "Progress section header."
+  },
+  "progressThisWeek": "This week",
+  "@progressThisWeek": {
+    "description": "Progress this-week header."
+  },
+  "progressThisWeekEmpty": "No recorded activity this week.",
+  "@progressThisWeekEmpty": {
+    "description": "Empty text of the this-week card."
+  },
+  "progressRecent": "Recent activity",
+  "@progressRecent": {
+    "description": "Recent activity header."
+  },
+  "progressSourcesRow": "Sources",
+  "@progressSourcesRow": {
+    "description": "Row that opens Sources."
+  },
+  "progressSourcesHint": "Walks, runs and rides you record will appear on Progress.",
+  "@progressSourcesHint": {
+    "description": "Hint under the Sources row."
+  },
+  "activityJournalFailed": "Activity history on this device could not be opened.",
+  "@activityJournalFailed": {
+    "description": "Error when the activity journal cannot be opened."
+  },
+  "activityJournalRetry": "Try again",
+  "@activityJournalRetry": {
+    "description": "Retry button for the activity journal."
+  },
+  "activityNoData": "No data",
+  "@activityNoData": {
+    "description": "Shown instead of a missing value."
+  },
+  "activityEstimate": "Estimate",
+  "@activityEstimate": {
+    "description": "Label that marks an estimated value."
+  },
+  "activityStreamLost": "Route not available on this device",
+  "@activityStreamLost": {
+    "description": "Shown when the route stream is missing."
+  },
+  "activityTimeFrom": "{n, plural, one{Time from {k} of {n} session} other{Time from {k} of {n} sessions}}",
+  "@activityTimeFrom": {
+    "description": "Note that a time total covers k of n sessions.",
+    "placeholders": {
+      "k": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sportGroupWalkHike": "Walk and hike",
+  "@sportGroupWalkHike": {
+    "description": "Sport group name."
+  },
+  "sportGroupRun": "Run",
+  "@sportGroupRun": {
+    "description": "Sport group name."
+  },
+  "sportGroupRide": "Ride",
+  "@sportGroupRide": {
+    "description": "Sport group name."
+  },
+  "sportGroupSwim": "Swim",
+  "@sportGroupSwim": {
+    "description": "Sport group name."
+  },
+  "sportGroupRow": "Row",
+  "@sportGroupRow": {
+    "description": "Sport group name."
+  },
+  "sportGroupOther": "Other",
+  "@sportGroupOther": {
+    "description": "Sport group name."
+  },
+  "activitySourcesMore": "{k, plural, one{+{k} source} other{+{k} sources}}",
+  "@activitySourcesMore": {
+    "description": "Count of additional sources on a card.",
+    "placeholders": {
+      "k": {
+        "type": "int"
+      }
+    }
+  },
+  "sourceLabelApp": "Recorded in this app",
+  "@sourceLabelApp": {
+    "description": "Source label."
+  },
+  "sourceLabelHealthPlatform": "Health platform",
+  "@sourceLabelHealthPlatform": {
+    "description": "Source label."
+  },
+  "sourceLabelSensor": "Sensor",
+  "@sourceLabelSensor": {
+    "description": "Source label."
+  },
+  "sourceLabelService": "Service",
+  "@sourceLabelService": {
+    "description": "Source label."
+  },
+  "sourceLabelCompanionApp": "App",
+  "@sourceLabelCompanionApp": {
+    "description": "Source label."
+  },
+  "sourceLabelFileImport": "File import",
+  "@sourceLabelFileImport": {
+    "description": "Source label."
+  },
+  "sourceLabelUnknown": "Unknown source",
+  "@sourceLabelUnknown": {
+    "description": "Source label."
+  },
+  "syncChipPending": "Waiting to sync",
+  "@syncChipPending": {
+    "description": "Sync chip, only with the cloud flag on."
+  },
+  "syncChipFailed": "Could not sync, will retry",
+  "@syncChipFailed": {
+    "description": "Sync chip, only with the cloud flag on."
+  },
+  "syncChipConflict": "Needs your decision",
+  "@syncChipConflict": {
+    "description": "Sync chip, only with the cloud flag on."
+  },
+  "sourcesTitle": "Sources",
+  "@sourcesTitle": {
+    "description": "Title of the Sources screen."
+  },
+  "sourcesIntro": "Your activity can come from this app, your phone or your devices.",
+  "@sourcesIntro": {
+    "description": "Intro of the Sources screen."
+  },
+  "sourceApp": "Recorded in this app",
+  "@sourceApp": {
+    "description": "Sources row."
+  },
+  "sourceHealthConnect": "Health Connect",
+  "@sourceHealthConnect": {
+    "description": "Sources row."
+  },
+  "sourceBle": "Bluetooth sensors",
+  "@sourceBle": {
+    "description": "Sources row."
+  },
+  "sourceWatch": "Watch",
+  "@sourceWatch": {
+    "description": "Sources row."
+  },
+  "sourceOther": "Other services",
+  "@sourceOther": {
+    "description": "Sources row."
+  },
+  "sourceStatusInUse": "In use",
+  "@sourceStatusInUse": {
+    "description": "Source status."
+  },
+  "sourceStatusReady": "Ready",
+  "@sourceStatusReady": {
+    "description": "Source status."
+  },
+  "sourceStatusNotConnected": "Not connected",
+  "@sourceStatusNotConnected": {
+    "description": "Source status."
+  },
+  "sourceStatusNotActive": "Not active",
+  "@sourceStatusNotActive": {
+    "description": "Source status."
+  },
+  "sourceStatusPermission": "Permission needed",
+  "@sourceStatusPermission": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusUnavailable": "Unavailable on this device",
+  "@sourceStatusUnavailable": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusStale": "Out of date",
+  "@sourceStatusStale": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusError": "Problem",
+  "@sourceStatusError": {
+    "description": "Source status, shown later."
+  },
+  "sourceStatusConnected": "Connected",
+  "@sourceStatusConnected": {
+    "description": "Source status, shown later."
+  },
+  "sourcesNotActiveLine": "Activity history is not active in this build.",
+  "@sourcesNotActiveLine": {
+    "description": "Line shown when activity history is off."
+  },
+  "sourcesDedupNote": "If the same workout comes from two sources, we do not yet merge them automatically.",
+  "@sourcesDedupNote": {
+    "description": "Note about duplicate workouts."
+  },
+  "sourceStatusChecking": "Checking",
+  "@sourceStatusChecking": {
+    "description": "Source status while checking."
+  },
+  "signOutWarningTitle": "{n, plural, one{You have {n} activity stored only on this device} other{You have {n} activities stored only on this device}}",
+  "@signOutWarningTitle": {
+    "description": "Title of the sign-out warning; n is the count of local-only activities.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutExportFirst": "Export first (GPX/FIT)",
+  "@signOutExportFirst": {
+    "description": "Sign-out warning button."
+  },
+  "signOutAndDelete": "Sign out and delete from this device",
+  "@signOutAndDelete": {
+    "description": "Sign-out warning button."
+  },
+  "signOutCancel": "Cancel",
+  "@signOutCancel": {
+    "description": "Sign-out warning button."
+  },
+  "signOutConfirmDelete": "{n, plural, one{Delete {n} activity from this device? This cannot be undone.} other{Delete {n} activities from this device? This cannot be undone.}}",
+  "@signOutConfirmDelete": {
+    "description": "Second confirmation of the sign-out deletion.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "activityRecoveryNotice": "{n, plural, one{{n} activity could not be fully restored on this device} other{{n} activities could not be fully restored on this device}}",
+  "@activityRecoveryNotice": {
+    "description": "Notice on Sources and Progress: n activities could not be fully restored after a recovery.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sourceMayProvide": "May provide {list}",
+  "@sourceMayProvide": {
+    "description": "Sources row line; list is a joined list of capability names.",
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceCapSessionList": "workout history",
+  "@sourceCapSessionList": {
+    "description": "Capability name for the Sources line (session list)."
+  },
+  "sourceCapHeartRate": "heart rate",
+  "@sourceCapHeartRate": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapSpeedPace": "speed and pace",
+  "@sourceCapSpeedPace": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapCadence": "cadence",
+  "@sourceCapCadence": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapPower": "power",
+  "@sourceCapPower": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapGpsRoute": "GPS route",
+  "@sourceCapGpsRoute": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapStrokesLaps": "strokes and laps",
+  "@sourceCapStrokesLaps": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapSteps": "steps",
+  "@sourceCapSteps": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapSleep": "sleep",
+  "@sourceCapSleep": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapLiveStream": "live data",
+  "@sourceCapLiveStream": {
+    "description": "Capability name for the Sources line."
+  },
+  "sourceCapUnknown": "Unknown",
+  "@sourceCapUnknown": {
+    "description": "Sources line when no capability is known."
+  },
+  "signOutCannotCheckTitle": "We could not check the activity stored on this device",
+  "@signOutCannotCheckTitle": {
+    "description": "Title of the sign-out sheet when the journal cannot be counted."
+  },
+  "signOutCannotCheckBody": "If you sign out now, activity stored on this device may stay on it or be lost.",
+  "@signOutCannotCheckBody": {
+    "description": "Body of the cannot-check sign-out sheet."
+  },
+  "signOutAnyway": "Sign out anyway",
+  "@signOutAnyway": {
+    "description": "Button that signs out without checking local data."
+  },
+  "signOutPlain": "Sign out",
+  "@signOutPlain": {
+    "description": "Plain sign-out button."
+  },
+  "signOutErrorTitle": "Export or deletion failed. You are still signed in.",
+  "@signOutErrorTitle": {
+    "description": "Error title when export or wipe fails during sign-out."
+  },
+  "signOutDeleted": "Activity deleted from this device.",
+  "@signOutDeleted": {
+    "description": "Shown only after the wipe returned normally."
+  },
+  "activityStaleNotice": "Showing data from {time}",
+  "@activityStaleNotice": {
+    "description": "Progress line after a failed refresh; time is a formatted date or time.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMayBeIncomplete": "Totals may be incomplete",
+  "@activityMayBeIncomplete": {
+    "description": "Marker on totals while recovered or lost activities exist."
+  },
+  "activityTileSessions": "Sessions",
+  "@activityTileSessions": {
+    "description": "Label of the sessions row in an activity tile."
+  },
+  "activityTileTime": "Time",
+  "@activityTileTime": {
+    "description": "Label of the time row in an activity tile."
+  },
+  "activityTileDistance": "Distance",
+  "@activityTileDistance": {
+    "description": "Label of the distance row in an activity tile."
+  },
+  "activityDistanceFrom": "{n, plural, one{Distance from {k} of {n} session} other{Distance from {k} of {n} sessions}}",
+  "@activityDistanceFrom": {
+    "description": "Note that a distance total covers k of n sessions.",
+    "placeholders": {
+      "k": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "activityUnitKm": "km",
+  "@activityUnitKm": {
+    "description": "Kilometre unit label."
+  },
+  "activityTodayMore": "+{n} more",
+  "@activityTodayMore": {
+    "description": "Activity today card: how many more activities are not listed.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsRowTitle": "Record a GPS activity",
+  "@gpsRowTitle": {
+    "description": "Record sheet row that opens the GPS recorder."
+  },
+  "gpsRowBlocked": "Finish your unfinished recording first",
+  "@gpsRowBlocked": {
+    "description": "Record sheet row subtitle while an unfinished recording exists."
+  },
+  "gpsRowNoGps": "This device has no GPS",
+  "@gpsRowNoGps": {
+    "description": "Record sheet row subtitle on a device without GPS."
+  },
+  "gpsRowGymRunning": "Finish the workout timer first",
+  "@gpsRowGymRunning": {
+    "description": "Record sheet row subtitle while a gym timer of the same account runs."
+  },
+  "gpsStartTitle": "Record an activity",
+  "@gpsStartTitle": {
+    "description": "Title of the start screen."
+  },
+  "gpsSportWalk": "Walk",
+  "@gpsSportWalk": {
+    "description": "Sport chip: walk."
+  },
+  "gpsSportRun": "Run",
+  "@gpsSportRun": {
+    "description": "Sport chip: run."
+  },
+  "gpsSportHike": "Hike",
+  "@gpsSportHike": {
+    "description": "Sport chip: hike."
+  },
+  "gpsSportRide": "Ride",
+  "@gpsSportRide": {
+    "description": "Sport chip: ride."
+  },
+  "gpsAutoPause": "Auto-pause",
+  "@gpsAutoPause": {
+    "description": "Auto-pause switch label."
+  },
+  "gpsAutoPauseHint": "Pauses when you stop moving.",
+  "@gpsAutoPauseHint": {
+    "description": "Auto-pause switch hint."
+  },
+  "gpsPrivacyLine": "Location is recorded only while you record. It stays on this phone and only you can see it.",
+  "@gpsPrivacyLine": {
+    "description": "DRAFT location wording (text version gpsConsentTextVersion), awaiting approval."
+  },
+  "gpsStartButton": "Start",
+  "@gpsStartButton": {
+    "description": "Start button."
+  },
+  "gpsPrePromptReason": "To record your route we need your location while you record.",
+  "@gpsPrePromptReason": {
+    "description": "DRAFT pre-prompt reason before the system location dialog."
+  },
+  "gpsContinue": "Continue",
+  "@gpsContinue": {
+    "description": "Pre-prompt continue button."
+  },
+  "gpsNotNow": "Not now",
+  "@gpsNotNow": {
+    "description": "Pre-prompt dismiss button."
+  },
+  "gpsPrePromptPrecise": "On the next screen choose \"Precise\" so the route is accurate.",
+  "@gpsPrePromptPrecise": {
+    "description": "DRAFT pre-prompt hint about precise location."
+  },
+  "gpsStarting": "Starting...",
+  "@gpsStarting": {
+    "description": "Busy label of Start until the first state change."
+  },
+  "gpsPreparingBody": "Getting ready. One moment.",
+  "@gpsPreparingBody": {
+    "description": "Body of the preparing panel (S04-34)."
+  },
+  "gpsCannotStartTitle": "Cannot start yet",
+  "@gpsCannotStartTitle": {
+    "description": "Title of the cannot-start panel (S04-34)."
+  },
+  "gpsCannotStartBody": "The recording storage did not open. Try again, or add the activity by hand.",
+  "@gpsCannotStartBody": {
+    "description": "Body of the cannot-start panel (S04-34)."
+  },
+  "gpsStartFailedTitle": "Recording did not start",
+  "@gpsStartFailedTitle": {
+    "description": "Title of the start-failed panel (S04-34)."
+  },
+  "gpsStartFailedBody": "Nothing was recorded. Try again, or add the activity by hand.",
+  "@gpsStartFailedBody": {
+    "description": "Body of the start-failed panel (S04-34)."
+  },
+  "gpsConsentOffTitle": "Location recording is switched off",
+  "@gpsConsentOffTitle": {
+    "description": "Title of the consent-withdrawn panel."
+  },
+  "gpsConsentOffBody": "You withdrew consent to record location. Turn it on in privacy settings to record.",
+  "@gpsConsentOffBody": {
+    "description": "Body of the consent-withdrawn panel."
+  },
+  "gpsRestrictedTitle": "Location is restricted",
+  "@gpsRestrictedTitle": {
+    "description": "Title of the restricted-permission panel."
+  },
+  "gpsRestrictedBody": "Location access is restricted on this phone (for example by parental controls or your organisation), so the app cannot ask for it. You can add the activity by hand.",
+  "@gpsRestrictedBody": {
+    "description": "Body of the restricted-permission panel."
+  },
+  "gpsOpenPrivacySettings": "Open privacy settings",
+  "@gpsOpenPrivacySettings": {
+    "description": "Button of the consent-withdrawn panel."
+  },
+  "gpsResumeModeTitle": "Resume your recording",
+  "@gpsResumeModeTitle": {
+    "description": "Title of the start screen in resume mode."
+  },
+  "gpsOpenRecording": "Open recording",
+  "@gpsOpenRecording": {
+    "description": "Record sheet action while a recording runs."
+  },
+  "gpsOpenWorkout": "Open workout",
+  "@gpsOpenWorkout": {
+    "description": "Action that opens the running gym workout."
+  },
+  "gpsDeniedOnceTitle": "Location is off",
+  "@gpsDeniedOnceTitle": {
+    "description": "Title of the denied-once panel."
+  },
+  "gpsDeniedOnceBody": "Without location we cannot record a route. You can try again or add the activity by hand.",
+  "@gpsDeniedOnceBody": {
+    "description": "Body of the denied-once panel."
+  },
+  "gpsDeniedForeverBody": "Location is blocked for this app. Allow it in system settings, or add the activity by hand.",
+  "@gpsDeniedForeverBody": {
+    "description": "Body of the permanently-denied panel."
+  },
+  "gpsApproxTitle": "Precise location is needed",
+  "@gpsApproxTitle": {
+    "description": "Title of the approximate-only panel."
+  },
+  "gpsApproxBody": "You allowed only approximate location. A route needs precise location to be accurate.",
+  "@gpsApproxBody": {
+    "description": "Body of the approximate-only panel."
+  },
+  "gpsServicesOffTitle": "Location services are off",
+  "@gpsServicesOffTitle": {
+    "description": "Title of the services-off panel."
+  },
+  "gpsServicesOffBody": "Turn on location in your phone settings to record.",
+  "@gpsServicesOffBody": {
+    "description": "Body of the services-off panel."
+  },
+  "gpsNoGpsBody": "This device has no GPS, so it cannot record a route. You can add activities by hand.",
+  "@gpsNoGpsBody": {
+    "description": "Body of the no-GPS panel."
+  },
+  "gpsBlockedBody": "You have an unfinished recording. Review it before starting a new one.",
+  "@gpsBlockedBody": {
+    "description": "Body of the unfinished-recording-blocks-start panel."
+  },
+  "gpsBatteryTooLow": "Battery is too low to record (3 % or less). Charge the phone first.",
+  "@gpsBatteryTooLow": {
+    "description": "Start refused because the battery is at or below 3 percent."
+  },
+  "gpsBatteryStartNote": "Battery is at {n} %. Recording saves and stops at 3 %.",
+  "@gpsBatteryStartNote": {
+    "description": "Note on the start screen when the battery is low; the percent sign has a space in Russian.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsTryAgain": "Try again",
+  "@gpsTryAgain": {
+    "description": "Button."
+  },
+  "gpsAddManually": "Add manually",
+  "@gpsAddManually": {
+    "description": "Button that opens manual entry."
+  },
+  "gpsOpenSettings": "Open settings",
+  "@gpsOpenSettings": {
+    "description": "Button that opens the system app settings."
+  },
+  "gpsOpenLocationSettings": "Open location settings",
+  "@gpsOpenLocationSettings": {
+    "description": "Button that opens the system location settings."
+  },
+  "gpsReview": "Review",
+  "@gpsReview": {
+    "description": "Button that opens the recovery offer."
+  },
+  "gpsNotifReason": "A notification shows while you record, so you can always see that location is in use.",
+  "@gpsNotifReason": {
+    "description": "Reason shown before the notification permission request."
+  },
+  "gpsNotifOffTitle": "Notifications are off",
+  "@gpsNotifOffTitle": {
+    "description": "Title of the notifications-off panel (variant A)."
+  },
+  "gpsNotifOffBody": "Recording needs its notification so you can always see that location is in use. Turn notifications on to record.",
+  "@gpsNotifOffBody": {
+    "description": "Body of the notifications-off panel (variant A)."
+  },
+  "gpsAllowNotif": "Allow notifications",
+  "@gpsAllowNotif": {
+    "description": "Button of the notifications-off panel."
+  },
+  "gpsRecordWithoutNotif": "Record without notification",
+  "@gpsRecordWithoutNotif": {
+    "description": "Variant B button, used only if the operator chooses variant B."
+  },
+  "gpsNotifOffBanner": "The notification is hidden. Recording shows only in this app.",
+  "@gpsNotifOffBanner": {
+    "description": "Variant B banner, used only if the operator chooses variant B."
+  },
+  "gpsBgAskTitle": "Allow location in the background?",
+  "@gpsBgAskTitle": {
+    "description": "Title of the background-location ask (only if the background branch is built)."
+  },
+  "gpsBgAskBody": "On the next screen choose \"Allow all the time\" so location keeps working if the app is closed. You can record without it.",
+  "@gpsBgAskBody": {
+    "description": "Body of the background-location ask."
+  },
+  "gpsBgDisclosure": "This app collects location data to record your route, also when the app is closed or not in use.",
+  "@gpsBgDisclosure": {
+    "description": "DRAFT Play prominent-disclosure text for background location (S04-38)."
+  },
+  "gpsHeadAcquiring": "Looking for GPS signal",
+  "@gpsHeadAcquiring": {
+    "description": "Headline: acquiring."
+  },
+  "gpsHeadRecording": "Recording",
+  "@gpsHeadRecording": {
+    "description": "Headline: recording."
+  },
+  "gpsHeadWeak": "Weak GPS signal",
+  "@gpsHeadWeak": {
+    "description": "Headline: weak signal."
+  },
+  "gpsHeadPaused": "Paused",
+  "@gpsHeadPaused": {
+    "description": "Headline: manual pause."
+  },
+  "gpsHeadAutoPaused": "Auto-paused",
+  "@gpsHeadAutoPaused": {
+    "description": "Headline: auto-pause."
+  },
+  "gpsAcquiringHint": "Go outside with a clear view of the sky. Time starts at the first signal.",
+  "@gpsAcquiringHint": {
+    "description": "Hint while acquiring."
+  },
+  "gpsAcquiringLong": "Still looking. Move to open sky. You can keep waiting or stop.",
+  "@gpsAcquiringLong": {
+    "description": "Hint after a long acquire."
+  },
+  "gpsWeakHint": "Distance is not counted until the signal improves.",
+  "@gpsWeakHint": {
+    "description": "Hint while the signal is weak."
+  },
+  "gpsPausedHint": "Time and distance are not counting. Location stays on.",
+  "@gpsPausedHint": {
+    "description": "Hint while paused; says that location stays on (S04-36 AC-3)."
+  },
+  "gpsPausedLongBanner": "Paused for 30 minutes. Location is still on. Resume or finish.",
+  "@gpsPausedLongBanner": {
+    "description": "Banner after 30 minutes of manual pause (S04-36 AC-2)."
+  },
+  "gpsWeakLongHint": "No signal for a while. Check that location is on in your phone settings.",
+  "@gpsWeakLongHint": {
+    "description": "Hint after a long weak-signal stretch."
+  },
+  "gpsPauseDisabledHint": "Nothing to pause yet.",
+  "@gpsPauseDisabledHint": {
+    "description": "Semantics hint of the disabled pause button."
+  },
+  "gpsStopHint": "Opens the options to finish or discard. Recording continues until you choose.",
+  "@gpsStopHint": {
+    "description": "Semantics hint of the Stop button."
+  },
+  "gpsBannerShortBattery": "Low battery",
+  "@gpsBannerShortBattery": {
+    "description": "Short banner label: battery."
+  },
+  "gpsBannerShortStorage": "Storage full",
+  "@gpsBannerShortStorage": {
+    "description": "Short banner label: storage."
+  },
+  "gpsBannerShortLongPause": "Long pause",
+  "@gpsBannerShortLongPause": {
+    "description": "Short banner label: long pause."
+  },
+  "gpsAutoPausedHint": "You stopped moving. Recording continues when you start again.",
+  "@gpsAutoPausedHint": {
+    "description": "Hint while auto-paused."
+  },
+  "gpsSignal": "GPS signal: {level, select, none{None} weak{Weak} good{Good} other{None}}",
+  "@gpsSignal": {
+    "description": "Signal indicator text; level is none, weak or good.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsChipOffline": "Offline: recording continues",
+  "@gpsChipOffline": {
+    "description": "Chip: offline."
+  },
+  "gpsChipBackground": "Recording continued while the app was closed",
+  "@gpsChipBackground": {
+    "description": "Chip: recording ran in the background."
+  },
+  "gpsDetails": "Details",
+  "@gpsDetails": {
+    "description": "Details toggle."
+  },
+  "gpsGymTimerRow": "Workout timer is running. Open",
+  "@gpsGymTimerRow": {
+    "description": "Row that opens the running gym timer."
+  },
+  "gpsPause": "Pause",
+  "@gpsPause": {
+    "description": "Button."
+  },
+  "gpsResume": "Resume",
+  "@gpsResume": {
+    "description": "Button."
+  },
+  "gpsStop": "Stop",
+  "@gpsStop": {
+    "description": "Button."
+  },
+  "gpsBackLabel": "Back to the app. Recording continues.",
+  "@gpsBackLabel": {
+    "description": "Semantics label of the back button on the recording screen."
+  },
+  "gpsStripRecording": "Recording",
+  "@gpsStripRecording": {
+    "description": "Dock strip word: recording."
+  },
+  "gpsStripAcquiring": "Looking for GPS",
+  "@gpsStripAcquiring": {
+    "description": "Dock strip word: acquiring."
+  },
+  "gpsStripWeak": "Weak GPS signal",
+  "@gpsStripWeak": {
+    "description": "Dock strip word: weak signal."
+  },
+  "gpsStripPausedManual": "Paused",
+  "@gpsStripPausedManual": {
+    "description": "Dock strip word: manual pause."
+  },
+  "gpsStripPausedAuto": "Auto-paused",
+  "@gpsStripPausedAuto": {
+    "description": "Dock strip word: auto-pause."
+  },
+  "gpsStripUnfinished": "Unfinished recording",
+  "@gpsStripUnfinished": {
+    "description": "Dock strip word: unfinished recording."
+  },
+  "gpsStripNotRestored": "Recording unreadable",
+  "@gpsStripNotRestored": {
+    "description": "Dock strip word: recovery failed."
+  },
+  "gpsStripRevoked": "Location off: choose",
+  "@gpsStripRevoked": {
+    "description": "Dock strip word: permission revoked (22 characters in Russian, within the strip budget)."
+  },
+  "gpsStripOpenHint": "Tap to open",
+  "@gpsStripOpenHint": {
+    "description": "Semantics hint of the dock strip."
+  },
+  "gpsRailSearch": "Search",
+  "@gpsRailSearch": {
+    "description": "Rail word: acquiring."
+  },
+  "gpsRailRec": "Rec",
+  "@gpsRailRec": {
+    "description": "Rail word: recording."
+  },
+  "gpsRailWeak": "Weak",
+  "@gpsRailWeak": {
+    "description": "Rail word: weak signal."
+  },
+  "gpsRailPaused": "Paused",
+  "@gpsRailPaused": {
+    "description": "Rail word: manual pause."
+  },
+  "gpsRailAuto": "Auto",
+  "@gpsRailAuto": {
+    "description": "Rail word: auto-pause."
+  },
+  "gpsRailWaiting": "Waiting",
+  "@gpsRailWaiting": {
+    "description": "Rail word: unfinished recording."
+  },
+  "gpsRailProblem": "Problem",
+  "@gpsRailProblem": {
+    "description": "Rail word: recovery failed."
+  },
+  "gpsRailChoose": "Choose",
+  "@gpsRailChoose": {
+    "description": "Rail word: permission revoked."
+  },
+  "gpsBatteryBanner": "Battery low ({n} %). GPS updates less often to save power. Recording saves and stops at 3 %.",
+  "@gpsBatteryBanner": {
+    "description": "Banner at battery critical.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsStorageBanner": "Phone storage is almost full. Recording will save and stop soon.",
+  "@gpsStorageBanner": {
+    "description": "Banner when storage writes fail."
+  },
+  "gpsStopTitle": "Stop recording?",
+  "@gpsStopTitle": {
+    "description": "Stop panel header."
+  },
+  "gpsStopStillRecording": "Still recording until you choose.",
+  "@gpsStopStillRecording": {
+    "description": "Stop panel line."
+  },
+  "gpsFinishSave": "Finish and save",
+  "@gpsFinishSave": {
+    "description": "Stop panel button."
+  },
+  "gpsKeepRecording": "Keep recording",
+  "@gpsKeepRecording": {
+    "description": "Stop panel button."
+  },
+  "gpsDiscard": "Discard",
+  "@gpsDiscard": {
+    "description": "Stop panel button."
+  },
+  "gpsDiscardConfirm": "Delete this recording? {distance} and {time} will be lost. This cannot be undone.",
+  "@gpsDiscardConfirm": {
+    "description": "Discard confirmation.",
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsDelete": "Delete",
+  "@gpsDelete": {
+    "description": "Button."
+  },
+  "gpsKeep": "Keep",
+  "@gpsKeep": {
+    "description": "Button."
+  },
+  "gpsNothingRecorded": "No GPS points were recorded, so nothing was saved.",
+  "@gpsNothingRecorded": {
+    "description": "Finish screen when the recording has no points."
+  },
+  "gpsSavedTitle": "Activity saved",
+  "@gpsSavedTitle": {
+    "description": "Finish screen title."
+  },
+  "gpsSavedOnDevice": "Saved on this phone. It is not shared.",
+  "@gpsSavedOnDevice": {
+    "description": "Saved-on-device notice (S04-28 AC-2); removed only by the sprint that enables upload."
+  },
+  "gpsReasonSampleCap": "Stopped: the recording reached its size limit",
+  "@gpsReasonSampleCap": {
+    "description": "Stop reason line: sample cap."
+  },
+  "gpsReasonConsent": "Stopped: consent was withdrawn",
+  "@gpsReasonConsent": {
+    "description": "Stop reason line: consent withdrawn."
+  },
+  "gpsReasonAccount": "Stopped: you were signed out",
+  "@gpsReasonAccount": {
+    "description": "Stop reason line: account change."
+  },
+  "gpsReasonBattery": "Stopped: battery reached 3 %",
+  "@gpsReasonBattery": {
+    "description": "Stop reason line: battery."
+  },
+  "gpsReasonRevoked": "Stopped: location access was turned off",
+  "@gpsReasonRevoked": {
+    "description": "Stop reason line: permission revoked."
+  },
+  "gpsReasonStorage": "Stopped: phone storage was full",
+  "@gpsReasonStorage": {
+    "description": "Stop reason line: storage."
+  },
+  "gpsNoData": "No data",
+  "@gpsNoData": {
+    "description": "Visible placeholder of an empty summary value."
+  },
+  "gpsNoDataSpoken": "No data available",
+  "@gpsNoDataSpoken": {
+    "description": "Spoken form of gpsNoData."
+  },
+  "gpsSaveFailed": "We could not save the activity. Your recording is kept on this phone.",
+  "@gpsSaveFailed": {
+    "description": "Hand-off failed message."
+  },
+  "gpsDone": "Done",
+  "@gpsDone": {
+    "description": "Button."
+  },
+  "gpsRestoringLoading": "Checking your recording",
+  "@gpsRestoringLoading": {
+    "description": "Loading text while restoring."
+  },
+  "gpsRecoveryTitle": "Unfinished recording",
+  "@gpsRecoveryTitle": {
+    "description": "Recovery offer title."
+  },
+  "gpsRecoveryBody": "The app closed while you were recording. Kept: {time}, {distance}.",
+  "@gpsRecoveryBody": {
+    "description": "Recovery offer body.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsRecoveryAge": "Last point recorded {ago} ago.",
+  "@gpsRecoveryAge": {
+    "description": "Recovery offer age line; ago is composed from the gpsUnit* keys.",
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsRecoveryCaveat": "The last few seconds may be missing.",
+  "@gpsRecoveryCaveat": {
+    "description": "Recovery offer caveat."
+  },
+  "gpsResumeGapNote": "The time between is not counted and no distance is added for it.",
+  "@gpsResumeGapNote": {
+    "description": "Note about the gap on resume (also named gpsResumeNote in the contract)."
+  },
+  "gpsResumeNeedsPermission": "Resuming needs location access.",
+  "@gpsResumeNeedsPermission": {
+    "description": "Resume refused without permission."
+  },
+  "gpsRecoveryResume": "Resume",
+  "@gpsRecoveryResume": {
+    "description": "Recovery offer button."
+  },
+  "gpsRecoverySaveFinished": "Save as finished",
+  "@gpsRecoverySaveFinished": {
+    "description": "Recovery offer button."
+  },
+  "gpsRecoveryFailedTitle": "This recording could not be read",
+  "@gpsRecoveryFailedTitle": {
+    "description": "Recovery-failed title."
+  },
+  "gpsRecoveryFailedBody": "The saved file is damaged. We did not change it. You can keep it on this phone or delete it.",
+  "@gpsRecoveryFailedBody": {
+    "description": "Recovery-failed body."
+  },
+  "gpsDeleteFile": "Delete file",
+  "@gpsDeleteFile": {
+    "description": "Button."
+  },
+  "gpsKeepFile": "Keep file",
+  "@gpsKeepFile": {
+    "description": "Button."
+  },
+  "gpsRevokedTitle": "Location access was turned off",
+  "@gpsRevokedTitle": {
+    "description": "Permission-revoked title."
+  },
+  "gpsRevokedBody": "Recording stopped. Saved up to {clock}: {time}, {distance}.",
+  "@gpsRevokedBody": {
+    "description": "Permission-revoked body.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsRevokedNotif": "Location was turned off. Your recording was saved up to {clock}. Tap to choose what to do.",
+  "@gpsRevokedNotif": {
+    "description": "Notification text when permission is revoked.",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifTitle": "{sport, select, walk{Recording: Walk} run{Recording: Run} hike{Recording: Hike} ride{Recording: Ride} other{Recording}}",
+  "@gpsNotifTitle": {
+    "description": "Notification title (owner-visible version); sport is walk, run, hike or ride.",
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifAcquiring": "{sport, select, walk{Looking for GPS signal: Walk} run{Looking for GPS signal: Run} hike{Looking for GPS signal: Hike} ride{Looking for GPS signal: Ride} other{Looking for GPS signal}}",
+  "@gpsNotifAcquiring": {
+    "description": "Notification title while acquiring.",
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifBody": "{time} · {distance}",
+  "@gpsNotifBody": {
+    "description": "Notification text while recording; never coordinates.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifPaused": "Paused · {time}",
+  "@gpsNotifPaused": {
+    "description": "Notification text while paused.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifPrivate": "Recording in progress",
+  "@gpsNotifPrivate": {
+    "description": "Public (lock-screen) notification text: no sport, time, distance, coordinates or actions (S04-32)."
+  },
+  "gpsNotifPause": "Pause",
+  "@gpsNotifPause": {
+    "description": "Notification action."
+  },
+  "gpsNotifResume": "Resume",
+  "@gpsNotifResume": {
+    "description": "Notification action."
+  },
+  "gpsNotifFinish": "Finish...",
+  "@gpsNotifFinish": {
+    "description": "Notification action; opens the stop panel and stops nothing."
+  },
+  "gpsAutoStopNotif": "Recording stopped and saved: {reason, select, battery{battery reached 3 %} storage{phone storage was full} sampleCap{the recording reached its size limit} consent{consent was withdrawn} other{stopped}}. {time}, {distance}.",
+  "@gpsAutoStopNotif": {
+    "description": "Automatic-stop notification (S04-35); reason is battery, storage, sampleCap or consent.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsNotifDetached": "Recording is not running. Tap to open the app.",
+  "@gpsNotifDetached": {
+    "description": "Notification text after the engine detached (S04-37)."
+  },
+  "gpsPzTitle": "Privacy zone",
+  "@gpsPzTitle": {
+    "description": "Settings row title."
+  },
+  "gpsPzValue": "Hidden around the start and end when you share: {n} m (default)",
+  "@gpsPzValue": {
+    "description": "Settings row value; the default radius in metres.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsPzNote": "The default applies when you share a route. It is not applied in this version, and nothing is shared.",
+  "@gpsPzNote": {
+    "description": "Settings row note."
+  },
+  "gpsConsentTitle": "Location recording consent",
+  "@gpsConsentTitle": {
+    "description": "Consent row title."
+  },
+  "gpsConsentOn": "Allowed (version {v})",
+  "@gpsConsentOn": {
+    "description": "Consent row state: granted.",
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsConsentOff": "Withdrawn",
+  "@gpsConsentOff": {
+    "description": "Consent row state: withdrawn."
+  },
+  "gpsConsentWithdrawConfirm": "Withdraw consent? You will not be able to start a recording. A recording in progress will stop and be kept.",
+  "@gpsConsentWithdrawConfirm": {
+    "description": "Inline withdraw confirmation."
+  },
+  "gpsConsentNone": "Not given yet. You will be asked when you first start a recording.",
+  "@gpsConsentNone": {
+    "description": "Consent row state: never consented."
+  },
+  "gpsConsentDeleteData": "Delete my location data",
+  "@gpsConsentDeleteData": {
+    "description": "Link row to the existing data-deletion path."
+  },
+  "gpsConsentWithdraw": "Withdraw",
+  "@gpsConsentWithdraw": {
+    "description": "Button and switch label."
+  },
+  "gpsConsentGrant": "Allow again",
+  "@gpsConsentGrant": {
+    "description": "Button and switch label."
+  },
+  "gpsConsentLinks": "What is stored and who sees it",
+  "@gpsConsentLinks": {
+    "description": "Link row to the privacy statement."
+  },
+  "gpsConsentTextVersion": "draft-1",
+  "@gpsConsentTextVersion": {
+    "description": "Text version of the DRAFT location wording (gpsPrivacyLine, gpsPrePromptReason, gpsPrePromptPrecise, gpsSignOutNotice, gpsBgDisclosure). Not translated. Must equal kLocationConsentTextVersion in recording_defaults.dart (S04-21 AC-3); bump both when the wording changes."
+  },
+  "gpsDecisionInProgress": "Decision in progress. Try again in a moment.",
+  "@gpsDecisionInProgress": {
+    "description": "Shown while a keep/delete decision is being written."
+  },
+  "gpsAlreadyKept": "Already saved to your history. To remove it, delete the activity there.",
+  "@gpsAlreadyKept": {
+    "description": "Shown when Delete follows Keep."
+  },
+  "gpsAlreadyDeleted": "Already deleted.",
+  "@gpsAlreadyDeleted": {
+    "description": "Shown when Keep follows Delete."
+  },
+  "gpsSignOutNotice": "Your unfinished recording could not be saved to your history. It stays encrypted on this phone in your account for up to 30 days and only you can open it.",
+  "@gpsSignOutNotice": {
+    "description": "DRAFT sign-out sheet text when the recording stays on the device."
+  },
+  "gpsSignOutRecordingCount": "{n, plural, one{{n} unfinished recording} other{{n} unfinished recordings}}",
+  "@gpsSignOutRecordingCount": {
+    "description": "Sign-out warning sheet: how many recordings stay on the phone.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsGenericError": "Something went wrong. Your recording is kept on this phone.",
+  "@gpsGenericError": {
+    "description": "Content-free generic error text."
+  },
+  "gpsAnnAcquiring": "Looking for GPS signal",
+  "@gpsAnnAcquiring": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnStarted": "Recording started",
+  "@gpsAnnStarted": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnWeak": "Weak GPS signal. Distance is paused.",
+  "@gpsAnnWeak": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnSignalBack": "GPS signal is back",
+  "@gpsAnnSignalBack": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnPaused": "Recording paused",
+  "@gpsAnnPaused": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnResumed": "Recording resumed",
+  "@gpsAnnResumed": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnAutoPaused": "Auto-paused",
+  "@gpsAnnAutoPaused": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnAutoResumed": "Recording resumed after auto-pause",
+  "@gpsAnnAutoResumed": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnOffline": "Offline. Recording continues.",
+  "@gpsAnnOffline": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnBackgroundReturn": "Recording continued while the app was closed",
+  "@gpsAnnBackgroundReturn": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnBattery": "Battery low, {n} percent. Recording saves and stops at 3 percent.",
+  "@gpsAnnBattery": {
+    "description": "Announcement (assertive).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsAnnBatteryFinish": "Recording stopped and saved because the battery reached 3 percent",
+  "@gpsAnnBatteryFinish": {
+    "description": "Announcement (assertive)."
+  },
+  "gpsAnnRevoked": "Location access turned off. Recording saved up to {clock}.",
+  "@gpsAnnRevoked": {
+    "description": "Announcement (assertive).",
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsAnnSaved": "Activity saved",
+  "@gpsAnnSaved": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnDiscarded": "Recording deleted",
+  "@gpsAnnDiscarded": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnUnfinished": "Unfinished recording found",
+  "@gpsAnnUnfinished": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnResumedRecovered": "Recording resumed. The gap is not counted.",
+  "@gpsAnnResumedRecovered": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnRecoveryFailed": "The recording could not be read",
+  "@gpsAnnRecoveryFailed": {
+    "description": "Announcement (assertive)."
+  },
+  "gpsAnnPausedLong": "Paused for 30 minutes. Location is still on.",
+  "@gpsAnnPausedLong": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnStarting": "Starting",
+  "@gpsAnnStarting": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnStartFailed": "Recording did not start",
+  "@gpsAnnStartFailed": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnRestricted": "Location is restricted on this phone. You can add the activity by hand.",
+  "@gpsAnnRestricted": {
+    "description": "Announcement (polite)."
+  },
+  "gpsAnnAutoStopped": "Recording stopped and saved: {reason, select, battery{battery reached 3 %} storage{phone storage was full} sampleCap{the recording reached its size limit} consent{consent was withdrawn} other{stopped}}",
+  "@gpsAnnAutoStopped": {
+    "description": "Announcement (assertive); reason is battery, storage, sampleCap or consent.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsUnitHours": "{n, plural, one{{n} hour} other{{n} hours}}",
+  "@gpsUnitHours": {
+    "description": "Spoken hours.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitMinutes": "{n, plural, one{{n} minute} other{{n} minutes}}",
+  "@gpsUnitMinutes": {
+    "description": "Spoken minutes.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitSeconds": "{n, plural, one{{n} second} other{{n} seconds}}",
+  "@gpsUnitSeconds": {
+    "description": "Spoken seconds.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitDays": "{n, plural, one{{n} day} other{{n} days}}",
+  "@gpsUnitDays": {
+    "description": "Spoken days (recovery age).",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsUnitKm": "{d, plural, one{{d} kilometre} other{{d} kilometres}}",
+  "@gpsUnitKm": {
+    "description": "Spoken kilometres; d is a number.",
+    "placeholders": {
+      "d": {
+        "type": "num"
+      }
+    }
+  },
+  "gpsUnitMeters": "{d, plural, one{{d} metre} other{{d} metres}}",
+  "@gpsUnitMeters": {
+    "description": "Spoken metres; d is a number.",
+    "placeholders": {
+      "d": {
+        "type": "num"
+      }
+    }
+  },
+  "gpsUnitPercent": "{n, plural, one{{n} percent} other{{n} percent}}",
+  "@gpsUnitPercent": {
+    "description": "Spoken percent.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsPaceSpoken": "{p} per kilometre",
+  "@gpsPaceSpoken": {
+    "description": "Spoken pace.",
+    "placeholders": {
+      "p": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsSummarySpoken": "Moving time {time}, distance {distance}, pace {pace}",
+  "@gpsSummarySpoken": {
+    "description": "Spoken summary node.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      },
+      "pace": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsStripLabel": "{state}, {sport}, {minutes}",
+  "@gpsStripLabel": {
+    "description": "Semantics label of the dock strip.",
+    "placeholders": {
+      "state": {
+        "type": "String"
+      },
+      "sport": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsManualTitle": "Add an activity",
+  "@gpsManualTitle": {
+    "description": "Manual entry screen title."
+  },
+  "gpsManualSport": "Sport",
+  "@gpsManualSport": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualStart": "Start",
+  "@gpsManualStart": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualDuration": "Duration",
+  "@gpsManualDuration": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualHours": "Hours",
+  "@gpsManualHours": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualMinutes": "Minutes",
+  "@gpsManualMinutes": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualDistance": "Distance, km (optional)",
+  "@gpsManualDistance": {
+    "description": "Manual entry field label."
+  },
+  "gpsManualErrDuration": "Enter a duration longer than zero",
+  "@gpsManualErrDuration": {
+    "description": "Manual entry inline error."
+  },
+  "gpsManualErrFuture": "The start time cannot be in the future",
+  "@gpsManualErrFuture": {
+    "description": "Manual entry inline error."
+  },
+  "gpsManualErrDistance": "Enter a distance between 0.01 and 1000 km",
+  "@gpsManualErrDistance": {
+    "description": "Manual entry inline error (bounds PROPOSED)."
+  },
+  "gpsManualSave": "Save",
+  "@gpsManualSave": {
+    "description": "Manual entry button."
+  },
+  "gpsManualCancel": "Cancel",
+  "@gpsManualCancel": {
+    "description": "Manual entry button."
+  },
+  "gpsManualDiscardChanges": "Discard changes?",
+  "@gpsManualDiscardChanges": {
+    "description": "Inline step when leaving a changed form."
+  },
+  "gpsManualSaved": "Activity added",
+  "@gpsManualSaved": {
+    "description": "Confirmation line on the origin screen."
+  },
+  "gpsLabelMovingTime": "Moving time",
+  "@gpsLabelMovingTime": {"description": "Summary metric label."},
+  "gpsLabelElapsed": "Elapsed time",
+  "@gpsLabelElapsed": {"description": "Summary metric label."},
+  "gpsLabelDistance": "Distance",
+  "@gpsLabelDistance": {"description": "Summary metric label."},
+  "gpsLabelAvgPace": "Avg pace",
+  "@gpsLabelAvgPace": {"description": "Summary metric label."},
+  "gpsLabelAvgSpeed": "Avg speed",
+  "@gpsLabelAvgSpeed": {"description": "Summary metric label."},
+  "gpsLabelAscent": "Ascent",
+  "@gpsLabelAscent": {"description": "Summary metric label."},
+  "gpsLabelDescent": "Descent",
+  "@gpsLabelDescent": {"description": "Summary metric label."},
+  "gpsManualEnteredByHand": "Entered by hand",
+  "@gpsManualEnteredByHand": {
+    "description": "Source label of a manual activity."
+  },
+  "gpsSafetyGapNote": "Low-battery protection and the location-services check are not active in this build.",
+  "@gpsSafetyGapNote": {
+    "description": "Start screen note while the battery monitor or location-services probe is a placeholder."
+  },
+  "gpsConsentWithdrawFailed": "We could not save your choice. Location recording is off for now, but may turn on again after a restart. Try again.",
+  "@gpsConsentWithdrawFailed": {
+    "description": "Shown when withdrawing location consent was not saved; the toggle keeps its true state."
   }
 }

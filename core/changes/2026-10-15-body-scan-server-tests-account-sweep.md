@@ -1,0 +1,7 @@
+# C12 server tests: body-scan storage sweep in account deletion
+
+Date: 2026-10-15. Extended existing files: `functions/src/__tests__/delete_account.test.ts` (+14 tests, 67 total) and `functions/src/__tests__/account_deletion_reconcile.test.ts` (+8 tests, 42 total). Both gained a `firebase-admin/storage` mock (only `bucket(name).deleteFiles`), a per-test reset and `BODY_SCAN_BUCKET` cleanup; no existing test was changed.
+
+Covers `sweepAccountData` -> `sweepBodyScanObjects`: bucket unset or malformed = logged no-op with no storage call; success = `deleteFiles({prefix: users/<uid>/, force: true})` on the configured bucket in the Step 2 sweep and the final sweep, storage strictly after the three Firestore sweeps; 404 (single or array of 404s) = nothing to delete; 403/500/no code/mixed arrays = throw after the Firestore sweep completed, so Step 2 aborts before the Auth user is deleted (no intent record yet) and the logged error carries no object path; final-sweep failure = `finalCleanup: "scheduled"` and the retry record persists with the bare code (`403`), no delete of the record; reconciler: success, unset, 404s, 403 (record persists, attempts 2, backoff 30 min, not retried early, finished after recovery), mixed array records the first code, no code = `unknown`, and the deleteAccount -> reconciler hand-over.
+
+Verification: `npx jest src/__tests__/delete_account.test.ts src/__tests__/account_deletion_reconcile.test.ts` in `functions/`: delete_account 67 passed, account_deletion_reconcile 42 passed, 0 failed. No production code changed.

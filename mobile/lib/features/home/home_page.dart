@@ -1,3 +1,6 @@
+import 'dart:async' show unawaited;
+
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +16,8 @@ import '../../shared/widgets/hud/hud_metric.dart';
 import '../../shared/widgets/hud/hud_scaffold.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
+import '../body_scan/widgets/body_scan_entry_card.dart';
+import '../nutrition_plan/widgets/nutrition_entry_card.dart';
 import '../moments/data/moment.dart';
 import '../moments/state/moment_providers.dart';
 import '../moments/widgets/day3_welcome_modal.dart';
@@ -29,6 +34,16 @@ import '../workouts/data/session_digest.dart';
 import '../workouts/state/day_result_providers.dart';
 import '../workouts/state/session_digest_providers.dart';
 import '../workouts/state/session_screening_providers.dart';
+import '../../core/router/s03_routes.dart' show kModeChooserPath;
+import '../../shared/widgets/shell_scroll.dart' show ShellScrollbar;
+import '../activity/state/activity_dashboard_providers.dart'
+    show activityDigestsProvider;
+import '../modes/data/mode_models.dart' show AppMode, ChooserStatus, ModeState;
+import '../modes/state/mode_providers.dart' show ModeSaveResult, modeStateProvider;
+import '../modes/widgets/mode_chooser_offer.dart' show offeredThisRunProvider;
+import 'widgets/activity_today_card.dart';
+import 'widgets/home_lens.dart';
+import 'widgets/home_mode_widgets.dart';
 import 'data/home_dashboard.dart';
 import '../ai_planner/plan_reason_text.dart' show trainingContextReasonText;
 import 'data/suggestion_builder.dart';
@@ -85,25 +100,94 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   bool _maybeShowDay3Triggered = false;
 
+  /// The asynchronous Day-3 decision has settled (shown and closed, or not
+  /// needed). The chooser and the intro card wait for it (F-39, RV-7).
+  bool _day3Settled = false;
+
+  /// The Day-3 modal was shown in THIS Home session; the intro card then waits
+  /// for the next Home build (finding U8).
+  bool _day3ShownThisSession = false;
+
+  final ScrollController _scroll = ScrollController();
+
+  /// Keeps the scroll position when the scrollbar wrapper appears or goes
+  /// across a window resize (AC-LS-10).
+  final GlobalKey _bodyKey = GlobalKey(debugLabel: 'home.body');
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _logIntroSave(ModeSaveResult r) {
+    if (r == ModeSaveResult.saveFailed) {
+      debugPrint('home: mode intro resolve not saved (code=save_failed)');
+    }
+  }
+
+  /// Refresh of the journal digests; here, never in `build` (design 3.1).
+  void _refreshJournal() {
+    try {
+      ref.read(activityDigestsProvider.notifier).refreshIfStale();
+    } catch (e) {
+      // Home must not be affected by the journal; fixed message, type only.
+      debugPrint('home: activity refresh skipped (code=refresh_failed, '
+          '${e.runtimeType})');
+    }
+  }
+
+  /// Opens the first-run chooser once per run and uid when the status is
+  /// `pending` (contract J1, design 2.3). Replace (`go`), as the contract says.
+  void _maybeOfferChooser() {
+    if (!mounted || !_day3Settled) return;
+    final async = ref.read(modeStateProvider);
+    if (async.isLoading) return;
+    final modeState = async.valueOrNull;
+    if (modeState == null || modeState.chooserStatus != ChooserStatus.pending) {
+      return;
+    }
+    final uid = ref.read(authUserProvider).valueOrNull?.uid;
+    if (uid == null || uid.isEmpty) return;
+    final offered = ref.read(offeredThisRunProvider.notifier);
+    if (offered.wasOffered(uid)) return;
+    offered.markOffered(uid);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      GoRouter.of(context).go(kModeChooserPath);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _refreshJournal();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_maybeShowDay3Triggered || !mounted) return;
       _maybeShowDay3Triggered = true;
-      final repo = ref.read(momentRepositoryProvider);
-      await repo.bumpLaunchCount();
-      final shown = await repo.hasShown(MomentId.day3Welcome);
-      final launches = await repo.launchCount();
-      final firstLaunch = await repo.firstLaunchAt();
-      final ok = shouldShowDay3Welcome(
-        accountCreatedAt: firstLaunch ?? DateTime.now(),
-        launchCount: launches,
-        alreadyShown: shown,
-      );
-      if (!ok || !mounted) return;
-      await Day3WelcomeModal.show(context);
-      await repo.markShown(MomentId.day3Welcome);
+      try {
+        final repo = ref.read(momentRepositoryProvider);
+        await repo.bumpLaunchCount();
+        final shown = await repo.hasShown(MomentId.day3Welcome);
+        final launches = await repo.launchCount();
+        final firstLaunch = await repo.firstLaunchAt();
+        final ok = shouldShowDay3Welcome(
+          accountCreatedAt: firstLaunch ?? DateTime.now(),
+          launchCount: launches,
+          alreadyShown: shown,
+        );
+        if (!ok || !mounted) return;
+        setState(() => _day3ShownThisSession = true);
+        await Day3WelcomeModal.show(context);
+        await repo.markShown(MomentId.day3Welcome);
+      } catch (e) {
+        debugPrint('home: day-3 flow failed (code=day3_failed, ${e.runtimeType})');
+      } finally {
+        if (mounted) {
+          setState(() => _day3Settled = true);
+          _maybeOfferChooser();
+        }
+      }
     });
   }
 
@@ -113,37 +197,93 @@ class _HomePageState extends ConsumerState<HomePage> {
     final upcoming = ref.watch(screenedUpcomingSessionsProvider).valueOrNull ??
         const <ScreenedSession>[];
 
-    return HudScreenBody(
-      children: [
-        const _HudGreeting(),
-        const _HudIdentityRow(),
+    // Mode state: a value that is being reloaded (account switch) is not used,
+    // so a wrong lens or chip never flashes (F-35).
+    final asyncMode = ref.watch(modeStateProvider);
+    final ModeState? modeState =
+        asyncMode.isLoading ? null : asyncMode.valueOrNull;
+    ref.listen<AsyncValue<ModeState>>(
+        modeStateProvider, (_, __) => _maybeOfferChooser());
+    final lens = homeLensOf(modeState?.selectedMode ?? AppMode.train);
+    final bodyAnswer = modeState?.answerFor(AppMode.body);
+    final String? bodyStart =
+        (bodyAnswer?.isAnswered ?? false) ? bodyAnswer!.value : null;
+
+    // The upgrader intro: only for `migrated`, only after the Day-3 decision
+    // settled, never in a Home session that showed the Day-3 modal and never
+    // while another modal route covers Home.
+    final bool covered = ModalRoute.of(context)?.isCurrent == false;
+    final Widget? intro = (modeState?.chooserStatus == ChooserStatus.migrated &&
+            _day3Settled &&
+            !_day3ShownThisSession &&
+            !covered)
+        ? HomeModeIntroCard(
+            onChoose: () {
+              final router = GoRouter.of(context);
+              unawaited(ref
+                  .read(modeStateProvider.notifier)
+                  .markResolved()
+                  .then(_logIntroSave));
+              router.push(kModeChooserPath);
+            },
+            onDismiss: () => unawaited(ref
+                .read(modeStateProvider.notifier)
+                .markResolved()
+                .then(_logIntroSave)),
+          )
+        : null;
+
+    // Every pre-S03 child keeps its place; the trailing spacing of each
+    // section is part of the section so a lens can move it as a unit.
+    final sections = <String, Widget>{
+      HomeSection.greeting: const _HudGreeting(),
+      HomeSection.identity: const _HudIdentityRow(),
+      HomeSection.dayPanel: _stack(<Widget>[
         _HudDayPanel(
           upcoming: upcoming,
           digest: ref.watch(todayDigestProvider),
         ),
         const SizedBox(height: 14),
+      ]),
+      HomeSection.week: _stack(<Widget>[
         const _HudWeekSection(),
         const SizedBox(height: 14),
+      ]),
+      HomeSection.recovery: _stack(<Widget>[
         const _HudRecoveryPanel(),
         const SizedBox(height: 14),
+      ]),
+      HomeSection.quickScan: _stack(<Widget>[
         const _HudQuickScanRow(),
+        const SizedBox(height: 14),
+      ]),
+      HomeSection.bodyScan: _stack(<Widget>[
+        _gutter(const BodyScanEntryCard(compact: true)),
+        const SizedBox(height: 12),
+      ]),
+      HomeSection.nutrition: _stack(<Widget>[
+        _gutter(const NutritionEntryCard(compact: true)),
         const SizedBox(height: 20),
-        _gutter(const DeloadBanner()),
-        // R5's way in. Shown only once the day has something to summarise: a
-        // permanent link to a screen that says "nothing finished today" is a
-        // link to a disappointment.
-        if (!ref.watch(todayResultProvider).isEmpty) ...[
+      ]),
+      HomeSection.deload: _gutter(const DeloadBanner()),
+      // R5's way in. Shown only once the day has something to summarise: a
+      // permanent link to a screen that says "nothing finished today" is a
+      // link to a disappointment.
+      if (!ref.watch(todayResultProvider).isEmpty)
+        HomeSection.summary: _stack(<Widget>[
           const SizedBox(height: 12),
           _gutter(const _SummaryLinkCard()),
-        ],
-        if (upcoming.length > 1) ...[
+        ]),
+      if (upcoming.length > 1)
+        HomeSection.upcoming: _stack(<Widget>[
           const SizedBox(height: 20),
           _HudSectionTitle(l10n.homeSectionUpcoming),
           for (final s in upcoming.skip(1).take(3)) ...[
             _gutter(_UpcomingCard(screened: s)),
             const SizedBox(height: 12),
           ],
-        ],
+        ]),
+      HomeSection.more: _stack(<Widget>[
         const SizedBox(height: 8),
         _HudSectionTitle(l10n.homeSectionMore),
         _gutter(const _AiPlanCard()),
@@ -152,6 +292,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         const SizedBox(height: 12),
         _gutter(const HealthSyncCard()),
         const SizedBox(height: 20),
+      ]),
+      HomeSection.suggestions: _stack(<Widget>[
         _HudSectionTitle(l10n.homeSectionSuggestions),
         // Gate M's floor on the surface a user actually lands on.
         //
@@ -193,10 +335,105 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ],
               ),
         ],
-      ],
-    );
+      ]),
+    };
+
+    // (name, widget, pane) in lens order. The intro follows the greeting and
+    // "Activity today" follows the day panel; both belong to the main pane.
+    final entries = <_HomeEntry>[];
+    for (final name in homeSectionOrder(lens, bodyStart: bodyStart)) {
+      final w = sections[name];
+      if (w == null) continue;
+      // Mode state not known yet: greeting only, so no section order of a
+      // guessed mode flashes (F-35, DT-01-9).
+      if (modeState == null && name != HomeSection.greeting) continue;
+      entries.add(_HomeEntry(
+          KeyedSubtree(key: Key('home.section.$name'), child: w),
+          homePaneOf(name, lens)));
+      if (name == HomeSection.greeting && intro != null) {
+        entries.add(_HomeEntry(intro, HomePane.main));
+      }
+      if (name == HomeSection.dayPanel) {
+        entries.add(const _HomeEntry(ActivityTodayCard(), HomePane.main));
+      }
+    }
+
+    // Layout comes from the CONTENT PANE width (the shell already placed the
+    // pane after the rail), never from the window class.
+    return LayoutBuilder(builder: (context, constraints) {
+      final double pane = constraints.maxWidth;
+      final List<Widget> children;
+      // AC-LS-3: a wide pane with a large font falls back to one column.
+      final bool largeText =
+          MediaQuery.textScalerOf(context).scale(1.0) > 1.3;
+      if (pane >= kHomeTwoPaneMinWidth && !largeText) {
+        children = <Widget>[
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: kHomeTwoPaneMaxWidth),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(
+                    child: _stack(<Widget>[
+                      for (final e in entries)
+                        if (e.pane == HomePane.main) e.child,
+                    ], key: const Key('home.pane.main')),
+                  ),
+                  const SizedBox(width: kHomePaneGap),
+                  SizedBox(
+                    width: kHomeSidePaneWidth,
+                    child: _stack(<Widget>[
+                      for (final e in entries)
+                        if (e.pane == HomePane.side) e.child,
+                    ], key: const Key('home.pane.side')),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ];
+      } else if (pane > kHomeSingleColumnMaxWidth) {
+        children = <Widget>[
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: kHomeSingleColumnMaxWidth),
+              child: _stack(<Widget>[for (final e in entries) e.child]),
+            ),
+          ),
+        ];
+      } else {
+        children = <Widget>[for (final e in entries) e.child];
+      }
+      return ShellScrollbar(
+        controller: _scroll,
+        child: HudScreenBody(
+          key: _bodyKey,
+          controller: _scroll,
+          children: children,
+        ),
+      );
+    });
   }
 }
+
+class _HomeEntry {
+  const _HomeEntry(this.child, this.pane);
+  final Widget child;
+  final HomePane pane;
+}
+
+/// A column that gives its children the full width, like a list does.
+Widget _stack(List<Widget> children, {Key? key}) => Column(
+      key: key,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    );
 
 /// `margin:0 16px` — the handoff's panel gutter, applied to whatever still
 /// needs it explicitly (the legacy glass cards kept below the spine; the new
@@ -233,23 +470,38 @@ class _HudGreeting extends ConsumerWidget {
       DayGreeting.evening => l10n.homeGreetingEvening,
     };
 
+    // The chip appears only once the mode state has loaded (F-35).
+    final AppMode? mode = ref.watch(modeStateProvider
+        .select((s) => s.isLoading ? null : s.valueOrNull?.selectedMode));
+
+    final block = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(greeting, style: HudType.body(t, size: 12.5).overPhoto(t)),
+        const SizedBox(height: 2),
+        Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: HudType.screenTitle(t).overPhoto(t),
+        ),
+      ],
+    );
+
     return Padding(
       key: const Key('home.greeting'),
       padding: const EdgeInsets.fromLTRB(
           HudTokens.headerGutter, 6, HudTokens.headerGutter, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(greeting, style: HudType.body(t, size: 12.5).overPhoto(t)),
-          const SizedBox(height: 2),
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: HudType.screenTitle(t).overPhoto(t),
-          ),
-        ],
-      ),
+      // Wrap rule (A9): chip at the end when it fits on the greeting's line,
+      // otherwise on its own row under the greeting, start-aligned.
+      child: mode == null
+          ? block
+          : Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              runSpacing: 6,
+              children: [block, HomeModeChip(mode: mode)],
+            ),
     );
   }
 }

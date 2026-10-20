@@ -1,0 +1,3 @@
+# S02 test epic 15: I1 display-tie tests
+
+Date: 2026-10-16. Adds `mobile/test/features/activity/repository/activity_sync_display_tie_test.dart` (7 tests: mismatch from the start, null supplier, flip while list() is gated, recovery after rebind, controls) and `mobile/test/features/activity/widgets/sync_conflict_sheet_display_tie_test.dart` (1 sheet test and 2 presenter tests). No production change. Oracles: H test notes heading I1. Not covered: candidates (same guard, a state with candidates needs the two-device flow); a loaded real-repository state in a pumped widget hangs the fake-async binding, so the positive control runs on the presenter.

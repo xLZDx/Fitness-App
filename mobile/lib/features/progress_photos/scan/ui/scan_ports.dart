@@ -28,6 +28,12 @@ abstract class ScanCamera {
   /// True while the scene is sustained dark.
   ValueListenable<bool> get lowLight;
 
+  /// Mean brightness (0..1) of the latest analysed frame, or null when the
+  /// camera cannot measure it. NON-abstract on purpose: an implementer that
+  /// does not measure stays valid, and the screen then falls back to the
+  /// `lowLight` verdict (over-exposure is simply not detected).
+  double? get luminance => null;
+
   /// The lens that is actually open.
   ValueListenable<SessionFacing> get facing;
 
@@ -49,8 +55,28 @@ abstract class ScanCamera {
 
 /// Speaks a short phrase. Best effort; honours the user's mute switch.
 abstract class ScanSpeaker {
-  Future<void> say(String text);
+  /// Resolves to true when the phrase was handed to the speech engine and
+  /// false when speech failed or is unavailable. The failure stays swallowed
+  /// (a missing TTS voice must never break the scan) but is observable, so the
+  /// live-region fallback can be tested (D-80).
+  Future<bool> say(String text);
   Future<void> stop();
+}
+
+/// The named, distinguishable haptic patterns of the capture screen (D-80):
+/// the documented non-visual alternative to the skeleton overlay.
+enum ScanHapticPattern {
+  /// All four checks pass.
+  ready,
+
+  /// Readiness was lost.
+  lost,
+
+  /// One pattern per failing check class.
+  distance,
+  lighting,
+  position,
+  pose,
 }
 
 /// Tactile feedback for the countdown and the shutter.
@@ -58,7 +84,21 @@ abstract class ScanHaptics {
   void tick();
   void shutter();
   void warn();
+
+  /// A named pattern. Distinct patterns are distinct call sequences.
+  void pattern(ScanHapticPattern p);
 }
+
+/// The manual-shutter timer lengths the user can choose (D-80).
+const List<int> kScanManualTimerChoices = [3, 5, 10];
+
+/// Default manual-shutter timer in seconds.
+const int kScanManualTimerDefault = 5;
+
+/// The chosen manual-shutter timer; a value outside [kScanManualTimerChoices]
+/// is treated as the default by the screen.
+final scanManualTimerSecondsProvider =
+    StateProvider<int>((_) => kScanManualTimerDefault);
 
 /// Millisecond clock the shutter machine is fed from. Overridden in tests.
 typedef ScanClock = int Function();
@@ -78,6 +118,39 @@ class _PlatformHaptics implements ScanHaptics {
 
   @override
   void warn() => unawaited(HapticFeedback.lightImpact());
+
+  @override
+  void pattern(ScanHapticPattern p) {
+    switch (p) {
+      case ScanHapticPattern.ready:
+        unawaited(HapticFeedback.mediumImpact());
+      case ScanHapticPattern.lost:
+        unawaited(HapticFeedback.heavyImpact());
+      case ScanHapticPattern.distance:
+        unawaited(_burst([HapticFeedback.lightImpact]));
+      case ScanHapticPattern.lighting:
+        unawaited(_burst(
+            [HapticFeedback.lightImpact, HapticFeedback.lightImpact]));
+      case ScanHapticPattern.position:
+        unawaited(_burst([
+          HapticFeedback.lightImpact,
+          HapticFeedback.lightImpact,
+          HapticFeedback.lightImpact,
+        ]));
+      case ScanHapticPattern.pose:
+        unawaited(_burst(
+            [HapticFeedback.selectionClick, HapticFeedback.heavyImpact]));
+    }
+  }
+
+  Future<void> _burst(List<Future<void> Function()> steps) async {
+    for (var i = 0; i < steps.length; i++) {
+      await steps[i]();
+      if (i + 1 < steps.length) {
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+      }
+    }
+  }
 }
 
 final scanHapticsProvider =
@@ -90,11 +163,13 @@ class _VoiceCoachSpeaker implements ScanSpeaker {
   final Ref _ref;
 
   @override
-  Future<void> say(String text) async {
+  Future<bool> say(String text) async {
     try {
       await _ref.read(voiceCoachProvider).say(text);
+      return true;
     } catch (_) {
       // Speech is a nicety: a missing TTS voice must never break the scan.
+      return false;
     }
   }
 
@@ -133,6 +208,9 @@ class MlKitScanCamera implements ScanCamera {
 
   @override
   ValueListenable<SessionFacing> get facing => _session.activeFacing;
+
+  @override
+  double? get luminance => _session.lastBrightness;
 
   @override
   Future<void> start() async {

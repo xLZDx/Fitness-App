@@ -11,6 +11,10 @@ import 'package:fitness_app/core/settings/app_settings.dart';
 import 'package:fitness_app/core/settings/state/settings_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/body_scan/data/scan_plan_context.dart';
+import 'package:fitness_app/features/body_scan/state/body_scan_providers.dart';
+import 'package:fitness_app/features/body_scan/state/body_scan_settings.dart';
+import 'package:fitness_app/features/body_scan/state/scan_plan_context_provider.dart';
 import 'package:fitness_app/features/progress_photos/scan/scan_models.dart';
 import 'package:fitness_app/features/progress_photos/scan/scan_reminder.dart';
 import 'package:fitness_app/features/progress_photos/scan/scan_repository.dart';
@@ -27,6 +31,13 @@ class _MemRepo implements ScanRepository {
   Future<void> save(ScanRecord r) async => items.add(r);
   @override
   Future<void> delete(String id) async => items.removeWhere((r) => r.id == id);
+}
+
+class _FullSurfaceSource extends ScanPlanContextSource {
+  const _FullSurfaceSource();
+  @override
+  ScanPlanContext current() =>
+      const ScanPlanContext(surfaceMode: ScanSurfaceMode.full);
 }
 
 class _ThrowingScheduler extends MockNotificationService {
@@ -51,20 +62,34 @@ void main() {
     final now = DateTime(2026, 10, 13, 12);
     test('no history: null',
         () => expect(scanReminderNextDue(const [], now), isNull));
-    test('14 days after the newest scan, order independent', () {
+    test('first Sunday 08:00 after newest scan + 5 days, order independent', () {
       final hist = [
         _r(DateTime(2026, 10, 1, 9)),
         _r(DateTime(2026, 10, 10, 9)),
         _r(DateTime(2026, 9, 1)),
       ];
-      expect(scanReminderNextDue(hist, now), DateTime(2026, 10, 24, 9));
+      // Newest Sat 10 Oct + 5 days = Thu 15 Oct; next Sunday is 18 Oct.
+      expect(scanReminderNextDue(hist, now), DateTime(2026, 10, 18, 8));
     });
-    test('overdue is clamped to now', () {
-      expect(scanReminderNextDue([_r(DateTime(2026, 8, 1))], now), now);
+    test('a Friday scan does not fire on the Sunday two days later', () {
+      final fri = DateTime(2026, 10, 9, 10);
+      expect(scanReminderNextDue([_r(fri)], DateTime(2026, 10, 9, 11)),
+          DateTime(2026, 10, 18, 8));
     });
-    test('raw due is not clamped', () {
-      expect(scanReminderDueAt([_r(DateTime(2026, 8, 1))]),
-          DateTime(2026, 8, 15));
+    test('overdue scan: next weekday slot strictly after now', () {
+      expect(scanReminderNextDue([_r(DateTime(2026, 8, 1))], now),
+          DateTime(2026, 10, 18, 8));
+    });
+    test('strictly after: same weekday and time as now moves a week', () {
+      final sun = DateTime(2026, 10, 18, 8);
+      expect(scanReminderNextDue([_r(DateTime(2026, 8, 1))], sun),
+          DateTime(2026, 10, 25, 8));
+    });
+    test('custom weekday and time', () {
+      expect(
+          scanReminderNextDue([_r(DateTime(2026, 8, 1))], now,
+              weekday: 3, minutes: 18 * 60 + 30),
+          DateTime(2026, 10, 14, 18, 30));
     });
   });
 
@@ -78,6 +103,7 @@ void main() {
       repo = _MemRepo();
       final c = ProviderContainer(overrides: [
         notificationServiceProvider.overrideWithValue(notes),
+        scanPlanContextProvider.overrideWithValue(const _FullSurfaceSource()),
         scanRepositoryProvider.overrideWithValue(repo),
         authUserProvider.overrideWith(
             (_) => Stream.value(const AuthUser(uid: 'u1', displayName: 'x'))),
@@ -109,7 +135,8 @@ void main() {
       expect(c.read(scanReminderEnabledProvider), isTrue);
     });
 
-    test('enabling after a scan schedules 14 days after it, one id', () async {
+    test('enabling after a scan schedules the next Sunday 08:00, one id',
+        () async {
       final c = make();
       final at = DateTime.now().subtract(const Duration(days: 2));
       repo.items.add(_r(at));
@@ -119,7 +146,9 @@ void main() {
       expect(notes.scheduled, hasLength(1));
       final s = notes.scheduled.single;
       expect(s.sessionId, kScanReminderId);
-      expect(s.fireAt, at.add(const Duration(days: 14)));
+      expect(s.fireAt.weekday, DateTime.sunday);
+      expect((s.fireAt.hour, s.fireAt.minute), (8, 0));
+      expect(s.fireAt.isAfter(at.add(const Duration(days: 5))), isTrue);
       expect(s.title, isNotEmpty);
       await c.read(scanReminderEnabledProvider.notifier).sync();
       expect(notes.scheduled, hasLength(1));
@@ -162,7 +191,7 @@ void main() {
       expect(notes.scheduled, isEmpty);
     });
 
-    test('an overdue scan is scheduled as due now, not cancelled', () async {
+    test('an overdue scan is scheduled at the next weekly slot', () async {
       final c = make();
       repo.items.add(_r(DateTime.now().subtract(const Duration(days: 40))));
       await settle(c);
@@ -173,7 +202,8 @@ void main() {
       expect(notes.scheduled, hasLength(1));
       final fireAt = notes.scheduled.single.fireAt;
       expect(fireAt.isAfter(before), isTrue);
-      expect(fireAt.difference(before), lessThan(const Duration(minutes: 5)));
+      expect(fireAt.difference(before), lessThan(const Duration(days: 7)));
+      expect(fireAt.weekday, DateTime.sunday);
       expect(c.read(scanReminderEnabledProvider), isTrue);
     });
 
@@ -221,8 +251,14 @@ void main() {
       auth = StreamController<AuthUser?>();
       c = ProviderContainer(overrides: [
         notificationServiceProvider.overrideWithValue(notes),
+        scanPlanContextProvider.overrideWithValue(const _FullSurfaceSource()),
         scanRepositoryProvider.overrideWithValue(repo),
         authUserProvider.overrideWith((_) => auth.stream),
+        // The real store is per account; a fresh one per auth emission mirrors that.
+        bodyScanSettingsStoreProvider.overrideWith((ref) {
+          ref.watch(authUserProvider);
+          return InMemoryBodyScanSettingsStore();
+        }),
         initialSettingsProvider
             .overrideWithValue(AppSettings(notificationsEnabled: true)),
       ]);

@@ -213,6 +213,29 @@ class DeviceLocalDataWipe implements LocalDataWipe {
   static const _personalPrefixes = <String>['moment.'];
   static const _personalKeys = <String>['settings.tier_override'];
 
+  /// C25 (design 20.2). Per-uid keys of the body-scan, nutrition and diary
+  /// features, and the versioned first-use data notice
+  /// (`data_notice.v<N>.<uid>`, `core/privacy/data_notice.dart`). Matched as
+  /// `<prefix>...<dot><exact uid>`: the uid must be the final segment, so a
+  /// different account's key on a shared phone is never touched, and a key of
+  /// any notice version (or a future key under these feature prefixes) goes
+  /// with the account. The scan sidecars (`scans/`) and the meal thumbnails
+  /// (`meals/`) live inside the per-uid photo directory removed below.
+  static const _perUidFeaturePrefixes = <String>[
+    'data_notice.',
+    'body_scan.',
+    'nutrition.',
+    'food_diary.',
+    'weight.',
+    // S02: the per-account cloud-streams consent cache
+    // (`activity.cloudStreamsConsent.<uid>`).
+    'activity.',
+  ];
+
+  static bool _isPerUidFeatureKey(String key, String uid) =>
+      key.endsWith('.$uid') &&
+      _perUidFeaturePrefixes.any(key.startsWith);
+
   /// The pre-A2-sec install-wide photo key. Still handled because an install
   /// that never re-opened the Photos tab never migrated it, and it would
   /// otherwise sit in plaintext prefs forever. The CURRENT key is not a prefs
@@ -292,7 +315,9 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     final failed = <String>[];
     for (final key in prefs.getKeys().toList()) {
       final personal =
-          personalKeys.contains(key) || _personalPrefixes.any(key.startsWith);
+          personalKeys.contains(key) ||
+              _personalPrefixes.any(key.startsWith) ||
+              _isPerUidFeatureKey(key, uid);
       if (!personal) continue;
       try {
         if (!await prefs.remove(key)) failed.add(key.replaceAll(uid, '<uid>'));

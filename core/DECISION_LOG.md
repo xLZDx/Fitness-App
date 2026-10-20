@@ -55910,3 +55910,2301 @@ Operator request: every project points its sessions to the global skill `sdlc-or
 ## 2026-10-20 - Commit: Integrate sprint/hardening-followups-2026-10
 
 Decision: keep the SDLC pointer from sprint/hardening-followups-2026-10; the Stripe settle commits were already on master. See docs/commits/2026-10-20-integrate-hardening-followups.md.
+## 2026-10-15 - Commit: Body Scan + Nutrition Coach technical design (decisions D-1..D-36)
+
+Decision: the Body Scan + Nutrition Coach pillar is designed in core/plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md; the durable decisions are D-1..D-36 there (section 27). Highlights: (D-1) extend the existing local scan stack under progress_photos/scan, add features body_scan, nutrition_plan, food_diary; (D-2) clean-room rule, every adopted number tagged observed / published / own choice (design section 29), attribution file core/ATTRIBUTIONS_NUTRITION.md for anything copied or bundled; (D-4) face blur on device before any upload, fail closed; (D-5) a separate cloud-upload consent shown only when the provider needs photos; (D-7) body_scans is server-authored, client may edit only weightKg and clientNote; (D-8) the weekly review is client-side pure logic because the exclusion flags are device-only; (D-9) exclusions (under 18 or unknown age, pregnancy/breastfeeding flag, new nutrition-guidance flag, clinician advice against exercise, surgery under restrictions) show a neutral professional notice and no numbers; (D-11) HealthFlags gains nutritionGuidance and foodAllergens, device-only, firestore.rules flagsAreStripped must be deployed before the client; (D-13) Mifflin-St Jeor x conservative activity factors, calorie range plus slider bounds, floors, deficit and surplus caps; (D-25) every new users/{uid} collection is carved out of the rules wildcard with a shape-validating block; (D-27) meal and label photos are never stored server-side; (D-28) Cyrillic label OCR uses Gemini vision on the server because ML Kit text recognition has no Cyrillic; (D-29) no exercise-calorie credit; (D-30) food macros come from USDA/Open Food Facts with a per-item source tag, the model supplies names and gram ranges, the server recomputes totals; (D-31) Open Food Facts only through a cached server function, USDA with a registered key in Secret Manager, GPL-3 code (OpenNutriTracker) re-implemented not pasted. Evidence: documentation only, no code, no tests, no analyzer or CI run; see core/changes/2026-10-15-body-scan-nutrition-design.md. Unverified: every VERIFY item in the document, reference frames (design section 3), device behaviour.
+
+## 2026-10-15 - Commit: Body-fat estimator ships PROVISIONAL (limitation recorded)
+
+Decision (D-3): no validated photo-based body-fat model exists in the repository or in this sprint. The shipped estimator is named provisional-anthropometric (version deurenberg-1991-v0): Deurenberg 1991 equation from height, weight, age and sex, confidence low, range half-width 5.0 points as a labelled placeholder that is NOT a measured accuracy. It ignores photos, so no photo is uploaded while it is active. Consequences accepted: a permanent "rough estimate" banner, and with a half-width of 5 points the noise threshold is about 7 points, so week-to-week change reads "no meaningful change" until a real provider reports tighter ranges. The provider interface (BodyCompositionEstimator) makes a licensed or in-house model a configuration plus one adapter. Evidence: design sections 8 and 12. Unverified: any accuracy of any estimator; choosing the real provider is an open operator question (Q-1).
+
+## 2026-10-15 - Commit: Clean-room rule and refusal to reverse engineer proprietary apps
+
+Decision (D-2, D-35): only behaviour and UX structure of the third-party reference app (com.body.fat) are re-implemented; no code, decompiled output, assets, icons, fonts, copy text, promo codes, API hosts, keys or trademarks are taken, and its server API is not mimicked. Reverse engineering, decompiling or traffic interception of proprietary apps is refused for this and every later competitive study. Legal alternatives are used instead: official documentation, API/SDK references and terms, store listings, published research, open-source projects under their licences, the operator's own accounts and ordinary observation, user-initiated data exports, public datasets. Evidence: core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md section 6 and 7. Open-source licences are not a blocker for a private app but are recorded: GPL-3 code is re-implemented, never pasted.
+
+## 2026-10-15 - Commit: Phase 2 priority backlog and foundations (programme level, activity model)
+
+Decision (D-33, D-34, D-36): the current sprint delivers only foundations for (a) a nutrition-aware programme level (data contract, pure decision function adviseTrainingFromNutrition, neutral-default hook; it can only lower load and never bypasses age, screening or injury-filter caps) and (b) a sport-agnostic activity model (ActivitySession, DeviceSource and capability interfaces, pure merge/dedup) with no sport UI. The priority Phase 2 backlog (multi-sport tracking, device ecosystem integration order with effort estimates, full nutrition-aware programmes, competitive study plan, epics with Definition of Done) is core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md. Evidence: design sections 30 and 31. Unverified: all vendor capability statements (hypotheses for the Phase 2 study).
+
+## 2026-10-15 - Commit: Sprint plan, test coverage map and reference behaviour notes; test execution policy
+
+Decision (D-37..D-45 in the design, SD-1..SD-10 in the sprint plan): the sprint is 27 commits across nine epics behind three default-off flags (BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP). Reference values are inputs, never constants; our safety clamps always win (weekly loss cap, target body-fat floors, protein range, no exercise credit). Operator test policy (2026-10-15): test-writing agents (functional-test-reviewer, e2e-runner and equivalents) write detailed functional scripts for every epic and run the COMPLETE set of tests they wrote after each epic and again after the last epic; the coordinator never runs tests; legacy full suites, lint, analyze and CI stay prohibited. Evidence: documentation only, nothing executed. Change record: core/changes/2026-10-15-body-scan-nutrition-plan-and-test-map.md.
+
+## 2026-10-15 - Commit: Body Scan + Nutrition Coach decisions D-37..D-45 itemised
+
+Decision: the v1 log carried only a summary line for D-37..D-45, while the plan and map cite them as load-bearing; they are recorded here one by one. (D-37) body-fat smoothing alpha = max(1 - exp(-dDays/tau), 1/n) with a running-mean warm-up, trend interval hwMean * max(0.85, n_eff^-0.5) from the third reading, per-reading ranges never narrowed by us. (D-38) goal weight = lean / (1 - target bf), ETA = to-lose / clamped pace shown as a range and hidden for the provisional estimator, target body-fat clamp 10-40 % male and 16-40 % female/unspecified, BMI >= 30 default loss rate 0.75 %/week. (D-39) loss range is target -200/+100 kcal (maintain/gain +-150), below-range wording neutral and not mid-day, Atwater tolerance max(25 %, 10 kcal). (D-40) scan cadence: recommended on day 7, extra scans allowed, first weekly review on day 7. (D-41) honest timing UI: elapsed time and real stages, indeterminate indicator, no promised analysis duration, "taking longer" at 20 s, retry at the 25 s timeout. (D-42) protein lean-mass variant (2.2 g/kg lean, clamped) only with a non-provisional confident body-fat trend; point targets rounded to 5 g. (D-43) confidence levels not percentages; meal slot defaults by local time. (D-44) health source read-only and only for scopes a shipped feature uses; weekly scan reminder Sunday 08:00 on, daily scan off, weight reminder opt-in. (D-45) reference values are inputs, never constants; clamps win. D-46..D-51 are reserved by the Phase 2 reconciliation entries. Evidence: design section 27. Change record: core/changes/2026-10-15-body-scan-nutrition-doc-review-fixes.md.
+
+## 2026-10-15 - Commit: Body Scan + Nutrition Coach one-time documentation review fixes (D-52..D-85)
+
+Decision (design v1.1, sprint plan v1.1, coverage map review-fix additions; five reviewers: architect, security, database, product-ux, accessibility): (D-52) the PROVISIONAL estimator runs on the device in pure Dart and is stored in the encrypted local scan record; there is no server provisional estimator, no callable, no quota for it; the server pipeline exists only for a real or test provider. (D-53) cloud scan callables are idempotent: create() with ALREADY_EXISTS re-read, done returns the stored entry with no provider call and no quota, estimate uses a 60 s lease plus a final re-read transaction, quota is charged only on first creation or first processing, resource-exhausted is non-retriable until the next day. (D-54) no stored isBaseline; baseline and trend are derived on the client per modelId+modelVersion and never compared across estimators. (D-55) an ineligible or unanswered verdict is never persisted: plan status is only active or needsProfile, review decision has no referProfessional value, rules enums refuse it, excludedFoods is device-only, sexAtBirth is ordinary personal data like gender. (D-56) body_scan_settings cloudConsent rule: valid when unchanged, or new/bumped with acceptedAt == request.time and version >= existing; withdrawal allowed. (D-57) the weekly review is one transaction (review read first, planVersion/basePlanVersion and cooldown checked inside, review and plan written together, undo record on the plan doc, offline defers). (D-58) createBodyScan derives age server-side from profile.personal.birthYear (refuse under 18 or unknown), ignores the client age, enforces the tier when Q-2 keeps the scan gate; limit: birthYear is client-writable; nutrition exclusions stay client-advisory. (D-59) orphan and late-PUT handling: create refused while accountDeletionRetries/{uid} exists, 48 h cancelled tombstone on delete, four-pass purge with an unmatched-object sweep, cursor paging and a failure counter; a bucket lifecycle rule for pending objects is rejected. (D-60) dedicated identity fn-bodyscan for body-scan callables and purge, fn-account-delete also gets objectAdmin on the bucket, bucket 404 means nothing to delete, configured-but-IAM-denied is a go-live blocker verified by a runbook canary, flag-gated release-guard bucket check; supersedes D-14. (D-61) export of new collections is ordered newest first with per-collection truncated/cursor paging; photo links are minted for 1 hour by manageBodyScanData.exportLinks, not carried in the export; amends D-15. (D-62) new callable manageBodyScanData (applyRetention, deleteAllPhotos, deleteAllScans, exportLinks) with its own quota; retention lowering is retroactive on request; copy says "within 48 hours". (D-63) analyzeMealPhoto and parseNutritionLabel join the release-guard set (4 to 6, updated in the commit that adds them); enrichment stays in fn-ai-runtime with one extra secret-accessor role; kill switch and flag run before quota. (D-64) FOOD_LOOKUP global upstream token budget below Open Food Facts limits, per-uid burst limit, fail-closed App Check, negative results charged. (D-65) every upstream call goes through safeFetch (URL encoding, host allowlist, same-host redirects only, timeout, body cap, key in header, closed error slugs). (D-66) model-authored names are sanitised. (D-67) log and Crashlytics redaction rules. (D-68) rules shape checks. (D-69) a post-blur on-device face check is a go-live gate for BODY_SCAN_CLOUD; a fail-closed port ships now. (D-70) HealthFlags.toJson omits the new keys when empty so old rules accept the new client and deploy order is not load-bearing. (D-71) feature dependency graph is acyclic (food_suggestions moves to food_diary, series_math to core/math, ports with safe defaults wired at the app root). (D-72) one currentWeightProvider, a weight-log screen, scan weight edits write weight_entries. (D-73) provisional presentation: plain label everywhere, weight-trend headline, hidden ring/points-to-go/fat-lean change/ETA/plan-decision card; Supporter gate kept and flagged. (D-74) scan surfaces follow nutrition eligibility (measurement-only mode). (D-75) onboarding order puts the nutrition step after the safety questions, exact EN/RU copy fixed. (D-76) user-facing names Body check-in, Nutrition targets, Food diary, Weight log. (D-77) neutral target copy, ETA hidden below goal BMI 20, pause tracking; body-fat floors 10/16 % unchanged (deferred). (D-78) diary states, resume card, terminal-failure actions. (D-79) first-use data notice for server-stored body data and food AI. (D-80) capture accessibility: cancellable manual-shutter timer, one announcement channel per tick, throttled cues plus haptic patterns, bounded readiness panel. (D-81) progress announcements limited to stage changes plus 20 s and 25 s notices; reduced motion. (D-82) custom range slider with per-thumb semantics and steppers. (D-83) contrast verified by a token-pair test. (D-84) RU plurals for integers only, decimals use abbreviations. (D-85) review-screen labels, chart summary plus table, chip state, modal focus, tap-target sweep, locale formatting. Rejected or deferred review items are listed in the change record. Evidence: documentation only, nothing executed. Unverified: every VERIFY item, all behaviour. Change record: core/changes/2026-10-15-body-scan-nutrition-doc-review-fixes.md.
+
+## 2026-10-15 - Commit: PRODUCT_PHASE2_EXPANSION research package reconciled
+
+Decision (D-46): the downloaded Phase 2 research package (40 stories: 13 P0 / 20 P1 / 7 P2) is imported into core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md (section 8) with the package ids kept as cross-references; duplicates of existing design sections, sprint commits and epics are merged, not copied. The package is research input only: where it disagrees with the approved design (D-1..D-45) or the safety clamps (design s13.6), the design and the clamps win. Evidence: core/plans/PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md sections 1-3. Unverified: nothing was run.
+
+Decision (D-47): conflicts resolved in favour of our design: no exercise-calorie credit (D-29, package credit policy not implemented), health sources read-only (D-44, no write-back), weekly review stays client-side (D-8), no server REST surface (callables, D-27 no meal photo storage), EWMA trend (D-18, D-37), body-fat target and pace clamps unchanged. Evidence: reconciliation file section 2.
+
+Decision (D-48): the package's APK playbook is narrowed to what D-35 allows. Static review (OWASP MASVS/MASTG) applies to open-source apps only (OpenTracks, openScale, Waistline; source and official releases). Commercial apps are studied from public material only (store listings including the Play Data safety section, official docs/SDK docs, published privacy policies, ordinary use of apps the operator owns). Decompiling, extracting APKs, traffic interception or any reverse engineering of proprietary apps stays refused; package items P2-004, the playbook tooling, the acquisition manifest wording and gate G8 are rewritten accordingly. App purchases remain operator actions and are not required. Evidence: reconciliation file section 6.
+
+Decision (D-49): the Fitbit Web API is not a target. Google's developer pages (opened 2026-10-15) state support ends 2026-09-30 and the API is turned off on 2026-10-30; backlog item 13 is "Google Health API" and is built only on an operator decision (O-4) after its access model for a private project is verified. Vendor-cloud adapters other than Withings/Strava stay behind terms review and partner approval; platform stores (Health Connect, HealthKit) and FIT/GPX/TCX import come first. Evidence: reconciliation file section 5. Unverified: access models of Garmin, Polar, Suunto, TrainingPeaks, Oura, WHOOP.
+
+Decision (D-50): the operator's two reference recordings, any extracted frames, thumbnails or screenshots of the reference app, and the package ZIP stay outside git (.gitignore already ignores *.mp4 and docs/rec_frames/); committed documents refer to them only as "the operator's recordings" and carry no file paths, account details or faces. Evidence: reconciliation file section 7.
+
+Decision (D-51): package milestone wording "no unvalidated body-fat percent" is not adopted literally; the PROVISIONAL estimator of D-3 stays with its banner pending operator answer O-2. Fat/lean tiles must label whether they use the raw reading or the smoothed trend (clarification of design s12.1 pending, O-6).
+
+## 2026-10-15 - Commit: C04 profile model, nutrition preferences and health flags
+
+Decision (D-9, D-11, D-55, D-70 as implemented): `NutritionPrefs` lives on `UserProfile.nutrition` with omit-empty JSON and tolerant reads; `HealthFlags` gains `nutritionGuidance` (null = unanswered, which locks the coach) and `foodAllergens`, and their JSON keys are omitted when null/empty so the deployed rules key allowlist accepts the stripped block. `excludedFoods` is device-only (added to `SensitiveProfile`, blanked by `stripSensitive`). Deviation: `DietaryPreference.pescatarian` moves to C10 because `step_lifestyle.dart` switches exhaustively over the enum and needs its l10n label in the same commit. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-profile-model-nutrition-prefs.md.
+
+## 2026-10-15 - Commit C01: rules, storage deny-all, indexes (Body Scan + Nutrition Coach, E0)
+
+Decision (SD-2): operator-blocked infrastructure is feature-flagged OFF in code. Client flags are compile-time (`--dart-define` BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP) and server flags are environment variables (BODY_SCAN_BUCKET + BODY_SCAN_PROVIDER, FOOD_AI_ENABLED, FOOD_LOOKUP_ENABLED); all default off or unset, and every flagged path has a documented working fallback (sprint plan section 4). Enabling a flag is an operator action and needs no code change. The flag readers themselves land in C02 (server) and C03 (client).
+
+Decision (rollout order): deploy firestore.rules before any client build that emits the new keys ("rules before client"). The order is hygiene, not load-bearing: the new `HealthFlags.toJson` omits the two new flag keys while empty (D-70), so old rules accept the new client and new rules accept the old one. Deploying `storage.rules` overwrites whatever is deployed for the default bucket (none is tracked in git), so verify first that nothing public depends on it.
+
+Decision (C01 rules shape, deviations from design s6.1 recorded here): (1) `food_entries.items` is checked per element at fixed indexes 0..29 for "is a map with a string `name` <= 80" only; the per-element numeric ranges of `grams` and `per100g` are NOT enforced by rules because 30 items times a full numeric check would exceed Firestore's per-request expression budget and refuse legitimate large entries; the ranges are enforced on `totals` (and `per100g` of `saved_foods`) and the server recomputes macros for AI entries. (2) `nutrition_plan` list-free shape checks are conditional on presence except `status` and `planVersion`, which are required, so a `needsProfile` document may be minimal. (3) The data-lifecycle policy rows and the data-access policy JSON for the new paths stay in C25 as the sprint plan assigns; until then the CI coverage scripts (not run) and the data-access-policy parity expectation of coverage-map file T05 (RULES-14) cannot pass, so the T05 rows requirement belongs to the C25 gate, not G0. (4) `run_emulator_tests.js` forwards extra arguments only when they contain no spaces or double quotes (they sit inside one quoted shell argument).
+
+Evidence: reading only; nothing executed. Unverified: emulator behaviour of every rule, expression-budget headroom of `food_entries`, the Storage emulator port 9199. Change record: core/changes/2026-10-15-rules-and-indexes.md.
+
+## 2026-10-15 - Commit: C04 evidence note (E1 sequencing)
+
+Decision: the C04 decision entry above landed in the C01 commit because of a concurrent path-limited commit; the C04 code commit follows it. E1 commits keep device-only `excludedFoods` inside `SensitiveProfile` so the rules allowlist (which refuses it) never sees it. Evidence: reading only; nothing executed.
+
+## 2026-10-15 - Commit C02: functions infrastructure and server flags (Body Scan + Nutrition Coach, E0)
+
+Decision (D-60, D-64 implemented): new runtime identity fn-bodyscan (RUNTIME_SA.bodyScan) and capped profiles BODY_SCAN (fn-bodyscan) and FOOD_LOOKUP (fn-data), both on the fail-closed APP_CHECK_ENFORCED_AI flag. The identity must exist before any function using it deploys (runbooks/body_scan_bucket.md).
+
+Decision (D-67): quota log events for the eight new quota actions carry no uid and log an error code instead of String(e); pre-existing actions keep their log shape. Chosen "omit" over "salted hash" because a hash needs a secret salt and gives no operational value the action name does not already give.
+
+Decision (flags): server flags are read per call through three modules only (body_scan/flags.ts, food_flags.ts, feature_flags.ts assertFeatureEnabled); only the exact string true enables FOOD_AI_ENABLED / FOOD_LOOKUP_ENABLED; a malformed BODY_SCAN_BUCKET counts as unset (fail closed, never points the purge at another bucket). Flag checks run before quota charges.
+
+Decision (SD-11 kept): release_guard.ts, discover_callables.ts and index.ts sweepAccountData are untouched in C02; they change in C12/C20 with their callables. AI_GATEWAY_OPERATIONS grows to six in C02 so the type and monitoring filters are ready (monitoring series bound 6 x 3 = 18).
+
+Evidence: reading only; not compiled or run. Unverified: Schema import and DOM fetch types under the existing tsconfig, all behaviour. Change record: core/changes/2026-10-15-functions-infra-and-flags.md.
+
+## 2026-10-15 - Commit C03: client flags, feature gates, data notice (Body Scan + Nutrition Coach, E0)
+
+Decision (SD-2 client side): BodyScanFlags (BODY_SCAN_CLOUD, FOOD_AI, FOOD_LOOKUP) are compile-time dart-defines, default false, read through bodyScanFlagsProvider; they decide what the UI offers while the server enforces its own flag and answers feature-disabled.
+
+Decision (Q-2 / D-26 default): AppFeature gets one entry per feature; only bodyScan is tier-gated, mirroring ScanAccess.needsSupporter (any non-free tier); nutritionPlan, weeklyReview, foodDiary, foodAiRecognition and foodBarcodeLabel are ungated. Changing a tier is a one-line edit in canAccess.
+
+Decision (D-79): first-use data notice is a single-tap, versioned, device-local acknowledgement (key data_notice.v<version>.<uid>); a dismissed sheet defers the write and never loses it; the Vertex AI paragraph is shown only when FOOD_AI is compiled in. The ARB keys ship in C03 (SD-3) although the coordinator expected l10n later.
+
+Evidence: reading only; not analyzed or run. Change record: core/changes/2026-10-15-client-flags-and-gates.md.
+
+## 2026-10-15 - Commit: C05 nutrition maths, safety clamps and eligibility
+
+Decision (D-13, D-39, D-55 as implemented): all safety numbers are named constants in `SafetyClamps`; the lose-goal calorie range is target -200/+100 (D-39) and is clamped inside the recomputed slider bounds, whose low end applies the 25 % TDEE / absolute-rate deficit cap, so the hand vectors V-LOSE-M and V-LOSE-CAP of the coverage map (written with +-150 and without the bounds clamp) are superseded for the range values only; TDEE, rate, deficit and target agree. When TDEE is at or under the calorie floor the floor wins and the upper bound is lifted to min + 100. The eligibility verdict is computed on the device and never persisted. Shared EWMA and Theil-Sen primitives live in `mobile/lib/core/math/series_math.dart` (D-71). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-maths-and-eligibility.md.
+
+## 2026-10-15 - Commit: C06 weekly review pure logic
+
+Decision (D-8, D-55, D-57, D-71 as implemented): `decide()` returns null for any non-eligible user and has no `referProfessional` value; a change needs two consecutive same classifications plus a 14-day cooldown except the `tooFast` correction; a shift that would leave the recomputed bounds becomes `keep(atSafetyLimit)`, never a truncated change; the steps-first path applies to loss goals only (more steps would work against a gain goal); the ISO week key takes an explicit UTC offset. The body-fat trend enters only through the `BodyFatTrendSource` port and is ignored when provisional or when the estimator changed. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-weekly-review-logic.md.
+
+## 2026-10-15 - Commit: E0 client tests (flags, feature gates, data notice)
+
+Decision (operator test policy 2026-10-15): E0 client tests are written by e2e-runner as detailed functional tests: `body_scan_flags_test.dart` (T01), the extended `feature_gates_test.dart` and the new `data_notice_test.dart` (both added to coverage map section 12). Flag-to-define mapping is proven by extra runs with `--dart-define`.
+
+Evidence: written; run results are recorded in the follow-up change record. Change record: core/changes/2026-10-15-e0-tests-client.md.
+
+## 2026-10-15 - Commit: C07 body scan data layer (pure parts)
+
+Decision (D-3, D-37, D-52, D-54, D-69, D-71, D-74 as implemented): the provisional estimator is on-device pure Dart behind a `BodyCompositionEstimator` interface and its range edges stay inside the 3-60 plausibility window; trend series are segmented by `modelId`+`modelVersion` and never compared across estimators; the scan flow machine is pure (state + effects) and fails closed on the face region and on the post-blur face check (default port answers "cannot verify"); the plan decision enters the scan result only through the `ScanPlanContextSource` port whose safe default is measurement only. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-data-layer.md.
+
+## 2026-10-15 - Commit: C12 body-scan Cloud Functions
+
+Decision (D-52, D-53, D-58, D-59, D-60, D-62, D-67 as implemented): the server registry has only `licensed-api` (reserved) and `test-fake` (jest/emulator only), with NO server provisional provider; every body-scan callable runs one guard preamble (auth, App Check note, non-anonymous, kill switch, bucket flag) before any quota; quota is charged once per document created/reset and once per first estimate processing (`estimateCharged` marker), and refunded when the work was not delivered; deletes write a scrubbed 48 h tombstone BEFORE removing objects; `sweepAccountData` deletes `users/{uid}/` in the body-scan bucket last (unset = no-op, all-404 = nothing to delete, other failures throw so the reconciler retries). Not in this commit: release-guard bucket check, discover_callables update, bucket runbook. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-functions.md.
+
+## 2026-10-15 - Commit: C08 activity model foundation and pure merge/dedup
+
+Decision (D-34 as implemented): `mobile/lib/features/activity/data/` holds the sport-agnostic model, the `DeviceSource` and capability interfaces and a deterministic, order-independent `merge` (sorted by priority, start, id) with no UI, persistence or adapters; complementary-stream alignment uses the start-time skew (not cross-correlation) and a stream kind is taken only from a source covering at least 80 % of the session; user edits always win. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-activity-foundation.md.
+
+## 2026-10-15 - Commit: C10 onboarding nutrition step
+
+Decision (D-75 as implemented): `OnboardingStep.nutrition` sits after `healthFlags` and before `screening`; the two safety questions (pregnancy/breastfeeding, nutrition guidance) are asked on `healthFlags`, and the nutrition step renders any goal, pace, body-fat target, sex, steps or ownership element only when BOTH answers are `none` (`nutritionSafetyClear`); otherwise one neutral lock-out line with no reason and no number, and only allergens, excluded foods and meals remain. The target weight is never asked twice (read-only line with a link back to the personal step). Existing users are not routed back to onboarding; they use the C11 profile flow. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-onboarding-nutrition-step.md.
+
+## 2026-10-15 - Commit: C09 nutrition-aware programme hook
+
+Decision (D-33, SD-7 outcome): `adviseTrainingFromNutrition` is pure, neutral by default and can only lower load; the programme builder seam is small and is WIRED as `ProgrammeBuildRequest.volumeFactor` (default 1.0, capped at 1.0 and floored at 0.70, sets rounded with a minimum of 1, validator minimum trimmed proportionally); the intensity delta has no consumer in the programme builder and its wiring into the AI planner is deferred (a `combinedIntensityCeiling` helper takes the most conservative of age, screening and hint caps before applying the nutrition delta). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-aware-programme-hook.md.
+
+## 2026-10-15 - Commit: C11 nutrition profile flow for existing users
+
+Decision (design s16.3 as implemented): existing users reach `/nutrition/profile`, a separate flow that is never forced and does not touch `/onboarding` or the profile's own `completedAt`. The sheet list (safety, body and goal, food and activity) is derived once on entry from `missingNutritionInputs`; the safety sheet appears only while a safety question is unanswered, an already-answered safety question is never re-asked here, and answering `reported` locks the next sheets live (no goal, pace or targets). Saving goes through the existing draft and profile repository; `NutritionPrefs.completedAt` is stamped on the final Save only. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-profile-flow.md.
+
+## 2026-10-15 - Commit: C12 leftovers (bucket release check, runbook)
+
+Decision (SD-6, SD-11, SD-15, D-60, D-63): the release guard gains ONE flag-gated check that runs only when BODY_SCAN_BUCKET is configured (bucket private, uniform access, fn-bodyscan and fn-account-delete objectAdmin, canary acknowledged in core/state/g4_release_evidence.json as bodyScanBucketCanary); AI_CALLABLES stays at 4 because the body-scan callables run as fn-bodyscan and the inventory check only counts fn-ai-runtime functions. The runbook now carries the kill-switch secretAccessor grant, the deny-all default-bucket verification and the go-live blockers. discover_callables.ts is test-side and left to the test agents. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-c12-leftovers.md.
+
+## 2026-10-15 - Commit: C12 server tests (fakes, create) and two type fixes
+
+Decision: the body-scan server tests share one stateful Firestore/Storage/Secret Manager/logger fake module (functions/src/__tests__/body_scan/fakes.ts), the same model as the stateful fake already used by account_deletion_reconcile.test.ts, instead of eight private copies. The first ts-jest run found two real type errors in C12 (create.ts Uploads cast, manage.ts action union); both fixed minimally without behaviour change. Evidence: `npx jest src/__tests__/body_scan/create.test.ts` in functions/ = 102 passed. Change record: core/changes/2026-10-15-body-scan-server-tests.md.
+
+## 2026-10-15 - Commit: C13 ScanRecord v2 and capture-screen changes
+
+Decision (D-6, D-52, D-80, D-81): ScanRecord v2 stores the job state, local provisional estimate, recorded weight, per-pose manual override and the owed remote delete inside the existing encrypted sidecar; a record without `analysis` is a legacy local-only scan and is never uploaded. Capture changes: real frame luminance (over-exposure becomes a live check), a cancellable manual-shutter timer (default 5 s, choices 3/5/10) that records `manualOverride` only when it fires while not ready, one announcement channel per tick, a 2 s throttled hint live region, named haptic patterns, a bounded scrollable panel. The new interface members (`ScanCamera.luminance` default getter, `ScanSpeaker.say` returning bool, `ScanHaptics.pattern`) require the test fakes to be updated by the test agents. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-scan-record-v2-and-capture.md.
+
+## 2026-10-15 - Commit: C18 nutrition plan state, repositories and weekly review scheduler
+
+Decision (D-55, D-57, D-72, D-74): the review transaction rules are one pure function (`planReviewTransaction`) run by both the Firestore transaction and the in-memory fake: week key checked first (existing -> no-op), then plan version against `basePlanVersion`, then cooldown (tooFast exempt), drift cap and bounds re-checked on the stored plan, then review and plan written together (coached with the 7-day `reviewUndo`; shared and manual write the review only, a shared proposal is applied by a version-checked accept). `lastKcalAdjustAt` is set by any plan-changing review so the 14-day cooldown guards steps as well as kcal. The plan is re-validated (bounds recomputed from `inputsDigest`) on every read and write; only an `active` plan is written and nothing is written for an ineligible, unanswered or unknown verdict, nor before the data notice is acknowledged. The review classification is stored inside `inputs` because the rules close the top-level key set. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-nutrition-plan-state.md.
+
+## 2026-10-15 - Commit: C12 server tests (estimate, validate_estimate, registry)
+
+Decision: estimate tests drive the provider through the __setTestEstimatorForTests seam and assert persisted state and quota counters (not mock calls); the 25 s timeout is proved by capturing the setTimeout delay and firing it at once. Evidence: `npx jest` on the three files in functions/ = 131 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-estimate.md.
+
+## 2026-10-15 - Commit: E1 tests, nutrition maths (written, run pending)
+
+Decision: the E1 nutrition-maths tests (energy_math, safety_clamps, plan_calculator, nutrition_eligibility, weekly_review) take every expected number from an independent scratch oracle written from design s13, not from the code. Deviation resolved by arithmetic: the lose range follows D-39 (-200/+100) and is pulled inside the slider bounds, so V-LOSE-M is range 1900-2110 / bounds 1900-2440 and V-LOSE-CAP is 1840-1940; the coverage map is corrected accordingly. Evidence: written only at this commit; run results follow in a later record. Change record: core/changes/2026-10-15-e1-tests-nutrition-maths.md.
+
+## 2026-10-15 - Commit: E0 functions tests and nutrition_http dot-segment fix
+
+Decision (defect fix): `buildUrl` in `nutrition_http.ts` refuses a bare `.` or `..` path segment with the new closed slug `upstream-invalid-request`, because percent-encoding does not stop the URL parser from collapsing it into path navigation. Found by the E0 functional test, fixed minimally in the E0 file.
+
+Decision (deferral): the "six callables in the release guard" expectation (RULES-21) is a `test.todo` until C20 creates the food callables; it is not faked.
+
+Evidence: focused jest runs of each new or extended file passed; complete-set results are recorded in the E0 evidence record. Change record: core/changes/2026-10-15-e0-tests-functions.md.
+
+## 2026-10-15 - Commit: C22 food diary data layer
+
+Decision: the food diary data layer is pure Dart under `food_diary/data/`. Day and entry totals combine item ranges by root-sum-square (design s17.7); per-meal shares are 30/35/35 for three meals, and for four or more meals each snack takes 10 % (at most 40 % in total) with the mains keeping 30/35/35 of the remainder (design wording was open). `FoodItem.sourceId` accepts `llm_estimate`; the Firestore rules allowlist in design s5.6 does not list it, so rules or the C23 repository must reconcile (flagged, not silently changed). Evidence: written only at this commit, not run per development rules v4. Change record: core/changes/2026-10-15-c22-food-diary-data.md.
+
+## 2026-10-15 - Commit: C12 server tests (delete)
+
+Decision: the delete tests assert the surviving key set of the tombstone exactly, so any metric field that leaks past the scrub fails them. Evidence: `npx jest src/__tests__/body_scan/delete.test.ts` in functions/ = 23 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-delete.md.
+
+Note: the delete suite also proves isolation between users and between scan ids sharing a prefix (the object prefix ends with a slash).
+
+## 2026-10-15 - Commit: C14 part 1 (callable client, blur service, scrubbed errors)
+
+Decision (D-4, D-67): every callable failure is reduced to a closed slug before it is stored or logged; the blur service is fail closed (no landmarks, unsizable head box, undecodable or oversize output all refuse, never an unblurred image) and re-encodes from raw pixels so no EXIF/GPS/ICC survives. `connectivity_plus` is not in pubspec, so the job runner uses foreground, Progress-open and timer resume (the design fallback); no package was added. Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-api-blur.md.
+
+## 2026-10-15 - Commit: C15 part 1 (ARB keys for the body scan flow and result)
+
+Decision (D-73, D-74, D-78, D-81, D-85): all C15 user-visible strings are added to both ARB files up front under `bodyScan*` and `checkCode*` keys; decimals are passed as pre-formatted strings (locale-aware formatting in the widgets) with non-inflecting RU units, plurals only for integer counts. Evidence: change record `core/changes/2026-10-15-c15-arb-keys.md`; no checks run by operator rule.
+
+## 2026-10-15 - Commit: C20 food scanning Cloud Functions
+
+Decision (D-63, D-64, D-65, D-66, D-67 as implemented): analyzeMealPhoto and parseNutritionLabel join the release-guard set (AI_CALLABLES 4 to 6) and run flag-gated (FOOD_AI_ENABLED) before any quota charge; lookupBarcode and searchFoods run on FOOD_LOOKUP (FOOD_LOOKUP_ENABLED), do not call the AI kill switch (fn-data has no grant on it), charge only cache misses (negative results included) and take a per-uid burst slot and the global OFF budget before any upstream call. All model output is clamped, sanitised and recomputed server-side; USDA key is read from Secret Manager at runtime and an absent key degrades to llm_estimate. Recorded deviations: flat functions/src layout per design 2.3; secretAccessor on USDA_FDC_API_KEY needed for fn-data as well as fn-ai-runtime; response schema gains a packaged flag. Evidence: reading only; nothing executed (rules v4). Change record: core/changes/2026-10-15-c20-food-functions.md.
+
+## 2026-10-15 - Commit: C18 functional tests (review transaction and undo)
+
+Decision (D-57, D-55): C18 is verified by pure-function tests that assert nothing is written on every refusal path (already reviewed, no plan, stale planVersion, cooldown, drift cap, bounds) and that review plus plan change come from one result. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C12 server tests (manage)
+
+Decision: manageBodyScanData tests prove the paging contract (200 per call, whole-user prefix sweep only on the final delete-all page, applyRetention never sweeping) and that delete-all is not gated by the per-scan delete quota. Evidence: `npx jest src/__tests__/body_scan/manage.test.ts` in functions/ = 41 passed. Residual risk noted, not tested: exportLinks pages by takenAt millis, so two scans with an identical takenAt straddling a page boundary would skip one. Change record: core/changes/2026-10-15-body-scan-server-tests-manage.md.
+
+## 2026-10-15 - Commit: C21 generic foods table
+
+Decision (D-71, design 17.5/17.8): the generic food table is generated offline from USDA FDC Foundation and SR Legacy (CC0) by scripts/nutrition/build_generic_foods.py (2,590 rows committed); tags default restrictive (null animal/pescatarian, allergenCertain=false for mixed foods) and suggestions live in food_diary/data. Halal and kosher also hide land-animal meat because slaughter certification is not modelled. Russian names: 321 own-authored entries (below the ~400 target). Evidence: core/changes/2026-10-15-c21-generic-foods-table.md; verification not run (v4).
+
+## 2026-10-15 - Commit: E1 tests, scan trend / slope / result maths / provisional estimator
+
+Decision: trend vectors are derived with a scratch script from design s12.5; V-EWMA 25.5669 is tested without the D-37 warm-up and the warm-up behaviour (second reading weight 0.5) is tested separately, resolving map deviation 2. Evidence: flutter test of energy_math_test + scan_trend_test + weight_slope_test + scan_result_math_test + provisional_estimator_test = 173 passed, 0 failed. Change record: core/changes/2026-10-15-e1-tests-scan-trend-result.md.
+
+## 2026-10-15 - Commit: C12 server tests (purge)
+
+Decision: purge tests prove non-starvation (stuck documents stay in the query yet later documents are purged through startAfter paging), the persisted listing token and the 240 s start-of-work budget. The shared Storage fake now pages by object name like GCS. Evidence: `npx jest src/__tests__/body_scan/purge.test.ts` in functions/ = 31 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-purge.md.
+
+## 2026-10-15 - Commit: C14 part 2 (job runner, upload port, repositories, providers)
+
+Decision (D-52, D-69, D-71, D-72): the job runner has a LOCAL path (default; zero callable and zero PUT calls, offline) and a CLOUD path reachable only with the flag on, a current consent and a server-reported photo provider; the fail-closed default face check means flipping the flag without a detector uploads nothing. A server `scan-cancelled` rotates `remoteId` and re-queues. The weight repository and `currentWeightProvider` already exist from the C18 commit and are reused, not duplicated. The app root must still bind the plan-context, trend-source, result-source and Firestore repository overrides and bridge `scanCompletedProvider` to the nutrition `scanDoneSignalProvider` (listed in the change record). Evidence: reading only; nothing executed. Change record: core/changes/2026-10-15-body-scan-pipeline-runner-providers.md.
+
+## 2026-10-15 - Commit: C15 parts 2-3 (state seams, intro, weight prompt, analysis progress)
+
+Decision (SD-9, D-73, D-74, D-81, D-85): plan-context port has a measurement-only default plus a named app-root placeholder until C18; stage announcements are limited to stage changes, the 20 s notice and one assertive 25 s timeout with focus to Retry. Evidence: change records c15-state and c15-intro-weight-progress; no checks run.
+
+## 2026-10-15 - Commit: C15 part 4 (check items card, trend chart, cloud consent sheet)
+
+Decision (D-5, D-85): chart is semantics-excluded with a single summary node plus data table; check chips carry text state labels and move focus after resolve; the cloud sheet is a separate explicit consent. Evidence: `core/changes/2026-10-15-c15-checks-chart-consent.md`; no checks run.
+
+## 2026-10-15 - Commit: C12 server tests (guard preamble)
+
+Decision: one parameterised table proves the guard order and the zero-charge refusals identically for all four callables, so a callable that bypasses the shared preamble fails its own row. Evidence: `npx jest` on guard.test.ts and purge.test.ts in functions/ = 71 passed. Change record: core/changes/2026-10-15-body-scan-server-tests-guard.md.
+
+## 2026-10-15 - Commit: C15 part 5 (result view, resume and failure card)
+
+Decision (D-73, D-74, D-78): the result is rendered from a pure view model; provisional and measurement-only presentation hide goal figures; the ETA stays hidden until C18 supplies pace inputs. Evidence: `core/changes/2026-10-15-c15-result-resume.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 stored plan tests
+
+Decision (D-55, D-57): stored plan tests prove validated() recomputes bounds from the digest and that only an active readable plan is read; no referProfessional key exists in the document. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C15 part 6 (flow page, result page, routes)
+
+Decision: the flow page only renders the pure flow state and delegates capture to the existing guided capture route; the result route reads through a narrow port so C14/C16 binding is a wiring step. Evidence: `core/changes/2026-10-15-c15-pages-routes.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 review record tests
+
+Decision: review record tests prove the classification round-trips through inputs and referProfessional never reads as a review (D-55). Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C20 food function tests
+
+Decision: C20 food callables are proven by one jest file per module (T104-T111 plus cache, breaker, food_text, sources) using the shared Firestore fake and injected fetch/clock/budget/key deps; product defects found are fixed minimally and noted in the record. Evidence: `core/changes/2026-10-15-c20-tests.md`.
+
+## 2026-10-15 - Commit: C22 tests (food diary data layer)
+
+Decision: C22 data layer is covered by seven single-file functional test files (246 tests, all green). The item `sourceId` value `llm_estimate` is pinned by `food_source_test.dart` as a known mismatch with the stale design s5.6 allowlist; `firestore.rules` does not check `sourceId`, so the design line should be reconciled, not the layer. Evidence: `core/changes/2026-10-15-c22-tests.md`.
+
+Evidence addendum (C18 review record tests): plan_review_record_test.dart ran green, 22 tests.
+
+## 2026-10-15 - Commit: C23 part 1 (food API client and diary repositories)
+
+Decision: the diary talks to food callables only through the FoodApi interface (feature-disabled is a calm not-available state) and stores through ports with Firestore and in-memory implementations; firestore.rules already cover food_entries and saved_foods and accept item sourceId llm_estimate (rules check only item name), so no rules change. Evidence: `core/changes/2026-10-15-c23-state-ports.md`; no checks run.
+
+## 2026-10-15 - Commit: design fix (sourceId allowlist)
+
+Decision: design s5.6 FoodItem sourceId allowlist now includes llm_estimate (stale line fixed; the C22 data layer was already correct). Evidence: `core/changes/2026-10-15-design-sourceid-allowlist.md`.
+
+## 2026-10-15 - Commit: C18 review input builder tests
+
+Decision: builder tests prove the 21-day window edges, previousClass from the newest review and cooldown days feed decide() correctly. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C12 tests for the account-deletion storage sweep
+
+Decision: the existing stateful reconcile fake and the delete_account mock were extended in place (storage mock only) rather than duplicated, per the instruction not to invent a parallel mechanism. Evidence: delete_account.test.ts 67 passed, account_deletion_reconcile.test.ts 42 passed (functions/, npx jest on both files). Change record: core/changes/2026-10-15-body-scan-server-tests-account-sweep.md.
+
+## 2026-10-15 - Commit: C23 part 2 (diary providers)
+
+Decision: diary visibility reuses the device-local eligibility verdict (no new health signal); server search runs only on explicit submit behind the foodLookup flag with a 600 ms debounce and a last-results cache. Evidence: `core/changes/2026-10-15-c23-state-providers.md`; no checks run.
+Progress: T105 nutrition_normalise tests added (56 passing).
+
+## 2026-10-15 - Commit: C13/C14 tests
+
+Decision: shared scan fakes extended in place (luminance, Future<bool> speech, haptic patterns) and the two legacy manual-shutter tests now advance the 5 s timer; new C13/C14 test files follow one per commit. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C12 server tests, final complete run
+
+Evidence: the complete set of C12 server test files (8 new, 2 extended) ran in one jest invocation at head 269e72d: 10 suites, 477 tests passed, 0 failed. Change record: core/changes/2026-10-15-body-scan-server-tests-final-run.md.
+
+## 2026-10-15 - Commit: E1 tests for body-scan guards, activity and nutrition state
+
+Decision: fixed the SCAN-52 product defect in body_scan_flow_machine.dart (a local-only cancel must not emit a server delete); the coverage map V-LOSE-M/V-LOSE-CAP values are wrong against D-39 and are corrected, the implementation stands. Evidence: core/changes/2026-10-15-e1-tests-body-scan-activity-nutrition-state.md.
+Progress: T104 coerce_meal_analysis tests added (54 passing; one test fixture corrected for 0.1 rounding).
+
+## 2026-10-15 - Commit: C21 generic foods and suggestions tests
+
+Decision: fixed three product defects found by the tests: Eggplant no longer carries the egg allergen (builder regex and asset), malt liquor is tagged alcohol, and halal/kosher now hide all uncertain rows as the documented contract says. Evidence: generic_foods_test 68 passed, food_suggestions_test 77 passed (single-file runs); core/changes/2026-10-15-c21-tests.md.
+
+## 2026-10-15 - Commit: fix(body-scan): import CustomSemanticsAction in trend_chart
+
+Decision: one-line import fix; the widget did not compile under the pinned Flutter 3.27.1, blocking every test that imports it. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C18 in-memory repository tests
+
+Decision: repository tests prove version-checked saves, one atomic review+plan write, concurrent same-week idempotency and the offline no-write rule. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C17 reminder settings field and check-in ARB keys
+
+Decision: the weekly reminder choice is stored as `body_scan_settings/main.reminder` (ScanReminderPrefs, null = never chosen) with the v1 SharedPreferences bool kept as a read fallback. Evidence: core/changes/2026-10-15-c17-settings-and-arb.md (no checks run yet).
+
+## 2026-10-15 - Commit: C23 part 3 (diary ARB keys)
+
+Decision: diary copy uses non-inflecting units for decimals and neutral, non-budget wording; one integer-only plural carries all four RU forms. Evidence: `core/changes/2026-10-15-c23-arb.md`; no checks run.
+
+Evidence addendum (C21): change record completed with both test files, the halal/kosher fix and commit ids.
+
+## 2026-10-15 - Commit: C13 tests: ScanRecord v2 round trip and v1 tolerance
+
+Decision: scan_models_v2_test covers legacy v1 reading, v2 round trip through JSON text, unknown status as failed, manualOverride strictness. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Note 2026-10-15: C23 ARB keys were swept into earlier path-limited commits of other sessions (same files); the C23 record core/changes/2026-10-15-c23-arb.md documents them.
+
+## 2026-10-15 - Commit: C16 part 2 (history list, privacy view, routes, l10n)
+
+Decision: cloud privacy controls render only when BODY_SCAN_CLOUD is on (no callable otherwise); copy states deletion within 48 hours and that phone-local photos are untouched; weight edit asks the data notice before the weight-log write. Evidence: core/changes/2026-10-15-c16-history-privacy-ui-routes-l10n.md; no checks run.
+
+## 2026-10-15 - Commit: Body scan root wiring
+
+Decision: all body_scan <-> nutrition bridges live in core/wiring/body_scan_wiring.dart so body_scan never imports review state; Firestore repository/settings are bound only when BODY_SCAN_CLOUD is on; the flow effects run through a body_scan-only driver over the existing job runner. Evidence: core/changes/2026-10-15-body-scan-root-wiring.md.
+
+## 2026-10-15 - Commit: C15 tests - scan_flow_controller
+
+Decision: the flow controller test pins that illegal events still bump the revision and clear effects, and that updateContext never replays effects. Evidence: core/changes/2026-10-15-c15-tests.md.
+Progress: T106 label_normalise tests added (44 passing).
+
+## 2026-10-15 - Commit: C23 part 4 (shared diary widgets)
+
+Decision: widgets use the Material theme and semantic colours, never colour alone for state, and route every number through NumberFormat. Evidence: `core/changes/2026-10-15-c23-widgets-a.md`; no checks run.
+
+## 2026-10-15 - Commit: C17 weekly reminder rule and editor
+
+Decision: the 14-day reminder becomes weekly (Sunday 08:00 default, strictly after newest scan + 5 days); default OFF in measurementOnly; notification tap only opens the app because LocalNotificationService has no tap handler (documented limit). Evidence: core/changes/2026-10-15-c17-weekly-reminder-editor.md (no checks run yet).
+
+## 2026-10-15 - Commit: C16 part 2 commit
+
+Evidence record: the C16 part 2 decision entry above was swept into a concurrent session commit; this commit carries the C16 part 2 files and change record core/changes/2026-10-15-c16-history-privacy-ui-routes-l10n.md; no checks run.
+
+## 2026-10-15 - Commit: C19 plan page, review card, entry card
+
+Decision: the plan screen is gated by the device-local verdict (referProfessional shows one notice, no numbers); every plan or weight write passes ensureDataNoticeAcknowledged first; the entry card is exported but mounted by the Progress/Home owners (C17). Evidence: core/changes/2026-10-15-c19-plan-page.md; no checks run.
+
+## 2026-10-15 - Commit: C23 part 5 (chips, macro bars, ring)
+
+Decision: the day ring never colours or words a low day as failure (D-78); check chips expose state as text and manage focus after resolution. Evidence: `core/changes/2026-10-15-c23-widgets-b.md`; no checks run.
+
+Evidence addendum (C19): plan widgets are in core/changes/2026-10-15-c19-plan-widgets.md; plan page and cards in core/changes/2026-10-15-c19-plan-page.md.
+Progress: nutrition_cache tests added.
+Progress: nutrition_breaker tests added.
+
+## 2026-10-15 - Commit: C18 review scheduler tests
+
+Decision: scheduler tests prove it writes nothing for signed-out, deleting, notice-pending, ineligible, no-plan, reviewed or offline cases and reviews once per ISO week. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C23 part 6 (slot section, detail sheet)
+
+Decision: the data-notice gate runs inside the detail sheet right before the first diary write, so no write or food-AI call precedes disclosure (D-79). Evidence: `core/changes/2026-10-15-c23-detail-sheet.md`; no checks run.
+
+## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
+
+Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md (l10n 18, flow 16, journey 8, step_answered 19 passed; router test not run: other epics do not compile).
+
+Evidence addendum (C18 scheduler tests): review_scheduler_test.dart ran green, 24 tests.
+
+## 2026-10-15 - Commit: C15 tests - scan_result_view_model_test
+
+Decision: view-model tests assert provisional and measurement-only hide every goal figure even when a target and decision are supplied. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: E2 tests part 2 (l10n, profile flow, onboarding journey, router gating)
+
+Decision: E2 coverage is asserted through the real pages and the generated l10n class; step_answered_test fixtures gained a nutrition answer (the new step is the first gap otherwise) with no assertion weakened. Evidence: core/changes/2026-10-15-e2-tests-onboarding-flow.md.
+
+## 2026-10-15 - Commit: C17 Body check-in entry card and mounting
+
+Decision: one BodyScanEntryCard (full on Progress with resume card and history/privacy links, compact on Home); result-page hooks deferred. Evidence: core/changes/2026-10-15-c17-entry-cards.md (no checks run yet).
+
+Evidence addendum (C19): pages and routes in core/changes/2026-10-15-c19-pages-routes.md.
+
+## 2026-10-15 - Commit: C23 part 7 (diary and add-food pages)
+
+Decision: the diary page is hidden for referProfessional and never worded as a budget game; the data notice precedes the first food-AI call. Evidence: `core/changes/2026-10-15-c23-pages-a.md`; no checks run.
+
+## 2026-10-15 - Commit: C25 privacy, deletion, export, inventory
+
+Decision (D-61): the export of the new collections is ordered newest first and paged by the app; the paging state is returned under `paging` (the legacy `truncated` string array is unchanged because the old sections and tests depend on it); continuation pages are charged to their own `accountExportPage` counter. No signed URLs are ever embedded in the export; scans only carry `photoLinksAvailable`.
+
+Decision (Q-10, privacy wording status): `public/privacy.html` was rewritten by an agent to match the actual behaviour with the feature flags off and on. The wording is a DRAFT pending operator and professional (legal) review; it ships as text, but no feature flag (`BODY_SCAN`, `FOOD_AI`) may be enabled in production until the operator signs the wording off. Evidence: `core/changes/2026-10-15-c25-export-paging.md` and the following C25 change records; no checks run.
+Progress: T108 lookup_barcode tests added; product fix: OFF budget slot honours injected clock.
+
+Evidence addendum (C19): ARB keys in core/changes/2026-10-15-c19-arb.md.
+
+## 2026-10-15 - Commit: E0 rules tests and two firestore.rules fixes
+
+Decision (defect fix, C01 rules): `food_entries` exceeded the 1000-expression rules budget for every entry and so could never be written. The element check is inlined for all 30 slots and `rangeOk` is one ordered comparison chain (low <= mid <= high, 0..100000); a 30-item entry with all optional fields is accepted on the emulator.
+
+Decision (defect fix, C01 rules): `cloudConsent` withdrawal was refused by an evaluation error on the missing key. `consentOk` now accepts an absent key first, matching D-56.
+
+Decision (deferral): lifecycle-policy rows for the new collections (PRIV-21, RULES-14) are `test.todo` until C25 adds them to `scripts/ci/data_lifecycle_policy.json`.
+
+Evidence: firestore_rules + data_access_policy 491 passed / 4 todo; storage_rules 82 passed (emulator, alternate port config). Change record: core/changes/2026-10-15-e0-tests-rules.md.
+
+## 2026-10-15 - Commit: C23 part 8 (search page, routes)
+
+Decision: server food search is explicit-submit only and the weight link reuses the C19 weight log page. Evidence: `core/changes/2026-10-15-c23-search-routes.md`; no checks run.
+
+## 2026-10-15 - Commit: C16 functional tests (test-engineer pass)
+
+Decision: C16 history/privacy/compare behaviour is covered by focused Dart tests using fakes and provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c16-tests.md`.
+
+## 2026-10-15 - Commit: C18 plan actions tests
+
+Decision: plan action tests prove every write is eligibility-gated, version-checked and clamped, and acceptProposal and undo refuse stale or out-of-bounds changes. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C25 client export merge and device wipe
+
+Decision: device-only excludedFoods is merged into the export from the local store; per-uid feature keys are wiped by exact-uid suffix match so shared-phone accounts stay isolated. Evidence: `core/changes/2026-10-15-c25-client-export-and-wipe.md`; no checks run.
+
+Evidence addendum (C18 plan actions tests): nutrition_plan_actions_test.dart ran green, 40 tests.
+Progress: T109 search_foods tests added.
+
+## 2026-10-15 - Commit: C17 functional tests (test-engineer pass)
+
+Decision: C17 weekly reminder, editor, settings field and entry cards are covered by focused Dart tests using provider overrides, one file per commit; defects found are fixed minimally in source and named in the change record. Evidence: `core/changes/2026-10-15-c17-tests.md`.
+Progress: T109 hostile-name fixture corrected.
+
+## 2026-10-15 - Commit: C15 follow-up result actions
+
+Decision: the result page gets History, Edit weight and Delete photos wired to the C16 flows; resume-card Cancel/Delete use the remote-delete-aware deletePhotos path; the nutrition entry card is mounted on Progress and (compact) Home. Evidence: `core/changes/2026-10-15-c15-followup-result-actions.md`; no checks run.
+
+## 2026-10-15 - Commit: C25 data inventory rows
+
+Decision: new stores are listed with deletion and export behaviour; nutrition_cache and body_scan_purge_state are EXEMPT (no user data). Evidence: `core/changes/2026-10-15-c25-data-inventory.md`; no checks run.
+
+## 2026-10-15 - Commit: C18 weight providers tests
+
+Decision: weight provider tests prove one current-weight definition (14 days, stale fallback), validation, the deletion fence and that a scan weight never replaces an equal same-day manual entry. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+Progress: manage API client tests added (C16).
+
+## 2026-10-15 - Commit: C18 nutrition providers tests
+
+Decision: provider tests prove the median-steps rule, that an ineligible or unknown verdict hides the plan without deleting it, and that the live review is read-only. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - result_view_test
+
+Decision: result view tests pin that the ETA text is never rendered and that provisional mass tiles are labelled this reading. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: router closure compile fixes
+
+Decision: ServerExport implementers extend (not implement) the abstract class so C25 concrete defaults are inherited; missing imports added; nullable row copied to a final local; intl TextDirection hidden. Evidence: core/changes/2026-10-15-compile-fixes-router-closure.md; single router test green.
+Progress: T110 analyze_meal_photo tests added (70 passing).
+
+## 2026-10-15 - Commit: E0 tests follow-up for the C20 food callables and map rows T136/T137
+
+Decision: the deferred RULES-21 six-callable guard expectation became a real test once C20 landed; the scaling registry lists the four food endpoints; the map registers the two author-added E0 files.
+
+Evidence: release_guard 80 passed, scaling 122 passed (single-file jest runs). Change record: core/changes/2026-10-15-e0-tests-food-wiring.md.
+
+## 2026-10-15 - Commit: E1 final tests, SourceKind import-cycle fix, map correction
+
+Decision: extracted SourceKind into its own file (re-exported from device_source.dart) because the PLAN-29 guard found an import cycle in activity/data; corrected the coverage map V-LOSE-M/V-LOSE-CAP rows against D-39 (implementation stands); the two nutrition_plan -> body_scan edges outside data/ are reported, not edited. Evidence: core/changes/2026-10-15-e1-tests-final-profile-safety-programmes-guards.md (27 E1 files, 1075 passed, 0 failed).
+
+## 2026-10-15 - Commit: C24 attributions, scanner dependency, tile routes
+
+Decision: mobile_scanner ^6.0.11 (not 7.x, which needs Flutter 3.29 while the toolchain is 3.27.1); Android useUnbundled stays default pending an on-device VERIFY; add-food tiles use the planned /nutrition/add/photo|barcode|label paths. Evidence: `core/changes/2026-10-15-c24-attributions-deps-routes.md`; nothing was run.
+
+## 2026-10-15 - Commit: C18 scan plan context source tests
+
+Decision: context source tests prove the decision and target body fat reach the scan surfaces only for an eligible user and an unknown or refused verdict is measurement only. Evidence: core/changes/2026-10-15-c18-tests.md.
+
+Evidence addendum (C18 scan plan context source tests): scan_plan_context_source_test.dart ran green, 14 tests.
+
+## 2026-10-15 - Commit: C19 kcal range slider tests
+
+Decision: the slider persists the last drag value on release (stale parent range could be written when the last move and the release share a frame). Evidence: core/changes/2026-10-15-c19-tests.md (kcal_range_slider_test 22 passed).
+Evidence: scan_plan_context_source_test.dart green (14), part of the C18 set of ten files.
+
+## 2026-10-15 - Commit: C23 food_api tests
+
+Decision: callable errors are tested through the pure `mapFoodCallableError` and the parsers; the real `HttpsCallable` wiring is not faked. Evidence: core/changes/2026-10-15-c23-tests.md (food_api_test 33 passed).
+
+## 2026-10-15 - Commit: C13 tests: manual timer, announcement channels, text scale 2.0; fix l10n plurals, top-bar overflow, stale live cue
+
+Decision: Capture screen tests prove timer/override/channel/throttle/overflow contracts; three product defects (literal # in ICU plurals, top-bar overflow at 2.0x RU, stale throttled live-region cue) fixed minimally in ARB and scan_capture_screen. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+Progress: T111 parse_nutrition_label tests added (30 passing).
+
+## 2026-10-15 - Commit: C25 policy rows and privacy text
+
+Decision (Q-10): privacy.html text is shipped as a draft; the data-lifecycle rows name CONDITIONAL-cell tests that the test agents must add. Evidence: `core/changes/2026-10-15-c25-policy-and-privacy.md`; no checks run.
+
+## 2026-10-15 - Commit: C24 capture state, thumbnail store, ARB keys
+
+Decision: the optional meal thumbnail reuses the progress-photo cipher and per-uid directory (meals/ subfolder) and is deleted by FoodDiaryActions.deleteEntry; barcode decoding keeps only GTIN-valid values with no format filter. Evidence: `core/changes/2026-10-15-c24-capture-state-l10n.md`; nothing was run.
+
+## 2026-10-15 - Commit: C15 tests - analysis_progress_view_test
+
+Decision: progress tests fix that the live text carries only stage changes and notices, never the elapsed counter. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C13 tests: setup status panel rows, hint mapping, semantics, RU
+
+Decision: Panel tests prove four rows with icon+text per state, per-row hint prompts, generic Adjust fallback and semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C23 diary providers tests
+
+Decision: write actions are proven through the real providers over the in-memory repositories; the data-notice gate stays a UI contract and is proven in the sheet/page tests. Evidence: core/changes/2026-10-15-c23-tests.md (diary_providers_test 34 passed).
+Progress: nutrition_sources tests added; product fix: Cyrillic serving units in OFF serving text.
+
+Evidence addendum (C17 tests): entry card tests added; scan_reminder_weekly 33, editor 22, settings 14, entry card 35 passed.
+
+## 2026-10-15 - Commit: C24 scan pages and routes
+
+Decision: label scan always shows an editable confirmation sheet and writes a saved_food only after Confirm; barcode lookups are sent only for GTIN-valid values; describe mode stays in the C23 add-food sheet. Evidence: `core/changes/2026-10-15-c24-scan-pages-routes.md`; nothing was run.
+
+## 2026-10-15 - Commit: C15 tests - trend_chart_test
+
+Decision: chart tests assert one summary node plus an expand action instead of per-point semantics. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 food search controller tests
+
+Decision: debounce and cache are proven with the widget-test fake clock (599 ms no call, 600 ms call). Evidence: core/changes/2026-10-15-c23-tests.md (food_search_controller_test 26 passed).
+
+## 2026-10-15 - Commit: C19 macro_ranges_card_test.dart
+
+Decision: the ICU '#' in nutritionStepsValue and nutritionReviewBasis rendered literally, so the placeholder names are used in EN and RU. Evidence: core/changes/2026-10-15-c19-tests.md (macro_ranges_card_test.dart 7 passed).
+
+Progress: history actions tests added (C16).
+
+## 2026-10-15 - Commit: C25 export paging tests
+
+Decision: the paging test seeds food ids uncorrelated with loggedAt so a document-id-order read would fail it; the legacy export test gets a typed runExport helper because the handler return type became a union. Evidence: core/changes/2026-10-15-c25-tests.md (account_export 19 passed, account_export_paging 16 passed).
+
+## 2026-10-15 - Commit: C19 ownership_selector_test.dart
+
+Decision: ownership selector reports only real changes and is inert when disabled. Evidence: core/changes/2026-10-15-c19-tests.md (ownership_selector_test.dart 7 passed).
+
+## 2026-10-15 - Commit: C13 tests: skeleton overlay geometry and non-colour cues
+
+Decision: Recording-canvas tests prove bone/joint geometry, dashed-vs-solid and hollow-vs-filled readiness cues, likelihood floor and decorative semantics. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - check_items_card_test
+
+Decision: check card tests pin one announcement and focus movement after resolve. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 check these chips tests
+
+Decision: the announcement is captured from the accessibility channel and focus is read from FocusManager debug labels. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+Evidence addendum (C17 Home card test): home_body_check_in_card_test.dart ran green, 6 tests.
+
+## 2026-10-15 - Commit: C19 auto_adjust_toggles_test.dart
+
+Decision: auto-adjust toggles are inert and off under Manual and independent otherwise. Evidence: core/changes/2026-10-15-c19-tests.md (auto_adjust_toggles_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C23 macro bars tests
+
+Decision: macro values are asserted as text and through the semantics label, not via the bar. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C19 professional_notice_test.dart
+
+Decision: the referProfessional notice carries no numbers or reasons. Evidence: core/changes/2026-10-15-c19-tests.md (professional_notice_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C13 tests: scan ports defaults, speaker bridge and haptic patterns
+
+Decision: Port tests prove luminance default, 3/5/10 s timer provider, speech success/failure observability and six distinct haptic sequences. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Progress: retention settings view tests added (C16).
+
+## 2026-10-15 - Commit: C23 day summary ring tests
+
+Decision: neutral wording is asserted over all rendered Text in every state. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - cloud_consent_sheet_test
+
+Decision: consent sheet dismissal is always a refusal; only an explicit Agree returns true. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C19 review_card_test.dart
+
+Decision: undo and accept affordances are gated by ownership, window and plan version; every review shows why. Evidence: core/changes/2026-10-15-c19-tests.md (review_card_test.dart 20 passed).
+
+Progress: scan history list widget tests added (C16).
+
+## 2026-10-15 - Commit: C15 tests - intro_view_test
+
+Decision: intro tests assert the rough-estimate label shows only for the provisional estimator. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C23 meal slot section tests
+
+Decision: slot total and row values use hand-computed kcal (150 g x 130 / 100 = 195). Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: E0 policy-row tests and the E0 test evidence record
+
+Decision: with the C25 lifecycle rows present, the T05 deferrals became real tests: the twelve CONDITIONAL-cell tests carry the exact titles the policy rows reference, and a governance test compares each new row to an expected matrix written from the rules, not from the policy file.
+
+Evidence: complete E0 set green on the recorded heads (jest 409, firestore rules + policy 547, storage 82, Dart 49 plus three flag-define runs); details in core/changes/2026-10-15-e0-test-evidence.md.
+
+## 2026-10-15 - Commit: C14 tests: body scan job runner (local path, cloud gates, fence, rotation, backoff, cancel)
+
+Decision: Runner tests drive the real runner with fakes for api/uploader/blur/face check and assert call counts, persisted states and slugs. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - weight_prompt_sheet_test
+
+Decision: weight prompt tests keep skip (explicit) distinct from dismissal (null) and bound the weight to 20-400 kg. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C25 CONDITIONAL cell rules tests
+
+Decision: cell tests use inline template-literal doc paths because the access checker cannot resolve helper calls; the DEFERRED todo block became real governance tests. Evidence: core/changes/2026-10-15-c25-tests.md (data_access_policy.test.ts 208 passed on the emulator, alternate port 18080).
+
+## 2026-10-15 - Commit: C24 image_prep tests and metadata-strip fix
+
+Decision: `prepareJpeg` clears EXIF and the ICC profile explicitly, because re-encoding alone copied them through. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 portion editor tests
+
+Decision: only positive values up to 10000 reach the callback. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C19 nutrition_entry_card_test.dart
+
+Decision: the entry card hides every number for non-eligible verdicts even when a plan doc exists. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_entry_card_test.dart 9 passed).
+
+Progress: compare start/prompt/deleteScanFiles tests added (C16).
+
+## 2026-10-15 - Commit: C15 tests - resume_scan_card_test
+
+Decision: resume card tests assert that each terminal-failure action reaches its own callback. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 meal thumbnail store tests
+
+Decision: thumbnail tests use the real AesPhotoCipher and a temp directory, and prove deletion through FoodDiaryActions.deleteEntry. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: body scan api client and scrubbed errors
+
+Decision: Fake-FirebaseFunctions tests prove exact payloads, tolerant parsing and closed-slug mapping; scrubbed_error tests prove no raw text or signed URL survives. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C25 local wipe key tests
+
+Decision: the wipe rule is tested as prefix plus exact-uid final segment, including look-alike uids. Evidence: core/changes/2026-10-15-c25-tests.md (local_data_wipe_c25_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C19 nutrition_plan_page_test.dart
+
+Decision: the plan page gates numbers on the verdict, acknowledges the data notice before any write and persists edits only through NutritionPlanActions. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_plan_page_test.dart 25 passed).
+
+## 2026-10-15 - Commit: C23 food detail sheet tests
+
+Decision: the notice gate is proven by zero repository writes until the acknowledge tap. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C25 client export paging tests
+
+Decision: the cap is asserted as 49 continuations because the first page counts toward the 50. Evidence: core/changes/2026-10-15-c25-tests.md (server_export_paging_test.dart 15 passed).
+
+## 2026-10-15 - Commit: test(food): C24 barcode port and page tests
+
+Decision: barcode page tests drive the page through FakeBarcodePort with a recording FoodApi and assert call arguments, not only UI. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 food diary page tests
+
+Decision: referProfessional is proven by the absence of any digit or kcal text on the page. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 parseLabelDraft and label scaling tests
+
+Decision: label draft validation is tested at exact bounds with hand-computed scaling values. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 weight_log_page_test.dart
+
+Decision: the weight log writes only valid 30..300 kg weights, only after the data notice, and edit/delete touch exactly one entry. Evidence: core/changes/2026-10-15-c19-tests.md (weight_log_page_test.dart 20 passed).
+
+## 2026-10-15 - Commit: C15 tests - body_scan_flow_driver_test
+
+Decision: driver tests use a recording fake runner and a stateful record list instead of Firestore. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: photo upload port and scan trend source
+
+Decision: Scripted Dio adapter proves retry/backoff/expiry/cancel; trend source tests prove provisional or changed estimators never count as a decrease. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+Progress: history/privacy route tests added (C16).
+
+## 2026-10-15 - Commit: C19 plan_sources_page_test.dart
+
+Decision: the sources page attributes formulas and food data and states estimate and no-medical-advice limits. Evidence: core/changes/2026-10-15-c19-tests.md (plan_sources_page_test.dart 6 passed).
+
+## 2026-10-15 - Commit: C19 plan_explainer_page_test.dart
+
+Decision: the explainer page describes the weekly review and ownership modes without promising dates or results. Evidence: core/changes/2026-10-15-c19-tests.md (plan_explainer_page_test.dart 6 passed).
+
+Progress: C16 l10n parity and plural tests added.
+
+## 2026-10-15 - Commit: test(food): C24 label scan page tests
+
+Decision: the label page is proven to write a saved_food only after Confirm, using the edited values, and nothing on Cancel or dismiss. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 add food page tests
+
+Decision: tile routes are asserted by the URI the pushed stub receives, matching the routes C24 registered. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: blur service, fix EXIF leak in blurred upload
+
+Decision: Real-pixel blur tests found that the uploaded JPEG kept source EXIF; blur_service now clears exif and ICC before encoding. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C14 tests: settings consent/retention and scan repository
+
+Decision: Tolerant-read and in-memory store tests plus LocalScanRepository signed-in/signed-out behaviour. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 meal scan page tests
+
+Decision: the meal page is proven to call the food AI only after the data notice and to log nothing without Save. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C15 fix - Delete scan on the failed card
+
+Decision: Delete on the terminal failure card calls driver.deleteFailedScan (runner cancel plus flow reset) because the machine has no cancel from failed. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: C15 tests - flow page and driver delete
+
+Decision: the flow page test drives the real page with a fake runner and a stub capture route. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 capture routes and add-food tiles tests
+
+Decision: route agreement is checked by tile taps against the harness plus a source-level check of app_router.dart. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 nutrition_routes_test.dart
+
+Decision: C19 routes are registered in the real router and reachable without redirect. Evidence: core/changes/2026-10-15-c19-tests.md (nutrition_routes_test.dart 5 passed).
+
+## 2026-10-15 - Commit: C23 food search page tests and generic foodRef fix
+
+Decision: generic foodRef is the table id as is (gen:<fdcId>); the doubled prefix was a product defect. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+Progress: scan_gate_delete_test fake aligned with the C17 sync signature.
+
+## 2026-10-15 - Commit: C15 tests - body_scan_wiring_test
+
+Decision: wiring tests drive the bridge with overrides only; no Firebase. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 attribution file vs in-app sources tests
+
+Decision: attribution consistency is tested by parsing the real file and rendering the real sources page. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C19 plan_arb_parity_test.dart
+
+Decision: the C19 EN/RU keys stay in parity and RU plural forms resolve correctly. Evidence: core/changes/2026-10-15-c19-tests.md (plan_arb_parity_test.dart 14 passed).
+
+## 2026-10-15 - Commit: C15 tests - c15_body_scan_arb_test
+
+Decision: ARB parity test reads the ARB files directly so it needs no generated l10n. Evidence: core/changes/2026-10-15-c15-tests.md.
+
+## 2026-10-15 - Commit: test(food): C24 EN/RU ARB parity tests
+
+Decision: ARB parity is asserted on the real files for the new key family and the food* family. Evidence: core/changes/2026-10-15-c24-tests.md.
+
+## 2026-10-15 - Commit: C23 routes tests
+
+Decision: route agreement is asserted from the add-food source against the router source plus the live router. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 l10n and accessibility audit
+
+Decision: RU plurals only for integer fields (all new plural placeholders are int, one/few/many/other defined); decimals use locale-formatted numbers with non-inflecting abbreviations. HUD light warning/danger failed WCAG on cards (1.55 / 2.78), so new widgets read the status colours from AppSemanticColors; the camera readiness panel fill went from 0.65 to 0.85 black. The missing trainingReason* family (7 codes) was added. Evidence: core/changes/2026-10-15-c26-l10n-a11y-audit.md (contrast table; contrast_tokens_test.dart written, NOT RUN).
+
+## 2026-10-15 - Commit: sprint status report (checkpoint)
+
+Decision: interim status report pair added (reports/2026-10-15-body-scan-nutrition-sprint-status.*). Checkpoint only: sprint not closed, test agents and C27 continue. Evidence: `core/changes/2026-10-15-sprint-status-report.md`.
+
+## 2026-10-15 - Commit: C26 contrast token test run and fixed
+
+Decision: `contrast_tokens_test.dart` compiled only after replacing `toARGB32()` with `value` for the pinned SDK; source-pinned checks added for the camera panel alpha and status colours so the hard-coded camera pairs cannot drift from the source. 65 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: C13 tests: capture screen no-rebuild window accounts for throttled first cue
+
+Decision: The rebuild-stability test now starts after the 2 s live-region throttle. Evidence: core/changes/2026-10-15-c13-c14-tests.md.
+
+## 2026-10-15 - Commit: C23 text scale 2.0 RU tests and overflow fixes
+
+Decision: text-scale overflow is asserted through takeException on a 360x640 RU 2.0 render of every diary surface. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C23 food ARB parity tests
+
+Decision: RU plural forms are proven by output of the generated localizations, not only by the ARB text. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 plural and decimal test (T123)
+
+Decision: `body_scan_plurals_test.dart` added; it renders the 11 new plural keys and the decimal-unit keys in RU and EN and pins the D-84 rule. 35 tests pass. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: C27 docs (CODEMAP, INDEX, state, decisions)
+
+Decision (SD not yet recorded): (SD-16) `core/CURRENT_STATE.md` stays generated by `scripts/review/state_ledger.py`; sprint status lives in `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md`. (SD-17) `core/INDEX.md` stays the hand-maintained document registry (no generator exists). (SD-18) Final flag defaults: `BODY_SCAN_CLOUD`, `FOOD_AI`, `FOOD_LOOKUP` all off in the client; server `BODY_SCAN_BUCKET` unset and food flags off; each needs its runbook go-live gates. (SD-19) The body-scan estimator shipped is the on-device provisional Deurenberg estimate (range 5.0 points) that ignores photos; no real provider. VERIFY outcomes as recorded: `mobile_scanner` added with a licence row in `core/ATTRIBUTIONS_NUTRITION.md` and unverified on device; the import-graph check found two nutrition_plan to body_scan edges, pinned by test; coverage map V-LOSE-M and V-LOSE-CAP corrected to the D-39 values. Open items are listed in `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md`. Evidence: `core/changes/2026-10-15-c27-docs.md`.
+
+## 2026-10-15 - Commit: C23 diary repository fake tests
+
+Decision: the fake repositories are held to the same refusals as the rules. Evidence: core/changes/2026-10-15-c23-tests.md.
+
+## 2026-10-15 - Commit: C26 capture screen large-text test (T126)
+
+Decision: `body_scan_a11y_test.dart` added (7 tests pass); the capture panel is bounded and scrolls at 2.0 in RU on 360x640, the shutter stays >= 48 dp and tappable. Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: server review fixes part 1
+
+Decision: erase paths (deleteBodyScan, manageBodyScanData, purge, account-delete sweep) depend on the bucket name only; a separate BODY_SCAN_ACCEPT_UPLOADS switch (default on) gates new scans and estimates, and rollback means flipping it, never unsetting the bucket while objects exist. The purge trusts only documents at users/{uid}/body_scans/{id}. Failed scans are purged after pendingExpiresAt. Estimate attempts per scan are capped at 3 and not reset by refunds. Evidence: core/changes/2026-10-15-server-review-fixes-1.md; no checks run.
+
+## 2026-10-15 - Commit: C26 tap-target sweep test (T125)
+
+Decision: `new_pages_tap_targets_test.dart` sweeps 14 new pages x EN/RU x 1.0/2.0 with the Android tap-target and labeled-tap-target guidelines. First run: 53 pass, 3 fail (result page overflow on 360 dp, product defect). Evidence: `core/changes/2026-10-15-c26-tests.md`.
+
+## 2026-10-15 - Commit: mobile runner review fixes
+
+Decision: an owed server delete (`pendingRemoteDelete`) makes a scan permanently non-resumable and every runner write re-reads the record first; "inputs still loading" is not-ready (stays queued), never `subject-missing`; the retry timer is always re-armed from the stored queue after a pass. Evidence: core/changes/2026-10-15-mobile-runner-fixes.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 2 (tests and runbook)
+
+Decision: bucket runbook rollback is flipping BODY_SCAN_ACCEPT_UPLOADS, never unsetting BODY_SCAN_BUCKET while objects exist; storage rules are deployed separately with --only storage. Evidence: core/changes/2026-10-15-server-review-fixes-2-tests-runbook.md; no checks run.
+
+## 2026-10-15 - Commit: mobile owed deletes
+
+Decision: a photo delete with a possibly existing cloud copy is never reported `deleted` until the server delete succeeded; otherwise it is persisted as owed (photos-only kind), the scan is stopped (terminal cancelled when unfinished) and the runner removes the phone copy after the flush. Evidence: core/changes/2026-10-15-mobile-delete-owed.md; no checks run.
+
+## 2026-10-15 - Commit: mobile fire-and-forget observation
+
+Decision: no runner call is fire-and-forget without an error observer; the runner provider (not the app-root wiring) resumes on profile/weight load so existing wiring tests keep their provider graph. Evidence: core/changes/2026-10-15-mobile-fire-and-forget.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 3 (export quota, log redaction)
+
+Decision: account export continuation quota is 150/day; accountExport and accountExportPage quota logs and export failure logs are uid-free (error code only); ai_gateway logs an error code, not the exception text. SF-F13 closed as already satisfied (writeCache never throws). Evidence: core/changes/2026-10-15-server-review-fixes-3-logs-quota.md; no checks run.
+
+## 2026-10-15 - Commit: server review fixes part 4 (unusable model output)
+
+Decision: analyzeMealPhoto and parseNutritionLabel treat unparseable model output as a failed call (refund, unavailable); only a well-formed empty items list is a successful empty meal. Evidence: core/changes/2026-10-15-server-review-fixes-4-unusable-model-output.md; no checks run.
+
+## 2026-10-15 - Commit: mobile plan and diary read fixes
+
+Decision: "document exists but unreadable" is an error state distinct from "no document" (plan), and a diary entry with missing totals or time is `degraded` (never written back). Evidence: core/changes/2026-10-15-mobile-plan-and-diary-reads.md; no checks run.
+
+## 2026-10-15 - Commit: cancel vs unresolved createBodyScan race tests
+
+Decision: the cloud-scan cancel-while-create-unresolved race is covered by deterministic tests; no production change was needed. cancel() sends deleteBodyScan (the scan is persisted as `uploading` before create) or persists pendingRemoteDelete, and the server tombstone makes a late create harmless. Evidence: core/changes/2026-10-15-cancel-create-race-tests.md; focused run of body_scan_job_runner_test.dart only.
+
+## 2026-10-15 - Commit: bulk-delete fence and straggler pass (MAJOR-02)
+
+Decision: delete-all pages raise a 15 min per-user fence in `body_scan_purge_state` (hashed id, server-only) and `createBodyScan` refuses new/reset/re-issue work with `delete-in-progress` while it is active; the final page runs a bounded (3 passes) `createdAt`-window straggler sweep and fails with `delete-incomplete` rather than reporting done with live scans left. Evidence: core/changes/2026-10-15-bulk-delete-fence.md; jest manage 53, create 111, delete 23, guard 44 green.
+
+## 2026-10-15 - Commit: fence ownership and late-upload sweep (MAJOR-02A/02B)
+
+Decision: the bulk-delete fence holds one transactional entry per operation (random `fenceToken` returned with the cursor and echoed back); each operation refreshes and clears only its own entry and `createBodyScan` refuses while any entry is active. Because already-issued signed PUT URLs cannot be revoked, a completed delete-all records a `late_sweep` record (due = completion + 10 min URL TTL + 2 min) and the new `sweepLateBodyScanUploads` schedule (every 5 min) removes orphan objects of the user's scans prefix, so the stated bound is 17 minutes. Trade-off: the transient late-sweep record carries the uid. Evidence: core/changes/2026-10-15-fence-ownership-late-sweep.md.
+
+## 2026-10-15 - Commit: fence ownership test sweep and uid statement alignment
+
+Decision: the uid carried by the transient `late_sweep_<hash>` record (at most ~17 minutes, server-only, deny-all to clients) is stated exactly in the firestore.rules comment and the data inventory (md and csv) instead of the earlier "no uid" wording; classification and access cells stay EXEMPT/NONE. Added a Dart test for the `fenceToken` echo. Evidence: core/changes/2026-10-15-fence-ownership-tests.md.
+
+## 2026-10-15 - Commit: late sweep compare-and-delete and honest contract
+
+Decision: the late-sweep record carries a `rev` rewritten on every completion and the sweep deletes it only if `rev` and `dueAtMs` are unchanged (transaction), so a newer delete-all is never erased by an older run; the "17 minutes" figure is a target under normal operation, a record that cannot finish is retried every 5 minutes with no hard upper bound, and the uid-bearing record lives until deleted. Evidence: core/changes/2026-10-15-late-sweep-cas-and-contract.md.
+
+## 2026-10-15 - Commit: late sweep resumable cursor
+
+Decision: the late sweep stores the last listed object name as `cursor` on its record (compare-and-set on rev/dueAtMs, reset by every completeFence) and resumes with `startOffset`, so live objects ahead of a late orphan cannot starve it; the record is still deleted only after the listing completes. Evidence: core/changes/2026-10-15-late-sweep-resumable-cursor.md.
+
+## 2026-10-15 - Commit: S00 split of Phase 1 and Phase 2
+
+Decision: operator answers recorded. D-1 phase rule as written (Phase 1 = planned before 2026-10-10, first production MVP, fixes and release readiness only; Phase 2 = planned after; a Phase 2 feature found in the Phase 1 line is an experiment, flag OFF, developed only in Phase 2; `training_context` stays in Phase 1). D-2 PR #5 retargeted to `phase2/main`; the base commit is identical to the previously reviewed base (`42d1b849`), the diff is identical (552 files) and GPT-PM APPROVE on head `cd9d7c3a` was therefore applied; merged as `5137ccda`. D-4 separate Firebase alias for Phase 2 (alias creation is an operator action; Phase 2 stays on the emulator until it exists). D-5 Option A: one repository, branches `phase1/main` and `phase2/main`, tag `phase1-baseline` at `42d1b849`, worktrees `D:\Repo\Fitness_App_Phase1` and `D:\Repo\Fitness_App_Phase2`. Plan package approved: GPT-PM APPROVE on revision 3 (three rounds). Evidence: docs/phase2/split/SNAPSHOT_2026-10-15.md, core/changes/2026-10-15-s00-split-docs.md. Open: backend separation gate, `phase1/main` documentation PR, retirement of old branches and worktrees (operator approval).
+
+## 2026-10-15 - Commit: S00 backend separation gate
+
+Decision: the release guard checks the deploy line (from the git branch) before the project: phase1 line deploys only to fitness-app-korostelev, phase2 line only to the project under .firebaserc alias phase2 (never production or legacy), any other branch is blocked; no env override. Phase 2 stays on the emulator until the operator creates the Phase 2 Firebase project and the alias. Evidence: core/changes/2026-10-15-s00-backend-separation-gate.md; not yet tested.
+
+## 2026-10-15 - Commit: S00 backend separation gate tests
+
+Decision: the deploy-line gate is proven by deterministic fake-deps tests in release_guard.test.ts (115 tests passing, 0 failing): branch classification, all six block reasons, both PASS paths, phase2 default-project fallback blocks, no override path. No product code changed. Not verified: real CLI execution of run_release_guard.mjs and the real git branch reader. Evidence: core/changes/2026-10-15-s00-backend-gate-tests.md.
+
+## 2026-10-15 - Commit: S01 contract and rights drafts
+
+Decision: S01 starts as documentation only. The GPS privacy contract, lifecycle matrix and rights study are drafts with PROPOSED requirements; D-16, D-17, D-6 and D-7 remain open for the operator with a recommendation each. Evidence: core/changes/2026-10-15-s01-contract-and-rights-drafts.md.
+
+## 2026-10-15 - Commit: S01 UI-0 baseline audit
+
+Decision: the UI-0 audit is saved as a verbatim agent report with FACT/INFERENCE labels; it shows that two token layers coexist (AppSemanticColors and HudTokens), that 30 feature files still use the legacy FrostedScaffold, that no location package or mode state exists, and that the direction document assumes 48 dp targets (code: 44) and about 45 routes (code: 35). Evidence: core/changes/2026-10-15-s01-ui0-baseline-audit.md.
+
+## 2026-10-15 - Commit: S01 contract security review fixes
+
+Decision: all 15 security-review findings are addressed in the GPS contract and lifecycle matrix (none rejected; three accepted with qualifications because cloud-side settings cannot be verified from the repository). D-16 and D-17 remain open for the operator. Evidence: core/changes/2026-10-15-s01-contract-security-review-fixes.md.
+
+## 2026-10-15 - Commit: S01 review round 2 and UI-0 addendum
+
+Decision: the privacy zones of the user are a data class of their own (C11) with a consent-gated exemption from the D-16 stream retention, because the server needs them to validate a publish; friends visibility follows the D-17 option with unknown age always refused; the UI-0 audit stays a verbatim agent report plus an addendum, and the audited mobile/ tree predates the PR #5 Body Scan code. Evidence: core/changes/2026-10-15-s01-review-round-2-and-ui0-addendum.md.
+
+
+## 2026-10-15 - Commit: S00 deploy guard coverage and provenance
+
+Decision: after GPT-PM MODIFY, the release guard now runs in the predeploy of every deploy target in firebase.json (both functions codebases, firestore, hosting; a future storage block must carry it), the effective project comes from GCLOUD_PROJECT and/or an explicit --project and fails closed when absent or conflicting, and a phase1 deploy additionally requires HEAD to be an ancestor of origin/phase1/main or origin/master (new reason phase1-provenance-unverified). Supported path: scripts/deploy/guarded_deploy.mjs. Residual limit stated, not solved: a local guard cannot stop use of the firebase CLI with another config or credentials; separate production deploy credentials or protected CI are an open operator item. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance.md; not yet tested.
+
+## 2026-10-15 - Commit: S00 review fixes, documentation state
+
+Decision: after GPT-PM round 1 (MODIFY) the plan documents keep their original wording and gain a CURRENT STATE banner; docs/phase2/README.md carries the executed S00 state; the registry generator gets a --check stale test. The earlier "no tests run" record stays valid history; core/changes/2026-10-15-s00-backend-gate-tests.md is the current verification evidence for the first guard version (115 passed), superseded by the tests of the coverage and provenance fix. Evidence: core/changes/2026-10-15-s00-review-fixes-docs-state.md.
+
+## 2026-10-15 - Commit: guard coverage and provenance tests
+
+Decision: the deploy guard fix is accepted for review with 275 focused tests passing (232 + 43, run by the test agent). `findUnguardedDeployTargets` is a test-time check only; the docs must not claim a deploy-time check of firebase.json. Evidence: core/changes/2026-10-15-s00-guard-coverage-provenance-tests.md.
+
+## 2026-10-15 - Commit: merge phase2/main into the S00 branch
+
+Decision: the S00 branch integrates PR #5 (5137ccda) before its own PR so the guard knows the Body Scan checks and every deploy target, including the storage block PR #5 introduced, carries the deploy-line guard. Evidence: core/changes/2026-10-15-s00-merge-phase2-main-into-s00.md; tests rerun follows.
+
+## 2026-10-15 - Commit: guard tests after merge
+
+Decision: the merged guard (PR #5 checks plus deploy-line coverage and provenance) is covered by 436 passing jest tests across the three files that import release_guard; the Python deployment-isolation scripts that mention the guard were not run. Evidence: core/changes/2026-10-15-s00-guard-tests-after-merge.md.
+
+
+## 2026-10-15 - Commit: S00 deploy guard review fixes
+
+Decision: after the security and silent-failure reviews, the clean-tree check also covers rules, indexes, storage rules and the hosting public dir; short-flag clusters that could hide -c or -P are refused; the project id is validated before use (new reason project-invalid) and the deploy-target check runs before any gcloud call, with the remaining checks reported as not run; guard wiring requires the exact predeploy command; one throwing check no longer aborts the report; the wrapper refuses to deploy when firebase.json has an unguarded target. Deliberately not done: deploy-time env reading and the hardcoded production kill-switch secret path in abuse_guard.ts, recorded as open items before the first Phase 2 cloud deploy in docs/phase2/split/BACKEND_SEPARATION.md. Evidence: core/changes/2026-10-15-s00-guard-review-fixes.md; not yet tested.
+
+## 2026-10-16 - Commit: guard tests for the review fixes
+
+Decision: the guard review fixes are covered by 608 passing jest tests (397 + 86 + 125); a timed-out gcloud child on Windows may outlive the guard (shell:true plus SIGKILL), recorded as a known limit, not fixed in S00. Evidence: core/changes/2026-10-16-s00-guard-tests-review-fixes.md.
+The registry generator no longer lists core/DECISION_LOG.md: its size changed with every decision entry and made the registry stale after each commit; the log remains the canonical decision record.
+
+
+## 2026-10-16 - Commit: S00 deploy guard ignored files
+
+Decision: after GPT-PM round 2 (MAJOR-02A), the clean-tree check also inspects git-ignored files under the deploy-relevant paths, because Firebase uploads ignored files that its own ignore list does not exclude. Allowed: node_modules, functions/lib and functions-equipment-identity/lib, entries excluded by the target's own firebase.json ignore list, and functions .env files; everything else blocks with ignored-deployable-files. A git status failure fails closed. The candidate dotenv content stays unverified (open item before the first Phase 2 cloud deploy). Evidence: core/changes/2026-10-16-s00-guard-ignored-files.md; not yet tested.
+
+## 2026-10-16 - Commit: tests for the ignored deployable files check
+
+Decision: MAJOR-02A (git-ignored deployable files) is covered by 703 passing jest tests (477 + 101 + 125), including an end-to-end case with real git where an ignored public file blocks the wrapper before firebase is spawned. Evidence: core/changes/2026-10-16-s00-guard-ignored-files-tests.md.
+
+
+## 2026-10-16 - Commit: S00 deploy guard node_modules scope
+
+Decision: after GPT-PM round 3 (MAJOR-02B), an ignored node_modules path is no longer allowed unconditionally; it is allowed only when the deploy target's own ignore list in firebase.json excludes it (so hosting.ignore with no node_modules entry plus an ignored public/node_modules now blocks). The functions ignore list mirrors firebase-tools (default node_modules and .git only when no ignore key exists, basename matching for slash-free patterns). functions/lib, functions-equipment-identity/lib and functions .env files stay allowed by design (build output and env config are packaged by firebase deploy). Unreadable firebase.json now also blocks an ignored functions/node_modules (fail closed). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope.md; not yet tested.
+
+## 2026-10-16 - Commit: tests for the node_modules scope fix
+
+Decision: MAJOR-02B (unconditional node_modules allowance) is covered by 742 passing jest tests (505 + 112 + 125), including a real-git end-to-end case where an ignored public/node_modules file blocks the wrapper before firebase is spawned. Hosting implicit exclusions are intentionally not modelled (stricter than firebase-tools). Evidence: core/changes/2026-10-16-s00-guard-node-modules-scope-tests.md.
+
+## 2026-10-15 - Commit: Phase 1 documentation index
+
+Decision: Phase 1 line gets a navigation index (`docs/phase1/README.md`) as part of the S00 split; no documents moved. The tag `phase1-baseline` at `42d1b849` is a historical split point, not a production-ready certificate. Evidence: core/changes/2026-10-15-s00-phase1-docs-index.md.
+
+## 2026-10-15 - Commit: Phase 1 index review fix
+
+Decision: after GPT-PM round 1 (MODIFY, MAJOR-01) the Phase 1 index labels `docs/EXPERIMENTS.md` and the roadmap plan as Phase 2 line files that are absent from `phase1/main` until the Phase 2 documentation PR is merged and synced. Evidence: core/changes/2026-10-15-s00-phase1-docs-index-review-fix.md.
+
+## 2026-10-16 - Commit: sync merge of phase1/main
+
+Decision: the first Phase 1 to Phase 2 sync is a pure merge commit of origin/phase1/main (0eee9ca2, documentation only) so that the sync log can name its exact SHA. Evidence: core/changes/2026-10-16-s00b-sync-merge.md.
+
+## 2026-10-16 - Commit: phase2 alias and sync log entry
+
+Decision: the phase2 Firebase alias points at fitness-app-phase2-korostelev and the first sync is logged with the exact merge commit 39dc95cd. Phase 2 stays on the emulator until the open items in docs/phase2/split/BACKEND_SEPARATION.md are closed. Evidence: core/changes/2026-10-16-s00b-phase2-alias-and-sync-log.md.
+
+## 2026-10-16 - Commit: S01 branch updated from phase2/main
+
+Decision: the S01 branch merges phase2/main (89927444) before its review gate; the UI-0 audit still describes the mobile tree before PR #5 and a delta pass over the Body Scan screens is a follow-up item. Evidence: core/changes/2026-10-16-s01-merge-phase2-main.md.
+
+## 2026-10-16 - Commit: S01 contract round 3 and SDLC state
+
+Decision: until the operator answers the minors question, adult-to-minor friend edges are refused (default E1); the debug_sessions rules criterion is bounded to list size and top-level keys because rules cannot iterate list elements. docs/sdlc/STATE.md becomes the phase truth of the Phase 2 program. Evidence: core/changes/2026-10-16-s01-contract-round-3-and-sdlc-state.md.
+
+## 2026-10-16 - Commit: S01 UI-0 delta for PR #5 screens
+
+Decision: the UI-0 baseline gets a separate delta document for the Body Scan, nutrition plan and food diary screens (a third visual pattern: plain Material plus GlassCard) instead of rewriting the original audit. Evidence: core/changes/2026-10-16-s01-ui0-bodyscan-delta.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 1
+
+Decision: the contract baseline follows the PR #5 state (deny-all storage.rules, separate Body Scan bucket); a server-side guarantee for debug telemetry (sanitising callable or per-event documents) is mandatory before any GPS code ships, because rules cannot check list elements. Evidence: core/changes/2026-10-16-s01-gptpm-round1-fixes.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 2
+
+Decision: every statement about Storage, account deletion and Body Scan code in the S01 documents follows the PR #5 tree (sweepBodyScanObjects exists, Body Scan code is present); the UI-0 audit keeps its explicit pre-PR #5 date. Evidence: core/changes/2026-10-16-s01-gptpm-round2-fixes.md.
+
+## 2026-10-16 - Commit: S01 fixes for GPT-PM round 3
+
+Decision: all file and line citations and "absent" claims in the S01 contract and lifecycle matrix were re-verified against the PR #5 tree in one sweep (the documents were drafted before PR #5); the existing Storage rules test and the server read of the client-writable birth year are recorded as facts. Evidence: core/changes/2026-10-16-s01-gptpm-round3-fixes.md.
+
+## 2026-10-16 - Commit: operator decisions D-16, D-17, D-6, D-7 recorded and S02 started
+
+Decision: the operator answered the four open S01 decisions in chat (GPS cloud with user-set expiry and heart rate device-only; friends by mutual accept, no public sharing for minors, self-declared age; open source tiles; open source tracks and maps). The interpretation and the points still open (default expiry, retention clock, region) are written into the contract section 9; the first-release region must be named before S07. Evidence: core/changes/2026-10-16-s02-operator-decisions-and-state.md.
+
+## 2026-10-16 - Commit: S01 gate closure report
+
+Decision: the closed S01 gate is reported as a Russian and English HTML pair in reports/. Two older reports without the provenance block are not part of this work and are left unchanged. Evidence: core/changes/2026-10-16-s01-gate-closure-report.md.
+
+## 2026-10-16 - Commit: SDLC state header refresh
+
+Decision: STATE.md names the current branch and base, and links the S01 report; no separate S01 retrospective is written for a documentation-only sprint. Evidence: core/changes/2026-10-16-s02-state-header-and-s01-report-link.md.
+
+## 2026-10-16 - Commit: S02 code map
+
+Decision: the explorer fact sheet is kept in the repository as the shared starting point of the S02 design; claims stay labelled as the agent reported them and are re-verified by the design author. Evidence: core/changes/2026-10-16-s02-code-map.md.
+
+## 2026-10-16 - Commit: S02 design draft
+
+Decision: the S02 design draft recommends a dedicated private bucket with signed URLs and scheduled purge, a sanitising callable for debug telemetry and a file journal locally; all remain PROPOSED until architecture and security review and GPT-PM. Evidence: core/changes/2026-10-16-s02-design-draft.md.
+
+## 2026-10-16 - Commit: S02 design revision 2
+
+Decision: the S02 design applies all 24 internal review findings (tombstone with TTL instead of callable-only summary writes to keep offline-first; four permanent rules exclusions; closed server schema for streams; expiry derived at purge time) and answers the 15 test-plan questions as proposals; three questions stay with the operator (cloud stream kinds beyond GPS, "never" retention, default expiry). Evidence: core/changes/2026-10-16-s02-design-revision-2.md.
+
+## 2026-10-16 - Commit: S02 test plan and summary revision counter
+
+Decision: summary ordering uses a client-incremented rev enforced strictly increasing by rules instead of a server stamp, because the summary is an offline client write; resurrection after delete is stopped by the tombstone. Test plan: 181 planned tests, 5 more for rev. Evidence: core/changes/2026-10-16-s02-test-plan-and-rev.md.
+
+## 2026-10-16 - Commit: S02 design revision 3
+
+Decision: the delete fence and late job live in a top-level server-only collection written before the first deletion sweep (the Body Scan precedent); a permission-denied on a summary write never deletes local data without a tombstone; summary batches are capped at 10; bulk stream deletion is a seventh hardened callable. Evidence: core/changes/2026-10-16-s02-design-revision-3.md.
+
+## 2026-10-16 - Commit: S02 test plan revision 3
+
+Decision: Firebase Auth uids are treated as never re-issued (the fence document is removed one hour after the late job); a commit with an already-due expiry is refused so an expiry purge cannot be undone by a pending re-upload. Test plan: 212 planned tests. Evidence: core/changes/2026-10-16-s02-test-plan-revision-3.md.
+
+## 2026-10-16 - Commit: S02 documentation phase report
+
+Decision: PM Bridge mode was turned on through its normal tool after the direct review path reported that no orchestrator was active; no break-glass flag was used. The S02 documentation phase is reported as a Russian and English HTML pair. Evidence: core/changes/2026-10-16-s02-documentation-phase-report.md.
+
+## 2026-10-16 - Commit: S02 design revision 4
+
+Decision: the Firestore rules themselves refuse client summary writes while an account deletion fence exists (batches of 8), the fence outlives the ID-token window, concurrent edits are merged three-way or surfaced as a user-visible conflict, and the local journal switches generations atomically. Evidence: core/changes/2026-10-16-s02-design-revision-4.md.
+
+## 2026-10-16 - Commit: S02 test plan revision 4
+
+Decision: the test plan covers the rules-level deletion fence, the three-way merge, generation-directory journal recovery, a split valid and hostile corpus and a story-map lint; design section 11 is the single authoritative order and its test-id column equals the plan map. Evidence: core/changes/2026-10-16-s02-test-plan-revision-4.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 5
+
+Decision: the merged activity summary is kept as explicit per-field overrides in the local record so it survives recomputation and restart; a journal generation is committed by its COMMIT marker (not by the CURRENT pointer) and recovery never activates an uncommitted generation; a stream-only checksum mismatch is recovered as streamLost rather than rolled back. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-5.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 6
+
+Decision: a summary override is bound to the input revision of its own field instead of the general journal sequence, so metadata-only mutations cannot undo a merge; an uncommitted first journal generation is never shown as an activity. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-6.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 7
+
+Decision: summary override invalidation is driven by digests of ten classified input classes against an authoritative field matrix that is a superset by rule, and the tests compare the production constant with an independent golden fixture instead of reading the constant itself. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-7.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 8
+
+Decision: the lifecycle of a merged summary override is decided by observable values (recomputed value versus the value at merge time and the adopted value), not by a classification of inputs; the matrix design was withdrawn after two review findings that no matrix could fix. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-8.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 9
+
+Decision: explicit user edits, passive changes and automatic recalculations are three different operations on a merged summary value; a calculation-version change never replaces an adopted cloud value on its own and is offered to the user as a recalculation candidate. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-9.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 10
+
+Decision: explicit user edits are stored in the record and applied by the summary projection, and version reconciliation of overrides is a mandatory atomic step that runs first, so neither a restart nor a version-only upgrade can change how the next edit is classified. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-10.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 11
+
+Decision: an explicit user value is deliberately authoritative until the user reconsiders it, newer source data is surfaced as a candidate instead of being hidden or applied, and the edit history is a bounded ring separate from the canonical value map with a saturating cloud counter. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-11.md.
+
+## 2026-10-16 - Commit: S02 design and test plan revision 12
+
+Decision: resolving a recalculation or source candidate is a single atomic operation over the explicit value, the cloud override and the candidate, merged against the current base and server revision, so the user's choice is never undone by an older override. Evidence: core/changes/2026-10-16-s02-design-and-test-plan-revision-12.md.
+
+## 2026-10-16 - Commit: S02 documentation phase closed
+
+Decision: the S02 documentation gate is closed on GPT-PM APPROVE for head 9c68cab8 (verification round 10); implementation of S02 starts. Evidence: core/changes/2026-10-16-s02-documentation-phase-closed.md.
+
+## 2026-10-16 - Commit: S02-01 model building blocks
+
+Decision: the cloud-summary allowlist and bounds live in one Dart constant file, sub-models keep unknown keys in extras, and explicit values and cloud overrides are plain data classes with tolerant readers. Evidence: core/changes/2026-10-16-s02-01-model-building-blocks.md.
+
+## 2026-10-16 - Commit: S02-01 schema 2 session and migration chain
+
+Decision: schema 2 adds the A-5 strings and record state to ActivitySession, the migration chain is total and returns newer-schema records untouched, and the design edit ring is a new editHistory field because the merger depends on the existing userEdits map. Evidence: core/changes/2026-10-16-s02-01-schema2-and-migration.md.
+
+## 2026-10-16 - Commit: S02-01 cloud summary, projection and three-way merge
+
+Decision: the summary is built only from the effective projection of the record by pure functions, and merge, override and candidate resolution are pure so they can be tested without Firestore. Evidence: core/changes/2026-10-16-s02-01-cloud-summary-and-projection.md.
+
+## 2026-10-16 - Commit: S02-01 stream payload and sport-to-model table
+
+Decision: the stream payload is built by a closed-schema copy that hard-denies heart rate, and strength is the only sport owned by the workout model; every other sport and unknown names belong to the activity model. Evidence: core/changes/2026-10-16-s02-01-stream-payload-and-sport-model.md.
+
+## 2026-10-16 - Commit: S02-02: file-system seam, layout constants and backup exclusion
+
+Decision: The journal talks to storage only through an injectable file-system seam without a directory fsync, and one constant list of directories drives both Android backup XML files, the checker and the iOS marker interface. Evidence: core/changes/2026-10-16-s02-02-fs-seam-layout-backup.md.
+
+## 2026-10-16 - Commit: S02-02: stream cipher and secure-storage key provider
+
+Decision: Streams are encrypted with AES-256-GCM under a secure-storage key that is never re-minted when the store is merely unreadable. Evidence: core/changes/2026-10-16-s02-02-cipher-and-key.md.
+
+## 2026-10-16 - Commit: S02-02: journal value types
+
+Decision: record.json is an envelope of the raw session map and journal-owned state so tombstone and synced survive an index rebuild. Evidence: core/changes/2026-10-16-s02-02-journal-models.md.
+
+## 2026-10-16 - Commit: S02-02: generation writer with COMMIT marker
+
+Decision: A mutation writes a new generation directory and the COMMIT marker rename is the only commit point; CURRENT and the index are written after it and are caches. Evidence: core/changes/2026-10-16-s02-02-generation-writer.md.
+
+## 2026-10-16 - Commit: S02-02: recovery pass
+
+Decision: Recovery selects the highest generation with a valid COMMIT, deletes everything uncommitted, and treats CURRENT and the index as rebuildable caches. Evidence: core/changes/2026-10-16-s02-02-recovery-pass.md.
+
+## 2026-10-16 - Commit: S02-02: journal repository API, tombstone, sync state, wipe and sign-out hooks
+
+Decision: The journal serialises every operation through one mutex, acknowledges only after the COMMIT rename, keeps tombstone and synced state inside record.json, and exposes sign-out and export as interfaces. Evidence: core/changes/2026-10-16-s02-02-journal-api.md.
+
+## 2026-10-16 - Commit: S02-03: owner wildcard exclusions
+
+Decision: The four activity collections are excluded from both the read and the write clause of the owner wildcard as a permanent floor, before their dedicated blocks exist. Evidence: core/changes/2026-10-16-s02-03-owner-wildcard-exclusions.md.
+
+## 2026-10-16 - Commit: S02-03: activity summary, stream, settings and tombstone blocks
+
+Decision: The summary rules use one allowlist identical to summary_fields.dart, require rev 1 on create and a strictly higher rev on update, keep startUtc and sport immutable, and check the tombstone and the account-deletion fence with two exists() lookups; the other three paths are owner-read, server-write. Evidence: core/changes/2026-10-16-s02-03-activity-blocks.md.
+
+## 2026-10-16 - Commit: S02-04a: closed-schema stream validator, canonical serialiser, SHA-256 helpers
+
+Decision: The server rejects (never strips) unknown keys at every depth, allows only gps, altitude and speed, re-serialises the parsed structure into a deterministic canonical gzip and returns separate contentSha256 and storedSha256; the string patterns are PROPOSED and carry an extra coordinate-like denial pending security review. Evidence: core/changes/2026-10-16-s02-04a-validator-and-schemas.md.
+
+## 2026-10-16 - Commit: S02-04a: stream bucket setting, path builders, bucket seam, runbook
+
+Decision: Streams use a dedicated private bucket named by ACTIVITY_STREAM_BUCKET (treated as unset when equal to the Body Scan bucket), storage.rules stays the single deny-all, and callables reach the bucket only through an injectable seam and validated-id path builders. Evidence: core/changes/2026-10-16-s02-04a-bucket-and-paths.md.
+
+## 2026-10-16 - Commit: S02-05a: activity settings model
+
+Decision: Settings validation and the change planner are pure functions; retention is a closed set (90, 365, 730 days, or null while the OPEN "never" question defaults to offered) with a single named default constant of 730 days marked OPEN-DEFAULT, and the generation increments once per effective change only. Evidence: core/changes/2026-10-16-s02-05a-settings-model.md.
+
+## 2026-10-16 - Commit: S02-05a: setActivityCloudSettings callable
+
+Decision: Consent and retention are written only by one fenced transaction (settings, account fence, deletion-retries marker, Auth existence), a no-op request writes nothing, a pure withdrawal is exempt from the daily quota, and the quota name activitySettingsSet is added to the redacted set. Evidence: core/changes/2026-10-16-s02-05a-set-settings-callable.md.
+
+## 2026-10-16 - Commit: S02-06a: shared fence helper and deleteAccount fence write
+
+Decision: All activity callables read the delete fence, the deletion-retries marker and Auth existence through one helper that fails closed on a transient Auth error; deleteAccount writes the fence after the Stripe cancel and before the first sweep (a failed cancel must not fence a live account). Evidence: core/changes/2026-10-16-s02-06a-fence-helper.md.
+
+## 2026-10-16 - Commit: S02-06a: deleteActivity callable
+
+Decision: deleteActivity writes the 400-day tombstone first inside the fenced transaction, then removes both object prefixes (404 is success, failures aggregate to one bare code), then the stream index row, then the summary last; it is idempotent, not behind the feature flag, and has its own redacted quota activityDelete. Evidence: core/changes/2026-10-16-s02-06a-delete-activity.md.
+
+## 2026-10-16 - Commit: S02-06a: mobile permission-denied decision
+
+Decision: With no sync layer yet, the rule "permission-denied is not deletion" is a pure function that deletes local data only when the tombstone read succeeded and found a document, and keeps data as sync_conflict on absence or a failed read. Evidence: core/changes/2026-10-16-s02-06a-mobile-denial-decision.md.
+
+## 2026-10-16 - Commit: S02-04b: createActivityStreamUpload callable
+
+Decision: The upload intent is decided in one fenced transaction (fence, tombstone, summary, consent, already-due expiry, 5 attempts per UTC day); a stored row keeps state stored and gains pending fields during a re-upload, and the signed PUT URL is minted only after that transaction commits. Evidence: core/changes/2026-10-16-s02-04b-create-upload.md.
+
+## 2026-10-16 - Commit: S02-04b: commitActivityStream callable
+
+Decision: The commit reads the quarantine object once pinned to its generation, validates and re-serialises those same bytes, records intendedStoredSha256 before promoting to the uploadId-specific path, selects the object in one second transaction, deletes the previous object only after it, and compensates only its own uploadId paths on a refusal. Evidence: core/changes/2026-10-16-s02-04b-commit-stream.md.
+
+## 2026-10-16 - Commit: S02-04b: export upload callables
+
+Decision: Both upload callables are exported from index.ts; their quota names were registered with the create callable. Evidence: core/changes/2026-10-16-s02-04b-exports.md.
+
+## 2026-10-16 - Commit: S02-05b: pure retention and purge logic
+
+Decision: Expiry stays derived (summary startUtc clamped plus the current retention, never the stored hint) through the same helpers the upload callables use; the recompute gets half of the run budget so it cannot starve the purge, and non-stored rows are stamped with the current generation so the final pass can finish. Evidence: core/changes/2026-10-16-s02-05b-retention-logic.md.
+
+## 2026-10-16 - Commit: S02-05b: purge function and recompute continuation
+
+Decision: One daily scheduled function first advances the recompute (20 users, bounded pages per user, generation-guarded cursor, final per-user pass before the flag clears) and then purges due streams by deleting the object before marking the row expired in the same re-reading transaction, retrying failures forever and signalling overdue age, capped rows, backlog and a missing index in one structured log entry. Evidence: core/changes/2026-10-16-s02-05b-purge-function.md.
+
+## 2026-10-16 - Commit: S02-05b: purge and recompute indexes
+
+Decision: The purge query gets a composite collection-group index (state, expiresAt) and the recompute discovery gets a single-field collection-group override on recomputePending; no settingsGeneration index is added because the final pass needs none. Evidence: core/changes/2026-10-16-s02-05b-indexes.md.
+
+## 2026-10-16 - Commit: S02-06b: activity object sweep in sweepAccountData
+
+Decision: sweepAccountData runs the Body Scan sweep and the new activity sweep as independent cleanups (both prefixes of the activity bucket attempted, failures aggregated into one bare code, a single failure rethrown unchanged) so both deleteAccount calls and the reconciler retry sweep both buckets. Evidence: core/changes/2026-10-16-s02-06b-sweep.md.
+
+## 2026-10-16 - Commit: S02-06b: late sweep job and fence lifetime
+
+Decision: The fence document written at deleteAccount Step 1c is the durable late job; a scheduled run sweeps both prefixes and ends with a final recursive delete of the activity collections (all parts attempted independently, done only after full success) and removes the fence at max(lateSweepDone+1h, authDeletedAt+70min) via compare-and-delete, deriving authDeletedAt from Auth absence when it was never recorded and never removing while the Auth user exists. Evidence: core/changes/2026-10-16-s02-06b-late-sweep.md.
+
+## 2026-10-16 - Commit: S02-06b: orphan reconciler
+
+Decision: A 5-minute reconciler repairs pending uploads only when the promoted object hash equals the intendedStoredSha256 recorded before promotion and the repair transaction (selectPromotedObject) re-checks fence, tombstone, summary and consent; otherwise it deletes the upload own objects. It also removes stored rows without summary, marks stored rows with a missing object deleted, and deletes unreferenced objects older than the upload TTL, using persisted cursors in a server-only state document. Evidence: core/changes/2026-10-16-s02-06b-reconciler.md.
+
+## 2026-10-16 - Commit: S02-06b: deleteAllActivityStreams bulk job
+
+Decision: The seventh callable is a resumable job whose state (job id, cursor, pending flag) lives on the settings document; each call deletes at most 50 rows object-first, is fence- and Auth-checked in both its transactions, uses its own activityDeleteAll quota charged only when a job starts, and unfinished jobs are continued by the reconciler. Evidence: core/changes/2026-10-16-s02-06b-delete-all-streams.md.
+
+## 2026-10-16 - Commit: S02-07: account export sections for unified activity
+
+Decision: The export reuses the existing paged path for activities and stream index rows (first response capped at MAX_ROWS and named in truncated, continuation by cursor), exposes stream rows through an allow-list with no object path or samples, adds the activity settings document and an always-present note that GPS is delivered by short-lived links and heart rate stays on the device. Evidence: core/changes/2026-10-16-s02-07-export-sections.md.
+
+## 2026-10-16 - Commit: S02-07: getActivityStreamDownloadUrls callable and quota
+
+Decision: The download callable is fence-aware and read-only in one transaction, signs 15-minute V4 GET links only for stored rows whose object path lies under the owner and activity prefix, answers deleted, tombstoned, missing and foreign ids with the same not_found, has its own redacted activityDownloadUrls quota, and logs only outcome slugs and counts. Evidence: core/changes/2026-10-16-s02-07-download-urls.md.
+
+## 2026-10-16 - Commit: S02-07: Dart GPX 1.1 encoder
+
+Decision: GpxEncoder is a pure function in activity/data returning a typed document or no_geometry; the owner export is the full series with optional heart rate, the shared export trims the route ends by routeTrimMeters and carries no heart rate, and indoor or fully trimmed sessions never produce a file. Evidence: core/changes/2026-10-16-s02-07-gpx-encoder.md.
+
+## 2026-10-16 - Commit: S02-07: Dart FIT encoder
+
+Decision: FitEncoder is a pure function in activity/data producing a header-CRC and file-CRC protected FIT file with file_id, record, lap and session messages, fixed definitions with invalid-value fill, a GPS-first record timeline, and a public fitCrc16 so the test decoder can be proven able to fail. Evidence: core/changes/2026-10-16-s02-07-fit-encoder.md.
+
+## 2026-10-16 - Commit: S02-07: local export hook over the activity journal
+
+Decision: The device export reads the journal and returns typed results (file, no_geometry, not found, stream lost) with a safe file name, using only the pure encoders and the session JSON; it writes no files and has no UI, and a streamLost entry is refused for GPX and FIT rather than exported empty. Evidence: core/changes/2026-10-16-s02-07-local-export-hook.md.
+
+## 2026-10-16 - Commit: S02-09: sanitising debug-telemetry callable
+
+Decision: sendDebugTelemetry is the only writer of debug_sessions; a closed schema (enumerated strings, integer counters capped at 255, flat events, 100 events and 16 KiB per call) rejects the whole batch with a bare code, identity is derived from the sign-in provider, uid and receivedAt are server-set, the account fence is read in the write transaction, droppedCount is emitted as a metric and not stored, and two redacted quotas (200 calls, 5000 events per day) apply. Evidence: core/changes/2026-10-16-s02-09-telemetry-callable.md.
+
+## 2026-10-16 - Commit: S02-09: debug_sessions rules create false
+
+Decision: Clients can no longer create debug_sessions documents; the sanitising callable is the only writer, and the rule change is the last, separately revertible step of the deploy order (callable, client switch, rule), outside the permanent activity rules floor. The data lifecycle policy cell for create is NONE. Evidence: core/changes/2026-10-16-s02-09-rules-create-false.md.
+
+## 2026-10-16 - Commit: S02-09: mobile debug-telemetry sink migration
+
+Decision: The debug telemetry sink now sends closed-schema batches (level, component enumeration, type, seq; no free text or build identity) through the sendDebugTelemetry callable, never throws, retries at most 3 times with doubling backoff and reports failed events as a capped droppedCount in the next batch; no extra offline buffer was added because the old writer had none. Evidence: core/changes/2026-10-16-s02-09-mobile-sink-migration.md.
+
+## 2026-10-16 - Commit: S02-10: merger performance restructuring
+
+Decision: The merger meets the operation-count budget by indexing echo detection by source id or app package and by clustering through a time-bucket window derived from the policy (start difference bound from minIou and the longest session), preserving the first-match cluster order; an optional onPairCompared seam counts comparisons and changes no result; sessions with a repeated id collapse to one with a deterministic tie-break. Record: core/changes/2026-10-16-s02-10-merger-perf.md
+
+## 2026-10-16 - Commit: S02-10: native-session id rule
+
+Decision: A native recording id is activityIdFor(sourceId app, externalId recording uuid) via nativeActivityId, with a matching provenance record, so replays and re-syncs share one id; this is the only dedup S02 promises and no cross-source matching is claimed; the journal upsert by id is reused unchanged. Record: core/changes/2026-10-16-s02-10-native-id-rule.md
+
+## 2026-10-16 - Commit: S02-10: A-1..A-3 interfaces
+
+Decision: Quarantine is a pure raw-text validation stage with hard limits and reason codes, the source cursor is a tolerant value record where corruption means no cursor, and DeviceSource gains healthStatus, deleteCached and an optional workout stream with no write-back; none of this claims cross-source dedup. Record: core/changes/2026-10-16-s02-10-interfaces-a1-a3.md
+
+## 2026-10-16 - Commit: S02-12: sync foundations
+
+Decision: The journal gains updateRecord, which commits a changed session map and sync state as one generation reusing the existing streams bytes, so overrides, explicit values, candidates and conflict state change atomically even for a streamLost entry; the cloud is reached only through a small backend seam whose denial is a typed exception never read as deletion, and baseSummary is stored with ISO timestamp strings
+
+## 2026-10-16 - Commit: S02-12: sync orchestration and resolution operations
+
+Decision: ActivitySyncRepository uploads with an optimistic rev, reads tombstone then server on a denial, merges three-way once and otherwise leaves sync_conflict; user choices and candidate resolutions persist their change (overrides, explicit values, adjusted baseSummary) in one generation before any write, so they are durable and idempotent; derived metadata keys are device-owned and cannot conflict
+
+## 2026-10-16 - Commit: S02-12: sync-conflict presenter
+
+Decision: The presenter is a Riverpod Notifier whose entry lists come only from the repository state stream, so a conflict or candidate disappears only after its resolution is stored; each action is guarded against double submission and the presenter exposes no delete
+
+## 2026-10-16 - Commit: S02-12: sync-conflict choice sheet and strings
+
+Decision: The choice sheet renders summary fields only with the two conflict actions and the two or three candidate actions, has no delete action, opens at most once and updates in place; strings are added to both app_en.arb and app_ru.arb as neighbouring features do
+
+## 2026-10-16 - Commit: S02 glue: Firestore summary backend and cloud-sync flag
+
+Decision: The Firestore adapter maps only permission-denied on a write to SummaryWriteDenied and every other failure (including a missing or anonymous sign-in) to SummaryBackendUnavailable, reads from the server source so a cache hit is never taken for server state, and batches at most 8 writes; the cloud path hangs on one compile-time flag ACTIVITY_CLOUD_STREAMS, default OFF, as design 12.1 prescribes
+
+## 2026-10-16 - Commit: S02 glue: app wiring, start-up sync and conflict entry point
+
+Decision: All runtime wiring (journal open, provider override, start-up syncAll with retryConflicts, Progress-page entry card for the conflict sheet) hangs on ACTIVITY_CLOUD_STREAMS; with it off nothing is opened or overridden and the card never reads the presenter; the entry point is a Progress-page card next to the body scan card and reuses the sheet title string instead of adding l10n keys
+
+## 2026-10-16 - Commit: S02 glue: push local tombstones to the server
+
+Decision: The tombstone push is an optional injected function on the sync repository (not a new method on the backend seam, so existing fakes keep compiling); it pushes only ids missing from a successfully read server tombstone list, at most 8 per pass, which keeps the delete quota untouched by repeated passes and never pushes when the server state is unknown
+
+## 2026-10-16 - Commit: S02 glue: consent withdrawal can start the bulk stream-delete job
+
+Decision: The offer is a boolean cloudStreams.deleteExisting inside the existing closed request (accepted only with granted=false), the job fields are written in the settings transaction itself so withdrawal and job start are atomic, a running job is never replaced, and the option also works for a later offer after an earlier withdrawal without bumping the settings generation
+
+## 2026-10-16 - Commit: S02 glue: coordinate-like string denial in the Dart payload builder
+
+Decision: The client conforms to the server validator instead of loosening it: strings failing the pattern or the shared coordinate-like denial are dropped (record dropped when a required string cannot be valid) and importedAt is cut to whole seconds because a fractional second itself matches the denial and would make every provenance record, and so every upload, be rejected
+
+## 2026-10-16 - Commit: S02-08: lifecycle policy rows
+
+Decision: Six policy rows (activities, activity_streams, activity_settings BOTH; activity_tombstones DELETE because S02-07 does not export tombstones; activity_account_state and activity_reconcile_state EXEMPT server-only) plus an informational storageObjects section for the streams/ and quarantine/ prefixes; test agents must use the named conditionalRefs test strings.
+
+## 2026-10-16 - Commit: S02-08: lifecycle matrix
+
+Decision: The matrix rows C1, C2, C8, debug sessions and the section 3 sweep map now state the implemented S02 behaviour; the default expiry, the never option and C2 independence stay marked as open operator decisions.
+
+## 2026-10-16 - Commit: S02-08: bucket runbook
+
+Decision: The runbook records that the activity functions run as the default runtime identity (no dedicated service account exists in code), leaves a dedicated identity and the soft-delete window as open operator decisions, and makes the tombstone TTL policy and the telemetry deploy order explicit release steps.
+
+## 2026-10-16 - Commit: S02-08: privacy text request
+
+Decision: The privacy wording is requested as content statements only and needs operator approval; public/privacy.html is not edited by this story and the cloud flag stays OFF until it is.
+
+## 2026-10-16 - Commit: S02-08: design corrections and implementation notes
+
+Decision: The design now states the fence write position after the Stripe cancel and token revoke (authDeletedAt at Step 3b) and carries a section 17 listing the build deviations from the change records; settled text elsewhere is untouched.
+
+## 2026-10-16 - Commit: S02 test epic 1: corpus, round trip and migration tests (U01-U04, U12, U27, U28)
+
+Decision: Corpus is generated by an own PRNG and pinned by digests; latitudes use 10 decimals so the 7351 sentinel does not quantise tracks (plan said 6).
+
+## 2026-10-16 - Commit: S02 test epic 1: cloud summary, payload, merge, ownership and schema pin tests (U05-U09, U13, U31, U32, U37-U39)
+
+Decision: Plan U08 is read literally: the string heartRate must not appear in the payload, including as a contributed field name.
+
+## 2026-10-16 - Commit: S02 test epic 1: golden summaries and hostile normalised tests (U30, U40)
+
+Decision: The golden file format is chosen by the test author because the plan names the file but not its layout.
+
+## 2026-10-16 - Commit: S02 test epic 1: summaryOverrides projection tests (U41) and findings
+
+Decision: Plan G17 is followed (candidate stays); G32 session-level version strings differ from the plan and are recorded, not changed.
+
+## 2026-10-16 - Commit: S02 test epic 2: journal round trip, replay, corruption, ordering and write-order tests (I01, I06, I18, I19, I23)
+
+Decision: The fault-injection seam is an in-memory file system plus a logging wrapper over any seam; JournalInvalidIdException loses its const (did not compile).
+
+## 2026-10-16 - Commit: S02 test epic 2: crash matrix, commit cases A-D and recovery tests (I20, I21, I40, I41, I46-I49, I54, I55)
+
+Decision: Crash expectations follow the design (older generation removed after a verified read or at recovery); a missing streams.bin no longer blocks metadata edits of a stream-lost entry.
+
+## 2026-10-16 - Commit: S02 test epic 2: crash, encryption, backup, wipe, ownership and overrides tests (I02-I04, I07-I10, I22, I24, I25, I29, I35, I36, I45)
+
+Decision: Backup exclusion test expects the real seven entries per section; read() treats a stream hash mismatch against the COMMIT marker as stream-lost.
+
+## 2026-10-16 - Commit: S02 test epic 2: I05 synced marker and replay convergence, epic 2 findings
+
+Decision: A replay with an unknown base marks synced when the merged summary equals the server, instead of writing the same content with a higher rev.
+
+## 2026-10-16 - Commit: S02 test epic 3: native id, replay, quarantine, cursor and DeviceSource surface tests (U10, U11, U14, U15, U16, U23)
+
+Decision: The quarantine duplicate-key test compares decoded keys (an escape-spelled duplicate was accepted before).
+
+## 2026-10-16 - Commit: S02 test epic 3: telemetry sink buffer, schema parity, redaction (U25, U26, U34, U35, I14)
+
+Decision: The debug telemetry sink gets the 500-event / 64 KiB oldest-dropped buffer and a non-blocking send (design 8.1); redact() also masks coordinates, geohashes, heart-rate readings and labelled places.
+
+## 2026-10-16 - Commit: S02 test epic 3: merger operation-count budget, consent matrix, copy lint (U21, U22, U24, U33, U36)
+
+Decision: The merger budget keeps the design ceilings and adds frozen calibrated count ceilings (1000 and 6000; measured 300 and 2000).
+
+## 2026-10-16 - Commit: S02 test epic 3: GPX and FIT encoders, test-only FIT decoder, summary-only upload and offline queue (U17-U20, I11, I12)
+
+Decision: FIT acceptance is a structural round trip through an independent test-only decoder; the I11/I12 plan file name is kept but the tests run on ActivitySyncRepository (no FirestoreActivityRepository exists).
+
+## 2026-10-16 - Commit: S02 test epic 3: findings and final epic run
+
+Decision: Epic 3 closes with 170 tests green; plan/design contradictions and four production changes are recorded in S02_TEST_FINDINGS_EPIC3.md.
+
+## 2026-10-16 - Commit: S02 test epic 4: two-device fake server, rev convergence, tombstone sync, override convergence
+
+Decision: Two devices are two journal directories over one rule-enforcing fake server (rev, immutability, shape, clamp, tombstone, fence); a device can only adopt a server-only change of a field it holds a value for (otherwise sync_conflict, design rule 3).
+
+## 2026-10-16 - Commit: S02 test epic 4: override value rule, explicit edit, recalculation and source candidates
+
+Decision: Override lifecycle tests assert record.json on disk, the rule-enforcing fake write log and restart/lost-ack replay; a version bump necessarily writes the merged formulaVersion string (plan G9/G32 "zero writes" is read as "no write of the stale distance").
+
+## 2026-10-16 - Commit: S02 test epic 4: sync-conflict presenter and sheet, delete-wins end-to-end scenarios
+
+Decision: Widget tests of the sheet tap inside the real-async zone (the journal futures cannot progress in FakeAsync); layout stays NOT_RUN.
+
+## 2026-10-16 - Commit: S02 test epic 4: findings and final epic run
+
+Decision: Epic 4 closes with 127 tests green and no production change; I15-I17, I27, I28 have no client code and stay with the stream-upload story.
+
+## 2026-10-16 - Commit: S02 test epic 5: activity rules emulator tests and rules expression-budget fix
+
+Decision: R32/R34 follow the design (rev strictly greater on update, resent equal rev refused); the activity helper functions bind `d.get(k, default)` with `let` because a document with all 32 allowlisted keys exceeded the 1000-expression budget.
+
+## 2026-10-16 - Commit: S02 test epic 5: golden seam, policy cells, debug_sessions, Storage rules, client constants
+
+Decision: The two debug_sessions expectations that assumed client create are updated to the S02-09 rule; the flush of 500 entries is asserted as single-summary backend calls (the client sends no multi-summary batch today).
+
+## 2026-10-16 - Commit: S02 test epic 5: findings and final epic run
+
+Decision: Epic 5 closes with 908 emulator tests green (8 suites) and one production rules fix (expression budget); the emulator access-call limit for activity batches is 19 summaries (fence lookup counted once), production unconfirmed.
+
+## 2026-10-16 - Commit: S02 test epic 6a: shared fakes and F94 self-test
+
+Decision: The existing body_scan Firestore double is reused unchanged (it already retries on conflicting writes); the new support file adds only the generation-pinned bucket, Auth, Date-only clock and gates.
+
+## 2026-10-16 - Commit: S02 test epic 6a: S02-04a validator, schema pin, canonical, decompression limits
+
+Decision: Inclusive coordinate bounds and ratio-20-accepted follow the design (plan rows F03/F50 are wrong); the encoding error is classified by name so it works across realms.
+
+## 2026-10-16 - Commit: S02 test epic 6a: S02-04b create/commit state machine and callable hardening
+
+Decision: A concurrent duplicate commit of the same upload id returns already_stored (production fix in writeIntendedHash); over a stored row a create keeps state=stored (design), not pending (plan text).
+
+## 2026-10-16 - Commit: S02 test epic 6a: settings, consent, delete, fence, pinned quota set, findings
+
+Decision: Epic 6a closes with 669 tests green and two small production fixes; the scaling export registry lists the ten S02 exports and treats the three S02 scheduled jobs as single-flight.
+
+## 2026-10-16 - Commit: S02 test epic 6b: retention, recompute, purge and index limits (S02-05b)
+
+Decision: Plan F18 (lengthening resurrects) is wrong; the design says lengthening does not resurrect an expired row. The shared Firestore fake now models index limits and null/type range exclusion so the purge and recompute queries are checked against the real index file.
+
+## 2026-10-16 - Commit: S02 test epic 6b: sweeps, late sweep, reconciler, bulk delete and the real deleteAccount flow (S02-06b)
+
+Decision: Design formula for fence removal wins over plan cell F95(a); the late sweep after an aborted deletion is an open risk recorded in the epic 6b findings and pinned by a test that documents current behaviour.
+
+## 2026-10-16 - Commit: S02 test epic 6b: export, download URLs, log hygiene and telemetry callable and schema (S02-07, S02-09)
+
+Decision: The 16 KiB batch boundary is proven on the sanitiser gate (a valid batch cannot be that large); every other telemetry and download assertion follows the plan.
+
+## 2026-10-16 - Commit: S02 test epic 6b: lifecycle policy checkers, indexes, privacy text and ops log metrics (S02-08)
+
+Decision: Plan F39 expects activity_tombstones classified BOTH; the policy row records the decision not to export tombstones (DELETE) and the test pins that. The five pre-S02 access checker violations stay out of S02 scope and are pinned.
+
+## 2026-10-16 - Commit: S02 test epic 6b: story-map completeness lint F96 with mutated-copy proofs (S02-11)
+
+Decision: The blocking-criterion check uses the GPS-PRIV ids of plan section 7; named MAJOR/BLOCKER tokens of design sections 6.1, 6.2 and 10 are not machine-mapped and are recorded as not covered.
+
+## 2026-10-16 - Commit: S02 test epic 6b: findings and final epic run
+
+Decision: Epic 6b closes with 178 tests green and three small production fixes (policy path and audited call sites of the access checker, privacy paragraph); the late sweep erasing a live account's activity data after an aborted deletion is recorded as an open risk, not changed.
+
+## 2026-10-16 - Commit: S02 test epic 6b: late sweep never erases a live account, F71 table, F72/F81/F54 gaps
+
+Decision: The late job never runs its destructive part while the Auth user exists; a fence left by an aborted deletion stays until the deletion completes (open question: deleteAccount does not remove its own fence on an abort before Step 3). Plan F72 and the F54 late-sweep wording are plan errors.
+
+## 2026-10-16 - Commit: S02 client stream uploader and retry policy
+
+Decision: Stream upload reuses the journal sync state (markSynced after commit, upload_failed after the cap) because the journal has no separate stream-state field; every run starts a new upload and nothing but the journal state survives an app restart.
+
+## 2026-10-16 - Commit: S02 client cloud settings client and consent-withdrawal flow
+
+Decision: Withdrawal flips the local consent cache before the network call and cancels queued uploads first; the bulk-delete offer is a separate method that sends deleteExisting once, and the client does not itself continue the resumable job (the reconciler does).
+
+## 2026-10-16 - Commit: S02 client upload wiring behind the flag
+
+Decision: Uploader and withdrawal providers exist only when ACTIVITY_CLOUD_STREAMS is on; one upload run per app start after the summary sync, with consent read from a per-account cache that is unknown (no upload) until loaded.
+
+## 2026-10-16 - Commit: S02 test epic 7b: dedicated stream-upload marker in the journal
+
+Decision: The stream upload has its own journal marker (streamUploadedHash); the synced state belongs to the summary sync only, because a summary-synced entry was never uploaded.
+
+## 2026-10-16 - Commit: S02 test epic 7b: shared fakes for the client upload tests
+
+Decision: The fake server refuses a commit without a complete PUT of that upload id, so wrong client sequences fail.
+
+## 2026-10-16 - Commit: S02 test epic 7b: client stream upload tests (I15, I16, I17)
+
+Decision: The real sequence summary sync then upload is pinned; HR is checked in stream, lap and field-name form with a positive control.
+
+## 2026-10-16 - Commit: S02 test epic 7b: client retry policy tests (I27)
+
+Decision: I27 restart wording is implemented as never resume, always a new upload; design 5.2 item 4 jitter and resume text is stale.
+
+## 2026-10-16 - Commit: S02 test epic 7b: consent withdrawal tests (I28) and findings
+
+Decision: Epic 7b closes with 198 tests green in the final run and one production defect fixed (stream marker); a grant path that calls uploader resume is open.
+
+## 2026-10-16 - Commit: S02 remediation A: abandoned fence of a live account
+
+Decision: The fence carries a heartbeat refreshed by every deleteAccount attempt; the late sweep clears a live account fence only by compare-and-delete after 24 h without heartbeat and without a deletion intent record, and never erases data while Auth exists.
+
+## 2026-10-16 - Commit: S02 test epic 7a: E01 100-session round trip
+
+Decision: The merge oracle is the count and the plan quotas because merged sessions differ from the corpus valid set in 14 records; cloud distance is compared with a 10 percent tolerance because it is the effective projection; the post-sync record is compared with the three version-stamp keys neutralised.
+
+## 2026-10-16 - Commit: S02 test epic 7b: findings and last test file
+
+Decision: The withdrawal tests and the epic 7 findings file are recorded; the epic 7b decision entry above was swept into commit 73820a0e by a concurrent session.
+
+## 2026-10-16 - Commit: S02 remediation A: reconciler deadline and bulk-delete fairness
+
+Decision: Bulk-delete jobs are ordered in memory by last attempt time over a bounded batch of 200 instead of adding a composite index, and every attempt is stamped before it runs.
+
+## 2026-10-16 - Commit: S02 remediation A: commit, download and delete hardening
+
+Decision: An already-due expiry at commit transaction 2 stores nothing; an unset bucket with a stream row is a failure for delete, never a silent no-op; the commit callable gets explicit 1GiB memory and concurrency 4.
+
+## 2026-10-16 - Commit: S02 test epic 7a: E02 account wipe and consent cache fix
+
+Decision: The two real app-flow wipe tests are skipped with an explicit NOT WIRED marker instead of being weakened, because no production code calls the journal wipe; the missing wiring is recorded in the epic 7 findings. The activity consent cache prefix is added to the per-account device wipe.
+
+## 2026-10-16 - Commit: S02 remediation A: settings, rules, TTL, privacy and docs
+
+Decision: The tombstone TTL is declared in firestore.indexes.json instead of being an operator-only step; the summary-sync privacy paragraph is drafted but stays pending operator approval; purge scale, tombstone read cost, export deviation, cursor restart and soft-delete disclosure are recorded as accepted risk or backlog in design section 17.
+
+## 2026-10-16 - Commit: S02 test epic 7a: final run and findings
+
+Decision: Epic 7a closes with 148 passed and 2 skipped (NOT WIRED) tests; the journal wipe wiring and the emulator half of E05 remain open.
+
+## 2026-10-16 - Commit: S02 remediation B1: recovery keeps committed generations on I/O errors
+
+Decision: Recovery distinguishes a missing or invalid COMMIT marker (uncommitted, deleted) from an I/O error (every generation of the activity kept, diagnostic `unreadable:<id>`, retried at the next start).
+
+## 2026-10-16 - Commit: S02 remediation B1: transient stream failures are not persisted as lost
+
+Decision: The journal keeps a persisted-lost set and a separate transient-unavailable set; only the persisted-lost set may write streamLost into a new generation, so a key store or read error is retried instead of hiding intact streams. Stream-lost counts and the sign-out assessment use the persisted-lost set only. A fully verified read clears both sets for the id.
+
+## 2026-10-16 - Commit: S02 remediation B1: read keeps the cache entry on I/O errors
+
+Decision: The journal read drops a cached entry only on a verified mismatch (marker or record missing, or hash different); an I/O error keeps the entry and surfaces JournalIoException so the caller can retry.
+
+## 2026-10-16 - Commit: S02 remediation B2: journal wipe wiring and owner guard
+
+Decision: Account deletion wipes the activity journal through a decorator around the device wipe (one object for the normal and the relaunch path); the device-wide journal records an owner uid and is wiped before sync when another uid signs in (fail closed). The sign-out export offer stays S03 scope.
+
+## 2026-10-16 - Commit: S02 test epic 8a: abandoned fence, usage cleanup and unset bucket
+
+Decision: The late-sweep contract of remediation A1, A5 and A10 is pinned by new jest tests whose oracles come from the remediation notes; the old skipped-live tests were updated to the 24 h window.
+
+## 2026-10-16 - Commit: S02 remediation B2: corrupt cloud summary and tombstone push error
+
+Decision: A cloud summary that is read but cannot be parsed is a distinct SummaryCorrupt result shown as a visible sync conflict instead of an offline retry; the last tombstone push error code is kept and printed through debugPrint, the existing diagnostics path of the sync layer.
+
+## 2026-10-16 - Commit: S02 test epic 9b: account wipe e2e un-skipped
+
+Decision: The two NOT WIRED account wipe tests run against the real decorator composition of main.dart (activityAwareLocalDataWipe around DeviceLocalDataWipe with an in-memory owner store); the epic 7a quarantine entries are closed.
+
+## 2026-10-16 - Commit: S02 test epic 8b: rules and TTL checker
+
+Decision: primarySourceId rule behaviour is pinned on the emulator against the stream sourceId pattern plus the coordinate-like denial; a new script check_ttl_overrides.js fails when a required TTL fieldOverride is missing from firestore.indexes.json.
+
+## 2026-10-16 - Commit: S02 test epic 8b: policy, privacy and scaling tests
+
+Decision: the privacy draft, the tombstone TTL text, the five-entry late-sweep list, the pre-S02 access-checker violations and the ACTIVITY_COMMIT and reconciler memory profiles are pinned by tests whose oracles come from the remediation notes; the Russian privacy section stays untested until its wording is approved.
+
+## 2026-10-16 - Commit: S02 test epic 8a: reconciler deadline, bulk-delete fairness, silent skips (A2, A3, A4, A14, A15)
+
+Decision: Remediation A2, A3, A4, A14 and A15 are pinned by jest tests with fakes; the notes name the cycle fields shorthand while the code uses streamsCursorCycleStartedAt and quarantineCursorCycleStartedAt, the tests assert the code names.
+
+## 2026-10-16 - Commit: S02 test epic 9b: journal wipe wiring and owner guard tests
+
+Decision: The B2 wipe decorator, the owner skip, claimActivityJournal and the sync wiring fail-closed behaviour are pinned by tests whose oracles are the B2 test notes and design 6.2, 7 and 17.
+
+## 2026-10-16 - Commit: S02 test epic 8a: commit expiry race and download expiry (A7)
+
+Decision: Remediation A7 is pinned at the callable, transaction and reconciler layers and for the download answer.
+
+## 2026-10-16 - Commit: S02 test epic 9b: corrupt cloud summary and tombstone push error tests
+
+Decision: SummaryCorrupt versus SummaryBackendUnavailable (backend over a fake Firestore) and the visible sync_conflict outcome without a retry loop are pinned by tests; lastTombstonePushError is pinned as the last failed push (not cleared by a later success, per its getter doc).
+
+## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation (B1) and read-failure callers
+
+Decision: SF1, SF2 and SF3 are pinned by tests whose oracles are the B1 test notes; a local read I/O failure is retryable per entry, so callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.
+
+## 2026-10-16 - Commit: S02 test epic 8a: validator separator bound (A8)
+
+Decision: Remediation A8 validator bound is pinned with a JSON.parse spy; the scaling profile pin belongs to epic 8b.
+
+## 2026-10-16 - Commit: S02 test epic 9a: journal I/O error remediation tests (B1 SF1-SF3)
+
+Decision: the B1 tests add an additive read-failure mode (failReadWhen, failReadsOnOpen) to the shared fault file system and harness instead of a new fake; B1 production code needed no change.
+
+## 2026-10-16 - Commit: S02 test epic 9a: read-failure callers fix and tests
+
+Decision: a local read I/O failure is retryable per entry; callers of ActivityJournal.read() catch JournalIoException and return pending, failed or ActivityExportUnavailable without changing state.
+
+## 2026-10-16 - Commit: S02 test epic 8a: withdrawal no-op, grant cancels delete job, recompute termination (A11, A13, A16)
+
+Decision: Remediation A11, A13 and A16 are pinned with spies on the transaction and Auth seams and with end-state checks.
+
+## 2026-10-16 - Commit: S02 test epic 9b: findings section
+
+Decision: Epic 9b evidence is recorded in S02_TEST_FINDINGS_EPIC9.md; no production defect was found in remediation B2 client code.
+
+Evidence: epic 9b run 02:22 +156 all passed; details in S02_TEST_FINDINGS_EPIC9.md.
+
+## 2026-10-16 - Commit: S02 test epic 8a: findings and final run
+
+Decision: Epic 8a closes green: 26 suites and 744 tests of the activity directory pass.
+
+## 2026-10-16 - Commit: S02 test epic 9a: final run evidence
+
+Decision: the epic 9a findings record the complete 14-file run at head 62ab9f9e (222 tests green).
+
+## 2026-10-16 - Commit: S02 test epic 8b: findings and stale expectations
+
+Decision: two expectations left stale by epic 6b were updated to the audited reality (account_export residue lines, activity_account_state path {docId}); no product change.
+
+## 2026-10-16 - Commit: S03-D UI design contract draft and S02 SDLC state
+
+Decision: the S03-D UI design contract (revision 2, after product-ux and accessibility review) is committed as a DRAFT prepared in parallel with the S02 verification phase (development rule 7). It records open operator decisions (U-1 shell option, U-2 tablet, D-9 monetisation, OD-9 open the local journal in the default build) and is not approved. docs/sdlc/STATE.md moves S02 to phase 7 Verify. Evidence: core/changes/2026-10-16-s03d-ui-design-contract-draft.md.
+
+## 2026-10-16 - Commit: S02 design corrections after the review rounds
+
+Decision: design 5.2 item 4 is corrected to the plan and the built uploader (no jitter, restart always starts a fresh upload); 12.1 records that the built client flag gates the whole cloud path and adds the independent ACTIVITY_LOCAL_JOURNAL define; section 17 records the release gate for off-UI-isolate work (before cloud streams go live or GPS recording ships), the accepted rev-cap behaviour and the account-bound uploader. Evidence: core/changes/2026-10-16-s02-design-review-round-corrections.md.
+
+## 2026-10-16 - Commit: S02 remediation C conflict view (FL1, FL2)
+
+Decision: watch() reports refresh failures on the stream, _conflictView treats any non-read backend error as cloudKnown:false, and the conflict sheet has loading, error and retry states instead of a false "in sync" text. Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
+
+## 2026-10-16 - Commit: S02 remediation C conflict view code and test notes (FL1, FL2)
+
+Decision: the FL1/FL2 production code lands with test notes in docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md; FL3, FL4 and FL7 stay as decided (skip, release gate, keep). Evidence: core/changes/2026-10-16-s02-remediation-c-conflict-view.md.
+
+## 2026-10-16 - Commit: S02 remediation C uploader account safety (FL5, FL6)
+
+Decision: stream upload runs are single-flight and bound to the uid they started with (checked before every network step and journal mark); the auth listener cancels on account change and resumes only after the new journal claim; the wiring closure is guarded. Evidence: core/changes/2026-10-16-s02-remediation-c-uploader-account-safety.md.
+
+## 2026-10-16 - Commit: S02 remediation D independent local journal flag
+
+Decision: a second client define ACTIVITY_LOCAL_JOURNAL (default OFF) opens the device journal without any network path; ActivityFlags.journalEnabled (localJournal or cloudSync) decides whether a journal exists, while every Firestore, sync, tombstone, conflict and upload object stays gated by cloudSync alone. Evidence: core/changes/2026-10-16-s02-remediation-d-local-journal-flag.md.
+
+## 2026-10-16 - Commit: S02 remediation D rules mirror parity
+
+Decision: the hand-written Dart mirror of the primarySourceId rule now uses the stream sourceId pattern plus the coordinate-like denial, matching firestore.rules (A12). Evidence: core/changes/2026-10-16-s02-remediation-d-rules-mirror.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b uploader account binding tests
+
+Decision: FL5 uploader behaviour (uid flip at five points, single-flight) is pinned by activity_stream_upload_account_binding_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-uploader-account-binding.md.
+
+## 2026-10-16 - Commit: S02 test epic 10a conflict view state tests
+
+Decision: FL1 and the presenter half of FL2 are covered by tests over the real repository with scripted failing collaborators (backend readSummary, journal list). Evidence: core/changes/2026-10-16-s02-test-epic10a-conflict-view-state.md.
+
+## 2026-10-16 - Commit: S02 test epic 10a sheet states and entry card fix
+
+Decision: the sync entry card stays visible when the conflict view failed to load, so the retry action is reachable (defect D10a-1 found by the new widget test); the sheet states are covered by widget tests. Evidence: core/changes/2026-10-16-s02-test-epic10a-sheet-states-and-card.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b wiring account-switch tests
+
+Decision: FL5 wiring and FL6 closure guard are pinned by activity_wiring_account_switch_test.dart. Evidence: core/changes/2026-10-16-s02-test-epic10b-wiring-account-switch.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b flag matrix tests
+
+Decision: the ActivityFlags truth table and the wiring flag matrix (OFF, localJournal only, cloudSync, both) are pinned by tests under mobile/test/features/activity/config. Evidence: core/changes/2026-10-16-s02-test-epic10b-flag-matrix.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b primarySourceId parity table
+
+Decision: the Dart rules mirror, schema.ts sourceId pattern and firestore.rules actLabelsOk are pinned to one value table. Evidence: core/changes/2026-10-16-s02-test-epic10b-source-id-parity.md.
+
+## 2026-10-16 - Commit: S02 test epic 10b findings
+
+Decision: epic 10b closes green; the only defect was a stale uploader fake in the epic 9b wiring test. Evidence: core/changes/2026-10-16-s02-test-epic10b-findings.md.
+
+## 2026-10-16 - Commit: S02 final complete run (Dart side)
+
+Decision: the S02 Dart side closes green at 45c747b0 (1117 + 97 + 23 tests, zero skips, zero failures). Evidence: core/changes/2026-10-16-s02-final-run-dart.md.
+
+## 2026-10-16 - Commit: S02 final complete run (server side)
+
+Decision: the S02 server side closes green (744 + 191 + 289 + 124 tests); three stale test fakes/pins were updated, no product change. Evidence: core/changes/2026-10-16-s02-final-run-server.md.
+
+## 2026-10-16 - Commit: S02 final run, complete rules emulator set
+
+Decision: the complete rules set (9 suites, 953 tests) is green on head 479b7342, re-proving the three pre-existing rules files after the A12 rules change. Evidence: core/changes/2026-10-16-s02-final-run-rules.md.
+
+## 2026-10-16 - Commit: S02 code gate submission
+
+Decision: S02 enters phase 8 Gate; the report pair and the SDLC state are committed before the GPT-PM review so the approved head stays final. Evidence: core/changes/2026-10-16-s02-code-gate-submission.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (a) account-scoped journal class
+
+Decision: replace the device-wide journal plus owner marker by account-scoped journals (ownership is the location); this commit adds the scoped journal class and the per-scope key name. Evidence: core/changes/2026-10-16-s02-remediation-e1-scoped-journal.md.
+
+## 2026-10-16 - Commit: S02 remediation E2, tombstone continuation
+
+Decision: local deletions are pushed in continuation rounds (cap 128 rounds of 8 per sync call), stop at the first refusal, are observable as `pendingTombstones`, and are retried by one backed-off timer (60 s to 15 min, 6 attempts per start); the durable queue is the journal tombstone set. Evidence: core/changes/2026-10-16-s02-remediation-e2-client-continuation.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (b) wiring and owner marker removal
+
+Decision: the app binds the journal of the signed-in uid through an always-on listener, cloud sync fails closed on a failed bind, and the owner marker mechanism is removed. Evidence: core/changes/2026-10-16-s02-remediation-e1-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation E2, erasure quota
+
+Decision: the per-user daily `activityDelete` quota is 1000 (was 100) because it is privacy-erasure capacity for queued offline deletions, not an abuse limit. Evidence: core/changes/2026-10-16-s02-remediation-e2-server-docs.md.
+
+## 2026-10-16 - Commit: S02 remediation E1 (c) wipe decorator and design docs
+
+Decision: account deletion wipes exactly the deleted uid journal scope; design section 17 item 22 records account-scoped journals (sign-out and switch never wipe). Evidence: core/changes/2026-10-16-s02-remediation-e1-wipe-docs.md.
+
+## 2026-10-16 - Commit: lessons log and S02 retrospective draft
+
+Decision: the program keeps core/LESSONS_LOG.md from now on, one entry per commit that carries a lesson (operator global rule 2026-10-16); the S02 retrospective is a living draft built from it. Evidence: core/changes/2026-10-16-lessons-log-and-s02-retro.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (a) scoped journal tests
+
+Decision: the account-scoped journal is verified on real files with a per-scope fake key store; oracles come from the E1 notes and the account-switch promise. Evidence: core/changes/2026-10-16-s02-test-epic11a-scoped-journal-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b tombstone continuation and account change
+
+Decision: the E2 tombstone continuation is verified on a real journal with a fake pusher and timer; the repository gets `onAccountChanged()` (cancels the retry timer, drops per-account confirmed/failed sets, backoff budget and last error, stops a pass in flight) because a timer and the confirmed-id set otherwise outlive a sign-out or uid change. Evidence: core/changes/2026-10-16-s02-test-epic11b-tombstone-continuation.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b erasure quota 1000
+
+Decision: the pinned `activityDelete` limit is 1000 in four server test files and the F82 plan row, with a new test for the 1000/1001 boundary, per-user scope and fence refund. Evidence: core/changes/2026-10-16-s02-test-epic11b-erasure-quota.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (b) wiring and decorator tests, compile fix
+
+Decision: the wipe-wiring and account-switch tests run the real scoped journal over real files; type promotion to AccountScopedJournal is replaced by pattern matching. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (b) code commit
+
+Decision: the pattern-match compile fix and the rewritten wiring tests are committed together; the log entries above travelled in the previous parallel commit. Evidence: core/changes/2026-10-16-s02-test-epic11a-wiring-tests.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (c) flag matrix and account wipe e2e
+
+Decision: the flag matrix and the account-wipe e2e run on the real scoped journal; no owner-marker symbol remains under mobile/. Evidence: core/changes/2026-10-16-s02-test-epic11a-flag-matrix-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (d) account-switch promise e2e
+
+Decision: the promise "signing in as someone else never destroys my data" is pinned by an end-to-end test over the real file journal. Evidence: core/changes/2026-10-16-s02-test-epic11a-promise-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 11b findings and stale fake fix
+
+Decision: the complete epic 11b runs are green after the stale journal fake forwards `listTombstones()`; the epic findings file records defects, commands and remaining limits. Evidence: core/changes/2026-10-16-s02-test-epic11b-findings-and-fake-fix.md.
+
+## 2026-10-16 - Commit: S02 test epic 11a (e) findings
+
+Decision: epic 11a findings and the complete run are recorded in the epic 11 findings file. Evidence: core/changes/2026-10-16-s02-test-epic11a-findings.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (1/4) no rebind after wipe
+
+Decision: `UidScopedActivityJournal` remembers the uid it wiped while bound and refuses to bind it (fail closed) until another uid or null is bound; `AccountScopedJournal` exposes `boundUid` and `isBound`. Evidence: core/changes/2026-10-16-s02-remediation-f2-no-rebind.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (2/4) key deletion failure surfaces
+
+Decision: `forget()` propagates secure-storage failures so the wipe is reported incomplete and retried from the marker. Evidence: core/changes/2026-10-16-s02-remediation-f2-key-delete.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (1/4) sync pass identity and pinning
+
+Decision: every serialized sync operation carries a pass identity (account epoch, bound journal uid, auth uid) and re-checks it before every journal write and, synchronously, before every backend or tombstone-pusher call; a stale pass stops with `pending`. Evidence: core/changes/2026-10-16-s02-remediation-f1-pass-identity.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (4/4) uploader state reset on account change
+
+Decision: `cancelQueued()` drops the uploader single-flight state and failed ids and bumps an epoch; slot cleanup is identity-guarded. Evidence: core/changes/2026-10-16-s02-remediation-f2-uploader-switch.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 (3/4) binding retry, deleting skip, authUid
+
+Decision: the journal binding retries a failed bind with bounded backoff through an injectable timer factory, never binds the account being deleted, and the sync repository receives an authUid supplier. Evidence: core/changes/2026-10-16-s02-remediation-f2-binding.md.
+
+## 2026-10-16 - Commit: S02 remediation F2 test notes
+
+Decision: F2 test oracles recorded in docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md. Evidence: core/changes/2026-10-16-s02-remediation-f2-test-notes.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (2/4) account-change cache reset and unbound visibility
+
+Decision: an unbound scoped journal is a visible failure (state stream error, `unavailable` outcomes for resolutions, `pending` for syncs, no backend call), never an empty "in sync" state; the conflict caches belong to the account and are cleared on change. Evidence: core/changes/2026-10-16-s02-remediation-f1-unbound-and-caches.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (3/4) tombstone retry budget and fallback timer
+
+Decision: after six backed-off attempts one 60-minute fallback timer remains while deletions are owed; a clean pass resets the budget and the last error; phase exceptions schedule a retry; `requestTombstoneSync()` is the entry point for callers that create a local deletion. Evidence: core/changes/2026-10-16-s02-remediation-f1-tombstone-retry.md.
+
+## 2026-10-16 - Commit: S02 remediation F1 (4/4) design item 23 and F1 test notes
+
+Decision: remediation F1 is recorded in design 17 item 23 with the accepted/backlog list (anonymous sign-out data stays on disk until the S03 export offer; pending-deletions UI is S03). Evidence: core/changes/2026-10-16-s02-remediation-f1-docs.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (1) no rebind after wipe and key-delete failure
+
+Decision: `bindUid(null)` ends the wiped-uid refusal even when the journal is already unbound (smallest production fix); the epic 11a oracle that a wiped uid re-binds at once is superseded by the F2 contract. Evidence: core/changes/2026-10-16-s02-test-epic12b-wipe-rebind.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (2) binding retry tests
+
+Decision: the bind retry schedule and the deleting-account skip are pinned by tests with a fake timer; the `authUid` wiring check stays construction-level only and is not testable without a Firebase app (reported, no seam added). Evidence: core/changes/2026-10-16-s02-test-epic12b-binding-retry.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (3) uploader account-switch tests
+
+Decision: the single-flight and failed-id reset of the uploader on `cancelQueued()` are pinned by blocked-completer tests, including the old-epoch failure case; no production change. Evidence: core/changes/2026-10-16-s02-test-epic12b-uploader-switch.md.
+
+## 2026-10-16 - Commit: S02 test epic 12b (4) wipe and rebind e2e, complete runs, findings
+
+Decision: the throwing-close wipe test failure is a test defect (lazy key), the assertion is kept; the import of the deleting-uid provider into core/wiring needs no change (guards scan data/ only). Evidence: core/changes/2026-10-16-s02-test-epic12b-e2e-and-findings.md.
+
+## 2026-10-16 - Commit: S02 test epic 12a (1) pass identity, caches, unbound, retry tests
+
+Decision: the F1 contract (pass identity, cache reset, unbound visibility, fallback timer) is pinned at the repository seam with a real scoped journal and a blocking backend; the E2 "no seventh attempt" assertion is replaced by "six attempts plus one 60-minute fallback timer" per design 17 item 23. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-pass-identity.md.
+
+## 2026-10-16 - Commit: S02 test epic 12a (2) account-switch pass e2e, complete run, findings
+
+Decision: the epic 9 oracle that a later success never clears `lastTombstonePushError` is superseded by F1 (a clean pass clears it); the account-switch promise for running passes is pinned end to end including the cloud side. No production change. Evidence: core/changes/2026-10-16-s02-test-epic12a-e2e-and-run.md.
+
+## 2026-10-16 - Commit: S02 remediation G1 journal uid tied to auth uid
+
+Decision: a sync pass on an account-scoped journal with an auth supplier is valid only when the bound journal uid equals the signed-in uid exactly at the start (`_beginPass`, otherwise a dead pass that does nothing) and again right before every backend or pusher call (`_mayCall`); plain journals and a null supplier are unchanged; a null auth uid stays fail-closed. Evidence: core/changes/2026-10-16-s02-remediation-g-journal-auth-tie.md.
+
+## 2026-10-16 - Commit: S02 remediation G2 republish on account or binding change, G5 skip logging
+
+Decision: `onAccountChanged()` and the new `onJournalBindingChanged()` publish the state (unbound reaches the stream as `JournalUnbound`); the binding provider and the cloud sync wiring call it after every `bindUid` completion only with `cloudSync` on and while not disposed; skipped passes log a reason word, never a uid. Evidence: core/changes/2026-10-16-s02-remediation-g-republish-and-skip-log.md.
+
+## 2026-10-16 - Commit: S02 remediation G3 raw-uid account change, G4 wipe marker and deleting-account skip
+
+Decision: the account-change reset in the cloud sync listener is keyed on the raw uid (anonymous included); `wipeForUid` records the wiped uid in both branches; the sync wiring and the binding provider share one `_bindableUid` helper that excludes the account being deleted. Evidence: core/changes/2026-10-16-s02-remediation-g-raw-uid-and-wipe-marker.md.
+
+## 2026-10-16 - Commit: S02 remediation G docs, accepted backlog and test notes
+
+Decision: two items are accepted unchanged and recorded in design 17 item 23 (no re-run of the sync start after a late bind retry success, the bind-retry budget leaves the journal unbound until the next auth event; the presenter retry cannot force a bind); the test oracles for G2 to G5 and the stale fake list are in the F test notes section G. Evidence: core/changes/2026-10-16-s02-remediation-g-docs.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a stale oracles and fakes after remediation G
+
+Decision: four tests that expected bindUid to succeed after wipeForUid of an unbound uid now expect the G4 refusal until bindUid(null); _ThrowingSyncRepo records onJournalBindingChanged. Evidence: core/changes/2026-10-16-s02-test-epic13a-stale-oracles.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a G1 auth tie and G5 skip logs
+
+Decision: 17 tests prove the journal-auth tie yields zero backend and pusher calls on a uid disagreement, and that skipped passes log a reason word without a uid. Evidence: core/changes/2026-10-16-s02-test-epic13a-g1-g5-auth-tie.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a G2 G3 G4 republish, raw-uid reset, wipe marker
+
+Decision: 21 tests cover the live presenter without a tap, the wiring publish after every bind completion, the raw-uid reset, the unbound-branch wipe marker and the deleting-account skip. Evidence: core/changes/2026-10-16-s02-test-epic13a-g2-g4-republish-wiring.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a auth-flip end-to-end
+
+Decision: an end-to-end test over the real file journal proves that during an auth flip nothing of A reaches B's cloud and no local file changes. Evidence: core/changes/2026-10-16-s02-test-epic13a-auth-flip-e2e.md.
+
+## 2026-10-16 - Commit: S02 test epic 13a complete runs, flaky ciphertext assertion, findings
+
+Decision: the I07 gzip-header assertion on random ciphertext is limited to the start of the stream because a whole-file search for two bytes is flaky; the complete runs are green and recorded. Evidence: core/changes/2026-10-16-s02-test-epic13a-findings-and-runs.md.
+
+
+## 2026-10-16 - Commit: S02 documents after remediation E, F and G (report pair, state, lessons)
+
+Decision: the S02 code-gate report pair, the SDLC state and the retrospective draft are updated to the situation after the round-11 REJECT: three MAJOR findings remediated (E1, E2), a second independent review round fixed in F and G, test epics 11 to 13 green per the test agents, resubmission as round 12. Evidence: server, rules and indexes are unchanged since their last runs (git diff --stat empty for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since ac9b252f, and for the rules paths since 479b7342); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md. Accepted limits are recorded in design section 17 item 23 and in the report. Evidence: core/changes/2026-10-16-s02-documents-after-remediation.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A consent store and settings client bound to the account
+
+Decision: the consent store and the settings client carry the uid their state belongs to; a stale sign-in cannot overwrite a newer account, load/grant/withdraw refuse to act for another account, a write with no account throws, and the delete-request guard is per account. Stored consent is never deleted on account change. Evidence: core/changes/2026-10-16-s02-remediation-h-a-consent-store-and-settings-client.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A uploader requires consent of its own account
+
+Decision: the uploader uploads only when the consent view belongs to the uid the run is bound to, stops when that account is being deleted, and marks a journal entry only if the epoch and the scoped journal binding are unchanged. Evidence: core/changes/2026-10-16-s02-remediation-h-a-uploader.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B deletion in progress and conflict cache fills
+
+Decision: a sync pass or tombstone retry of the account whose deletion is in progress does nothing (optional accountBeingDeleted supplier, dead pass identity, skip reason account-deleting); the conflict cache is filled and the state read is kept only if the account identity is unchanged after the await. Evidence: core/changes/2026-10-16-s02-remediation-h-b-deletion-and-cache-fills.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B conflict presenter and sheet per account
+
+Decision: the conflict presenter depends on the signed-in uid (syncConflictUidProvider) and is rebuilt on a uid change; actions carry the uid captured at tap time as expectedUid; the sheet draws cards only for a loaded, non-failed state. Evidence: core/changes/2026-10-16-s02-remediation-h-b-presenter-and-sheet.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A startup wiring bound to the account
+
+Decision: every asynchronous step of the app-start sync and upload re-verifies the original uid, generation and deletion state; resume happens only after this account consent is loaded; an account change unbinds the consent store and resets the settings state without deleting stored consent; a deletion in progress stops sync and uploads. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B wipe coordinator and export bound to the account
+
+Decision: onSignOut wipes the uid captured before the prompts (wipeForUid) and aborts on a change; exportAll aborts the whole export with ActivityExportAccountChanged when the bound uid changes, and keeps reading each entry by id because the listing has no streams. Evidence: core/changes/2026-10-16-s02-remediation-h-b-wipe-and-export.md.
+
+## 2026-10-16 - Commit: S02 remediation H-B design item 24 and test notes
+
+Decision: design section 17 item 24 records remediation H; the H-B test notes list the oracles and stale fakes. Evidence: core/changes/2026-10-16-s02-remediation-h-b-docs.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A startup wiring code (H3 code commit)
+
+Decision: the H3 decision entry above landed in the sibling H-B commit because the two agents share one git index; this commit carries the H3 code and its change record. Evidence: core/changes/2026-10-16-s02-remediation-h-a-startup-wiring.md.
+
+## 2026-10-16 - Commit: S02 remediation H-A test notes
+
+Decision: the H-A test notes list 19 interleaving oracles and every stale fake or older assertion the new consent, uploader and wiring contracts break, so the test agent updates them in one pass. Evidence: core/changes/2026-10-16-s02-remediation-h-a-test-notes.md.
+
+## 2026-10-16 - Commit: test(s02): H5 deletion-in-progress flag stops the sync pass (epic 14b)
+
+Decision: The deletion-flag tests (10 tests) assert the flag raised during listTombstoneIds, a tombstone push and a summary write; a pass that starts under the flag; the retry timer; and the account-deleting log line without a uid. One production line added: a mid-flight skip after the tombstone listing is now logged like the start-of-pass skip. Evidence: core/changes/2026-10-16-s02-test-epic14b-deletion-flag.md.
+
+## 2026-10-16 - Commit: test(s02): H6 presenter reset per uid and sheet card rule (epic 14b)
+
+Decision: Presenter and sheet tests (3 + 4) assert the first frame of a new uid is loading with no conflicts, busy keys or failure flag, a stale action of A does not touch B, a refresh error clears the list, equal-uid re-emission does not reset, and the sheet draws cards only for a loaded, non-failed state (positive control included). Evidence: core/changes/2026-10-16-s02-test-epic14b-presenter-sheet.md.
+
+## 2026-10-16 - Commit: test(s02): H6 queued tap expectedUid and H7 cache and view guards (epic 14b)
+
+Decision: Eleven repository tests assert a tap queued under A behind a blocked syncAll leaves B's same-id entry byte-identical with outcome pending for resolveConflict and resolveCandidate, the direct expectedUid call, the conflict cache is not filled by a stale updateSyncState or readSummary, and refreshState discards a result across a switch (B's state, JournalUnbound, or three attempts then JournalUnbound). Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-state.md.
+
+## 2026-10-16 - Commit: test(s02): update stale fakes and older assertions for remediation H-A (epic 14a)
+
+Decision: FakeConsent gets consentUid (fixed or following the uploader uid), five _Settings fakes get reset(), and four older assertions change to the new contract (write before sign-in throws, resume after sync, resume failure logged in the upload step, consent follows a flipped uid). Evidence: core/changes/2026-10-16-s02-test-epic14a-stale-fakes.md.
+
+## 2026-10-16 - Commit: test(s02): H8 sign-out wipe and local export bound to the account (epic 14b)
+
+Decision: Twelve tests assert onSignOut wipes exactly the uid captured before the prompt (wipeForUid), aborts with false and wipes nothing when the bound uid changes during the assessment or the prompt, keeps wipe() for a plain journal; exportAll returns one ActivityExportAccountChanged on a uid change after the listing or at any read, and a normal export keeps the full GPX route and FIT bytes of one account only. Evidence: core/changes/2026-10-16-s02-test-epic14b-wipe-export.md.
+
+## 2026-10-16 - Commit: test(s02): stale view end-to-end journey over the real journal (epic 14b)
+
+Decision: One adversarial journey test over the real FileActivityJournal, real repository and real presenter asserts after an A to B switch with the same activity id: B's first frame is loading and empty, B never shows A's field values, A's queued tap leaves B byte-identical and writes nothing to any cloud, and A's conflict returns intact on the way back. Evidence: core/changes/2026-10-16-s02-test-epic14b-stale-view-e2e.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14b findings section
+
+Decision: The epic 14 findings file records the epic 14b files, the one production log change, defects, exact commands and the complete-run summary line (02:46 +167: All tests passed!). Evidence: core/changes/2026-10-16-s02-test-epic14b-findings.md.
+
+## 2026-10-16 - Commit: test(s02): consent binding, uploader and startup interleaving tests (epic 14a)
+
+Decision: 42 tests with Completer gates cover the five reviewer scenarios (A delayed init, B delayed init, A granted/B unknown, A granted/B withdrawn, stale completion after sign-out) through the real startup closure and the real store/client/uploader, plus the uploader consentUid and mark guards and the client grant/withdraw/delete rules. The accountBeingDeleted supplier inside the real uploader provider is not tested (no seam without Firebase). Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-binding.md.
+
+## 2026-10-16 - Commit: test(s02): consent switch end-to-end test (epic 14a)
+
+Decision: One adversarial e2e over the real journal, store, client, uploader and startup closure asserts that with A granted and B unknown and A stalled in syncAll, zero create/PUT/commit happens, B stream marker stays unset and A data and stored consent are untouched; a control run uploads for A alone. Evidence: core/changes/2026-10-16-s02-test-epic14a-consent-switch-e2e.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14a findings section
+
+Decision: Epic 14a is recorded in S02_TEST_FINDINGS_EPIC14.md: no production defect in remediation H-A, four notes gaps and two oracle slips of mine, final complete run +784 green. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md and core/changes/2026-10-16-s02-test-epic14a-findings.md.
+
+## 2026-10-16 - Commit: docs(s02): test epic 14c final run findings
+
+Decision: Final complete run for sprint S02 on head cf1a4eb5 is recorded: flutter activity directory +1389, flutter account/architecture/backup/parity/n07 set +120, jest activity/abuse/hardening 791 tests, jest policy/scaling/delete/reconcile/indexes 315 tests, all green with no production or test change. Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md and core/changes/2026-10-16-s02-test-epic14c-final-run.md.
+
+## 2026-10-16 - Commit: fix(s02): tie state reads to the auth uid (remediation I1)
+
+Decision: `ActivitySyncRepository.refreshState` applies the same journal/auth tie as a pass (new private `_viewTied`, also inside `_viewCurrent`): with a scoped journal and an auth supplier, a read whose journal uid differs from the signed-in uid is logged as a skip (reason word, no uid), retried up to 3 times, then ends in `JournalUnbound`. Plain journals and a null supplier keep the old behaviour. Evidence: core/changes/2026-10-16-s02-remediation-i-display-tie.md.
+
+## 2026-10-16 - Commit: fix(s02): consent contract with an unbound store and early consent bind (remediation I2)
+
+Decision: `grant`, `withdraw` and `deleteCloudStreamsNow` throw `ConsentAccountChangedException` before any state change or server call when the consent store is unbound; the startup closure binds the consent store and loads the settings before the journal bind and `syncAll` (consent does not depend on either), keeps `resume` after the final `current()` check, and the account-change block unbinds consent first, each step in its own try/catch. Evidence: core/changes/2026-10-16-s02-remediation-i-consent-contract.md.
+
+## 2026-10-16 - Commit: docs(s02): remediation I accepted limits and test notes
+
+Decision: Design item 24 records four accepted limits honestly (server closes the account-deletion window, a tap during a transition is a no-op, exportAll cannot see an A to B to A switch inside one read, a failed sign-out after wipeForUid leaves the journal unbound) and the H test notes gain heading I with oracles for I1 and I2 and the stale-fake list. Evidence: core/changes/2026-10-16-s02-remediation-i-docs.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 stale assertions after remediation I
+
+Decision: stale tests are updated to the intended remediation I contract (bound in-memory store; start order signIn, load, bind, sync, resume; a consent load failure no longer blocks bind and sync), and the wiring keeps the `account is being deleted; sync not started` log by logging it in the new early `current()` check. Evidence: core/changes/2026-10-16-s02-test-epic15-stale-assertions.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 I1 display-tie tests
+
+Decision: the I1 guard is proved at three layers (repository read, presenter, pumped sheet) with a positive control each; candidates are not seeded because the guard sits before the journal read. Evidence: core/changes/2026-10-16-s02-test-epic15-i1-display-tie.md.
+
+## 2026-10-16 - Commit: test(s02): epic 15 I2 consent-contract tests
+
+Decision: the I2 contract is proved at the client level and through the real startup closure; the unguarded `onAccountChanged` call is accepted because consent is unbound before it (the order is the guarantee), and the test pins that order. Evidence: core/changes/2026-10-16-s02-test-epic15-i2-consent-contract.md.
+
+## 2026-10-16 - Commit: docs(s02): epic 15 final runs and findings
+
+Decision: epic 15 closes green on head 866a05b3; findings recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-test-epic15-final-run.md.
+
+
+## 2026-10-16 - Commit: S02 documents after external gate round 12, remediation H and I
+
+Decision: GPT-PM round 12 on 10288e57 returned REJECT with one MAJOR (consent cache shared by all accounts) and accepted the three round-11 findings as resolved. The finding was verified against the source, a class sweep by three independent reviewers added siblings, remediation H and I fixed them with tests (epics 14 and 15 per the test agents), and the report pair, state and lessons are updated for round 13. Accepted limits are in design section 17 item 24. Evidence: server, rules and indexes unchanged since their last runs (empty git diff --stat for functions, firestore.rules, storage.rules, firestore.indexes.json, public and scripts since cf1a4eb5); Dart runs recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md. Evidence: core/changes/2026-10-16-s02-documents-after-round-12.md.
+
+## 2026-10-16 - Commit: fix(s02): bind server activity callables to the initiating account (remediation J1)
+
+Decision: GPT-PM round 13 on the head after remediation H and I returned REJECT with one MAJOR (the Dart consent client checks only the locally bound uid while the callable runs as the account signed in at that instant, so a sign-in flip between check and call applies account A action to account B). Decision: the initiating account travels with the call. The four client-initiated callables require `expectedUid`, verified against `request.auth.uid` right after the auth and anonymous gates and before the parse, any quota charge or any read or write; a mismatch is `failed-precondition` / `account_changed`. `expectedUid` is a consistency check, not the authorization boundary. The Dart half (J2) follows. Evidence: core/changes/2026-10-16-s02-remediation-j1-server-expected-uid.md; verification not run (test agent pending).
+
+## 2026-10-16 - Commit: fix(s02): bind client activity calls to the initiating account (remediation J2)
+
+Decision: the Dart half of remediation J. The settings client takes a required live-uid supplier and refuses grant, withdraw and delete-now unless the store uid equals the live uid (start, immediately before the call, after the call); the stream callables and the tombstone pusher send the uid captured for the pass as expectedUid and the real clients fail closed on null; the server pair failed-precondition / account_changed (message compared) maps to the existing account-changed outcome (cancelled uploader pass, stopped sync pass). Accepted limits are in design section 17 item 25. Evidence: core/changes/2026-10-16-s02-remediation-j2-client-expected-uid.md; verification not run (test agent pending).
+
+## 2026-10-16 - Commit: refactor(s02): move the account-changed outcome to its own file (remediation J2)
+
+Decision: ConsentAccountChangedException and isAccountChangedRefusal move from activity_cloud_settings_client.dart to a new account_changed.dart; the settings client re-exports both so existing importers keep working, and the uploader, the sync repository and the tombstone pusher import the new file. No behavior change; it removes an import cycle created by remediation J2. Evidence: core/changes/2026-10-16-s02-remediation-j2b-account-changed-file.md; verification not run (test agents pending).
+
+## 2026-10-16 - Commit: test(s02): send expectedUid from the activity test support (epic 16a)
+
+Decision: `functions/src/__tests__/activity/support/flow.ts` gains `withUid(data, uid)` (adds `expectedUid: uid` to a plain object that lacks the key; non-object data and an explicit key pass through). `create`, `commit` and the four J1 entries of the SEVEN table in `support/seven.ts` use it. The three other SEVEN entries are unchanged. Evidence: core/changes/2026-10-16-s02-test16a-1-central-fixes.md; Run after the fix: `npx jest src/__tests__/activity` gave 25 of 26 suites passing (744 of 745 tests); the one failure (a 32 MiB validator test hitting the 5 s timeout) is unrelated to the change and passed when run alone. The red state before the fix was not observed.
+
+## 2026-10-16 - Commit: test(s02): add expectedUid helper and handler tests (epic 16a)
+
+Decision: New `functions/src/__tests__/activity/expected_uid.test.ts` (unit tests of `verifyExpectedUid`) and `expected_uid_handlers.test.ts` (the four handlers: mismatch writes and charges nothing and logs `account_changed` without a uid, mismatch wins over an invalid request and an exhausted quota, missing or malformed key gives `invalid_request`, non-object data, matching key success, strict settings parser, anonymous gate first, onCall wrapper refuses a missing auth). Evidence: core/changes/2026-10-16-s02-test16a-2-new-tests.md; 88 tests in the two new files passed (88 total). Broader sets are recorded in docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md.
+
+## 2026-10-16 - Commit: docs(s02): record the epic 16a server test findings
+
+Decision: New `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` with the section "16a server": changes, new tests, exact commands and result lines, findings and limits. Evidence: core/changes/2026-10-16-s02-test16a-3-findings.md; Documentation only; the results quoted are from the runs described in the document.
+
+## 2026-10-16 - Commit: fix(s02): bind the remaining activity callables to the initiating account (remediation J3a)
+
+Decision: `getActivityStreamDownloadUrls` and `deleteAllActivityStreams` now require `expectedUid` and verify it right after the auth and anonymous gates, before the parse, any quota charge, read or write (same helper and error pair as the four J1 callables). `deleteAllActivityStreams` no longer ignores its body: after the key is stripped it must be an empty object, else `invalid_request` (smallest strict check; the handler never parsed a body). `handleDeleteAllActivityStreams` takes a required `data` argument before `limits`. `sendDebugTelemetry` stays unchanged (accepted limit). The accepted limits and the backlog of the class sweep are recorded in design item 25. Evidence: core/changes/2026-10-16-s02-remediation-j3a-server-more-callables.md; NOT RUN (no test, analysis or build executed); test agents must update the existing jest support and add tests as listed in the J3 section of docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md.
+
+## 2026-10-16 - Commit: fix(s02): class sweep findings in the client activity calls (remediation J3b)
+
+Decision: five client fixes from the class sweep: an unbound consent store is never granted and load() ignores it (B1); a refused withdrawal no longer cancels the uploader and a successful one re-arms the delete offer (B2); a transient account-changed tombstone push (pass still alive) schedules the normal backed-off retry with no failure bookkeeping (B3); the conflict presenter does nothing when the tap-time uid is null (B4); the uploader never reads a scoped journal bound to another account (B5). The accepted limits and backlog are in design item 25. Evidence: core/changes/2026-10-16-s02-remediation-j3b-client-class-sweep.md; NOT RUN (no test, analysis or build executed); test impact in docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md, section CLIENT (J3b, Dart).
+
+## 2026-10-16 - Commit: test(s02): server tests for remediation J3a (epic 16a2, 1/2)
+
+Decision: fix the existing server tests for the new expectedUid requirement and the deleteAll body argument, and add expected_uid_more_callables.test.ts with a structural scan of every onCall handler. Evidence: core/changes/2026-10-16-s02-test16a2-1-server-tests-j3a.md; focused run 7 suites / 321 tests passed.
+
+## 2026-10-16 - Commit: docs(s02): findings of test epic 16a2 server (J3a)
+
+Decision: record the 16a2 results; the line-pinned allowlist entry for delete_all_streams.ts in scripts/ci/check_data_access_policy.js (201 -> 203) is handed back to the implementer, not changed by the test agent. Evidence: core/changes/2026-10-16-s02-test16a2-2-findings.md.
+
+## 2026-10-16 - Commit: fix(s02): repin the data-access allowlist line for delete_all_streams
+
+Decision: the allowlist entry of scripts/ci/check_data_access_policy.js for functions/src/activity_streams/delete_all_streams.ts moves from line 201 to line 203, because remediation J3a shifted the pinned call by two lines. One-line change; no redesign of the line-pinned mechanism (secondary mechanism, one fix round). Evidence: core/changes/2026-10-16-s02-data-access-allowlist-repin.md; the three red tests are re-run by the test agents.
+
+## 2026-10-16 - Commit: test(s02): Dart compile fixes for remediation J2/J3b (epic 16b, 1/3)
+
+Decision: keep the old client scenarios by wiring the settings client's live uid to the consent store's bound uid through one helper, record expectedUid in the stream fake, and give every tombstone pusher closure the second argument; the one stale assertion found (presenter tap without a uid) gets an explicit uid override instead of a weaker check.
+
+## 2026-10-16 - Commit: test(s02): settings client tests for remediation J2/J3b and findings 16b (epic 16b, 2/3)
+
+Decision: test the A to B flip with a read-counting live-uid supplier at every guard point of grant, withdraw and deleteCloudStreamsNow, and test the server-refusal mapping through a faked FirebaseFunctions so the real mapping code runs.
+
+## 2026-10-16 - Commit: test(s02): uploader, tombstone, presenter and real client tests for remediation J2/J3b (epic 16c, 1/2)
+
+Decision: test the uploader flip with explicit flip points (before create, during the PUT, during commit) plus a sweep over flip points 0..8, test the tombstone refusal through the injectable retry timer and the retry order, and fake FirebaseFunctions for the real clients; the presenter null-uid test uses control rows so a blind observer cannot pass.
+
+## 2026-10-16 - Commit: test(s02): stale presenter test fix and findings 16c (epic 16c, 2/2)
+
+Decision: give the presenter tests an explicit uid instead of weakening the J3 B4 no-op rule; record both complete runs in findings 16c.
+
+## 2026-10-16 - Commit: test(s02): final server run and large-filler timeouts (epic 16d)
+
+Decision: raise the timeout of the two large-filler tests to 60 s so the complete parallel run is deterministic; record the final server run (922 + 315 tests green). Evidence: core/changes/2026-10-16-s02-test16d-final-server-run.md.
+
+## 2026-10-16 - Commit: docs: S02 report, state and retro after external gate round 13
+
+Decision: GPT-PM round 13 on 0096dd88 accepted all four earlier findings as resolved and returned REJECT with one MAJOR (consent calls checked only the locally bound account while the callable ran as the account signed in at that instant). Verified against the source. Decision: the initiating account travels in the request and the server verifies it first, for all six client-reachable activity callables (design section 17 item 25); three independent reviewers swept the whole surface with an inventory table; their findings in scope were fixed in one batch (J3); a withdrawal outbox, the stream PUT timeout and the other backlog items are NOT built now (accepted limits and backlog, item 25, with S03 requirements for the UI). Rules emulator not re-run: firestore.rules, storage.rules and firestore.indexes.json are unchanged since 479b7342 (empty git diff --stat). Evidence: docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md; core/changes/2026-10-16-s02-documents-after-round-13.md.
+
+## 2026-10-16 - Commit: docs: record operator answers after the S02 merge
+
+Decision: PR #10 (sprint S02) was merged into phase2/main by the operator's decision as the merge commit 2c121242 (a merge commit rather than a squash, to keep the per-commit change records and the lessons log in history); GPT-PM APPROVE on 72cc3803 (round 14). Operator answers recorded: (1) one app: Phase 2 ships as an update of the same app, not as a second app; (2) U-1 (replace the Scan tab with a Record action): keep five tabs, Record is a button over the screen; (3) U-2 (tablet and large layouts now or later): NOW, and the design covers Android phone, iPhone, iPad, Android tablet and MacBook; the repository has only an android platform folder, so whether and when iOS, iPadOS and macOS builds are created is NOT decided; (4) OD-9 (open the local journal in the default build regardless of the cloud flag): yes, always; (5) retention: "never" is not offered, the default expiry is 2 years (730 days), allowed 90, 365 and 730 days. The privacy draft still says "or never"; it must be changed in the generator source (legalPrivacyBody in app_en.arb and app_ru.arb, then regenerate public/privacy.html) together with the privacy wording approval, which is still pending. Not answered yet: the first-release region, deletion-record retention (400 days proposed), bucket and IAM and alerts and service account, the heavy-work release gate, monetisation per mode (D-9), the fate of the master branch name (D-3), the legal status of the third-party dossier (D-10). Evidence: operator answers in chat 2026-10-16; PR #10 merged at 2026-10-16T20:05:19Z; core/changes/2026-10-16-s03d-record-operator-answers.md.
+
+## 2026-10-16 - Commit: test: rename a fake uid sentinel that the secret scanner flags
+
+Decision: the red secret scan after the S02 merge is treated as a false positive and fixed in two parts, as the operator chose on 2026-10-16: (1) the unit test of the activity journal renames its fake user-id marker (name and value both contained the word "secret") to `sentinel` with a neutral value; (2) one reviewed entry is added to .gitleaksignore for the already-merged commit 2791285a, because the scanner reads the whole history. Alternatives rejected: rewriting history (forbidden, the commit is merged) and disabling the secret scan (it protects real credentials). Unverified: the rule id and line in the new entry are inferred (entropy 3.85 is above the 3.5 threshold of the generic key rule; line 264 read with git show at that commit); the scanner was not run locally by operator decision, so only the next CI secrets job confirms it. Nothing is pushed; the change goes into the next sprint pull request. Evidence: core/changes/2026-10-16-gitleaks-false-positive-sentinel.md.
+
+## 2026-10-17 - Commit: S02 follow-up: apply the retention and privacy answers, close phase 9
+
+Decision: apply the operator's answers of 2026-10-16 to the merged S02 code and wording, as follow-up work on the next sprint branch. (1) Retention: "never" is not offered, so the server constant `STREAM_RETENTION_NEVER_OFFERED` is `false` (the settings call refuses `null` with `invalid_retention`; a stored `null` counts as the 730-day default); the default stays 730 days and the allowed values 90, 365 and 730. (2) Privacy wording: the hand-edited public page and the wording it carries (body scan from 6dbe2392, S02 from c7e30e9c and 7c4a404d) are ported into the real source `scripts/legal/legal_text.py` as pure transcription, with the single change that "or never" is removed; the generator now reproduces the page, `build_legal.py --check` exits 0, and a new test guards the sync. The wording as a whole is still a DRAFT pending the operator's approval, and the Russian counterpart of the S02 paragraphs is still missing. (3) Accepted side effects of the generator: the shared last-updated stamp reads 15 October 2026, so the Terms page date moved from 21 August although the Terms text did not change; about 20 ARB placeholder-metadata entries were re-indented with identical content. Alternatives rejected: a per-document stamp (a new key and a secondary mechanism) and a hand revert of the metadata hunks. (4) S02 phase 9 artifacts written: sprint acceptance record and release notes, each with explicit UNKNOWN lists and source disagreements; the operator has not stated acceptance of the sprint. Not changed: the local journal flag default (ACTIVITY_LOCAL_JOURNAL is still off in code; opening it always is story S03-0). Evidence: core/changes/2026-10-17-s02-followup-retention-privacy-phase9.md, docs/phase2/s02/S02_TEST_FINDINGS_EPIC17.md.
+
+## 2026-10-17 - Commit: docs: S03-D UI design contract revision 3 for all device families
+
+Decision: the S03-D UI design contract is revised to revision 3 and applies the operator answers of 2026-10-16: one app (an update of the same application id); five tabs with Record as a button over the screen (the alternative that replaces Scan is dropped); tablet and large layouts are designed now for Android phone, iPhone, iPad, Android tablet and MacBook, with a window-size model by width (compact under 600 dp, medium 600 to 839, expanded 840 and up, plus a short-window rule at 480 dp height), a side navigation rail on expanded and short windows, per-family conventions, and pointer and keyboard support on Mac; Apple builds stay design only because the repository has only an android platform folder; the local journal opens in the default build regardless of the cloud flag (story S03-0); cloud retention has no "never", default 730 days. Assumptions made by the designer and put to the operator in section 15 of the contract (DQ-16 is the contract's own list of open design assumptions): the rail shows an enabled Record button on all five tabs including Scan and Profile; Esc never means Back; a wide window with large text shows one column when the content pane is under 880 dp; the rail form is chosen by measured label width; the compact rail shows a state word and minutes while a session runs. Reviews: product-ux-reviewer 4 MAJOR and 6 MINOR, a11y-architect 3 MAJOR and 6 MINOR, no BLOCKER; all items remediated in one batch. The contract is a DRAFT, not approved; the next step is the GPT-PM documentation gate on the exact head. Not decided: when Apple build targets are created, the first-release region, monetisation per mode, the fate of the master branch name, the legal status of the third-party dossier. Evidence: docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md, core/changes/2026-10-17-s03d-ui-contract-revision-3.md.
+
+## 2026-10-17 - Commit: docs: S03-D fix the short-window chooser grid after the GPT-PM gate
+
+Decision: GPT-PM documentation gate round 1 on head 5302915e returned MODIFY (1 MAJOR, 2 MINOR); each item was verified against the contract text and accepted. The chooser grid is now decided by the available grid width: 4x1 only on a short window (height under 480 dp) whose grid width is at least 4 x 136 + 3 x 12 = 580 dp, otherwise 2x2 with vertical scroll; card width floor 136 dp (200 dp in the Medium 2x2 grid). The rail-form criterion computes the expected form from the measured-width rule instead of hard-coding 96 dp. The privacy status line (OD-11) says the generator source and outputs were already updated and the wording stays a DRAFT pending the operator. Alternatives rejected: smaller card widths for the short variant (new text budgets and touch-target questions) and horizontal scrolling (forbidden by the layout criteria). The contract remains a DRAFT, not approved; a verification round on the new exact head follows. Evidence: GPT-PM reply of 2026-10-17 (request 9bdd45d1), core/changes/2026-10-17-s03d-gate-round-1-fixes.md.
+
+## 2026-10-17 - Commit: docs: record the S03-D documentation gate approval and its report
+
+Decision: the S03-D documentation gate is closed. GPT-PM APPROVE on the exact head 45b9184b in verification round 2 (request id 6e9e542e, 0 BLOCKER, 0 MAJOR); round 1 on 5302915e returned MODIFY (request id 9bdd45d1). The approval covers the S03-D contract revision 3 and the S02 follow-up commit 849abd5e as they stood at 45b9184b; this commit only adds the operator report pair and the records, so it changes no reviewed content. Nothing is pushed: the branch is pushed and the one pull request opened after the S03 build, the agent checks and the external approval on that exact head, as in S02. Next: the S03 technical documentation (mode design, states, test plan) and its gate. Open operator decisions are listed in the report and in contract section 15: privacy wording approval, when Apple build targets are created, the designer's five assumptions, first-release region, bucket and access rights, Blaze billing, monetisation per mode, the fate of the master branch name, the legal status of the third-party dossier, retention of deletion records. Evidence: core/changes/2026-10-17-s03d-gate-approval-report.md, reports/2026-10-17-s03d-documentation-gate.ru.html.
+
+## 2026-10-17 - Commit: docs: start sprint S03 on the operator GO
+
+Decision: the operator gave an explicit GO on 2026-10-17 ("yes, GO") to start sprint S03 (shell, mode chooser, dashboard skeleton) after the S03-D documentation gate approval (GPT-PM APPROVE on 45b9184b). No answer was given on the privacy wording, on when Apple build targets are created or on the designer's five assumptions (DQ-16), so by the defaults stated in the report the five assumptions stand as written, Apple build targets are not created in S03, and cloud route upload stays off until the privacy wording is approved. The sprint follows the documentation-first order: code map, technical design, test plan, internal reviews, GPT-PM documentation gate, build, focused tests by the test agents, internal reviews, GPT-PM code gate, one push and one pull request at the end. Evidence: core/changes/2026-10-17-s03-start.md, docs/sdlc/STATE.md.
+
+## 2026-10-17 - Commit: docs: S03 code map, technical design, test plan and internal review batch 1
+
+Decision: the coordinator accepted the merged internal review of the S03 design and test plan and fixed the design decisions for the remediation batch without operator input, because none of them is operator-only (no deletion, no money, no wording of the privacy text): one writer for the mode status (RV-1), three-way read of the stored mode so a damaged value is never overwritten (RV-2), journal availability with a binding state and uid-stamped digests so an account never sees another account's data (RV-3), owner uid captured at timer start (RV-4), file ownership table and split lanes (RV-5), element-preserving shell swap (RV-6), chooser pushed with Back equal to Decide later (RV-7), timed strip transitions (RV-8), adaptive surfaces as routes (RV-9), recovery loss and stale-data notices (RV-10, RV-11), a sign-out guard that does not pass silently (RV-12), and the Android backup exclusion fix as a mandatory part of story S03-0 before the journal flag flips (RV-13). The backup finding was verified by the coordinator against the code (uid_scoped_activity_journal.dart:47-55 and the three exclude blocks) before it was accepted. Further coordinator decisions in the same batch: the test plan owns every test id and the design only cites them (after two authors minted the same ids for different tests); a rail label measurer seam (`railLabelMeasurerProvider` in `shell_layout.dart`) so that the 96 dp and 240 dp rail forms can both be tested although the project loads no real font in tests; the reading of the sign-out guard against contract J10 (a journal that exists but cannot be read gets a "cannot check" sheet, a build with no journal or an empty open journal signs out silently), which the GPT-PM gate is asked to confirm; the Russian values of the localization keys are listed in the design tables as product content for review before the ARB files are written (all prose stays English; the approved contract already contains a few such lines). The test plan now plans 452 tests without the two conditional stories and 464 with them (the design estimate was about 340); whether to keep one sprint and one pull request or to split is an operator decision that stays open, default one sprint. No S03 code exists yet; the documentation gate with GPT-PM follows. Evidence: docs/phase2/s03/S03_DESIGN.md (disposition table), docs/phase2/s03/S03_TEST_PLAN.md, core/changes/2026-10-17-s03-design-testplan-review-batch-1.md.
+
+## 2026-10-17 - Commit: docs: S03 one retry state machine for automatic and manual journal bind (GPT-PM MAJOR-01)
+
+Decision: GPT-PM returned MODIFY for 3bedcba4 with one MAJOR (the manual retry test DT-0-5 contradicts the retained automatic retry schedule) and no BLOCKER; the coordinator verified the finding against the code and the two documents (FACT) and accepted it. Remediation chosen by the coordinator: one authoritative retry state machine for automatic and manual journal bind attempts, as GPT-PM preferred (single flight shared by both sources; a manual attempt that fails leaves the original automatic deadline and index intact; a manual success cancels the timer; after the fifth automatic retry fails the state is gave-up, no automatic attempts, one manual attempt per tap and no new loop; a due automatic timer during an in-flight manual attempt is re-armed with the same index). The design describes it in section 2.1 item 3 and the closure in the binding provider becomes a small controller class with behaviour-preserving automatic retries; the existing binding-retry test file stays valid. The plan rewrites DT-0-5 and adds DT-0-11 to DT-0-14. GPT-PM also accepted the sign-out guard refinement of contract J10 and asked to keep the explicit "Sign out anyway" path (kept). Open operator decisions stay open (sprint size, Health Connect wording, Apple targets, privacy wording). Evidence: core/changes/2026-10-17-s03-gate-round-1-fixes.md, docs/phase2/s03/S03_DESIGN.md section 2.1, docs/phase2/s03/S03_TEST_PLAN.md DT-0-5 and DT-0-11 to DT-0-14.
+
+## 2026-10-17 - Commit: docs: S03 failedToOpen is defensive, retryNow contract and per-generation rules (GPT-PM MAJOR-02, reliability review)
+
+Decision: after GPT-PM round 2 (MODIFY, MAJOR-02: DT-0-5 expects impossible open and bind counts for failedToOpen) the coordinator verified the finding (FACT), ran an independent read-only reliability review of the retry state machine (0 BLOCKER, 5 MAJOR, 4 MINOR) and verified its main claim against the code. Decisions: failedToOpen is a defensive state (journal flag enabled and no journal object provided) that production cannot reach, it has no retry and its error panel shows no Try again button (documented deviation from AC-PR-2, which applies to gaveUp); there is no separate open attempt; retryNow() returns started, busy or notApplicable and busy is a separate boolean, availability does not change when a manual attempt starts; single flight, busy and the timer belong to a generation and a stale completion touches nothing; the recovery counts come from an optional RecoveryReportSource interface so existing fakes stay valid; the up to 11 minute 20 second LOADING window while a bind keeps failing is an accepted, recorded risk (R14) because the journal has no writer before S05; rule 2 gets the deadline exception and the gave-up index rule. Counts: 458 tests without and 470 with the two conditional stories. Round 3 of the documentation gate follows. Evidence: core/changes/2026-10-17-s03-gate-round-2-fixes.md, docs/phase2/s03/S03_DESIGN.md section 2.1 item 3 and risk R14, docs/phase2/s03/S03_TEST_PLAN.md DT-0-3, DT-0-5, DT-0-15, DT-0-16.
+
+## 2026-10-17 - Commit: docs: record the S03 documentation gate approval and start the build
+
+Decision: GPT-PM returned APPROVE for head 59828804 (S03 technical design and test plan, round 3, 0 BLOCKER, 0 MAJOR) and authorized implementation and focused testing under the documented contracts; the approval does not authorize push, merge, deployment or acceptance of the code. The coordinator started build wave 1 (lanes L1, L2, L3) on that approval. Conditions that GPT-PM asked to keep visible in the implementation and acceptance records: (1) the AC-PR-2 deviation: no Try again button in the unreachable failedToOpen state, retry behaviour belongs to the reachable gaveUp state; (2) accepted risk R14: up to 11 minutes 20 seconds of loading while a bind keeps failing, follow-up in S05. Open operator decisions stay open with their defaults: sprint size (one sprint and one pull request), Health Connect row wording, Apple build targets (not in S03), privacy wording (cloud upload stays off), the designer's five assumptions (accepted as written). The Russian values of the localization keys listed in the design tables are product content, not prose; this interpretation of the English-only rule is recorded here for the next gate. Evidence: docs/sdlc/STATE.md, core/changes/2026-10-17-s03-doc-gate-approved-build-started.md, GPT-PM round 3 reply (request 6cd0930d-726d-4e86-ac97-37be3aa02664).
+
+## 2026-10-17 - Commit: fix(activity): exclude the per-account activity_journal tree from Android backup and device transfer
+
+Decision: the per-account journal root directory `activity_journal` is added to the single list of backup-excluded directories (`kActivityBackupExcludedDirs`, now four entries) and to `backup_rules.xml` (full backup) and both sections of `data_extraction_rules.xml` (cloud backup and device transfer). The three legacy names stay in the list because `FileActivityJournal.openDefault` still uses them. The change precedes the flip of the local journal default (S03-0, later run of lane L1), so there is no moment in which the journal is on and not excluded. Open follow-up kept for the documentation pass: the Apple marking (`isExcludedFromBackup`) is required before any Apple build target (OD-12). The two checker-fixture tests in backup_exclusion_test.dart that build a list without `activity_journal` are tightened by the test agents. Nothing was run by the coordinator; the focused tests are written and run by the test agents after epic 0. Evidence: core/changes/2026-10-17-s03-l1-run1-backup-exclusion.md, docs/phase2/s03/S03_DESIGN.md section 5.
+
+## 2026-10-17 - Commit: feat(ui): add the window size class and optional focus, hover and semantics parameters to the HUD controls
+
+Decision: window classes are compact under 600 dp, medium 600 to 839, expanded 840 and up, with a short-window flag under 480 dp height (lower bound inclusive); the class is read through an inherited model (`WindowSizeScope`) so a widget rebuilds only when its aspect changes, with an override provider for tests (RV-18b). The text scale is accepted by `classifyWindow` and ignored, as design 2.6 says. The hover wash of the HUD controls is the existing accent chip gradient at half opacity because contract 10.9 does not name a token (recorded as UNGROUNDED in the lane report; no new colour added). Wiring (mount point, call sites) belongs to later lanes. Nothing was run; the S03-02 and S03-03 tests are written and run by the test agents. Evidence: core/changes/2026-10-17-s03-l3-hud-primitives-window-size.md.
+
+## 2026-10-17 - Commit: feat(modes): add the mode state models, the never-throwing codec and the per-account store
+
+Decision: (1) `ModeStore.read` returns a three-way result and `ModeStore.write` returns a result and never throws; the design text in section 2.2 shows simpler signatures, the rule prose of RV-2 requires this shape. (2) The encoder accepts chooser status `absent`, so an explicit user action on a default state built after a corrupt or newer-version read has a valid value to write; `initIfAbsent` acts only on a missing key, and a value with chooser `absent` is never treated as missing. (3) The wiped-uid guard is a per-process set that is never cleared (account ids are not reused after deletion; fail-closed). (4) Run 2 connects the guard by listening to `accountBeingDeletedUidProvider` inside the mode providers (that provider is set before the pending-wipe marker and before the wipe, while auth still reports the uid), so `local_data_wipe.dart` and the deletion providers are not edited, as design 5.3 requires. (5) Availability takes a table, flags are composed in run 2. Nothing was run. Evidence: core/changes/2026-10-17-s03-l2-run1-mode-data-layer.md.
+
+## 2026-10-17 - Commit: feat(modes): add the mode notifier, the start-up migration and the warm-up provider
+
+Decision: (1) the migration decides only from the first profile value loaded for the uid (`null` counts as the first value, as RV-1 says); if that value is not onboarded the migration never runs for that uid in this process. Known edge: an upgrader whose profile stream first emits null (offline cache miss) and later the real profile is not migrated in that process and is retried at the next start; accepted, nothing is shown or written meanwhile. (2) A failed store read or a newer-version value makes the whole run read-only, not only the start-up writes (safer reading of RV-2: the disk content is unknown). (3) `initIfAbsent` takes an optional `forUid` so the migration cannot act on a notifier loaded for another account. (4) `resolveChooser` flips the chooser status only after a successful write (AC-CH-6); the other methods set the in-memory state first, then write. (5) The wiped-uid guard is `modeWipeGuardProvider`, listening to `accountBeingDeletedUidProvider`; it has no effect if a wipe is ever started without setting that provider (recorded for the test agents, DT-01-20). Nothing was run. Evidence: core/changes/2026-10-17-s03-l2-run2-mode-state-layer.md.
+
+## 2026-10-17 - Commit: feat(activity): turn the local journal on by default and add the bind retry state machine and journal availability
+
+Decision: `ACTIVITY_LOCAL_JOURNAL` defaults to true (the backup exclusion landed first in 0d6ac407); the cloud flag stays off and the cloud pieces stay unwired. `journalAvailabilityProvider` is a derived Provider, not a Notifier (no state of its own). Journals that are not account-scoped (test harness journals) derive `open` directly. `bindBusy` is true for any attempt in flight, automatic or manual; availability does not change when a manual attempt starts. `retryNow` checks in this order: no bindable uid is `notApplicable`, an attempt in flight is `busy`, a phase other than waiting or gave-up is `notApplicable`. The retry schedule and the log strings `gave up after 5 retries` and `journal bind failed (<Type>)` are kept. The bind status is not reset when the binding provider is disposed (only a flag rebuild matters). Known red test until updated by the test agents: activity_flags_test.dart lines 75-79. Nothing was run. Evidence: core/changes/2026-10-17-s03-l1-run2-journal-on-retry-machine.md, docs/phase2/s03/S03_DESIGN.md section 2.1.
+
+## 2026-10-17 - Commit: feat(modes): record the onboarding choice and start the mode warm-up at the app root
+
+Decision: the onboarding page awaits `modeStateProvider.future` and then `initIfAbsent(InitSource.onboarding)` inside try/catch (fixed log message with the exception type only) before it navigates to `/home`; a failed or ignored `saveFailed` result never blocks the navigation; when the widget is unmounted after the await it returns without navigating. `FitnessApp.build` watches only `modeWarmUpProvider`. The `AppShortcuts` splice and the `WindowSizeScope` mount in `main.dart` are NOT part of this commit (waves 3 and 4). Nothing was run. Evidence: core/changes/2026-10-17-s03-l2-run3-onboarding-hook-warmup.md.
+
+## 2026-10-17 - Commit: docs: add the S03 documentation gate report pair for the operator
+
+Decision: the checkpoint report of the S03 documentation gate (GPT-PM APPROVE on 59828804 in round 3, the inherited S02 backup-exclusion defect, the accepted deviation and risk, the open operator decisions with defaults) is kept in reports/2026-10-17-s03-documentation-gate.ru.html and reports/2026-10-17-s03-documentation-gate.html. It states that the build has started and lists the first commits. The report is a checkpoint: the program continues. Evidence: core/changes/2026-10-17-s03-documentation-gate-report.md.
+
+## 2026-10-17 - Commit: feat(activity): add the pure activity aggregates and the dashboard digest providers
+
+Decision: aggregates are pure and live in `features/activity/data/activity_aggregates.dart`; the digest notifier rebuilds (synchronous reset to loading) only when the uid or the open state changes, not on every bind-status flip; a stale or discarded load never publishes; while the journal is not `open` the notifier stays loading and the UI chooses panels from `journalAvailabilityProvider`; a failed refresh keeps the same-uid value and sets `lastLoadFailedAt`; sessions whose summary throws are counted as `unreadableSessions`; source labels switch exhaustively over `SourceKind` (a future kind fails to compile). `progress_stats.dart` gets public `localDayOf` and `mondayWeekStartOf` (behaviour unchanged, old private names delegate). Not done in this run: activity row formatters, mode ordering of tiles (UI). Carry-over for `main.dart` (wave 4): call `activityDigestsProvider.notifier.refresh()` on app resume. Nothing was run. Evidence: core/changes/2026-10-17-s03-l1-run3-aggregates-digest-providers.md.
+
+## 2026-10-17 - Commit: feat(ui): add the adaptive surface route and the S03 routes with guarded mode questions
+
+Decision: (1) one `PopupRoute` subclass for all three placements (deviation from the three route types named in the brief; needed for live re-placement while open); (2) `shared/widgets` imports `features/auth/state/auth_providers.dart` to reset the open-surface depth counter on account change (accepted for now, architect decides at the code review); (3) the route list is built by `buildS03Routes(availability:)` with `modeFlagsProvider(...).availabilityTable` read when the router is created (flags are compile-time constants); (4) Esc goes through a `FocusScope` key handler and `maybePop`, Esc never navigates back; (5) bottom sheets float with an 8 dp margin and `HudSheet` rounding; (6) a missing anchor gives a 360 dp centred dialog. Not done: the conditional S03-19 router part and `pushed_page_frame.dart`. Page swaps for the chooser, questions and Sources pages are three marked lines in `s03_routes.dart` after lanes L6 and L9 deliver their interface commits. Nothing was run. Evidence: core/changes/2026-10-17-s03-l5-adaptive-surface-and-routes.md.
+
+## 2026-10-17 - Commit: feat(workouts): add the active session status, the dock widgets and the session owner capture
+
+Decision: the status model has kinds and states (running, paused, resting, restFinished) derived from the existing set and rest timers read-only; the owner uid is captured when a timer starts and the status is hidden when it differs from the current uid; two driven one-shot timers fire at the rest end and ten minutes later through an injectable factory; a skipped rest hides the strip (the contract table is silent; the ten-minute window cannot be derived once `endsAt` is cleared); the set-timer start is observed by `ref.listen` in the player page build because the start lives in a card no lane owns; the destination is a new parameter of two private buttons; a provider failure returns null and logs the exception type only. Carry-over: ARB getters wait for lane L13; announcements are not written (see lessons entry); the compaction trigger belongs to the shell host (L4a). Nothing was run. Evidence: core/changes/2026-10-17-s03-l4b-dock-and-session-status.md.
+
+## 2026-10-17 - Commit: docs: record the activity journal tree, the mode key and the Apple backup marking in the data documents
+
+Decision: docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md gets the rows 'Local activity journal (S03-0)' and 'Mode state'; core/DATA_INVENTORY_2026-08-11.md gets the SharedPreferences row for activity.mode.v1.<uid> and the Files row for the journal tree; mobile/IOS_PERMISSIONS_TODO.md names the real tree activity_journal/<scopeId>/{journal,sources,quarantine} and states that any Apple (iOS, iPadOS, macOS) build target requires the isExcludedFromBackup marking before it ships (OD-12). The OD-12 row in the design documents is not edited (settled documents); the requirement already stands in the decision log. Evidence: core/changes/2026-10-17-s03-doc-follow-up-journal-and-mode-key.md.
+
+## 2026-10-17 - Commit: feat(shell): build the navigation bar and the side rail from one destinations list with the dock host
+
+Decision: one destinations list (`kShellDestinations`) builds both the bar and the rail; the `ShellRoute` child sits under one GlobalKey slot so a bar-to-rail swap keeps its element and state; `PopScope` and `_AnnounceShellCanPop` keep their code and stay outside the swap; the rail width follows the measured widest label (96 dp, 240 dp from a 1200 dp window or when label + 16 dp exceeds 96 dp) through `railLabelMeasurerProvider`; the medium bar is capped at 560 dp; the dock host reserves a fixed 56 dp and switches the dock to the compact variant when less than 240 dp of height remains above it; `HudScreenBody` animates a clearance change only when `ShellLayout` is present. Known gaps carried forward: the Record sheet opener provider is null until lane L6 wires it (the taps do nothing meanwhile); focus does not move to the same destination in the other presentation on a swap (route, selection and tab state are kept); the new code needs the ARB keys of lane L13 (`navMainLabel`) before it compiles; `shell_insets.dart` is not edited. Nothing was run. Evidence: core/changes/2026-10-17-s03-l4a-shell-frame.md.
+
+## 2026-10-17 - Commit: feat(l10n): add the S03 localization keys in English and Russian
+
+Decision: new lane L13 (localization) is the only lane that edits mobile/lib/l10n/app_en.arb and app_ru.arb; other lanes use generated getters and report missing keys. 129 keys per language were added at the end of both files (CRLF, UTF-8 without BOM, existing keys including legalPrivacyBody untouched). Interpretation choices recorded for the acceptance record: mode selects carry an `other` fallback branch; mode names are never interpolated (ICU select on the mode id, Russian nominative); `modeQuestionWhatChanges` is a select on `question` (`body` or other = Train text); `signOutConfirmDelete` is an English plural, the Russian wording needs no plural. The Russian values listed in the design tables are product content copied exactly; the Russian plural forms of `activityTimeFrom` and `activitySourcesMore` were derived by the agent and are not product-reviewed. The generated localization getters are not tracked in git (generated at build time), so nothing was generated or run. The agent ran one throw-away insertion script from the scratchpad for the bulk edit and parsed the result as JSON; the coordinator ran nothing. Evidence: core/changes/2026-10-17-s03-l13-localization-keys.md.
+
+## 2026-10-17 - Commit: feat(shell): add keyboard shortcuts, the visible Back control and scroll helpers
+
+Decision: shortcuts use Cmd on iOS and macOS and Ctrl elsewhere; tab shortcuts act only on the five shell paths and not on the tab already shown; Record on Shift+R opens the running session when one exists, otherwise the Record sheet through the opener provider (null until lane L6); the Back button renders only on macOS unless forced; Back shortcut on the home route does nothing (deviation from 'same as system Back', recorded); scroll-to-top on re-selecting a tab is not wired (needs a hook in main_shell.dart, owned by lane L4a). The splice into main.dart follows in a separate commit. Nothing was run. Evidence: core/changes/2026-10-17-s03-l10-input-shortcuts-back.md.
+
+## 2026-10-17 - Commit: feat(app): mount the window scope and the shortcuts and refresh the digests on resume
+
+Decision: WindowSizeScope is the outer and AppShortcuts the inner wrapper of the MaterialApp.router builder, both below the app ProviderScope; the resume refresh of activityDigestsProvider is unawaited inside try/catch. Nothing was run. Evidence: core/changes/2026-10-17-s03-main-window-scope-shortcuts.md.
+
+## 2026-10-17 - Commit: feat(sources): add the Sources page with the app row states and the source rows
+
+Decision: SourcesPage lives in features/modes/pages/sources_page.dart; app row chip by availability (not active, checking, problem with Try again for gaveUp, ready or in use when open, problem with refresh on a digest error); fixed rows Health Connect, Bluetooth sensors, Watch, Other services always show Not connected with no action; extra rows for sources found in the journal use the section 8.1 labels (unknown shows Unknown source); two columns only at 880 dp content width; refreshIfStale once in initState. Coordinator decisions for run 2: the failedToOpen state gets no Try again button on Sources (retryNow is not applicable, same documented deviation as AC-PR-2); lane L9 may edit mobile/lib/features/profile/profile_page.dart (the only user-initiated sign-out, not owned by any lane) and the single PAGE SWAP line of Sources in s03_routes.dart (lane L5 is finished); account_deletion_providers.dart is not edited (the deletion path already wipes the journal). Missing ARB keys are being added by lane L13. Nothing was run. Evidence: core/changes/2026-10-17-s03-l9-run1-sources-page.md.
+
+## 2026-10-17 - Commit: feat(l10n): add the keys for the Sources capability lines, the recovery notice and the sign-out guard
+
+Decision: lane L13 added activityRecoveryNotice (plural), sourceMayProvide, ten sourceCap* capability names (one per CapabilityColumn of kCapabilityMatrix) plus sourceCapUnknown, and signOutCannotCheckTitle, signOutCannotCheckBody, signOutAnyway, signOutPlain, signOutErrorTitle, signOutDeleted. The Russian texts and the English texts other than signOutCannotCheckTitle are agent-drafted and need product review (carried to the acceptance record). Retry labels reuse commonRetry and activityJournalRetry. The STATE.md build progress line is updated in this commit. Nothing was generated or run. Evidence: core/changes/2026-10-17-s03-l13-run2-extra-keys.md.
+
+## 2026-10-17 - Commit: feat(signout): add the sign-out guard for local activity and finish the Sources page
+
+Decision: confirmSignOutWithLocalData is the single guard of the Profile sign-out tile; notEnabled and an open empty journal sign out with no prompt; a non-empty open journal offers export first (GPX, falling back to FIT then JSON), then a second confirmation, then ActivityWipeCoordinator.onSignOut, called only when availability is open; binding, gaveUp and failedToOpen show the cannot-check sheet (Try again except for failedToOpen); a failed export or wipe keeps the user signed in with an error sheet and Retry; the deleted message appears only after a normal wipe return; the export file lives under the temporary directory in a folder named by the hashed uid and is deleted after the share. A fourth warning-sheet button signs out and keeps the data on the device (addition to design 6.9, accepted by the coordinator). Sources: no Try again in failedToOpen; recovery-loss line and the May-provide lines are shown. Nothing was run. Evidence: core/changes/2026-10-17-s03-l9-run2-signout-guard.md.
+
+## 2026-10-17 - Commit: fix(modes): persist again after a failed save when the same choice is repeated
+
+Decision: ModeNotifier keeps a private persist-failed flag (set by any non-saved write, cleared by a saved write, reset on rebuild; a completion for a previous account does not touch it); selectMode, resolveChooser, markResolved and the answer methods return unchanged only when memory equals the request AND the flag is clear, otherwise they write again and return saved or saveFailed truthfully; initIfAbsent still returns unchanged on a second call (a retry could persist the wrong source status, the migration retries at the next start). Nothing was run. Evidence: core/changes/2026-10-17-s03-l2-run5-persist-after-failed-save.md.
+
+## 2026-10-17 - Commit: feat(modes): add the mode chooser, the per-mode questions, the switcher, the Coming-later sheet and the Record sheet
+
+Decision: refused photo option: underage and ageUnknown access outcomes disable it with the existing reason, needsSupporter and needsConsent do not (the answer only records a preference); TRAIN question is asked only when both the mode answer and the training-context answer are unanswered; the question list is fixed at page start; chooser Continue goes to the questions route when the chosen mode still has an unanswered question; the save error on Continue is an app-level snackbar so it survives navigation; the Record sheet hides nothing behind flags in S03 and never replaces a running session (the shortcut layer opens the session instead); Record rows use push so Back returns to the originating tab; the switcher shows an unanswered-question count under available modes and sends an announcement on a mode change. The route swap lines in s03_routes.dart are committed separately after the stub cleanup. Nothing was run. Evidence: core/changes/2026-10-17-s03-l6-mode-screens.md.
+
+## 2026-10-17 - Commit: feat(app): route to the real chooser, questions and Sources pages and wire the switcher and Record openers
+
+Decision: s03_routes.dart now builds the chooser, questions and Sources routes with the real pages; the stub classes and the unused `s03Routes` list were removed; main.dart overrides modeSwitcherOpenerProvider with openModeSwitcher and shellRecordSheetOpenerProvider with openRecordSheet. On expanded windows the rail Record slot has no anchor key, so the Record sheet opens as a centred dialog there (accepted for S03). Nothing was run. Evidence: core/changes/2026-10-17-s03-routes-and-openers-wired.md.
+
+## 2026-10-17 - Commit: feat(progress): add the all-activity block, the journal error panel and the Sources slot to Progress
+
+Decision: Progress inserts the Sources slot, the journal error panel and the All activity block without reordering the existing sections; the Sources slot is shown only when the block is not (key progress.slot.sources absent otherwise); in gaveUp and in a failed first load the error panel has Try again (retryNow or refresh, disabled while a bind or reload runs), in failedToOpen it has none; the staleness refresh runs once from a post-frame callback in initState; time is whole minutes, distance is kilometres with one decimal and the unit comes from activityUnitKm; two-pane layout: left column sync card, All activity or error panel, chart and the remaining sections, right column body-scan card, nutrition card and the Sources slot; the page imports kSourcesPath from the S03 routes file. The 7 new localization keys (stale notice, incomplete notice, tile labels, distance hint, km unit) are in this commit; their Russian texts and the English tile labels are agent-drafted and need product review. Nothing was run. Evidence: core/changes/2026-10-17-s03-l8-progress.md.
+
+## 2026-10-17 - Commit: feat(home): add the mode lens, the mode chip, the activity today card and the two-pane layout to Home
+
+Decision: every pre-S03 Home child is a section under a stable home.section.<name> key and the lens reorders sections only (TRAIN keeps the pre-S03 order; Ride and Explore use the TRAIN lens; BODY puts the day panel, Activity today, body scan and nutrition first, nutrition first when the stored body answer is food); two panes from an 880 dp content pane (main pane: greeting, identity, day panel, week, deload, intro card, Activity today; the rest in the side pane), single column capped at 640 dp otherwise; the mode chip sits in the greeting row with the GlobalKey of lane L6 as the switcher anchor; the intro card shows only for migrated users after the Day-3 decision settled and never over another modal; the chooser is opened once per run by go (replace) after markOffered, only when the status is pending; the existing Day-3 flow is wrapped in try/finally so it always settles. Open: text of the '+n more' line, chip icon, viewport compensation (carried to the conformance pass). Nothing was run. Evidence: core/changes/2026-10-17-s03-l7-home.md.
+
+## 2026-10-17 - Commit: fix(s03): fix the compile errors and the defects found by the first test run
+
+Decision: fix lane L12 batch 1 applies the six compile fixes (journal availability and recovery source tests go through an Object local; pushReplacement without type argument; null-safe surface depth; KeyDownEvent and KeyEvent imports; super.key on the Progress sources row), the Sources failed-refresh Problem state with the stale notice and Try again, Home single column when the text scale exceeds 1.3 (the contract gives only the words one column at large text; the 1.3 threshold is the coordinator's number and is recorded as a design addition), and the new key activityTodayMore (+{n} more / +{n} ещё; the Russian is agent-drafted and needs product review). The two viewport-jump findings (Progress block and Home card shift content) stay open for the conformance pass. Nothing was run by the coordinator; the test agents re-run in the tree. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-1.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md.
+
+## 2026-10-17 - Commit: fix(modes): show only the greeting while the mode is unknown and refuse a stale write without throwing
+
+Decision: while the mode state is unknown Home shows the greeting only (no mode-dependent section, no Activity today card, no intro card); the stale-write refusal in ModeNotifier catches Error from the provider reads and returns saveFailed, logging a fixed message with the exception type. Known consequence to verify: existing Home tests that do not settle the mode state see only the greeting on the first frame. Nothing was run. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-2.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md.
+
+## 2026-10-17 - Commit: fix(modes): fix chooser focus order, anchor the rail Record sheet, put meal first for food answers and size the loading cards
+
+Decision: the chooser uses FocusTraversalGroup(OrderedTraversalPolicy) with numeric orders (Back first, cards, Continue, Decide later); the ShellRecordSheetOpener typedef gains an optional named anchorKey and the rail Record slot is wrapped in a KeyedSubtree holding a GlobalKey (the existing ValueKey of the slot stays for tests); recordRowsFor takes the stored Body answer (food: meal, scan, weight; weight: weight, scan, meal); loading outline cards are an invisible real card inside the outline so heights match by construction. Known risks to verify: tests that override the Record opener with a one-argument closure no longer match the typedef; semantics and focus of the invisible card. Not done: flag inputs for recordRowsFor (minor finding). Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-3.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md.
+
+## 2026-10-17 - Commit: test(modes): add the functional tests for the chooser, the questions, the switcher and the Record sheet
+
+Decision: step 3 test files and the findings file are committed after a green run of the complete step 3 set (96 of 96 at head 0969258b). The Record rows flag-input finding stays open and is carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md, core/changes/2026-10-17-s03-test-step-3.md.
+
+## 2026-10-17 - Commit: fix(shell): keep the viewport steady, show the rail focus ring, keep focus on resize, hide the Record pill for another account and announce session changes
+
+Decision: lane L12 batches 4 and 5. Scroll compensation (jumpTo by the added height when the position is not at the top) for the Progress All-activity block and the Home Activity today card; focus ring on rail tiles; shell-owned focus nodes per destination so focus survives the rail to bottom bar switch; dock and pill hidden for another account through a foreign-owner provider (the owner itself is NOT cleared, to avoid showing account A's session to account B); compact dock also when the text scale is above 1.5 (the 1.5 value is an addition by the coordinator, to be reviewed); announcements through SemanticsService for started, paused, resumed and ended, ended only for the same signed-in uid; mode chip icon; three new ARB keys (stripSessionStarted, stripSessionResumed, stripSessionEnded), Russian texts agent-drafted. Skipped: flag inputs for the Record rows. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-4-5.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 documentation readiness note
+
+Decision: the S04 readiness note is committed as a planning input only; none of its 8 entry decisions is taken by it and no S04 scope changes. Evidence: docs/phase2/s04/S04_DOC_READINESS.md, core/changes/2026-10-17-s04-doc-readiness.md.
+
+## 2026-10-17 - Commit: fix(progress): compensate the scroll offset by the net height change when the activity block arrives
+
+Decision: Progress compensates by the arriving block height minus the Sources slot height (slot and gap) measured while it was shown, clamped to 0 and the maximum scroll extent; in two-column layout the slot height is 0. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-6.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md.
+
+## 2026-10-17 - Commit: test(activity): add the functional tests for the journal availability, the mode state and the account-switch wipe
+
+Decision: step 1 test files and the findings file are committed after a green complete run (140 of 140). Partial rows stay open: the real-app first Home frame part of the chooser-offer row, and the dashboard-widget part of one availability row. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1.md.
+
+## 2026-10-17 - Commit: test(shell): add the functional tests for the window class, the rail, the dock, the surfaces and the session strip
+
+Decision: step 2 tests are committed after a green complete run at e35a3f66; the session owner stays set when another account signs in (the foreign-owner provider hides the strip and pill), so the provider-level row asserts hiding and owner retention. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, core/changes/2026-10-17-s03-test-step-2.md.
+
+## 2026-10-17 - Commit: test(dashboards): add the functional tests for the activity aggregates, Home, Progress, Sources and the sign-out warning
+
+Decision: step 4 tests and the findings file are committed after a green complete run (242 passed, 0 failed, 2 skipped) at head 3bf9d24c; STATE.md now states that the build is complete and the verify phase is in progress. Plan versus code differences are recorded in the findings file and carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md, core/changes/2026-10-17-s03-test-step-4.md.
+
+## 2026-10-17 - Commit: fix(wiring): ignore a repeated auth value for the same account in the journal bind controller
+
+Decision: onAuthValue returns early when the target uid equals the current uid and the state is neither none nor gaveUp; a generation is now one distinct uid. A repeated value after gaveUp still restarts the bind (kept deliberately). The related minor review findings (timer dropped during account deletion, no timeout on a hung open, no reaction to an external unbind, no busy feedback on Try again) are not fixed in this commit and are carried to the review consensus. Nothing was run by the coordinator; a test for the re-emission is added by the test agent. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-7.md.
+
+## 2026-10-17 - Commit: docs(s02): add the S02 sprint report and retrospective and the architecture input to the S04 readiness note
+
+Decision: the S02 report is committed in this branch and goes into the S03 pull request as agreed; unverifiable S02 facts stay marked UNKNOWN. The S04 readiness note gets an addendum from the S03 architecture review: the running-session status provider has one source and must be replaced by a prioritised list of sources or rewritten in S04 (a decision for the S04 plan, not taken here). Evidence: docs/phase2/s02/S02_SPRINT_REPORT.md, docs/phase2/s04/S04_DOC_READINESS.md, core/changes/2026-10-17-s02-report-and-s04-addendum.md.
+
+## 2026-10-17 - Commit: test(activity): add regression tests for a repeated auth value in the journal bind controller
+
+Decision: regression tests for the repeated auth value are committed with the step 1 findings update (144 of 144). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1-regression.md.
+
+## 2026-10-17 - Commit: fix(s03): apply the review findings on mode state, logging, scroll compensation and accessibility
+
+Decision: lane L12 batches 8 and 9 apply the review findings that were verified against the code. Skipped with reasons: refreshIfStale returns void (nothing to catch at future level); the contrast hypothesis and the speculative Flutter minors (rebuild breadth, anchor not built) are not changed; the S04 single-source session status finding is carried to the S04 plan; the guest sign-out wording and the unbound wipe fallback (security minors) are carried to the acceptance record as product and design questions; unknown format entries (silent failure minor) are carried as a format rule: adding a mode requires a version bump. Pause versus rest pause cannot be told apart, so pause and resume are announced in both cases. Nothing was run by the coordinator; the test agents re-run all sets. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-8-9.md.
+
+## 2026-10-17 - Commit: fix(shell): make the keyboard shortcuts see pages pushed over a tab
+
+Decision: _location in app_shortcuts.dart uses currentConfiguration.last.matchedLocation, so Back pops a pushed page and the tab shortcuts do nothing while a pushed page is on top (the contract tests require that; my own instruction to the fix agent said to replace the stack like the dock, which was wrong and is corrected here). Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-10.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md.
+
+## 2026-10-17 - Commit: fix(modes): declare the mode state in the switcher sheet build method
+
+Decision: the switcher sheet reads the mode state in build (initial state while the state is loading, so another account's state is not used). The re-read of all files touched by batches 8 to 10 found no other compile error by reading (the compiler was not run). Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-11.md.
+
+## 2026-10-17 - Commit: test(modes): add tests for the selected mode, the rollback write and the retry during account deletion
+
+Decision: step 1 additions are committed after a green complete run (150 of 150). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md, core/changes/2026-10-17-s03-test-step-1-review-fixes.md.
+
+## 2026-10-17 - Commit: test(shell): add tests for rest-only announcements and the surface depth on an account change
+
+Decision: step 2 additions are committed after a green complete run at head 7888326b. Rows that need an injectable destination list in the shell stay partial and are carried to the acceptance record. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md, core/changes/2026-10-17-s03-test-step-2-review-fixes.md.
+
+## 2026-10-17 - Commit: test(dashboards): add tests for the scroll compensation, the error transition, Try again and the account switch
+
+Decision: step 4 additions are committed after a green complete run at head 7888326b (247 passed, 0 failed, 2 skipped). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md, core/changes/2026-10-17-s03-test-step-4-review-fixes.md.
+
+## 2026-10-17 - Commit: test(input): add the keyboard and pointer tests for the shortcuts, the shell input and the real pages
+
+Decision: step 5 tests and the findings file are committed after a green complete run (63 of 63). The listed NOT_RUN rows are carried to the acceptance record with the owner: the final complete run (step 7) is not expected to close them, they need an end-to-end journey runner. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md, core/changes/2026-10-17-s03-test-step-5.md.
+
+## 2026-10-17 - Commit: test(modes): add tests for the Coming-later Back button, the Open Train announcement and wrapped labels
+
+Decision: step 3 additions are committed after a green complete run (103 of 103). While the mode loads, the Record sheet shows the neutral Train rows (selected mode or Train) rather than an empty list; this stays unless the operator wants otherwise. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md, core/changes/2026-10-17-s03-test-step-3-review-fixes.md.
+
+## 2026-10-17 - Commit: fix(modes): read the selected mode for the Record sheet title
+
+Decision: the Record sheet semantic title uses selectedModeProvider and the neutral Train name while the mode loads. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-12.md.
+
+## 2026-10-17 - Commit: fix(modes): let the Coming-later chip wrap on the chooser cards and bound it in the switcher row
+
+Decision: lane L12 batch 13 fixes only the two candidates S03 introduced: the chooser card chip (Expanded with end alignment and two lines) and the switcher row chip (max width 104, two lines; the 104 is a guess to be confirmed by the conformance run). The four pre-S03 candidates are carried in S03_CARRIED_ITEMS.md as findings in base code: bottom bar labels clipped by design (accepted comment in hud_scaffold.dart), Home total cards, Home adaptive plan at 360x640 and scale 2.0, eligibility notice label in Russian on wide windows. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-13.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md.
+
+## 2026-10-17 - Commit: fix(modes): drop the Coming-later chip under the icon on narrow cards and scale its cap with the text size
+
+Decision: card header is a Wrap (icon and chip on one line while they fit, otherwise the chip under the icon); the switcher chip cap is 104 dp times the text scale, at most 40 percent of the window width. If the step 6 run still shows a clip or a narrowed title, the next step is a chip on its own line below the title, which needs a change to the shared setting row and is then a carried item. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-14.md.
+
+## 2026-10-17 - Commit: fix(modes): bound the text scale of the Coming-later badge at 1.3
+
+Decision (coordinator, deviation to be recorded for acceptance): the Coming-later badge text scale is bounded at 1.3 on the chooser cards and in the switcher rows, a small exception to the contract's rule that text follows the system scale. The meaning is available in full through the semantics label and hint. The switcher chip cap is 40 percent of the window width. If the operator or the designer rejects the bound, the alternative is a wider layout where the badge sits on its own line below the title, which changes the shared setting row. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-15.md, docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md.
+
+## 2026-10-17 - Commit: test(conformance): add the contract conformance matrix and the carried items record for S03
+
+Decision: conformance tests are committed after a green run (177 passed, 18 skipped as carried, 0 failed). The skipped cells (bottom bar label ellipsis, Home totals and adaptive plan labels at 360x640 and scale 2.0, an eligibility notice label) are base-code findings named in the test titles and listed with their base commits in docs/phase2/s03/S03_CARRIED_ITEMS.md, which is added in this commit as the single record of S03 deviations, carried findings, texts needing product review and operator-owned items. NOT_RUN rows are listed in the findings file. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md, core/changes/2026-10-17-s03-test-step-6.md.
+
+## 2026-10-17 - Commit: fix(modes): take the chip width cap from the window helper instead of a raw width
+
+Decision: windowWidthShare(context, fraction) is added next to classifyWindow in shared/widgets/window_size.dart and used by the switcher sheet for the chip cap (40 percent of the window width). Behaviour is unchanged. Because this changes the head after the final run, the affected test files (steps 2, 3 and 6) are re-run on the new head; steps 1, 4 and 5 were run on the previous head and the difference is one added function and one changed line in the switcher sheet. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-16.md.
+
+## 2026-10-17 - Commit: docs(s03): record the final complete test runs and the test summary
+
+Decision: S03_TEST_FINDINGS_FINAL.md is the summary of the test evidence for the gate; the per-epic findings files keep the detail and the run history. Steps 1, 4 and 5 were last run on 8783b58b and steps 2, 3 and 6 on c7758293; the difference between those heads is one helper function and one changed line in the mode switcher sheet, stated in the summary as a limit of the evidence. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md, core/changes/2026-10-17-s03-test-final-runs.md.
+
+## 2026-10-17 - Commit: fix(modes): persist an explicit Train choice over a rolled-back mode and keep focus on the destination that held it
+
+Decision: selectMode on the mode that is shown only because of a rollback now clears the raw stored mode and persists the explicit choice (no mode-change event, since memory did not change); the shell restores focus to the destination that held it before the swap and does nothing when none held it. Nothing was run by the coordinator. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-17.md.
+
+## 2026-10-17 - Commit: fix(shell): put the chip at the card end and announce a session that starts after a rest
+
+Decision: the card header Wrap takes the full width; a session that starts after a rest-only status announces started when the status becomes running; resting to null stays silent and rest pause versus set pause still cannot be told apart. Nothing was run by the coordinator; the test agents add tests (chip position at normal scale and under the icon at scale 2.0; the sequence nothing, resting, running announces once) and re-run all six steps. Evidence: core/changes/2026-10-17-s03-l12-fix-batch-18.md.
+
+## 2026-10-17 - Commit: test(s03): final complete runs on 489e486d and chip, focus and announcement tests
+
+Decision: the S03 code gate request goes to GPT-PM on the head that contains these test and documentation files; production code is unchanged since 489e486d. Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md, core/changes/2026-10-17-s03-test-final-runs-2.md.
+
+## 2026-10-17 - Commit: fix(shell): hide every Record entry point for a foreign session and order mode writes
+
+Decision: both GPT-PM MAJOR findings were verified against the code (dock_widgets.dart RailRecordSlot, app_shortcuts.dart _record, mode_providers.dart _write) and fixed in one batch; regression tests follow in the next commit; the code gate is re-requested on the new exact head. Evidence: core/changes/2026-10-17-s03-gate-fix-batch-19.md.
+
+## 2026-10-17 - Commit: fix(shell): keep the rail Record slot height when a foreign session hides the control
+
+Decision: the foreign-owner rail slot lays out the idle control invisibly (no semantics, focus or pointer) so both states have identical size; the test agent's failing test was kept red until this fix. Evidence: core/changes/2026-10-17-s03-gate-fix-batch-20.md.
+
+## 2026-10-17 - Commit: test(s03): regression tests for the code gate findings on foreign sessions and mode write order
+
+Decision: after this commit the code gate is requested again from GPT-PM on the new exact head as a verification round (the two MAJOR findings and regressions caused by their fixes only). Evidence: docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md section 1a, core/changes/2026-10-17-s03-gate-fix-tests.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 requirements and Android platform study, the S03 sprint report, and close S03 in STATE
+
+Decision: the operator answered yes to merging PR 11 (merged as f605cf3e) and to starting S04 documentation. S04 documentation proceeds on branch phase2/s04-docs with the readiness-note defaults (Android only, consent rows built inside S04, cloud upload off, S04-D produced as a separate contract in this phase); every invented number is PROPOSED. Evidence: docs/phase2/s04/S04_REQUIREMENTS.md section 3, core/changes/2026-10-17-s04-docs-wave1.md.
+
+## 2026-10-17 - Commit: docs(s04): add the S04 UI contract, design, stories and test plan with two review rounds, and the S03 operator report
+
+Decision: the operator ordered 'finish S04 and stop after the merge'. The S04 documentation set (requirements 58 items, platform study, 38 stories, UI contract revision 2 with about 105 AC ids, technical design, test plan with 783 committed rows) is committed on branch phase2/s04-docs after two review rounds; defaults Y1..Y11 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md apply until the operator overrides them. Next: GPT-PM documentation gate on the exact head, then one push, one PR and the merge; no S04 code is built in this work. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md, core/changes/2026-10-17-s04-docs-wave2.md.
+
+## 2026-10-17 - Commit: docs(s04): fix the documentation gate findings on recovery phase, revocation sequence and sign-out retention
+
+Decision: decisions Z1..Z4 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 4 apply (defaults pending operator override): after a kill Resume enters acquiring for every origin; revocation seals the partial recording as a pending decision and Keep hands it off; ordinary sign-out hands off then deletes (strict GPS-PRIV-014) and the 30-day encrypted fallback applies only when the hand-off cannot complete, recorded as a PROPOSED clarification next to GPS-PRIV-014 and as an operator question; AC-D4-B-4 added to the plan. Evidence: core/changes/2026-10-17-s04-docs-gate-fix.md.
+
+## 2026-10-17 - Commit: docs(s04): make Keep and Delete of a pending recording mutually exclusive and complete the story AC map
+
+Decision: decision Z5 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 5 applies: a durable DECISION marker (KEEP or DELETE) is written atomically before any action and the first durable decision wins; Delete is not offered after Keep is durable and never removes the hand-off activity; Keep is refused after Delete is durable; recovery follows the marker. Z6: the story AC to test mapping is complete (147 story ACs, 109 contract ids and 58 requirement ids compared, no gaps). Evidence: core/changes/2026-10-17-s04-docs-z5-z6.md.
+
+## 2026-10-17 - Commit: docs(s04): arbitrate Keep and Delete with one exclusive-create decision file
+
+Decision: decisions Z7 and Z8 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 6 apply: one DECISION file per recording created only by an exclusive create-if-absent, shared by Keep and Delete, durable (file and parent directory fsync) before any irreversible action; the loser does nothing irreversible; DISCARDING is only a progress marker valid with DECISION=DELETE; malformed combinations go to QUARANTINED. Evidence: core/changes/2026-10-17-s04-docs-z7-z8.md.
+
+Decision (2026-10-17, same commit): the contract remediation-log line for Z7 completes the Z7 batch; no new decision beyond Z7 in section 6 of S04_REVIEW_FINDINGS_ROUND1.md.
+
+## 2026-10-17 - Commit: docs(s04): make DECISION recovery one table with a whole-published never-unlinked decision file
+
+Decision: decisions Z9..Z12 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 7 apply: one recovery table executed by listUnfinished(); DECISION is published whole (temp file, fsync, exclusive hard-link create, parent fsync) and never unlinked; an empty, truncated or unknown-token DECISION at recovery is QUARANTINED; quarantine covers malformed decision state but never ordinary permission revocation; the crash test asserts only the barrier ordering invariant. This session owns S04 to the merge. Evidence: core/changes/2026-10-17-s04-docs-z9-z12.md.
+
+## 2026-10-17 - Commit: docs(s04): separate KEEP cleanup from the never-unlink rule and tie the fallback to the process-wide journal lock
+
+Decision: Z13..Z15 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 8: a DECISION is never removed or replaced on its own; it goes only with its whole recording directory after a completed DELETE or after a verified owner-checked KEEP hand-off; the no-hard-link fallback is allowed only under the process-wide exclusive journal lock (a second process cannot open the journal); S04-19 AC-13 mapped. Evidence: core/changes/2026-10-17-s04-docs-z13-z15.md.
+
+## 2026-10-17 - Commit: docs(s04): make KEEP cleanup one atomic rename and split the journal lock from the publication mutex
+
+Decision: Z16 and Z17 of docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md section 9: KEEP cleanup verifies the hand-off, renames the recording directory atomically to a .cleanup sibling, then deletes contents (recovery deletes .cleanup garbage without owner checks); the journal ownership lock (process lifetime) is separate from a per-recording publication mutex that readers wait on. Evidence: core/changes/2026-10-17-s04-docs-z16-z17.md.
+
+## 2026-10-17 - Commit: docs(s04): scope the atomic cleanup rename to verified KEEP and leave DELETE on the ordered 4.5 procedure
+
+Decision: Z18: the .cleanup atomic rename belongs only to verified KEEP cleanup; DELETE stays on DECISION=DELETE, DISCARDING and the ordered 4.5 steps. Evidence: core/changes/2026-10-17-s04-docs-z18.md.
+
+## 2026-10-17 - Commit: docs(s04): add the operator report for the approved S04 documentation gate
+
+Decision: the operator approved the GPS-PRIV-014 sign-out exception (30-day encrypted fallback only if the hand-off fails) and named the Samsung S8 as the S04 reference phone; both are recorded in the report and will be written into the privacy contract and the device-lab document in the first S04 code commits. Evidence: core/changes/2026-10-17-s04-docs-report.md.
+
+## 2026-10-17 - Commit: feat(s04): add the location seam, permission service, calculators pipeline and flag-gated manifest (lanes R1, R2, R3)
+
+Decision: operator approved the GPS-PRIV-014 sign-out exception on 2026-10-17 (the privacy contract note now says APPROVED); geolocator is added at ^13.0.4 because 14.x could not be confirmed against Flutter 3.27.1; the manifest is stripped of location entries when the GPS_RECORDER flag is off by a post-merge Gradle transform. Evidence: core/changes/2026-10-17-s04-lanes-r1-r2-r3.md.
+
+## 2026-10-17 - Commit: feat(s04): add the recorder state machine, journal with recovery, shell strip, copy and consent, and device-lab documents (lanes R4, R5, R6, R8, R11)
+
+Decision: the DECISION file uses the documented exclusive-create fallback under the process-wide journal lock until a native hard-link and directory-fsync implementation of RecordingFileOps exists; R6 treats the revoked-permission strip row as conflicting between design 7.2 (no strip) and contract 14.1 (Location off row) and follows the design; R8 uses draft-1 for the consent text version. Evidence: core/changes/2026-10-17-s04-lanes-r4-r5-r6-r8-r11.md.
+
+## 2026-10-17 - Commit: feat(s04): add the recording screens, sign-out guard, app wiring and routes behind the GPS_RECORDER flag (lanes R7, R9, R13)
+
+Decision: everything is behind the GPS_RECORDER flag and Android, off by default so behaviour equals S03; the pre-unbind hook uses stopAutomatically(account) because the recorder has no releaseAll; /record/manual redirects to /workouts until a manual-entry page exists. Evidence: core/changes/2026-10-17-s04-lanes-r7-r9-r13.md.
+
+## 2026-10-17 - Commit: fix(s04): make the S04 code compile and wire the real geolocator source
+
+Decision: the real GeolocatorLocationSource replaces the unsupported placeholder in main.dart (still behind GPS_RECORDER); the battery monitor stays a fake and manual entry stays a redirect until their stories are built. Evidence: core/changes/2026-10-17-s04-compile-pass.md.
+
+## 2026-10-17 - Commit: test(s04): add epic tests for the recorder core, journal and privacy, with the production bugs they found
+
+Decision: the epic test groups EP-A/B/C, EP-D and EP-E/H are committed with their production fixes; EP-F/G/J is left incomplete and recorded as such, and the project child-agent allowlist hook is not bypassed. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_*.md and core/changes/2026-10-17-s04-epic-tests.md.
+
+## 2026-10-17 - Commit: fix(s04): hold the distance and elevation tolerances found by the epic tests and record the final test run
+
+Decision: distance uses a chord accumulator with a 20 m minimum step and elevation counts a change only after 8 consecutive fixes beyond the 3 m band, to meet the plan tolerances; auto-pause on a provider speed of exactly 0.0 is kept as the design says (plan row DT-07-5 is wrong); the offline chip stays unset because the design gives the recorder no connectivity input. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.
+
+## 2026-10-17 - Commit: fix(s04): close the code-review findings on journal release, recovery classes, expiry, owner check, adapter stop and recorder screens
+
+Decision: accepted all MAJOR findings of docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md; the revoked state now shows a strip row per UI contract 14.1 (design 7.2 loses); the real battery monitor and services-off probe stay unwired and the Start panel states this when the flag is on (gap carried to the sprint report); the hook timeout cancels the hand-off. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md.
+
+## 2026-10-17 - Commit: docs(s04): sync design and test plan with the implemented journal and record the security residuals
+
+Decision: stale hard-link wording in the history entries (Z7, Z10, Z14) is kept as history; the 12.1 race row, F2, the 5.2 row and the 4.5 Discard step are recorded as documented deviations until the next doc pass. Security residuals (flag parsing, plugin pinning, lock-screen notification text, Play Services disclosure) go to the release checklist. Evidence: docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md section C.
+
+## 2026-10-17 - Commit: docs(s04): record the S04 code phase state before the gate request
+
+Decision: send the GPT-PM gate request on this exact head; sprint report follows the gate. Evidence: docs/sdlc/STATE.md S04 section.
+
+## 2026-10-20 - Commit: Integrate phase2/s04 chain (GPS recording, activity journal, phase1/phase2 docs)
+
+Decision: merge phase2/s04 with hand-resolved conflicts; restore the broken geolocator comment; keep scan-history and activity-journal backup exclusions together (nine entries). See docs/commits/2026-10-20-integrate-phase2-s04.md.

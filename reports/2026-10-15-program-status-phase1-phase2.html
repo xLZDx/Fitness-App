@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitness App: Body Scan + Nutrition Coach program and Phase 2</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1d2327;--muted:#5b666d;--rule:#c9cfd3;--ok:#1a7f37;--warn:#9a5b00;--bad:#b3261e;--todo:#4a5b8c;--soft:#f0f2f3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14181b;--fg:#e4e8ea;--muted:#9aa5ab;--rule:#323b40;--ok:#4cc26b;--warn:#e0a13a;--bad:#ff8a80;--todo:#8fa5e6;--soft:#1d2327;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14181b;--fg:#e4e8ea;--muted:#9aa5ab;--rule:#323b40;--ok:#4cc26b;--warn:#e0a13a;--bad:#ff8a80;--todo:#8fa5e6;--soft:#1d2327;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,"Segoe UI",sans-serif;max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:16px;line-height:1.5}
+h1{font-size:1.6rem;margin:.2em 0 .3em;text-wrap:balance}
+h2{font-size:1.25rem;margin-top:2em;padding-top:.6em;border-top:2px solid var(--rule)}
+h3{font-size:1.02rem;margin-top:1.5em}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:.9rem}
+th,td{border:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top;min-width:0}
+th{background:var(--soft)}
+.ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}.bad{color:var(--bad);font-weight:600}.todo{color:var(--todo);font-weight:600}
+.kpi{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.kpi div{flex:1 1 180px;border:1px solid var(--rule);padding:8px 10px;background:var(--soft)}
+.kpi b{display:block;font-size:1.3rem}
+.note{color:var(--muted);font-size:.88rem}
+ul{padding-left:1.2em}
+</style>
+</head>
+<body>
+<header><h1>Fitness App: Body Scan + Nutrition Coach program and Phase 2</h1>
+<p>Branch feature/body-scan-nutrition-coach, 15 October 2026. Full program status: Phase 1 (the Body Scan + Nutrition Coach sprint) and Phase 2 (the priority backlog for multisport, devices and extensions). Sources: sprint plan, tech design, Phase 2 backlog, change records in core/changes, decision log.</p></header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App_bodyscan</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; feature/body-scan-nutrition-coach @ 9865066e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+<h2>0. Summary</h2>
+<div class="kpi"><div><b>218</b>commits since base 42d1b84</div><div><b>27 / 27</b>plan commits C01-C27 in the branch</div><div><b>539 / +96 160</b>files / added lines</div><div><b>7</b>confirmed review MAJORs, all fixed</div><div><b>0 / 40</b>Phase 2 stories finished (21 partly covered by Phase 1 foundation)</div></div>
+<ul><li>Phase 1: all sprint code is committed, four specialist reviews are done, the confirmed MAJORs and most MINORs are fixed. Remaining: the final complete test rerun (running), the GPT-PM review on the exact head, the push and one PR.</li><li>Phase 1 is NOT closed: the PR is not open and GPT-PM approval has not been received.</li><li>Phase 2: nothing is started beyond the no-UI foundation (activity model, merge/dedup) delivered inside Phase 1. The work needs your decisions and external access.</li><li>Enabling the cloud features (photo scan, AI food recognition, barcode and search) is blocked on operator actions: IAM and a private bucket, the USDA secret, the Vertex retention posture, review of the privacy.html text, a real face detector.</li></ul>
+<h2>PHASE 1. Body Scan + Nutrition Coach sprint</h2>
+<p>Goal: a weekly three-pose body scan, a nutrition plan with a weekly review, food scanning (meal photo, barcode, label, search, diary), onboarding, safety clamps and privacy, an activity and multisport foundation, and a nutrition hook for training programmes. Out of scope: generated body images and sharing body photos.</p>
+<h3>1.1 Phase 1 gates</h3>
+<div class="tw"><table><tr><th>Gate</th><th>Criterion</th><th>Status</th><th>Evidence / blocker</th></tr><tr><td>G-A Documentation</td><td>Tech design, sprint plan, test coverage map, one document review pass</td><td><span class="ok">Done</span></td><td>core/plans/BODY_SCAN_NUTRITION_*_2026-10-15.md; review fixes applied</td></tr><tr><td>G-B Implementation</td><td>Commits C01-C27, each with a change record</td><td><span class="ok">Done</span></td><td>27 of 27 in the branch, a record in core/changes for each</td></tr><tr><td>G-C Functional tests per epic</td><td>Test agents write and run the complete set after each epic</td><td><span class="ok">Done</span></td><td>Per-epic results in section 1.3; all green after product fixes</td></tr><tr><td>G-D Specialist reviews</td><td>Actual reviewer agents, consensus, fixes for valid findings</td><td><span class="ok">Done</span></td><td>Run: database, flutter, silent-failure, security. Not run separately: code-reviewer, product-ux, a11y on code</td></tr><tr><td>G-E Review fixes</td><td>All valid BLOCKER/MAJOR closed with regression tests</td><td><span class="ok">Done</span></td><td>Commits 5488425c ... 9865066e; the test fixes are green per file</td></tr><tr><td>G-F Final complete rerun</td><td>After the last fix the agents run everything they wrote once more</td><td><span class="warn">Code done, final rerun running</span></td><td>Three agents (server, mobile groups 1 and 2) run the files one at a time on head 9865066e</td></tr><tr><td>G-G GPT-PM review</td><td>One broad adversarial pass on the exact head; test results and review consensus as evidence</td><td><span class="todo">Pending</span></td><td>Depends on G-F</td></tr><tr><td>G-H Push and one PR</td><td>Only after APPROVE on the exact head</td><td><span class="todo">Pending</span></td><td>Depends on G-G</td></tr><tr><td>G-I Flag go-live</td><td>IAM and bucket, USDA secret, Vertex, privacy.html, face detector</td><td><span class="bad">Blocked on operator</span></td><td>Operator actions Q-4, Q-5, Q-6, Q-10 (section 1.6)</td></tr></table></div>
+<h3>1.2 Epics and commits</h3>
+<div class="tw"><table><tr><th>Epic</th><th>Content</th><th>Commits</th><th>Code status</th><th>Test status</th></tr><tr><td>E0</td><td>Firestore and Storage rules, indexes, flags, release guard, quotas</td><td>C01-C04</td><td><span class="ok">Done</span></td><td>13 files green (jest 409, rules 547, storage 82, Dart 49)</td></tr><tr><td>E1</td><td>Pure logic: energy maths, safety clamps, plan calculator, weekly review, scan trend, activity model and merge/dedup, the nutrition hook for training</td><td>C05-C09</td><td><span class="ok">Done</span></td><td>27 files, 1075 tests green</td></tr><tr><td>E2</td><td>Nutrition onboarding and the complete-your-nutrition-profile flow</td><td>C10-C11</td><td><span class="ok">Done</span></td><td>158 tests green; the route test is rechecked in the final rerun</td></tr><tr><td>E3</td><td>Body scan: server functions, capture and upload queue, flow and result, history and privacy, reminder and entry cards</td><td>C12-C17</td><td><span class="ok">Done</span></td><td>C12: 10 suites 477 tests; C13-C17 green per file (incl. 138, 110 tests)</td></tr><tr><td>E4</td><td>Plan state and weekly review, nutrition plan screens, weight log</td><td>C18-C19</td><td><span class="ok">Done</span></td><td>C18: 10 files 333 tests; C19 green</td></tr><tr><td>E5</td><td>Food scanning: functions (meal photo, label, barcode, search), 2590-row food table, diary data layer, diary screens, three capture screens</td><td>C20-C24</td><td><span class="ok">Done</span></td><td>C20: 13 suites 581 tests; C21: 68 and 77; C22: 246; C23 and C24 green</td></tr><tr><td>E6</td><td>Privacy, deletion, export, data inventory, privacy.html</td><td>C25</td><td><span class="ok">Done</span></td><td>Tests green (35, 208, 21); the privacy.html text is a draft until Q-10</td></tr><tr><td>E7</td><td>EN and RU localisation (605 keys), contrast and accessibility</td><td>C26</td><td><span class="ok">Done</span></td><td>Tests green (incl. tap-target sweep, plurals); the contrast test is rechecked</td></tr><tr><td>E8</td><td>Documents: CODEMAP, INDEX, CURRENT_STATE, decision log</td><td>C27</td><td><span class="ok">Done</span></td><td>Documents are reviewed, not tested; final counts are added after the G-F rerun</td></tr><tr><td>Fix commits</td><td>Fixes from the four reviews and test fixes</td><td>5488425c ... 9865066e (about 14)</td><td><span class="ok">Done</span></td><td>Server 17 files green, food/l10n/a11y about 45 files green, body_scan 136 files green after the fixes</td></tr></table></div>
+<h3>1.3 What the product does today</h3>
+<ul><li>Body scan: the body-fat estimate is provisional (Deurenberg formula: height, weight, age, sex), a ±5 point range, computed on the device, photos do not enter it. The cloud path is off behind a flag.</li><li>Nutrition plan: a calorie range, macro ranges, a protein minimum, a 6,000-12,000 steps goal, a weekly review with a stated reason and a 7-day undo. Excluded groups get a neutral talk-to-a-professional message without numbers.</li><li>A meal-slot food diary: search, quick log, saved foods; meal photo, barcode, label and describe-by-text via server functions that are off behind flags.</li><li>Privacy: face blur that fails closed, EXIF and GPS stripped from uploads, deletion on request, paged export, retention purge, account-deletion sweep.</li><li>Multisport foundation (no screens): activity model, sport types, sources and dedup merge. The nutrition hook for training programmes is wired into programme_builder with a neutral default.</li></ul>
+<h3>1.4 Reviews and findings</h3>
+<div class="tw"><table><tr><th>Finding</th><th>Severity</th><th>Claim</th><th>Status</th></tr><tr><td>P-1</td><td>MAJOR</td><td>The purge trusted any body_scans path; fake nested documents could starve retention</td><td><span class="ok">Done (5488425c)</span></td></tr><tr><td>P-2 / DB-F2</td><td>MAJOR</td><td>Rollback by unsetting the bucket and the AI kill switch disabled every erase path</td><td><span class="ok">Done (separate switch, runbook rewritten)</span></td></tr><tr><td>DB-F1 / P-3</td><td>MAJOR</td><td>Failed scans were never purged</td><td><span class="ok">Done</span></td></tr><tr><td>SF-F1</td><td>MAJOR</td><td>Offline delete of an unfinished scan did not stop it; it was re-uploaded</td><td><span class="ok">Done (plus a regression found by a test and fixed)</span></td></tr><tr><td>SF-F2</td><td>MAJOR</td><td>A still-loading profile caused a permanent subject-missing failure</td><td><span class="ok">Done</span></td></tr><tr><td>SF-F3</td><td>MAJOR</td><td>The retry timer was lost when the runner was busy</td><td><span class="ok">Done</span></td></tr><tr><td>SF-F4</td><td>MAJOR</td><td>deletePhotos reported deleted while the cloud copy remained</td><td><span class="ok">Done</span></td></tr><tr><td>~30 MINOR</td><td>MINOR</td><td>Consent recheck, attempt and reissue caps, export cursor, logs without uid, barcode errors, diary day after midnight, degraded entries and more</td><td><span class="ok">Done (most fixed)</span></td></tr><tr><td>SF-F13</td><td>MINOR</td><td>A cache-write failure allegedly failed the lookup</td><td><span class="ok">Done (finding was wrong, the code already swallows errors)</span></td></tr><tr><td>FL-F4, FL-F5, FL-F7, P-6</td><td>MINOR</td><td>Barcode field off-screen with the keyboard; the Progress resume trigger; food table parsing on the UI isolate; late-PUT orphan bound</td><td><span class="todo">Pending (in the backlog)</span></td></tr></table></div>
+<h3>1.5 Defects found by tests and fixed</h3>
+<ul><li>Firestore rules: writing food_entries was impossible because of the expression limit.</li><li>Rules: withdrawing cloudConsent was refused although the design allows it.</li><li>EXIF survived in blurred and prepared JPEGs (two places).</li><li>Cancelling a local-only scan emitted a server delete without a document; Delete on the failed scan card did nothing.</li><li>Cyrillic serving units were not parsed; eggplant was tagged as an egg allergen; malt liquor was not tagged as alcohol.</li><li>The diary day follower never fired after midnight (a lazy field); the confidence row in the result card overflowed at 2x text scale and in Russian.</li><li>Also: compile errors in blind-written code (fixed), the ICU # in ARB, doubled gen:gen: food references, wrong vectors in the coverage map.</li></ul>
+<h3>1.6 Blockers and operator decisions</h3>
+<div class="tw"><table><tr><th>ID</th><th>What is needed</th><th>What it blocks</th><th>Status</th></tr><tr><td>Q-4</td><td>Open Food Facts User-Agent contact and a free USDA FDC key as a secret with access for fn-data and fn-ai-runtime</td><td>Barcode and server search (FOOD_LOOKUP)</td><td><span class="bad">Blocked on operator</span></td></tr><tr><td>Q-5</td><td>Private bucket, IAM, objectAdmin for fn-bodyscan and fn-account-delete, secretAccessor on the kill switch</td><td>The cloud photo path (BODY_SCAN_CLOUD)</td><td><span class="bad">Blocked on operator</span></td></tr><tr><td>Q-6</td><td>Vertex AI data-retention posture for the privacy text</td><td>AI food recognition (FOOD_AI)</td><td><span class="bad">Blocked on operator</span></td></tr><tr><td>Q-10</td><td>Review of the public/privacy.html wording</td><td>Enabling any flag</td><td><span class="bad">Blocked on operator</span></td></tr><tr><td>Face detector</td><td>A real post-blur face-check adapter (today it always refuses)</td><td>BODY_SCAN_CLOUD</td><td><span class="bad">Blocked on operator</span></td></tr><tr><td>Product decisions</td><td>The Supporter gate while the estimator is provisional; body-fat target floors; real gym photos and machine names</td><td>Do not block the default build</td><td><span class="todo">Pending</span></td></tr><tr><td>Device checks</td><td>Camera, TalkBack, mobile_scanner 6.x, notification delivery, iOS</td><td>NOT_RUN, a phone is needed</td><td><span class="todo">Pending</span></td></tr></table></div>
+<h3>1.7 Known limits</h3>
+<ul><li>The body-fat estimate does not use photos; there is no real provider (Q-1 default).</li><li>The /body-scan?scanId parameter is ignored by the flow page; the meal thumbnail is stored but not shown; a notification tap only opens the app.</li><li>The Firestore repositories are not covered by emulator tests, only the rules. Live Vertex, Open Food Facts and USDA calls were not made.</li><li>No full suite, analyze, lint, build or CI was run (operator rule).</li><li>The stray directory mobile/test/_probe/ is left in the worktree for you to delete.</li></ul>
+<h2>PHASE 2. Multisport, devices, extensions</h2>
+<p>Status: a priority backlog, not started and not scheduled (core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md). Estimates are in person-weeks (pw), order of magnitude, excluding partner approval waits and device-lab time. Everything except the no-UI foundation inside Phase 1 is unimplemented.</p>
+<h3>2.1 Phase 2 epics</h3>
+<div class="tw"><table><tr><th>Epic</th><th>Content</th><th>Status</th><th>Depends on / blocker</th></tr><tr><td>E1</td><td>Activity foundation hardening: persistence, rules, retention, deletion and export, FIT/GPX export</td><td><span class="warn">Partial (pure model and merger exist)</span></td><td>Phase 1 foundation</td></tr><tr><td>E2</td><td>Health Connect and HealthKit sessions via the HealthService seam</td><td><span class="todo">Not started</span></td><td>E1; iOS needs an iOS device</td></tr><tr><td>E3</td><td>Phone tracking for run, walk, cycle: GPS, auto-pause, map, crash-safe recording</td><td><span class="todo">Not started</span></td><td>E1; a map tile-provider decision; measurements on your phone</td></tr><tr><td>E4</td><td>Swimming: pool (lengths, SWOLF) and open water</td><td><span class="todo">Not started</span></td><td>E1</td></tr><tr><td>E5</td><td>BLE sensors: heart rate, power, cadence, foot pods, FTMS</td><td><span class="todo">Not started</span></td><td>E1; BLE with real sensors</td></tr><tr><td>E6</td><td>Watch companion apps: Wear OS, then Apple Watch</td><td><span class="todo">Not started</span></td><td>E2/E5; release signing is unresolved; Apple Watch needs iOS and the developer programme</td></tr><tr><td>E7</td><td>Vendor cloud adapters: Strava, Polar, Withings, Garmin, Wahoo, Google Health, Suunto, Oura, WHOOP, TrainingPeaks</td><td><span class="todo">Not started</span></td><td>Server OAuth vault; partner approval (Garmin, Suunto, TrainingPeaks); decision O-4</td></tr><tr><td>E8</td><td>Production dedup/merge: conflict UI, source priorities, undo</td><td><span class="todo">Not started</span></td><td>E2, an operator corpus of real workouts</td></tr><tr><td>E9</td><td>Nutrition-aware programmes (full version): periodisation, automatic deloads, training-day carbs</td><td><span class="warn">Partial (hook and rules are in Phase 1)</span></td><td>Clinical acceptance remains an operator gate</td></tr><tr><td>E10</td><td>Competitive and ecosystem study (legal methods only)</td><td><span class="todo">Not started</span></td><td>The app list needs operator confirmation</td></tr><tr><td>E11</td><td>Privacy, permissions, retention for activity data</td><td><span class="todo">Not started</span></td><td>Runs alongside each source</td></tr><tr><td>E12</td><td>Sport UI and run/cycle plans</td><td><span class="todo">Not started</span></td><td>E3, a check on the emulator and on your phone</td></tr></table></div>
+<h3>2.2 Device integrations by priority</h3>
+<div class="tw"><table><tr><th>#</th><th>Integration</th><th>pw</th><th>Status</th><th>Risk / blocker</th></tr><tr><td>1</td><td>Health Connect + HealthKit sessions</td><td>4-6</td><td><span class="todo">Not started</span></td><td>Data richness depends on the writing app; iOS cannot be verified without a device</td></tr><tr><td>2</td><td>FIT / GPX / TCX import</td><td>2-3</td><td><span class="todo">Not started</span></td><td>Check the FIT SDK licence</td></tr><tr><td>3</td><td>BLE Heart Rate (0x180D)</td><td>2</td><td><span class="todo">Not started</span></td><td>OS BLE quirks</td></tr><tr><td>4</td><td>BLE Cycling Power / CSC</td><td>3</td><td><span class="todo">Not started</span></td><td>Calibration, counter wraparound</td></tr><tr><td>5</td><td>BLE Running Speed &amp; Cadence</td><td>1</td><td><span class="todo">Not started</span></td><td>-</td></tr><tr><td>6</td><td>BLE FTMS</td><td>3</td><td><span class="todo">Not started</span></td><td>Read-only first</td></tr><tr><td>7</td><td>Wear OS companion</td><td>6-8</td><td><span class="todo">Not started</span></td><td>Release signing unresolved</td></tr><tr><td>8</td><td>Strava API</td><td>3</td><td><span class="todo">Not started</span></td><td>API terms, app review</td></tr><tr><td>9</td><td>Polar AccessLink</td><td>2-3</td><td><span class="todo">Not started</span></td><td>Server OAuth</td></tr><tr><td>10</td><td>Withings</td><td>2</td><td><span class="todo">Not started</span></td><td>Partner access</td></tr><tr><td>11</td><td>Garmin Health / Activity API</td><td>4+</td><td><span class="bad">Blocked on operator (partner approval)</span></td><td>Approval time</td></tr><tr><td>12</td><td>Wahoo Cloud</td><td>2-3</td><td><span class="todo">Not started</span></td><td>Partner access</td></tr><tr><td>13</td><td>Google Health API (вместо Fitbit)</td><td>3</td><td><span class="bad">Blocked on operator (decision O-4)</span></td><td>The Fitbit Web API is turned off on 2026-10-30; users must re-consent</td></tr><tr><td>14</td><td>Suunto API</td><td>3</td><td><span class="bad">Blocked on operator (partner approval)</span></td><td>Approval</td></tr><tr><td>15</td><td>Apple Watch companion</td><td>8+</td><td><span class="bad">Blocked on operator (needs iOS)</span></td><td>iOS device and developer programme</td></tr><tr><td>16-18</td><td>Oura, WHOOP, TrainingPeaks</td><td>2 / 2 / 3</td><td><span class="todo">Not started</span></td><td>Membership and limits unverified; TrainingPeaks for approved developers only</td></tr></table></div>
+<h3>2.3 Research package stories (40)</h3>
+<div class="tw"><table><tr><th>Group</th><th>Stories</th><th>Status</th><th>Comment</th></tr><tr><td>Partly or fully covered by the sprint (21)</td><td>P2-000, 001, 002, 006-019, 034-037</td><td><span class="warn">Code done, final rerun running (tests in the final rerun)</span></td><td>Charter, inventory, ontology, connector architecture, consent, metrics, navigation, nutrition data rights, diary, barcode, meal photo, portions, goal ownership, weekly review, three poses, trend, dedup, safety gates, accessibility, flags</td></tr><tr><td>Sport engines (5)</td><td>P2-022 ... 026</td><td><span class="todo">Not started</span></td><td>Running, cycling, walking and steps, swimming, unified multisport load</td></tr><tr><td>Devices and import (6)</td><td>P2-027 ... 033</td><td><span class="todo">Not started</span></td><td>Health Connect per datatype, Wear OS, FIT/GPX/TCX, BLE, cloud adapters, Google Health</td></tr><tr><td>Research and evaluations (6)</td><td>P2-003, 004, 005, 020, 021, 038</td><td><span class="todo">Not started</span></td><td>Competitor catalogue, static audit of open-source apps, vendor APIs, body-fat ML, Future You (deferred, default off, no minors), sport registry</td></tr><tr><td>Outside the program (1)</td><td>P2-039</td><td><span class="todo">Pending</span></td><td>Equipment recognition 90%+ is a separate track with a sealed holdout</td></tr><tr><td>New stories</td><td>X-04, X-15, X-20, X-21, X-26, X-37, X-38</td><td><span class="todo">Not started</span></td><td>Open-source app review, scale-weighed portion evaluation, body-fat build-vs-buy, Future You, unified load, phased rollout, sport registry</td></tr></table></div>
+<h3>2.4 Phase 2 blockers and decisions</h3>
+<ul><li>Your confirmation of the app list and timing for the study (E10); the operator decisions O-2...O-11 from the backlog (including O-4 for Google Health).</li><li>External approvals: Garmin, Suunto, TrainingPeaks and other partner programmes; Strava and other vendor API terms.</li><li>An iOS device and the Apple developer programme are needed for HealthKit and Apple Watch; the Wear OS release signing must be decided.</li><li>GPS, battery and dedup measurements need your phone and a corpus of real workouts.</li><li>Clinical acceptance of the nutrition and training rules stays with the operator; reverse engineering of third-party apps is refused (D-35).</li></ul>
+<h2>3. Other streams (from earlier sessions, not rechecked now)</h2>
+<ul><li>Branch sprint/coach-form-fixes-2026-10: the GPT-PM gate and PR are pending.</li><li>Waiting on the operator: a phone test, the squat demo clip, permission to clean up reports/, an alert channel, camera visible by default.</li><li>Equipment recognition: the corpus and keys live outside git; the fails.jpg data and real gym photos are needed from you.</li></ul>
+<h2>4. Next</h2>
+<ul><li>Wait for the three final-rerun test agents, fix what they find, update the counts in CURRENT_STATE_BODY_SCAN_NUTRITION.md.</li><li>Request the GPT-PM review on the exact head with the test results and review consensus; after APPROVE push and open one PR.</li><li>To start Phase 2: confirm the priorities and the study list (E10), decide O-4, pick the first integration (by the backlog: Health Connect sessions and FIT/GPX/TCX import).</li></ul>
+<p class="note">Not verified in this report: test counts are taken from the agent records and core/changes; the final rerun on head 9865066e has not finished. Phase 2 readiness is judged from the backlog documents, not from code.</p>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

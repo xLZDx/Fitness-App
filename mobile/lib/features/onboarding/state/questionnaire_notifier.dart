@@ -46,6 +46,20 @@ class QuestionnaireDraft extends Notifier<UserProfile> {
   void updateEquipment(EquipmentAccess Function(EquipmentAccess) update) =>
       state = state.copyWith(equipment: update(state.equipment));
 
+  /// Nutrition preferences (design s16.2). The two safety answers and the
+  /// allergen set are NOT here: they live in `HealthFlags` and go through
+  /// [updateHealth], the same device-only path as every other health answer.
+  void updateNutrition(NutritionPrefs Function(NutritionPrefs) update) =>
+      state = state.copyWith(nutrition: update(state.nutrition));
+
+  /// Stamps `NutritionPrefs.completedAt` once, when the user leaves the
+  /// nutrition questions (the step or the profile flow). Idempotent: a later
+  /// pass keeps the first timestamp.
+  void markNutritionCompleted([DateTime? now]) {
+    if (state.nutrition.completedAt != null) return;
+    updateNutrition((n) => n.copyWith(completedAt: now ?? DateTime.now()));
+  }
+
   void updateMotivation(MotivationPrefs Function(MotivationPrefs) update) =>
       state = state.copyWith(motivation: update(state.motivation));
 

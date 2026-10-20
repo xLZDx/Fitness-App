@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprint S03: documentation approved, build started</title>
+<style>
+  :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --warn-soft:#f6e6c8; --border:#dfe2da; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --warn-soft:#3a2a12; --border:#2c3122; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,sans-serif; line-height:1.55; padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+  .wrap { max-width:820px; margin:0 auto; padding-block:32px 72px; }
+  h1 { font-size:30px; line-height:1.2; margin:0 0 10px; text-wrap:balance; }
+  h2 { font-size:20px; margin:32px 0 10px; }
+  .lede { color:var(--text-2); font-size:16px; max-width:64ch; margin:0 0 8px; }
+  .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { border-left:4px solid var(--accent); } .warn { border-left:4px solid var(--warn); }
+  .tablewrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border:1px solid var(--border); font-size:14px; }
+  th { background:var(--accent-soft); }
+  code { font-family:Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="lede">Fitness App, Phase 2</p>
+  <h1>Sprint S03 (shell, modes, dashboards): external documentation review approved, build started</h1>
+  <p class="lede">The external reviewer (GPT-PM) approved the technical design and the test plan of sprint S03 in round 3 on head 59828804. A real defect inherited from S02 was found and fixed (the backup rules did not cover the real journal directory). The code build has started; nothing has been pushed to GitHub.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App_Phase2_s01</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s03d-ui-design-contract @ 03a0af32</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<h2>Summary</h2>
+<div class="box ok"><ul>
+  <li><b>The external reviewer (GPT-PM) approved the S03 documentation in round 3 on head <code>59828804</code>: 0 BLOCKER and 0 MAJOR findings.</b> Rounds 1 and 2 returned MODIFY with one MAJOR finding each; both were verified against the code and fixed.</li>
+  <li><b>The documentation phase of sprint S03 (app shell, mode chooser, Today / This week / Progress dashboard) is complete:</b> code map, technical design (21 stories), test plan (458 tests without the two conditional stories, 470 with them). No code existed at the time of the approval. The build started after the approval: the first three wave-1 commits are on the branch (backup-rule fix, mode state data layer, HUD controls and window size class). Nothing was run by the coordinator: by project rules only the test agents run tests, after each epic.</li>
+  <li><b>Five internal reviewers before the external review</b> (architect, Flutter, silent failures, security, test review) found no blocker, but found 21 root causes of material and minor findings; all were fixed in one batch.</li>
+  <li><b>One finding is a real defect inherited from S02:</b> the Android backup rules exclude the directories <code>journal</code>, <code>sources</code> and <code>quarantine</code> directly under the app data root, while the journal actually lives in <code>activity_journal/&lt;account id&gt;/journal</code>. I verified this in the code myself. No harm today: the journal is off in release builds and nothing is written to it before S05. S03 turns the journal on by default, so the rule fix is the mandatory first part of story S03-0 and lands before the switch. It is now committed (<code>0d6ac407</code>).</li>
+  <li><b>Nothing has been pushed to GitHub.</b> Branch <code>phase2/s03d-ui-design-contract</code>; the push and the one pull request come at the end of sprint S03.</li>
+</ul></div>
+
+<h2>How the external review went (GPT-PM)</h2>
+<div class="box"><ul>
+  <li><b>Round 1</b> (head <code>3bedcba4</code>): MODIFY, one MAJOR finding. A test of the plan required that after a failed manual "Try again" no automatic retries happen, while the design kept the existing retry ladder (5 s, 15 s, 60 s, 5 min, 5 min). Both cannot hold. I checked the code: the finding is correct.</li>
+  <li><b>Round 2</b> (head <code>27d6dc44</code>): the first finding closed, a second one found: in the test I had rewritten, the "open" and "bind" counters were impossible for the "journal failed to open" state. While verifying I found the root cause: the code has no separate "open attempt"; the journal object is created without touching the disk and binding (which is also the open) is a single call. The "failed to open" state is unreachable in the running app.</li>
+  <li><b>Independent review before round 3</b> (read-only reliability reviewer, 9 scenarios checked against the code): 5 MAJOR and 4 MINOR findings, no blocker. All applied: "failed to open" is now a defensive state without retries; a manual attempt has a clear result (started / busy / not applicable); single-flight protection and the timer belong to a "generation" (one sign-in of an account) so a late completion of a former account changes nothing; recovery counts come from an optional interface so the existing retry test stays unchanged.</li>
+  <li><b>Round 3</b> (head <code>59828804</code>): <b>approved</b>, 0 BLOCKER and 0 MAJOR. The approval permits implementation and focused tests under the documented contracts. It does not permit a push to GitHub or a merge: those are possible only after the finished code is reviewed.</li>
+</ul></div>
+
+<h2>What the plan now says, in plain words</h2>
+<div class="box"><ul>
+  <li><b>One owner of the state.</b> For the mode choice there is one "write if not yet present" function; when onboarding finishes, a new user is guaranteed to get the mode chooser and a user of an older version gets a "migrated" record. Before, two independent writes could race each other.</li>
+  <li><b>A corrupt stored mode value is not overwritten.</b> Before, it was read as "empty" and rewritten.</li>
+  <li><b>Never show someone else's data and never claim "no activity" falsely.</b> While the journal is binding to the account, the panels show loading, not emptiness; the data of one account cannot appear for another after a switch.</li>
+  <li><b>Sign-out.</b> If a journal exists but cannot be read, a sheet "we could not check the activity stored on this device" appears with the buttons "Try again" and "Sign out anyway". This refines contract item J10 (the sign-out behaviour); GPT-PM accepted it.</li>
+  <li><b>Tests are not empty.</b> The side-rail width is tested through a replaceable measurer (tests have no real font); timers are tested on real controllers, not stubs; static checks have an explicit file list.</li>
+</ul></div>
+
+<h2>Accepted deviations and risks (not questions to you, but you may object)</h2>
+<div class="box warn"><ul>
+  <li><b>A loading window of up to 11 minutes 20 seconds.</b> If binding the journal keeps failing, the panels show a loading indicator until the five automatic retries are exhausted, and only then a message with "Try again". Accepted for S03 because nothing is written to the journal until S05, so there is nothing to show; S05 resolves it with a separate "taking longer than usual" state (a contract change).</li>
+  <li><b>No "Try again" button in the "journal failed to open" state.</b> This deviates from acceptance criterion AC-PR-2 ("Try again" in the error panel); it is justified because the state is unreachable in the running app and there is nothing to retry.</li>
+  <li><b>The test plan is 34 percent larger than estimated at design time</b> (458 versus 342 by stories). This is a consequence of the review findings.</li>
+</ul></div>
+
+<h2>What I got wrong, in plain words</h2>
+<div class="box warn"><ul>
+  <li><b>Two authors invented the same ids for different tests.</b> I started the design and the test plan in parallel without a single owner of the ids. I found it myself when comparing the id sets (83 in the design, 144 in the plan, 5 and 64 unpaired) before any reviewer saw it. Rule now: name one owner of the ids and compare the sets before review.</li>
+  <li><b>My task wording caused the round-2 error.</b> I wrote "the opener or bind counter equals 1" without separating the paths, and the plan author repeated it. I also sent the retry-machine fix to the external reviewer without an independent review, and that review found what five internal reviewers had missed. Rule now: a state-machine fix gets an independent review before it is sent, and reviewers receive scenarios to work through.</li>
+  <li><b>The first design draft gave one state several writers</b> and treated the journal as "open" by default; reviewers caught both before any code was written.</li>
+</ul></div>
+
+<h2>What remains with you</h2>
+<div class="box warn">
+<p>These are product-owner decisions. For each, the consequence is stated; while you stay silent, the default applies.</p>
+<ul>
+  <li><b>Size of sprint S03.</b> It has 19 mandatory stories and about 458 tests (the roadmap estimated the sprint at four units). Option A (default): one sprint and one pull request; longer, but a single review and the app is never half-changed. Option B: two sprints (shell and big screens separate from modes and dashboards); each review is shorter, but the shell and dashboards ship separately, an intermediate app state is needed, and the tablet and Mac layouts you asked for immediately come later.</li>
+  <li><b>Label of the Health Connect row in "Sources".</b> By contract it is "Not connected". For Phase 1 users who already allowed synchronisation the label may be wrong. Default: keep the contract wording and record the risk; alternative: rephrase to "workout import not available yet".</li>
+  <li><b>Approve the privacy policy wording.</b> It is an English draft and has no paragraphs about activity and routes. Until it is approved, cloud upload of routes stays off.</li>
+  <li><b>When to create iOS, iPadOS and macOS builds.</b> By default not in S03: the repository has only the <code>android</code> folder, and the design is written so that nothing needs redoing.</li>
+  <li><b>The designer's five assumptions</b> (a "Record" button in the side rail on all five tabs; Esc is never "Back"; one column on a wide window with a large font; the rail form chosen by measured label width; during a workout the narrow rail shows a status word and minutes). If you say nothing they are accepted as written.</li>
+  <li><b>Your other decisions, unchanged:</b> first release region; bucket, access rights, alerts, soft-delete window and service account; the Blaze billing account; monetisation per mode (default: all new modes behind flags, no new subscription); the fate of the <code>master</code> branch name; the legal status of the competitor-app dossier; retention of deletion records (400 days proposed).</li>
+</ul>
+</div>
+
+<h2>What next</h2>
+<div class="box"><ul>
+  <li><b>Building sprint S03</b> in 12 lanes with non-overlapping files: first the journal and the backup fix, mode state and window primitives; then the shell and dock, surfaces and routes, mode screens, Sources and sign-out, input, Home and Progress. Implementation agents write production code only and run nothing.</li>
+  <li><b>Tests</b> are written and run by the test agents, focused only, after each epic (the complete set) and once more at the end. Then internal reviews, the external code review, one branch push and one pull request.</li>
+</ul></div>
+</div>
+
+
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

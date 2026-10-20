@@ -35,3 +35,18 @@ file,<temp>/camera stills,plaintext JPEG,none,NO,no,A2
 file,<docs>/offline_videos/,cached catalogue clips,none,no,n/a,-
 file,<docs>/<model assets>,ML model files,none,no,n/a,-
 file,<temp>/export file,the export itself,none,n/a,n/a,-
+firestore,users/{uid}/body_scans/*,"scan metadata, estimate, provider, photosState, weight, note",path,yes,yes (paged),C25
+firestore,users/{uid}/body_scan_settings/main,"cloud consent, retention days, reminder, paused",path,yes,yes,C25
+firestore,users/{uid}/weight_entries/*,daily body weight,path,yes,yes (paged),C25
+firestore,users/{uid}/nutrition_plan/main,nutrition plan targets,path,yes,yes,C25
+firestore,users/{uid}/nutrition_plan_reviews/*,weekly review decisions,path,yes,yes (paged),C25
+firestore,users/{uid}/food_entries/*,"diary entries: name, items, totals, timestamps",path,yes,yes (paged),C25
+firestore,users/{uid}/saved_foods/*,user saved foods,path,yes,yes (paged),C25
+firestore,nutrition_cache/{key},public nutrition-database responses (no user data),none,n/a,n/a (EXEMPT),C25
+firestore,body_scan_purge_state/{id},"purge cursor bookkeeping (no user content; transient late_sweep_<hash> records carry a uid for about 17 minutes under normal operation and are retried every 5 minutes until the sweep has deleted them - no hard bound, server-only)",none,n/a,n/a (EXEMPT),C25
+storage,<project>-bodyscan-private users/{uid}/scans/*,"face-blurred scan JPEGs; default retention 0 = deleted after analysis (within 48 hours worst case)",path prefix,yes (sweepAccountData prefix delete),metadata only (photoLinksAvailable; 1-hour links on demand),C25
+prefs,data_notice.v{N}.{uid},first-use data notice acknowledgement,key,yes,no,C25
+prefs,progress_photos.scan_reminder.v1.{uid},scan reminder toggle,key,yes,no,C25
+prefs,profile.sensitive.{uid} excludedFoods,device-only excluded foods (D-55),key,yes,yes (merged on device),C25
+file,<docs>/progress_photos/{uid}/scans/,encrypted scan sidecars,path,yes (directory wipe),metadata only,C25
+file,<docs>/progress_photos/{uid}/meals/,meal thumbnails (device only; meal photos are not stored on the server),path,yes (directory wipe),no,C25

@@ -1,0 +1,2 @@
+valid=cb14660a5ddbf8feea801e8dba9eb47b73f2bbcaa9f301880ef2ffe9a1abfd0d
+hostile=70982c9224b040410216655eebebc53d96925305feb5b93c47dcf0c17cfe23de

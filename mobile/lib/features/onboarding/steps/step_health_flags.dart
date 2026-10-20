@@ -8,6 +8,7 @@ import '../../safety/data/health_flags.dart';
 import '../../safety/widgets/eligibility_notice.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/inputs.dart';
+import '../widgets/nutrition_inputs.dart';
 
 /// Gate N — the health answers in a form a rule may act on.
 ///
@@ -137,24 +138,14 @@ class StepHealthFlags extends ConsumerWidget {
           onChanged: (v) => update((f) => f.copyWith(clinicianAdvice: v)),
         ),
         const SizedBox(height: 16),
-        // F014. Last, and a plain yes/no, because it is the only question here
-        // whose answer does not describe a limitation the user lives with --
-        // it describes a limitation of THIS APP. Offering "unsure" would be
-        // asking someone to be uncertain about something they are not
-        // uncertain about, and offering more granularity would collect a
-        // medical detail nothing acts on. See `ProfessionalGuidanceNeed`.
-        FieldLabel(l10n.healthStepProfessionalGuidance),
-        SingleChoiceChips<ProfessionalGuidanceNeed>(
-          key: const Key('onb.flags.guidance'),
-          options: ProfessionalGuidanceNeed.values,
-          labelOf: (v) => switch (v) {
-            ProfessionalGuidanceNeed.none => l10n.guidanceNeedNone,
-            ProfessionalGuidanceNeed.reported => l10n.guidanceNeedReported,
-          },
-          value: flags.professionalGuidance,
-          onChanged: (v) =>
-              update((f) => f.copyWith(professionalGuidance: v)),
-        ),
+        // F014. A plain yes/no about a limitation of THIS APP, not of the user;
+        // the rationale lives with the widget, which the nutrition profile
+        // flow reuses so both ask the identical question.
+        const ProfessionalGuidanceQuestion(),
+        // D-75. The nutrition safety question follows the pregnancy one and is
+        // asked BEFORE the nutrition step, which reads both answers: no pace,
+        // default goal or target text appears until both are `none`.
+        const NutritionGuidanceQuestion(),
       ],
     );
   }

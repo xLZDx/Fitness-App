@@ -37,6 +37,22 @@
   well: it is private to the phone by design and is handed over only by the
   user's own export action.
 
+  The activity journal (S02-02, GPS-PRIV-083) is excluded as well:
+  `activity_journal` (the production per-account tree
+  `<support>/activity_journal/<scopeId>`; excluding the directory excludes every
+  scope beneath it) plus the legacy `journal`, `sources` and `quarantine`, all
+  directly under `getFilesDir()` (the app support directory,
+  `domain="file"`). They hold routes, heart rate and laps; the
+  stream key lives in the excluded secure-storage files, so a restored copy
+  would be undecryptable anyway. The names come from `journal_layout.dart`
+  (`kActivityBackupExcludedDirs`); keep both files and that constant in step.
+
+  The S04 GPS recording journal (S04-15) needs no extra line: it lives at
+  `<support>/activity_journal/<scopeId>/recording/<recordingUuid>/`, below the
+  excluded `activity_journal` directory (the 30-day fallback copy of a recording
+  after a failed sign-out hand-off lives in the same tree). The S04 test walks
+  the directory the real factory creates and asserts this exclusion.
+
   Everything else in the app stays backed up. This is an exclusion list, not a
   switch: `android:allowBackup` is untouched.
 -->
@@ -46,4 +62,8 @@
     <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" />
     <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
     <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
+    <exclude domain="file" path="journal" />
+    <exclude domain="file" path="sources" />
+    <exclude domain="file" path="quarantine" />
+    <exclude domain="file" path="activity_journal" />
 </full-backup-content>

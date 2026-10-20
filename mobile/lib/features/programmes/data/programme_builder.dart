@@ -39,6 +39,8 @@
 /// model-derived signal is allowed to act — see [ProgrammeBuildRequest.rank].
 library;
 
+import 'dart:math' as math;
+
 import '../../equipment/data/equipment_models.dart';
 import '../../safety/data/eligibility.dart';
 import 'movement_role.dart';
@@ -275,9 +277,21 @@ class ProgrammeBuildRequest {
     required this.weeks,
     required this.daysPerWeek,
     this.rank,
+    this.volumeFactor = 1.0,
   });
 
   final ProgrammeSpec spec;
+
+  /// Optional nutrition-aware volume multiplier (design s30.4), default NEUTRAL
+  /// so nothing changes for users without a nutrition plan.
+  ///
+  /// It can only LOWER load: values above 1.0 are treated as 1.0, and values
+  /// below the advice floor of 0.70 as 0.70. It scales the programmed sets per
+  /// slot (see [setsAfterNutrition]) and the validator's weekly minimum, so a
+  /// trimmed programme is not refused for being trimmed. It never touches
+  /// exercise selection, so the eligibility layer, age band, screening ceiling
+  /// and injury filter are untouched.
+  final double volumeFactor;
 
   /// The unfiltered catalogue. Filtering happens HERE, through the one
   /// eligibility layer, rather than being the caller's responsibility — which
@@ -302,6 +316,22 @@ class ProgrammeBuildRequest {
   /// anyway. A ranker that returns something it was not given is caught rather
   /// than trusted.
   final List<ExerciseItem> Function(MovementRole, List<ExerciseItem>)? rank;
+}
+
+/// The effective volume factor: neutral for anything unusable, never above 1.0
+/// (nutrition may not raise load) and never below 0.70.
+double _effectiveVolumeFactor(double factor) {
+  if (!factor.isFinite) return 1.0;
+  if (factor > 1.0) return 1.0;
+  if (factor < 0.70) return 0.70;
+  return factor;
+}
+
+/// Sets for one slot after the nutrition advice: `round(setsPerSlot * factor)`,
+/// at least 1. With the neutral factor this is exactly [setsPerSlot].
+int setsAfterNutrition(int setsPerSlot, double factor) {
+  final scaled = (setsPerSlot * _effectiveVolumeFactor(factor)).round();
+  return scaled < 1 ? 1 : scaled;
 }
 
 /// Builds, then validates. Returns [ProgrammeRefused] if either stage fails.
@@ -412,7 +442,9 @@ ProgrammeBuildResult buildProgramme(ProgrammeBuildRequest request) {
         }
         if (choice == null) continue;
         picked.add(PlannedExercise(
-            exercise: choice, role: role, sets: spec.setsPerSlot));
+            exercise: choice,
+            role: role,
+            sets: setsAfterNutrition(spec.setsPerSlot, request.volumeFactor)));
         cursor++;
       }
       sessions.add(PlannedSession(
@@ -526,9 +558,18 @@ List<ProgrammeFinding> validateProgramme(
             role: role, detail: 'week ${week.key}: $f'));
       }
     }
+    // A nutrition-trimmed programme is held to a proportionally trimmed minimum
+    // (never below 1), so trimming volume cannot turn into a refusal.
+    final minSets = request.volumeFactor == 1.0
+        ? spec.minWeeklySetsPerRole
+        : math.max(
+            1,
+            (spec.minWeeklySetsPerRole * _effectiveVolumeFactor(request.volumeFactor))
+                .floor(),
+          );
     for (final role in volumeChecked) {
       final v = volume[role] ?? 0;
-      if (v < spec.minWeeklySetsPerRole || v > spec.maxWeeklySetsPerRole) {
+      if (v < minSets || v > spec.maxWeeklySetsPerRole) {
         findings.add(ProgrammeFinding(ProgrammeFault.volumeOutOfBand,
             role: role, detail: 'week ${week.key}: $v sets'));
       }

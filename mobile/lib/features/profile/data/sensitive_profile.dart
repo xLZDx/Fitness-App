@@ -33,11 +33,16 @@ class SensitiveProfile {
     this.health = HealthHistory.empty,
     this.smoking,
     this.alcohol,
+    this.excludedFoods = const [],
   });
 
   final HealthHistory health;
   final SmokingHabit? smoking;
   final AlcoholHabit? alcohol;
+
+  /// `NutritionPrefs.excludedFoods`: free text that can name an intolerance or
+  /// a condition, so it is device-only like the health block (D-55).
+  final List<String> excludedFoods;
 
   static const empty = SensitiveProfile();
 
@@ -45,12 +50,17 @@ class SensitiveProfile {
   /// "nothing stored locally" rather than as "stored, and empty" — which is
   /// what lets a profile written before this split still resolve from the
   /// server until the migration has run.
-  bool get isEmpty => health.isEmpty && smoking == null && alcohol == null;
+  bool get isEmpty =>
+      health.isEmpty &&
+      smoking == null &&
+      alcohol == null &&
+      excludedFoods.isEmpty;
 
   Map<String, dynamic> toJson() => {
         'health': health.toJson(),
         'smoking': smoking?.name,
         'alcohol': alcohol?.name,
+        if (excludedFoods.isNotEmpty) 'excludedFoods': excludedFoods,
       };
 
   static SensitiveProfile fromJson(Map<String, dynamic> j) => SensitiveProfile(
@@ -59,6 +69,10 @@ class SensitiveProfile {
         ),
         smoking: _byName(SmokingHabit.values, j['smoking']),
         alcohol: _byName(AlcoholHabit.values, j['alcohol']),
+        // Same tolerant reader (caps, trimming) as the profile block.
+        excludedFoods:
+            NutritionPrefs.fromJson({'excludedFoods': j['excludedFoods']})
+                .excludedFoods,
       );
 
   static T? _byName<T extends Enum>(List<T> values, dynamic name) {
@@ -119,6 +133,11 @@ String? sensitiveJsonProblem(Object? decoded) {
     final v = decoded[key];
     if (v != null && v is! String) return '$key is not a string';
   }
+  final foods = decoded['excludedFoods'];
+  if (foods != null) {
+    if (foods is! List) return 'excludedFoods is not a list';
+    if (foods.any((e) => e is! String)) return 'excludedFoods holds a non-string';
+  }
   if (health is Map) {
     for (final key in [
       'conditions',
@@ -158,6 +177,7 @@ SensitiveProfile extractSensitive(UserProfile p) => SensitiveProfile(
       health: p.health,
       smoking: p.lifestyle.smoking,
       alcohol: p.lifestyle.alcohol,
+      excludedFoods: p.nutrition.excludedFoods,
     );
 
 /// The same profile with those parts blanked — what the server is allowed to
@@ -170,6 +190,9 @@ SensitiveProfile extractSensitive(UserProfile p) => SensitiveProfile(
 /// downstream would then be reporting success.
 UserProfile stripSensitive(UserProfile p) => p.copyWith(
       health: HealthHistory.empty,
+      // `copyWith` keeps the old list when handed an empty one only through the
+      // `??` on a null; an explicit empty list is non-null and replaces it.
+      nutrition: p.nutrition.copyWith(excludedFoods: const []),
       lifestyle: Lifestyle(
         diet: p.lifestyle.diet,
         sleepHoursPerNight: p.lifestyle.sleepHoursPerNight,
@@ -186,6 +209,9 @@ UserProfile stripSensitive(UserProfile p) => p.copyWith(
 UserProfile mergeSensitive(UserProfile p, SensitiveProfile s) {
   if (s.isEmpty) return p;
   return p.copyWith(
+    nutrition: s.excludedFoods.isEmpty
+        ? p.nutrition
+        : p.nutrition.copyWith(excludedFoods: s.excludedFoods),
     health: s.health.isEmpty ? p.health : s.health,
     lifestyle: Lifestyle(
       diet: p.lifestyle.diet,

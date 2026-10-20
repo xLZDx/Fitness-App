@@ -200,6 +200,43 @@ enum ProfessionalGuidanceNeed {
   reported,
 }
 
+/// Whether the user has self-reported a nutrition situation for which this app
+/// gives no general food targets (a clinician or dietitian supervising what
+/// they eat, or a difficult relationship with food, now or in the past).
+///
+/// Mirrors [ProfessionalGuidanceNeed] exactly: nullable (null = never asked,
+/// which LOCKS the nutrition coach, it is never read as clear), generic name on
+/// the wire, no "prefer not to say" (that would be indistinguishable from
+/// unanswered), and device-only (`stripSensitive`, rules `flagsAreStripped`).
+/// The stored value deliberately names no condition.
+enum NutritionGuidanceNeed {
+  /// Asked, and none of the listed situations apply.
+  none,
+
+  /// Asked, and at least one applies. Blocks every nutrition number; the
+  /// product behaviour is a neutral "talk to a professional" notice.
+  reported,
+}
+
+/// The closed EU-14 list of food allergens. Device-only, like every other
+/// answer in [HealthFlags]: it is health-adjacent and the server never needs it.
+enum FoodAllergen {
+  gluten,
+  crustaceans,
+  eggs,
+  fish,
+  peanuts,
+  soy,
+  milk,
+  treeNuts,
+  celery,
+  mustard,
+  sesame,
+  sulphites,
+  lupin,
+  molluscs,
+}
+
 /// What a clinician has said about exercising with the user's conditions or
 /// medications.
 ///
@@ -260,6 +297,8 @@ class HealthFlags {
     this.surgery,
     this.clinicianAdvice,
     this.professionalGuidance,
+    this.nutritionGuidance,
+    this.foodAllergens = const {},
   });
 
   final Set<MovementRestriction> restrictions;
@@ -271,6 +310,15 @@ class HealthFlags {
   /// [ProfessionalGuidanceNeed], which explains why this field carries no
   /// medical detail at all.
   final ProfessionalGuidanceNeed? professionalGuidance;
+
+  /// Null means the nutrition safety question has not been asked, which locks
+  /// the nutrition coach. See [NutritionGuidanceNeed].
+  final NutritionGuidanceNeed? nutritionGuidance;
+
+  /// Self-reported allergens. Joins [isEmpty], `==`, [toJson] and [copyWith],
+  /// but NOT [isUnanswered]: an empty set is a legitimate "none" and the
+  /// safety questions are what lock the coach.
+  final Set<FoodAllergen> foodAllergens;
 
   static const empty = HealthFlags();
 
@@ -284,7 +332,8 @@ class HealthFlags {
       bloodPressure == null &&
       surgery == null &&
       clinicianAdvice == null &&
-      professionalGuidance == null;
+      professionalGuidance == null &&
+      nutritionGuidance == null;
 
   /// True when this holds nothing the user told us.
   ///
@@ -298,7 +347,8 @@ class HealthFlags {
   /// Routing through [isUnanswered] means the one list a new answer must join
   /// is the list that names the answers. That is a list an author updating
   /// this class has a reason to look at; `operator ==` is not.
-  bool get isEmpty => isUnanswered && restrictions.isEmpty;
+  bool get isEmpty =>
+      isUnanswered && restrictions.isEmpty && foodAllergens.isEmpty;
 
   /// Restrictions the catalogue has no tag for.
   ///
@@ -321,6 +371,13 @@ class HealthFlags {
         // its value are what land in Firestore, in a backup and in a data
         // export. See [ProfessionalGuidanceNeed].
         'professionalGuidance': professionalGuidance?.name,
+        // D-70: OMITTED when null/empty, never emitted as null. The deployed
+        // rules (`flagsAreStripped`) refuse any key outside their key list, so
+        // a stripped (server) block must not carry these two keys at all.
+        if (nutritionGuidance != null)
+          'nutritionGuidance': nutritionGuidance!.name,
+        if (foodAllergens.isNotEmpty)
+          'foodAllergens': [for (final a in foodAllergens) a.name],
       };
 
   /// Unknown names are DROPPED, not defaulted.
@@ -346,8 +403,19 @@ class HealthFlags {
         if (r != null) rs.add(r);
       }
     }
+    final allergens = <FoodAllergen>{};
+    final allergenList = raw['foodAllergens'];
+    if (allergenList is List) {
+      for (final entry in allergenList) {
+        final a = byName(FoodAllergen.values, entry);
+        if (a != null) allergens.add(a);
+      }
+    }
     return HealthFlags(
       restrictions: Set.unmodifiable(rs),
+      nutritionGuidance:
+          byName(NutritionGuidanceNeed.values, raw['nutritionGuidance']),
+      foodAllergens: Set.unmodifiable(allergens),
       bloodPressure:
           byName(BloodPressureStatus.values, raw['bloodPressure']),
       surgery: byName(SurgeryStatus.values, raw['surgery']),
@@ -364,6 +432,8 @@ class HealthFlags {
     SurgeryStatus? surgery,
     ClinicianExerciseAdvice? clinicianAdvice,
     ProfessionalGuidanceNeed? professionalGuidance,
+    NutritionGuidanceNeed? nutritionGuidance,
+    Set<FoodAllergen>? foodAllergens,
   }) =>
       HealthFlags(
         restrictions: restrictions ?? this.restrictions,
@@ -371,6 +441,8 @@ class HealthFlags {
         surgery: surgery ?? this.surgery,
         clinicianAdvice: clinicianAdvice ?? this.clinicianAdvice,
         professionalGuidance: professionalGuidance ?? this.professionalGuidance,
+        nutritionGuidance: nutritionGuidance ?? this.nutritionGuidance,
+        foodAllergens: foodAllergens ?? this.foodAllergens,
       );
 
   @override
@@ -380,8 +452,11 @@ class HealthFlags {
       other.surgery == surgery &&
       other.clinicianAdvice == clinicianAdvice &&
       other.professionalGuidance == professionalGuidance &&
+      other.nutritionGuidance == nutritionGuidance &&
       other.restrictions.length == restrictions.length &&
-      other.restrictions.containsAll(restrictions);
+      other.restrictions.containsAll(restrictions) &&
+      other.foodAllergens.length == foodAllergens.length &&
+      other.foodAllergens.containsAll(foodAllergens);
 
   @override
   int get hashCode => Object.hash(
@@ -389,12 +464,16 @@ class HealthFlags {
         surgery,
         clinicianAdvice,
         professionalGuidance,
+        nutritionGuidance,
         Object.hashAllUnordered(restrictions),
+        Object.hashAllUnordered(foodAllergens),
       );
 
   @override
   String toString() => 'HealthFlags(${restrictions.map((r) => r.name).toList()},'
       ' bp: ${bloodPressure?.name}, surgery: ${surgery?.name},'
       ' advice: ${clinicianAdvice?.name},'
-      ' guidance: ${professionalGuidance?.name})';
+      ' guidance: ${professionalGuidance?.name},'
+      ' nutrition: ${nutritionGuidance?.name},'
+      ' allergens: ${foodAllergens.length})';
 }

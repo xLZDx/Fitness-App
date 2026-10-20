@@ -132,6 +132,186 @@ async function one(path: string): Promise<unknown> {
   return snap.exists ? { id: snap.id, ...snap.data() } : null;
 }
 
+/**
+ * C25 / D-61. Collections added by the body-scan and nutrition work are read
+ * with an EXPLICIT newest-first order and paged by the app, instead of the
+ * unordered `sub()` above (document-id order, which for random-UUID
+ * `food_entries` silently exports a random subset and for date-keyed
+ * `weight_entries` keeps the oldest rows and drops the newest).
+ *
+ * `order` null means "document id, descending" (date-keyed or week-keyed ids,
+ * and `saved_foods`, whose `createdAt` is optional so an `orderBy` on it would
+ * silently drop rows that lack it).
+ */
+const PAGE_ROWS = 500;
+const MAX_CURSOR_LENGTH = 200;
+const PAGED_COLLECTIONS = [
+  { key: "bodyScans", path: "body_scans", order: "takenAt" },
+  { key: "weightEntries", path: "weight_entries", order: null },
+  { key: "foodEntries", path: "food_entries", order: "loggedAt" },
+  { key: "savedFoods", path: "saved_foods", order: null },
+  { key: "nutritionPlanReviews", path: "nutrition_plan_reviews", order: null },
+  // S02-07 (design 7, 7.1): unified activity summaries and the stream INDEX rows
+  // (never stream bytes, GPS-PRIV-052). Newest first; the first response carries
+  // up to MAX_ROWS of each (see `CAPPED_FIRST_PAGE`), continuations page by PAGE_ROWS.
+  { key: "activities", path: "activities", order: "startUtc" },
+  { key: "activityStreams", path: "activity_streams", order: null },
+] as const;
+type PagedKey = (typeof PAGED_COLLECTIONS)[number]["key"];
+
+/**
+ * Paged sections whose FIRST response is read up to [MAX_ROWS] (not [PAGE_ROWS])
+ * so the over-cap behaviour of every other section applies: reaching the cap is
+ * named in `truncated` and the rest is delivered by continuation cursors.
+ */
+const CAPPED_FIRST_PAGE: ReadonlySet<PagedKey> = new Set<PagedKey>([
+  "activities",
+  "activityStreams",
+]);
+
+/**
+ * What an activity stream index row exposes. An allow-list: the row's object
+ * path, hashes and upload bookkeeping are internal and would turn the export
+ * into a map of the private bucket. Samples are never in the row.
+ */
+const STREAM_ROW_FIELDS = ["id", "state", "bytes", "kinds", "expiresAt"] as const;
+
+function streamRow(row: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const f of STREAM_ROW_FIELDS) {
+    if (f in row) out[f] = row[f];
+  }
+  return out;
+}
+
+/** GPS-PRIV-053: the declared delivery of streams and the heart-rate exclusion. */
+export const STREAM_EXPORT_NOTE =
+  "GPS streams are not embedded in this file: each activityStreams row lists " +
+  "its state, size and expiry, and the app requests short-lived download " +
+  "links on demand; heart-rate streams are on your device only and are not " +
+  "part of this export.";
+
+/** Continuation pages are cheap but not free; own counter, never `accountExport`. */
+/** A bare error code, never a message (messages can embed the uid or a path). */
+function errorSlug(err: unknown): string {
+  const code = (err as { code?: unknown } | null | undefined)?.code;
+  const text = typeof code === "string" || typeof code === "number" ? String(code) : "";
+  return /^[A-Za-z0-9_./-]{1,64}$/.test(text) ? text : "unknown";
+}
+
+const PAGE_QUOTA_ACTION = "accountExportPage";
+const PAGE_QUOTA_LIMIT = 150;
+
+interface PageInfo {
+  returned: number;
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
+/** Fields that would turn the export into a bearer credential for a photo. */
+const LINK_FIELD = /url|link|objectpath|storagepath/i;
+
+/** A body-scan row without any link/path field, flagged when photos remain. */
+function scanRow(row: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(row)) {
+    if (!LINK_FIELD.test(k)) out[k] = v;
+  }
+  // Metadata only (D-61): links are minted for one hour by
+  // `manageBodyScanData.exportLinks`, never embedded here.
+  if (row.photosState === "stored") out.photoLinksAvailable = true;
+  return out;
+}
+
+async function pagedRead(
+  uid: string,
+  spec: (typeof PAGED_COLLECTIONS)[number],
+  cursor: string | undefined,
+  pageRows: number = PAGE_ROWS,
+): Promise<{ rows: Record<string, unknown>[]; info: PageInfo }> {
+  const base = `users/${uid}/${spec.path}`;
+  let q = db()
+    .collection(base)
+    .orderBy(spec.order ?? "__name__", "desc");
+  if (cursor !== undefined) {
+    const at = await db().doc(`${base}/${cursor}`).get();
+    if (!at.exists) {
+      throw new HttpsError(
+        "failed-precondition",
+        "The export position is no longer valid. Start the export again.",
+      );
+    }
+    q = q.startAfter(at);
+  }
+  const snap = await q.limit(pageRows + 1).get();
+  const hasMore = snap.docs.length > pageRows;
+  const rows = snap.docs.slice(0, pageRows).map((d) => {
+    const row = { id: d.id, ...d.data() } as Record<string, unknown>;
+    if (spec.key === "bodyScans") return scanRow(row);
+    return spec.key === "activityStreams" ? streamRow(row) : row;
+  });
+  return {
+    rows,
+    info: {
+      returned: rows.length,
+      hasMore,
+      nextCursor: hasMore ? String(rows[rows.length - 1].id) : null,
+    },
+  };
+}
+
+/** Halves the largest paged sections (keeping a valid cursor) until `budget` fits. */
+function fitPaged(
+  sections: Partial<Record<PagedKey, Record<string, unknown>[]>>,
+  paging: Partial<Record<PagedKey, PageInfo>>,
+  budget: number,
+): void {
+  let total = jsonBytes(sections);
+  while (total > budget) {
+    let key: PagedKey | undefined;
+    let best = 0;
+    for (const k of Object.keys(sections) as PagedKey[]) {
+      const n = sections[k]!.length;
+      if (n > 1 && jsonBytes(sections[k]) > best) {
+        best = jsonBytes(sections[k]);
+        key = k;
+      }
+    }
+    if (!key) break;
+    const kept = sections[key]!.slice(0, Math.ceil(sections[key]!.length / 2));
+    sections[key] = kept;
+    paging[key] = {
+      returned: kept.length,
+      hasMore: true,
+      nextCursor: String(kept[kept.length - 1].id),
+    };
+    total = jsonBytes(sections);
+  }
+}
+
+function parseCursors(data: unknown): Partial<Record<PagedKey, string>> {
+  const raw = (data as { cursors?: unknown } | null | undefined)?.cursors;
+  if (raw === undefined || raw === null) return {};
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    throw new HttpsError("invalid-argument", "cursors must be an object.");
+  }
+  const out: Partial<Record<PagedKey, string>> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    const known = PAGED_COLLECTIONS.some((c) => c.key === k);
+    if (
+      !known ||
+      typeof v !== "string" ||
+      v.length === 0 ||
+      v.length > MAX_CURSOR_LENGTH ||
+      v.includes("/")
+    ) {
+      throw new HttpsError("invalid-argument", "Invalid export cursor.");
+    }
+    out[k as PagedKey] = v;
+  }
+  return out;
+}
+
 /** Every document in a top-level collection where `field` names this user. */
 async function owned(
   collection: string,
@@ -245,11 +425,64 @@ export const exportAccountData = onCall(
   // nothing. A GDPR request is not made three times a day by anyone acting in
   // good faith, and the right to the data is not a right to it on demand at
   // any rate.
-  await enforceDailyQuota(uid, "accountExport", QUOTAS.accountExport);
+  // C25. A request carrying cursors is a continuation page of the app's export
+  // loop (up to 50 pages): it reads ONLY the named paged sections, so it is
+  // charged to its own counter instead of burning the 3/day full-export quota.
+  const cursors = parseCursors(request.data);
+  const continuation = Object.keys(cursors).length > 0;
+  if (continuation) {
+    await enforceDailyQuota(uid, PAGE_QUOTA_ACTION, PAGE_QUOTA_LIMIT);
+  } else {
+    await enforceDailyQuota(uid, "accountExport", QUOTAS.accountExport);
+  }
 
   const truncated: Truncation = [];
 
   try {
+    const wanted = PAGED_COLLECTIONS.filter(
+      (c) => !continuation || cursors[c.key] !== undefined,
+    );
+    const pagedResults = await Promise.all(
+      wanted.map((c) =>
+        pagedRead(
+          uid,
+          c,
+          cursors[c.key],
+          !continuation && CAPPED_FIRST_PAGE.has(c.key) ? MAX_ROWS : PAGE_ROWS,
+        ),
+      ),
+    );
+    const pagedSections: Partial<Record<PagedKey, Record<string, unknown>[]>> = {};
+    const paging: Partial<Record<PagedKey, PageInfo>> = {};
+    wanted.forEach((c, i) => {
+      pagedSections[c.key] = pagedResults[i].rows;
+      paging[c.key] = pagedResults[i].info;
+      // Hitting the MAX_ROWS cap is named, like every other capped section.
+      if (!continuation && CAPPED_FIRST_PAGE.has(c.key) && pagedResults[i].info.hasMore) {
+        truncated.push(c.key);
+      }
+    });
+    const photoNote =
+      "Photos are not embedded and no photo links are included. Scans with " +
+      "photoLinksAvailable still have photos in private cloud storage; the " +
+      "app requests one-hour download links on demand. Originals and meal " +
+      "thumbnails kept on your device are not part of this file.";
+
+    if (continuation) {
+      fitPaged(pagedSections, paging, MAX_EXPORT_BYTES);
+      return {
+        exportFormatVersion: 1,
+        generatedAt: new Date().toISOString(),
+        uid,
+        ...pagedSections,
+        paging,
+        notes: [
+          photoNote,
+          ...(pagedSections.activityStreams !== undefined ? [STREAM_EXPORT_NOTE] : []),
+        ],
+      };
+    }
+
     // Concurrent: sixteen independent reads, and a GDPR export that takes
     // sixteen sequential round trips is one a user cancels.
     const [
@@ -272,6 +505,9 @@ export const exportAccountData = onCall(
       bookingsAsCoach,
       equipmentReports,
       debugSessions,
+      bodyScanSettings,
+      nutritionPlan,
+      activitySettings,
     ] = await Promise.all([
       one(`users/${uid}/profile/main`),
       one(`users/${uid}/subscription/main`),
@@ -312,6 +548,12 @@ export const exportAccountData = onCall(
       owned("coach_bookings", "coachUid", uid, truncated),
       owned("equipment_reports", "reporterUid", uid, truncated),
       owned("debug_sessions", "uid", uid, truncated),
+      // C25: single `main` documents of the body-scan / nutrition features.
+      one(`users/${uid}/body_scan_settings/main`),
+      one(`users/${uid}/nutrition_plan/main`),
+      // S02-07: cloud-stream consent and retention (activities and stream index
+      // rows arrive through the paged sections above).
+      one(`users/${uid}/activity_settings/main`),
     ]);
 
     const body = {
@@ -353,6 +595,9 @@ export const exportAccountData = onCall(
       ].map((b) => redactBooking(b as Record<string, unknown>, uid)),
       equipmentReports,
       debugSessions,
+      bodyScanSettings,
+      nutritionPlan,
+      activitySettings,
       // Named, never silent. A capped read that did not say so would be the
       // same lie as a partial export claiming to be whole.
       truncated,
@@ -360,10 +605,27 @@ export const exportAccountData = onCall(
 
     // After the row caps, so the byte guard only trims what they let through.
     fitToByteBudget(body, truncated);
+    // Paged sections get what the legacy sections left (at least one row each);
+    // a trimmed page keeps a cursor so nothing is dropped silently.
+    const rowsBeforeFit = new Map<PagedKey, number>(
+      [...CAPPED_FIRST_PAGE].map((k) => [k, pagedSections[k]?.length ?? 0]),
+    );
+    fitPaged(pagedSections, paging, MAX_EXPORT_BYTES - jsonBytes(body));
+    // A byte-budget trim of an activity section is named too (rows are not lost:
+    // `paging` keeps a cursor), so `truncated` is the one list of incomplete sections.
+    for (const [k, before] of rowsBeforeFit) {
+      if ((pagedSections[k]?.length ?? 0) < before && !truncated.includes(k)) truncated.push(k);
+    }
 
     const response = {
       ...body,
+      ...pagedSections,
+      // Per-section paging state. The app repeats the call with
+      // `cursors: {section: nextCursor}` while any `hasMore` is true.
+      paging,
       notes: [
+        photoNote,
+        STREAM_EXPORT_NOTE,
         ...(truncated.length
           ? [
               "Some sections were capped at " +
@@ -387,10 +649,11 @@ export const exportAccountData = onCall(
     }
     return response;
   } catch (err) {
+    // A deliberate refusal (stale cursor) keeps its own code and message.
+    if (err instanceof HttpsError) throw err;
     if (err instanceof ExportTooLarge) {
       logger.error(EXPORT_ACCOUNT_FAILED, {
         event: EXPORT_ACCOUNT_FAILED,
-        uid,
         err: "export exceeds the response size limit after trimming",
       });
       throw new HttpsError(
@@ -404,8 +667,8 @@ export const exportAccountData = onCall(
     // `data_export.dart` already guards with `progressPhotosIncomplete`.
     logger.error(EXPORT_ACCOUNT_FAILED, {
       event: EXPORT_ACCOUNT_FAILED,
-      uid,
-      err: String(err),
+      // A bare code only: SDK messages can embed document paths and the uid (D-67).
+      errorCode: errorSlug(err),
     });
     throw new HttpsError(
       "internal",

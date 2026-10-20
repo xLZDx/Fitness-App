@@ -111,6 +111,7 @@ when the final sweep failed and the reconciler will finish the job.
 | `profile.sensitive.<uid>` | **health/injury blob**, JSON, plaintext | yes (exact key) | via profile, partially |
 | `profile.sensitive.corrupt.<uid>` | raw copy of an unreadable health blob (plaintext) | yes | no |
 | `training_context.v1.<uid>` | training-context answer | yes | no |
+| `activity.mode.v1.<uid>` | S03 mode state (per account, `modeStorageKeyFor` in `mobile/lib/features/modes/data/mode_store.dart`) | yes (prefix `activity.` and suffix `.<uid>`) | no |
 | `progress_photos.consent.v1.<uid>` | photo consent record | yes | no |
 | `progress_photos.scan_reminder.v1.<uid>` | scan reminder toggle | yes | no |
 | `progress_photos.key.v1` | pre-A2-sec install-wide AES key, base64, **not uid-scoped** (legacy; the current key is in the Keystore, see Files) | yes, only when the legacy owner marker is unset or this uid | no (correctly) |
@@ -152,6 +153,7 @@ preferences are not restored either.
 | `<docs>/progress_photos/<uid>/scans/<id>.scan` | Guided body-scan record: photo ids and pose landmarks (body-shape data), one AES-GCM envelope per scan, **no plaintext index**; same key as the photos | yes (whole per-uid directory) | no |
 | `<docs>/scan_history/<uid>/<scanId>/` (`record.json`, `photo.jpg`) | the on-phone scan history (operator order 2026-10-14): per scan the resized JPEG that was sent to the recogniser, timestamp, source (camera/gallery/live), the model's raw reply, every candidate with its confidence and the user's optional OK/NOT OK rating, which machine was opened or chosen by hand, whether the cloud or the on-device fallback answered, app build/git sha. **Plaintext, app-private, never uploaded** (a stated limit: not encrypted at rest, because the operator must be able to export it readable). Capped at the newest 500 scans or 1 GiB, whichever first, **per account** (each uid has its own cap, so two accounts on one phone can each hold that much; the cap is not a device-wide limit); "Clear history" deletes it | yes (`DeviceLocalDataWipe`, whole per-uid directory, serialised through the live store so a scan still being saved cannot recreate it afterwards) | only by the user's own export action (one JSON + `photos/`, handed to the share sheet); not in the account export function |
 | `<temp>/scan_history_export/` (`scan_history.json`, `photos/*.jpg`) | the export copy made for the share sheet: **plaintext** photos and JSON, in the app's temp storage (not in the per-uid folder). Deleted right after the share call returns (success or failure), by "Clear history", by the next export, and by the account wipe. A stated limit: on Android the share target reads the file after the call returns, so a very large export may be cut short for the receiving app; the user can export again | yes (`DeviceLocalDataWipe` deletes the folder; "Clear history" too) | this IS the export |
+| `<support>/activity_journal/<scopeId>/{journal,sources,quarantine}` | local activity journal (routes, heart rate, laps), one scope per account; ON by default since S03-0 (`ACTIVITY_LOCAL_JOURNAL`, `activity_flags.dart`); `activity_journal` is excluded from Android backup and device transfer in `backup_rules.xml` and both sections of `data_extraction_rules.xml` (`domain="file"`) | yes (the account's scope, by `ActivityAwareLocalDataWipe`) | local export only |
 | `<temp>/` camera stills | **plaintext JPEG** of the shot just encrypted | **NO** (not in `local_data_wipe.dart`) | no |
 | `<docs>/offline_videos/` | cached exercise clips (catalogue content) | no | n/a |
 | `<docs>/<model asset path>` | ML model files unpacked by `AssetBootstrap` | no | n/a |
@@ -181,3 +183,30 @@ machine cards, recognition history, generated exercises, stats, donor entry,
 coach listing, coach bookings, equipment reports, debug telemetry — plus a
 recorded decision on photo bytes, which today are excluded by a comment in
 `data_export.dart:13-22` that the privacy policy does not repeat.
+
+## Body scan and nutrition coach additions (C25, 2026-10-15)
+
+CSV rows carry gate `C25`. Deleted = `recursiveDelete(users/{uid})` or the
+`sweepAccountData` Storage prefix delete (D-60). Exported = `exportAccountData`
+(`functions/src/account_export.ts`), newest first, paged by the app (D-61).
+
+| Store | Holds | Deleted | Exported |
+|---|---|---|---|
+| `users/{uid}/body_scans/*` | scan metadata, estimate, provider, `photosState`, weight, note | yes | yes, paged; no links, `photoLinksAvailable` only |
+| `users/{uid}/body_scan_settings/main` | cloud consent, retention days, reminder | yes | yes |
+| `users/{uid}/weight_entries/*` | daily body weight | yes | yes, paged |
+| `users/{uid}/nutrition_plan/main` | plan targets | yes | yes |
+| `users/{uid}/nutrition_plan_reviews/*` | weekly review decisions | yes | yes, paged |
+| `users/{uid}/food_entries/*` | diary entries | yes | yes, paged |
+| `users/{uid}/saved_foods/*` | saved foods | yes | yes, paged |
+| `nutrition_cache/{key}` | public nutrition-database responses | n/a (no user data) | n/a, EXEMPT |
+| `body_scan_purge_state/{id}` | purge cursor bookkeeping; transient `late_sweep_<hash>` records carry a uid for about 17 minutes under normal operation, retried every 5 minutes until deleted, no hard bound (server-only, deny-all to clients) | n/a (no user content; the uid-bearing record is deleted by the 5-minute late sweep) | n/a, EXEMPT |
+| Storage `<project>-bodyscan-private` `users/{uid}/scans/*` | face-blurred scan JPEGs, default retention 0 (deleted after analysis, within 48 hours worst case) | yes, prefix delete | metadata only; 1-hour links via `manageBodyScanData.exportLinks` |
+| Prefs `data_notice.v{N}.{uid}` | data notice acknowledgement | yes (device wipe) | no |
+| Prefs `progress_photos.scan_reminder.v1.{uid}` | reminder toggle | yes (device wipe) | no |
+| Prefs `profile.sensitive.{uid}` (`excludedFoods`) | device-only excluded foods | yes (device wipe) | yes, merged from the device by the client export |
+| `<docs>/progress_photos/{uid}/scans/`, `.../meals/` | encrypted scan sidecars, meal thumbnails | yes (directory wipe) | no (stay on the device) |
+
+Logging (D-67): the new quota actions are in `REDACTED_QUOTA_ACTIONS`, so
+their quota log lines carry no uid; continuation export pages use the
+`accountExportPage` counter. No analytics SDK receives photos or body metrics.

@@ -8,6 +8,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
+import '../activity/state/sign_out_guard.dart';
 import '../auth/data/auth_user.dart';
 import '../auth/state/auth_providers.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
@@ -275,7 +276,11 @@ class ProfilePage extends ConsumerWidget {
                   gradient: AppPalette.tileGradients[4],
                   title: AppLocalizations.of(context).profileSignOut,
                   subtitle: AppLocalizations.of(context).profileSeeYouSoon,
-                  onTap: () => ref.read(authActionProvider.notifier).signOut(),
+                  onTap: () async {
+                    if (await confirmSignOutWithLocalData(context, ref)) {
+                      await ref.read(authActionProvider.notifier).signOut();
+                    }
+                  },
                 ),
               ],
             ),

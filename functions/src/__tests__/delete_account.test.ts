@@ -136,12 +136,18 @@ jest.mock("firebase-admin", () => {
         update: (ref: any, data: any) => {
           pending.push({ op: "update", path: ref.path, data });
         },
+        // S02 fence write (`activity_account_state/{uid}`) uses tx.set; the
+        // fence is not part of the booking/sweep assertions, so it is not
+        // recorded in `txOps`.
+        set: (_ref: any, _data: any) => undefined,
         delete: (ref: any) => {
           pending.push({ op: "delete", path: ref.path });
         },
       };
       const result = await fn(tx);
-      await txCommit();
+      // The S02 fence transaction writes only via `set` (no pending ops); it is
+      // not a booking commit, so it must not count as one.
+      if (pending.length > 0) await txCommit();
       for (const p of pending) {
         txOps.push(p);
         const [col, id] = p.path.split("/");
@@ -189,6 +195,18 @@ jest.mock("firebase-functions/logger", () => ({
   error: jest.fn(),
 }));
 
+/**
+ * C12: `sweepAccountData` also deletes the user's objects in the private
+ * body-scan bucket (`BODY_SCAN_BUCKET`). Storage is modelled by `deleteFiles`
+ * only; the bucket name requested is recorded so the tests can prove which
+ * bucket the sweep addressed.
+ */
+const storageDeleteFiles = jest.fn(async (_opts?: unknown) => undefined as unknown);
+const storageBucket = jest.fn((_name?: string) => ({ deleteFiles: storageDeleteFiles }));
+jest.mock("firebase-admin/storage", () => ({
+  getStorage: jest.fn(() => ({ bucket: storageBucket })),
+}));
+
 import * as logger from "firebase-functions/logger";
 import { HttpsError } from "firebase-functions/v2/https";
 import { deleteAccount } from "../index";
@@ -224,6 +242,9 @@ beforeEach(() => {
   deleteUser.mockReset().mockResolvedValue(undefined);
   revokeRefreshTokens.mockReset().mockResolvedValue(undefined);
   cancel.mockReset().mockResolvedValue(undefined);
+  storageDeleteFiles.mockReset().mockResolvedValue(undefined);
+  storageBucket.mockClear();
+  delete process.env.BODY_SCAN_BUCKET;
   // Not-yet-canceled by default -- most tests exercise the ordinary path
   // where cancel() is actually expected to run. The idempotency tests below
   // override this per-case.
@@ -1255,5 +1276,139 @@ describe("deleteAccount journey: failure combinations a user can hit and retry",
     }
     // The final sweep comes strictly after deleteUser.
     expect(order.slice(order.indexOf("deleteUser") + 1).filter((o) => o.startsWith("sweep:"))).toHaveLength(3);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* C12: the private body-scan bucket is part of the account sweep      */
+/* ------------------------------------------------------------------ */
+
+describe("deleteAccount: body-scan storage sweep (C12, design s7.6, SD-6)", () => {
+  const BUCKET = "body-scan-test-bucket";
+  const fail = (code?: number | string): Error => Object.assign(new Error("gcs failure for users/u1/scans/x/front.jpg"), code === undefined ? {} : { code });
+  const errorLogs = (): string => JSON.stringify((logger.error as jest.Mock).mock.calls);
+
+  beforeEach(() => {
+    (logger.info as jest.Mock).mockClear();
+    (logger.error as jest.Mock).mockClear();
+  });
+
+  test("bucket unset: a logged no-op, storage is never touched and the deletion completes", async () => {
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(res).toEqual({ success: true, finalCleanup: "complete" });
+    expect(storageBucket).not.toHaveBeenCalled();
+    expect(storageDeleteFiles).not.toHaveBeenCalled();
+    const skipped = (logger.info as jest.Mock).mock.calls.filter(
+      (c) => c[0] === "body_scan_storage_sweep_skipped_unconfigured",
+    );
+    expect(skipped).toHaveLength(2); // the Step 2 sweep and the final sweep
+    expect(JSON.stringify(skipped)).not.toContain("u1");
+  });
+
+  test("a malformed bucket name counts as unset (a typo never points the purge elsewhere)", async () => {
+    process.env.BODY_SCAN_BUCKET = "Not A Bucket";
+    await deleteAccount.run(req({ uid: "u1" }));
+    expect(storageBucket).not.toHaveBeenCalled();
+  });
+
+  test("bucket set: deleteFiles({prefix: users/<uid>/, force: true}) on the configured bucket, in the Step 2 sweep AND the final sweep", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(res).toEqual({ success: true, finalCleanup: "complete" });
+    expect(storageBucket.mock.calls).toEqual([[BUCKET], [BUCKET]]);
+    expect(storageDeleteFiles.mock.calls).toEqual([
+      [{ prefix: "users/u1/", force: true }],
+      [{ prefix: "users/u1/", force: true }],
+    ]);
+  });
+
+  test("the prefix is built from the caller's uid only (a different uid addresses a different prefix)", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    await deleteAccount.run(req({ uid: "u2" }));
+    expect(storageDeleteFiles.mock.calls.map((c) => (c[0] as any).prefix)).toEqual(["users/u2/", "users/u2/"]);
+  });
+
+  test("storage runs LAST in each sweep: all three Firestore sweeps, then storage, then (second time) after deleteUser", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    const order: string[] = [];
+    recursiveDelete.mockImplementation(async (ref: any) => {
+      order.push(`sweep:${ref.path}`);
+    });
+    storageDeleteFiles.mockImplementation(async () => {
+      order.push("storage");
+      return undefined;
+    });
+    deleteUser.mockImplementation(async () => {
+      order.push("deleteUser");
+    });
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(order.map((o) => (o.startsWith("sweep:") ? "sweep" : o))).toEqual([
+      "sweep", "sweep", "sweep", "storage", "deleteUser", "sweep", "sweep", "sweep", "storage",
+    ]);
+  });
+
+  test.each([
+    ["a single 404 (bucket or object not found)", fail(404)],
+    ["an array of 404s (force: true reports every failure)", [fail(404), fail(404), fail(404)]],
+  ])("%s means nothing to delete: not an error", async (_name, rejection) => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockRejectedValue(rejection);
+
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(res).toEqual({ success: true, finalCleanup: "complete" });
+    expect(deleteUser).toHaveBeenCalledWith("u1");
+    expect(logger.error).not.toHaveBeenCalledWith("delete_account_final_sweep_failed", expect.anything());
+  });
+
+  test.each([
+    ["403 (IAM denied)", fail(403), "403"],
+    ["500", fail(500), "500"],
+    ["no code at all (network)", fail(), undefined],
+    ["a mixed array [404, 403]: one real failure is enough", [fail(404), fail(403)], "404"],
+    ["an array that starts with a real failure", [fail(403), fail(404)], "403"],
+  ])("Step 2: %s throws after the Firestore sweep ran, so the call fails BEFORE the Auth user is deleted and can be repeated", async (_name, rejection, _code) => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockRejectedValue(rejection);
+
+    const err = await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+
+    expect(err.message).toMatch(/some of your data could not be deleted/i);
+    expect(recursiveDelete).toHaveBeenCalledTimes(3); // Firestore was swept first
+    expect(deleteUser).not.toHaveBeenCalled();
+    expect(getRef("accountDeletionRetries/u1").set).not.toHaveBeenCalled(); // no intent record yet
+    // The logged error carries the sweep's generic message, never the SDK text with the object path.
+    expect(errorLogs()).not.toContain("front.jpg");
+    expect(errorLogs()).not.toContain("users/u1/scans");
+  });
+
+  test("final sweep: a 403 after the Auth user is gone -> finalCleanup scheduled and the retry record persists with the bare error code", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles
+      .mockResolvedValueOnce(undefined) // Step 2 sweep
+      .mockRejectedValueOnce(fail(403)); // final sweep
+
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(res).toEqual({ success: true, finalCleanup: "scheduled" });
+    expect(deleteUser).toHaveBeenCalledWith("u1");
+    expect(recursiveDelete).toHaveBeenCalledTimes(6); // Firestore finished in BOTH sweeps
+    const record = (await getRef("accountDeletionRetries/u1").get()).data();
+    expect(record).toMatchObject({ uid: "u1", status: "pending", attempts: 1, lastErrorCode: "403" });
+    expect(getRef("accountDeletionRetries/u1").delete).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith("delete_account_final_sweep_failed", expect.anything());
+    expect(JSON.stringify(record)).not.toContain("front.jpg");
+  });
+
+  test("final sweep: a 404 is not a failure, so the intent record is removed", async () => {
+    process.env.BODY_SCAN_BUCKET = BUCKET;
+    storageDeleteFiles.mockResolvedValueOnce(undefined).mockRejectedValueOnce([fail(404)]);
+    const res = await deleteAccount.run(req({ uid: "u1" }));
+    expect(res).toEqual({ success: true, finalCleanup: "complete" });
+    expect((await getRef("accountDeletionRetries/u1").get()).exists).toBe(false);
   });
 });

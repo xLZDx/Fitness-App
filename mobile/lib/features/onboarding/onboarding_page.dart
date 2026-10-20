@@ -8,6 +8,9 @@ import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+import '../modes/state/mode_providers.dart'
+    show InitSource, ModeSaveResult, modeStateProvider;
 import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
 import 'data/step_answered.dart';
@@ -17,6 +20,7 @@ import 'steps/step_equipment.dart';
 import 'steps/step_goal_and_level.dart';
 import 'steps/step_body.dart';
 import 'steps/step_lifestyle.dart';
+import 'steps/step_nutrition.dart';
 import 'steps/step_barriers.dart';
 import 'steps/step_personal.dart';
 import 'steps/step_preview.dart';
@@ -56,6 +60,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         return l10n.onbStepBarriers;
       case OnboardingStep.healthFlags:
         return l10n.healthStepTitle;
+      case OnboardingStep.nutrition:
+        return l10n.onbStepNutrition;
       case OnboardingStep.screening:
         return l10n.safetyScreeningTitle;
       case OnboardingStep.preview:
@@ -63,7 +69,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     }
   }
 
-  static Widget _widgetFor(OnboardingStep step) {
+  /// An instance method since the nutrition step: it links back to the personal
+  /// screen (which owns the target weight) and so needs this page's controller.
+  Widget _widgetFor(OnboardingStep step) {
     switch (step) {
       case OnboardingStep.personal:
         return const StepPersonal();
@@ -81,6 +89,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         return const StepBarriers();
       case OnboardingStep.healthFlags:
         return const StepHealthFlags();
+      case OnboardingStep.nutrition:
+        return StepNutrition(onEditTarget: _editTargetWeight);
       case OnboardingStep.screening:
         return const StepScreening();
       case OnboardingStep.preview:
@@ -126,6 +136,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     super.dispose();
   }
 
+  /// Link back from the nutrition step to the screen that owns the target
+  /// weight, so it is never asked twice.
+  void _editTargetWeight() {
+    final target = kOnboardingOrder.indexOf(OnboardingStep.personal);
+    if (target < 0 || !_ctrl.hasClients) return;
+    _ctrl.animateToPage(
+      target,
+      duration: context.hudMotionDuration(const Duration(milliseconds: 320)),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   Future<void> _next() async {
     // Read before the `await` below, not after: `context` is only safe to
     // touch synchronously, and `Duration.zero` makes `PageController`'s own
@@ -133,6 +155,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     // motion skips the page-turn, not the step change itself.
     final Duration duration =
         context.hudMotionDuration(const Duration(milliseconds: 320));
+    // Leaving the nutrition step with anything entered stamps the completion
+    // time once; a skipped step leaves it unset so the profile flow still offers it.
+    if (kOnboardingOrder[_index] == OnboardingStep.nutrition &&
+        isOnboardingStepAnswered(
+            OnboardingStep.nutrition, ref.read(questionnaireDraftProvider))) {
+      ref.read(questionnaireDraftProvider.notifier).markNutritionCompleted();
+    }
     // Persist whatever the user has so far before advancing or finishing.
     await ref.read(questionnaireDraftProvider.notifier).saveDraft();
     if (_index < _stepCount - 1) {
@@ -163,6 +192,21 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       );
       return;
     }
+    // S03 (RV-1): record the first chooser status before leaving onboarding.
+    // A no-op for /onboarding/edit (status already set). Never blocks '/home'.
+    try {
+      await ref.read(modeStateProvider.future);
+      if (!mounted || !context.mounted) return;
+      final result = await ref
+          .read(modeStateProvider.notifier)
+          .initIfAbsent(InitSource.onboarding);
+      if (result == ModeSaveResult.saveFailed) {
+        debugPrint('mode onboarding hook: save failed (code=save_failed)');
+      }
+    } catch (e) {
+      debugPrint('mode onboarding hook failed (${e.runtimeType})');
+    }
+    if (!mounted || !context.mounted) return;
     context.go('/home');
   }
 

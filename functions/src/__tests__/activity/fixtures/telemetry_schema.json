@@ -1,0 +1,28 @@
+{
+  "counterMax": 255,
+  "justified": [],
+  "maxEvents": 100,
+  "maxBatchBytes": 16384,
+  "topLevelKeys": ["events", "droppedCount"],
+  "top": {
+    "droppedCount": { "kind": "counter", "max": 255, "required": false }
+  },
+  "event": {
+    "type": { "kind": "enum", "values": ["log", "lifecycle", "error", "metric", "permission", "network"], "required": true },
+    "level": { "kind": "enum", "values": ["debug", "info", "warn", "error"], "required": true },
+    "component": {
+      "kind": "enum",
+      "values": ["app", "auth", "scanner", "camera", "catalog", "recognition", "workout", "nutrition", "activity", "sync", "export", "settings", "print", "other"],
+      "required": true
+    },
+    "code": {
+      "kind": "enum",
+      "values": ["none", "ok", "failed", "denied", "timeout", "unavailable", "cancelled", "fallback", "retry", "started", "stopped", "other"],
+      "required": false
+    },
+    "count": { "kind": "counter", "max": 255, "required": false },
+    "seq": { "kind": "counter", "max": 255, "required": false }
+  },
+  "serverDerived": ["identity", "uid", "receivedAt"],
+  "providers": ["password", "google", "apple", "phone", "custom", "other"]
+}

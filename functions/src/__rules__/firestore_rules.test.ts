@@ -35,6 +35,13 @@ import {
   collection,
   deleteDoc,
   updateDoc,
+  setDoc as rawSetDoc,
+  type DocumentData,
+  type DocumentReference,
+  deleteField,
+  getDocs,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 
 let env: RulesTestEnvironment;
@@ -508,7 +515,8 @@ describe("canary identity: no other grant applies to it (CR-05)", () => {
     await assertFails(
       addDoc(collection(asCanary(), "debug_sessions"), session(CANARY_UID)),
     );
-    await assertSucceeds(
+    // S02-09: no client can create a debug session any more (Admin callable only).
+    await assertFails(
       addDoc(collection(asAlice(), "debug_sessions"), session(ALICE)),
     );
   });
@@ -523,8 +531,8 @@ describe("canary identity: no other grant applies to it (CR-05)", () => {
 });
 
 describe("debug sessions", () => {
-  test("a signed-in user creates one stamped with their own uid", async () => {
-    await assertSucceeds(
+  test("a signed-in user can no longer create one, not even stamped with their own uid (S02-09)", async () => {
+    await assertFails(
       addDoc(collection(asAlice(), "debug_sessions"), session(ALICE)),
     );
   });
@@ -574,11 +582,11 @@ describe("debug sessions", () => {
         );
       });
 
-    test("exactly the buffer capacity is accepted", async () => {
-      // The ceiling mirrors `debug_telemetry.dart:141`, so a full, legitimate
-      // buffer must not be refused.
+    test("exactly the buffer capacity is refused too since clients cannot create (S02-09)", async () => {
+      // Formerly "accepted" (the ceiling mirrors `debug_telemetry.dart:141`);
+      // S02-09 moved the only writer to the sanitising callable.
       const full = Array.from({ length: 500 }, (_, i) => ({ m: i }));
-      await assertSucceeds(
+      await assertFails(
         addDoc(collection(asAlice(), "debug_sessions"), session(ALICE, full)),
       );
     });
@@ -1097,4 +1105,864 @@ describe("P1.G1: top-level catalog authority collections — server/admin only",
       );
     });
   }
+});
+
+/* ====================================================================== */
+/* E0 / C01: Body Scan + Nutrition Coach rules (T03)                       */
+/* RULES-01..11, 13, 17..20, PRIV-16, ONB-16, SAFE-19                      */
+/*                                                                         */
+/* Every case states its failing condition: an `assertFails` proves a rule */
+/* is closed, and each is paired with an `assertSucceeds` for the nearest  */
+/* valid input so a rule that simply denies everything cannot pass.        */
+/* ====================================================================== */
+
+describe("E0 body scan + nutrition rules", () => {
+  const T0 = Timestamp.fromDate(new Date("2026-10-15T08:00:00Z"));
+  const OLD = Timestamp.fromDate(new Date("2020-01-01T00:00:00Z"));
+  const CANARY = "canary-fixed-uid";
+  const asCan = () => env.authenticatedContext(CANARY, { canary: true }).firestore();
+
+  const put = (path: string, data: Record<string, unknown>) =>
+    env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), path), data);
+    });
+  const ref = (db: ReturnType<typeof asAlice>, path: string) => doc(db, path);
+  const u = (rest: string, uid = ALICE) => `users/${uid}/${rest}`;
+
+  /* ---------------- valid fixtures, one per new collection ---------------- */
+  const bodyScan = () => ({
+    schema: 1,
+    status: "done",
+    provider: "licensed-api",
+    weightKg: 80,
+    clientNote: "morning",
+    estimate: { bodyFatPct: 20 },
+    photosState: "stored",
+    photosExpireAt: T0,
+    isBaseline: false,
+    takenAt: T0,
+  });
+  const settings = () => ({ schema: 1, retentionDays: 90, paused: false });
+  const weightEntry = () => ({ kg: 80, at: T0, source: "manual" });
+  const plan = () => ({ status: "active", planVersion: 1, kcalRange: { low: 1800, high: 2100 }, stepsGoal: 8000 });
+  const review = () => ({ decision: "keep" });
+  const item = (name = "Oats") => ({ name, grams: 50 });
+  const rng = (v: number) => ({ low: v, mid: v, high: v });
+  const totals = () => ({ kcal: rng(500), proteinG: rng(20), carbsG: rng(60), fatG: rng(10) });
+  const foodEntry = () => ({
+    day: "2026-10-15",
+    slot: "breakfast",
+    loggedAt: T0,
+    name: "Porridge",
+    source: "manual",
+    items: [item()],
+    totals: totals(),
+  });
+  const savedFood = () => ({ name: "Oats", per100g: { kcal: 370, proteinG: 13, carbsG: 60, fatG: 7 } });
+
+  const COLLECTIONS: Array<{ coll: string; id: string; valid: () => Record<string, unknown> }> = [
+    { coll: "body_scans", id: "s1", valid: bodyScan },
+    { coll: "body_scan_settings", id: "main", valid: settings },
+    { coll: "weight_entries", id: "2026-10-15", valid: weightEntry },
+    { coll: "nutrition_plan", id: "main", valid: plan },
+    { coll: "nutrition_plan_reviews", id: "2026-W42", valid: review },
+    { coll: "food_entries", id: "e1", valid: foodEntry },
+    { coll: "saved_foods", id: "f1", valid: savedFood },
+  ];
+
+  /* ====================== RULES-01: body_scans read ====================== */
+  describe("body_scans read (RULES-01)", () => {
+    beforeEach(() => put(u("body_scans/s1"), bodyScan()));
+
+    test("owner reads their own scan", async () => {
+      await assertSucceeds(getDoc(ref(asAlice(), u("body_scans/s1"))));
+    });
+    test("another user, a signed-out caller and the canary identity are refused", async () => {
+      await assertFails(getDoc(ref(asBob(), u("body_scans/s1"))));
+      await assertFails(getDoc(ref(signedOut(), u("body_scans/s1"))));
+      await put(u("body_scans/s1", CANARY), bodyScan());
+      await assertFails(getDoc(ref(asCan(), u("body_scans/s1", CANARY))));
+    });
+  });
+
+  /* ================ RULES-02 / RULES-19: body_scans write ================ */
+  describe("body_scans write surface (RULES-02, RULES-19)", () => {
+    beforeEach(() => put(u("body_scans/s1"), bodyScan()));
+    const scan = () => ref(asAlice(), u("body_scans/s1"));
+
+    test("owner CREATE is refused, even with a perfectly valid document", async () => {
+      await assertFails(setDoc(ref(asAlice(), u("body_scans/new")), bodyScan()));
+      await assertFails(setDoc(ref(asAlice(), u("body_scans/new2")), { weightKg: 80 }));
+    });
+    test("owner DELETE is refused (the tombstone and purge rely on it)", async () => {
+      await assertFails(deleteDoc(scan()));
+    });
+    test.each([30, 300, 80.5, 123])("weightKg %p is accepted", async (kg) => {
+      await assertSucceeds(updateDoc(scan(), { weightKg: kg }));
+    });
+    test.each([29.9, 300.1, 0, -5, 10, 400])("weightKg %p is refused", async (kg) => {
+      await assertFails(updateDoc(scan(), { weightKg: kg }));
+    });
+    test("weightKg of the wrong type is refused", async () => {
+      await assertFails(updateDoc(scan(), { weightKg: "80" }));
+      await assertFails(updateDoc(scan(), { weightKg: null }));
+    });
+    test("weightKg cannot be removed", async () => {
+      await assertFails(updateDoc(scan(), { weightKg: deleteField() }));
+    });
+    test("clientNote of 200 characters is accepted, 201 is refused", async () => {
+      await assertSucceeds(updateDoc(scan(), { clientNote: "a".repeat(200) }));
+      await assertFails(updateDoc(scan(), { clientNote: "a".repeat(201) }));
+    });
+    test("clientNote of a non-string type is refused", async () => {
+      await assertFails(updateDoc(scan(), { clientNote: 5 }));
+    });
+    test("clientNote may be removed (RULES-19 defined removal)", async () => {
+      await assertSucceeds(updateDoc(scan(), { clientNote: deleteField() }));
+    });
+    test("an update touching only weightKg on a doc WITHOUT clientNote is accepted (no missing-key error)", async () => {
+      const noNote: Record<string, unknown> = bodyScan();
+      delete noNote.clientNote;
+      await put(u("body_scans/s2"), noNote);
+      await assertSucceeds(updateDoc(ref(asAlice(), u("body_scans/s2")), { weightKg: 81 }));
+    });
+    test("adding a clientNote to a doc that had none is accepted", async () => {
+      const noNote: Record<string, unknown> = bodyScan();
+      delete noNote.clientNote;
+      await put(u("body_scans/s3"), noNote);
+      await assertSucceeds(updateDoc(ref(asAlice(), u("body_scans/s3")), { clientNote: "hi" }));
+    });
+    test("weightKg and clientNote together are accepted", async () => {
+      await assertSucceeds(updateDoc(scan(), { weightKg: 79, clientNote: "after" }));
+    });
+
+    const FORBIDDEN: Array<[string, unknown]> = [
+      ["estimate", { bodyFatPct: 5 }],
+      ["status", "failed"],
+      ["provider", "forged"],
+      ["photosState", "deleted"],
+      ["photosExpireAt", Timestamp.fromDate(new Date("2099-01-01T00:00:00Z"))],
+      ["isBaseline", true],
+      ["takenAt", Timestamp.fromDate(new Date("2025-01-01T00:00:00Z"))],
+    ];
+    test.each(FORBIDDEN)("an update of %s alone is refused", async (key, value) => {
+      await assertFails(updateDoc(scan(), { [key]: value }));
+    });
+    test.each(FORBIDDEN)("a write mixing a valid weightKg with a forbidden %s is refused", async (key, value) => {
+      await assertFails(updateDoc(scan(), { weightKg: 81, [key]: value }));
+    });
+    test("removing a server-owned key is refused", async () => {
+      await assertFails(updateDoc(scan(), { estimate: deleteField() }));
+      await assertFails(updateDoc(scan(), { photosState: deleteField() }));
+    });
+    test("adding an unknown key is refused", async () => {
+      await assertFails(updateDoc(scan(), { extra: 1 }));
+    });
+    test("another user, signed-out and canary cannot edit", async () => {
+      await assertFails(updateDoc(ref(asBob(), u("body_scans/s1")), { weightKg: 81 }));
+      await assertFails(updateDoc(ref(signedOut(), u("body_scans/s1")), { weightKg: 81 }));
+      await put(u("body_scans/s1", CANARY), bodyScan());
+      await assertFails(updateDoc(ref(asCan(), u("body_scans/s1", CANARY)), { weightKg: 81 }));
+    });
+    test("update of a missing document is refused (no create through update)", async () => {
+      await assertFails(updateDoc(ref(asAlice(), u("body_scans/ghost")), { weightKg: 81 }));
+    });
+  });
+
+  /* ====================== RULES-03: weight_entries ====================== */
+  describe("weight_entries (RULES-03)", () => {
+    const w = (day: string) => ref(asAlice(), u(`weight_entries/${day}`));
+    test("a valid entry is accepted, read back by the owner, overwritten the same day, deleted", async () => {
+      await assertSucceeds(setDoc(w("2026-10-15"), weightEntry()));
+      await assertSucceeds(getDoc(w("2026-10-15")));
+      await assertSucceeds(setDoc(w("2026-10-15"), { ...weightEntry(), kg: 79 }));
+      await assertSucceeds(deleteDoc(w("2026-10-15")));
+    });
+    test("source 'scan' and an explicit schema int are accepted", async () => {
+      await assertSucceeds(setDoc(w("2026-10-16"), { ...weightEntry(), source: "scan", schema: 1 }));
+    });
+    test.each(["2026-1-5", "2026-10-5", "26-10-15", "2026-10-15x", "x2026-10-15", "2026/10/15", "20261015", "2026-10-155", ""])(
+      "day id %j is refused",
+      async (day) => {
+        if (day === "") return; // an empty id is not addressable in the SDK
+        await assertFails(setDoc(w(day), weightEntry()));
+      },
+    );
+    test.each([30, 300, 150, 80.25])("kg %p is accepted", async (kg) => {
+      await assertSucceeds(setDoc(w("2026-10-15"), { ...weightEntry(), kg }));
+    });
+    test.each([29.9, 300.1, 10, 400, 0, -1])("kg %p is refused", async (kg) => {
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), kg }));
+    });
+    test("kg of the wrong type is refused", async () => {
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), kg: "80" }));
+    });
+    test("an unknown key is refused", async () => {
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), note: "x" }));
+    });
+    test("source outside the enum is refused", async () => {
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), source: "x" }));
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), source: "Manual" }));
+    });
+    test.each(["kg", "at", "source"])("a missing required key %s is refused", async (key) => {
+      const d: Record<string, unknown> = weightEntry();
+      delete d[key];
+      await assertFails(setDoc(w("2026-10-15"), d));
+    });
+    test("`at` must be a timestamp", async () => {
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), at: "2026-10-15T08:00:00Z" }));
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), at: 1760515200000 }));
+    });
+    test("schema must be an int when present", async () => {
+      await assertFails(setDoc(w("2026-10-15"), { ...weightEntry(), schema: "1" }));
+    });
+    test("another user, signed-out and canary are refused on read and write", async () => {
+      await put(u("weight_entries/2026-10-15"), weightEntry());
+      await assertFails(getDoc(ref(asBob(), u("weight_entries/2026-10-15"))));
+      await assertFails(setDoc(ref(asBob(), u("weight_entries/2026-10-16")), weightEntry()));
+      await assertFails(deleteDoc(ref(asBob(), u("weight_entries/2026-10-15"))));
+      await assertFails(getDoc(ref(signedOut(), u("weight_entries/2026-10-15"))));
+      await assertFails(setDoc(ref(asCan(), u("weight_entries/2026-10-15", CANARY)), weightEntry()));
+    });
+  });
+
+  /* ======================= RULES-04 / 20: nutrition_plan ======================= */
+  describe("nutrition_plan (RULES-04, RULES-20, SAFE-19)", () => {
+    const p = (id = "main") => ref(asAlice(), u(`nutrition_plan/${id}`));
+    // The plan document is a singleton and a SECOND write to it is an update,
+    // which additionally needs planVersion + 1. To judge each shape rule on its own
+    // (and never let a refusal come from the version rule by accident), every
+    // write starts from an empty database unless the test sets `keep` after
+    // seeding. This local `setDoc` shadows the module one.
+    let keep = false;
+    beforeEach(() => {
+      keep = false;
+    });
+    const setDoc = async (r: DocumentReference<DocumentData>, d: DocumentData) => {
+      if (!keep) await env.clearFirestore();
+      return rawSetDoc(r, d);
+    };
+    const withPlan = (over: Record<string, unknown>) => ({ ...plan(), ...over });
+
+    test("a valid plan is accepted and read by its owner", async () => {
+      await assertSucceeds(setDoc(p(), plan()));
+      await assertSucceeds(getDoc(p()));
+    });
+    test("the full designed document shape is accepted", async () => {
+      await assertSucceeds(
+        setDoc(
+          p(),
+          withPlan({
+            schema: 1,
+            ownership: "coached",
+            goalDirection: "lose",
+            ratePctPerWeek: 0.5,
+            driftFromInitialKcal: -50,
+            kcalBounds: { min: 1500, max: 2500 },
+            autoAdjust: { steps: true, kcal: false },
+            protein: { minG: 128, targetG: 160, maxG: 176 },
+            fat: { minG: 48, maxG: 70 },
+            carbs: { minG: 100, maxG: 300 },
+            inputsDigest: { a: 1 },
+            computedAt: T0,
+            lastKcalAdjustAt: T0,
+            reviewUndo: { week: "2026-W42", prevKcalRange: { low: 1800, high: 2100 }, prevStepsGoal: 8000, prevDrift: 0, expiresAt: T0, undone: false },
+          }),
+        ),
+      );
+    });
+    test("status 'needsProfile' is accepted", async () => {
+      await assertSucceeds(setDoc(p(), withPlan({ status: "needsProfile" })));
+    });
+    test("status 'referProfessional' is refused (an ineligible verdict is never persisted, D-55)", async () => {
+      await assertFails(setDoc(p(), withPlan({ status: "referProfessional" })));
+    });
+    test.each(["bogus", "ACTIVE", "", 1, null])("status %p is refused", async (status) => {
+      await assertFails(setDoc(p(), withPlan({ status })));
+    });
+    test("kcalRange.low: 1200 accepted, 1199 refused", async () => {
+      await assertSucceeds(setDoc(p(), withPlan({ kcalRange: { low: 1200, high: 2100 } })));
+      await assertFails(setDoc(p(), withPlan({ kcalRange: { low: 1199, high: 2100 } })));
+    });
+    test("kcalRange.high: 6000 accepted, 6001 refused", async () => {
+      await assertSucceeds(setDoc(p(), withPlan({ kcalRange: { low: 1800, high: 6000 } })));
+      await assertFails(setDoc(p(), withPlan({ kcalRange: { low: 1800, high: 6001 } })));
+    });
+    test("kcalRange.high < low is refused, equal is accepted", async () => {
+      await assertFails(setDoc(p(), withPlan({ kcalRange: { low: 2100, high: 1800 } })));
+      await assertSucceeds(setDoc(p(), withPlan({ kcalRange: { low: 1800, high: 1800 } })));
+    });
+    test("kcalRange values must be ints and the map has no other key", async () => {
+      await assertFails(setDoc(p(), withPlan({ kcalRange: { low: 1800.5, high: 2100 } })));
+      await assertFails(setDoc(p(), withPlan({ kcalRange: { low: 1800, high: 2100, mid: 1950 } })));
+      await assertFails(setDoc(p(), withPlan({ kcalRange: { low: "1800", high: 2100 } })));
+    });
+    test("stepsGoal: 2000 and 30000 accepted, 1999 and 30001 refused", async () => {
+      await assertSucceeds(setDoc(p(), withPlan({ stepsGoal: 2000 })));
+      await assertSucceeds(setDoc(p(), withPlan({ stepsGoal: 30000 })));
+      await assertFails(setDoc(p(), withPlan({ stepsGoal: 1999 })));
+      await assertFails(setDoc(p(), withPlan({ stepsGoal: 30001 })));
+      await assertFails(setDoc(p(), withPlan({ stepsGoal: 8000.5 })));
+    });
+    test("docId other than 'main' is refused", async () => {
+      await assertFails(setDoc(p("other"), plan()));
+      await assertFails(setDoc(p("Main"), plan()));
+    });
+    test("an unknown key is refused", async () => {
+      await assertFails(setDoc(p(), withPlan({ bonus: 1 })));
+    });
+    test("ownership and goalDirection enums", async () => {
+      for (const v of ["coached", "shared", "manual"]) await assertSucceeds(setDoc(p(), withPlan({ ownership: v })));
+      await assertFails(setDoc(p(), withPlan({ ownership: "x" })));
+      for (const v of ["lose", "maintain", "gain"]) await assertSucceeds(setDoc(p(), withPlan({ goalDirection: v })));
+      await assertFails(setDoc(p(), withPlan({ goalDirection: "bulk" })));
+    });
+    test("planVersion must be an int >= 1; status and planVersion are required", async () => {
+      await assertFails(setDoc(p(), withPlan({ planVersion: 0 })));
+      await assertFails(setDoc(p(), withPlan({ planVersion: 1.5 })));
+      await assertFails(setDoc(p(), withPlan({ planVersion: "1" })));
+      await assertFails(setDoc(p(), { planVersion: 1, kcalRange: { low: 1800, high: 2100 } }));
+      await assertFails(setDoc(p(), { status: "active", kcalRange: { low: 1800, high: 2100 } }));
+    });
+    test("macro grams: 1000 accepted, 1001 and negatives refused; macro maps take no extra key", async () => {
+      await assertSucceeds(setDoc(p(), withPlan({ protein: { minG: 0, targetG: 1000, maxG: 1000 } })));
+      await assertFails(setDoc(p(), withPlan({ protein: { minG: 0, targetG: 1001, maxG: 1000 } })));
+      await assertFails(setDoc(p(), withPlan({ protein: { minG: -1, targetG: 10, maxG: 10 } })));
+      await assertFails(setDoc(p(), withPlan({ fat: { minG: 48, maxG: 70, targetG: 60 } })));
+      await assertFails(setDoc(p(), withPlan({ carbs: { minG: 1.5, maxG: 70 } })));
+    });
+    test("nested maps reject unknown keys (kcalBounds, autoAdjust, reviewUndo) and oversized digests", async () => {
+      await assertFails(setDoc(p(), withPlan({ kcalBounds: { min: 1500, max: 2500, x: 1 } })));
+      await assertFails(setDoc(p(), withPlan({ autoAdjust: { steps: true, kcal: true, x: 1 } })));
+      await assertFails(setDoc(p(), withPlan({ reviewUndo: { week: "2026-W42", extra: 1 } })));
+      const big: Record<string, number> = {};
+      for (let i = 0; i < 13; i++) big[`k${i}`] = i;
+      await assertFails(setDoc(p(), withPlan({ inputsDigest: big })));
+      const ok: Record<string, number> = {};
+      for (let i = 0; i < 12; i++) ok[`k${i}`] = i;
+      await assertSucceeds(setDoc(p(), withPlan({ inputsDigest: ok })));
+    });
+    test("an update must carry exactly planVersion + 1", async () => {
+      keep = true;
+      await put(u("nutrition_plan/main"), plan());
+      await assertFails(setDoc(p(), withPlan({ planVersion: 1 })));
+      await assertFails(setDoc(p(), withPlan({ planVersion: 3 })));
+      await assertFails(setDoc(p(), withPlan({ planVersion: 0 })));
+      await assertSucceeds(setDoc(p(), withPlan({ planVersion: 2 })));
+    });
+    test("delete by the owner is accepted", async () => {
+      await put(u("nutrition_plan/main"), plan());
+      await assertSucceeds(deleteDoc(p()));
+    });
+    test("another user, signed-out and canary are refused", async () => {
+      keep = true;
+      await put(u("nutrition_plan/main"), plan());
+      await assertFails(getDoc(ref(asBob(), u("nutrition_plan/main"))));
+      await assertFails(setDoc(ref(asBob(), u("nutrition_plan/main")), withPlan({ planVersion: 2 })));
+      await assertFails(deleteDoc(ref(asBob(), u("nutrition_plan/main"))));
+      await assertFails(getDoc(ref(signedOut(), u("nutrition_plan/main"))));
+      await assertFails(setDoc(ref(asCan(), u("nutrition_plan/main", CANARY)), plan()));
+    });
+  });
+
+  /* ==================== RULES-05 / 20: nutrition_plan_reviews ==================== */
+  describe("nutrition_plan_reviews (RULES-05, RULES-20, SAFE-19)", () => {
+    const r = (week = "2026-W42") => ref(asAlice(), u(`nutrition_plan_reviews/${week}`));
+    test("create is accepted; update is refused (immutable); delete is accepted", async () => {
+      await assertSucceeds(setDoc(r(), review()));
+      await assertFails(setDoc(r(), { decision: "adjustKcal", deltaKcal: -100 }));
+      await assertFails(updateDoc(r(), { deltaKcal: -100 }));
+      await assertSucceeds(deleteDoc(r()));
+    });
+    test("every legal decision is accepted", async () => {
+      for (const decision of ["keep", "adjustKcal", "adjustSteps", "needMoreData", "needRecalculation"]) {
+        await assertSucceeds(setDoc(r(`2026-W${10 + ["keep", "adjustKcal", "adjustSteps", "needMoreData", "needRecalculation"].indexOf(decision)}`), { decision }));
+      }
+    });
+    test("decision outside the enum is refused, including 'referProfessional'", async () => {
+      await assertFails(setDoc(r(), { decision: "referProfessional" }));
+      await assertFails(setDoc(r(), { decision: "bogus" }));
+      await assertFails(setDoc(r(), { decision: 1 }));
+      await assertFails(setDoc(r(), {}));
+    });
+    test.each(["2026-W5", "2026-w05", "2026-05", "26-W05", "2026-W050", "2026-W5x", "2026W05"])("week id %j is refused", async (week) => {
+      await assertFails(setDoc(r(week), review()));
+    });
+    test("week id 2026-W53 matches the pattern (53-week year)", async () => {
+      await assertSucceeds(setDoc(r("2026-W53"), review()));
+    });
+    test("reasonCodes: 8 accepted, 9 refused", async () => {
+      const codes = (n: number) => Array.from({ length: n }, (_, i) => `code_${i}`);
+      await assertSucceeds(setDoc(r("2026-W01"), { decision: "keep", reasonCodes: codes(8) }));
+      await assertFails(setDoc(r("2026-W02"), { decision: "keep", reasonCodes: codes(9) }));
+    });
+    test("reasonCodes elements must be strings of at most 40 characters (checked at every index)", async () => {
+      await assertSucceeds(setDoc(r("2026-W03"), { decision: "keep", reasonCodes: ["a".repeat(40)] }));
+      await assertFails(setDoc(r("2026-W04"), { decision: "keep", reasonCodes: ["a".repeat(41)] }));
+      await assertFails(setDoc(r("2026-W06"), { decision: "keep", reasonCodes: [1] }));
+      await assertFails(setDoc(r("2026-W07"), { decision: "keep", reasonCodes: ["ok", "ok", "ok", "ok", "ok", "ok", "ok", "a".repeat(41)] }));
+      await assertFails(setDoc(r("2026-W08"), { decision: "keep", reasonCodes: "keep" }));
+    });
+    test("basePlanVersion, deltas and inputs have type checks; unknown keys refused", async () => {
+      await assertSucceeds(setDoc(r("2026-W09"), { decision: "adjustKcal", basePlanVersion: 3, deltaKcal: -100, deltaSteps: 500, inputs: { a: 1 }, decidedAt: T0, schema: 1 }));
+      await assertFails(setDoc(r("2026-W11"), { decision: "keep", basePlanVersion: "3" }));
+      await assertFails(setDoc(r("2026-W12"), { decision: "keep", deltaKcal: 1.5 }));
+      await assertFails(setDoc(r("2026-W13"), { decision: "keep", inputs: "x" }));
+      await assertFails(setDoc(r("2026-W14"), { decision: "keep", extra: 1 }));
+    });
+    test("another user, signed-out and canary are refused", async () => {
+      await put(u("nutrition_plan_reviews/2026-W42"), review());
+      await assertFails(getDoc(ref(asBob(), u("nutrition_plan_reviews/2026-W42"))));
+      await assertFails(setDoc(ref(asBob(), u("nutrition_plan_reviews/2026-W43")), review()));
+      await assertFails(deleteDoc(ref(asBob(), u("nutrition_plan_reviews/2026-W42"))));
+      await assertFails(getDoc(ref(signedOut(), u("nutrition_plan_reviews/2026-W42"))));
+      await assertFails(setDoc(ref(asCan(), u("nutrition_plan_reviews/2026-W42", CANARY)), review()));
+    });
+  });
+
+  /* ========================= RULES-06 / 19: food_entries ========================= */
+  describe("food_entries (RULES-06, RULES-19)", () => {
+    const f = (id = "e1") => ref(asAlice(), u(`food_entries/${id}`));
+    const withEntry = (over: Record<string, unknown>) => ({ ...foodEntry(), ...over });
+    const items = (n: number) => Array.from({ length: n }, (_, i) => item(`Item ${i}`));
+
+    test("a valid entry is accepted, read, updated and deleted by the owner", async () => {
+      await assertSucceeds(setDoc(f(), foodEntry()));
+      await assertSucceeds(getDoc(f()));
+      await assertSucceeds(setDoc(f(), withEntry({ name: "Porridge 2" })));
+      await assertSucceeds(deleteDoc(f()));
+    });
+    test("the full designed shape (confidence, checkThese, model, schema) is accepted", async () => {
+      await assertSucceeds(setDoc(f(), withEntry({ schema: 1, confidence: "medium", checkThese: ["portion"], model: { v: 1 }, source: "photo" })));
+    });
+    test("items: 1 and 30 accepted, 0 and 31 refused", async () => {
+      await assertSucceeds(setDoc(f("a"), withEntry({ items: items(1) })));
+      await assertSucceeds(setDoc(f("b"), withEntry({ items: items(30) })));
+      await assertFails(setDoc(f("c"), withEntry({ items: [] })));
+      await assertFails(setDoc(f("d"), withEntry({ items: items(31) })));
+    });
+    test("items must be a list", async () => {
+      await assertFails(setDoc(f(), withEntry({ items: { name: "x" } })));
+      await assertFails(setDoc(f(), withEntry({ items: "x" })));
+    });
+    test("every item is checked in all three index groups (index 0, 12, 25 and 29)", async () => {
+      for (const bad of [0, 12, 25, 29]) {
+        const list = items(30);
+        (list as unknown[])[bad] = "not a map";
+        await assertFails(setDoc(f(`bad-${bad}`), withEntry({ items: list })));
+      }
+      for (const bad of [0, 12, 25, 29]) {
+        const list = items(30);
+        list[bad] = item("n".repeat(81));
+        await assertFails(setDoc(f(`long-${bad}`), withEntry({ items: list })));
+      }
+      const noName = items(30);
+      (noName as unknown[])[25] = { grams: 5 };
+      await assertFails(setDoc(f("noname"), withEntry({ items: noName })));
+      const ok = items(30);
+      ok[29] = item("n".repeat(80));
+      await assertSucceeds(setDoc(f("edge"), withEntry({ items: ok })));
+    });
+    test("entry name: 80 accepted, 81 refused", async () => {
+      await assertSucceeds(setDoc(f("a"), withEntry({ name: "n".repeat(80) })));
+      await assertFails(setDoc(f("b"), withEntry({ name: "n".repeat(81) })));
+    });
+    test("unknown slot, source and confidence are refused; every legal one is accepted", async () => {
+      for (const slot of ["breakfast", "lunch", "dinner", "snack"]) await assertSucceeds(setDoc(f(`s-${slot}`), withEntry({ slot })));
+      for (const source of ["photo", "describe", "search", "barcode", "label", "manual"]) await assertSucceeds(setDoc(f(`o-${source}`), withEntry({ source })));
+      await assertFails(setDoc(f("x1"), withEntry({ slot: "brunch" })));
+      await assertFails(setDoc(f("x2"), withEntry({ source: "voice" })));
+      await assertFails(setDoc(f("x3"), withEntry({ confidence: "certain" })));
+    });
+    test("an unknown key is refused", async () => {
+      await assertFails(setDoc(f(), withEntry({ extra: 1 })));
+    });
+    test("checkThese: 8 accepted, 9 refused; must be a list", async () => {
+      await assertSucceeds(setDoc(f("a"), withEntry({ checkThese: Array(8).fill("c") })));
+      await assertFails(setDoc(f("b"), withEntry({ checkThese: Array(9).fill("c") })));
+      await assertFails(setDoc(f("c"), withEntry({ checkThese: "portion" })));
+    });
+    test("totals missing any key is refused", async () => {
+      for (const key of ["kcal", "proteinG", "carbsG", "fatG"]) {
+        const t: Record<string, unknown> = totals();
+        delete t[key];
+        await assertFails(setDoc(f(`m-${key}`), withEntry({ totals: t })));
+      }
+      await assertFails(setDoc(f("none"), (() => { const d: Record<string, unknown> = foodEntry(); delete d.totals; return d; })()));
+    });
+    test("totals: ranges 0 and 100000 accepted, negative, 100001 and an extra key refused", async () => {
+      await assertSucceeds(setDoc(f("a"), withEntry({ totals: { ...totals(), kcal: { low: 0, mid: 0, high: 100000 } } })));
+      await assertFails(setDoc(f("b"), withEntry({ totals: { ...totals(), kcal: { low: -1, mid: 0, high: 10 } } })));
+      await assertFails(setDoc(f("c"), withEntry({ totals: { ...totals(), kcal: { low: 0, mid: 0, high: 100001 } } })));
+      await assertFails(setDoc(f("d"), withEntry({ totals: { ...totals(), sugarG: rng(1) } })));
+      await assertFails(setDoc(f("e"), withEntry({ totals: { ...totals(), kcal: { low: 1, mid: 2 } } })));
+      await assertFails(setDoc(f("f"), withEntry({ totals: { ...totals(), kcal: { low: 1, mid: 2, high: 3, extra: 4 } } })));
+      // The range must be ordered low <= mid <= high (one comparison chain bounds all three).
+      await assertFails(setDoc(f("g"), withEntry({ totals: { ...totals(), kcal: { low: 600, mid: 500, high: 700 } } })));
+      await assertFails(setDoc(f("h"), withEntry({ totals: { ...totals(), kcal: { low: 400, mid: 700, high: 600 } } })));
+      await assertFails(setDoc(f("i"), withEntry({ totals: { ...totals(), kcal: { low: "1", mid: 2, high: 3 } } })));
+    });
+    test("day format and loggedAt type are enforced; required keys are required", async () => {
+      await assertFails(setDoc(f("a"), withEntry({ day: "2026-10-5" })));
+      await assertFails(setDoc(f("b"), withEntry({ day: 20261015 })));
+      await assertFails(setDoc(f("c"), withEntry({ loggedAt: "2026-10-15" })));
+      for (const key of ["day", "slot", "loggedAt", "name", "source", "items", "totals"]) {
+        const d: Record<string, unknown> = foodEntry();
+        delete d[key];
+        await assertFails(setDoc(f(`req-${key}`), d));
+      }
+    });
+    test("another user, signed-out and canary are refused", async () => {
+      await put(u("food_entries/e1"), foodEntry());
+      await assertFails(getDoc(ref(asBob(), u("food_entries/e1"))));
+      await assertFails(setDoc(ref(asBob(), u("food_entries/e2")), foodEntry()));
+      await assertFails(deleteDoc(ref(asBob(), u("food_entries/e1"))));
+      await assertFails(getDoc(ref(signedOut(), u("food_entries/e1"))));
+      await assertFails(setDoc(ref(asCan(), u("food_entries/e1", CANARY)), foodEntry()));
+    });
+  });
+
+  /* ============================ RULES-10: saved_foods ============================ */
+  describe("saved_foods (RULES-10)", () => {
+    const s = (id = "f1") => ref(asAlice(), u(`saved_foods/${id}`));
+    test("a valid saved food is accepted, read, updated and deleted", async () => {
+      await assertSucceeds(setDoc(s(), savedFood()));
+      await assertSucceeds(getDoc(s()));
+      await assertSucceeds(setDoc(s(), { ...savedFood(), servingG: 40, barcode: "3017620422003", createdAt: T0, schema: 1 }));
+      await assertSucceeds(deleteDoc(s()));
+    });
+    test("name: 80 accepted, 81 refused", async () => {
+      await assertSucceeds(setDoc(s("a"), { ...savedFood(), name: "n".repeat(80) }));
+      await assertFails(setDoc(s("b"), { ...savedFood(), name: "n".repeat(81) }));
+    });
+    test("per100g values: 1000 and 0 accepted, 1001 and -1 refused (every macro)", async () => {
+      for (const key of ["kcal", "proteinG", "carbsG", "fatG"]) {
+        await assertSucceeds(setDoc(s(`ok-${key}`), { ...savedFood(), per100g: { ...savedFood().per100g, [key]: 1000 } }));
+        await assertSucceeds(setDoc(s(`zero-${key}`), { ...savedFood(), per100g: { ...savedFood().per100g, [key]: 0 } }));
+        await assertFails(setDoc(s(`hi-${key}`), { ...savedFood(), per100g: { ...savedFood().per100g, [key]: 1001 } }));
+        await assertFails(setDoc(s(`neg-${key}`), { ...savedFood(), per100g: { ...savedFood().per100g, [key]: -1 } }));
+      }
+    });
+    test("per100g with an unknown key or a non-map is refused; name and per100g are required", async () => {
+      await assertFails(setDoc(s("a"), { ...savedFood(), per100g: { ...savedFood().per100g, sugarG: 1 } }));
+      await assertFails(setDoc(s("b"), { ...savedFood(), per100g: 5 }));
+      await assertFails(setDoc(s("c"), { per100g: savedFood().per100g }));
+      await assertFails(setDoc(s("d"), { name: "Oats" }));
+    });
+    test("an unknown key is refused; servingG, barcode and createdAt are bounded", async () => {
+      await assertFails(setDoc(s("a"), { ...savedFood(), extra: 1 }));
+      await assertFails(setDoc(s("b"), { ...savedFood(), servingG: 100001 }));
+      await assertFails(setDoc(s("c"), { ...savedFood(), barcode: "9".repeat(33) }));
+      await assertSucceeds(setDoc(s("d"), { ...savedFood(), barcode: "9".repeat(32) }));
+      await assertFails(setDoc(s("e"), { ...savedFood(), createdAt: "now" }));
+    });
+    test("another user, signed-out and canary are refused", async () => {
+      await put(u("saved_foods/f1"), savedFood());
+      await assertFails(getDoc(ref(asBob(), u("saved_foods/f1"))));
+      await assertFails(setDoc(ref(asBob(), u("saved_foods/f2")), savedFood()));
+      await assertFails(deleteDoc(ref(asBob(), u("saved_foods/f1"))));
+      await assertFails(getDoc(ref(signedOut(), u("saved_foods/f1"))));
+      await assertFails(setDoc(ref(asCan(), u("saved_foods/f1", CANARY)), savedFood()));
+    });
+  });
+
+  /* ================== RULES-07 / RULES-17: body_scan_settings ================== */
+  describe("body_scan_settings (RULES-07)", () => {
+    const s = (id = "main") => ref(asAlice(), u(`body_scan_settings/${id}`));
+    test("a valid settings document is accepted, read and deleted", async () => {
+      await assertSucceeds(setDoc(s(), settings()));
+      await assertSucceeds(getDoc(s()));
+      await assertSucceeds(deleteDoc(s()));
+    });
+    test.each([0, 30, 90, 365])("retentionDays %p is accepted", async (retentionDays) => {
+      await assertSucceeds(setDoc(s(), { ...settings(), retentionDays }));
+    });
+    test.each([7, 1, 29, 91, 366, -1, "90", 90.5])("retentionDays %p is refused", async (retentionDays) => {
+      await assertFails(setDoc(s(), { ...settings(), retentionDays }));
+    });
+    test("reminder weekday: 1 and 7 accepted, 0 and 8 refused; minutes 0 and 1439 accepted, 1440 and -1 refused", async () => {
+      const rem = (r: Record<string, unknown>) => ({ ...settings(), reminder: r });
+      await assertSucceeds(setDoc(s(), rem({ enabled: true, weekday: 1, minutes: 0 })));
+      await assertSucceeds(setDoc(s(), rem({ enabled: false, weekday: 7, minutes: 1439 })));
+      await assertFails(setDoc(s(), rem({ weekday: 0 })));
+      await assertFails(setDoc(s(), rem({ weekday: 8 })));
+      await assertFails(setDoc(s(), rem({ minutes: 1440 })));
+      await assertFails(setDoc(s(), rem({ minutes: -1 })));
+      await assertFails(setDoc(s(), rem({ weekday: 2.5 })));
+      await assertFails(setDoc(s(), rem({ enabled: "yes" })));
+      await assertFails(setDoc(s(), rem({ extra: 1 })));
+      await assertFails(setDoc(s(), { ...settings(), reminder: "weekly" }));
+    });
+    test("paused must be a bool; docId must be 'main'; unknown key refused", async () => {
+      await assertSucceeds(setDoc(s(), { ...settings(), paused: true }));
+      await assertFails(setDoc(s(), { ...settings(), paused: "true" }));
+      await assertFails(setDoc(s("other"), settings()));
+      await assertFails(setDoc(s(), { ...settings(), extra: 1 }));
+      await assertFails(setDoc(s(), { ...settings(), schema: "1" }));
+    });
+    test("another user, signed-out and canary are refused", async () => {
+      await put(u("body_scan_settings/main"), settings());
+      await assertFails(getDoc(ref(asBob(), u("body_scan_settings/main"))));
+      await assertFails(setDoc(ref(asBob(), u("body_scan_settings/main")), settings()));
+      await assertFails(deleteDoc(ref(asBob(), u("body_scan_settings/main"))));
+      await assertFails(getDoc(ref(signedOut(), u("body_scan_settings/main"))));
+      await assertFails(setDoc(ref(asCan(), u("body_scan_settings/main", CANARY)), settings()));
+    });
+
+    describe("cloudConsent (RULES-17, D-56)", () => {
+      const consent = (version: number, acceptedAt: unknown) => ({ cloudConsent: { version, acceptedAt } });
+      test("a NEW consent stamped with the server time is accepted", async () => {
+        await assertSucceeds(setDoc(s(), { ...settings(), ...consent(1, serverTimestamp()) }));
+      });
+      test("a new consent carrying an old (forged) timestamp is refused", async () => {
+        await assertFails(setDoc(s(), { ...settings(), ...consent(1, OLD) }));
+      });
+      test("a consent whose acceptedAt is not a timestamp is refused", async () => {
+        await assertFails(setDoc(s(), { ...settings(), ...consent(1, "now") }));
+        await assertFails(setDoc(s(), { ...settings(), ...consent(1, null) }));
+      });
+      test("an UNCHANGED consent carried by a later retention/reminder write is accepted (even with the old timestamp)", async () => {
+        await put(u("body_scan_settings/main"), { ...settings(), ...consent(1, OLD) });
+        await assertSucceeds(setDoc(s(), { ...settings(), retentionDays: 30, ...consent(1, OLD) }));
+        await assertSucceeds(setDoc(s(), { ...settings(), paused: true, reminder: { enabled: true, weekday: 7, minutes: 480 }, ...consent(1, OLD) }));
+      });
+      test("a changed VERSION carrying the old timestamp is refused", async () => {
+        await put(u("body_scan_settings/main"), { ...settings(), ...consent(1, OLD) });
+        await assertFails(setDoc(s(), { ...settings(), ...consent(2, OLD) }));
+      });
+      test("a version bump stamped with the server time is accepted", async () => {
+        await put(u("body_scan_settings/main"), { ...settings(), ...consent(1, OLD) });
+        await assertSucceeds(setDoc(s(), { ...settings(), ...consent(2, serverTimestamp()) }));
+      });
+      test("re-accepting the same version with a fresh server timestamp is accepted", async () => {
+        await put(u("body_scan_settings/main"), { ...settings(), ...consent(2, OLD) });
+        await assertSucceeds(setDoc(s(), { ...settings(), ...consent(2, serverTimestamp()) }));
+      });
+      test("a version DECREASE is refused even with a fresh timestamp", async () => {
+        await put(u("body_scan_settings/main"), { ...settings(), ...consent(2, OLD) });
+        await assertFails(setDoc(s(), { ...settings(), ...consent(1, serverTimestamp()) }));
+      });
+      test("version 0, a non-int version and an unknown consent key are refused", async () => {
+        await assertFails(setDoc(s(), { ...settings(), ...consent(0, serverTimestamp()) }));
+        await assertFails(setDoc(s(), { ...settings(), ...consent("1" as unknown as number, serverTimestamp()) }));
+        await assertFails(setDoc(s(), { ...settings(), cloudConsent: { version: 1, acceptedAt: serverTimestamp(), extra: 1 } }));
+        await assertFails(setDoc(s(), { ...settings(), cloudConsent: { version: 1 } }));
+        await assertFails(setDoc(s(), { ...settings(), cloudConsent: "yes" }));
+      });
+      test("WITHDRAWAL (the key removed) is accepted and means no consent", async () => {
+        await put(u("body_scan_settings/main"), { ...settings(), ...consent(1, OLD) });
+        await assertSucceeds(setDoc(s(), settings()));
+        await assertSucceeds(updateDoc(s(), { cloudConsent: deleteField() }));
+      });
+      test("a settings write with no consent on either side is accepted", async () => {
+        await put(u("body_scan_settings/main"), settings());
+        await assertSucceeds(setDoc(s(), { ...settings(), retentionDays: 365 }));
+      });
+      test("giving consent when the stored document had none requires the server time", async () => {
+        await put(u("body_scan_settings/main"), settings());
+        await assertFails(setDoc(s(), { ...settings(), ...consent(1, OLD) }));
+        await assertSucceeds(setDoc(s(), { ...settings(), ...consent(1, serverTimestamp()) }));
+      });
+    });
+  });
+
+  /* ==================== RULES-08 / 18 / 19: profile writes ==================== */
+  describe("profile: nutrition health flags and the nutrition map (RULES-08, RULES-18, RULES-19, PRIV-16, ONB-16)", () => {
+    const prof = () => ref(asAlice(), u("profile/main"));
+    const health = (flags: Record<string, unknown>) => ({
+      conditions: [],
+      allergies: [],
+      medications: [],
+      injuries: [],
+      physicalLimitations: [],
+      recentSurgeries: [],
+      bloodPressure: null,
+      otherConcerns: null,
+      screening: {},
+      flags: { restrictions: [], bloodPressure: null, surgery: null, clinicianAdvice: null, professionalGuidance: null, ...flags },
+    });
+    const legacyFlags = () => ({ restrictions: [], bloodPressure: null, surgery: null, clinicianAdvice: null, professionalGuidance: null });
+
+    test("the LEGACY five-key flags shape is still accepted (old client / new rules rollout)", async () => {
+      await assertSucceeds(setDoc(prof(), { health: { ...health({}), flags: legacyFlags() } }));
+    });
+    test("a profile with no nutrition key and no new flag keys is accepted", async () => {
+      await assertSucceeds(setDoc(prof(), { goal: "strength" }));
+    });
+    test("nutritionGuidance = 'reported' is refused (device-only health answer)", async () => {
+      await assertFails(setDoc(prof(), { health: health({ nutritionGuidance: "reported" }) }));
+    });
+    test("foodAllergens ['peanuts'] is refused", async () => {
+      await assertFails(setDoc(prof(), { health: health({ foodAllergens: ["peanuts"] }) }));
+    });
+    test("both new keys empty are accepted: null, [] and the absent form", async () => {
+      await assertSucceeds(setDoc(prof(), { health: health({ nutritionGuidance: null, foodAllergens: [] }) }));
+      await assertSucceeds(setDoc(prof(), { health: health({ nutritionGuidance: null, foodAllergens: null }) }));
+      await assertSucceeds(setDoc(prof(), { health: health({ foodAllergens: [] }) }));
+    });
+    test("a non-null nutritionGuidance of any value is refused; an empty-string-ish allergen list element is refused", async () => {
+      for (const v of ["none", "", "clear", false, 0]) {
+        await assertFails(setDoc(prof(), { health: health({ nutritionGuidance: v }) }));
+      }
+      await assertFails(setDoc(prof(), { health: health({ foodAllergens: [""] }) }));
+    });
+    test("an unknown key inside flags is still refused", async () => {
+      await assertFails(setDoc(prof(), { health: health({ dietaryDiagnosis: "x" }) }));
+    });
+    test("a patch (update) cannot smuggle the new health answers either", async () => {
+      await put(u("profile/main"), { health: health({}) });
+      await assertFails(updateDoc(prof(), { "health.flags": { ...legacyFlags(), nutritionGuidance: "reported" } }));
+      await assertFails(updateDoc(prof(), { "health.flags": { ...legacyFlags(), foodAllergens: ["milk"] } }));
+      await assertSucceeds(updateDoc(prof(), { "health.flags": { ...legacyFlags(), nutritionGuidance: null, foodAllergens: [] } }));
+    });
+
+    const nutrition = (over: Record<string, unknown> = {}) => ({
+      schema: 1,
+      sexAtBirth: "female",
+      goalDirection: "lose",
+      targetBodyFatPct: 22.5,
+      typicalDailySteps: 8000,
+      mealsPerDay: 3,
+      planOwnership: "coached",
+      healthConnectChoice: "granted",
+      completedAt: T0,
+      ...over,
+    });
+    test("a valid nutrition map is accepted", async () => {
+      await assertSucceeds(setDoc(prof(), { nutrition: nutrition() }));
+    });
+    test("nutrition: null and a map of explicit nulls are accepted (serializer tolerance)", async () => {
+      await assertSucceeds(setDoc(prof(), { nutrition: null }));
+      await assertSucceeds(
+        setDoc(prof(), { nutrition: { sexAtBirth: null, goalDirection: null, planOwnership: null, mealsPerDay: null, targetBodyFatPct: null, typicalDailySteps: null } }),
+      );
+    });
+    test("an empty nutrition map is accepted", async () => {
+      await assertSucceeds(setDoc(prof(), { nutrition: {} }));
+    });
+    test("a nutrition map with an unknown key is refused", async () => {
+      await assertFails(setDoc(prof(), { nutrition: nutrition({ bonus: 1 }) }));
+    });
+    test("excludedFoods in the server nutrition map is refused (device-only, D-55)", async () => {
+      await assertFails(setDoc(prof(), { nutrition: nutrition({ excludedFoods: ["peanuts"] }) }));
+      await assertFails(setDoc(prof(), { nutrition: nutrition({ excludedFoods: [] }) }));
+    });
+    test("nutrition that is not a map is refused", async () => {
+      await assertFails(setDoc(prof(), { nutrition: "x" }));
+      await assertFails(setDoc(prof(), { nutrition: ["a"] }));
+      await assertFails(setDoc(prof(), { nutrition: 5 }));
+    });
+    test("sexAtBirth / goalDirection / planOwnership enums", async () => {
+      for (const v of ["female", "male", "unspecified"]) await assertSucceeds(setDoc(prof(), { nutrition: nutrition({ sexAtBirth: v }) }));
+      await assertFails(setDoc(prof(), { nutrition: nutrition({ sexAtBirth: "other" }) }));
+      for (const v of ["lose", "maintain", "gain"]) await assertSucceeds(setDoc(prof(), { nutrition: nutrition({ goalDirection: v }) }));
+      await assertFails(setDoc(prof(), { nutrition: nutrition({ goalDirection: "bulk" }) }));
+      for (const v of ["coached", "shared", "manual"]) await assertSucceeds(setDoc(prof(), { nutrition: nutrition({ planOwnership: v }) }));
+      await assertFails(setDoc(prof(), { nutrition: nutrition({ planOwnership: "auto" }) }));
+    });
+    test("mealsPerDay: 2 and 6 accepted; -1, 0, 1, 7 and 3.5 refused (RULES-19)", async () => {
+      for (const v of [2, 3, 6]) await assertSucceeds(setDoc(prof(), { nutrition: nutrition({ mealsPerDay: v }) }));
+      for (const v of [-1, 0, 1, 7, 3.5, "3"]) await assertFails(setDoc(prof(), { nutrition: nutrition({ mealsPerDay: v }) }));
+    });
+    test("targetBodyFatPct: 5 and 60 accepted; 4.9 and 60.1 refused", async () => {
+      for (const v of [5, 60, 22.5]) await assertSucceeds(setDoc(prof(), { nutrition: nutrition({ targetBodyFatPct: v }) }));
+      for (const v of [4.9, 60.1, 0, -1, "20"]) await assertFails(setDoc(prof(), { nutrition: nutrition({ targetBodyFatPct: v }) }));
+    });
+    test("typicalDailySteps: 0 and 100000 accepted; -1 and 100001 refused", async () => {
+      for (const v of [0, 100000]) await assertSucceeds(setDoc(prof(), { nutrition: nutrition({ typicalDailySteps: v }) }));
+      for (const v of [-1, 100001, 8000.5]) await assertFails(setDoc(prof(), { nutrition: nutrition({ typicalDailySteps: v }) }));
+    });
+    test("the new keys do not weaken the existing health refusals", async () => {
+      await assertFails(setDoc(prof(), { health: { ...health({}), conditions: ["asthma"] }, nutrition: nutrition() }));
+      await assertSucceeds(setDoc(prof(), { health: health({}), nutrition: nutrition() }));
+    });
+  });
+
+  /* ================= RULES-09 / 11 / 13: carve-out proofs ================= */
+  describe("wildcard carve-out proof (RULES-09) and canary (RULES-13)", () => {
+    test.each(COLLECTIONS.map((c) => [c.coll, c.id] as [string, string]))(
+      "%s: a write that satisfies only the generic wildcard shape is refused (the explicit block is not dead)",
+      async (coll, id) => {
+        // `{ x: 1 }` is what the wildcard would have accepted from the owner.
+        await assertFails(setDoc(ref(asAlice(), u(`${coll}/${id}`)), { x: 1 }));
+        await assertFails(setDoc(ref(asAlice(), u(`${coll}/wildcard-probe`)), { x: 1 }));
+      },
+    );
+
+    test("body_scans: an UPDATE through the generic wildcard shape is refused on an existing scan", async () => {
+      await put(u("body_scans/s1"), bodyScan());
+      await assertFails(updateDoc(ref(asAlice(), u("body_scans/s1")), { x: 1 }));
+      await assertFails(setDoc(ref(asAlice(), u("body_scans/s1")), { x: 1 }));
+    });
+
+    test.each(COLLECTIONS.map((c) => [c.coll, c.id] as [string, string]))(
+      "%s: nested sub-paths fall out of the wildcard entirely (read and write refused for the owner)",
+      async (coll, id) => {
+        await put(u(`${coll}/${id}/sub/deep`), { x: 1 });
+        await assertFails(getDoc(ref(asAlice(), u(`${coll}/${id}/sub/deep`))));
+        await assertFails(setDoc(ref(asAlice(), u(`${coll}/${id}/sub/deep`)), { x: 1 }));
+      },
+    );
+
+    test("a sibling collection that is NOT carved out still works through the wildcard (the carve-out list is not over-broad)", async () => {
+      await assertSucceeds(setDoc(ref(asAlice(), u("workout_logs/l1")), { reps: 8 }));
+      await assertSucceeds(setDoc(ref(asAlice(), u("body_scans_archive/a1")), { x: 1 }));
+      await assertSucceeds(setDoc(ref(asAlice(), u("food_entries_old/a1")), { x: 1 }));
+    });
+
+    test.each(COLLECTIONS.map((c) => [c.coll, c.id] as [string, string]))(
+      "%s: the canary identity gets NOTHING (read and write refused) while the owner succeeds",
+      async (coll, id) => {
+        const valid = COLLECTIONS.find((c) => c.coll === coll)!.valid();
+        await put(u(`${coll}/${id}`, CANARY), valid);
+        await put(u(`${coll}/${id}`), valid);
+        await assertSucceeds(getDoc(ref(asAlice(), u(`${coll}/${id}`))));
+        await assertFails(getDoc(ref(asCan(), u(`${coll}/${id}`, CANARY))));
+        if (coll === "body_scans") {
+          await assertFails(updateDoc(ref(asCan(), u(`${coll}/${id}`, CANARY)), { weightKg: 81 }));
+        } else {
+          await assertFails(setDoc(ref(asCan(), u(`${coll}/${id}`, CANARY)), valid));
+          await assertFails(deleteDoc(ref(asCan(), u(`${coll}/${id}`, CANARY))));
+        }
+      },
+    );
+
+    test.each(COLLECTIONS.map((c) => [c.coll, c.id] as [string, string]))(
+      "%s: another user cannot read or write the owner's document",
+      async (coll, id) => {
+        const valid = COLLECTIONS.find((c) => c.coll === coll)!.valid();
+        await put(u(`${coll}/${id}`), valid);
+        await assertFails(getDoc(ref(asBob(), u(`${coll}/${id}`))));
+        await assertFails(setDoc(ref(asBob(), u(`${coll}/${id}`)), valid));
+        await assertFails(deleteDoc(ref(asBob(), u(`${coll}/${id}`))));
+        await assertFails(getDoc(ref(signedOut(), u(`${coll}/${id}`))));
+      },
+    );
+
+    test("the owner gets a successful valid write on every collection except body_scans (positive control)", async () => {
+      for (const c of COLLECTIONS.filter((x) => x.coll !== "body_scans")) {
+        await assertSucceeds(setDoc(ref(asAlice(), u(`${c.coll}/${c.id}`)), c.valid()));
+      }
+    });
+  });
+
+  /* ======================= RULES-11 / 20: server-only top level ======================= */
+  describe("nutrition_cache and body_scan_purge_state are server-only (RULES-11, RULES-20)", () => {
+    const paths = ["nutrition_cache/off_3017620422003", "nutrition_cache/budget_off_read_202610151407", "body_scan_purge_state/sweep"];
+    test.each(paths)("%s: owner, other user, signed-out and canary are refused on read and write", async (path) => {
+      await put(path, { count: 1 });
+      for (const db of [asAlice(), asBob(), signedOut(), asCan()]) {
+        await assertFails(getDoc(ref(db, path)));
+        await assertFails(setDoc(ref(db, path), { count: 99 }));
+        await assertFails(updateDoc(ref(db, path), { count: 99 }));
+        await assertFails(deleteDoc(ref(db, path)));
+      }
+    });
+    test.each(paths)("%s: the server (rules bypass) can still write it", async (path) => {
+      await assertSucceeds(put(path, { count: 1 }));
+    });
+    test("a collection-level read of nutrition_cache is refused too", async () => {
+      await assertFails(getDocs(collection(asAlice(), "nutrition_cache")));
+    });
+  });
 });

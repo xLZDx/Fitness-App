@@ -57,6 +57,12 @@ dependencies:
   health: ^11.0.0
   google_mlkit_pose_detection: ^0.14.0
   camera: ^0.11.0+2
+  # C24 barcode scanning (BSD-3-Clause), wrapped by state/barcode_port.dart.
+  # ^6.0.11 and not the 7.x line the design named: 7.x requires Flutter 3.29,
+  # the installed toolchain is Flutter 3.27.1 / Dart 3.6.0 (6.0.x needs 3.24).
+  # The Android `dev.steenbakker.mobile_scanner.useUnbundled` flag is left at
+  # its default until the on-device VERIFY is recorded (change record C24).
+  mobile_scanner: ^6.0.11
   image: ^4.3.0
   speech_to_text: ^7.0.0
   flutter_tts: ^4.2.2
@@ -94,6 +100,15 @@ dependencies:
   firebase_crashlytics: ^5.2.0
   firebase_app_check: ^0.4.3
   flutter_secure_storage: ^10.3.1
+  # S04 GPS recorder (design D-1 option A). Imported ONLY by
+  # lib/features/recording/location/geolocator_location_source.dart (import
+  # guard, S04-01). ^13.0.4 and not the 14.x line the study read: 14.x was not
+  # confirmed against the installed Flutter 3.27.1 / Dart 3.6.0 (same trap as
+  # mobile_scanner above) and `flutter pub get` was not run in this lane, so
+  # pubspec.lock is NOT updated. The plugin merges its location and
+  # foreground-service manifest entries into every build; android/app/
+  # build.gradle strips them unless GPS_RECORDER=true.
+  geolocator: ^13.0.4
 
 dev_dependencies:
   flutter_test:
@@ -148,6 +163,10 @@ flutter:
     # Anatomical muscle chart, front and back. CC BY 4.0 — credited on the
     # /licences screen, which is a condition of shipping it.
     - assets/anatomy/
+    # Bundled generic food table (C21): generic_foods_v1.json is built by
+    # scripts/nutrition/build_generic_foods.py from USDA FDC (CC0 1.0);
+    # generic_foods_ru.json holds own-authored Russian display names.
+    - assets/nutrition/
     # One still per clip, per body: the frame half a second in. Bundled rather
     # than hosted so the demo has something to show INSTANTLY and with no
     # network at all — the operator's report was that a clip loads in seconds

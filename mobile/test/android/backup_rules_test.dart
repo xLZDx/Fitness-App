@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fitness_app/features/activity/repository/journal_layout.dart';
 import 'package:fitness_app/features/scanner/history/scan_history_store.dart'
     show kScanHistoryDir;
 import 'package:flutter_test/flutter_test.dart';
@@ -17,13 +18,19 @@ import 'package:flutter_test/flutter_test.dart';
 //
 // Paths are relative to the package root (`flutter test` cwd = mobile/).
 
-const _expected = {
+// S02-02 (GPS-PRIV-083): the activity journal directories are excluded in every
+// section as well, so each section now carries the five earlier entries (photos,
+// scan history and three preference files) plus the four of
+// androidBackupExclusions() (journal, sources, quarantine and the scoped root
+// activity_journal), nine in all.
+final _expected = <String>{
   'root|app_flutter/progress_photos',
   // The on-phone scan history (scanned photos, raw answers, ratings).
   'root|app_flutter/scan_history',
   'sharedpref|FlutterSharedPreferences.xml',
   'sharedpref|FlutterSecureStorage.xml',
   'sharedpref|FlutterSecureKeyStorage.xml',
+  ...androidBackupExclusions(),
 };
 
 String _read(String path) => File(path).readAsStringSync();
@@ -61,12 +68,12 @@ void main() {
     _expectExactly(_excludes(xml, 'full-backup-content'), 'full-backup-content');
   });
 
-  test('data_extraction_rules.xml cloud-backup excludes the same five', () {
+  test('data_extraction_rules.xml cloud-backup excludes the same nine', () {
     final xml = _read('$res/data_extraction_rules.xml');
     _expectExactly(_excludes(xml, 'cloud-backup'), 'cloud-backup');
   });
 
-  test('data_extraction_rules.xml device-transfer excludes the same five', () {
+  test('data_extraction_rules.xml device-transfer excludes the same nine', () {
     final xml = _read('$res/data_extraction_rules.xml');
     _expectExactly(_excludes(xml, 'device-transfer'), 'device-transfer');
   });
@@ -101,7 +108,7 @@ void main() {
     // FlutterSecureKeyStorage.xml are plugin implementation details. When one
     // of these versions changes, this test fails on purpose so a human
     // re-checks the on-device file names against the exclusion lists.
-    final lock = _read('pubspec.lock');
+    final lock = _read('pubspec.lock').replaceAll('\r\n', '\n');
     String versionOf(String pkg) {
       final m = RegExp('^  $pkg:\\n(?:    .*\\n)*?    version: "([^"]+)"',
               multiLine: true)

@@ -65,3 +65,21 @@ ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-
 # actually deleted here is the debt -- the standing claim of an unresolved
 # credential exposure pending operator action, which was not true.
 2fed5a7c48cdd45852f41fe10eea189f658734bd:core/DECISION_LOG.md:generic-api-key:22121
+
+# S02 (activity journal): a fake test value, not a credential.
+#
+# Reviewed by hand 2026-10-16 (operator decision: fix the false positive).
+#   1. The flagged line declares a constant in a unit test that checks no raw
+#      user id reaches a log line. Its name contained the word "secret" and
+#      its value was a made-up user-id marker ending in 7f3a91; it is not a
+#      credential and grants access to nothing.
+#   2. The test now calls the constant `sentinel` and uses a marker that no
+#      rule matches.
+#
+# The entry stays because gitleaks scans the FULL history and commit 2791285a
+# is immutable. The rule id (generic-api-key: variable name with "secret" and
+# a value with entropy 3.85, above the 3.5 default) and the line number (264,
+# read with git show at that commit) are inferred, not taken from a scanner
+# run; if the next secrets job still reports this commit, copy the exact
+# fingerprint from its output.
+2791285a79e9fe28a07585205a2ebd8bdedb49dd:mobile/test/features/activity/repository/activity_journal_binding_retry_test.dart:generic-api-key:264

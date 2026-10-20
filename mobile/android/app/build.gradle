@@ -1,3 +1,15 @@
+import com.android.build.api.artifact.SingleArtifact
+import groovy.xml.XmlNodePrinter
+import groovy.xml.XmlParser
+import java.util.function.Function
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
@@ -179,6 +191,121 @@ android {
                 : signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+// S04 (lane R2, design 2.4, decision D-17 option B, X8): the location and
+// foreground-service manifest entries exist only in a build with
+// GPS_RECORDER=true (`--dart-define=GPS_RECORDER=true`, or `-PGPS_RECORDER=true`
+// to inspect the merged manifest without a Dart build).
+//
+// WHY A POST-MERGE GATE AND NOT REMOVAL MARKERS IN THE MAIN MANIFEST: the
+// geolocator plugin merges its own permissions and service into EVERY build,
+// and `tools:node="remove"` in the main manifest is unconditional, so it cannot
+// be switched off again for a flag-on build. A transform of the merged manifest
+// is the one place where the flag can decide, and it also catches any entry a
+// future plugin version injects.
+//   flag off: every location / foreground-service entry is removed.
+//   flag on : the entries stay, and the build FAILS if the plugin did not merge
+//             the approved set (permissions plus one `location` service). That
+//             failure is the design's trigger for the own-Kotlin-service
+//             fallback (design 2.3), not something to patch around.
+//   always  : ACCESS_BACKGROUND_LOCATION is removed (S04-18 default branch:
+//             background location is not requested; Play form not needed).
+def decodeDartDefines = {
+    def result = [:]
+    if (project.hasProperty('dart-defines')) {
+        project.property('dart-defines').toString().split(',').each { encoded ->
+            if (encoded) {
+                def pair = new String(encoded.decodeBase64(), 'UTF-8').split('=', 2)
+                result[pair[0]] = pair.length > 1 ? pair[1] : ''
+            }
+        }
+    }
+    return result
+}
+def gpsRecorderEnabled = (
+    project.hasProperty('GPS_RECORDER')
+        ? project.property('GPS_RECORDER').toString()
+        : decodeDartDefines().get('GPS_RECORDER', 'false')
+).equalsIgnoreCase('true')
+
+abstract class GpsManifestGateTask extends DefaultTask {
+    @InputFile
+    abstract RegularFileProperty getMergedManifest()
+
+    @OutputFile
+    abstract RegularFileProperty getUpdatedManifest()
+
+    @Input
+    abstract Property<Boolean> getGpsRecorder()
+
+    @TaskAction
+    void gate() {
+        def androidName = 'android:name'
+        def typeAttr = 'android:foregroundServiceType'
+        def locationPermissions = [
+            'android.permission.ACCESS_FINE_LOCATION',
+            'android.permission.ACCESS_COARSE_LOCATION',
+            'android.permission.FOREGROUND_SERVICE',
+            'android.permission.FOREGROUND_SERVICE_LOCATION',
+        ]
+        def backgroundPermission = 'android.permission.ACCESS_BACKGROUND_LOCATION'
+
+        // Non-namespace-aware, so attributes keep their literal `android:` prefix.
+        def root = new XmlParser(false, false).parse(mergedManifest.get().asFile)
+        def isPermissionNode = { n ->
+            n.name() == 'uses-permission' || n.name() == 'uses-permission-sdk-23'
+        }
+        def isLocationService = { n ->
+            n.name() == 'service' &&
+                ((n.attribute(typeAttr) ?: '').contains('location') ||
+                 (n.attribute(androidName) ?: '').contains('GeolocatorLocationService'))
+        }
+
+        // Always: background location is never declared in S04.
+        root.children().findAll {
+            it instanceof Node && isPermissionNode(it) && it.attribute(androidName) == backgroundPermission
+        }.each { root.remove(it) }
+
+        def app = root.application[0]
+        if (!gpsRecorder.get()) {
+            root.children().findAll {
+                it instanceof Node && isPermissionNode(it) && locationPermissions.contains(it.attribute(androidName))
+            }.each { root.remove(it) }
+            if (app != null) {
+                app.children().findAll { it instanceof Node && isLocationService(it) }.each { app.remove(it) }
+            }
+        } else {
+            def declared = root.children().findAll { it instanceof Node && isPermissionNode(it) }
+                .collect { it.attribute(androidName) } as Set
+            def missing = locationPermissions.findAll { !declared.contains(it) }
+            def hasService = app != null && app.children().any { it instanceof Node && isLocationService(it) }
+            if (!missing.isEmpty() || !hasService) {
+                throw new GradleException(
+                    'GPS_RECORDER=true but the merged manifest lacks the approved location set. ' +
+                    "Missing permissions: ${missing}; location foreground service present: ${hasService}. " +
+                    'Per S04 design 2.3 this triggers the own-Kotlin-service fallback (lane R2); ' +
+                    'do not add the entries by hand to the main manifest.')
+            }
+        }
+
+        updatedManifest.get().asFile.withWriter('UTF-8') { w ->
+            new XmlNodePrinter(new PrintWriter(w)).print(root)
+        }
+    }
+}
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def gate = project.tasks.register("${variant.name}GpsManifestGate", GpsManifestGateTask) {
+            it.gpsRecorder.set(gpsRecorderEnabled)
+        }
+        variant.artifacts.use(gate)
+            .wiredWithFiles(
+                { t -> t.mergedManifest } as Function,
+                { t -> t.updatedManifest } as Function)
+            .toTransform(SingleArtifact.MERGED_MANIFEST.INSTANCE)
     }
 }
 

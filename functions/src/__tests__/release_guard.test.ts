@@ -19,7 +19,25 @@ import {
   AI_CALLABLES,
   RELEASE_EVIDENCE_PATH,
   EXPECTED_PROJECT_ID,
+  LEGACY_PROJECT_ID,
+  PHASE2_ALIAS,
+  FIREBASERC_PATH,
+  DEPLOY_LINE_REASONS,
+  classifyDeployLine,
+  resolveDeployTarget,
+  checkDeployTarget,
+  PROTECTED_PHASE1_REFS,
+  PROJECT_RESOLUTION_REASONS,
+  GUARD_COMMAND_MARKER,
+  GUARD_COMMAND,
+  PROJECT_ID_PATTERN,
+  CHECK_NAME,
+  parseDeployArgs,
+  resolveEffectiveProject,
+  findUnguardedDeployTargets,
 } from "../release_guard";
+import * as fs from "fs";
+import * as path from "path";
 import {
   aiGatewayCallsMetricJson,
   aiGatewayLatencyMetricJson,
@@ -29,6 +47,14 @@ import {
 
 const PROJECT = EXPECTED_PROJECT_ID;
 const RUNTIME_SA = `fn-ai-runtime@${PROJECT}.iam.gserviceaccount.com`;
+const PHASE2_PROJECT = "fitness-app-phase2-test";
+
+const DEFAULT_FIREBASERC = JSON.stringify({
+  projects: { default: EXPECTED_PROJECT_ID, "legacy-shared": LEGACY_PROJECT_ID },
+});
+function firebasercWith(projects: Record<string, unknown>): string {
+  return JSON.stringify({ projects });
+}
 
 const HEALTHY_EVIDENCE = JSON.stringify({
   step8KillSwitch: { status: "closed" },
@@ -120,6 +146,8 @@ const AI_SOURCE_PATHS: Record<string, string> = {
   aiEquipmentRecognition: "functions/src/ai_equipment_recognition.ts",
   aiMachineDescription: "functions/src/ai_machine_description.ts",
   aiExerciseGeneration: "functions/src/ai_exercise_generation.ts",
+  analyzeMealPhoto: "functions/src/analyze_meal_photo.ts",
+  parseNutritionLabel: "functions/src/parse_nutrition_label.ts",
 };
 const SCALING_PATH = "functions/src/scaling.ts";
 
@@ -131,11 +159,25 @@ function makeDeps(opts: {
   git?: Partial<Record<string, CommandHandler>>;
   evidence?: string | null;
   sourceOverrides?: Partial<Record<string, string | null>>;
+  /** Branch returned by `currentBranch`; default is a phase1 branch. */
+  branch?: string | null;
+  /** When set, `currentBranch` rejects with this error. */
+  branchThrows?: Error;
+  /** Override for `isCommitOnProtectedLine`; default resolves `true` (HEAD is on the protected line). */
+  isCommitOnProtectedLine?: () => Promise<boolean>;
+  /** Content of `.firebaserc`; `null` = file missing. Default: production + legacy aliases only. */
+  firebaserc?: string | null;
 }): ReleaseGuardDeps {
   return {
     project: opts.project ?? PROJECT,
     now: () => Date.parse("2026-08-29T12:00:00.000Z"),
+    currentBranch: async () => {
+      if (opts.branchThrows) throw opts.branchThrows;
+      return opts.branch === undefined ? "phase1/main" : opts.branch;
+    },
+    isCommitOnProtectedLine: opts.isCommitOnProtectedLine ?? (async () => true),
     readFile: async (path: string) => {
+      if (path === FIREBASERC_PATH) return opts.firebaserc === undefined ? DEFAULT_FIREBASERC : opts.firebaserc;
       if (path === RELEASE_EVIDENCE_PATH) return opts.evidence === undefined ? HEALTHY_EVIDENCE : opts.evidence;
       if (opts.sourceOverrides && path in opts.sourceOverrides) return opts.sourceOverrides[path] ?? null;
       if (path === SCALING_PATH) return HEALTHY_SCALING_SOURCE;
@@ -203,6 +245,20 @@ const KILL_SWITCH_CHECK = "Step 8 kill switch secret exists with genuinely read-
 const OBSERVABILITY_CHECK = "AI Gateway observability metrics exist, match source, and are producing";
 const S23_CHECK = "S23 production Play Integrity proof gates an AI-enabled release";
 const PROVENANCE_CHECK = "Release comes from a clean, committed working tree";
+
+/** Review fix C: when the deploy-target check does not pass it is reported FIRST, and the other nine checks are
+ * UNAVAILABLE "not run" (no gcloud / git-state command was issued). Asserts that exact shape. */
+function expectBlockedByTargetOnly(result: Awaited<ReturnType<typeof runReleaseGuard>>, slug: string): void {
+  expect(result.verdict).toBe("BLOCK");
+  expect(result.checks).toHaveLength(10);
+  expect(result.checks[0].name).toBe(DEPLOY_TARGET_CHECK);
+  expect(result.checks[0].status).toBe("FAILED");
+  expect(result.checks[0].detail.split(":")[0]).toBe(slug);
+  for (const c of result.checks.slice(1)) {
+    expect(c.status).toBe("UNAVAILABLE");
+    expect(c.detail).toBe("not run: the deploy-target check did not pass, so no command was run against this project");
+  }
+}
 
 describe("runReleaseGuard", () => {
   test("PASS when every invariant genuinely holds", async () => {
@@ -432,7 +488,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    const check = byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables");
+    const check = byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables");
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("aiEquipmentRecognition");
   });
@@ -451,7 +507,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("OK");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("OK");
   });
 
   test("App Check OK when APP_CHECK_ENFORCED_AI is off but APP_CHECK_ENFORCED covers it", async () => {
@@ -471,7 +527,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("OK");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("OK");
   });
 
   test("anonymous-refusal FAILED when AI_ALLOW_ANONYMOUS=true on any callable", async () => {
@@ -486,7 +542,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
-    const check = byName(result, "Anonymous callers are refused on all 4 AI callables");
+    const check = byName(result, "Anonymous callers are refused on all 6 AI callables");
     expect(check.status).toBe("FAILED");
     expect(check.detail).toContain("aiMachineDescription");
   });
@@ -495,8 +551,8 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     const result = await runReleaseGuard(
       makeDeps({ gcloud: { "describe:aiExerciseGeneration": () => ({ ok: false, stdout: "", stderr: "not found" }) } }),
     );
-    expect(byName(result, "App Check enforcement is on (fail-closed) for all 4 AI callables").status).toBe("UNAVAILABLE");
-    expect(byName(result, "Anonymous callers are refused on all 4 AI callables").status).toBe("UNAVAILABLE");
+    expect(byName(result, "App Check enforcement is on (fail-closed) for all 6 AI callables").status).toBe("UNAVAILABLE");
+    expect(byName(result, "Anonymous callers are refused on all 6 AI callables").status).toBe("UNAVAILABLE");
   });
 
   test("kill switch FAILED when fn-ai-runtime lacks secretAccessor entirely", async () => {
@@ -844,9 +900,12 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
         },
       }),
     );
+    // Review fix A: with an unreadable/absent firebase.json the FIXED list is used; it now also names the
+    // other files `firebase deploy` reads (rules, indexes, storage rules, hosting public dir). Still scoped, never the whole repo.
     expect(capturedArgs).toEqual([
       "status",
       "--porcelain",
+      "--ignored=matching",
       "--",
       "functions",
       "functions-equipment-identity",
@@ -854,6 +913,10 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
       ".firebaserc",
       ".gitignore",
       RELEASE_EVIDENCE_PATH,
+      "firestore.rules",
+      "firestore.indexes.json",
+      "storage.rules",
+      "public",
     ]);
     expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
   });
@@ -909,5 +972,2323 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     );
     expect(result.checks.filter((c) => c.status === "OK")).toHaveLength(9);
     expect(result.verdict).toBe("BLOCK");
+  });
+});
+
+describe("deploy line classification (S00 backend separation gate)", () => {
+  test.each([
+    ["phase2/s00-split-docs", "phase2"],
+    ["phase2/x", "phase2"],
+    ["  phase2/padded  ", "phase2"],
+    ["phase1/main", "phase1"],
+    ["master", "phase1"],
+    ["phase1/x", "phase1"],
+    ["phase1/hotfix/deep", "phase1"],
+    ["feature/x", "other"],
+    ["main", "other"],
+    ["HEAD", "other"],
+    ["", "other"],
+    ["   ", "other"],
+    ["phase2", "other"],
+    ["phase1", "other"],
+    ["Phase2/x", "other"],
+    ["release/phase2/x", "other"],
+    [null, "other"],
+  ] as const)("classifyDeployLine(%j) = %s", (branch, expected) => {
+    expect(classifyDeployLine(branch)).toBe(expected);
+  });
+
+  test("DEPLOY_LINE_REASONS is exactly the closed set of seven slugs", () => {
+    expect([...DEPLOY_LINE_REASONS]).toEqual([
+      "deploy-line-unknown",
+      "phase1-wrong-project",
+      "firebaserc-unreadable",
+      "phase2-alias-missing",
+      "phase2-targets-production",
+      "phase2-project-mismatch",
+      "phase1-provenance-unverified",
+    ]);
+  });
+
+  test("PROJECT_RESOLUTION_REASONS is exactly the closed set of three slugs", () => {
+    expect([...PROJECT_RESOLUTION_REASONS]).toEqual(["project-undeterminable", "project-conflict", "project-invalid"]);
+  });
+
+  test("PROTECTED_PHASE1_REFS names exactly the two protected remote-tracking refs", () => {
+    expect([...PROTECTED_PHASE1_REFS]).toEqual([
+      "refs/remotes/origin/phase1/main",
+      "refs/remotes/origin/master",
+    ]);
+  });
+});
+
+describe("checkDeployTarget / resolveDeployTarget by deploy line", () => {
+  const phase2Rc = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+
+  function slugOf(detail: string): string {
+    return detail.split(":")[0];
+  }
+
+  // ---- PASS paths
+  test("PASS: phase1 line + production project", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/main", project: EXPECTED_PROJECT_ID }));
+    expect(check.status).toBe("OK");
+    expect(check.detail).toBe(`line = phase1, project = ${EXPECTED_PROJECT_ID}`);
+  });
+
+  test("PASS: master is phase1 and may deploy to production", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "master" }));
+    expect(check.status).toBe("OK");
+  });
+
+  test("PASS: phase2 line + the project behind alias phase2", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase2/s00-split-docs", project: PHASE2_PROJECT, firebaserc: phase2Rc }),
+    );
+    expect(check.status).toBe("OK");
+    expect(check.detail).toBe(`line = phase2, project = ${PHASE2_PROJECT}`);
+  });
+
+  test("resolveDeployTarget returns the allowed project per line", async () => {
+    const p1 = await resolveDeployTarget(makeDeps({ branch: "phase1/x" }));
+    expect(p1).toEqual({ ok: true, line: "phase1", branch: "phase1/x", allowedProject: EXPECTED_PROJECT_ID });
+    const p2 = await resolveDeployTarget(makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }));
+    expect(p2).toEqual({ ok: true, line: "phase2", branch: "phase2/x", allowedProject: PHASE2_PROJECT });
+  });
+
+  // ---- deploy-line-unknown
+  test.each(["feature/x", "HEAD", "", "main"])("deploy-line-unknown for branch %j", async (branch) => {
+    const check = await checkDeployTarget(makeDeps({ branch }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("deploy-line-unknown");
+    expect(check.detail).toContain(JSON.stringify(branch));
+  });
+
+  test("deploy-line-unknown when the branch cannot be read (null)", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: null }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("deploy-line-unknown");
+    expect(check.detail).toContain("could not be read");
+  });
+
+  test("deploy-line-unknown when currentBranch throws (fails closed, does not propagate)", async () => {
+    const deps = makeDeps({ branchThrows: new Error("git exploded") });
+    const resolved = await resolveDeployTarget(deps);
+    expect(resolved).toMatchObject({ ok: false, line: "other", branch: null, reason: "deploy-line-unknown" });
+    const check = await checkDeployTarget(deps);
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("deploy-line-unknown");
+  });
+
+  // ---- phase1-wrong-project
+  test.each([LEGACY_PROJECT_ID, PHASE2_PROJECT, "anything-else"])(
+    "phase1-wrong-project when the phase1 line targets %s",
+    async (project) => {
+      const check = await checkDeployTarget(makeDeps({ branch: "phase1/main", project }));
+      expect(check.status).toBe("FAILED");
+      expect(slugOf(check.detail)).toBe("phase1-wrong-project");
+      expect(check.detail).toContain(`"${project}"`);
+      expect(check.detail).toContain(`"${EXPECTED_PROJECT_ID}"`);
+    },
+  );
+
+  test("phase1 line cannot deploy to the phase2 project even when .firebaserc defines it", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase1/main", project: PHASE2_PROJECT, firebaserc: phase2Rc }),
+    );
+    expect(slugOf(check.detail)).toBe("phase1-wrong-project");
+  });
+
+  // ---- firebaserc-unreadable
+  test.each([
+    ["missing file", null],
+    ["bad JSON", "{not json"],
+    ["empty file", ""],
+    ["JSON null", "null"],
+    ["JSON array root", "[]"],
+    ["no projects object", JSON.stringify({ other: 1 })],
+    ["projects is a string", JSON.stringify({ projects: "x" })],
+    ["projects is null", JSON.stringify({ projects: null })],
+  ] as const)("firebaserc-unreadable on phase2 line: %s", async (_label, firebaserc) => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project: PHASE2_PROJECT, firebaserc }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("firebaserc-unreadable");
+  });
+
+  test("a missing .firebaserc does NOT matter on the phase1 line (it is not consulted)", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/main", firebaserc: null }));
+    expect(check.status).toBe("OK");
+  });
+
+  // ---- phase2-alias-missing
+  test.each([
+    ["absent", firebasercWith({ default: EXPECTED_PROJECT_ID })],
+    ["non-string (number)", firebasercWith({ [PHASE2_ALIAS]: 42 })],
+    ["non-string (object)", firebasercWith({ [PHASE2_ALIAS]: { id: PHASE2_PROJECT } })],
+    ["null", firebasercWith({ [PHASE2_ALIAS]: null })],
+    ["empty string", firebasercWith({ [PHASE2_ALIAS]: "" })],
+    ["blank string", firebasercWith({ [PHASE2_ALIAS]: "   " })],
+    ["empty projects map", firebasercWith({})],
+  ] as const)("phase2-alias-missing when alias phase2 is %s", async (_label, firebaserc) => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project: PHASE2_PROJECT, firebaserc }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-alias-missing");
+  });
+
+  // ---- phase2-targets-production
+  test.each([
+    ["the production id", firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: EXPECTED_PROJECT_ID })],
+    ["the production id with no other aliases", firebasercWith({ [PHASE2_ALIAS]: EXPECTED_PROJECT_ID })],
+    ["the legacy id", firebasercWith({ "legacy-shared": LEGACY_PROJECT_ID, [PHASE2_ALIAS]: LEGACY_PROJECT_ID })],
+    ["the legacy id with no legacy alias", firebasercWith({ [PHASE2_ALIAS]: LEGACY_PROJECT_ID })],
+    ["another alias's id", firebasercWith({ staging: "shared-staging", [PHASE2_ALIAS]: "shared-staging" })],
+  ] as const)("phase2-targets-production when alias phase2 equals %s", async (_label, firebaserc) => {
+    const resolved = await resolveDeployTarget(makeDeps({ branch: "phase2/x", firebaserc }));
+    expect(resolved).toMatchObject({ ok: false, line: "phase2", reason: "phase2-targets-production" });
+    const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project: PHASE2_PROJECT, firebaserc }));
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-targets-production");
+  });
+
+  test("phase2-targets-production even when deps.project equals the production id (cannot be satisfied by matching)", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({
+        branch: "phase2/x",
+        project: EXPECTED_PROJECT_ID,
+        firebaserc: firebasercWith({ [PHASE2_ALIAS]: EXPECTED_PROJECT_ID }),
+      }),
+    );
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-targets-production");
+  });
+
+  // ---- phase2-project-mismatch
+  test.each([EXPECTED_PROJECT_ID, LEGACY_PROJECT_ID, "some-other-project"])(
+    "phase2-project-mismatch when phase2 line targets %s instead of the alias project",
+    async (project) => {
+      const check = await checkDeployTarget(makeDeps({ branch: "phase2/x", project, firebaserc: phase2Rc }));
+      expect(check.status).toBe("FAILED");
+      expect(slugOf(check.detail)).toBe("phase2-project-mismatch");
+      expect(check.detail).toContain(`"${project}"`);
+      expect(check.detail).toContain(`"${PHASE2_PROJECT}"`);
+    },
+  );
+
+  test("phase2 run with the default project fallback (production id) blocks", async () => {
+    // The production project id (what a production-resolving deploy would carry)
+    // on a phase2 branch must block. run_release_guard.mjs no longer falls back
+    // to a default project (see resolveEffectiveProject), but a CLI that really
+    // resolves to production still reaches this check.
+    const result = await runReleaseGuard(makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }));
+    expect(result.project).toBe(EXPECTED_PROJECT_ID);
+    expect(result.verdict).toBe("BLOCK");
+    const check = byName(result, DEPLOY_TARGET_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(slugOf(check.detail)).toBe("phase2-project-mismatch");
+  });
+
+  // ---- runReleaseGuard result fields
+  test("runReleaseGuard reports line, branch and project on a phase1 PASS", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: "phase1/main" }));
+    expect(result.verdict).toBe("PASS");
+    expect(result.line).toBe("phase1");
+    expect(result.branch).toBe("phase1/main");
+    expect(result.project).toBe(EXPECTED_PROJECT_ID);
+  });
+
+  test("runReleaseGuard reports line other / branch null when the branch is unreadable, and BLOCKs", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: null }));
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.line).toBe("other");
+    expect(result.branch).toBeNull();
+    expect(slugOf(byName(result, DEPLOY_TARGET_CHECK).detail)).toBe("deploy-line-unknown");
+  });
+
+  test("runReleaseGuard reports line phase2 on a phase2 branch", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ branch: "phase2/s00", project: PHASE2_PROJECT, firebaserc: phase2Rc }),
+    );
+    expect(result.line).toBe("phase2");
+    expect(result.branch).toBe("phase2/s00");
+    expect(result.project).toBe(PHASE2_PROJECT);
+    expect(byName(result, DEPLOY_TARGET_CHECK).status).toBe("OK");
+  });
+
+  test("every failing deploy-target detail leads with a slug from the closed DEPLOY_LINE_REASONS set", async () => {
+    const cases = [
+      makeDeps({ branch: "feature/x" }),
+      makeDeps({ branch: "phase1/main", project: LEGACY_PROJECT_ID }),
+      makeDeps({ branch: "phase2/x", firebaserc: null }),
+      makeDeps({ branch: "phase2/x", firebaserc: firebasercWith({}) }),
+      makeDeps({ branch: "phase2/x", firebaserc: firebasercWith({ [PHASE2_ALIAS]: EXPECTED_PROJECT_ID }) }),
+      makeDeps({ branch: "phase2/x", firebaserc: phase2Rc }),
+    ];
+    const slugs: string[] = [];
+    for (const deps of cases) {
+      const check = await checkDeployTarget(deps);
+      expect(check.status).toBe("FAILED");
+      const slug = slugOf(check.detail);
+      expect(DEPLOY_LINE_REASONS as readonly string[]).toContain(slug);
+      slugs.push(slug);
+    }
+    expect(new Set(slugs).size).toBe(6);
+  });
+
+  test("the seventh slug (phase1-provenance-unverified) is also a member of the closed set when it fails", async () => {
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: async () => false }));
+    expect(check.status).toBe("FAILED");
+    expect(DEPLOY_LINE_REASONS as readonly string[]).toContain(slugOf(check.detail));
+    expect(slugOf(check.detail)).toBe("phase1-provenance-unverified");
+  });
+
+  // ---- no override
+  test("no override path: env vars and extra deps fields cannot turn a block into a pass", async () => {
+    const names = [
+      "GCLOUD_PROJECT",
+      "FORCE_DEPLOY",
+      "RELEASE_GUARD_OVERRIDE",
+      "RELEASE_GUARD_SKIP",
+      "DEPLOY_LINE",
+      "ALLOW_CROSS_LINE_DEPLOY",
+      "FIREBASE_PROJECT",
+    ];
+    const saved: Record<string, string | undefined> = {};
+    for (const n of names) saved[n] = process.env[n];
+    try {
+      for (const n of names) process.env[n] = "1";
+      process.env.GCLOUD_PROJECT = PHASE2_PROJECT;
+      process.env.DEPLOY_LINE = "phase2";
+
+      const blocked = makeDeps({ branch: "feature/x" }) as ReleaseGuardDeps & Record<string, unknown>;
+      blocked.override = true;
+      blocked.force = true;
+      blocked.allowCrossLine = true;
+      expect((await checkDeployTarget(blocked)).status).toBe("FAILED");
+      expect((await runReleaseGuard(blocked)).verdict).toBe("BLOCK");
+
+      const crossLine = makeDeps({ branch: "phase1/main", project: PHASE2_PROJECT });
+      expect(slugOf((await checkDeployTarget(crossLine)).detail)).toBe("phase1-wrong-project");
+
+      const prodFromPhase2 = makeDeps({ branch: "phase2/x", firebaserc: phase2Rc });
+      expect(slugOf((await checkDeployTarget(prodFromPhase2)).detail)).toBe("phase2-project-mismatch");
+    } finally {
+      for (const n of names) {
+        if (saved[n] === undefined) delete process.env[n];
+        else process.env[n] = saved[n];
+      }
+    }
+  });
+});
+
+describe("Phase 1 commit provenance (isCommitOnProtectedLine)", () => {
+  const slugOf = (detail: string): string => detail.split(":")[0];
+
+  test("PASS: phase1 branch + provenance true -> allowed project is production", async () => {
+    const calls = jest.fn(async () => true);
+    const resolved = await resolveDeployTarget(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: calls }));
+    expect(resolved).toEqual({ ok: true, line: "phase1", branch: "phase1/x", allowedProject: EXPECTED_PROJECT_ID });
+    expect(calls).toHaveBeenCalledTimes(1);
+    const check = await checkDeployTarget(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: calls }));
+    expect(check.status).toBe("OK");
+    expect(check.detail).toBe(`line = phase1, project = ${EXPECTED_PROJECT_ID}`);
+  });
+
+  test.each(["phase1/main", "master", "phase1/x", "phase1/hotfix/deep"])(
+    "BLOCK: provenance false on branch %s -> phase1-provenance-unverified",
+    async (branch) => {
+      const deps = makeDeps({ branch, isCommitOnProtectedLine: async () => false });
+      const resolved = await resolveDeployTarget(deps);
+      expect(resolved).toMatchObject({ ok: false, line: "phase1", branch, reason: "phase1-provenance-unverified" });
+      const check = await checkDeployTarget(deps);
+      expect(check.status).toBe("FAILED");
+      expect(slugOf(check.detail)).toBe("phase1-provenance-unverified");
+      // The operator must be told which refs HEAD has to be contained in.
+      for (const ref of PROTECTED_PHASE1_REFS) expect(check.detail).toContain(ref);
+      expect(check.detail).toContain(JSON.stringify(branch));
+    },
+  );
+
+  test("BLOCK: a rejecting provenance reader fails closed (does not propagate)", async () => {
+    const deps = makeDeps({
+      branch: "phase1/main",
+      isCommitOnProtectedLine: async () => {
+        throw new Error("git exploded");
+      },
+    });
+    const resolved = await resolveDeployTarget(deps);
+    expect(resolved).toMatchObject({ ok: false, line: "phase1", reason: "phase1-provenance-unverified" });
+    expect(slugOf((await checkDeployTarget(deps)).detail)).toBe("phase1-provenance-unverified");
+    expect((await runReleaseGuard(deps)).verdict).toBe("BLOCK");
+  });
+
+  test("BLOCK: a provenance reader that throws synchronously also fails closed", async () => {
+    const deps = makeDeps({
+      branch: "phase1/main",
+      isCommitOnProtectedLine: (() => {
+        throw new Error("sync boom");
+      }) as unknown as () => Promise<boolean>,
+    });
+    const resolved = await resolveDeployTarget(deps);
+    expect(resolved).toMatchObject({ ok: false, reason: "phase1-provenance-unverified" });
+  });
+
+  test.each([["yes"], [1], [{}], [undefined], [null]])(
+    "BLOCK: only the boolean true counts as verified (resolved value %j)",
+    async (value) => {
+      const deps = makeDeps({
+        branch: "phase1/main",
+        isCommitOnProtectedLine: (async () => value) as unknown as () => Promise<boolean>,
+      });
+      expect(await resolveDeployTarget(deps)).toMatchObject({ ok: false, reason: "phase1-provenance-unverified" });
+    },
+  );
+
+  test("Phase 2 content presented under a branch named phase1/x (provenance false) is blocked end to end", async () => {
+    // Local branch name says phase1, commit graph says Phase 2: the injected
+    // provenance reader reports HEAD is not contained in the protected refs.
+    const result = await runReleaseGuard(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: async () => false }));
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.line).toBe("phase1");
+    expect(result.branch).toBe("phase1/x");
+    // Everything else is healthy in this fixture; the provenance block is the ONLY reason and now short-circuits the rest.
+    expectBlockedByTargetOnly(result, "phase1-provenance-unverified");
+  });
+
+  test("same healthy fixture with provenance true PASSes (control for the test above)", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: "phase1/x", isCommitOnProtectedLine: async () => true }));
+    expect(result.verdict).toBe("PASS");
+  });
+
+  test("provenance true does not bypass the project check (phase1-wrong-project still wins)", async () => {
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase1/main", project: LEGACY_PROJECT_ID, isCommitOnProtectedLine: async () => true }),
+    );
+    expect(slugOf(check.detail)).toBe("phase1-wrong-project");
+  });
+
+  test("provenance is NOT consulted on the phase2 line and cannot affect it", async () => {
+    const phase2Rc = firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: PHASE2_PROJECT });
+    const calls = jest.fn(async () => false);
+    const check = await checkDeployTarget(
+      makeDeps({ branch: "phase2/s00", project: PHASE2_PROJECT, firebaserc: phase2Rc, isCommitOnProtectedLine: calls }),
+    );
+    expect(check.status).toBe("OK");
+    expect(calls).not.toHaveBeenCalled();
+  });
+
+  test.each(["feature/x", "HEAD", "main", null])(
+    "provenance is NOT consulted when the branch is not on a deploy line (%j) -- deploy-line-unknown",
+    async (branch) => {
+      const calls = jest.fn(async () => true);
+      const resolved = await resolveDeployTarget(makeDeps({ branch, isCommitOnProtectedLine: calls }));
+      expect(resolved).toMatchObject({ ok: false, reason: "deploy-line-unknown" });
+      expect(calls).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe("explicit production project from a phase2/* branch is blocked (effective project -> deploy target)", () => {
+  const rc = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+
+  async function checkFor(argv: string[], env: Record<string, string | undefined>, branch: string) {
+    const eff = resolveEffectiveProject({ env, argv, firebaserc: rc });
+    if (!eff.ok) throw new Error(`unexpected resolution failure: ${eff.detail}`);
+    return checkDeployTarget(makeDeps({ branch, project: eff.project, firebaserc: rc }));
+  }
+
+  test.each([
+    ["--project with the production id", ["--project", EXPECTED_PROJECT_ID], {}],
+    ["--project=<production id>", [`--project=${EXPECTED_PROJECT_ID}`], {}],
+    ["-P <production id>", ["-P", EXPECTED_PROJECT_ID], {}],
+    ["-P<production id>", [`-P${EXPECTED_PROJECT_ID}`], {}],
+    ["the 'default' alias (maps to production)", ["--project", "default"], {}],
+    ["GCLOUD_PROJECT = production id", [], { GCLOUD_PROJECT: EXPECTED_PROJECT_ID }],
+    ["the legacy alias", ["--project", "legacy-shared"], {}],
+  ] as const)("phase2 branch + %s -> phase2-project-mismatch", async (_label, argv, env) => {
+    const check = await checkFor([...argv], { ...env }, "phase2/s00-split-docs");
+    expect(check.status).toBe("FAILED");
+    expect(check.detail.split(":")[0]).toBe("phase2-project-mismatch");
+    expect(check.detail).toContain(`"${PHASE2_PROJECT}"`);
+  });
+
+  test("control: phase2 branch + the phase2 alias / id is allowed", async () => {
+    for (const [argv, env] of [
+      [["--project", PHASE2_ALIAS], {}],
+      [["--project", PHASE2_PROJECT], {}],
+      [[], { GCLOUD_PROJECT: PHASE2_PROJECT }],
+    ] as const) {
+      const check = await checkFor([...argv], { ...env }, "phase2/s00-split-docs");
+      expect(check.status).toBe("OK");
+    }
+  });
+
+  test("control: the same production project from a verified phase1 branch is allowed", async () => {
+    const check = await checkFor(["--project", "default"], {}, "phase1/main");
+    expect(check.status).toBe("OK");
+  });
+});
+
+describe("parseDeployArgs", () => {
+  test("no arguments", () => {
+    expect(parseDeployArgs([])).toEqual({ projects: [], hasConfigFlag: false, hasShortFlagCluster: false, rest: [] });
+  });
+
+  test("unrelated arguments are passed through untouched, in order", () => {
+    expect(parseDeployArgs(["--only", "functions:default", "--force"])).toEqual({
+      projects: [],
+      hasConfigFlag: false,
+      hasShortFlagCluster: false,
+      rest: ["--only", "functions:default", "--force"],
+    });
+  });
+
+  test.each([
+    ["--project X", ["--project", "X"], ["X"]],
+    ["--project=X", ["--project=X"], ["X"]],
+    ["-P X", ["-P", "X"], ["X"]],
+    ["-PX", ["-PX"], ["X"]],
+  ] as const)("project flag form %s is parsed and removed from rest", (_label, argv, projects) => {
+    expect(parseDeployArgs([...argv, "--only", "hosting"])).toEqual({
+      projects: [...projects],
+      hasConfigFlag: false,
+      hasShortFlagCluster: false,
+      rest: ["--only", "hosting"],
+    });
+  });
+
+  test.each([
+    ["--project with no value", ["--project"]],
+    ["-P with no value", ["-P"]],
+    ["--project= with empty value", ["--project="]],
+  ] as const)("%s yields an empty-string value (so the resolver can fail closed)", (_label, argv) => {
+    expect(parseDeployArgs([...argv]).projects).toEqual([""]);
+  });
+
+  test("project flag consumes its value even when the flag is in the middle", () => {
+    expect(parseDeployArgs(["--only", "firestore", "--project", "a", "--force"])).toEqual({
+      projects: ["a"],
+      hasConfigFlag: false,
+      hasShortFlagCluster: false,
+      rest: ["--only", "firestore", "--force"],
+    });
+  });
+
+  test("several project flags are all collected in order", () => {
+    expect(parseDeployArgs(["--project", "a", "-Pb", "--project=c"]).projects).toEqual(["a", "b", "c"]);
+  });
+
+  test.each([
+    ["--config", ["--config", "other.json"]],
+    ["--config=other.json", ["--config=other.json"]],
+    ["-c", ["-c", "other.json"]],
+    ["-cother.json", ["-cother.json"]],
+  ] as const)("%s sets hasConfigFlag", (_label, argv) => {
+    const parsed = parseDeployArgs([...argv]);
+    expect(parsed.hasConfigFlag).toBe(true);
+    // config flags are NOT stripped: the wrapper refuses them rather than rewriting them.
+    expect(parsed.rest).toEqual([...argv]);
+  });
+
+  test.each([["--only"], ["--force"], ["--cors"], ["--projects"], ["--projectx"]])(
+    "%s is not mistaken for a project or config flag",
+    (flag) => {
+      const parsed = parseDeployArgs([flag]);
+      expect(parsed).toEqual({ projects: [], hasConfigFlag: false, hasShortFlagCluster: false, rest: [flag] });
+    },
+  );
+
+  test("does not mutate its input", () => {
+    const argv = ["--project", "a", "--only", "x"];
+    const copy = [...argv];
+    parseDeployArgs(argv);
+    expect(argv).toEqual(copy);
+  });
+});
+
+describe("resolveEffectiveProject", () => {
+  const RC = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+  const resolve = (env: Record<string, string | undefined>, argv: string[], firebaserc: string | null = RC) =>
+    resolveEffectiveProject({ env, argv, firebaserc });
+
+  // ---- accepted inputs
+  test("GCLOUD_PROJECT only", () => {
+    expect(resolve({ GCLOUD_PROJECT: "proj-a" }, [])).toEqual({ ok: true, project: "proj-a", source: "GCLOUD_PROJECT" });
+  });
+
+  test("GCLOUD_PROJECT is trimmed", () => {
+    expect(resolve({ GCLOUD_PROJECT: "  proj-a \n" }, [])).toEqual({ ok: true, project: "proj-a", source: "GCLOUD_PROJECT" });
+  });
+
+  test.each([
+    ["--project X", ["--project", "proj-x"]],
+    ["--project=X", ["--project=proj-x"]],
+    ["-P X", ["-P", "proj-x"]],
+    ["-PX", ["-Pproj-x"]],
+  ] as const)("explicit flag form %s", (_label, argv) => {
+    expect(resolve({}, [...argv])).toEqual({ ok: true, project: "proj-x", source: "--project" });
+  });
+
+  test("an explicit alias is mapped through .firebaserc", () => {
+    expect(resolve({}, ["--project", "default"])).toEqual({ ok: true, project: EXPECTED_PROJECT_ID, source: "--project" });
+    expect(resolve({}, ["-P", PHASE2_ALIAS])).toEqual({ ok: true, project: PHASE2_PROJECT, source: "--project" });
+  });
+
+  test("a value that is not an alias is used as the project id", () => {
+    expect(resolve({}, ["--project", "not-an-alias"])).toMatchObject({ ok: true, project: "not-an-alias" });
+  });
+
+  test("an unreadable/missing .firebaserc means no alias mapping (flag value used verbatim)", () => {
+    for (const rc of [null, "{not json", "[]", JSON.stringify({ projects: "x" }), JSON.stringify({ projects: null })]) {
+      expect(resolve({}, ["--project", "default"], rc)).toEqual({ ok: true, project: "default", source: "--project" });
+    }
+  });
+
+  test("a blank alias mapping is ignored (value used verbatim)", () => {
+    const rc = firebasercWith({ "weird-project": "   " });
+    expect(resolve({}, ["--project", "weird-project"], rc)).toMatchObject({ ok: true, project: "weird-project" });
+  });
+
+  test("unrelated arguments around the flag are ignored", () => {
+    expect(resolve({}, ["--only", "functions", "--project", "proj-x", "--force"])).toMatchObject({
+      ok: true,
+      project: "proj-x",
+    });
+  });
+
+  test("GCLOUD_PROJECT and a flag that agree (alias resolved) -> GCLOUD_PROJECT wins as source", () => {
+    expect(resolve({ GCLOUD_PROJECT: PHASE2_PROJECT }, ["--project", PHASE2_ALIAS])).toEqual({
+      ok: true,
+      project: PHASE2_PROJECT,
+      source: "GCLOUD_PROJECT",
+    });
+  });
+
+  test("repeating the same project through alias and id is not a conflict", () => {
+    expect(resolve({}, ["--project", PHASE2_ALIAS, "--project", PHASE2_PROJECT])).toEqual({
+      ok: true,
+      project: PHASE2_PROJECT,
+      source: "--project",
+    });
+  });
+
+  test("GCLOUD_PROJECT is taken as an already-resolved id, never alias-mapped", () => {
+    expect(resolve({ GCLOUD_PROJECT: "default" }, [])).toMatchObject({ ok: true, project: "default" });
+  });
+
+  // ---- project-undeterminable
+  test.each([
+    ["--project with no value", ["--project"]],
+    ["-P with no value", ["-P"]],
+    ["--project= with an empty value", ["--project="]],
+    ["--project with a blank value", ["--project", "   "]],
+    ["an empty flag followed by a valid one", ["--project=", "--project", "x"]],
+  ] as const)("flag without a value fails closed: %s", (_label, argv) => {
+    const r = resolve({}, [...argv]);
+    expect(r).toMatchObject({ ok: false, reason: "project-undeterminable" });
+  });
+
+  test("a valueless flag blocks even when GCLOUD_PROJECT is set (never silently falls back to the env)", () => {
+    expect(resolve({ GCLOUD_PROJECT: "proj-a" }, ["--project"])).toMatchObject({
+      ok: false,
+      reason: "project-undeterminable",
+    });
+  });
+
+  test.each([
+    ["empty env, no flag", {}],
+    ["GCLOUD_PROJECT empty string", { GCLOUD_PROJECT: "" }],
+    ["GCLOUD_PROJECT whitespace", { GCLOUD_PROJECT: "   " }],
+    ["GCLOUD_PROJECT undefined", { GCLOUD_PROJECT: undefined }],
+    ["FIREBASE_PROJECT only (ignored by firebase deploy, ignored here)", { FIREBASE_PROJECT: PHASE2_PROJECT }],
+    ["GOOGLE_CLOUD_PROJECT only", { GOOGLE_CLOUD_PROJECT: PHASE2_PROJECT }],
+  ] as const)("neither source present fails closed: %s", (_label, env) => {
+    const r = resolve({ ...env }, ["--only", "functions"]);
+    expect(r).toMatchObject({ ok: false, reason: "project-undeterminable" });
+    // It must NOT guess from the .firebaserc default alias (which maps to production).
+    expect(JSON.stringify(r)).not.toContain(`"project":"${EXPECTED_PROJECT_ID}"`);
+  });
+
+  test("neither source present, no .firebaserc at all", () => {
+    expect(resolve({}, [], null)).toMatchObject({ ok: false, reason: "project-undeterminable" });
+  });
+
+  // ---- project-conflict
+  test("two different flag values conflict", () => {
+    const r = resolve({}, ["--project", "a", "--project", "b"]);
+    expect(r).toMatchObject({ ok: false, reason: "project-conflict" });
+    expect(r.ok === false && r.detail).toContain("a, b");
+  });
+
+  test("two flags that resolve to different ids via aliases conflict", () => {
+    expect(resolve({}, ["--project", "default", "-P", PHASE2_ALIAS])).toMatchObject({
+      ok: false,
+      reason: "project-conflict",
+    });
+  });
+
+  test("GCLOUD_PROJECT disagreeing with a flag conflicts (flag = production, env = phase2)", () => {
+    const r = resolve({ GCLOUD_PROJECT: PHASE2_PROJECT }, ["--project", "default"]);
+    expect(r).toMatchObject({ ok: false, reason: "project-conflict" });
+    expect(r.ok === false && r.detail).toContain(PHASE2_PROJECT);
+    expect(r.ok === false && r.detail).toContain(EXPECTED_PROJECT_ID);
+  });
+
+  test("GCLOUD_PROJECT disagreeing with a flag conflicts (flag = phase2, env = production)", () => {
+    expect(resolve({ GCLOUD_PROJECT: EXPECTED_PROJECT_ID }, ["--project", PHASE2_ALIAS])).toMatchObject({
+      ok: false,
+      reason: "project-conflict",
+    });
+  });
+
+  test("every failure reason is a member of PROJECT_RESOLUTION_REASONS and leads its detail", () => {
+    const failures = [
+      resolve({}, []),
+      resolve({}, ["--project"]),
+      resolve({}, ["--project", "a", "--project", "b"]),
+      resolve({ GCLOUD_PROJECT: "a" }, ["--project", "b"]),
+    ];
+    for (const f of failures) {
+      expect(f.ok).toBe(false);
+      if (!f.ok) {
+        expect(PROJECT_RESOLUTION_REASONS as readonly string[]).toContain(f.reason);
+        expect(f.detail.startsWith(`${f.reason}:`)).toBe(true);
+      }
+    }
+  });
+});
+
+describe("findUnguardedDeployTargets", () => {
+  const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
+  const GUARD_CMD = "node functions/scripts/run_release_guard.mjs";
+  const guarded = (): { predeploy: string[] } => ({ predeploy: ["npm --prefix functions run build", GUARD_CMD] });
+  const unguarded = (): { predeploy: string[] } => ({ predeploy: ["npm --prefix functions run build"] });
+  const base = (): Record<string, unknown> => ({
+    firestore: guarded(),
+    hosting: guarded(),
+    functions: [guarded(), guarded()],
+    emulators: { firestore: { port: 8080 } },
+  });
+  const realConfig = (): Record<string, unknown> =>
+    JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "firebase.json"), "utf8")) as Record<string, unknown>;
+
+  test("GUARD_COMMAND_MARKER is the guard script's file name", () => {
+    expect(GUARD_COMMAND_MARKER).toBe("run_release_guard.mjs");
+  });
+
+  // ---- the real repository file
+  test("REAL firebase.json: no deploy target is left unguarded", () => {
+    expect(findUnguardedDeployTargets(realConfig())).toEqual([]);
+  });
+
+  test("REAL firebase.json: the four known deploy targets exist (the empty list above is not vacuous) and each runs the guard", () => {
+    const c = realConfig() as {
+      firestore?: { predeploy?: string[] };
+      hosting?: { predeploy?: string[] };
+      functions?: Array<{ codebase?: string; predeploy?: string[] }>;
+    };
+    expect(c.functions).toHaveLength(2);
+    expect(c.functions!.map((f) => f.codebase)).toEqual(["default", "equipment-identity"]);
+    for (const [label, entry] of [
+      ["firestore", c.firestore],
+      ["hosting", c.hosting],
+      ["functions[0]", c.functions![0]],
+      ["functions[1]", c.functions![1]],
+    ] as const) {
+      expect(entry).toBeDefined();
+      const hit = (entry!.predeploy ?? []).filter((cmd) => cmd.includes(GUARD_COMMAND_MARKER));
+      expect({ label, guardCommands: hit.length }).toEqual({ label, guardCommands: 1 });
+    }
+  });
+
+  test("REAL firebase.json: every deploy-capable section present carries the guard, and no unknown top-level section appears", () => {
+    const deploySections = [
+      "functions", "firestore", "hosting", "storage", "database", "dataconnect", "remoteconfig",
+      "apphosting", "auth", "extensions",
+    ];
+    const ignored = new Set(["emulators", "$schema"]);
+    const c = realConfig();
+    for (const key of Object.keys(c)) {
+      if (ignored.has(key)) continue;
+      // A new top-level key must be consciously classified here, not silently left unguarded.
+      expect(deploySections).toContain(key);
+      const entries = Array.isArray(c[key]) ? (c[key] as unknown[]) : [c[key]];
+      for (const [i, entry] of entries.entries()) {
+        const predeploy = (entry as { predeploy?: unknown } | null)?.predeploy;
+        const cmds = typeof predeploy === "string" ? [predeploy] : Array.isArray(predeploy) ? predeploy : [];
+        const carriesGuard = cmds.some((cmd) => typeof cmd === "string" && cmd.includes(GUARD_COMMAND_MARKER));
+        expect({ section: key, index: i, carriesGuard }).toEqual({ section: key, index: i, carriesGuard: true });
+      }
+    }
+  });
+
+  test("REAL firebase.json: the guard command points at a script that exists", () => {
+    const c = realConfig() as { firestore: { predeploy: string[] } };
+    const cmd = c.firestore.predeploy.find((x) => x.includes(GUARD_COMMAND_MARKER))!;
+    const rel = cmd.replace(/^node\s+/, "").trim();
+    expect(fs.existsSync(path.join(REPO_ROOT, rel))).toBe(true);
+  });
+
+  // ---- synthetic configs
+  test("fully guarded synthetic config -> empty", () => {
+    expect(findUnguardedDeployTargets(base())).toEqual([]);
+  });
+
+  test("firestore only unguarded", () => {
+    const c = base();
+    c.firestore = unguarded();
+    expect(findUnguardedDeployTargets(c)).toEqual(["firestore"]);
+  });
+
+  test("hosting only unguarded", () => {
+    const c = base();
+    c.hosting = unguarded();
+    expect(findUnguardedDeployTargets(c)).toEqual(["hosting"]);
+  });
+
+  test("functions[1] only unguarded", () => {
+    const c = base();
+    c.functions = [guarded(), unguarded()];
+    expect(findUnguardedDeployTargets(c)).toEqual(["functions[1]"]);
+  });
+
+  test("functions[0] only unguarded", () => {
+    const c = base();
+    c.functions = [unguarded(), guarded()];
+    expect(findUnguardedDeployTargets(c)).toEqual(["functions[0]"]);
+  });
+
+  test("a future storage block without the guard is reported; with the guard it is not", () => {
+    const c = base();
+    c.storage = { rules: "storage.rules" };
+    expect(findUnguardedDeployTargets(c)).toEqual(["storage"]);
+    c.storage = { rules: "storage.rules", ...guarded() };
+    expect(findUnguardedDeployTargets(c)).toEqual([]);
+  });
+
+  test.each(["database", "dataconnect", "remoteconfig"])("a future %s block without the guard is reported", (section) => {
+    const c = base();
+    c[section] = {};
+    expect(findUnguardedDeployTargets(c)).toEqual([section]);
+  });
+
+  test.each(["apphosting", "auth", "extensions"])(
+    "%s cannot carry a predeploy hook at all, so its mere presence is reported",
+    (section) => {
+      const c = base();
+      c[section] = {};
+      expect(findUnguardedDeployTargets(c)).toEqual([`${section}:no-predeploy-hook`]);
+    },
+  );
+
+  test("everything unguarded -> every target listed", () => {
+    const c: Record<string, unknown> = {
+      firestore: unguarded(),
+      hosting: unguarded(),
+      functions: [unguarded(), unguarded()],
+    };
+    expect([...findUnguardedDeployTargets(c)].sort()).toEqual(["firestore", "functions[0]", "functions[1]", "hosting"]);
+  });
+
+  test("a non-array functions block is labelled without an index", () => {
+    expect(findUnguardedDeployTargets({ functions: unguarded() })).toEqual(["functions"]);
+    expect(findUnguardedDeployTargets({ functions: guarded() })).toEqual([]);
+  });
+
+  test("predeploy as a plain string is accepted only when it runs the guard", () => {
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: GUARD_CMD } })).toEqual([]);
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: "npm run build" } })).toEqual(["hosting"]);
+  });
+
+  test.each([
+    ["missing predeploy", { public: "public" }],
+    ["empty predeploy array", { predeploy: [] }],
+    ["predeploy runs a different script", { predeploy: ["node scripts/other_guard.mjs"] }],
+    ["predeploy has only non-string entries", { predeploy: [1, null, {}] }],
+    ["predeploy is a number", { predeploy: 7 }],
+    ["entry is null", null],
+    ["entry is a string", "hosting"],
+  ] as const)("a hosting block with %s is reported", (_label, hosting) => {
+    expect(findUnguardedDeployTargets({ hosting })).toEqual(["hosting"]);
+  });
+
+  test("the emulators block is not a deploy target", () => {
+    expect(findUnguardedDeployTargets({ emulators: { firestore: {} } })).toEqual([]);
+  });
+
+  test.each([[null], [undefined], ["x"], [42]])("an unreadable config (%j) fails closed", (config) => {
+    expect(findUnguardedDeployTargets(config)).toEqual(["firebase.json:unreadable"]);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* E0 / C02 + C12 leftovers: guard set parity and the flag-gated       */
+/* body-scan bucket check (T06, RULES-16, RULES-21)                    */
+/* ------------------------------------------------------------------ */
+
+import { AI_GATEWAY_OPERATIONS } from "../ai_gateway";
+
+describe("release guard set vs. the Body Scan + Nutrition Coach surface", () => {
+  test("every guarded AI callable is a registered AI Gateway operation (guard set cannot drift from the gateway)", () => {
+    for (const name of AI_CALLABLES) {
+      expect(AI_GATEWAY_OPERATIONS as readonly string[]).toContain(name);
+    }
+  });
+
+  test("the body-scan callables run as fn-bodyscan outside the AI guard set (D-63): none is in AI_CALLABLES", () => {
+    for (const name of ["createBodyScan", "estimateBodyScan", "deleteBodyScan", "manageBodyScanData"]) {
+      expect(AI_CALLABLES as readonly string[]).not.toContain(name);
+    }
+  });
+
+  // RULES-21: the guard set is six callables (the four originals plus the two
+  // food AI callables, D-63) and the healthy guard passes with them.
+  test("AI_CALLABLES is exactly the six guarded surfaces, the four originals first", () => {
+    expect([...AI_CALLABLES]).toEqual([
+      "aiCoachAdvice",
+      "aiEquipmentRecognition",
+      "aiMachineDescription",
+      "aiExerciseGeneration",
+      "analyzeMealPhoto",
+      "parseNutritionLabel",
+    ]);
+    expect(AI_CALLABLES).toHaveLength(6);
+  });
+
+  test("the lookup callables (lookupBarcode, searchFoods) are NOT in the AI guard set: they make no Vertex call", () => {
+    expect(AI_CALLABLES as readonly string[]).not.toContain("lookupBarcode");
+    expect(AI_CALLABLES as readonly string[]).not.toContain("searchFoods");
+  });
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "the guard FAILS the candidate-source check when the %s source file is missing (it is really read)",
+    async (callable) => {
+      const result = await runReleaseGuard(makeDeps({ sourceOverrides: { [AI_SOURCE_PATHS[callable]]: null } }));
+      const check = byName(result, CANDIDATE_INVARIANTS_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toContain(AI_SOURCE_PATHS[callable]);
+      expect(check.detail).toContain("file missing");
+    },
+  );
+
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "the guard FAILS when %s drops enforceAiGatewayEnabled, exactly like the original four",
+    async (callable) => {
+      const result = await runReleaseGuard(
+        makeDeps({
+          sourceOverrides: {
+            [AI_SOURCE_PATHS[callable]]: healthyCallableSource(callable).replace(`await enforceAiGatewayEnabled("${callable}");`, ""),
+          },
+        }),
+      );
+      const check = byName(result, CANDIDATE_INVARIANTS_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toContain("no real enforceAiGatewayEnabled(...) call in the handler body");
+    },
+  );
+
+  test("the healthy guard with all six callables passes (10 checks, PASS)", async () => {
+    const result = await runReleaseGuard(makeDeps({}));
+    expect(result.verdict).toBe("PASS");
+    expect(result.checks).toHaveLength(10);
+  });
+});
+
+describe("runReleaseGuard: flag-gated body-scan bucket check (C12 leftovers, D-60)", () => {
+  const BUCKET = "fitness-app-korostelev-body-scans";
+  const BUCKET_CHECK = "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged";
+  const SCAN_SA = `serviceAccount:fn-bodyscan@${PROJECT}.iam.gserviceaccount.com`;
+  const DELETE_SA = `serviceAccount:fn-account-delete@${PROJECT}.iam.gserviceaccount.com`;
+
+  const healthyBucketInfo = { iamConfiguration: { publicAccessPrevention: "enforced", uniformBucketLevelAccess: { enabled: true } } };
+  const healthyBucketPolicy = {
+    bindings: [{ role: "roles/storage.objectAdmin", members: [SCAN_SA, DELETE_SA] }],
+  };
+  const CANARY_CLOSED = JSON.stringify({
+    step8KillSwitch: { status: "closed" },
+    s23PlayIntegrityProof: { status: "closed" },
+    bodyScanBucketCanary: { status: "closed" },
+  });
+
+  type Storage = { describe?: () => CommandResult; policy?: () => CommandResult };
+  const ok = (v: unknown): CommandResult => ({ ok: true, stdout: JSON.stringify(v), stderr: "" });
+
+  function depsWithBucket(opts: {
+    env?: Record<string, string | undefined>;
+    dotenv?: string | null;
+    evidence?: string | null;
+    storage?: Storage;
+    calls?: string[][];
+  }): ReleaseGuardDeps {
+    const base = makeDeps({ evidence: opts.evidence === undefined ? CANARY_CLOSED : opts.evidence });
+    const baseRead = base.readFile;
+    const baseRun = base.runCommand;
+    return {
+      ...base,
+      ...(opts.env ? { env: opts.env } : {}),
+      readFile: async (path: string) => {
+        if (path === `functions/.env.${PROJECT}`) return opts.dotenv === undefined ? null : opts.dotenv;
+        return baseRead(path);
+      },
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "storage" && args[1] === "buckets") {
+          opts.calls?.push(args);
+          if (args[2] === "describe") return (opts.storage?.describe ?? (() => ok(healthyBucketInfo)))();
+          if (args[2] === "get-iam-policy") return (opts.storage?.policy ?? (() => ok(healthyBucketPolicy)))();
+        }
+        return baseRun(cmd, args, timeoutMs);
+      },
+    };
+  }
+
+  const bucketCheck = (r: Awaited<ReturnType<typeof runReleaseGuard>>) => r.checks.find((c) => c.name === BUCKET_CHECK);
+
+  test("unset bucket: the check is absent, the guard keeps its 10 checks and PASSes (flag-gated skip)", async () => {
+    const calls: string[][] = [];
+    const result = await runReleaseGuard(depsWithBucket({ env: {}, calls }));
+    expect(bucketCheck(result)).toBeUndefined();
+    expect(result.checks).toHaveLength(10);
+    expect(result.verdict).toBe("PASS");
+    expect(calls).toHaveLength(0);
+  });
+
+  test("no env at all (older callers) behaves exactly like unset", async () => {
+    const result = await runReleaseGuard(depsWithBucket({}));
+    expect(bucketCheck(result)).toBeUndefined();
+    expect(result.checks).toHaveLength(10);
+  });
+
+  test("an invalid bucket name is treated as not configured, never probed", async () => {
+    for (const bad of ["Bad_Bucket", "x", "-lead", "trail-", "has space", ""]) {
+      const calls: string[][] = [];
+      const result = await runReleaseGuard(depsWithBucket({ env: { BODY_SCAN_BUCKET: bad }, calls }));
+      expect(bucketCheck(result)).toBeUndefined();
+      expect(calls).toHaveLength(0);
+    }
+  });
+
+  test("set via env and fully healthy: 11 checks, the bucket check is OK, PASS, and gcloud was asked about gs://<bucket>", async () => {
+    const calls: string[][] = [];
+    const result = await runReleaseGuard(depsWithBucket({ env: { BODY_SCAN_BUCKET: `  ${BUCKET}  ` }, calls }));
+    expect(result.checks).toHaveLength(11);
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("OK");
+    expect(check.detail).toContain(BUCKET);
+    expect(result.verdict).toBe("PASS");
+    expect(calls.map((c) => c.slice(0, 4))).toEqual([
+      ["storage", "buckets", "describe", `gs://${BUCKET}`],
+      ["storage", "buckets", "get-iam-policy", `gs://${BUCKET}`],
+    ]);
+  });
+
+  test("set only in functions/.env.<project> (quoted value): the check runs", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({ env: {}, dotenv: `OTHER=1\nBODY_SCAN_BUCKET="${BUCKET}"\n` }),
+    );
+    expect(bucketCheck(result)?.status).toBe("OK");
+  });
+
+  test("a commented-out BODY_SCAN_BUCKET line in the .env file does not count", async () => {
+    const result = await runReleaseGuard(depsWithBucket({ env: {}, dotenv: `# BODY_SCAN_BUCKET=${BUCKET}\n` }));
+    expect(bucketCheck(result)).toBeUndefined();
+  });
+
+  test("process env wins over the .env file", async () => {
+    const calls: string[][] = [];
+    await runReleaseGuard(
+      depsWithBucket({ env: { BODY_SCAN_BUCKET: BUCKET }, dotenv: "BODY_SCAN_BUCKET=some-other-bucket-name\n", calls }),
+    );
+    expect(calls[0][3]).toBe(`gs://${BUCKET}`);
+  });
+
+  test("snake_case gcloud storage output (public_access_prevention / uniform_bucket_level_access) is accepted too", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ok({ public_access_prevention: "enforced", uniform_bucket_level_access: true }) },
+      }),
+    );
+    expect(bucketCheck(result)?.status).toBe("OK");
+  });
+
+  test("FAILED when public access prevention is not enforced (and BLOCK verdict)", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ok({ iamConfiguration: { publicAccessPrevention: "inherited", uniformBucketLevelAccess: { enabled: true } } }) },
+      }),
+    );
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public access prevention");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("FAILED when uniform bucket-level access is off", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ok({ iamConfiguration: { publicAccessPrevention: "enforced", uniformBucketLevelAccess: { enabled: false } } }) },
+      }),
+    );
+    expect(bucketCheck(result)!.detail).toContain("uniform bucket-level access is not enabled");
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+  });
+
+  test.each(["allUsers", "allAuthenticatedUsers"])("FAILED when the public principal %s is bound", async (principal) => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: {
+          policy: () =>
+            ok({
+              bindings: [
+                { role: "roles/storage.objectAdmin", members: [SCAN_SA, DELETE_SA] },
+                { role: "roles/storage.objectViewer", members: [principal] },
+              ],
+            }),
+        },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+    expect(bucketCheck(result)!.detail).toContain(principal);
+  });
+
+  test("FAILED when fn-bodyscan lacks objectAdmin (named in the detail), and only that account is named", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ok({ bindings: [{ role: "roles/storage.objectAdmin", members: [DELETE_SA] }] }) },
+      }),
+    );
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("fn-bodyscan lacks roles/storage.objectAdmin");
+    expect(check.detail).not.toContain("fn-account-delete lacks");
+  });
+
+  test("FAILED when fn-account-delete lacks objectAdmin (a configured-but-IAM-denied bucket would break account deletion)", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ok({ bindings: [{ role: "roles/storage.objectAdmin", members: [SCAN_SA] }] }) },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+    expect(bucketCheck(result)!.detail).toContain("fn-account-delete lacks roles/storage.objectAdmin");
+  });
+
+  test("FAILED when the role is a weaker one than objectAdmin", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ok({ bindings: [{ role: "roles/storage.objectViewer", members: [SCAN_SA, DELETE_SA] }] }) },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("FAILED");
+  });
+
+  test("FAILED when the canary evidence is open, absent from the evidence file, or the evidence is unreadable", async () => {
+    const open = JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" }, bodyScanBucketCanary: { status: "open" } });
+    const absent = JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" } });
+    for (const evidence of [open, absent, "not json {"]) {
+      const result = await runReleaseGuard(depsWithBucket({ env: { BODY_SCAN_BUCKET: BUCKET }, evidence }));
+      const check = bucketCheck(result)!;
+      expect(check.status).toBe("FAILED");
+      expect(check.detail).toMatch(/bodyScanBucketCanary|canary acknowledgement unreadable/);
+    }
+  });
+
+  test("UNAVAILABLE (not OK, not silently skipped) when the bucket cannot be described", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { describe: () => ({ ok: false, stdout: "", stderr: "404 bucket not found" }) },
+      }),
+    );
+    const check = bucketCheck(result)!;
+    expect(check.status).toBe("UNAVAILABLE");
+    expect(check.detail).toContain("404 bucket not found");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("UNAVAILABLE when the bucket IAM policy cannot be read", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        storage: { policy: () => ({ ok: true, stdout: "garbage {", stderr: "" }) },
+      }),
+    );
+    expect(bucketCheck(result)!.status).toBe("UNAVAILABLE");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("several problems are all reported in one detail, not just the first", async () => {
+    const result = await runReleaseGuard(
+      depsWithBucket({
+        env: { BODY_SCAN_BUCKET: BUCKET },
+        evidence: JSON.stringify({ step8KillSwitch: { status: "closed" }, s23PlayIntegrityProof: { status: "closed" } }),
+        storage: {
+          describe: () => ok({ iamConfiguration: { publicAccessPrevention: "inherited", uniformBucketLevelAccess: { enabled: false } } }),
+          policy: () => ok({ bindings: [] }),
+        },
+      }),
+    );
+    const detail = bucketCheck(result)!.detail;
+    for (const part of ["public access prevention", "uniform bucket-level access", "fn-bodyscan lacks", "fn-account-delete lacks", "bodyScanBucketCanary"]) {
+      expect(detail).toContain(part);
+    }
+  });
+});
+
+describe("merge interactions: deploy-line gate x PR #5 six callables x body-scan bucket check", () => {
+  const BUCKET = "fitness-app-korostelev-body-scans";
+  const BUCKET_CHECK = "Body scan private bucket exists, is private, has the required IAM, and the canary is acknowledged";
+  const INVENTORY_CHECK = "AI callables match the intended fn-ai-runtime deployed set";
+  const SCAN_SA = `serviceAccount:fn-bodyscan@${PROJECT}.iam.gserviceaccount.com`;
+  const DELETE_SA = `serviceAccount:fn-account-delete@${PROJECT}.iam.gserviceaccount.com`;
+  const CANARY_CLOSED = JSON.stringify({
+    step8KillSwitch: { status: "closed" },
+    s23PlayIntegrityProof: { status: "closed" },
+    bodyScanBucketCanary: { status: "closed" },
+  });
+  const phase2Rc = firebasercWith({
+    default: EXPECTED_PROJECT_ID,
+    "legacy-shared": LEGACY_PROJECT_ID,
+    [PHASE2_ALIAS]: PHASE2_PROJECT,
+  });
+  const ok = (v: unknown): CommandResult => ({ ok: true, stdout: JSON.stringify(v), stderr: "" });
+
+  /** Healthy everywhere (six callables, bucket configured and healthy, canary closed) except what the test overrides. */
+  function healthyWithBucket(opts: Parameters<typeof makeDeps>[0]): ReleaseGuardDeps {
+    const base = makeDeps({ evidence: CANARY_CLOSED, ...opts });
+    const baseRun = base.runCommand;
+    return {
+      ...base,
+      env: { BODY_SCAN_BUCKET: BUCKET },
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "storage" && args[1] === "buckets") {
+          if (args[2] === "describe") {
+            return ok({ iamConfiguration: { publicAccessPrevention: "enforced", uniformBucketLevelAccess: { enabled: true } } });
+          }
+          return ok({ bindings: [{ role: "roles/storage.objectAdmin", members: [SCAN_SA, DELETE_SA] }] });
+        }
+        return baseRun(cmd, args, timeoutMs);
+      },
+    };
+  }
+
+  test("control: healthy phase1 line with provenance, six callables and a healthy bucket -> PASS with 11 checks", async () => {
+    const result = await runReleaseGuard(healthyWithBucket({ branch: "phase1/main" }));
+    expect(result.verdict).toBe("PASS");
+    expect(result.checks).toHaveLength(11);
+    expect(result.checks.every((c) => c.status === "OK")).toBe(true);
+  });
+
+  test("phase1 provenance failure still BLOCKs through the Deploy target check even though the bucket is healthy and all six callables are present (target check short-circuits the rest)", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({ branch: "phase1/main", isCommitOnProtectedLine: async () => false }),
+    );
+    // Review fix C: the target check runs first and short-circuits. The bucket check is not even attempted (10 checks,
+    // not 11), and the callable inventory is reported as not run -- a healthy bucket cannot mask the provenance block.
+    expectBlockedByTargetOnly(result, "phase1-provenance-unverified");
+    expect(result.checks.find((c) => c.name === BUCKET_CHECK)).toBeUndefined();
+    expect(byName(result, INVENTORY_CHECK).status).toBe("UNAVAILABLE");
+  });
+
+  test("phase1 provenance reader rejecting is the same BLOCK (target check only; the rest not run)", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({
+        branch: "phase1/x",
+        isCommitOnProtectedLine: async () => {
+          throw new Error("git exploded");
+        },
+      }),
+    );
+    expectBlockedByTargetOnly(result, "phase1-provenance-unverified");
+  });
+
+  test("phase2 branch + production project is BLOCKed (phase2-project-mismatch) even though the bucket and callables are healthy", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({ branch: "phase2/s00-split-docs", project: EXPECTED_PROJECT_ID, firebaserc: phase2Rc }),
+    );
+    expect(result.line).toBe("phase2");
+    expectBlockedByTargetOnly(result, "phase2-project-mismatch");
+    expect(result.checks.find((c) => c.name === BUCKET_CHECK)).toBeUndefined();
+  });
+
+  test("a missing body-scan canary evidence blocks on the bucket check only, and the deploy-line gate stays OK (the two gates are independent)", async () => {
+    const result = await runReleaseGuard(
+      healthyWithBucket({ branch: "phase1/main", evidence: JSON.stringify({
+        step8KillSwitch: { status: "closed" },
+        s23PlayIntegrityProof: { status: "closed" },
+      }) }),
+    );
+    expect(result.verdict).toBe("BLOCK");
+    expect(byName(result, DEPLOY_TARGET_CHECK).status).toBe("OK");
+    expect(result.checks.filter((c) => c.status !== "OK").map((c) => c.name)).toEqual([BUCKET_CHECK]);
+  });
+
+  test("the six AI source paths used by the fixtures all exist in the repository", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    expect(Object.keys(AI_SOURCE_PATHS).sort()).toEqual([...AI_CALLABLES].sort());
+    for (const rel of Object.values(AI_SOURCE_PATHS)) {
+      expect({ rel, exists: fs.existsSync(path.join(repoRoot, rel)) }).toEqual({ rel, exists: true });
+    }
+    expect(fs.existsSync(path.join(repoRoot, SCALING_PATH))).toBe(true);
+  });
+
+  test("REAL firebase.json: the storage block PR #5 added exists, has its rules file, runs the guard, and the whole file reports no unguarded target", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.json"), "utf8")) as {
+      storage?: { rules?: string; predeploy?: string[] };
+    };
+    expect(config.storage).toBeDefined();
+    expect(fs.existsSync(path.join(repoRoot, config.storage!.rules!))).toBe(true);
+    expect((config.storage!.predeploy ?? []).filter((c) => c.includes(GUARD_COMMAND_MARKER))).toHaveLength(1);
+    expect(findUnguardedDeployTargets(config)).toEqual([]);
+  });
+
+  test("the same real config with its storage guard removed reports exactly storage", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.json"), "utf8")) as {
+      storage: { predeploy?: string[] };
+    };
+    config.storage.predeploy = config.storage.predeploy!.filter((c) => !c.includes(GUARD_COMMAND_MARKER));
+    expect(findUnguardedDeployTargets(config)).toEqual(["storage"]);
+  });
+});
+
+// =====================================================================
+// Review-fix tests (round 2): working-tree scope (A), short-flag clusters (B),
+// project-id validation and check order (C), exact guard command (E),
+// throwing checks (F).
+// =====================================================================
+
+describe("review fix A: clean-tree check covers every deploy input", () => {
+  const FIXED_LIST = [
+    "functions",
+    "functions-equipment-identity",
+    "firebase.json",
+    ".firebaserc",
+    ".gitignore",
+    RELEASE_EVIDENCE_PATH,
+    "firestore.rules",
+    "firestore.indexes.json",
+    "storage.rules",
+    "public",
+  ];
+
+  /** git fake that reports `dirtyPath` as modified ONLY when the pathspec covers it (as real git status would). */
+  function gitReporting(dirtyPath: string | null, seen: string[][] = []): Partial<Record<string, CommandHandler>> {
+    return {
+      status: (args) => {
+        seen.push(args);
+        const specs = args.slice(4);
+        const covered =
+          dirtyPath !== null && specs.some((p) => dirtyPath === p || dirtyPath.startsWith(`${p}/`));
+        return { ok: true, stdout: covered ? ` M ${dirtyPath}\n` : "", stderr: "" };
+      },
+    };
+  }
+
+  const FIREBASE_JSON = (extra: Record<string, unknown> = {}): string =>
+    JSON.stringify({
+      firestore: { rules: "firestore.rules", indexes: "firestore.indexes.json" },
+      storage: { rules: "storage.rules" },
+      hosting: { public: "public" },
+      functions: [{ source: "functions" }, { source: "functions-equipment-identity" }],
+      ...extra,
+    });
+
+  test.each([
+    ["firestore.rules"],
+    ["firestore.indexes.json"],
+    ["storage.rules"],
+    ["public/index.html"],
+    ["public/deep/dir/app.js"],
+    ["functions-equipment-identity/src/index.ts"],
+  ])("a dirty %s makes the clean-tree check FAIL (firebase.json unreadable: fixed list)", async (dirty) => {
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting(dirty) }));
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("uncommitted changes under");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test.each([["firestore.rules"], ["firestore.indexes.json"], ["storage.rules"], ["public/index.html"]])(
+    "a dirty %s makes the check FAIL when firebase.json is readable and names the same files",
+    async (dirty) => {
+      const result = await runReleaseGuard(
+        makeDeps({ git: gitReporting(dirty), sourceOverrides: { "firebase.json": FIREBASE_JSON() } }),
+      );
+      expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+    },
+  );
+
+  test("control: a dirty file OUTSIDE every deploy input (docs/x.md) does not fail the check", async () => {
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting("docs/x.md") }));
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("paths named in firebase.json are added: renamed rules, indexes, storage rules, hosting dir and every functions source", async () => {
+    const seen: string[][] = [];
+    const json = JSON.stringify({
+      firestore: { rules: "rules/fs.rules", indexes: "rules/idx.json" },
+      storage: { rules: "rules/st.rules" },
+      hosting: { public: "dist/web" },
+      functions: [{ source: "functions" }, { source: "services/api" }],
+    });
+    await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
+    expect(seen).toHaveLength(1);
+    const specs = seen[0].slice(4);
+    for (const expected of [...FIXED_LIST, "rules/fs.rules", "rules/idx.json", "rules/st.rules", "dist/web", "services/api"]) {
+      expect(specs).toContain(expected);
+    }
+    expect(new Set(specs).size).toBe(specs.length); // no duplicates
+  });
+
+  test.each([
+    ["rules/fs.rules"],
+    ["rules/idx.json"],
+    ["rules/st.rules"],
+    ["dist/web/app.js"],
+    ["services/api/src/index.ts"],
+  ])("a dirty %s (a path only firebase.json names) makes the check FAIL", async (dirty) => {
+    const json = JSON.stringify({
+      firestore: { rules: "rules/fs.rules", indexes: "rules/idx.json" },
+      storage: { rules: "rules/st.rules" },
+      hosting: { public: "dist/web" },
+      functions: [{ source: "functions" }, { source: "services/api" }],
+    });
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting(dirty), sourceOverrides: { "firebase.json": json } }));
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
+  test("the same dirty path is NOT covered when firebase.json is unreadable (only the fixed list applies) -- the extras really come from firebase.json", async () => {
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting("rules/fs.rules") }));
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("normalisation: leading ./ and trailing slashes are stripped; single objects (not arrays) are accepted", async () => {
+    const seen: string[][] = [];
+    const json = JSON.stringify({ hosting: { public: "./site/" }, functions: { source: "./fn//" } });
+    await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
+    const specs = seen[0].slice(4);
+    expect(specs).toContain("site");
+    expect(specs).toContain("fn");
+    expect(specs).not.toContain("./site/");
+  });
+
+  test.each([
+    ["absolute path", "/etc/passwd"],
+    ["parent traversal", "../outside"],
+    ["embedded parent traversal", "a/../../b"],
+    ["backslash path", "a\\b"],
+    ["drive letter", "C:\\x"],
+    ["drive-relative", "C:x"],
+    ["pathspec magic", ":(top)x"],
+    ["option-looking", "--exclude=x"],
+    ["single dash", "-x"],
+    ["empty string", ""],
+    ["non-string", 42],
+  ])("unsafe firebase.json path is ignored (%s): the pathspec stays the fixed list", async (_label, bad) => {
+    const seen: string[][] = [];
+    const json = JSON.stringify({
+      firestore: { rules: bad, indexes: bad },
+      storage: { rules: bad },
+      hosting: { public: bad },
+      functions: [{ source: bad }],
+    });
+    const result = await runReleaseGuard(makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": json } }));
+    expect(seen[0].slice(4)).toEqual(FIXED_LIST);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test.each([
+    ["missing file", null],
+    ["invalid JSON", "{not json"],
+    ["JSON null", "null"],
+    ["JSON string", '"x"'],
+    ["JSON number", "7"],
+    ["empty file", ""],
+  ])("unreadable firebase.json (%s) still uses exactly the fixed list", async (_label, content) => {
+    const seen: string[][] = [];
+    const result = await runReleaseGuard(
+      makeDeps({ git: gitReporting(null, seen), sourceOverrides: { "firebase.json": content } }),
+    );
+    expect(seen[0]).toEqual(["status", "--porcelain", "--ignored=matching", "--", ...FIXED_LIST]);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("a readFile that THROWS for firebase.json also falls back to the fixed list (never aborts the check)", async () => {
+    const seen: string[][] = [];
+    const base = makeDeps({ git: gitReporting(null, seen) });
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async (p: string) => {
+        if (p === "firebase.json") throw new Error("EACCES");
+        return base.readFile(p);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    expect(seen[0].slice(4)).toEqual(FIXED_LIST);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+});
+
+describe("review fix B: short-flag clusters", () => {
+  test.each([
+    ["-ic", ["-ic", "x.json"]],
+    ["-jc", ["-jc", "x.json"]],
+    ["-iPprod", ["-iPprod"]],
+    ["-fc", ["-fc"]],
+    ["-xP", ["-xP", "prod"]],
+  ])("parseDeployArgs flags the cluster %s", (_label, argv) => {
+    expect(parseDeployArgs(argv).hasShortFlagCluster).toBe(true);
+  });
+
+  test.each([
+    ["single -m with a value", ["-m", "release note"]],
+    ["--only", ["--only", "hosting"]],
+    ["--force", ["--force"]],
+    ["--dry-run", ["--dry-run"]],
+    ["--project X", ["--project", "prod-project"]],
+    ["-P X", ["-P", "prod-project"]],
+    ["-PX", ["-Pprod-project"]],
+    ["cluster without c or P (-ab)", ["-ab"]],
+    ["-cfoo is a config flag, not a cluster", ["-cfoo"]],
+  ])("parseDeployArgs does not flag %s", (_label, argv) => {
+    expect(parseDeployArgs(argv).hasShortFlagCluster).toBe(false);
+  });
+
+  test("-cfoo is reported as a config flag (hasConfigFlag) rather than a cluster", () => {
+    const parsed = parseDeployArgs(["-cfoo"]);
+    expect(parsed.hasConfigFlag).toBe(true);
+    expect(parsed.hasShortFlagCluster).toBe(false);
+  });
+
+  test.each([["-ic", "x.json"], ["-jc", "x.json"], ["-iPprod"]])(
+    "resolveEffectiveProject BLOCKS the cluster %s as project-undeterminable even with a valid GCLOUD_PROJECT",
+    (...argv) => {
+      const r = resolveEffectiveProject({
+        env: { GCLOUD_PROJECT: "valid-project-id" },
+        argv,
+        firebaserc: DEFAULT_FIREBASERC,
+      });
+      expect(r).toMatchObject({ ok: false, reason: "project-undeterminable" });
+      expect(r.ok === false && r.detail).toContain("combined short-flag token");
+    },
+  );
+
+  test.each([
+    [["-m", "note", "--only", "hosting", "--force", "--dry-run", "--project", "valid-project-id"]],
+    [["-P", "valid-project-id", "--only", "hosting"]],
+    [["-Pvalid-project-id"]],
+  ])("resolveEffectiveProject still accepts the legitimate form %j", (argv) => {
+    expect(resolveEffectiveProject({ env: {}, argv, firebaserc: null })).toEqual({
+      ok: true,
+      project: "valid-project-id",
+      source: "--project",
+    });
+  });
+});
+
+describe("review fix C: project id validation and check order", () => {
+  const rcWith = (phase2: string): string => firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: phase2 });
+
+  test("PROJECT_ID_PATTERN accepts 6..30 char ids and rejects the boundary cases around them", () => {
+    expect(PROJECT_ID_PATTERN.test("abcde1")).toBe(true); // 6 chars
+    expect(PROJECT_ID_PATTERN.test("a" + "b".repeat(28) + "c")).toBe(true); // 30 chars
+    expect(PROJECT_ID_PATTERN.test("abcd1")).toBe(false); // 5 chars
+    expect(PROJECT_ID_PATTERN.test("a" + "b".repeat(29) + "c")).toBe(false); // 31 chars
+    expect(PROJECT_ID_PATTERN.test(EXPECTED_PROJECT_ID)).toBe(true);
+    expect(PROJECT_ID_PATTERN.test(PHASE2_PROJECT)).toBe(true);
+  });
+
+  const BAD_IDS = [
+    ["uppercase", "Fitness-App-Korostelev"],
+    ["too short", "abc"],
+    ["5 chars", "abcde"],
+    ["31 chars", "a".repeat(31)],
+    ["metacharacter &", "x&calc"],
+    ["metacharacter ;", "proj;rm-rf"],
+    ["space", "my project"],
+    ["leading digit", "1project-a"],
+    ["trailing hyphen", "project-a-"],
+    ["underscore", "my_project"],
+    ["dot", "my.project"],
+    ["newline", "valid-project\nx"],
+  ] as const;
+
+  test.each(BAD_IDS)("resolveEffectiveProject rejects %s from GCLOUD_PROJECT as project-invalid", (_label, bad) => {
+    const r = resolveEffectiveProject({ env: { GCLOUD_PROJECT: bad }, argv: [], firebaserc: null });
+    expect(r).toMatchObject({ ok: false, reason: "project-invalid" });
+    expect(r.ok === false && r.detail.startsWith("project-invalid:")).toBe(true);
+  });
+
+  test.each(BAD_IDS)("resolveEffectiveProject rejects %s from the --project flag as project-invalid", (_label, bad) => {
+    if (bad.trim().length !== bad.length || bad.length === 0) return; // trimmed values are covered by the env test
+    const r = resolveEffectiveProject({ env: {}, argv: ["--project", bad], firebaserc: null });
+    expect(r).toMatchObject({ ok: false, reason: "project-invalid" });
+  });
+
+  test("an alias that maps to a malformed id is project-invalid (the id, not the alias, is validated)", () => {
+    const r = resolveEffectiveProject({
+      env: {},
+      argv: ["--project", PHASE2_ALIAS],
+      firebaserc: rcWith("X&calc"),
+    });
+    expect(r).toMatchObject({ ok: false, reason: "project-invalid" });
+  });
+
+  // ---- runReleaseGuard: deps.project
+  function recording(opts: Parameters<typeof makeDeps>[0]) {
+    const base = makeDeps(opts);
+    const commands: Array<{ cmd: string; args: string[] }> = [];
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        commands.push({ cmd, args });
+        return base.runCommand(cmd, args, timeoutMs);
+      },
+    };
+    return { deps, commands };
+  }
+
+  test.each(BAD_IDS)("deps.project = %s: target check FAILED with project-invalid, ZERO commands of any kind, nine checks not run", async (_label, bad) => {
+    const { deps, commands } = recording({ project: bad });
+    const result = await runReleaseGuard(deps);
+    expectBlockedByTargetOnly(result, "project-invalid");
+    expect(commands).toEqual([]);
+  });
+
+  test.each([
+    ["deploy-line-unknown", { branch: "feature/x" }],
+    ["phase1-wrong-project", { branch: "phase1/main", project: LEGACY_PROJECT_ID }],
+    ["phase1-provenance-unverified", { branch: "phase1/main", isCommitOnProtectedLine: async () => false }],
+    ["phase2-project-mismatch", { branch: "phase2/x", firebaserc: firebasercWith({ [PHASE2_ALIAS]: PHASE2_PROJECT }) }],
+    ["firebaserc-unreadable", { branch: "phase2/x", firebaserc: null }],
+  ] as const)("a blocked deploy target (%s) issues ZERO gcloud/git commands", async (slug, opts) => {
+    const { deps, commands } = recording({ ...opts });
+    const result = await runReleaseGuard(deps);
+    expectBlockedByTargetOnly(result, slug);
+    expect(commands).toEqual([]);
+  });
+
+  test("the not-run report is the fixed set of nine downstream checks, in a fixed order, after the target check", async () => {
+    const result = await runReleaseGuard(makeDeps({ branch: "feature/x" }));
+    expect(result.checks.map((c) => c.name)).toEqual([
+      CHECK_NAME.target,
+      CHECK_NAME.candidate,
+      CHECK_NAME.inventory,
+      CHECK_NAME.appCheck,
+      CHECK_NAME.anonymous,
+      CHECK_NAME.killSwitch,
+      CHECK_NAME.drill,
+      CHECK_NAME.observability,
+      CHECK_NAME.s23,
+      CHECK_NAME.provenance,
+    ]);
+  });
+
+  test("a deploy-line resolution that throws is reported as deploy-line-unknown, not an escaped exception", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async () => {
+        throw new Error("disk gone");
+      },
+      currentBranch: async () => "phase2/x",
+    };
+    const result = await runReleaseGuard(deps);
+    expect(result.verdict).toBe("BLOCK");
+    expect(result.checks[0].status).toBe("FAILED");
+    expect(result.checks[0].detail).toContain("disk gone");
+  });
+
+  test("F6: with a NON-default project every gcloud call carries that project; none carries production", async () => {
+    const OTHER = "fitness-app-other-env";
+    const gcloudArgs: string[][] = [];
+    const base = makeDeps({
+      branch: "phase2/x",
+      project: OTHER,
+      firebaserc: firebasercWith({ default: EXPECTED_PROJECT_ID, [PHASE2_ALIAS]: OTHER }),
+    });
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud") gcloudArgs.push(args);
+        // Answer even unexpected shapes so the guard goes as far as it can; the assertion is about the arguments.
+        try {
+          return await base.runCommand(cmd, args, timeoutMs);
+        } catch {
+          return { ok: false, stdout: "", stderr: "unexpected in fake" };
+        }
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    expect(result.checks[0].status).toBe("OK"); // target accepted, so gcloud really ran
+    expect(gcloudArgs.length).toBeGreaterThan(5);
+    for (const args of gcloudArgs) {
+      const carries =
+        args.includes(`--project=${OTHER}`) ||
+        (args[0] === "projects" && args[1] === "get-iam-policy" && args[2] === OTHER);
+      expect({ args, carries }).toEqual({ args, carries: true });
+      expect(args.join(" ")).not.toContain(EXPECTED_PROJECT_ID);
+    }
+  });
+});
+
+describe("review fix E: the guard command must match exactly", () => {
+  test("GUARD_COMMAND is the exact command and contains the marker", () => {
+    expect(GUARD_COMMAND).toBe("node functions/scripts/run_release_guard.mjs");
+    expect(GUARD_COMMAND).toContain(GUARD_COMMAND_MARKER);
+  });
+
+  test.each([
+    ["shell-or-true neutering", "node x || true # run_release_guard.mjs"],
+    ["echo of the file name", "echo run_release_guard.mjs"],
+    ["extra argument that could change behaviour", "node functions/scripts/run_release_guard.mjs --skip"],
+    ["a different directory", "node other/scripts/run_release_guard.mjs"],
+    ["chained after another command", "npm run build && node functions/scripts/run_release_guard.mjs"],
+    ["negated", "! node functions/scripts/run_release_guard.mjs"],
+    ["only the file name", "run_release_guard.mjs"],
+    ["different case", "NODE functions/scripts/run_release_guard.mjs"],
+  ])("a predeploy of %s counts as UNGUARDED", (_label, cmd) => {
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: [cmd] } })).toEqual(["hosting"]);
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: cmd } })).toEqual(["hosting"]);
+  });
+
+  test("surrounding whitespace is tolerated; the exact command alongside others is guarded", () => {
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: [`  ${GUARD_COMMAND}  `] } })).toEqual([]);
+    expect(findUnguardedDeployTargets({ hosting: { predeploy: ["npm run build", GUARD_COMMAND] } })).toEqual([]);
+  });
+
+  test("a neutered command in ONE target is reported while the others stay clean", () => {
+    const ok = { predeploy: [GUARD_COMMAND] };
+    expect(
+      findUnguardedDeployTargets({
+        firestore: ok,
+        hosting: ok,
+        storage: { rules: "storage.rules", predeploy: ["node x || true # run_release_guard.mjs"] },
+        functions: [ok, ok],
+      }),
+    ).toEqual(["storage"]);
+  });
+
+  test("REAL firebase.json: every guarded target uses the EXACT command (not merely the marker)", () => {
+    const repoRoot = path.resolve(__dirname, "..", "..", "..");
+    const config = JSON.parse(fs.readFileSync(path.join(repoRoot, "firebase.json"), "utf8")) as Record<string, unknown>;
+    for (const section of ["firestore", "storage", "hosting", "functions"]) {
+      const entries = Array.isArray(config[section]) ? (config[section] as unknown[]) : [config[section]];
+      for (const entry of entries) {
+        const predeploy = (entry as { predeploy: string[] }).predeploy;
+        expect(predeploy.filter((c) => c.trim() === GUARD_COMMAND)).toHaveLength(1);
+      }
+    }
+  });
+});
+
+describe("review fix F: a throwing check becomes UNAVAILABLE and the report stays complete", () => {
+  const THREW = "check threw an unexpected error";
+
+  test.each([["null"], ["[]"], ['"x"'], ["7"], ["true"]])(
+    "release evidence file content %s never aborts the report (10 checks, a verdict, no escaped exception)",
+    async (content) => {
+      const result = await runReleaseGuard(makeDeps({ evidence: content }));
+      expect(result.checks).toHaveLength(10);
+      expect(result.verdict).toBe("BLOCK");
+      // Evidence that is not a proper object can never produce an OK drill check.
+      expect(byName(result, CHECK_NAME.drill).status).not.toBe("OK");
+    },
+  );
+
+  test("evidence JSON null: the drill check THROWS internally and is reported UNAVAILABLE with the message; the other checks still ran", async () => {
+    const result = await runReleaseGuard(makeDeps({ evidence: "null" }));
+    const drill = byName(result, CHECK_NAME.drill);
+    expect(drill.status).toBe("UNAVAILABLE");
+    expect(drill.detail).toContain(THREW);
+    expect(byName(result, CHECK_NAME.inventory).status).toBe("OK");
+    expect(byName(result, CHECK_NAME.provenance).status).toBe("OK");
+  });
+
+  test.each([["null"], ["[]"], ['"x"']])(
+    "kill-switch payload %s never aborts the report; it is not treated as 'AI disabled' success",
+    async (payload) => {
+      const result = await runReleaseGuard(makeDeps({ gcloud: { secretAccess: () => ({ ok: true, stdout: payload, stderr: "" }) } }));
+      expect(result.checks).toHaveLength(10);
+      const s23 = byName(result, CHECK_NAME.s23);
+      if (payload === "null") {
+        expect(s23.status).toBe("UNAVAILABLE");
+        expect(s23.detail).toContain(THREW);
+      }
+      expect(result.checks.every((c) => ["OK", "FAILED", "UNAVAILABLE"].includes(c.status))).toBe(true);
+    },
+  );
+
+  test("a runCommand that throws on one gcloud call makes only the affected checks UNAVAILABLE, with the message", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "secrets" && args[1] === "describe") throw new Error("spawn EPERM");
+        return base.runCommand(cmd, args, timeoutMs);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    expect(result.checks).toHaveLength(10);
+    const ks = byName(result, CHECK_NAME.killSwitch);
+    expect(ks.status).toBe("UNAVAILABLE");
+    expect(ks.detail).toContain("spawn EPERM");
+    expect(byName(result, CHECK_NAME.inventory).status).toBe("OK");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("readFile throwing for a candidate source file makes the candidate check UNAVAILABLE with the message", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async (p: string) => {
+        if (p === "functions/src/scaling.ts") throw new Error("EIO scaling");
+        return base.readFile(p);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    const c = byName(result, CHECK_NAME.candidate);
+    expect(c.status).toBe("UNAVAILABLE");
+    expect(c.detail).toContain("EIO scaling");
+    expect(result.checks).toHaveLength(10);
+  });
+
+  test("the functions-list step throwing marks BOTH dependent checks UNAVAILABLE with the message and the report continues", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      runCommand: async (cmd, args, timeoutMs) => {
+        if (cmd === "gcloud" && args[0] === "functions" && args[1] === "list") throw new Error("list exploded");
+        return base.runCommand(cmd, args, timeoutMs);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    for (const name of [CHECK_NAME.appCheck, CHECK_NAME.anonymous]) {
+      expect(byName(result, name).status).toBe("UNAVAILABLE");
+      expect(byName(result, name).detail).toContain("list exploded");
+    }
+    expect(byName(result, CHECK_NAME.inventory).status).toBe("UNAVAILABLE");
+    expect(result.checks).toHaveLength(10);
+  });
+
+  test("an env/readFile failure while looking for the body-scan bucket is reported as an UNAVAILABLE bucket check", async () => {
+    const base = makeDeps({});
+    const deps: ReleaseGuardDeps = {
+      ...base,
+      readFile: async (p: string) => {
+        if (p.startsWith("functions/.env.")) throw new Error("dotenv unreadable");
+        return base.readFile(p);
+      },
+    };
+    const result = await runReleaseGuard(deps);
+    const bucket = result.checks.find((c) => c.name === CHECK_NAME.bodyScanBucket);
+    expect(bucket?.status).toBe("UNAVAILABLE");
+    expect(bucket?.detail).toContain("dotenv unreadable");
+    expect(result.verdict).toBe("BLOCK");
+  });
+});
+
+// =====================================================================
+// git-ignored deployable files (`git status --ignored=matching`)
+// =====================================================================
+
+describe("review fix: git-ignored deployable files in the clean-tree check", () => {
+  const IGNORED_DETAIL_PREFIX = "ignored-deployable-files:";
+  const FJ = (overrides: Record<string, unknown> = {}): string =>
+    JSON.stringify({
+      firestore: { rules: "firestore.rules", indexes: "firestore.indexes.json" },
+      storage: { rules: "storage.rules" },
+      hosting: { public: "public", ignore: ["firebase.json", "**/.*", "**/node_modules/**"] },
+      functions: [
+        {
+          source: "functions",
+          codebase: "default",
+          ignore: ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+        },
+        {
+          source: "functions-equipment-identity",
+          codebase: "equipment-identity",
+          ignore: ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+        },
+      ],
+      ...overrides,
+    });
+
+  /** git fake whose status output is pathspec-aware like real git: lines outside the requested pathspec are not reported. */
+  function gitStatusLines(lines: string[], seen: string[][] = []): Partial<Record<string, CommandHandler>> {
+    return {
+      status: (args) => {
+        seen.push(args);
+        const specs = args.slice(4);
+        const shown = lines.filter((l) => {
+          const p = l.slice(3).replace(/\/+$/, "");
+          return p.startsWith('"') || specs.some((s) => p === s || p.startsWith(`${s}/`));
+        });
+        return { ok: true, stdout: shown.length > 0 ? `${shown.join("\n")}\n` : "", stderr: "" };
+      },
+    };
+  }
+
+  const run = (lines: string[], firebaseJson: string | null = FJ()) =>
+    runReleaseGuard(makeDeps({ git: gitStatusLines(lines), sourceOverrides: { "firebase.json": firebaseJson } }));
+
+  test("git status is asked for ignored entries with --ignored=matching", async () => {
+    const seen: string[][] = [];
+    await runReleaseGuard(makeDeps({ git: gitStatusLines([], seen), sourceOverrides: { "firebase.json": FJ() } }));
+    expect(seen[0].slice(0, 4)).toEqual(["status", "--porcelain", "--ignored=matching", "--"]);
+  });
+
+  test.each([
+    ["ignored public/app.js (not excluded by hosting.ignore)", "!! public/app.js"],
+    ["ignored nested public/sub/app.js", "!! public/sub/app.js"],
+    ["ignored non-dot file public/Thumbs.db", "!! public/Thumbs.db"],
+    ["ignored functions/src/evil.ts", "!! functions/src/evil.ts"],
+    ["ignored functions-equipment-identity source", "!! functions-equipment-identity/src/x.ts"],
+    ["ignored functions/.runtimeconfig.json (documented false positive)", "!! functions/.runtimeconfig.json"],
+    ["ignored firestore.rules", "!! firestore.rules"],
+    ["ignored firestore.indexes.json", "!! firestore.indexes.json"],
+    ["ignored storage.rules", "!! storage.rules"],
+    ["quoted path with special characters", '!! "public/we\\303\\251ird.js"'],
+    ["ignored env file nested below the functions source (not directly in it)", "!! functions/sub/.env"],
+  ])("BLOCKS: %s", async (_label, line) => {
+    const result = await run([line]);
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail.startsWith(IGNORED_DETAIL_PREFIX)).toBe(true);
+    expect(check.detail).toContain(line.slice(3));
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test.each([
+    ["ignored public/.hidden (excluded by **/.*)", "!! public/.hidden"],
+    ["ignored public/.cache/ directory", "!! public/.cache/"],
+    ["nested ignored dot directory public/a/b/.git/", "!! public/a/b/.git/"],
+    ["ignored functions/node_modules/", "!! functions/node_modules/"],
+    ["node_modules below another directory", "!! functions/sub/node_modules/"],
+    ["node_modules inside public (excluded by **/node_modules/**)", "!! public/node_modules/x/"],
+    ["ignored functions/lib/", "!! functions/lib/"],
+    ["ignored file inside functions/lib", "!! functions/lib/index.js"],
+    ["ignored functions-equipment-identity/lib/", "!! functions-equipment-identity/lib/"],
+    ["ignored functions/.env", "!! functions/.env"],
+    ["ignored functions/.env.fitness-app-phase2-korostelev", "!! functions/.env.fitness-app-phase2-korostelev"],
+    ["ignored env file of the second codebase", "!! functions-equipment-identity/.env.fitness-app-korostelev"],
+    ["ignored functions/foo.local (excluded by *.local)", "!! functions/foo.local"],
+    ["ignored functions/firebase-debug.log", "!! functions/firebase-debug.log"],
+    ["ignored functions/firebase-debug.1.log (firebase-debug.*.log)", "!! functions/firebase-debug.1.log"],
+    ["ignored functions/.git/", "!! functions/.git/"],
+  ])("ALLOWS: %s", async (_label, line) => {
+    const result = await run([line]);
+    const check = byName(result, PROVENANCE_CHECK);
+    expect({ line, status: check.status, detail: check.detail }).toEqual({ line, status: "OK", detail: check.detail });
+    expect(check.detail).toContain("clean tree");
+  });
+
+  test("a mix of ONLY allowed ignored entries is OK", async () => {
+    const result = await run([
+      "!! public/.hidden",
+      "!! functions/node_modules/",
+      "!! functions/lib/",
+      "!! functions/.env",
+      "!! functions/foo.local",
+    ]);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("a mix of allowed and ONE disallowed ignored entry fails and names only the offender", async () => {
+    const result = await run(["!! functions/node_modules/", "!! public/app.js", "!! functions/lib/"]);
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public/app.js");
+    expect(check.detail).not.toContain("node_modules/,");
+    expect(check.detail.split("not in the verified commit: ")[1]).toBe("public/app.js");
+  });
+
+  test.each([
+    ["ignored entry OUTSIDE the deploy scope (docs/tmp.log) is never reported by git for this pathspec", ["!! docs/tmp.log"]],
+    ["several out-of-scope ignored entries", ["!! docs/tmp.log", "!! core/x.log", "!! tools/.venv/"]],
+  ])("%s", async (_label, lines) => {
+    const result = await run(lines);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  describe("mixed output", () => {
+    test("an uncommitted change plus allowed ignored entries reports the uncommitted change", async () => {
+      const result = await run([" M functions/src/a.ts", "!! functions/lib/", "!! functions/node_modules/"]);
+      const check = byName(result, PROVENANCE_CHECK);
+      expect(check.status).toBe("FAILED");
+      expect(check.detail.startsWith("uncommitted changes under")).toBe(true);
+    });
+
+    test("an uncommitted change plus a disallowed ignored entry still reports the uncommitted change (first)", async () => {
+      const result = await run(["!! public/app.js", " M firestore.rules"]);
+      expect(byName(result, PROVENANCE_CHECK).detail.startsWith("uncommitted changes under")).toBe(true);
+    });
+
+    test("an untracked file plus an allowed ignored entry reports the uncommitted change", async () => {
+      const result = await run(["?? public/new.html", "!! functions/lib/"]);
+      expect(byName(result, PROVENANCE_CHECK).detail.startsWith("uncommitted changes under")).toBe(true);
+    });
+  });
+
+  describe("unreadable firebase.json: strict classification (empty ignore lists)", () => {
+    test.each([["missing file", null], ["invalid JSON", "{not json"], ["JSON null", "null"]])(
+      "%s: ignored public/x and public/.hidden and functions/foo.local BLOCK",
+      async (_label, content) => {
+        for (const line of ["!! public/x", "!! public/.hidden", "!! functions/foo.local", "!! functions/firebase-debug.log"]) {
+          const check = byName(await run([line], content), PROVENANCE_CHECK);
+          expect({ line, status: check.status }).toEqual({ line, status: "FAILED" });
+          expect(check.detail.startsWith(IGNORED_DETAIL_PREFIX)).toBe(true);
+        }
+      },
+    );
+
+    test("with the same unreadable file the build dirs and functions env files are still allowed (node_modules is NOT: it needs the target ignore list)", async () => {
+      const result = await run(
+        ["!! functions/lib/", "!! functions-equipment-identity/lib/", "!! functions/.env", "!! functions/.env.x"],
+        "{not json",
+      );
+      expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+    });
+
+    test("control: the same ignored public/.hidden is ALLOWED when firebase.json is readable (the difference is the ignore list)", async () => {
+      expect(byName(await run(["!! public/.hidden"]), PROVENANCE_CHECK).status).toBe("OK");
+    });
+  });
+
+  describe("ignore-list pattern syntax", () => {
+    const withHostingIgnore = (ignore: string[]): string =>
+      FJ({ hosting: { public: "public", ignore } });
+
+    test.each([
+      ["["], ["]"], ["{"], ["}"], ["("], [")"], ["!"], ["+"], ["@"], ["|"], ["\\"],
+    ])("a pattern containing %j is unsupported and never matches (stricter): the ignored file blocks", async (ch) => {
+      for (const pattern of [`app${ch}.js`, `${ch}app.js`, `app.js${ch}`, "app.js" + ch + "x"]) {
+        const result = await run(["!! public/app.js"], withHostingIgnore([pattern]));
+        const check = byName(result, PROVENANCE_CHECK);
+        expect({ pattern, status: check.status }).toEqual({ pattern, status: "FAILED" });
+      }
+    });
+
+    test.each([
+      ["app[a-z].js"],
+      ["{app,other}.js"],
+      ["(app).js"],
+      ["!app.js"],
+      ["app+.js"],
+      ["@app.js"],
+      ["app|x.js"],
+      ["app\\.js"],
+    ])("realistic unsupported pattern %j does not exclude public/app.js (and public/app.js blocks)", async (pattern) => {
+      const check = byName(await run(["!! public/app.js"], withHostingIgnore([pattern])), PROVENANCE_CHECK);
+      expect(check.status).toBe("FAILED");
+    });
+
+    test("control: the plain pattern app.js DOES exclude public/app.js", async () => {
+      expect(byName(await run(["!! public/app.js"], withHostingIgnore(["app.js"])), PROVENANCE_CHECK).status).toBe("OK");
+    });
+
+    test.each([
+      ["**/*.js", "!! public/sub/app.js", true],
+      ["*.js", "!! public/app.js", true],
+      ["*.js", "!! public/sub/app.js", false], // * does not cross a slash
+      ["app?.js", "!! public/app1.js", true],
+      ["app?.js", "!! public/app12.js", false],
+      ["generated/**", "!! public/generated/a/b.js", true],
+      ["generated/**", "!! public/generated/", true],
+      ["generated", "!! public/generated/a/b.js", true], // an ignored ancestor directory excludes its content
+      ["*", "!! public/.hidden", false], // * never matches a leading dot
+      ["*", "!! public/visible.js", true],
+      ["./app.js", "!! public/app.js", true],
+      ["**/.*", "!! public/x/.y", true],
+    ])("ignore pattern %j vs %s is allowed=%s", async (pattern, line, allowed) => {
+      const check = byName(await run([line], withHostingIgnore([pattern])), PROVENANCE_CHECK);
+      expect(check.status).toBe(allowed ? "OK" : "FAILED");
+    });
+
+    test("an ignore list with non-string / empty / whitespace entries does not crash and excludes nothing extra", async () => {
+      const json = JSON.stringify({ hosting: { public: "public", ignore: [1, null, "", "   ", {}] } });
+      const check = byName(await run(["!! public/app.js"], json), PROVENANCE_CHECK);
+      expect(check.status).toBe("FAILED");
+    });
+
+    test("a non-array ignore value is treated as an empty list", async () => {
+      const json = JSON.stringify({ hosting: { public: "public", ignore: "**/*" } });
+      expect(byName(await run(["!! public/app.js"], json), PROVENANCE_CHECK).status).toBe("FAILED");
+    });
+  });
+
+  test("more than 20 offending paths: still FAILED, detail truncated to 20 with a '+N more' count", async () => {
+    const lines = Array.from({ length: 25 }, (_, i) => `!! public/f${String(i + 1).padStart(2, "0")}.js`);
+    const check = byName(await run(lines), PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail.startsWith(IGNORED_DETAIL_PREFIX)).toBe(true);
+    expect(check.detail).toContain("public/f01.js");
+    expect(check.detail).toContain("public/f20.js");
+    expect(check.detail).not.toContain("public/f21.js");
+    expect(check.detail).not.toContain("public/f25.js");
+    expect(check.detail).toContain("(+5 more)");
+  });
+
+  test("exactly 20 offending paths: all listed, no '+N more'", async () => {
+    const lines = Array.from({ length: 20 }, (_, i) => `!! public/f${String(i + 1).padStart(2, "0")}.js`);
+    const check = byName(await run(lines), PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public/f20.js");
+    expect(check.detail).not.toContain("more)");
+  });
+
+  test("duplicate ignored lines are counted once", async () => {
+    const check = byName(await run(["!! public/a.js", "!! public/a.js"]), PROVENANCE_CHECK);
+    expect(check.detail.split("not in the verified commit: ")[1]).toBe("public/a.js");
+  });
+
+  test("git status failure stays UNAVAILABLE (and BLOCKs), with git's message", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ git: { status: () => ({ ok: false, stdout: "!! public/.hidden\n", stderr: "fatal: not a git repository" }) } }),
+    );
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("UNAVAILABLE");
+    expect(check.detail).toBe("fatal: not a git repository");
+    expect(result.verdict).toBe("BLOCK");
+  });
+
+  test("blank and whitespace-only output lines are ignored; clean output proceeds to rev-parse", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ git: { status: () => ({ ok: true, stdout: "\n   \n\r\n", stderr: "" }) } }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("CRLF line endings in git's output are handled", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({ git: { status: () => ({ ok: true, stdout: "!! functions/lib/\r\n!! public/app.js\r\n", stderr: "" }) } }),
+    );
+    const check = byName(result, PROVENANCE_CHECK);
+    expect(check.status).toBe("FAILED");
+    expect(check.detail).toContain("public/app.js");
+  });
+});
+
+describe("ignored node_modules is allowed only through the target's own ignore list (unit, git fake)", () => {
+  const FN_IGNORE = ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"];
+  const cfg = (c: { hosting?: unknown; functions?: unknown }): string =>
+    JSON.stringify({
+      hosting: c.hosting ?? { public: "public", ignore: ["**/node_modules/**"] },
+      functions: c.functions ?? [
+        { source: "functions", ignore: FN_IGNORE },
+        { source: "functions-equipment-identity", ignore: FN_IGNORE },
+      ],
+    });
+
+  function gitLines(lines: string[]): Partial<Record<string, CommandHandler>> {
+    return {
+      status: (args) => {
+        const specs = args.slice(4);
+        const shown = lines.filter((l) => {
+          const p = l.slice(3).replace(/\/+$/, "");
+          return p.startsWith('"') || specs.some((s) => p === s || p.startsWith(`${s}/`));
+        });
+        return { ok: true, stdout: shown.length > 0 ? `${shown.join("\n")}\n` : "", stderr: "" };
+      },
+    };
+  }
+  const prov = async (lines: string[], firebaseJson: string | null) =>
+    byName(
+      await runReleaseGuard(makeDeps({ git: gitLines(lines), sourceOverrides: { "firebase.json": firebaseJson } })),
+      PROVENANCE_CHECK,
+    );
+  const expectBlocked = (c: { status: string; detail: string }, path_: string): void => {
+    expect(c.status).toBe("FAILED");
+    expect(c.detail.startsWith("ignored-deployable-files:")).toBe(true);
+    expect(c.detail).toContain(path_);
+  };
+
+  describe("hosting", () => {
+    test.each(["!! public/node_modules/", "!! public/node_modules/pkg/index.js"])(
+      "hosting.ignore [] + %s BLOCKS (Firebase Hosting has no implicit node_modules exclusion)",
+      async (line) => {
+        expectBlocked(await prov([line], cfg({ hosting: { public: "public", ignore: [] } })), line.slice(3));
+      },
+    );
+
+    test("hosting without an ignore key behaves like an empty list: BLOCKS", async () => {
+      expectBlocked(await prov(["!! public/node_modules/"], cfg({ hosting: { public: "public" } })), "public/node_modules/");
+    });
+
+    test("control: hosting.ignore ['**/node_modules/**'] allows the same entries", async () => {
+      for (const line of ["!! public/node_modules/", "!! public/node_modules/pkg/index.js", "!! public/sub/node_modules/"]) {
+        expect({ line, status: (await prov([line], cfg({}))).status }).toEqual({ line, status: "OK" });
+      }
+    });
+
+    test("hosting uses whole-path matching: ['node_modules'] excludes public/node_modules but NOT public/sub/node_modules", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: ["node_modules"] } });
+      expect((await prov(["!! public/node_modules/"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! public/sub/node_modules/"], json), "public/sub/node_modules/");
+    });
+
+    test("hosting does NOT apply functions-style basename matching to any slash-free pattern ('*.tmp' vs public/a/x.tmp)", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: ["*.tmp"] } });
+      expect((await prov(["!! public/x.tmp"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! public/a/x.tmp"], json), "public/a/x.tmp");
+    });
+
+    // The implementation does not model firebase-tools' implicit hosting exclusions
+    // (**/firebase-debug.log, **/firebase-debug.*.log, .firebase/*): they are NOT applied, so these entries block
+    // unless the configured ignore list (or **/.* for dot paths) excludes them. Stricter than firebase-tools; pinned here.
+    test("hosting implicit exclusions are NOT modelled: ignored public/firebase-debug.log and public/firebase-debug.1.log block with hosting.ignore []", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: [] } });
+      expectBlocked(await prov(["!! public/firebase-debug.log"], json), "public/firebase-debug.log");
+      expectBlocked(await prov(["!! public/firebase-debug.1.log"], json), "public/firebase-debug.1.log");
+    });
+
+    test("hosting implicit .firebase/* exclusion is NOT modelled: ignored public/.firebase/x blocks with hosting.ignore [] but is allowed by a configured **/.*", async () => {
+      expectBlocked(await prov(["!! public/.firebase/x"], cfg({ hosting: { public: "public", ignore: [] } })), "public/.firebase/x");
+      expect((await prov(["!! public/.firebase/x"], cfg({ hosting: { public: "public", ignore: ["**/.*"] } }))).status).toBe("OK");
+    });
+
+    test("hosting.ignore that lists firebase-debug patterns excludes them (explicit list works)", async () => {
+      const json = cfg({ hosting: { public: "public", ignore: ["**/firebase-debug.log", "**/firebase-debug.*.log"] } });
+      expect((await prov(["!! public/firebase-debug.log", "!! public/a/firebase-debug.2.log"], json)).status).toBe("OK");
+    });
+  });
+
+  describe("functions", () => {
+    test("no ignore key: Firebase's default ['node_modules', '.git'] applies -> functions/node_modules and functions/.git are allowed", async () => {
+      const json = cfg({ functions: [{ source: "functions" }] });
+      for (const line of ["!! functions/node_modules/", "!! functions/.git/", "!! functions/src/node_modules/x/"]) {
+        expect({ line, status: (await prov([line], json)).status }).toEqual({ line, status: "OK" });
+      }
+    });
+
+    test("no ignore key: the default does NOT include *.local (it blocks), unlike the real config", async () => {
+      expectBlocked(await prov(["!! functions/foo.local"], cfg({ functions: [{ source: "functions" }] })), "functions/foo.local");
+    });
+
+    test("ignore [] (explicit): functions/node_modules and functions/.git BLOCK", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: [] }] });
+      expectBlocked(await prov(["!! functions/node_modules/"], json), "functions/node_modules/");
+      expectBlocked(await prov(["!! functions/.git/"], json), "functions/.git/");
+    });
+
+    test("ignore [] still allows the implicit firebase-debug.log and firebase-debug.*.log", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: [] }] });
+      expect((await prov(["!! functions/firebase-debug.log", "!! functions/firebase-debug.3.log"], json)).status).toBe("OK");
+    });
+
+    test("a configured ignore list that omits them still allows firebase-debug.log and firebase-debug.*.log (implicit)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: ["node_modules"] }] });
+      expect((await prov(["!! functions/firebase-debug.log", "!! functions/firebase-debug.9.log"], json)).status).toBe("OK");
+      // ... but the implicit entries do not widen anything else
+      expectBlocked(await prov(["!! functions/foo.local"], json), "functions/foo.local");
+    });
+
+    test("a non-array ignore value is treated as absent (default list)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: "node_modules" }] });
+      expect((await prov(["!! functions/node_modules/"], json)).status).toBe("OK");
+    });
+
+    test("each codebase uses its OWN list: only the second codebase has ignore []", async () => {
+      const json = cfg({
+        functions: [
+          { source: "functions", ignore: FN_IGNORE },
+          { source: "functions-equipment-identity", ignore: [] },
+        ],
+      });
+      expect((await prov(["!! functions/node_modules/"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! functions-equipment-identity/node_modules/"], json), "functions-equipment-identity/node_modules/");
+    });
+
+    test.each([
+      ["functions/src/node_modules/", "src/node_modules"],
+      ["functions/a/b/c/node_modules/pkg/", "a/b/c/node_modules"],
+    ])("nested %s is allowed by basename matching ('node_modules' listed; functions targets use matchBase)", async (p) => {
+      expect((await prov([`!! ${p}`], cfg({}))).status).toBe("OK");
+    });
+
+    test("basename matching applies to any slash-free functions pattern ('*.tmp' matches functions/a/b/x.tmp)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: ["*.tmp"] }] });
+      expect((await prov(["!! functions/a/b/x.tmp"], json)).status).toBe("OK");
+    });
+
+    test("a pattern WITH a slash is NOT basename-matched for functions ('src/node_modules' matches functions/src/node_modules but not functions/other/src/node_modules)", async () => {
+      const json = cfg({ functions: [{ source: "functions", ignore: ["src/node_modules"] }] });
+      expect((await prov(["!! functions/src/node_modules/"], json)).status).toBe("OK");
+      expectBlocked(await prov(["!! functions/other/src/node_modules/"], json), "functions/other/src/node_modules/");
+    });
+
+    test("basename matching still never makes a pattern match a different NAME (node_modules_backup blocks)", async () => {
+      expectBlocked(await prov(["!! functions/node_modules_backup/"], cfg({})), "functions/node_modules_backup/");
+    });
+  });
+
+  describe("unreadable / invalid firebase.json (strict: empty ignore lists)", () => {
+    test.each([["missing file", null], ["invalid JSON", "{not json"], ["JSON null", "null"], ["JSON string", '"x"']])(
+      "%s: ignored functions/node_modules, the second codebase's node_modules and public/node_modules all BLOCK",
+      async (_label, content) => {
+        for (const line of [
+          "!! functions/node_modules/",
+          "!! functions-equipment-identity/node_modules/",
+          "!! public/node_modules/",
+          "!! functions/.git/",
+        ]) {
+          expectBlocked(await prov([line], content), line.slice(3));
+        }
+      },
+    );
+
+    test("with the same unreadable file functions/lib, functions-equipment-identity/lib, .env and .env.<project> are STILL allowed", async () => {
+      const lines = [
+        "!! functions/lib/",
+        "!! functions/lib/index.js",
+        "!! functions-equipment-identity/lib/",
+        "!! functions/.env",
+        "!! functions/.env.fitness-app-phase2-korostelev",
+        "!! functions-equipment-identity/.env.fitness-app-korostelev",
+      ];
+      expect((await prov(lines, "{not json")).status).toBe("OK");
+    });
+  });
+
+  test("lib dirs and env files are allowed independently of the ignore lists (functions ignore [] and hosting ignore [])", async () => {
+    const json = cfg({
+      hosting: { public: "public", ignore: [] },
+      functions: [
+        { source: "functions", ignore: [] },
+        { source: "functions-equipment-identity", ignore: [] },
+      ],
+    });
+    const lines = [
+      "!! functions/lib/",
+      "!! functions-equipment-identity/lib/index.js",
+      "!! functions/.env",
+      "!! functions/.env.fitness-app-phase2-korostelev",
+      "!! functions-equipment-identity/.env.x",
+    ];
+    expect((await prov(lines, json)).status).toBe("OK");
+  });
+
+  test("a node_modules directory OUTSIDE every uploaded dir is not special-cased any more: not reported by git for this pathspec, and a quoted one blocks", async () => {
+    expect((await prov(["!! tools/node_modules/"], cfg({}))).status).toBe("OK"); // outside the pathspec: git never lists it
+    expectBlocked(await prov(['!! "functions/node_modules/caf\\303\\251"'], cfg({})), "caf");
   });
 });

@@ -110,6 +110,30 @@ class LogEvent {
 /// data in the first place. This catches the accident, not the intent.
 String redact(String input) {
   var out = input;
+  // Location, heart-rate and place values (S02 design 8): a coordinate pair, a
+  // labelled latitude/longitude, a geohash, a heart-rate reading, a labelled
+  // place name. Applied first so the digit-run rule below cannot half-mask them.
+  out = out.replaceAll(
+      RegExp(r'-?\d{1,3}\.\d{3,}\s*[,;/ ]\s*-?\d{1,3}\.\d{3,}'), '[coordinate]');
+  out = out.replaceAll(
+      RegExp(r'\b(?:lat|latitude|lon|lng|longitude)\s*[:=]\s*-?\d+(?:\.\d+)?',
+          caseSensitive: false),
+      '[coordinate]');
+  out = out.replaceAll(
+      RegExp(r'\bgeohash\s*[:=]\s*\w+', caseSensitive: false), '[geohash]');
+  out = out.replaceAll(
+      RegExp(r'\b(?=[0-9b-hjkmnp-z]*\d)(?=[0-9b-hjkmnp-z]*[b-hjkmnp-z])[0-9b-hjkmnp-z]{7,12}\b'),
+      '[geohash]');
+  out = out.replaceAll(
+      RegExp(r'\b(?:hr|heart[\s_-]?rate|heartrate|pulse)\b\D{0,12}\d{2,3}(?:\.\d+)?',
+          caseSensitive: false),
+      '[hr]');
+  out = out.replaceAll(
+      RegExp(r'\b\d{2,3}(?:\.\d+)?\s*bpm\b', caseSensitive: false), '[hr]');
+  out = out.replaceAll(
+      RegExp(r'\b(?:place|city|address|location|venue|street)\s*[:=]\s*[^,;\n]+',
+          caseSensitive: false),
+      '[place]');
   // Email addresses.
   out = out.replaceAll(
       RegExp(r'[\w.+-]+@[\w-]+\.[\w.-]+', caseSensitive: false), '[email]');

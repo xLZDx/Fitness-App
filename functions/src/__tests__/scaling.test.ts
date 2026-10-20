@@ -47,7 +47,7 @@ jest.mock("firebase-functions/logger", () => ({
 
 import * as index from "../index";
 import { clipUrl, clipUrls } from "../video_urls";
-import { AI_METERED, INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
+import { ACTIVITY_COMMIT, AI_METERED, BODY_SCAN, FOOD_LOOKUP, INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
 import { noteAppCheck } from "../abuse_guard";
 
 /** `__endpoint` is internal to firebase-functions and untyped for consumers. */
@@ -84,6 +84,34 @@ const ENTRYPOINTS: Record<string, unknown> = {
   runProductionCanary: index.runProductionCanary,
   // MVP1.G3 Step 10A. Same registration discipline.
   runEnforcementStateCheck: index.runEnforcementStateCheck,
+  // Body Scan (C12). The four callables share BODY_SCAN (fn-bodyscan); the purge
+  // job is scheduled and single-flight. `reconcileAccountDeletions` is the durable
+  // account-deletion retry sweep, also scheduled and single-flight. Registered in
+  // the same change that exported them, as the discipline above requires.
+  createBodyScan: index.createBodyScan,
+  estimateBodyScan: index.estimateBodyScan,
+  deleteBodyScan: index.deleteBodyScan,
+  manageBodyScanData: index.manageBodyScanData,
+  purgeExpiredBodyScanPhotos: index.purgeExpiredBodyScanPhotos,
+  sweepLateBodyScanUploads: index.sweepLateBodyScanUploads,
+  reconcileAccountDeletions: index.reconcileAccountDeletions,
+  // Food (C20): two metered AI callables on AI_METERED, two lookup callables on
+  // FOOD_LOOKUP.
+  analyzeMealPhoto: index.analyzeMealPhoto,
+  parseNutritionLabel: index.parseNutritionLabel,
+  lookupBarcode: index.lookupBarcode,
+  searchFoods: index.searchFoods,
+  // S02 unified activity (seven callables of design 5.4 plus the three scheduled jobs).
+  setActivityCloudSettings: index.setActivityCloudSettings,
+  deleteActivity: index.deleteActivity,
+  createActivityStreamUpload: index.createActivityStreamUpload,
+  commitActivityStream: index.commitActivityStream,
+  deleteAllActivityStreams: index.deleteAllActivityStreams,
+  getActivityStreamDownloadUrls: index.getActivityStreamDownloadUrls,
+  sendDebugTelemetry: index.sendDebugTelemetry,
+  purgeExpiredActivityStreams: index.purgeExpiredActivityStreams,
+  sweepLateActivityStreams: index.sweepLateActivityStreams,
+  reconcileActivityStreams: index.reconcileActivityStreams,
 };
 
 describe("scaling ceilings", () => {
@@ -93,7 +121,7 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these twenty", () => {
+  test("the deployed surface is exactly these thirty", () => {
     // A function added without a ceiling is the regression this whole file
     // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
@@ -180,7 +208,19 @@ describe("scaling ceilings", () => {
       "aiExerciseGeneration",
       "runProductionCanary",
       "runEnforcementStateCheck",
+      // Scheduled and pinned single-flight (see the Body Scan block below).
+      "purgeExpiredBodyScanPhotos",
+      "sweepLateBodyScanUploads",
+      "reconcileAccountDeletions",
+      // S02 scheduled jobs, pinned single-flight (concurrency: 1).
+      "purgeExpiredActivityStreams",
+      "sweepLateActivityStreams",
+      "reconcileActivityStreams",
+      // S02 remediation A8: the commit callable runs on ACTIVITY_COMMIT (concurrency 4).
+      "commitActivityStream",
     ];
+    // The food AI callables ride AI_METERED, which sets an explicit concurrency.
+    explicitConcurrency.push("analyzeMealPhoto", "parseNutritionLabel");
     for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
       if (explicitConcurrency.includes(name)) continue;
       expect(endpointOf(fn).concurrency).not.toEqual(expect.any(Number));
@@ -196,6 +236,31 @@ describe("scaling ceilings", () => {
     // edit that quietly raises it back toward the default fails here first.
     expect(AI_METERED.concurrency).toBe(10);
     expect(AI_METERED.maxInstances * Number(AI_METERED.concurrency)).toBeLessThan(200);
+  });
+
+  test("S02 A8: commitActivityStream deploys on ACTIVITY_COMMIT: 1GiB, concurrency 4, maxInstances 5, one region", () => {
+    expect(ACTIVITY_COMMIT.memory).toBe("1GiB");
+    expect(ACTIVITY_COMMIT.concurrency).toBe(4);
+    expect(ACTIVITY_COMMIT.maxInstances).toBe(5);
+    const ep = endpointOf(index.commitActivityStream);
+    expect(ep.availableMemoryMb).toBe(1024);
+    expect(ep.concurrency).toBe(4);
+    expect(ep.maxInstances).toBe(5);
+    expect(ep.region).toEqual(["europe-west1"]);
+  });
+
+  test("S02 A8: the other activity callables keep the default 256 MiB (only the commit callable was raised)", () => {
+    for (const n of ["setActivityCloudSettings", "deleteActivity", "createActivityStreamUpload", "deleteAllActivityStreams", "getActivityStreamDownloadUrls"]) {
+      const mem = endpointOf(ENTRYPOINTS[n]).availableMemoryMb;
+      expect(typeof mem === "number" ? mem : 256).toBeLessThanOrEqual(256);
+    }
+  });
+
+  test("S02 A8: the stream reconciler has 1GiB and stays single-flight", () => {
+    const ep = endpointOf(index.reconcileActivityStreams);
+    expect(ep.availableMemoryMb).toBe(1024);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
   });
 
   test("the production canary is genuinely single-flight: maxInstances 1 AND concurrency 1", () => {
@@ -396,5 +461,157 @@ describe("noteAppCheck records the measurement and nothing else", () => {
 
   it("carries no uid for a signed-out caller either", () => {
     expect(call({ app: {} })[1]).not.toHaveProperty("uid");
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* E0 / C02: BODY_SCAN and FOOD_LOOKUP profiles, fn-bodyscan (T07)     */
+/* ------------------------------------------------------------------ */
+
+describe("Body Scan + Nutrition Coach profiles (C02, RULES-16, D-60, D-64)", () => {
+  const withEnvFresh = (env: Record<string, string | undefined>) => {
+    const saved = { ...process.env };
+    for (const [key, value] of Object.entries(env)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    let mod: typeof import("../scaling");
+    jest.isolateModules(() => {
+      mod = require("../scaling");
+    });
+    process.env = saved;
+    return mod!;
+  };
+
+  test("BODY_SCAN: region europe-west1, maxInstances exactly 10, no concurrency override", () => {
+    const s = withEnvFresh({ GCLOUD_PROJECT: "fitness-app-korostelev" });
+    expect(s.BODY_SCAN.region).toBe("europe-west1");
+    expect(s.BODY_SCAN.maxInstances).toBe(10);
+    expect(s.BODY_SCAN).not.toHaveProperty("concurrency");
+    expect(s.BODY_SCAN).not.toHaveProperty("minInstances");
+  });
+
+  test("BODY_SCAN runs as the dedicated fn-bodyscan identity, NOT fn-data and NOT fn-ai-runtime", () => {
+    const s = withEnvFresh({ GCLOUD_PROJECT: "fitness-app-korostelev" });
+    expect(s.RUNTIME_SA.bodyScan).toBe("fn-bodyscan@fitness-app-korostelev.iam.gserviceaccount.com");
+    expect(s.BODY_SCAN.serviceAccount).toBe(s.RUNTIME_SA.bodyScan);
+    expect(s.BODY_SCAN.serviceAccount).not.toBe(s.RUNTIME_SA.data);
+    expect(s.BODY_SCAN.serviceAccount).not.toBe(s.RUNTIME_SA.aiRuntime);
+  });
+
+  test("the bodyScan identity follows the deploy project and is distinct from every other tier", () => {
+    const s = withEnvFresh({ GCLOUD_PROJECT: "other-project" });
+    expect(s.RUNTIME_SA.bodyScan).toBe("fn-bodyscan@other-project.iam.gserviceaccount.com");
+    const all = Object.values(s.RUNTIME_SA);
+    expect(all).toHaveLength(8);
+    expect(new Set(all).size).toBe(8);
+  });
+
+  test("BODY_SCAN App Check follows the fail-CLOSED AI flag: on by default, on for typos, off only for 'false'", () => {
+    for (const value of [undefined, "1", "TRUE", "yes", "", "0"]) {
+      const s = withEnvFresh({ APP_CHECK_ENFORCED_AI: value });
+      expect(s.BODY_SCAN.enforceAppCheck).toBe(true);
+      expect(s.FOOD_LOOKUP.enforceAppCheck).toBe(true);
+    }
+    const off = withEnvFresh({ APP_CHECK_ENFORCED_AI: "false", APP_CHECK_ENFORCED: undefined });
+    expect(off.BODY_SCAN.enforceAppCheck).toBe(false);
+    expect(off.FOOD_LOOKUP.enforceAppCheck).toBe(false);
+  });
+
+  test("BODY_SCAN and FOOD_LOOKUP track the same flag object value as AI_METERED", () => {
+    for (const value of [undefined, "false", "true"]) {
+      const s = withEnvFresh({ APP_CHECK_ENFORCED_AI: value, APP_CHECK_ENFORCED: undefined });
+      expect(s.BODY_SCAN.enforceAppCheck).toBe(s.AI_METERED.enforceAppCheck);
+      expect(s.FOOD_LOOKUP.enforceAppCheck).toBe(s.AI_METERED.enforceAppCheck);
+    }
+  });
+
+  test("FOOD_LOOKUP: region europe-west1, maxInstances exactly 10, runs as fn-data, no concurrency override", () => {
+    const s = withEnvFresh({ GCLOUD_PROJECT: "fitness-app-korostelev" });
+    expect(s.FOOD_LOOKUP.region).toBe("europe-west1");
+    expect(s.FOOD_LOOKUP.maxInstances).toBe(10);
+    expect(s.FOOD_LOOKUP.serviceAccount).toBe("fn-data@fitness-app-korostelev.iam.gserviceaccount.com");
+    expect(s.FOOD_LOOKUP.serviceAccount).toBe(s.RUNTIME_SA.data);
+    expect(s.FOOD_LOOKUP).not.toHaveProperty("concurrency");
+  });
+
+  test("neither profile pays for an idle warm instance", () => {
+    expect(BODY_SCAN).not.toHaveProperty("minInstances");
+    expect(FOOD_LOOKUP).not.toHaveProperty("minInstances");
+  });
+
+  test("the previous identities are untouched by adding the eighth tier", () => {
+    const s = withEnvFresh({ GCLOUD_PROJECT: "fitness-app-korostelev" });
+    expect(s.RUNTIME_SA.aiRuntime).toBe("fn-ai-runtime@fitness-app-korostelev.iam.gserviceaccount.com");
+    expect(s.RUNTIME_SA.data).toBe("fn-data@fitness-app-korostelev.iam.gserviceaccount.com");
+    expect(s.RUNTIME_SA.accountDelete).toBe("fn-account-delete@fitness-app-korostelev.iam.gserviceaccount.com");
+  });
+});
+
+describe("Body Scan deployed endpoints (C12 wired onto the C02 profiles)", () => {
+  const callables = ["createBodyScan", "estimateBodyScan", "deleteBodyScan", "manageBodyScanData"];
+
+  test.each(callables)("%s deploys with the BODY_SCAN profile: europe-west1, maxInstances 10, fn-bodyscan, App Check follows the AI flag", (name) => {
+    const ep = endpointOf(ENTRYPOINTS[name]);
+    expect(ep.region).toEqual(["europe-west1"]);
+    expect(ep.maxInstances).toBe(10);
+    expect(ep.serviceAccountEmail).toBe(BODY_SCAN.serviceAccount);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@.+\.iam\.gserviceaccount\.com$/);
+    expect(ep.callableTrigger).toBeDefined();
+  });
+
+  test("the purge job is single-flight (maxInstances 1 AND concurrency 1) and runs as fn-bodyscan", () => {
+    const ep = endpointOf(index.purgeExpiredBodyScanPhotos);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@/);
+    expect(ep.scheduleTrigger?.schedule).toBe("30 3 * * *");
+  });
+
+  test("the late-upload sweep is single-flight, every 5 minutes, and runs as fn-bodyscan", () => {
+    const ep = endpointOf(index.sweepLateBodyScanUploads);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-bodyscan@/);
+    expect(ep.scheduleTrigger?.schedule).toBe("every 5 minutes");
+  });
+
+  test("the deletion reconciler is single-flight and runs as the account-delete identity, not fn-bodyscan", () => {
+    const ep = endpointOf(index.reconcileAccountDeletions);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+    expect(ep.serviceAccountEmail).toMatch(/^fn-account-delete@/);
+  });
+});
+
+describe("Food deployed endpoints (C20 wired onto AI_METERED / FOOD_LOOKUP)", () => {
+  test.each(["analyzeMealPhoto", "parseNutritionLabel"])(
+    "%s runs on the AI_METERED profile: fn-ai-runtime, the AI concurrency, App Check follows the AI flag",
+    (name) => {
+      const ep = endpointOf(ENTRYPOINTS[name]);
+      expect(ep.region).toEqual(["europe-west1"]);
+      expect(ep.maxInstances).toBe(AI_METERED.maxInstances);
+      expect(ep.concurrency).toBe(10);
+      expect(ep.serviceAccountEmail).toBe(AI_METERED.serviceAccount);
+      expect(ep.serviceAccountEmail).toMatch(/^fn-ai-runtime@/);
+    },
+  );
+
+  test.each(["lookupBarcode", "searchFoods"])(
+    "%s runs on FOOD_LOOKUP: maxInstances 10, fn-data (no photo access, no Vertex), platform-default concurrency",
+    (name) => {
+      const ep = endpointOf(ENTRYPOINTS[name]);
+      expect(ep.region).toEqual(["europe-west1"]);
+      expect(ep.maxInstances).toBe(10);
+      expect(ep.serviceAccountEmail).toBe(FOOD_LOOKUP.serviceAccount);
+      expect(ep.serviceAccountEmail).toMatch(/^fn-data@/);
+      expect(ep.concurrency).not.toEqual(expect.any(Number));
+    },
+  );
+
+  test("no food callable runs as the body-scan identity (fn-bodyscan is photo-bucket only)", () => {
+    for (const name of ["analyzeMealPhoto", "parseNutritionLabel", "lookupBarcode", "searchFoods"]) {
+      expect(endpointOf(ENTRYPOINTS[name]).serviceAccountEmail).not.toMatch(/^fn-bodyscan@/);
+    }
   });
 });

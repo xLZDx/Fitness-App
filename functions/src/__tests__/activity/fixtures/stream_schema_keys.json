@@ -1,0 +1,24 @@
+{
+  "comment": "Shared by the Dart test U37 (stream_schema_pin_test.dart) and the functions validator test F53/F91. Mirrors functions/src/activity_streams/schema.ts. A rename on either side must change this file.",
+  "streamKeys": {
+    "gps": ["kind", "unit", "sourceId", "offsetsMs", "lats", "lons", "accuracies"],
+    "altitude": ["kind", "unit", "sourceId", "offsetsMs", "values"],
+    "speed": ["kind", "unit", "sourceId", "offsetsMs", "values"]
+  },
+  "lapKeys": ["index", "kind", "startOffsetS", "durationS", "distanceM", "strokeCount", "strokeType"],
+  "provenanceKeys": ["sourceId", "sourceKind", "importedAt", "deviceModel", "appPackage", "externalId", "fieldsContributed"],
+  "lapStringPatterns": {
+    "kind": "^(?:auto|manual|poolLength|interval)$",
+    "strokeType": "^(?:free|back|breast|fly|mixed)$"
+  },
+  "provenanceStringPatterns": {
+    "sourceId": "^[A-Za-z0-9._:-]{1,64}$",
+    "sourceKind": "^(?:platformHealth|bleSensor|vendorCloud|companionApp|fileImport)$",
+    "importedAt": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$",
+    "deviceModel": "^[A-Za-z0-9 ._()-]{1,64}$",
+    "appPackage": "^[a-z][a-z0-9_.]{0,127}$",
+    "externalId": "^[A-Za-z0-9._:-]{1,128}$"
+  },
+  "fieldContributedPattern": "^[A-Za-z][A-Za-z0-9]{0,31}$",
+  "coordinateLike": "\\d\\.\\d{2,}|\\d\\s*,\\s*-?\\d"
+}

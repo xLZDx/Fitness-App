@@ -41,6 +41,11 @@ enum OnboardingStep {
   /// holds the same ground as free text nothing may read.
   healthFlags,
 
+  /// Food and activity inputs for the nutrition coach (design s16.2). Placed
+  /// AFTER [healthFlags] so the two nutrition safety questions are asked before
+  /// any goal, pace or target text is shown (D-75).
+  nutrition,
+
   /// Gate M. The PAR-Q+ pre-exercise screen — the only step whose answers can
   /// stop the app producing a workout at all.
   screening,
@@ -78,6 +83,10 @@ const List<OnboardingStep> kOnboardingOrder = [
   // together means a user answers "what can you not do" and "what has a doctor
   // told you" in one sitting rather than either side of three other screens.
   OnboardingStep.healthFlags,
+  // D-75: straight after the health questions, so the nutrition safety
+  // questions (on `healthFlags`) are always answered before this step shows a
+  // pace, a default goal or any target text. The step reads those answers.
+  OnboardingStep.nutrition,
   // Immediately before the preview, because the preview is the first screen in
   // this flow that produces a workout, and this is the gate on producing one.
   // Placing it first instead would ask the medical questions before the user
@@ -189,6 +198,11 @@ bool isOnboardingStepAnswered(OnboardingStep step, UserProfile p) {
       // unanswered one is simply absent from the context rather than a hole in
       // a decision rule.
       return !p.health.flags.isUnanswered || p.health.flags.restrictions.isNotEmpty;
+    case OnboardingStep.nutrition:
+      // "Touched": any nutrition preference, or an allergen chip. The safety
+      // answers belong to `healthFlags` and are deliberately not counted here,
+      // otherwise answering them would mark this screen done unseen.
+      return !p.nutrition.isEmpty || p.health.flags.foodAllergens.isNotEmpty;
     case OnboardingStep.screening:
       // The one step where this asks "complete", not "touched", and the
       // departure from the rule above is deliberate.
