@@ -7,9 +7,11 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | Path | First heading | Bytes |
 |---|---|---|
 | `AGENTS.md` | AGENTS.md — Fitness App | 6067 |
-| `CLAUDE.md` | Fitness App — router | 9955 |
+| `CLAUDE.md` | Fitness App — router | 10024 |
 | `FITNESS_APP_TASK_LIST.md` | Fitness App — Complete Task List | 15792 |
+| `README.md` | Fitness App | 4098 |
 | `core/ATTRIBUTIONS_NUTRITION.md` | Attributions: nutrition, food diary and body check-in | 4343 |
+| `core/AUDIT_REPORT_2026-08-11.en.md` | Full Fitness App Audit — English Historical Translation | 23776 |
 | `core/AUDIT_REPORT_2026-08-11.md` | Полный аудит Fitness App | 28796 |
 | `core/BACKLOG_2026-07-31.md` | Backlog — operator dump of 2026-07-31 | 31308 |
 | `core/CATALOG_STATE_2026-08-03.md` | Catalog — full picture, 2026-08-03 | 4114 |
@@ -19,7 +21,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/CONVENTIONS.md` | Engineering conventions | 4241 |
 | `core/CURRENT_STATE.md` | Current state | 14555 |
 | `core/CURRENT_STATE_BODY_SCAN_NUTRITION.md` | Current state: Body Scan + Nutrition Coach sprint | 8754 |
-| `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 15494 |
+| `core/DATA_INVENTORY_2026-08-11.md` | Data inventory — every store keyed to a user (2026-08-11) | 17792 |
 | `core/DEBUGGING.md` | Dev observability — debug daemon | 8855 |
 | `core/DECISION_SELF_BOOKING.md` | Operator decision — should a coach be able to book themselves? | 11742 |
 | `core/DEPENDENCIES.md` | DEPENDENCIES | 1108 |
@@ -40,10 +42,11 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/G4_STEP7_PRODUCT_E2E_2026-08-29.md` | G4 Step 7 — product-level real-device E2E (S8) | 10971 |
 | `core/G4_STEP8_KILL_SWITCH_2026-08-29.md` | G4 Step 8 — rollback mechanism: a live, redeploy-free kill switch for the AI Gateway | 16957 |
 | `core/G4_STEP9_RELEASE_GUARD_2026-08-29.md` | G4 Step 9 — a fail-closed release guard for the AI Gateway | 34718 |
+| `core/HANDOFF_2026-09-25.en.md` | Historical English Companion — September 25 Fitness App Handoff | 13469 |
 | `core/HANDOFF_2026-09-25.md` | Handoff prompt — Fitness_App, gate T3 (Form Coach scoring reliability) | 13730 |
-| `core/INDEX.md` | core/ — documentation index | 12566 |
+| `core/INDEX.md` | core/ — documentation index | 14900 |
 | `core/LEGACY_CATALOG_REMOVED_2026-08-04.md` | The pre-purchase catalog is gone — 2026-08-04 | 6006 |
-| `core/LESSONS_LOG.md` | Lessons log | 171886 |
+| `core/LESSONS_LOG.md` | Lessons log | 183854 |
 | `core/MASTER_PLAN_2026-08-26.md` | Fitness_App — Master Plan (Consolidated Decisions, Designs, Plans) | 91666 |
 | `core/ML_PLATFORM_ARCHITECTURE.md` | SPTR — ML and continuous-retraining architecture | 24308 |
 | `core/OBS1_G3_REBASELINE_2026-08-27.md` | OBS-1 re-baseline evidence ledger — MVP1.G3, Step 0 | 12322 |
@@ -52,6 +55,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/PHASE_4B_STRIPE_SETUP.md` | Phase 4B — Stripe + Cloud Functions runbook | 12263 |
 | `core/PLAN_2026-07-31.md` | План работ — Fitness App, 2026-07-31 | 58074 |
 | `core/PLAN_AUDIT_REMEDIATION_2026-08-04.md` | Fitness App remediation — consensus plan, 2026-08-04 | 59801 |
+| `core/PLAN_GYMS_AND_NEWS_2026-08-01.en.md` | Favorite Gyms and Their News — English Translation of an Unapproved Proposal | 11704 |
 | `core/PLAN_GYMS_AND_NEWS_2026-08-01.md` | Любимые залы и новости о них — проект решения | 11996 |
 | `core/PLATFORM_SCOPE.md` | Platform scope — what this product officially supports | 4713 |
 | `core/PLAY_DATA_SAFETY_2026-08-05.md` | Google Play — Data safety answers (P0, 2026-08-05) | 21921 |
@@ -59,10 +63,13 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/PROVIDER_CLEANUP_INVENTORY.md` | Provider cleanup inventory (F010) | 6342 |
 | `core/RELEASE_BUILD_2026-08-16.md` | Android release build — 2026-08-16 (gate G2) | 7454 |
 | `core/REMEDIATION_ENGINEERING_FREEZE.md` | Engineering remediation — FROZEN | 9633 |
+| `core/RESUME_2026-08-14.en.md` | Fitness App — Historical Resume Checkpoint (English Translation) | 12033 |
 | `core/RESUME_2026-08-14.md` | Точка возобновления — 2026-08-14, 15:49 local (Europe/Chisinau) / 12:49 UTC | 13308 |
 | `core/RESUME_PROMPT_2026-08-04.md` | Resume prompt — Fitness App audit remediation, paste this as the first message in a new session | 7665 |
 | `core/SCAN_G1_SCOPE.md` | SCAN-G1 — the Scan tab is the design reference's Scan screen | 13532 |
+| `core/SESSION_STATE_2026-08-07.en.md` | Fitness App — August 7, 2026 Session Checkpoint (English Translation) | 5965 |
 | `core/SESSION_STATE_2026-08-07.md` | Состояние сессии на 2026-08-07 22:45 local / 19:45 UTC | 5549 |
+| `core/SESSION_STATE_2026-08-08.en.md` | Fitness App — August 8, 2026 Session Checkpoint and Rolling Updates (English Translation) | 27480 |
 | `core/SESSION_STATE_2026-08-08.md` | Состояние сессии на 2026-08-08 01:30 local / 22:30 UTC | 38697 |
 | `core/STATE_H_GATES_2026-08-03.md` | Hybrid catalog gates — state, 2026-08-03 | 9862 |
 | `core/TECHSTACK.md` | TECHSTACK | 2103 |
@@ -138,10 +145,15 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/decisions/gym-webhook-disclosure.md` | Decision: `gym-webhook-disclosure` | 4873 |
 | `core/decisions/roboflow-key-reissue.md` | Decision: `roboflow-key-reissue` | 1469 |
 | `core/decisions/scanner-pipeline-location.md` | Decision: `scanner-pipeline-location` | 3749 |
+| `core/design/ENGLISH_DOCUMENTATION_INDEX.md` | Fitness App — Design Documentation English Reference Inventory | 7724 |
 | `core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md` | P2.G5-readiness — Shadow-data telemetry lifecycle + measurement contract | 43825 |
+| `core/design/reference/fitness_hud_v1/CLAUDE.en.md` | Fitness App — Approved Historical HUD/Glass Visual Design (English Companion) | 4366 |
 | `core/design/reference/fitness_hud_v1/CLAUDE.md` | Fitness app — общий дизайн (утверждён) | 3800 |
+| `core/design/reference/fitness_hud_v1/README.en.md` | Fitness App — HUD Glass UI Design Handoff (English Historical Translation) | 16479 |
 | `core/design/reference/fitness_hud_v1/README.md` | Handoff: Fitness app — HUD glass UI (light + dark) | 18671 |
+| `core/design/reference/full_handoff_v1/CLAUDE.en.md` | Fitness App — Approved Historical HUD/Glass Visual Design (English Companion) | 4366 |
 | `core/design/reference/full_handoff_v1/CLAUDE.md` | Fitness app — общий дизайн (утверждён) | 3800 |
+| `core/design/reference/full_handoff_v1/README.en.md` | Fitness App — HUD Glass UI Design Handoff (English Historical Translation) | 16479 |
 | `core/design/reference/full_handoff_v1/README.md` | Handoff: Fitness app — HUD glass UI (light + dark) | 18671 |
 | `core/design/reference/full_handoff_v1/README_LOCAL.md` | Full design handoff — everything from the zip, unabridged | 5842 |
 | `core/design/reference/onboarding_v4/README.md` | Onboarding design reference — handoff v4 | 2863 |
@@ -174,9 +186,13 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md` | AUTONOMOUS PROGRAM AUTHORIZED — Fitness_App backlog closure run | 13664 |
 | `core/plans/AUTONOMOUS_CLOSURE_PROMPT_2026-10-08.md` | Fitness App / SPTR — автономный промпт закрытия всех инженерных хвостов | 31319 |
 | `core/plans/AUTONOMOUS_TAIL_CLOSURE_2026-10-07.md` | Fitness App / SPTR — автономное закрытие инженерных хвостов | 19240 |
+| `core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.en.md` | B1 — What the On-Device Equipment Model Did With Real Gym Photos (English Historical Translation) | 6075 |
 | `core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md` | B1 — что on-device модель делает с реальным залом (2026-08-07) | 6140 |
+| `core/plans/B3_MEDIA_DIAGNOSIS_2026-08-07.en.md` | B3 — People Photographs in Exercise Cards: Original Diagnosis DISPROVEN (English Translation) | 6441 |
 | `core/plans/B3_MEDIA_DIAGNOSIS_2026-08-07.md` | B3 — фото людей в карточках: диагноз ОПРОВЕРГНУТ (2026-08-07) | 5948 |
+| `core/plans/B5_DATA_SOURCES_2026-08-07.en.md` | B5 — Equipment Training Images: Measured Sources and Roboflow Update (English Translation) | 10136 |
 | `core/plans/B5_DATA_SOURCES_2026-08-07.md` | B5 — откуда брать картинки: измерено, а не предположено (2026-08-07) | 9144 |
+| `core/plans/B5b_TEXT_ANCHOR_2026-08-07.en.md` | B5b — Second Machine-Recognition Anchor: Read Equipment Text (English Translation) | 8430 |
 | `core/plans/B5b_TEXT_ANCHOR_2026-08-07.md` | B5b — второй якорь: читать то, что написано на тренажёре (2026-08-07) | 8772 |
 | `core/plans/BODY_SCAN_NUTRITION_SPRINT_PLAN_2026-10-15.md` | Body Scan + Nutrition Coach - sprint plan | 55479 |
 | `core/plans/BODY_SCAN_NUTRITION_TECH_DESIGN_2026-10-15.md` | Body Scan + Nutrition Coach - technical design | 215874 |
@@ -186,6 +202,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/CARD_FULL_CATALOG_AUDIT_2026-08-15.md` | Card — full-catalog re-check (1887 exercises) | 22699 |
 | `core/plans/CATALOG_DESCRIPTION_COVERAGE_2026-08-15.md` | Exercise catalog — description coverage and defect accounting | 8237 |
 | `core/plans/COACH_ENGINE_SHIP_GATE_2026-10-13.md` | Coach engine ship gate (2026-10-13) | 4775 |
+| `core/plans/ENGLISH_TRANSLATION_INDEX.md` | Fitness App — English Documentation Coverage for core/plans | 8890 |
 | `core/plans/FIGMA_MAKE_REFACTOR_AUDIT_2026-08-05.md` | R0 / Gate 0 — Figma Make → Flutter audit (2026-08-05) | 28296 |
 | `core/plans/FINAL_SCOPE_2026-08-16.md` | Final scope — everything not done, or not finished | 25836 |
 | `core/plans/GATE_V0_REVISED.md` | Gate V0 (revised) + round-1 findings for cross-review | 10039 |
@@ -194,18 +211,22 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/ML_STRATEGY_2026-08-11.md` | ML strategy — from three unvalidated features to programme generation | 15827 |
 | `core/plans/NEXT_STEPS_2026-07-31.md` | What to do next — after two review rounds | 9037 |
 | `core/plans/NEXT_TICKETS.md` | Next implementation tickets | 11865 |
+| `core/plans/O0_ONBOARDING_SCHEMA_2026-08-12.en.md` | O0 — Minimal Onboarding Schema Proposal (English Historical Companion) | 11002 |
 | `core/plans/O0_ONBOARDING_SCHEMA_2026-08-12.md` | O0 — предложение схемы под фигмовский онбординг (2026-08-12) | 14237 |
 | `core/plans/PHASE2_BODY_SCAN_COACH_REFERENCE_REVIEW_2026-10-09.md` | Phase 2 candidate: body-composition scan + adaptive-coaching features — reference app walkthrough | 12092 |
 | `core/plans/PHASE2_MULTISPORT_DEVICES_BACKLOG_2026-10-15.md` | Phase 2 priority backlog: multi-sport tracking, device ecosystem, nutrition-aware programmes | 27904 |
 | `core/plans/PLAN_AI_RESTRUCTURE_2026-07-28.md` | Plan — AI-Friendly Repo Restructure (2026-07-28) | 19394 |
 | `core/plans/PLAN_AUDIT_2026-08-11_REMEDIATION.md` | Audit remediation plan — 2026-08-11 | 12677 |
+| `core/plans/PLAN_BUGS_2026-08-13.en.md` | Fitness App — August 13 Screenshot Defects and Remaining Gates (English Translation) | 19236 |
 | `core/plans/PLAN_BUGS_2026-08-13.md` | План: баги со скриншотов 13 августа + остаток | 32013 |
 | `core/plans/PLAN_DEVICE_DEFECTS_2026-07-30.md` | Plan — nine device-reported defects (2026-07-30) | 10658 |
 | `core/plans/PLAN_DEVICE_DEFECTS_ROUND2_2026-07-30.md` | Device-defect round 2 — five operator reports (2026-07-30) | 9275 |
 | `core/plans/PLAN_F3_WORKOUT_SESSION_2026-08-06.md` | F3 — WorkoutSession entity + backfill + aggregate read layer | 15905 |
 | `core/plans/PLAN_R10_POSTURE_2026-08-08.md` | R10 — Posture, plan (2026-08-08) | 7940 |
+| `core/plans/PLAN_R11_DECISIONS_2026-08-12.en.md` | R11 — Implementation Plan From Operator Decisions (English Historical Translation) | 14922 |
 | `core/plans/PLAN_R11_DECISIONS_2026-08-12.md` | R11 — план реализации по ответам оператора (2026-08-12) | 23415 |
 | `core/plans/PLAN_R11_FIGMA_PARITY_REBUILD_2026-08-08.md` | R11 — Figma parity rebuild, plan (2026-08-08) | 18737 |
+| `core/plans/PLAN_REDESIGN_REMAINDER_2026-08-12.en.md` | Fitness App — Redesign Remainder, August 12 Checkpoint (English Translation) | 12802 |
 | `core/plans/PLAN_REDESIGN_REMAINDER_2026-08-12.md` | Остаток редизайна — состояние на 2026-08-12 | 20122 |
 | `core/plans/PRODUCT_HARDENING_SPRINT_2026-10-13.md` | Product hardening sprint — plan (2026-10-13) | 25518 |
 | `core/plans/PRODUCT_PHASE2_EXPANSION_RECONCILIATION_2026-10-15.md` | PRODUCT_PHASE2_EXPANSION - reconciliation of the research handoff package with the repo | 42173 |
@@ -217,6 +238,7 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/plans/RECOG_C1_WINDOW2_RUNBOOK.md` | RECOG-C1 — window 2 runbook | 15111 |
 | `core/plans/RECOG_SO1_PREREGISTRATION_2026-09-07.md` | RECOG-SO1 — pre-registration | 19283 |
 | `core/plans/RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md` | RECOG-SO1 pre-registration, REVISION 2 — 2026-09-08 | 35835 |
+| `core/plans/RESUME_O_SERIES_2026-08-12.en.md` | Fitness App — O-Series Resume Checkpoint (English Translation) | 9720 |
 | `core/plans/RESUME_O_SERIES_2026-08-12.md` | Возобновление серии O — состояние на 2026-08-12 | 11665 |
 | `core/plans/ROADMAP_2026_V2.md` | Roadmap 2026 v2 — Implementation Plan + New Game-Changer Features | 40706 |
 | `core/plans/SESSION_HANDOFF_2026-07-29.md` | Session handoff — Fitness App (paste this whole file as the prompt) | 11653 |
@@ -246,22 +268,30 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `core/vendor_requests/legs_2026-08-06.md` | Missing clip request -- Legs | 1344 |
 | `docs/EXPERIMENTS.md` | Experiments register | 1489 |
 | `docs/README.md` | docs/ — screenshot index | 1737 |
+| `docs/Redisign/DEV_COMPLETION_SCOPE_v1.5.en.md` | Dev Agent — Complete Missing Refactor Scope — v1.5 (English) | 4182 |
 | `docs/Redisign/DEV_COMPLETION_SCOPE_v1.5.md` | Dev Agent — Complete Missing Refactor Scope — v1.5 | 3957 |
+| `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.6.en.md` | Fitness App — Single-File Development Master Prompt v1.6 (English Historical Companion) | 43968 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.6.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v1.6 | 60996 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.7_EN.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v1.7 (ENGLISH) | 63220 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.8_EN.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v1.8 (ENGLISH) | 67739 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v1.9_EN.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v1.9 (ENGLISH) | 77027 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v2.0_EN(1).md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v2.0 (ENGLISH) | 84991 |
 | `docs/Redisign/DEV_SINGLE_FILE_MASTER_PROMPT_v2.0_EN.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v2.0 (ENGLISH) | 84991 |
+| `docs/Redisign/ENGLISH_DOCUMENTATION_INDEX.md` | Fitness-App Redesign — English Documentation Index | 6169 |
 | `docs/Redisign/FIGMA_DECISION_REGISTRY_SCREEN_PROMPT_v1.3 (1).md` | Figma Prompt — Interactive Decision Registry Screen v1.3 | 954 |
+| `docs/Redisign/FIGMA_DECISION_REGISTRY_SCREEN_PROMPT_v1.3.en.md` | Figma Prompt — Interactive Decision Registry Screen v1.3 (English Companion) | 2773 |
 | `docs/Redisign/FIGMA_DECISION_REGISTRY_SCREEN_PROMPT_v1.3.md` | Figma Prompt — Interactive Decision Registry Screen v1.3 | 954 |
 | `docs/Redisign/FIGMA_FINAL_MINIMUM_SCOPE_PROMPT_v1.5 (1).md` | Figma — Final Minimum Scope Before Development — v1.5 | 2985 |
+| `docs/Redisign/FIGMA_FINAL_MINIMUM_SCOPE_PROMPT_v1.5.en.md` | Figma — Final Minimum Scope Before Development, v1.5 (English Translation) | 3503 |
 | `docs/Redisign/FIGMA_FINAL_MINIMUM_SCOPE_PROMPT_v1.5.md` | Figma — Final Minimum Scope Before Development — v1.5 | 2985 |
 | `docs/Redisign/FIGMA_FULL_APP_REFACTOR_PROMPT_v1.3 (1).md` | FITNESS APP — FULL FIGMA REFACTOR PROMPT v1.1 | 49733 |
+| `docs/Redisign/FIGMA_FULL_APP_REFACTOR_PROMPT_v1.3.en.md` | Fitness App — Full Figma Refactor Brief v1.1 + v1.3 Governance Update (English Companion) | 35130 |
 | `docs/Redisign/FIGMA_FULL_APP_REFACTOR_PROMPT_v1.3.md` | FITNESS APP — FULL FIGMA REFACTOR PROMPT v1.1 | 49733 |
 | `docs/Redisign/HANDOFF_GAP_MATRIX_v1.5 (1).md` | Fitness App — Figma vs Dev Completion Matrix — v1.5 | 8545 |
+| `docs/Redisign/HANDOFF_GAP_MATRIX_v1.5.en.md` | Fitness App — Figma vs. Development Completion Matrix v1.5 (English Companion) | 8156 |
 | `docs/Redisign/HANDOFF_GAP_MATRIX_v1.5.md` | Fitness App — Figma vs Dev Completion Matrix — v1.5 | 8545 |
 | `docs/Redisign/LATEST_DEV_SINGLE_FILE_MASTER_PROMPT_EN.md` | FITNESS APP — SINGLE-FILE DEVELOPMENT MASTER PROMPT v1.7 (ENGLISH) | 63220 |
+| `docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.en.md` | Fitness App — Open Decisions Register v1.3 (English Companion) | 9215 |
 | `docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.md` | Fitness App — Open Decisions Register v1.3 | 6810 |
 | `docs/Redisign/R2_SCANNER_EXECUTION_CORRECTION_v2.0(1).md` | R2 Scanner Execution Correction — v2.0 | 2096 |
 | `docs/Redisign/R2_SCANNER_EXECUTION_CORRECTION_v2.0.md` | R2 Scanner Execution Correction — v2.0 | 2096 |
@@ -269,89 +299,110 @@ Per-commit change records under `core/changes/` are intentionally not listed.
 | `docs/Redisign/reference/emulator/README.md` | Emulator captures — the other half of §30 | 2715 |
 | `docs/Redisign/reference/prototype/README.md` | Reference frames — Figma Make prototype walkthrough | 3278 |
 | `docs/SYNC_LOG.md` | Phase 1 to Phase 2 synchronisation log | 1543 |
+| `docs/ai-coach/00_README.md` | Live AI Coach (TDD-001): documentation package | 5587 |
+| `docs/ai-coach/01_REQUIREMENTS.md` | Live AI Coach - Requirements (SDLC phase 1, Discovery) | 86842 |
+| `docs/ai-coach/01b_CODE_MAP.md` | AI Coach code map: draft claims versus the real code | 8685 |
+| `docs/ai-coach/02_BACKLOG.md` | Live AI Coach - Backlog (SDLC phase 2, Backlog) | 66433 |
+| `docs/ai-coach/03_DESIGN.md` | Live AI Coach - Technical Design, revision 4 (SDLC phase 3, Design) | 120352 |
+| `docs/ai-coach/03a_ADR_PROPOSALS.md` | Live AI Coach - ADR proposals ADR-001..ADR-013 (revision 4: ADR-005 and ADR-011 amended for GPT-PM gate round 1; revisio | 30544 |
+| `docs/ai-coach/03b_UI_SPEC.md` | Live AI Coach - UI specification (SDLC phase 3, UI design) | 148560 |
+| `docs/ai-coach/04a_FUNCTIONAL_TEST_PLAN.md` | Live AI Coach - Functional Test Plan (SDLC phase 4a: unit, provider, repository fake, rules emulator, Cloud Function) | 217593 |
+| `docs/ai-coach/04b_E2E_AND_DEVICE_PLAN.md` | Live AI Coach - E2E and Device Acceptance Plan (SDLC phase 4b) | 293220 |
+| `docs/ai-coach/05_REVIEW_ROUND1.md` | AI Coach documentation: review round 1 findings | 26225 |
+| `docs/ai-coach/06_REMEDIATION_DECISIONS.md` | AI Coach documentation: remediation decisions for review round 1 | 28702 |
+| `docs/ai-coach/07_REVIEW_ROUND2.md` | AI Coach documentation: review round 2 (verification of round 1 fixes) | 14729 |
+| `docs/ai-coach/08_GPTPM_GATE_ROUND1.md` | AI Coach documentation: GPT-PM documentation gate, round 1 | 6469 |
+| `docs/ai-coach/09_GPTPM_VERIFICATION_ROUND4.md` | AI Coach documentation: GPT-PM focused verification round 4 | 1975 |
+| `docs/ai-coach/10_GPTPM_GATE_RECORD_ROUND5.md` | AI Coach documentation: GPT-PM gate-record consistency round 5 | 1715 |
+| `docs/ai-coach/TDD-001_LIVE_AI_COACH_v0.1_INPUT.md` | TDD-001: Live AI Coach and Hands-Free Workout Engine (input draft v0.1) | 18042 |
+| `docs/commits/2026-10-20-integrate-hardening-followups.md` | Integrate sprint/hardening-followups-2026-10 (74ba5adc) | 562 |
+| `docs/commits/2026-10-20-integrate-phase2-s04.md` | Integrate phase2/s04 chain (5d5723fa) | 2238 |
 | `docs/phase1/README.md` | Phase 1 documents (production MVP line) | 1639 |
 | `docs/phase2/README.md` | Phase 2 documents (development line) | 3117 |
 | `docs/phase2/plan/01_PROJECT_REASSESSMENT_2026-10-15.md` | Fitness App: project reassessment (planning document, not approved) | 20755 |
 | `docs/phase2/plan/02_PHASE_SPLIT_AND_REPO_LAYOUT_2026-10-15.md` | Phase 1 / Phase 2 split: repository, folders and synchronisation plan (planning only) | 12952 |
 | `docs/phase2/plan/03_ROADMAP_AND_SPRINTS_2026-10-15.md` | Fitness App: product roadmap, sprints, epics and priorities (planning, not approved) | 33688 |
 | `docs/phase2/plan/04_UI_UX_DIRECTION_2026-10-15.md` | Fitness App: UI/UX direction for the four-mode product (planning, not approved) | 19311 |
-| `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2456 |
-| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 24777 |
+| `docs/phase2/s00/S00_SPRINT_REPORT_AND_RETRO.md` | S00 sprint report and retrospective: Phase 1 / Phase 2 split and migration | 2478 |
+| `docs/phase2/s01/DATA_LIFECYCLE_MATRIX.md` | Data lifecycle matrix (Phase 2, sprint S01 part a) | 24875 |
 | `docs/phase2/s01/GPS_LOCATION_PRIVACY_CONTRACT.md` | GPS and location privacy contract (Phase 2, sprint S01 part a) | 85958 |
-| `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 25034 |
-| `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27499 |
-| `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27607 |
-| `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14165 |
-| `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1513 |
-| `docs/phase2/s02/S02_ACCEPTANCE.md` | S02 sprint acceptance record: unified activity | 15407 |
-| `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3889 |
-| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 183218 |
-| `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 6940 |
-| `docs/phase2/s02/S02_RELEASE_NOTES.md` | S02 release notes: Unified activity | 16105 |
-| `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6324 |
-| `docs/phase2/s02/S02_REMEDIATION_B_TEST_NOTES.md` | S02 remediation B: test notes | 4680 |
-| `docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md` | S02 remediation C: test notes (client findings) | 2000 |
-| `docs/phase2/s02/S02_REMEDIATION_D_TEST_NOTES.md` | S02 remediation D: test notes | 1702 |
-| `docs/phase2/s02/S02_REMEDIATION_E_TEST_NOTES.md` | S02 remediation E test notes | 4935 |
-| `docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md` | S02 remediation F: test notes | 20278 |
-| `docs/phase2/s02/S02_REMEDIATION_H_TEST_NOTES.md` | S02 remediation H: test notes | 19876 |
-| `docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md` | S02 remediation J: invocation-bound identity (test notes) | 29521 |
-| `docs/phase2/s02/S02_SPRINT_REPORT.md` | S02 sprint report and retrospective: unified activity (E1) | 18485 |
-| `docs/phase2/s02/S02_SPRINT_REPORT_AND_RETRO.md` | S02 sprint report and retrospective (living draft) | 7772 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3144 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 6259 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC11.md` | S02 test findings, epic 11 | 7903 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC12.md` | S02 test findings, epic 12 (remediation F) | 9593 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md` | S02 test findings, epic 13 (remediation G) | 4333 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md` | S02 test findings, epic 14 (remediation H) | 11302 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md` | S02 test findings, epic 15 (remediation I) | 5377 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` | S02 test findings: epic 16 (remediation J) | 19648 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC17.md` | S02 test findings: epic 17 ("never expire" retention is not offered) | 9310 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4305 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4714 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC4.md` | S02 test epic 4: findings (plan versus design versus code) | 5009 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC5.md` | S02 test epic 5: findings (plan versus design versus rules) | 5834 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6A.md` | S02 test findings, epic 6a: functions stream upload, settings, tombstone and delete | 3791 |
+| `docs/phase2/s01/RIGHTS_STUDY_TILES_ROUTES_POI.md` | Rights study: map tiles, route data, routing, POI, elevation, user routes | 25224 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT.md` | UI-0 baseline audit: `mobile/lib` (read-only) | 27768 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT_ADDENDUM.md` | UI-0 baseline audit: ADDENDUM (read-only, nothing run) | 27894 |
+| `docs/phase2/s01/UI0_BASELINE_AUDIT_BODYSCAN_DELTA.md` | UI-0 delta after PR #5: body_scan, nutrition_plan and food_diary | 14325 |
+| `docs/phase2/s02/S02_01_SPORT_MODEL_NOTE.md` | S02-01 note: SportType-to-model table (design 3.6) | 1532 |
+| `docs/phase2/s02/S02_ACCEPTANCE.md` | S02 sprint acceptance record: unified activity | 15519 |
+| `docs/phase2/s02/S02_CODE_MAP.md` | S02 code map: how activities and workouts are modelled and persisted today | 3908 |
+| `docs/phase2/s02/S02_DESIGN.md` | S02 design: Unified activity (E1) | 183978 |
+| `docs/phase2/s02/S02_PRIVACY_TEXT_REQUEST.md` | S02 privacy text change request | 6979 |
+| `docs/phase2/s02/S02_RELEASE_NOTES.md` | S02 release notes: Unified activity | 16241 |
+| `docs/phase2/s02/S02_REMEDIATION_A_TEST_NOTES.md` | S02 remediation batch A: test notes | 6344 |
+| `docs/phase2/s02/S02_REMEDIATION_B_TEST_NOTES.md` | S02 remediation B: test notes | 4705 |
+| `docs/phase2/s02/S02_REMEDIATION_C_TEST_NOTES.md` | S02 remediation C: test notes (client findings) | 2009 |
+| `docs/phase2/s02/S02_REMEDIATION_D_TEST_NOTES.md` | S02 remediation D: test notes | 1709 |
+| `docs/phase2/s02/S02_REMEDIATION_E_TEST_NOTES.md` | S02 remediation E test notes | 4971 |
+| `docs/phase2/s02/S02_REMEDIATION_F_TEST_NOTES.md` | S02 remediation F: test notes | 20425 |
+| `docs/phase2/s02/S02_REMEDIATION_H_TEST_NOTES.md` | S02 remediation H: test notes | 20105 |
+| `docs/phase2/s02/S02_REMEDIATION_J_TEST_NOTES.md` | S02 remediation J: invocation-bound identity (test notes) | 29707 |
+| `docs/phase2/s02/S02_SPRINT_REPORT.md` | S02 sprint report and retrospective: unified activity (E1) | 18639 |
+| `docs/phase2/s02/S02_SPRINT_REPORT_AND_RETRO.md` | S02 sprint report and retrospective (living draft) | 7813 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC1.md` | S02 test epic 1: findings (plan versus design versus code) | 3170 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC10.md` | S02 test findings, epic 10 | 6320 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC11.md` | S02 test findings, epic 11 | 7957 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC12.md` | S02 test findings, epic 12 (remediation F) | 9664 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC13.md` | S02 test findings, epic 13 (remediation G) | 4379 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC14.md` | S02 test findings, epic 14 (remediation H) | 11428 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC15.md` | S02 test findings, epic 15 (remediation I) | 5416 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC16.md` | S02 test findings: epic 16 (remediation J) | 19787 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC17.md` | S02 test findings: epic 17 ("never expire" retention is not offered) | 9362 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC2.md` | S02 test epic 2: findings (plan versus design versus code) | 4333 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC3.md` | S02 test epic 3: findings (plan versus design versus code) | 4746 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC4.md` | S02 test epic 4: findings (plan versus design versus code) | 5046 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC5.md` | S02 test epic 5: findings (plan versus design versus rules) | 5876 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6A.md` | S02 test findings, epic 6a: functions stream upload, settings, tombstone and delete | 3829 |
 | `docs/phase2/s02/S02_TEST_FINDINGS_EPIC6B.md` | S02 test findings, epic 6b: retention, deletion sweeps, export, telemetry, lifecycle policy, story-map lint | 8031 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 11197 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC8.md` | S02 test findings, epic 8: remediation batch A | 6331 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC9.md` | S02 test findings, epic 9 | 6621 |
-| `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7009 |
-| `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 328832 |
-| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 173094 |
-| `docs/phase2/s03/S03_CARRIED_ITEMS.md` | S03 carried items, deviations and accepted risks | 7078 |
-| `docs/phase2/s03/S03_CODE_MAP.md` | S03 code map | 33748 |
-| `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 194349 |
-| `docs/phase2/s03/S03_SPRINT_REPORT.md` | S03 sprint report and retrospective: shell, mode chooser, dashboard skeleton (E2) | 21441 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 19733 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC7.md` | S02 test epic 7: findings | 11269 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC8.md` | S02 test findings, epic 8: remediation batch A | 6415 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_EPIC9.md` | S02 test findings, epic 9 | 6678 |
+| `docs/phase2/s02/S02_TEST_FINDINGS_FINAL_RUN.md` | S02 final complete run | 7076 |
+| `docs/phase2/s02/S02_TEST_PLAN.md` | S02 test plan: Unified activity (E1) | 329764 |
+| `docs/phase2/s03/S03D_UI_DESIGN_CONTRACT.md` | S03-D UI design contract: shell, mode chooser, dashboard skeleton | 174205 |
+| `docs/phase2/s03/S03_CARRIED_ITEMS.md` | S03 carried items, deviations and accepted risks | 7137 |
+| `docs/phase2/s03/S03_CODE_MAP.md` | S03 code map | 34082 |
+| `docs/phase2/s03/S03_DESIGN.md` | S03 Technical Design: shell, mode chooser, dashboard skeleton | 195421 |
+| `docs/phase2/s03/S03_SPRINT_REPORT.md` | S03 sprint report and retrospective: shell, mode chooser, dashboard skeleton (E2) | 21598 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC0_1.md` | S03 test findings, step 1 (EP-0 and EP-1) | 19871 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC2.md` | S03 test findings, step 3 (EP-2: S03-08 to S03-11) | 16460 |
 | `docs/phase2/s03/S03_TEST_FINDINGS_EPIC3_4.md` | S03 test findings, step 4 (EP-3 and EP-4) | 19364 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md` | S03 test findings: EP-5 foundations (step 2) | 10164 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md` | S03 test findings, epic 5B (S03-17 keyboard and pointer input) | 7153 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md` | S03 test findings, epic 5C (S03-18 conformance to the UI design contract) | 16769 |
-| `docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md` | S03 final test summary | 4908 |
-| `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 174368 |
-| `docs/phase2/s04/S04D_UI_DESIGN_CONTRACT.md` | S04-D UI design contract: GPS permission and recording-state contract | 139556 |
-| `docs/phase2/s04/S04_ANDROID_PLATFORM_STUDY.md` | S04 Android platform study (GPS recorder without a map) | 27999 |
-| `docs/phase2/s04/S04_BATTERY_PROTOCOL.md` | S04 battery protocol (story S04-23, requirement S04-R-028) | 10761 |
-| `docs/phase2/s04/S04_DESIGN.md` | S04 Technical Design: GPS recorder without a map | 144245 |
-| `docs/phase2/s04/S04_DEVICE_LAB_RECORD.md` | S04 device-lab record (story S04-29, requirements S04-R-029, -031, -051) | 10543 |
-| `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21323 |
-| `docs/phase2/s04/S04_RELEASE_CHECKLIST.md` | S04 release checklist (story S04-38) | 5285 |
-| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 89665 |
-| `docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md` | S04 code review, round 1 (consolidated) | 9217 |
-| `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 31591 |
-| `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 73623 |
-| `docs/phase2/s04/S04_TEST_FINDINGS_EP_A_B_C.md` | S04 test findings, group EP_A_B_C (EP-A, EP-B, EP-C) | 10330 |
-| `docs/phase2/s04/S04_TEST_FINDINGS_EP_D.md` | S04 test findings, group EP_D (journal, kill and recovery) | 7793 |
-| `docs/phase2/s04/S04_TEST_FINDINGS_EP_E_H.md` | S04 test findings, group EP_E_H (EP-E permission/consent, EP-H privacy guarantees) | 4414 |
-| `docs/phase2/s04/S04_TEST_FINDINGS_EP_F_G_J.md` | S04 test findings, group EP_F_G_J (epics EP-F, EP-G, EP-J) | 4951 |
-| `docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md` | S04 final test run | 4677 |
-| `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 190212 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5A.md` | S03 test findings: EP-5 foundations (step 2) | 10243 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5B.md` | S03 test findings, epic 5B (S03-17 keyboard and pointer input) | 7226 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_EPIC5C.md` | S03 test findings, epic 5C (S03-18 conformance to the UI design contract) | 16934 |
+| `docs/phase2/s03/S03_TEST_FINDINGS_FINAL.md` | S03 final test summary | 4965 |
+| `docs/phase2/s03/S03_TEST_PLAN.md` | S03 test plan: shell, mode chooser, dashboard skeleton | 175217 |
+| `docs/phase2/s04/S04D_UI_DESIGN_CONTRACT.md` | S04-D UI design contract: GPS permission and recording-state contract | 140430 |
+| `docs/phase2/s04/S04_ANDROID_PLATFORM_STUDY.md` | S04 Android platform study (GPS recorder without a map) | 28168 |
+| `docs/phase2/s04/S04_BATTERY_PROTOCOL.md` | S04 battery protocol (story S04-23, requirement S04-R-028) | 10874 |
+| `docs/phase2/s04/S04_DESIGN.md` | S04 Technical Design: GPS recorder without a map | 145013 |
+| `docs/phase2/s04/S04_DEVICE_LAB_RECORD.md` | S04 device-lab record (story S04-29, requirements S04-R-029, -031, -051) | 10655 |
+| `docs/phase2/s04/S04_DOC_READINESS.md` | S04 documentation readiness (GPS core without a map) | 21437 |
+| `docs/phase2/s04/S04_RELEASE_CHECKLIST.md` | S04 release checklist (story S04-38) | 5336 |
+| `docs/phase2/s04/S04_REQUIREMENTS.md` | S04 requirements: GPS core without a map (recorder, not map) | 90227 |
+| `docs/phase2/s04/S04_REVIEW_FINDINGS_CODE_ROUND1.md` | S04 code review, round 1 (consolidated) | 9267 |
+| `docs/phase2/s04/S04_REVIEW_FINDINGS_ROUND1.md` | S04 documentation review, round 1: findings and decisions | 31706 |
+| `docs/phase2/s04/S04_STORIES.md` | S04 stories: GPS core without a map (prioritised backlog) | 74138 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_EP_A_B_C.md` | S04 test findings, group EP_A_B_C (EP-A, EP-B, EP-C) | 10415 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_EP_D.md` | S04 test findings, group EP_D (journal, kill and recovery) | 7856 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_EP_E_H.md` | S04 test findings, group EP_E_H (EP-E permission/consent, EP-H privacy guarantees) | 4451 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_EP_F_G_J.md` | S04 test findings, group EP_F_G_J (epics EP-F, EP-G, EP-J) | 5011 |
+| `docs/phase2/s04/S04_TEST_FINDINGS_FINAL.md` | S04 final test run | 4743 |
+| `docs/phase2/s04/S04_TEST_PLAN.md` | S04 test plan: GPS recorder without a map | 191388 |
 | `docs/phase2/split/BACKEND_SEPARATION.md` | Backend separation gate (Phase 1 / Phase 2) | 12479 |
 | `docs/phase2/split/SNAPSHOT_2026-10-15.md` | Split snapshot 2026-10-15 (read-only record before S00 migration) | 7108 |
-| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 15179 |
-| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13362 |
+| `docs/sdlc/STATE.md` | SDLC state: Phase 2 program (sprints S00, S01, S02) | 18766 |
+| `reports/ENGLISH_HISTORICAL_REPORTS_INDEX.md` | Fitness App — English Historical Report Directory | 16056 |
+| `reports/citation_verification_report.en.md` | Fitness-App — Historical Source Citation Verification (English) | 2630 |
+| `reports/equipment_identity_citation_review.en.md` | Fitness-App — Equipment Identity Citation Review (English, Historical) | 2515 |
+| `runbooks/activity_stream_bucket.md` | Activity stream private bucket: operator runbook | 13464 |
 | `runbooks/body_scan_bucket.md` | Body Scan private bucket: operator runbook | 9748 |
 | `runbooks/food_lookup.md` | Food scanning: operator steps (flags are OFF by default) | 3059 |
 | `runbooks/video_bundle_import.md` | Importing the purchased video bundle | 13673 |
