@@ -1,0 +1,105 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Итоговый отчёт: спринт hardening, PR #3</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><header><h1>Итоговый отчёт: спринт hardening, PR #3</h1></header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; sprint/hardening-followups-2026-10 @ e219df3</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+<main>
+<p>Хед e219df3, ветка sprint/product-hardening-2026-10. GPT-PM: раунд 1 REJECT, раунд 2 REJECT, раунд 3 APPROVE, раунд 4 APPROVE (дельта).</p><table><tr><th>Находка</th><th>Статус</th><th>Доказательство</th></tr>
+<tr><td>MAJOR-01 потолок сложности</td><td>Закрыто</td><td>difficulty_ceiling_test: 31</td></tr>
+<tr><td>MAJOR-02 сохранение скана при смене/удалении аккаунта</td><td>Закрыто</td><td>scan_save_account_switch_test, photo_store_test: 37</td></tr>
+<tr><td>MAJOR-03 надёжная зачистка после удаления</td><td>Закрыто в коде; деплой не проверен</td><td>Jest 191 (6 файлов / files)</td></tr>
+<tr><td>MAJOR-04 запись рекордера по uid и гонка с удалением</td><td>Закрыто (раунд 3)</td><td>coach_recorder_account_test: 30 вместе с wipe / with wipe</td></tr>
+<tr><td>Решение A: граница по году рождения</td><td>Закрыто</td><td>age_boundary и связанные: 173</td></tr>
+<tr><td>Решение B: Android-бэкап</td><td>Закрыто на уровне конфигурации</td><td>backup_rules_test: 9</td></tr>
+</table>
+<h2>Проверено дополнительно</h2><ul><li>Rules-эмулятор Firestore: 279/279. E2E удаления аккаунта на эмуляторах Auth+Firestore: 11/11 (порты 18080/19099, потому что 8080 занят чужим процессом).</li><li>Индексы Firestore с TTL задеплоены в fitness-app-korostelev. Функции не деплоились (преддеплой запускает полный npm test).</li></ul><h2>Не проверено</h2><ul><li>Эмулятор Firestore и тесты правил; реальный бэкап/восстановление; камера, ML Kit, речь, Health Connect на устройстве.</li><li>Деплой планировщика и индекса (firebase deploy --only firestore:indexes), живая алерт-политика.</li><li>Golden-тесты (CI отключён).</li></ul><h2>На оператора</h2><ul><li>GOOGLE_SERVICES_JSON_B64; Play Console (Health Connect, Data Safety).</li></ul><h2>Известные ограничения</h2><ul><li>402 строки со скамьёй/стойкой; три пункта F13; пороги коуча только beta; русские тексты без нативной проверки; MINOR GPT-PM: A→B→A у рекордера и повтор отката.</li></ul></main>
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body></html>

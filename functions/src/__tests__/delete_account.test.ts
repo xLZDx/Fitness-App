@@ -50,6 +50,14 @@ const seededDocs = new Map<string, Array<{ id: string; data: any }>>();
 const batchOps: Array<{ op: "update" | "delete"; path: string; data?: any }> =
   [];
 const commit = jest.fn(async () => undefined);
+/**
+ * Booking rows are now settled by one `db.runTransaction` per booking (not a
+ * write batch). The fake transaction reads the CURRENT `seededDocs` state,
+ * buffers writes, and applies them at commit, recording each applied write in
+ * `txOps` (the transaction counterpart of `batchOps`).
+ */
+const txOps: Array<{ op: "update" | "delete"; path: string; data?: any }> = [];
+const txCommit = jest.fn(async () => undefined);
 
 const seed = (collection: string, docs: Array<{ id: string; data: any }>) =>
   seededDocs.set(collection, docs);
@@ -112,6 +120,41 @@ jest.mock("firebase-admin", () => {
         },
       };
     }),
+    runTransaction: jest.fn(async (fn: (tx: any) => Promise<unknown>) => {
+      const pending: Array<{ op: "update" | "delete"; path: string; data?: any }> = [];
+      const tx = {
+        get: async (ref: any) => {
+          const [col, id] = ref.path.split("/");
+          const row = (seededDocs.get(col) ?? []).find((r) => r.id === id);
+          return {
+            exists: !!row,
+            id,
+            ref,
+            data: () => (row ? { ...row.data } : undefined),
+          };
+        },
+        update: (ref: any, data: any) => {
+          pending.push({ op: "update", path: ref.path, data });
+        },
+        delete: (ref: any) => {
+          pending.push({ op: "delete", path: ref.path });
+        },
+      };
+      const result = await fn(tx);
+      await txCommit();
+      for (const p of pending) {
+        txOps.push(p);
+        const [col, id] = p.path.split("/");
+        const rows = seededDocs.get(col) ?? [];
+        if (p.op === "delete") {
+          seededDocs.set(col, rows.filter((r) => r.id !== id));
+        } else {
+          const row = rows.find((r) => r.id === id);
+          if (row) row.data = { ...row.data, ...p.data };
+        }
+      }
+      return result;
+    }),
     recursiveDelete,
   }));
   // The retry record stores Timestamps; a plain marker object is enough here.
@@ -173,7 +216,9 @@ beforeEach(() => {
   refs.clear();
   seededDocs.clear();
   batchOps.length = 0;
+  txOps.length = 0;
   commit.mockClear();
+  txCommit.mockReset().mockResolvedValue(undefined);
   listSubscriptions.mockReset().mockResolvedValue({ data: [] });
   recursiveDelete.mockReset().mockResolvedValue(undefined);
   deleteUser.mockReset().mockResolvedValue(undefined);
@@ -464,7 +509,9 @@ describe("deleteAccount", () => {
 
       await deleteAccount.run(req({ uid: "u1" }));
 
-      expect(batchOps).toEqual(
+      // OLD expectation (batch ops) replaced: bookings are settled by one
+      // transaction each, so the writes show up in `txOps`, not `batchOps`.
+      expect(txOps).toEqual(
         expect.arrayContaining([
           {
             op: "update",
@@ -478,9 +525,16 @@ describe("deleteAccount", () => {
           },
         ]),
       );
+      expect(txOps).toHaveLength(2);
       // The record survives: a coach who was paid for a session keeps their
       // own row, with nothing in it pointing at a person any more.
-      expect(batchOps.some((o) => o.op === "delete")).toBe(false);
+      expect(txOps.some((o) => o.op === "delete")).toBe(false);
+      expect(seededDocs.get("coach_bookings")).toEqual([
+        { id: "b1", data: { clientUid: "deleted_user", coachUid: "coach_9" } },
+        { id: "b2", data: { clientUid: "client_7", coachUid: "deleted_user" } },
+      ]);
+      // No booking write goes through a write batch any more.
+      expect(batchOps.filter((o) => o.path.startsWith("coach_bookings/"))).toEqual([]);
     });
 
   test("deletes a booking whose OTHER side was already deleted", async () => {
@@ -490,10 +544,32 @@ describe("deleteAccount", () => {
 
     await deleteAccount.run(req({ uid: "u1" }));
 
-    expect(batchOps).toContainEqual({
-      op: "delete",
-      path: "coach_bookings/b3",
-    });
+    // OLD expectation (batch delete) replaced by the transaction write.
+    expect(txOps).toEqual([{ op: "delete", path: "coach_bookings/b3" }]);
+    expect(seededDocs.get("coach_bookings")).toEqual([]);
+  });
+
+  test("a booking with an undefined counterparty side counts that side as gone and is deleted", async () => {
+    seed("coach_bookings", [{ id: "b4", data: { clientUid: "u1" } }]);
+
+    await deleteAccount.run(req({ uid: "u1" }));
+
+    expect(txOps).toEqual([{ op: "delete", path: "coach_bookings/b4" }]);
+    expect(seededDocs.get("coach_bookings")).toEqual([]);
+  });
+
+  test("a failed booking transaction fails the sweep with the same internal error and keeps the Auth user", async () => {
+    seed("coach_bookings", [
+      { id: "b1", data: { clientUid: "u1", coachUid: "coach_9" } },
+    ]);
+    txCommit.mockRejectedValueOnce(new Error("tx aborted"));
+
+    await expectHttpsError(deleteAccount.run(req({ uid: "u1" })), "internal");
+    expect(deleteUser).not.toHaveBeenCalled();
+    // Nothing was applied: the row is untouched and a retry can finish it.
+    expect(seededDocs.get("coach_bookings")).toEqual([
+      { id: "b1", data: { clientUid: "u1", coachUid: "coach_9" } },
+    ]);
   });
 
   test("anonymises equipment reports and deletes debug telemetry", async () => {
@@ -679,6 +755,8 @@ describe("deleteAccount", () => {
     await deleteAccount.run(req({ uid: "u1" }));
 
     expect(batchOps).toEqual([]);
+    expect(txOps).toEqual([]);
+    expect(txCommit).not.toHaveBeenCalled();
   });
 
   // -------------------------------------------------------------------
@@ -694,7 +772,9 @@ describe("deleteAccount", () => {
 
     await deleteAccount.run(req({ uid: "u1" }));
 
-    expect(batchOps).toEqual([{ op: "delete", path: "coach_bookings/self" }]);
+    // OLD expectation (batch delete) replaced: one transaction, one delete.
+    expect(txOps).toEqual([{ op: "delete", path: "coach_bookings/self" }]);
+    expect(batchOps).toEqual([]);
     expect(seededDocs.get("coach_bookings")).toEqual([]);
   });
 
@@ -1149,6 +1229,11 @@ describe("deleteAccount journey: failure combinations a user can hit and retry",
     });
     commit.mockImplementation(async () => {
       order.push(`commit:${batchOps[batchOps.length - 1].path}`);
+    });
+    // The booking is committed by a transaction now (OLD: a batch commit); its
+    // pending write is not in `txOps` yet when `txCommit` fires, so name it.
+    txCommit.mockImplementation(async () => {
+      order.push("commit:coach_bookings/b1");
     });
     try {
       await deleteAccount.run(req({ uid: "u1" }));
