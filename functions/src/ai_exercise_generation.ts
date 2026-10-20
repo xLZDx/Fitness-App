@@ -51,7 +51,7 @@ export const EQUIPMENT_NAMES_EN = new Map<string, string>([
   ["treadmill", "Treadmill"],
   ["rowing_machine", "Rowing machine"],
   ["squat_rack", "Squat rack"],
-  ["bench_press", "Weight bench"],
+  ["bench_press", "Bench press station"],
   ["cable_machine", "Cable machine"],
   ["leg_press", "Leg press"],
   ["lat_pulldown", "Lat pulldown"],
