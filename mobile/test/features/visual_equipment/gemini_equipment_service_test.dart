@@ -76,6 +76,33 @@ void main() {
       expect(out[1].equipmentId, 'squat_rack');
     });
 
+    test('best answer plus 3 alternatives are all kept, in confidence order', () {
+      final out = GeminiVisualEquipmentService.parseResponse(
+        '{"machine": "smith machine", "confidence": 0.6, "alternatives": ['
+        '{"machine": "squat rack", "confidence": 0.3},'
+        '{"machine": "treadmill", "confidence": 0.2},'
+        '{"machine": "cable machine", "confidence": 0.1}]}',
+        index,
+      );
+      expect(kScanCandidateCount, 4);
+      expect(out.map((m) => m.equipmentId).toList(),
+          ['smith_machine', 'squat_rack', 'treadmill', 'cable_machine'],
+          reason: 'the default limit used to be 3 and dropped the 4th');
+    });
+
+    test('a fifth candidate is cut at the candidate limit', () {
+      final out = GeminiVisualEquipmentService.parseResponse(
+        '{"machine": "smith machine", "confidence": 0.6, "alternatives": ['
+        '{"machine": "squat rack", "confidence": 0.3},'
+        '{"machine": "treadmill", "confidence": 0.2},'
+        '{"machine": "cable machine", "confidence": 0.1},'
+        '{"machine": "leg press", "confidence": 0.05}]}',
+        index,
+      );
+      expect(out, hasLength(kScanCandidateCount));
+      expect(out.last.equipmentId, 'cable_machine');
+    });
+
     test('tolerates markdown code fences', () {
       final out = GeminiVisualEquipmentService.parseResponse(
         '```json\n{"machine": "treadmill", "confidence": 0.9}\n```',

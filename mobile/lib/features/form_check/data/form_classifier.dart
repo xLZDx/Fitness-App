@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'pose_gate.dart';
 import 'pose_landmark.dart';
+import 'pose_scoring_gate.dart' show chooseScoringSide;
 
 /// Identifies every cue a rule can emit.
 ///
@@ -35,6 +36,14 @@ enum FormCueKey {
   /// silhouette match rather than by a per-frame rule.
   silhouetteMissed,
 
+  /// The trunk folded far forward at depth, which is how a rounded back shows
+  /// up from the side (see [SquatBackClassifier]).
+  squatBackRounding,
+
+  /// A completed repetition never reached target depth, or a started one came
+  /// back up without reaching the counting depth.
+  squatDepthShallow,
+
   /// Sentinel for feedback produced by a data-driven registry rule
   /// (`GenericRuleClassifier`). The wording is NOT a function of this key: it
   /// is [FormFeedback.cueId], resolved by `registryCueText`. Kept last so the
@@ -53,7 +62,29 @@ class FormFeedback {
     this.metric,
     this.cueId,
     this.advisory = false,
+    this.repScoped = false,
   });
+
+  /// True for a cue that is already paced by the repetition: the controller
+  /// speaks at most one per completed (or rejected) rep. `CueGate` then skips
+  /// its stopwatch filters (same-cue repeat window, minimum gap) for it.
+  ///
+  /// Why: with those filters on top of the per-rep pacing, only the FIRST of
+  /// several identical rep-end cues was spoken -- "shallow squat" on reps 2..N
+  /// was written on the banner and never said (operator, real phone,
+  /// 2026-10-14). Per-frame cues keep the stopwatch filters.
+  final bool repScoped;
+
+  /// This feedback, marked as paced by the repetition. See [repScoped].
+  FormFeedback asRepScoped() => FormFeedback(
+        rule: rule,
+        severity: severity,
+        cueKey: cueKey,
+        metric: metric,
+        cueId: cueId,
+        advisory: advisory,
+        repScoped: true,
+      );
 
   /// Registry cue id (see `registry_cue_text.dart`), set only when [cueKey] is
   /// [FormCueKey.registry]. Null for every legacy rule.
@@ -136,6 +167,14 @@ abstract class FormClassifier {
   FormFeedback? evaluate(PoseFrame frame);
 }
 
+/// A classifier that keeps state across frames (hysteresis, streaks) and can
+/// be asked to forget it -- at a new set. Separate from [FormClassifier] for the
+/// same reason as [FrameSelectingClassifier]: test doubles `implement` that
+/// interface and a new abstract member would break every one of them.
+abstract interface class ResettableClassifier {
+  void reset();
+}
+
 /// A classifier that must be gated and evaluated on a frame of its own choosing
 /// rather than on the raw one -- today only `GenericRuleClassifier`, which maps
 /// the better-visible body side into the left slots so that a side view filmed
@@ -173,17 +212,25 @@ abstract interface class FrameSelectingClassifier {
 /// target pose, which is what the silhouette match is being built to provide.
 /// Until it exists this rule contributes its metric to the rep record and says
 /// nothing.
-class SquatDepthClassifier implements FormClassifier {
+class SquatDepthClassifier
+    implements FormClassifier, FrameSelectingClassifier {
   @override
   String get rule => 'squat.depth';
 
+  /// One side only, in the left slots (2026-10-14). Seen side-on, the far hip and
+  /// knee are hidden behind the body and the detector only infers them, so
+  /// requiring both sides refused the frame -- and with it the rep count -- for
+  /// the very view the coach asks for. [frameFor] maps the better-visible side
+  /// into these slots.
   @override
   Set<LandmarkType> get requiredLandmarks => const {
         LandmarkType.leftHip,
-        LandmarkType.rightHip,
         LandmarkType.leftKnee,
-        LandmarkType.rightKnee,
       };
+
+  @override
+  PoseFrame frameFor(PoseFrame raw) =>
+      chooseScoringSide(raw, requiredLandmarks).frame;
 
   /// False: every arm of [evaluate] returns severity 0, deliberately.
   @override
@@ -196,17 +243,11 @@ class SquatDepthClassifier implements FormClassifier {
 
   @override
   FormFeedback? evaluate(PoseFrame frame) {
-    final lHip = frame.landmarks[LandmarkType.leftHip];
-    final rHip = frame.landmarks[LandmarkType.rightHip];
-    final lKnee = frame.landmarks[LandmarkType.leftKnee];
-    final rKnee = frame.landmarks[LandmarkType.rightKnee];
-    if (lHip == null || rHip == null || lKnee == null || rKnee == null) {
-      return null;
-    }
-    final hipY = (lHip.y + rHip.y) / 2;
-    final kneeY = (lKnee.y + rKnee.y) / 2;
+    final hip = frame.landmarks[LandmarkType.leftHip];
+    final knee = frame.landmarks[LandmarkType.leftKnee];
+    if (hip == null || knee == null) return null;
     // Image y grows downward; "below knee" means hipY > kneeY.
-    final ratio = hipY - kneeY;
+    final ratio = hip.y - knee.y;
     // Severity 0 in every arm, deliberately. The thresholds below still choose
     // WHICH observation to record, but none of them is entitled to raise an
     // alarm, because the quantity they compare is camera-dependent.
@@ -220,6 +261,124 @@ class SquatDepthClassifier implements FormClassifier {
               : FormCueKey.squatDepthHalf,
       metric: ratio,
     );
+  }
+}
+
+/// Squat back position: flags a trunk folded far forward at depth, the
+/// side-view signature of a rounded back.
+///
+/// **What this does and does not measure.** BlazePose has no spinal landmark
+/// (see [DeadliftHipHingeClassifier]), so curvature itself is not observable.
+/// The shoulder-to-hip line IS, and its angle off vertical is stable under
+/// camera height and distance because both points sit in one image plane. A
+/// sustained lean beyond [leanEnterDeg] while the hips are low is the
+/// observable proxy for "chest dropped, back rounding" and is named honestly
+/// in the explanation text. Front-on, a forward lean runs toward the camera
+/// and shows no sideways offset, so this rule stays silent there rather than
+/// guessing.
+///
+/// Thresholds are `PRODUCT_HEURISTIC`: a normal back squat bottoms out at
+/// roughly 30-55 degrees off vertical, so the rule starts at 60 and releases at
+/// 50. It only runs once the hip is within [minDepthRatio] of the knee in torso
+/// lengths (not while standing or bending to reach the phone), and it needs
+/// [minFaultFrames] consecutive bad frames to fire so one jittery frame cannot
+/// speak (hysteresis against flicker).
+class SquatBackClassifier
+    implements FormClassifier, FrameSelectingClassifier, ResettableClassifier {
+  static const leanEnterDeg = 60.0;
+  static const leanExitDeg = 50.0;
+  static const minFaultFrames = 5;
+
+  /// (hipY - kneeY) / torso at or above which the lifter counts as squatting.
+  /// -0.5 is a thigh about 25 degrees above horizontal for average proportions.
+  static const minDepthRatio = -0.5;
+
+  /// Longest gap between two evaluated frames over which the streak survives.
+  /// `evaluateGated` simply does not call [evaluate] on frames it drops
+  /// (unscorable, low confidence), so "consecutive" is checked on the frame
+  /// clock: 3 bad frames, a dropout, then 2 bad frames is NOT 5 in a row.
+  static const maxFrameGapMs = 250;
+
+  int _badFrames = 0;
+  bool _faulting = false;
+  int? _lastTimestampMs;
+
+  /// Forget the streak and the latched fault (new set).
+  @override
+  void reset() {
+    _badFrames = 0;
+    _faulting = false;
+    _lastTimestampMs = null;
+  }
+
+  @override
+  String get rule => 'squat.back';
+
+  @override
+  Set<LandmarkType> get requiredLandmarks => const {
+        LandmarkType.leftShoulder,
+        LandmarkType.leftHip,
+        LandmarkType.leftKnee,
+      };
+
+  @override
+  bool get canFault => true;
+
+  /// The hip: the trunk-to-thigh angle turns on it.
+  @override
+  LandmarkType? get faultVertex => LandmarkType.leftHip;
+
+  /// Side-on, the better-visible side is the one that is judged, mapped into the
+  /// left slots (same helper the rep-shape scoring uses).
+  @override
+  PoseFrame frameFor(PoseFrame raw) =>
+      chooseScoringSide(raw, requiredLandmarks).frame;
+
+  @override
+  FormFeedback? evaluate(PoseFrame frame) {
+    final last = _lastTimestampMs;
+    if (last != null && frame.timestampMs - last > maxFrameGapMs) _reset();
+    _lastTimestampMs = frame.timestampMs;
+    final shoulder = frame.landmarks[LandmarkType.leftShoulder];
+    final hip = frame.landmarks[LandmarkType.leftHip];
+    final knee = frame.landmarks[LandmarkType.leftKnee];
+    if (shoulder == null || hip == null || knee == null) {
+      _reset();
+      return null;
+    }
+    final torso = math.sqrt(math.pow(shoulder.x - hip.x, 2) +
+        math.pow(shoulder.y - hip.y, 2));
+    if (torso < 1e-6) {
+      _reset();
+      return null;
+    }
+    if ((hip.y - knee.y) / torso < minDepthRatio) {
+      _reset();
+      return null;
+    }
+    final leanDeg = math.atan2((shoulder.x - hip.x).abs(),
+            (hip.y - shoulder.y).abs()) *
+        180 /
+        math.pi;
+    if (_faulting) {
+      if (leanDeg < leanExitDeg) _reset();
+    } else if (leanDeg >= leanEnterDeg) {
+      if (++_badFrames >= minFaultFrames) _faulting = true;
+    } else {
+      _badFrames = 0;
+    }
+    if (!_faulting) return null;
+    return FormFeedback(
+      rule: rule,
+      severity: 2,
+      cueKey: FormCueKey.squatBackRounding,
+      metric: leanDeg,
+    );
+  }
+
+  void _reset() {
+    _badFrames = 0;
+    _faulting = false;
   }
 }
 

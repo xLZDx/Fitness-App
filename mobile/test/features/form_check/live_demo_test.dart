@@ -104,13 +104,12 @@ double _opacity(WidgetTester t) => t.widget<AnimatedOpacity>(_liveDemo).opacity;
 /// demonstration is what the user is looking at, including for the whole fade
 /// that hides it.
 ///
-/// These assertions used to read a video decoder's play/pause calls, because
-/// the squat's demonstration was a clip and the decoder was the only visible
-/// consequence of this flag. The squat's clip is gone (G1.2, 2026-09-09) and
-/// the flag is not: it is the contract `CoachDemoClip` consumes, and reading
-/// it directly keeps the timing covered without tying the page's hand-over
-/// behaviour to which source a movement happens to have. `coach_demo_test.dart`
-/// still holds the decoder's own end of the same contract.
+/// Read next to the recording decoder's play/pause calls, not instead of them:
+/// the flag is what the page decides, the decoder is what that decision causes.
+/// (Between G1.2, 2026-09-09, and 2026-10-14 the squat had no clip and this
+/// flag was the only thing left to read; the clip is back and both are
+/// asserted.) `coach_demo_test.dart` holds the decoder's own end of the
+/// contract.
 bool _active(WidgetTester t) => t.widget<CoachDemo>(find.byType(CoachDemo)).active;
 
 PoseTarget _demoTarget(WidgetTester t) =>
@@ -179,13 +178,18 @@ void main() {
     expect(_active(t), isTrue);
     expect(_avatar, findsNothing, reason: 'positive control: nobody to draw');
     expect(_target, findsNothing);
-    // I4b. The squat's demonstration is a stated absence now, so the live
-    // panel must show that and neither of the other two sources.
-    expect(_unavailable, findsOneWidget);
-    expect(_clip, findsNothing);
+    // 2026-10-14: the squat's demonstration is back, on the live screen BEFORE
+    // a body is tracked. It must be the clip — not the stated absence it was
+    // from 2026-09-09, and not the drawn figure the operator rejected — and
+    // the decoder must really be opened and playing, so a panel that mounted
+    // the widget but never started it would fail here too.
+    expect(_clip, findsOneWidget, reason: 'the squat is the reference clip');
+    expect(_unavailable, findsNothing,
+        reason: 'the absence stated since 2026-09-09 must not come back');
     expect(_figure, findsNothing);
-    expect(factory.created, isEmpty,
-        reason: 'no decoder is opened for a movement with no clip');
+    expect(factory.only.calls, contains('initialize'));
+    expect(factory.only.calls, contains('play'));
+    expect(factory.only.calls, isNot(contains('pause')));
   });
 
   testWidgets('a tracked body fades it out, then releases the demonstration',
@@ -200,6 +204,8 @@ void main() {
     expect(_opacity(t), 0);
     expect(_active(t), isFalse,
         reason: 'a hidden demonstration must not keep running under the avatar');
+    expect(factory.only.calls.last, 'pause',
+        reason: 'a hidden loop must not keep decoding under the avatar');
     expect(_target, findsNothing);
   });
 
@@ -216,14 +222,19 @@ void main() {
     await t.pump(const Duration(seconds: 2));
     // The body is drawable; the fade has been started by this frame.
     expect(_opacity(t), 0, reason: 'positive control: the fade is under way');
+    expect(factory.only.calls, contains('play'));
 
     await t.pump(const Duration(milliseconds: 150));
     expect(_active(t), isTrue,
         reason: 'mid-fade the demonstration must still be running');
+    expect(factory.only.calls, isNot(contains('pause')),
+        reason: 'mid-fade the clip must still be decoding');
 
     await t.pump(const Duration(milliseconds: 400));
     await t.pump();
     expect(_active(t), isFalse, reason: 'and stop once the fade has ended');
+    expect(factory.only.calls.last, 'pause',
+        reason: 'and the decoder stops once the fade has ended');
   });
 
   testWidgets('losing the body brings the demonstration back', (t) async {
@@ -236,6 +247,8 @@ void main() {
     expect(_avatar, findsNothing);
     expect(_opacity(t), 1);
     expect(_active(t), isTrue);
+    expect(factory.only.calls.last, 'play',
+        reason: 'the clip resumes when the body is lost');
   });
 
   testWidgets('camera mode hands over on the same body', (t) async {
@@ -251,6 +264,7 @@ void main() {
     expect(_avatar, findsNothing, reason: 'camera mode draws no avatar');
     expect(_opacity(t), 0);
     expect(_active(t), isFalse);
+    expect(factory.only.calls.last, 'pause');
     expect(_target, findsNothing);
   });
 
@@ -270,7 +284,10 @@ void main() {
 
     expect(_avatar, findsOneWidget, reason: 'positive control');
     expect(_opacity(t), 0);
+    expect(factory.only.calls, isNot(contains('play')),
+        reason: 'reduce motion: the poster is the demonstration, never a loop');
     expect(_active(t), isFalse);
+    expect(t.widget<CoachDemoClip>(_clip).active, isFalse);
   });
 
   testWidgets('the drawn demonstration moves on the live screen while nobody '
@@ -386,5 +403,6 @@ void main() {
         reason: 'positive control');
     expect(_opacity(t), 1);
     expect(_active(t), isTrue);
+    expect(factory.only.calls, isNot(contains('pause')));
   });
 }

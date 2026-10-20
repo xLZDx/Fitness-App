@@ -9,6 +9,8 @@ import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/asset_equipment_repository.dart';
 import '../data/clip_url_resolver.dart';
+import '../data/equipment_alias_index.dart';
+import '../data/equipment_hero.dart';
 import '../data/equipment_models.dart';
 import '../data/equipment_report_service.dart';
 import '../data/equipment_repository.dart';
@@ -289,12 +291,24 @@ final equipmentHeroImageProvider =
     await ref.watch(_exercisesForEquipmentProvider(equipmentId).future),
     profile,
   );
-  for (final e in exercises) {
-    final poster = e.posterFor(null);
-    if (poster != null) return poster;
-  }
-  return null;
+  // Not "the first exercise with a poster": a machine's list is everything
+  // that can be done on it, so that picked a dumbbell curl for the bench-press
+  // page. See `pickHeroExercise` for the rule; null (placeholder) beats a
+  // picture of the wrong movement.
+  final machine = await ref.watch(equipmentByIdProvider(equipmentId).future);
+  final index = await ref.watch(equipmentAliasIndexProvider.future);
+  return pickHeroExercise(
+    equipmentId: equipmentId,
+    candidates: exercises,
+    index: index,
+    preferredExerciseId: machine?.heroExerciseId,
+  )?.posterFor(null);
 });
+
+/// Free-text machine name -> catalogue id, shared by every reader that ranks
+/// by "does this name the machine" (the page hero today).
+final equipmentAliasIndexProvider = FutureProvider<EquipmentAliasIndex>(
+    (ref) => EquipmentAliasIndex.load());
 
 /// True for an exercise that came out of the AI generator rather than the
 /// vendor catalog.

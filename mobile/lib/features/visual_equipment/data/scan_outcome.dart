@@ -53,22 +53,25 @@ class ScanResult {
     required this.outcome,
     this.matches = const [],
     this.answeredOffline = false,
+    this.rawAnswer,
   });
 
   const ScanResult.confident(List<VisualMatch> matches,
-      {bool answeredOffline = false})
+      {bool answeredOffline = false, String? rawAnswer})
       : this(
           outcome: ScanOutcome.confident,
           matches: matches,
           answeredOffline: answeredOffline,
+          rawAnswer: rawAnswer,
         );
 
   const ScanResult.alternatives(List<VisualMatch> matches,
-      {bool answeredOffline = false})
+      {bool answeredOffline = false, String? rawAnswer})
       : this(
           outcome: ScanOutcome.alternatives,
           matches: matches,
           answeredOffline: answeredOffline,
+          rawAnswer: rawAnswer,
         );
 
   const ScanResult.unknown() : this(outcome: ScanOutcome.unknown);
@@ -89,6 +92,10 @@ class ScanResult {
   /// rather than as the app being bad at recognition — and so the user knows
   /// a retry on a connection is worth something.
   final bool answeredOffline;
+
+  /// What the cloud model replied, verbatim, when it did. Kept only for the
+  /// on-phone scan history; no screen renders it.
+  final String? rawAnswer;
 
   /// True when trying the same shot again could plausibly change the answer.
   ///
@@ -141,8 +148,10 @@ class ScanResult {
   factory ScanResult.fromMatches(
     List<VisualMatch> ranked, {
     bool answeredOffline = false,
+    String? rawAnswer,
   }) {
     if (ranked.isEmpty) return const ScanResult.noEquipment();
-    return ScanResult.alternatives(ranked, answeredOffline: answeredOffline);
+    return ScanResult.alternatives(ranked,
+        answeredOffline: answeredOffline, rawAnswer: rawAnswer);
   }
 }

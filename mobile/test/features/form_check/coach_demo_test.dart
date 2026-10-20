@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -156,22 +157,38 @@ Widget _host(
 
 void main() {
   group('coachDemoFor', () {
-    // I4a. Both halves matter and they fail for different reasons. The squat
-    // must be the STATED absence, not the clip (which G1.2 proved unusable)
-    // and not null (which renders nothing and is reserved for a movement the
-    // coach does not teach) and above all not the drawn figure — the squat has
-    // an authored `poseTargetsFor` pair, so a missing branch here would fall
-    // through to it silently and ship the stand-in the 2026-09-09 ruling
-    // rejected.
-    test('the squat is an explicit absence, not a clip and not a figure', () {
+    // The operator ordered the squat's demonstration back (2026-10-14), over
+    // the interim that stated its absence (2026-09-09). Each `isNot` fails for
+    // a different regression: the absence returning, the drawn figure the
+    // operator rejected three times (the squat has an authored
+    // `poseTargetsFor` pair, so a missing branch here would fall through to
+    // it silently), or nothing at all.
+    test('the squat is the reference clip, not an absence and not a figure',
+        () {
       final source = coachDemoFor(FormExercise.squat);
-      expect(source, isA<CoachDemoUnavailableSource>());
-      expect(source, isNot(isA<CoachDemoClipSource>()));
+      expect(source, isA<CoachDemoClipSource>());
+      expect(source, isNot(isA<CoachDemoUnavailableSource>()));
       expect(source, isNot(isA<CoachDemoFigureSource>()));
-      expect(source, isNotNull,
-          reason: 'an absence the coach states, not one it renders as nothing');
+      source as CoachDemoClipSource;
+      expect(source.asset, 'assets/coach_demo/squat_side.mp4');
+      expect(source.poster, 'assets/coach_demo/squat_side_poster.jpg');
       expect(poseTargetsFor(FormExercise.squat), isNotNull,
-          reason: 'the fall-through this branch exists to prevent is real');
+          reason: 'the fall-through the explicit branch exists to prevent is '
+              'real');
+    });
+
+    test('the squat clip and its poster are real files, declared in pubspec',
+        () {
+      // A mapping to a path nobody bundles is a demonstration that throws on
+      // the first frame; the failure would only show on a device. `flutter
+      // test` runs with the package root as cwd.
+      final source = coachDemoFor(FormExercise.squat) as CoachDemoClipSource;
+      expect(File(source.asset).existsSync(), isTrue, reason: source.asset);
+      expect(File(source.poster).existsSync(), isTrue, reason: source.poster);
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      final declared = RegExp(r'^\s*-\s*assets/coach_demo/\s*$', multiLine: true);
+      expect(declared.hasMatch(pubspec), isTrue,
+          reason: 'assets/coach_demo/ must be an uncommented pubspec asset');
     });
 
     test('every other authored movement is the drawn figure, from the same '

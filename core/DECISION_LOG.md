@@ -55819,6 +55819,86 @@ Decision: settle write guarded by the ordering marker after a reliability review
 
 Decision: replace the marker guard with a write-revision compare-and-swap after GPT-PM MAJOR on 4995369. Evidence: focused Jest 49/53/34, see core/changes/2026-10-14-hardening-stripe-settle-revision-cas.md.
 
+## 2026-10-14 - Commit: Target silhouette drawn again on the live coach
+
+Decision: the operator's explicit instruction overrides the G17 removal of the target outline; the target of `poseTargetProvider` is drawn over the tracked body (layer `form_check.layer.target`). Evidence: focused Flutter tests, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device.
+
+## 2026-10-14 - Commit: Specific squat voice cues
+
+Decision: squat gets a fault-capable back-position rule (trunk fold proxy, hysteresis) and a shallow-depth fault on completed or incomplete reps; specific squat cues win over the generic silhouette-miss cue. No registry row exists for squat, so no registry change. Evidence: focused Flutter runs, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device; thresholds are PRODUCT_HEURISTIC.
+
+## 2026-10-14 - Commit: Body-relative squat rep signal
+
+Decision: the live squat counts on hip-below-knee in torso lengths (near-side view accepted) with a counting depth and a separate target depth; shallow reps are counted and faulted, quarter squats are not counted. Counting before Start was left as is because existing tests require it. Evidence: 536 focused Flutter tests green, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device; thresholds are PRODUCT_HEURISTIC.
+
 ## 2026-10-14 - Commit: Scan result to equipment page mapping fixes
 
 Decision: fix the client-side defects found behind the operator report that the Scan list and the opened page disagree: bench_press catalogue name collided with the adjustable_bench alias, the text anchor named a non-existent hip_thrust_machine id, and history/live taps carried the current scan scanId into another machine. Evidence: focused Flutter run, 228 tests, see core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: live camera, real model answers, Jest parity test for EQUIPMENT_NAMES_EN (no node_modules).
+
+## 2026-10-14 - Commit: Machine page hero depicts the machine
+
+Decision: the equipment page header is chosen by an explicit rule (curated heroExerciseId, then an exercise whose id slug or vendor label names the machine, else no hero) instead of the first exercise with a poster, which showed a dumbbell curl on the bench-press page. Evidence: focused Flutter run, 320 tests, 35 of 69 machines changed hero, 1 lost a wrong hero; see core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: device rendering, injury-screened picks.
+
+## 2026-10-14 - Commit: Rep-end cues are paced by the rep, not by the gate stopwatch
+
+Decision: rep-end cues are marked `repScoped` and bypass the CueGate repeat window and minimum gap, so every rep that shows a cue also speaks it; per-frame cues keep the stopwatch filters. Voice wiring moved to `buildLocalizedTtsVoiceCoach` for testability. Evidence: focused Flutter run (132 tests green), see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device speech (first-cue silence, if any, is a device hypothesis).
+
+## 2026-10-14 - Commit: Target figure restyled as a translucent body
+
+Decision: the target is drawn as a thick-limbed translucent cyan body figure (one alpha layer, head, no joint rings) instead of green lines with rings, after the operator read it as a duplicate skeleton. Evidence: coach_target_layer_test (6 tests), see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device look.
+
+## 2026-10-14 - Commit: Preview and squat demonstration findings recorded
+
+Decision: no code change for the preview/demo report. The squat demonstration is a deliberate stated absence since 2026-09-09 and was already so at 42d1b84; the target layer is transparent and cannot hide the preview. Evidence: git diff 42d1b84..HEAD on the widgets is empty; 570 focused Flutter tests green. See core/changes/2026-10-14-coach-form-fixes.md. Open product decision: a squat demonstration.
+
+## 2026-10-14 - Commit: Cheaper target figure painter
+
+Decision: static Paint objects and a figure-bounded alpha layer for the target figure, same look. Evidence: coach_target_layer_test. See core/changes/2026-10-14-coach-form-fixes.md.
+
+## 2026-10-14 - Commit: Squat review fixes: silent rejection, hysteresis gap, voice fallback
+
+Decision: the incomplete-squat shallow cue is keyed on the rejection reason alone (target withdrawn in avatar mode); the back rule restarts its streak across frame gaps and on a new set; a failed language bundle falls back to English or silence, never a cue key. Evidence: 577 focused Flutter tests green, see core/changes/2026-10-14-coach-form-fixes.md. Unverified: device.
+
+## 2026-10-14 - Commit: Review fixes for hero and scan tests
+
+Decision: strengthen the tests behind the hero and scan fixes after independent review: injury screening of the header, a pinned machine-to-hero map, scanId forwarding on the confident path (reachable via the printed-text anchor, so no call site removed), working-directory independence; curate squat_rack and barbell heroes; the dumbbell/band bench press ambiguity of the alias index is a documented limit covered by curation. Evidence: focused Flutter run, 327 tests; Jest ai_exercise_generation 33/33 after npm ci. See core/changes/2026-10-14-scan-mapping-fixes.md. Not verified: device rendering.
+
+## 2026-10-14 - Commit: Squat demonstration restored by operator order
+
+Decision: the operator ordered the squat demonstration back; this overrides, for the squat only, the 2026-09-09 GPT-PM interim (G1-interim) that showed "no demonstration yet". `coachDemoFor(squat)` is the bundled reference clip again, through `CoachDemoClip` with its lifecycle contract unchanged, and `assets/coach_demo/` is declared in pubspec again. Source search found no better acceptable asset: the vendor squat clips are signed-URL-only and cannot be bundled, vendor posters are one still per clip, and the drawn figure is the stand-in the operator rejected three times (2026-09-04), so it stays excluded and the squat branch stays explicit. Accepted limits, not fixed: the clip is a screen recording of an older prototype with burned-in English coach line, a rep counter frozen at 0 and a "too dark" toast; the approved target O1 (chrome-free footage plus app-owned overlay) is still open and needs content the repository lacks. The selection golden master was recorded for the absence state and needs re-recording in the container. Evidence: 4 focused files, 49 tests, all passed; presence is pinned in coach_demo_test, demo_silhouette_test, live_demo_test and coach_selection_screen_test. Unverified: device playback. See core/changes/2026-10-14-coach-form-fixes.md.
+
+## 2026-10-14 - Commit: Scan confirmation experience (pictures, 3 alternatives, manual picker)
+
+Decision: because model top-1 is 16/33 (top 3 alternatives: 20/33) and prompt variants did not help, accuracy is not chased further here; the result list becomes a confirmation surface instead: best + 3 candidates (prompt asks for exactly 3 alternatives, client topK 4), a hero-image thumbnail per row, and a "Not it - choose manually" row opening a searchable list of the whole catalogue; a manual pick is recorded as source manual, confidence 1.0, and does not carry the scan's id. Limit: this does not raise accuracy, and the prompt change needs a deploy of `aiEquipmentRecognition`, which has NOT been done. Evidence: Jest 22/22; focused Flutter run, see core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 3). Unverified: device appearance.
+
+## 2026-10-14 - Commit: Fix stale squat fixture in pose_roll_diagnostics_test
+
+Decision: the incomplete-attempt fixture was re-based to the body-relative counting depth (0.64 became 0.60); the failure was ours (a shallow rep is now counted), the base passes. Evidence: base 42d1b84 +16 pass, HEAD before fix +15 -1, after fix pass; golden test fails identically at base. See core/changes/2026-10-14-coach-form-fixes.md.
+
+## 2026-10-14 - Commit: Full-screen scan window with a draggable result sheet
+
+Decision: the operator's real phone showed the 230px card could not fit a machine, so the Scan preview now fills the screen and all results live in a draggable sheet over it (pinned shutter, Gallery/Live and the cloud-upload disclosure; the answer scrolls below and opens by itself). The reference-card geometry/golden tests are skipped as retired by that order (not deleted); structural full-screen tests replace them. Evidence: scanner_page_test 55/55 and the neighbouring scanner suites green (15 retired skips). Unverified: device feel and bottom-nav overlap. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 4).
+
+## 2026-10-14 - Commit: Camera zoom presets and pinch on the Scan preview
+
+Decision: zoom is owned by a small `CameraZoom` behind a `ZoomBackend` seam so the device-dependent presets (0.6, 1, 2, 3, 5, 10x, only those the device really has; 0.6x only with a reported minimum of 0.6 or less) and the clamping are testable with a fake camera reporting 0.6..10 and 1..4. Pinch is coalesced (one call in flight, latest wins); leaving the screen resets to 1x. Evidence: scan_zoom_test 17/17 plus page tests green. Unverified: real devices. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 5).
+
+## 2026-10-14 - Commit: Automatic on-phone scan history (storage, wipe, backup exclusion)
+
+Decision: every scan is saved automatically to app-private storage on the phone only (`<docs>/scan_history/<uid>/<scanId>/`: record.json + the resized JPEG that was sent), with the model's raw answer, all candidates, ratings, the opened or manually chosen machine, cloud vs on-device fallback and the app build, so the operator can compare model output with reality. It is plaintext by design (it must be exportable), excluded from Android backup and device transfer, wiped by `DeviceLocalDataWipe`, capped at 500 scans or 1 GiB (oldest first). `data_lifecycle_policy.json` is Firestore-only and would flag a local class as stale, so the class lives in the data inventory and is pinned by tests. Evidence: store 30/30, flow 6/6, account deletion, controller and scanner suites green. Not verified: device behaviour; one pre-existing failing lock-file test in backup_rules_test. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 6).
+
+## 2026-10-14 - Commit: Optional rating marks and the scan history screen with export and clear
+
+Decision: each candidate carries two optional marks (OK / NOT OK, tap again to clear, never blocks opening), saved into the scan's on-phone record; "История сканов" lists and details every saved scan, exports ONE JSON plus a photos folder through the system share sheet only on the user's tap (no zip: no archive dependency), and "Очистить историю" deletes this account's history after a confirmation. The history screens are top-level routes so the camera is released while they are open. Evidence: history page 6/6, history flow 10/10, scanner page 60/60 plus l10n/router/account-deletion suites green. Unverified: device share sheet and look. See core/changes/2026-10-14-scan-mapping-fixes.md (Addendum 7).
+
+## 2026-10-14 - Commit: Scan history privacy fixes (plaintext export copy, wipe race, per-account cap)
+
+Decision: the plaintext export copy in `<temp>/scan_history_export/` is deleted right after the share call returns (success or failure) and also by "Clear history" and the account wipe; the account wipe goes through the history store's serial queue and permanently refuses later writes for that uid, so an in-flight save cannot recreate `scan_history/<uid>`; the 500 scans / 1 GiB retention cap is documented as per account. Why: an independent privacy review found the export copy never deleted and a same-uid window between the wipe and a late save. Trade-off accepted: on Android a share target that reads very large files after the call returns may get a truncated export (user exports again). Details: `core/changes/2026-10-14-scan-mapping-fixes.md` Addendum 8.
+
+## 2026-10-14 - Commit: Scan screen review fixes part 1 (shutter without camera, measured header, short screens)
+
+Decision: the shutter is disabled while the camera is unavailable instead of waiting 8 s and failing; the pinned sheet header height is measured from its content (226 px is only a floor) so large text scales cannot clip the shutter row or the upload disclosure, which is now shown in full; on short or landscape screens the collapsed sheet may take up to 92% and the aiming window keeps at least min(120 px, 30% of the height). `CameraSession.awaitReady` stays as is because the progress-photo flows share it. Details: `core/changes/2026-10-14-scan-mapping-fixes.md` Addendum 9.
+
+## 2026-10-14 - Commit: Scan screen review fixes part 2 (drag rebuilds, overlay, picker states, thumbnails, 44 px targets, arm/disarm queue)
+
+Decision: the scan page serialises camera arm and disarm through one queue that honours the last wish, because a quick inactive -> resumed used to leave the camera released (the resume's start() was a no-op while the stop was still finishing); the sheet extent drives only the overlay (no page rebuild per drag frame) and the overlay hides above 0.61; the manual picker distinguishes loading, load failure (with Retry) and an empty search; thumbnails decode at drawn size; zoom chips and rating marks are 44 px targets. Trade-off: a disarm waits behind a start still in flight. Details: `core/changes/2026-10-14-scan-mapping-fixes.md` Addendum 10.

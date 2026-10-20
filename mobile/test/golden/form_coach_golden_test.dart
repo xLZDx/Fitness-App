@@ -227,11 +227,14 @@ void main() {
     final path = c.read(coachBackdropProvider);
     final element = tester.element(find.byType(FormCheckPage));
     await tester.runAsync(() => precacheImage(AssetImage(path), element));
-    // The demonstration's poster used to be precached here too: a widget test
-    // has no video platform, so the squat's clip always fell back to its
-    // poster and that still image WAS the picture of the picker. G1.2
-    // (2026-09-09) removed the clip, so there is no second image to decode —
-    // the panel now holds a sentence, which needs no asset I/O.
+    // The demonstration's poster, for the same reason. A widget test has no
+    // video platform, so the squat's clip falls back to its poster — which is
+    // the honest picture of the picker here, and it has to be decoded on this
+    // container's clock too. (Dropped 2026-09-09 while the squat stated its
+    // absence; restored 2026-10-14 with the clip. The selection master was
+    // recorded for the absence state and needs re-recording in the container.)
+    await tester.runAsync(() => precacheImage(
+        const AssetImage('assets/coach_demo/squat_side_poster.jpg'), element));
     await tester.pump();
   }
 

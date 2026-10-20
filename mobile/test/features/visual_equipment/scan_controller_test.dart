@@ -27,6 +27,20 @@ class _HangingService implements VisualEquipmentService {
       Completer<List<VisualMatch>>().future;
 }
 
+/// Records the candidate count the controller asks for.
+class _TopKRecordingService implements VisualEquipmentService {
+  int? requestedTopK;
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) async {
+    requestedTopK = topK;
+    return const [VisualMatch(equipmentId: 'leg_press', confidence: 0.9)];
+  }
+}
+
 /// Genuinely finds nothing.
 ///
 /// `MockVisualEquipmentService(fixedResults: const [])` does NOT do this — an
@@ -169,6 +183,22 @@ void main() {
       // name describes.
       expect(result.outcome, ScanOutcome.alternatives);
       expect(result.matches.single.equipmentId, 'leg_press');
+    });
+
+    test('the controller asks the service for best + 3 alternatives (topK 4)',
+        () async {
+      final svc = _TopKRecordingService();
+      final c = containerWith([
+        visualEquipmentServiceProvider.overrideWithValue(svc),
+      ]);
+
+      await c
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/a.jpg');
+
+      expect(svc.requestedTopK, kScanCandidateCount);
+      expect(svc.requestedTopK, 4,
+          reason: 'the default of 3 would hide the 4th candidate');
     });
 
     test('nothing in the catalogue but nameable is UNKNOWN', () async {

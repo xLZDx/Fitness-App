@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
+import '../helpers/fake_zoom_backend.dart';
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/camera/camera_availability.dart';
 import 'package:fitness_app/core/camera/camera_session.dart';
@@ -34,6 +35,7 @@ import 'package:fitness_app/features/visual_equipment/state/live_equipment_provi
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart';
 import 'package:fitness_app/features/scanner/widgets/scan_frame.dart';
+import 'package:fitness_app/features/scanner/widgets/scan_viewfinder.dart';
 import 'package:fitness_app/features/visual_equipment/widgets/live_equipment_preview.dart';
 import 'package:fitness_app/shared/widgets/app_buttons.dart';
 import 'package:fitness_app/shared/widgets/hud/hud_surface.dart';
@@ -342,6 +344,10 @@ void main() {
           builder: (_, s) =>
               Scaffold(body: Text('equipment ${s.pathParameters['id']}')),
         ),
+        GoRoute(
+          path: '/scan-history',
+          builder: (_, __) => const Scaffold(body: Text('history page')),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -422,57 +428,86 @@ void main() {
     // the previous full-bleed-camera-plus-sheet layout are replaced by these;
     // the pixel-level contract is `scan_reference_geometry_test.dart` and
     // `tools/design/scan_fidelity_check.py`, this is the structural one.
-    testWidgets('the viewfinder is the reference card: 230px tall, 16px in',
+    testWidgets('the preview fills the whole screen area, edge to edge',
         (tester) async {
+      // Operator order 2026-10-14 (A): the 230px reference card could not fit a
+      // machine; the camera now fills the screen and the answer sits in a sheet.
       await pumpScan(tester);
-      final width =
-          tester.view.physicalSize.width / tester.view.devicePixelRatio;
-      final preview = tester.getRect(find.byType(LiveEquipmentPreview));
-      expect(preview.height, closeTo(230, 0.5),
-          reason: '`height:230px` (Sunset.dc.html:186)');
-      expect(preview.left, closeTo(16, 0.5), reason: '`margin:0 16px`');
-      expect(preview.width, closeTo(width - 32, 0.5));
+      final Size screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      final Rect preview = tester.getRect(find.byType(LiveEquipmentPreview));
+      expect(preview, Rect.fromLTWH(0, 0, screen.width, screen.height),
+          reason: 'no card, no margin: the preview IS the screen area');
       expect(find.byType(ScanFrame), findsOneWidget);
       expect(find.byKey(const Key('scan-hint')), findsOneWidget);
       expect(find.text('ALIGN THE MACHINE IN FRAME'), findsOneWidget);
     });
 
-    testWidgets('the card sits under the title at the reference spacing',
-        (tester) async {
-      // Reference: title top 52, card top 116.1 with a 46px status bar --
-      // 64.1px apart. The test harness has no status bar, so only the
-      // distance is pinned here; the absolute position is the geometry
-      // test's job.
+    testWidgets('the title is drawn over the camera and the aiming frame '
+        'stays clear of the title and of the sheet', (tester) async {
       await pumpScan(tester);
-      final title = tester.getTopLeft(find.text('Scan'));
-      final card = tester.getRect(find.byType(LiveEquipmentPreview));
-      expect(card.top - title.dy, closeTo(64.1, 3));
-      expect(
-        find.ancestor(
-          of: find.byType(LiveEquipmentPreview),
-          matching: find.byType(SafeArea),
-        ),
-        findsNothing,
-        reason: 'HudScreenBody already pads the status bar; a SafeArea here '
-            'would count it twice',
-      );
+      final Rect preview = tester.getRect(find.byType(LiveEquipmentPreview));
+      final Rect title = tester.getRect(find.text('Scan'));
+      expect(preview.contains(title.topLeft), isTrue,
+          reason: 'the title overlays the preview');
+      final Rect hint = tester.getRect(find.byKey(const Key('scan-hint')));
+      final Rect sheet = tester.getRect(find.byKey(const Key('scan-sheet-surface')));
+      expect(hint.top, greaterThan(title.bottom),
+          reason: 'the frame is below the title block');
+      expect(hint.bottom, lessThan(sheet.top),
+          reason: 'the frame is above the collapsed sheet');
     });
 
-    testWidgets('no sheet: one list, controls visible without a drag',
-        (tester) async {
+    testWidgets(
+        'the sheet starts collapsed with the shutter, Gallery and Live in '
+        'reach', (tester) async {
       await pumpScan(tester);
-      final screen =
+      final screenH =
           tester.view.physicalSize.height / tester.view.devicePixelRatio;
 
-      expect(find.byType(DraggableScrollableSheet), findsNothing);
-      final primary = tester.getRect(find.byKey(const Key('scan-recognise-camera')));
-      final card = tester.getRect(find.byType(LiveEquipmentPreview));
-      expect(primary.top - card.bottom, closeTo(14, 0.5),
-          reason: '`margin:14px 16px 18px` (Sunset.dc.html:221)');
-      expect(primary.height, closeTo(52, 1),
-          reason: 'padding 16 + 20px glyph line');
-      expect(primary.bottom, lessThan(screen));
-      expect(find.byKey(const Key('scan-recognise-gallery')), findsOneWidget);
+      final Rect sheet = tester.getRect(find.byKey(const Key('scan-sheet-surface')));
+      expect(sheet.height, closeTo(kScanSheetCollapsedPx, 1.5));
+      expect(sheet.bottom, closeTo(screenH, 0.5));
+      for (final key in const ['scan-recognise-camera', 'scan-recognise-gallery', 'scan-live-toggle']) {
+        final Rect r = tester.getRect(find.byKey(Key(key)));
+        expect(sheet.contains(r.center), isTrue,
+            reason: '$key must be inside the collapsed sheet');
+      }
+      expect(tester.getRect(find.byKey(const Key('scan-recognise-camera'))).height,
+          closeTo(52, 1));
+    });
+
+    testWidgets('the sheet expands when dragged up and collapses when dragged down',
+        (tester) async {
+      await pumpScan(tester);
+      Rect sheet() => tester.getRect(find.byKey(const Key('scan-sheet-surface')));
+      final double collapsed = sheet().height;
+
+      await tester.fling(find.byKey(const Key('scan-sheet-handle')),
+          const Offset(0, -900), 2000);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(sheet().height, greaterThan(collapsed + 600),
+          reason: 'dragging the handle up opens the sheet');
+      expect(find.byKey(const Key('scan-recognise-camera')), findsOneWidget);
+
+      await tester.fling(find.byKey(const Key('scan-sheet-handle')),
+          const Offset(0, 1800), 2000);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(sheet().height, closeTo(collapsed, 1.5),
+          reason: 'dragging it down returns to the collapsed shutter strip');
+    });
+
+    test('the capture crop window is the aiming frame, insets included', () {
+      const Size card = Size(400, 800);
+      final Rect plain = ScanViewfinder.windowNormalized(card);
+      expect(plain.left, closeTo(20 / 400, 1e-9));
+      expect(plain.top, closeTo(20 / 800, 1e-9));
+      final Rect inset = ScanViewfinder.windowNormalized(card,
+          guideInsets: const EdgeInsets.only(top: 100, bottom: 200));
+      expect(inset.top, closeTo(120 / 800, 1e-9));
+      expect(inset.bottom, closeTo(1 - 220 / 800, 1e-9));
+      expect(inset.left, plain.left);
     });
 
     testWidgets('the live toggle sits in the controls row and still works',
@@ -535,6 +570,134 @@ void main() {
       expect(container.read(visualEquipmentControllerProvider).requireValue.outcome,
           ScanOutcome.noEquipment);
       expect(spy.stops, stopsBefore, reason: 'the camera never stopped');
+    });
+
+    testWidgets(
+        'an answer opens the sheet by itself and Scan again collapses it',
+        (tester) async {
+      final spy = _SpySession();
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(spy),
+        machineTextRecogniserProvider
+            .overrideWithValue(FakeMachineTextRecogniser('leg press')),
+        equipmentListProvider.overrideWith((_) async => const [
+              EquipmentItem(
+                id: 'leg_press',
+                name: 'Leg press',
+                manufacturer: 'Any',
+                category: 'strength',
+                description: '',
+              ),
+            ]),
+      ]);
+      await container.read(equipmentListProvider.future);
+      await tester.pump();
+      Rect sheet() => tester.getRect(find.byKey(const Key('scan-sheet-surface')));
+      final double collapsed = sheet().height;
+      expect(collapsed, closeTo(kScanSheetCollapsedPx, 1.5));
+
+      _useFakePicker();
+      await tapGallery(tester);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(sheet().height, greaterThan(collapsed + 400),
+          reason: 'the answer must be readable without a drag');
+      expect(find.byKey(const Key('scan-match-card')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('scan-recognise-camera')));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(sheet().height, closeTo(collapsed, 1.5),
+          reason: 'Scan again returns to the shutter strip');
+      expect(container.read(visualEquipmentControllerProvider).requireValue.outcome,
+          ScanOutcome.noEquipment);
+    });
+
+    testWidgets('zoom presets follow the camera: an ultra-wide phone shows 0.6x, '
+        'a 1..4x phone does not show 5x or 10x', (tester) async {
+      final wide = _SpySession();
+      await wide.zoom.attach(FakeZoomBackend(0.6, 10));
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(wide)]);
+      for (final k in ['0.6', '1', '2', '3', '5', '10']) {
+        expect(find.byKey(Key('scan-zoom-$k')), findsOneWidget, reason: k);
+      }
+      expect(find.byKey(const Key('scan-zoom-label')), findsOneWidget);
+      // Reachable: above the collapsed sheet, inside the screen.
+      final Rect chips = tester.getRect(find.byKey(const Key('scan-zoom-1')));
+      final Rect sheet = tester.getRect(find.byKey(const Key('scan-sheet-surface')));
+      expect(chips.bottom, lessThanOrEqualTo(sheet.top));
+      expect(chips.top, greaterThan(0));
+
+      final narrow = _SpySession();
+      await narrow.zoom.attach(FakeZoomBackend(1, 4));
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(narrow)]);
+      await tester.pump();
+      expect(find.byKey(const Key('scan-zoom-0.6')), findsNothing);
+      expect(find.byKey(const Key('scan-zoom-5')), findsNothing);
+      expect(find.byKey(const Key('scan-zoom-10')), findsNothing);
+      expect(find.byKey(const Key('scan-zoom-3')), findsOneWidget);
+    });
+
+    testWidgets('tapping a preset on the Scan screen zooms the camera',
+        (tester) async {
+      final spy = _SpySession();
+      final backend = FakeZoomBackend(0.6, 10);
+      await spy.zoom.attach(backend);
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(spy)]);
+      await tester.tap(find.byKey(const Key('scan-zoom-5')));
+      await tester.pump();
+      await tester.pump();
+      expect(backend.requested, [5.0]);
+      expect(spy.zoom.state.value!.current, 5.0);
+    });
+
+    testWidgets('leaving the screen resets zoom to 1x', (tester) async {
+      final spy = _SpySession();
+      final backend = FakeZoomBackend(0.6, 10);
+      await spy.zoom.attach(backend);
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(spy)]);
+      await tester.tap(find.byKey(const Key('scan-zoom-3')));
+      await tester.pump();
+      await tester.pump();
+      expect(backend.requested.last, 3.0);
+
+      GoRouter.of(tester.element(find.byType(ScannerPage)))
+          .go('/equipment/leg_press');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(backend.requested.last, 1.0,
+          reason: 'the next visit must not start zoomed in');
+    });
+
+    testWidgets('no zoom controls while the camera is unavailable',
+        (tester) async {
+      final failing = _FailingSession(CameraUnavailableReason.noCamera);
+      // Even with a stale range published, a blocked camera shows no zoom.
+      await failing.zoom.attach(FakeZoomBackend(0.6, 10));
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(failing)]);
+      await tester.pump();
+      expect(find.byKey(const Key('scan-camera-unavailable')), findsOneWidget);
+      expect(find.byKey(const Key('scan-zoom-label')), findsNothing);
+    });
+
+    testWidgets('the history button over the camera opens the scan history and '
+        'releases the camera', (tester) async {
+      final spy = _SpySession();
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(spy)]);
+      final before = spy.stops;
+      final Rect button = tester.getRect(find.byKey(const Key('scan-history-open')));
+      expect(button.top, greaterThan(0));
+      expect(button.right, lessThanOrEqualTo(tester.view.physicalSize.width));
+
+      await tester.tap(find.byKey(const Key('scan-history-open')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.text('history page'), findsOneWidget);
+      expect(spy.stops, greaterThan(before),
+          reason: 'a screen above the Scan tab must not leave the camera on');
     });
 
     testWidgets('the hint says RECOGNISING while a capture is classified',
@@ -995,6 +1158,10 @@ void main() {
       ]);
       await tester.pump();
 
+      await tester.drag(
+          find.byKey(const Key('scan-sheet-handle')), const Offset(0, -2000));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.scrollUntilVisible(
           find.byKey(const Key('scan-history')), 200);
       expect(find.text('My machines'), findsOneWidget);
@@ -1317,7 +1484,7 @@ void main() {
     });
 
     testWidgets(
-        'the low-light banner stays inside the viewfinder card, under the status bar',
+        'the low-light banner stays inside the preview, under the status bar and the title',
         (tester) async {
       // MVP1.G2 regression guard, carried over the SCAN-G1 layout change. The
       // banner used to be a second overlay over a full-bleed camera and twice
@@ -1336,9 +1503,8 @@ void main() {
       final card = tester.getRect(find.byType(LiveEquipmentPreview));
       final banner = tester.getRect(find.byKey(const Key('scan-low-light')));
 
-      expect(card.top, greaterThanOrEqualTo(94),
-          reason: 'the whole card clears the simulated status bar inset');
-      expect(banner.top, greaterThanOrEqualTo(card.top));
+      expect(banner.top, greaterThanOrEqualTo(94 + kScanTitleBlockPx),
+          reason: 'below the simulated status bar and the title block');
       expect(banner.bottom, lessThanOrEqualTo(card.bottom));
       expect(banner.left, greaterThanOrEqualTo(card.left));
       expect(banner.right, lessThanOrEqualTo(card.right));

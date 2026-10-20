@@ -5,6 +5,30 @@ import 'package:fitness_app/features/equipment/data/equipment_alias_index.dart';
 import 'package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+
+/// The `mobile` package directory, found from wherever the test runs (the
+/// package root under `flutter test`, but not guaranteed by every runner).
+final Directory _mobile = () {
+  var dir = Directory.current.absolute;
+  while (true) {
+    final pubspec = File('${dir.path}/pubspec.yaml');
+    if (pubspec.existsSync() &&
+        pubspec.readAsStringSync().contains(RegExp(r'^name:\s*fitness_app',
+            multiLine: true))) {
+      return dir;
+    }
+    final parent = dir.parent;
+    if (parent.path == dir.path) {
+      throw StateError('mobile package root not found from '
+          '${Directory.current.path}');
+    }
+    dir = parent;
+  }
+}();
+
+/// A path relative to the `mobile` package (`../` reaches the repo root).
+String _p(String relative) => '${_mobile.path}/$relative';
+
 /// Data contract for the scan mapping: every machine name the cloud model may
 /// answer with (`CANONICAL_MACHINES` in
 /// `functions/src/ai_equipment_recognition.ts`) must resolve, through the real
@@ -118,7 +142,7 @@ const Set<String> _cardioIds = {
 };
 
 List<String> _canonicalMachines() {
-  final src = File('../functions/src/ai_equipment_recognition.ts')
+  final src = File(_p('../functions/src/ai_equipment_recognition.ts'))
       .readAsStringSync();
   final start = src.indexOf('CANONICAL_MACHINES');
   if (start < 0) throw StateError('CANONICAL_MACHINES not found');
@@ -135,16 +159,16 @@ Map<String, dynamic> _json(String path) =>
     (jsonDecode(File(path).readAsStringSync()) as Map).cast<String, dynamic>();
 
 List<Map<String, dynamic>> _catalogue() =>
-    (jsonDecode(File('assets/data/equipment.json').readAsStringSync()) as List)
+    (jsonDecode(File(_p('assets/data/equipment.json')).readAsStringSync()) as List)
         .cast<Map<String, dynamic>>();
 
 void main() {
   final canonical = _canonicalMachines();
-  final aliasJson = _json('assets/data/equipment_aliases.json');
+  final aliasJson = _json(_p('assets/data/equipment_aliases.json'));
   final index = EquipmentAliasIndex.fromJson(aliasJson);
   final catalogue = _catalogue();
   final byId = {for (final e in catalogue) e['id'] as String: e};
-  final ru = _json('assets/data/equipment.ru.json');
+  final ru = _json(_p('assets/data/equipment.ru.json'));
 
   test('canonical list was parsed and the table covers exactly it', () {
     expect(canonical, isNotEmpty);
@@ -250,7 +274,7 @@ void main() {
   test('ids hard-coded in the text anchor and on-device label map exist', () {
     final ids = byId.keys.toSet();
     final anchor = File(
-            'lib/features/visual_equipment/data/machine_text_anchor.dart')
+            _p('lib/features/visual_equipment/data/machine_text_anchor.dart'))
         .readAsStringSync();
     final anchorBlock = anchor.substring(
         anchor.indexOf('const Map<String, String> _kPhrases'),
@@ -265,7 +289,7 @@ void main() {
     expect(anchor.contains("equipmentId: 'cable_machine'"), isTrue);
 
     final mlkit = File(
-            'lib/features/visual_equipment/data/mlkit_visual_equipment_service.dart')
+            _p('lib/features/visual_equipment/data/mlkit_visual_equipment_service.dart'))
         .readAsStringSync();
     final labelIds = RegExp(r"'[a-z_]+':\s*'([a-z_]+)'")
         .allMatches(mlkit)

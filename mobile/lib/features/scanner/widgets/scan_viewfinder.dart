@@ -39,7 +39,22 @@ class ScanViewfinder extends StatelessWidget {
     this.guides = true,
     this.banner,
     this.corner,
+    this.fullBleed = false,
+    this.guideInsets = EdgeInsets.zero,
   });
+
+  /// Operator order 2026-10-14: the scan window is the whole screen area, not
+  /// a 230px card. True drops the card chrome (glass surface, rounded corners,
+  /// fixed height) and fills whatever space the parent gives it, edge to edge.
+  /// The reference card ([fullBleed] false) is kept for the fidelity tests.
+  final bool fullBleed;
+
+  /// Where the aiming brackets, glyph and hint may sit inside a full-bleed
+  /// viewfinder: the title block above and the result sheet below cover part of
+  /// the preview, and brackets hidden under a sheet frame nothing. The capture
+  /// crop uses the same insets ([windowNormalized]), so the crop IS the frame
+  /// the user sees.
+  final EdgeInsets guideInsets;
 
   /// The camera (or whatever stands in for it). Fills the card.
   final Widget preview;
@@ -73,45 +88,45 @@ class ScanViewfinder extends StatelessWidget {
 
   /// The bracket window as fractions of the card, for [viewfinderSourceRect]:
   /// `ScanFrame.inset` in from every edge.
-  static Rect windowNormalized(Size card) => Rect.fromLTRB(
-        ScanFrame.inset / card.width,
-        ScanFrame.inset / card.height,
-        1 - ScanFrame.inset / card.width,
-        1 - ScanFrame.inset / card.height,
+  static Rect windowNormalized(Size card,
+          {EdgeInsets guideInsets = EdgeInsets.zero}) =>
+      Rect.fromLTRB(
+        (ScanFrame.inset + guideInsets.left) / card.width,
+        (ScanFrame.inset + guideInsets.top) / card.height,
+        1 - (ScanFrame.inset + guideInsets.right) / card.width,
+        1 - (ScanFrame.inset + guideInsets.bottom) / card.height,
       );
 
   @override
   Widget build(BuildContext context) {
     final HudTokens t = context.hud;
-    final bool dark = t.brightness == Brightness.dark;
+    // Full-bleed sits on the camera itself, which is dark whatever the theme.
+    final bool dark = fullBleed || t.brightness == Brightness.dark;
     final Color bracket =
         dark ? const Color(0xE6FFFFFF) : const Color(0x6B1B2030);
     final Color glyph = dark ? const Color(0xE6FFFFFF) : const Color(0xEB1B2030);
     final Color hintInk =
         dark ? const Color(0xCCFFFFFF) : const Color(0xDB1B2030);
 
-    return HudSurface(
-      glass: t.panel,
-      // See `HudSurface.shadowOutsideOnly`'s doc -- Scan opts in, the
-      // panel-family default (every other panel) does not.
-      shadowOutsideOnly: true,
-      borderRadius: BorderRadius.circular(radius),
-      child: SizedBox(
-        height: height,
-        child: Stack(
+    final Widget content = Stack(
           fit: StackFit.expand,
           children: <Widget>[
             preview,
             if (guides) ...<Widget>[
-              IgnorePointer(
-                child: ScanFrame(
-                  key: const Key('scan-frame'),
-                  phase: phase,
-                  bracket: bracket,
-                  accent: t.accent,
+              Padding(
+                padding: guideInsets,
+                child: IgnorePointer(
+                  child: ScanFrame(
+                    key: const Key('scan-frame'),
+                    phase: phase,
+                    bracket: bracket,
+                    accent: t.accent,
+                  ),
                 ),
               ),
-              IgnorePointer(
+              Padding(
+                padding: guideInsets,
+                child: IgnorePointer(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -159,19 +174,28 @@ class ScanViewfinder extends StatelessWidget {
                   ),
                 ),
               ),
+              ),
             ],
             if (banner != null)
               Positioned(
-                top: 8,
+                top: 8 + guideInsets.top,
                 left: 8,
                 right: 8,
                 child: Center(child: banner),
               ),
             if (corner != null)
-              Positioned(top: 6, left: 6, child: corner!),
+              Positioned(top: 6 + guideInsets.top, left: 6, child: corner!),
           ],
-        ),
-      ),
+    );
+
+    if (fullBleed) return ClipRect(child: SizedBox.expand(child: content));
+    return HudSurface(
+      glass: t.panel,
+      // See `HudSurface.shadowOutsideOnly`'s doc -- Scan opts in, the
+      // panel-family default (every other panel) does not.
+      shadowOutsideOnly: true,
+      borderRadius: BorderRadius.circular(radius),
+      child: SizedBox(height: height, child: content),
     );
   }
 }

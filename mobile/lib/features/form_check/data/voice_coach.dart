@@ -35,6 +35,8 @@ enum CueDecision {
 /// Decides whether a piece of [FormFeedback] should reach the speaker.
 ///
 /// Policy, in order:
+///   0. A rep-scoped cue (one per repetition by construction) skips 2-5 and is
+///      spoken, preempting when severe.
 ///   1. Below [minSeverity] — silent. "Good depth" every rep is noise.
 ///   2. Identical to the last cue spoken, within [repeatGapMs] — silent.
 ///   3. At or above [interruptSeverity] — spoken immediately, bypassing the
@@ -119,6 +121,13 @@ class CueGate {
     // Advisory/beta registry rows are on-screen only, whatever severity says.
     if (feedback.advisory) return CueDecision.suppress;
     if (feedback.severity < minSeverity) return CueDecision.suppress;
+    // Already one-per-rep: the repetition is the pacer, so neither the repeat
+    // window nor the minimum gap applies (see [FormFeedback.repScoped]).
+    if (feedback.repScoped) {
+      return feedback.severity >= interruptSeverity
+          ? CueDecision.preempt
+          : CueDecision.speak;
+    }
     // Identity is the cue KEY, not the rendered sentence: "is this the same
     // fault as last time" must not change answer when the app's language does.
     final cue = feedback.cueKey;

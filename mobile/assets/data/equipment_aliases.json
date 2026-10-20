@@ -118,6 +118,7 @@
  ],
  "air_bike": [
   "air bike",
+  "airbike",
   "airdyne",
   "assault bike",
   "fan bike",
@@ -127,6 +128,7 @@
  ],
  "ski_erg": [
   "ski erg",
+  "ski ergometer",
   "skierg",
   "лыжи",
   "лыжный тренажёр"
@@ -498,6 +500,7 @@
  ],
  "sissy_squat_machine": [
   "quad isolator",
+  "sissy squat",
   "sissy squat bench",
   "sissy squat frame",
   "sissy squat machine",

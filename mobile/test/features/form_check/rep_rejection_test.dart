@@ -24,9 +24,9 @@ import 'unscorable_frame_test.dart' show oneSquat, squatFrame;
 /// perfect silence. Both are correct behaviour that has to be visible to be
 /// tolerable.
 
-/// Down, but not to depth, and back up. The counter's `bottomEnter` is -0.04
-/// (hips level with the knees); this bottoms out at -0.08, so the lap starts
-/// and is then thrown away as incomplete.
+/// Down, but not to depth, and back up. The squat counter's `bottomEnter` is
+/// -0.30 torso lengths (`squatBodyRelativeConfig`; torso 0.28 here); this bottoms
+/// out at -0.43, so the lap starts and is then thrown away as incomplete.
 List<PoseFrame> halfSquat(int startTs) {
   final out = <PoseFrame>[];
   var ts = startTs;
@@ -38,12 +38,12 @@ List<PoseFrame> halfSquat(int startTs) {
   }
 
   hold(0.42, 4); // standing, well above the knee: this is what arms the counter
-  for (var hipY = 0.46; hipY <= 0.64; hipY += 0.04) {
+  for (var hipY = 0.46; hipY <= 0.60; hipY += 0.04) {
     out.add(squatFrame(ts, hipY));
     ts += 100;
   }
-  hold(0.64, 3); // as low as it goes, still short of depth
-  for (var hipY = 0.60; hipY > 0.42; hipY -= 0.04) {
+  hold(0.60, 3); // as low as it goes, still short of depth
+  for (var hipY = 0.56; hipY > 0.42; hipY -= 0.04) {
     out.add(squatFrame(ts, hipY));
     ts += 100;
   }
@@ -143,12 +143,17 @@ void main() {
           reason: 'a counted rep clears the rejection banner');
     });
 
-    test('is not narrated when nothing trustworthy measured it', () async {
-      // The counter rejects on hip-height-minus-knee-height, which depends on
-      // where the phone is standing. Blaming the user with that number is the
-      // mistake that produced "прогнись ниже" at the bottom of a full squat.
+    test('a squat that never reached counting depth says so, with no target',
+        () async {
+      // History: the counter used to reject on raw hip-height-minus-knee-height,
+      // which depends on where the phone is standing, so blaming the user with
+      // that number produced "прогнись ниже" at the bottom of a full squat and
+      // the rejection was left silent without a silhouette target. The squat now
+      // counts on a torso-relative signal (`squatBodyRelativeSignal`), so an
+      // `incomplete` rejection is a trustworthy "did not go deep enough" even
+      // with the target withdrawn (operator review, 2026-10-14).
       final (_, coach) = await run(halfSquat(0));
-      expect(coach.spoken, isEmpty);
+      expect(coach.spoken, [FormCueKey.squatDepthShallow.name]);
     });
 
     test('IS narrated when the silhouette says the shape was missed', () async {
@@ -173,7 +178,9 @@ void main() {
       expect(state.lastRepCue, isNull,
           reason: 'the clean rep must not inherit the discarded one\'s fault');
       expect(state.lastRepClean, isTrue);
-      expect(coach.spoken, isEmpty);
+      // Only the half rep's own shallow cue; the discarded lap's TEST fault
+      // (`_FaultsFirst`) was not spoken at the end of the next one.
+      expect(coach.spoken, [FormCueKey.squatDepthShallow.name]);
     });
   });
 

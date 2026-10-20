@@ -7,6 +7,7 @@ import 'package:fitness_app/features/safety/data/par_q.dart';
 import 'package:fitness_app/features/safety/state/eligibility_providers.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/visual_equipment/data/recognition_history.dart';
+import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_service.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
@@ -53,7 +54,21 @@ class _ScriptedService implements VisualEquipmentService {
   }
 }
 
-const _chest = 'Жим от груди (тренажёр)';
+/// Answers every classification with one fixed [ScanResult]. Needed for the
+/// `confident` outcome, which no recogniser service can produce any more (every
+/// photo match settles in `alternatives`); only the printed-text anchor builds
+/// it, and that path is not what these tests are about.
+class _FixedController extends VisualEquipmentController {
+  _FixedController(this.result);
+  final ScanResult result;
+
+  @override
+  Future<void> classifyFilePath(String path) async {
+    state = AsyncValue.data(result);
+  }
+}
+
+const _chest ='Жим от груди (тренажёр)';
 const _pec = 'Бабочка (пек-дек)';
 const _legPress = 'Жим ногами';
 const _elliptical = 'Эллиптический тренажёр';
@@ -109,8 +124,9 @@ class _Harness {
 
 Future<_Harness> _pump(
   WidgetTester tester, {
-  required List<List<VisualMatch>> script,
+  List<List<VisualMatch>> script = const [],
   List<String> seededHistory = const [],
+  ScanResult? fixedResult,
 }) async {
   final picker = _Picker();
   final previous = ImagePickerPlatform.instance;
@@ -177,6 +193,9 @@ Future<_Harness> _pump(
       recognitionHistoryRepositoryProvider.overrideWithValue(history),
       visualEquipmentServiceProvider
           .overrideWithValue(_ScriptedService(script)),
+      if (fixedResult != null)
+        visualEquipmentControllerProvider
+            .overrideWith(() => _FixedController(fixedResult)),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -292,5 +311,42 @@ void main() {
     // Nothing from scan one was navigated to again.
     expect(
         h.landed.skip(1).map(_path), isNot(contains('/equipment/pec_deck')));
+  });
+
+  testWidgets(
+      'confident result: the locked card and every runner-up row open their '
+      'own page WITH this scan\'s id; history chips open theirs without it',
+      (tester) async {
+    final h = await _pump(
+      tester,
+      seededHistory: ['elliptical'],
+      fixedResult: ScanResult.confident([
+        _m('chest_press_machine', 0.92),
+        _m('pec_deck', 0.40),
+        _m('leg_press', 0.30),
+      ]),
+    );
+    await h.scanViaGallery();
+
+    // Call site 1: the locked match card's button.
+    await h.tapAndBack(find.byKey(const Key('scan-open-exercises')), _chest);
+    expect(_path(h.landed.last), '/equipment/chest_press_machine');
+    final scanId = _scanId(h.landed.last);
+    expect(scanId, isNotNull, reason: 'locked card dropped the scan id');
+
+    // Call site 2: the runner-up rows under the locked card.
+    await h.tapAndBack(find.text(_pec), _pec);
+    expect(_path(h.landed.last), '/equipment/pec_deck');
+    expect(_scanId(h.landed.last), scanId,
+        reason: 'runner-up row dropped the scan id');
+    await h.tapAndBack(find.text(_legPress), _legPress);
+    expect(_path(h.landed.last), '/equipment/leg_press');
+    expect(_scanId(h.landed.last), scanId);
+
+    // Not part of this scan: the remembered chips carry nothing.
+    await h.tapAndBack(
+        find.byKey(const Key('scan-history-elliptical')), _elliptical);
+    expect(_path(h.landed.last), '/equipment/elliptical');
+    expect(_scanId(h.landed.last), isNull);
   });
 }

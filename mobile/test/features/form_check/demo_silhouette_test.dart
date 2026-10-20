@@ -23,10 +23,11 @@ import 'package:fitness_app/features/form_check/state/form_check_providers.dart'
 /// So:
 ///
 /// - the picker demonstrates the movement with the avatar-styled figure, for
-///   every authored movement except the squat — whose demonstration was the
-///   design reference's own clip until G1.2 (2026-09-09) proved that clip to
-///   be a screen recording of an older prototype, and which now states its
-///   absence rather than substituting the stand-in that was already rejected;
+///   every authored movement except the squat — whose demonstration is the
+///   design reference's own clip. G1.2 (2026-09-09) took it off the screen
+///   (the clip is a screen recording of an older prototype), and the
+///   operator's order of 2026-10-14 put it back; it is never the stand-in
+///   figure the operator rejected;
 /// - the live screen shows the SAME demonstration while there is nobody to
 ///   draw, and the user's own figure once there is (`live_demo_test.dart`
 ///   covers the hand-over);
@@ -78,7 +79,7 @@ void _phoneSized(WidgetTester t) {
 }
 
 void main() {
-  testWidgets('the picker states the squat has no demonstration yet',
+  testWidgets('the picker demonstrates the squat with the reference clip',
       (t) async {
     _phoneSized(t);
     final c = _container(phase: CoachPhase.selection);
@@ -88,12 +89,14 @@ void main() {
 
     expect(find.byKey(const Key('coach.selection.demo')), findsOneWidget);
     expect(_demo, findsOneWidget, reason: 'the host, not just its panel');
-    expect(_unavailable, findsOneWidget);
-    expect(_clip, findsNothing, reason: 'the prototype recording is gone');
+    expect(_clip, findsOneWidget, reason: 'the squat is the reference clip');
+    expect(find.byKey(const Key('form_check.demo_poster')), findsOneWidget,
+        reason: 'the clip shows its poster at once, and keeps it if no '
+            'decoder is available');
+    expect(_unavailable, findsNothing,
+        reason: 'the "no demonstration yet" state must not come back');
     expect(_figure, findsNothing,
-        reason: 'and it did NOT fall through to the drawn stand-in');
-    // The white outline stays gone in this state too — the state this file
-    // exists to guard is not allowed back in through an empty panel.
+        reason: 'and it must not fall through to the drawn stand-in');
     expect(_target, findsNothing);
   });
 
@@ -123,8 +126,8 @@ void main() {
     await t.pump();
 
     expect(_demo, findsOneWidget);
-    expect(_unavailable, findsOneWidget);
-    expect(_clip, findsNothing);
+    expect(_clip, findsOneWidget, reason: 'the squat clip, before any body');
+    expect(_unavailable, findsNothing);
     expect(_figure, findsNothing);
     expect(_target, findsNothing);
   });

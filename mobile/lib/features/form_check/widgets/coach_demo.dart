@@ -1,22 +1,24 @@
 /// What the Form Coach shows when there is nobody to coach yet.
 ///
-/// G17, amended 2026-09-09. Three sources, one host, one look:
+/// G17, amended 2026-09-09 and again 2026-10-14. Three sources, one host, one
+/// look:
 ///
-/// - the **squat** has no demonstration at the moment ([CoachDemoUnavailable]).
-///   It used to play the design reference's own clip, and G1.2 established that
-///   the clip is a screen recording of an older prototype: its UI is burned into
-///   the pixels, including an English "stand tall to start counting" that
-///   duplicates this app's own localized string, a rep counter frozen at 0 for
-///   all 240 frames, and a toast reading "Too dark or too blurry to read your
-///   position". None of it is removable — the line crosses the figure's head, so
-///   no crop reaches it; inpainting smeared the face; no background plate exists;
-///   and the reference's own compositing amplifies the chrome rather than hiding
-///   it, because its `contrast(7)` glow layer keeps the white UI text exactly as
-///   it keeps the skeleton. GPT-PM's ruling (2026-09-09, recorded in
-///   `core/DECISION_LOG.md`) is that an honest empty state ships until real
-///   chrome-free footage exists, and specifically NOT the drawn figure below:
-///   substituting it here would silently reverse the operator's 2026-09-04
-///   decision, which had already rejected three drawn stand-ins on a real phone;
+/// - the **squat** plays the design reference's own clip ([CoachDemoClip]),
+///   as it did under G17. G1.2 (2026-09-09) established that this clip is a
+///   screen recording of an older prototype — its UI is burned into the
+///   pixels, including an English "stand tall to start counting", a rep counter
+///   frozen at 0 and a toast reading "Too dark or too blurry to read your
+///   position" — and none of it can be removed from the footage. GPT-PM's
+///   interim ruling took the squat's demonstration off the screen and showed
+///   [CoachDemoUnavailableSource] instead. The operator then ordered the
+///   squat's demonstration back (2026-10-14, recorded in
+///   `core/DECISION_LOG.md`), which overrides that interim for the squat. The
+///   clip's defects are NOT fixed by this: they are a known, accepted limit
+///   until chrome-free footage exists (the approved O1 target). What the order
+///   does not reopen is the drawn figure below for the squat — the operator
+///   rejected three drawn stand-ins on a real phone (2026-09-04), and
+///   `coachDemoFor` still names the squat explicitly so that a missing branch
+///   cannot fall through to it;
 /// - every other movement that has authored targets is demonstrated by
 ///   [DemoFigurePainter]: the same body the avatar draws for the user (dark
 ///   fill, faint rim, white glowing bones, joint dots), animated between the
@@ -62,6 +64,11 @@ class CoachDemoFigureSource extends CoachDemoSource {
 
 /// A movement whose demonstration is knowingly missing, said out loud.
 ///
+/// No movement maps to this today: the squat used to (2026-09-09 to
+/// 2026-10-14) and plays its clip again. The variant, its panel and the
+/// source-aware screen-reader label stay as the honest way to give a taught
+/// movement an absent demonstration, rather than an empty box or a stand-in.
+///
 /// Distinct from `null`, and the distinction is the whole point. `null` means
 /// "nothing is authored for this movement", which renders nothing and is
 /// correct for a movement the coach does not teach. This means "this movement
@@ -72,7 +79,7 @@ class CoachDemoUnavailableSource extends CoachDemoSource {
   const CoachDemoUnavailableSource();
 }
 
-/// An explicit absence for the squat; the authored figure for everything else
+/// The reference clip for the squat; the authored figure for everything else
 /// that has one; null when nothing is authored at all.
 ///
 /// A plain function rather than only a provider, so the mapping is tested
@@ -80,10 +87,15 @@ class CoachDemoUnavailableSource extends CoachDemoSource {
 /// demonstration's animation clock needs to run.
 CoachDemoSource? coachDemoFor(FormExercise e) {
   // Explicit, and it has to be. `poseTargetsByTag` holds a squat pair
-  // (`pose_target.dart`), so simply deleting this branch would fall through to
+  // (`pose_target.dart`), so removing this branch again would fall through to
   // `CoachDemoFigureSource` and quietly produce the drawn stand-in the
-  // 2026-09-09 ruling rejects. The absence is stated, not arrived at.
-  if (e == FormExercise.squat) return const CoachDemoUnavailableSource();
+  // operator rejected (2026-09-04). The clip is chosen, not arrived at.
+  if (e == FormExercise.squat) {
+    return const CoachDemoClipSource(
+      asset: 'assets/coach_demo/squat_side.mp4',
+      poster: 'assets/coach_demo/squat_side_poster.jpg',
+    );
+  }
   final pair = poseTargetsFor(e);
   if (pair == null) return null;
   return CoachDemoFigureSource(pair.$1, pair.$2);

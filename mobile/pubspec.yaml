@@ -182,23 +182,19 @@ flutter:
     # party to credit. Stated because every other image directory here does have
     # one, and silence would read as an omission.
     - assets/coach_bg/
-    # NOT bundled, deliberately: `assets/coach_demo/` is absent from this list.
+    # The Form Coach's squat demonstration: a clip and its poster, cropped from
+    # the design reference's own recording. Bundled again on 2026-10-14 by the
+    # operator's order (`core/DECISION_LOG.md`), after G1.2 (2026-09-09) took it
+    # out. Its limits are known and accepted until chrome-free footage exists:
+    # the source is a screen recording of an older prototype, so a coach line
+    # "stand tall to start counting" is present in all 240 frames and crosses
+    # the standing figure's head, the rep counter reads 0 throughout, and a
+    # toast reads "Too dark or too blurry to read your position". The crop does
+    # NOT put that chrome outside the frame; do not read it as having done so.
     #
-    # It held the Form Coach's squat demonstration, cropped from the design
-    # reference's own clip. The comment that used to sit here said the crop
-    # put "the prototype's baked-in chrome outside the frame", and G1.2
-    # (2026-09-09) measured that claim and found it false. The source is a
-    # screen recording of an older prototype: its coach line "stand tall to
-    # start counting" is present in all 240 frames, it crosses the standing
-    # figure's head so no crop can reach it, the rep counter reads 0
-    # throughout, and a toast reads "Too dark or too blurry to read your
-    # position". GPT-PM ruled the clip out of production until real
-    # chrome-free footage exists (`core/DECISION_LOG.md`, 2026-09-09).
-    #
-    # The files stay on disk and in git — they are the record of what was
-    # investigated, and deleting them is not this gate's call to make. Leaving
-    # them undeclared is what keeps them out of the app: nothing in `lib/`
-    # names them any more, and `coach_demo_test.dart` holds that.
+    # Declared as a directory entry (no recursion needed: two files).
+    # `coach_demo_test.dart` holds that the squat maps to exactly these paths.
+    - assets/coach_demo/
 
   # The two families the design uses, bundled rather than fetched.
   #

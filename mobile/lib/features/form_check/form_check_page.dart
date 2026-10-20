@@ -509,7 +509,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     //
     // This supersedes "the live screen never demonstrates" (2026-09-02, GPT-PM
     // MAJOR: the picker owns the loop, the live screen a still target), which
-    // was a rule about the white target outline. The outline is gone; what the
+    // was a rule about the white target outline. NOTE 2026-10-14: the operator
+    // overrode the removal of the outline -- `_TargetOutline` draws the target
+    // again, but only over a tracked body, so the demonstration still never
+    // runs under it. Originally: the outline is gone; what the
     // live screen shows before a body is tracked is the reference's own figure
     // performing the movement, and it hands over to the user's figure the
     // moment there is one (`_LiveDemo`). The defect that rule fixed — a user at
@@ -817,6 +820,15 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                                       key: Key('form_check.layer.avatar'),
                                       child:
                                           IgnorePointer(child: _PoseAvatar()),
+                                    ),
+                                    // The shape the rep is judged against, drawn on the
+                                    // tracked body (operator 2026-10-14: the voice refers
+                                    // to a silhouette, so the silhouette must be on
+                                    // screen). Between the avatar and the skeleton.
+                                    const Positioned.fill(
+                                      key: Key('form_check.layer.target'),
+                                      child:
+                                          IgnorePointer(child: _TargetOutline()),
                                     ),
                                     const Positioned.fill(
                                       key: Key('form_check.layer.skeleton'),
@@ -1305,6 +1317,169 @@ class _PreviewScrim extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// The target shape of the selected movement, placed on the tracked body.
+///
+/// Operator, 2026-10-14, after a real-phone test: the coach says «вы не дошли
+/// до силуэта» while no silhouette is on screen. This overrides the G17 decision
+/// that removed the outline: the target (the very `poseTargetProvider` shape
+/// the match score and the `silhouette.match` cue are computed against) is drawn
+/// again whenever the user's own body is drawable
+/// (`coachBodyDrawableProvider`), and the demonstration still owns the panel
+/// while nobody is tracked. Placed with [alignTargetToBody] -- the same
+/// anchoring and mirror choice the score uses -- and projected with
+/// [projectLandmark] exactly like [_SkeletonPainter], so the figure sits where
+/// the body is drawn. Drawn as a translucent, thick-limbed body figure (no
+/// joint rings) UNDER the skeleton, so it cannot be mistaken for a second
+/// skeleton.
+///
+/// Static paint, no animation: nothing here needs a reduce-motion branch, and
+/// the layer repaints only when the frame or the aligned target changes.
+class _TargetOutline extends ConsumerWidget {
+  const _TargetOutline();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(coachBodyDrawableProvider)) return const SizedBox.shrink();
+    final target = ref.watch(poseTargetProvider);
+    final frame = ref.watch(latestPoseFrameProvider);
+    final body = ref.watch(stabilisedBodyProvider);
+    if (target == null || frame == null || body == null) {
+      return const SizedBox.shrink();
+    }
+    final alignment = alignTargetToBody(body.joints, target);
+    if (alignment == null) return const SizedBox.shrink();
+    return RepaintBoundary(
+      child: CustomPaint(
+        key: const Key('form_check.target'),
+        painter: _TargetOutlinePainter(
+          target: target,
+          alignment: alignment,
+          frameAspect: frame.aspectRatio,
+        ),
+      ),
+    );
+  }
+}
+
+/// Pale cyan: clearly not the green/red verdict glow and not the white skeleton,
+/// so the target reads as its own thing under the tracked body.
+const _kTargetFigureColour = Color(0xFF8FE9FF);
+
+class _TargetOutlinePainter extends CustomPainter {
+  const _TargetOutlinePainter({
+    required this.target,
+    required this.alignment,
+    required this.frameAspect,
+  });
+
+  final PoseTarget target;
+  final PoseAlignment alignment;
+  final double frameAspect;
+
+  /// Limb thickness in logical pixels. Thick on purpose: a thin line over the
+  /// user's own skeleton read as a second, green skeleton ("green corners on
+  /// the figure", operator 2026-10-14), not as a shape to stand inside.
+  static const _limbWidth = 16.0;
+  static const _trunkWidth = 24.0;
+  static const _armWidth = 11.0;
+
+  /// Overall opacity of the whole figure, applied ONCE to a layer so the
+  /// overlaps at the joints do not double up into darker blobs.
+  static const _figureAlpha = 0.42;
+
+  // Paint objects are constants of the look, not of the frame: built once, and
+  // never mutated (the stroke widths differ, so there is one per width).
+  static final _trunkPaint = _stroke(_trunkWidth);
+  static final _limbPaint = _stroke(_limbWidth);
+  static final _armPaint = _stroke(_armWidth);
+  static final _headPaint = Paint()
+    ..color = _kTargetFigureColour
+    ..style = PaintingStyle.fill;
+  static final _layerPaint = Paint()
+    ..color = Colors.white.withValues(alpha: _figureAlpha);
+
+  static Paint _stroke(double width) => Paint()
+    ..color = _kTargetFigureColour
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round
+    ..strokeWidth = width;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Offset place(LandmarkType t) {
+      final p = alignment(target.joints[t]!);
+      return projectLandmark(p.$1, p.$2, frameAspect: frameAspect, canvas: size);
+    }
+
+    final segments = <(Offset, Offset, Paint)>[];
+    for (final (a, b) in target.bones) {
+      if (!target.joints.containsKey(a) || !target.joints.containsKey(b)) {
+        continue;
+      }
+      final isTrunk = {a, b}
+          .containsAll({LandmarkType.leftShoulder, LandmarkType.leftHip});
+      final isArm = a == LandmarkType.leftElbow ||
+          b == LandmarkType.leftElbow ||
+          a == LandmarkType.leftWrist ||
+          b == LandmarkType.leftWrist;
+      segments.add((
+        place(a),
+        place(b),
+        isTrunk ? _trunkPaint : (isArm ? _armPaint : _limbPaint),
+      ));
+    }
+    Offset? headAt;
+    var headRadius = 0.0;
+    final head = target.head;
+    if (head != null) {
+      final c = alignment((head.$1, head.$2));
+      headAt = projectLandmark(c.$1, c.$2,
+          frameAspect: frameAspect, canvas: size);
+      final unit = (projectLandmark(0, 1,
+                  frameAspect: frameAspect, canvas: size) -
+              projectLandmark(0, 0, frameAspect: frameAspect, canvas: size))
+          .distance;
+      headRadius = head.$3 * alignment.scale * unit;
+    }
+    if (segments.isEmpty && headAt == null) return;
+
+    // One alpha layer so the joint overlaps do not double up into darker blobs,
+    // but bounded to the figure: a full-canvas offscreen buffer every camera
+    // frame is what this used to cost.
+    var minX = double.infinity, minY = double.infinity;
+    var maxX = double.negativeInfinity, maxY = double.negativeInfinity;
+    void grow(Offset o, double r) {
+      minX = o.dx - r < minX ? o.dx - r : minX;
+      minY = o.dy - r < minY ? o.dy - r : minY;
+      maxX = o.dx + r > maxX ? o.dx + r : maxX;
+      maxY = o.dy + r > maxY ? o.dy + r : maxY;
+    }
+
+    for (final (p, q, _) in segments) {
+      grow(p, _trunkWidth);
+      grow(q, _trunkWidth);
+    }
+    if (headAt != null) grow(headAt, headRadius);
+    final bounds = Rect.fromLTRB(minX, minY, maxX, maxY)
+        .intersect(Offset.zero & size);
+    if (bounds.isEmpty) return;
+
+    canvas.saveLayer(bounds, _layerPaint);
+    for (final (p, q, paint) in segments) {
+      canvas.drawLine(p, q, paint);
+    }
+    if (headAt != null) canvas.drawCircle(headAt, headRadius, _headPaint);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_TargetOutlinePainter old) =>
+      old.target.id != target.id ||
+      old.alignment != alignment ||
+      old.frameAspect != frameAspect;
 }
 
 /// The body as the detector sees it, drawn over the preview.

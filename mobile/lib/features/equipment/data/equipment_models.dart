@@ -352,6 +352,7 @@ class EquipmentItem {
     required this.category,
     required this.description,
     this.imageUrl,
+    this.heroExerciseId,
   });
 
   final String id;
@@ -360,6 +361,11 @@ class EquipmentItem {
   final String category; // 'cardio' / 'strength' / 'free_weights' / ...
   final String description;
   final String? imageUrl;
+
+  /// The exercise whose poster heads this machine's page, when the generic
+  /// ranking in `equipment_hero.dart` cannot choose between several exercises
+  /// that all name the machine. Language-independent; never a translation.
+  final String? heroExerciseId;
 
   /// A copy with the display text replaced by a translation. Narrow on
   /// purpose, mirroring [ExerciseItem.withText]: id and category feed lookups
@@ -375,6 +381,7 @@ class EquipmentItem {
         category: category,
         description: description,
         imageUrl: imageUrl,
+        heroExerciseId: heroExerciseId,
       );
 
   factory EquipmentItem.fromJson(Map<String, dynamic> j) => EquipmentItem(
@@ -384,5 +391,6 @@ class EquipmentItem {
         category: j['category'] as String? ?? 'general',
         description: j['description'] as String? ?? '',
         imageUrl: j['imageUrl'] as String?,
+        heroExerciseId: j['heroExerciseId'] as String?,
       );
 }

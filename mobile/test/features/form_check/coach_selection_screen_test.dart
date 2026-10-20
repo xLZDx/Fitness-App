@@ -145,27 +145,25 @@ void main() {
     expect(find.byKey(const Key('coach.selection.start')), findsOneWidget);
     expect(find.text('Нажмите когда готовы'), findsOneWidget);
     expect(find.byKey(const Key('form_check.demo')), findsOneWidget);
-    expect(_unavailable, findsOneWidget,
-        reason: 'the squat states its missing demonstration');
-    expect(_clip, findsNothing);
-    expect(_figure, findsNothing);
+    // 2026-10-14: the operator ordered the squat's demonstration back, so the
+    // picker shows the clip and NOT the "no demonstration yet" panel that
+    // stood here from 2026-09-09.
+    expect(_clip, findsOneWidget, reason: 'the squat is the reference clip');
+    expect(_unavailable, findsNothing,
+        reason: 'the stated absence must not return for the squat');
+    expect(_figure, findsNothing,
+        reason: 'and the squat is not the rejected drawn stand-in');
 
-    // I4c. A `CustomPaint` announces nothing on its own, so the screen's main
-    // content would otherwise be a silent hole for a screen reader — and the
-    // label used to be the same sentence whatever the panel actually held.
-    // Both halves are asserted: the panel must announce the absence, and must
-    // NOT announce a figure performing a movement it is not performing. A
-    // golden cannot see either one.
-    expect(find.bySemanticsLabel(_unavailableLabel), findsOneWidget);
-    expect(find.bySemanticsLabel(_figureLabel), findsNothing,
-        reason: 'the screen reader must not be told a figure is demonstrating');
-    // And exactly once. The absence is stated visibly too, in its own shorter
-    // wording; without `excludeSemantics` that Text would be a second
-    // semantics node and the panel would announce the same fact twice.
-    expect(find.text(_visibleUnavailable), findsOneWidget,
-        reason: 'positive control: the visible sentence really is on screen');
-    expect(find.bySemanticsLabel(_visibleUnavailable), findsNothing,
-        reason: 'the wrapper speaks for the panel; the text must stay silent');
+    // A video texture announces nothing on its own, so the screen's main
+    // content would otherwise be a silent hole for a screen reader. The label
+    // follows the source: a demonstration is on screen, so it says one is,
+    // and it must NOT say there is none. A golden cannot see either one.
+    expect(find.bySemanticsLabel(_figureLabel), findsOneWidget);
+    expect(find.bySemanticsLabel(_unavailableLabel), findsNothing,
+        reason: 'the screen reader must not be told the demonstration is '
+            'missing while the clip is on screen');
+    expect(find.text(_visibleUnavailable), findsNothing,
+        reason: 'no visible "no demonstration" sentence either');
 
     // «оставить только». The banners moved to the intro card in the previous
     // gate and must not reappear here; the counters, the cue card and the
@@ -229,23 +227,20 @@ void main() {
     await _pumpToSelection(t, c);
 
     expect(c.read(selectedExerciseProvider), FormExercise.squat);
-    expect(_unavailable, findsOneWidget, reason: 'the squat: a stated absence');
-    expect(_clip, findsNothing);
+    expect(_clip, findsOneWidget, reason: 'the squat: the reference clip');
+    expect(_unavailable, findsNothing);
     expect(_figure, findsNothing);
-    expect(find.bySemanticsLabel(_unavailableLabel), findsOneWidget);
+    expect(find.bySemanticsLabel(_unavailableLabel), findsNothing);
 
     await t.tap(find.byKey(const Key('form_check.exercise.curl')));
     await t.pump();
     expect(c.read(selectedExerciseProvider), FormExercise.curl);
-    // The drawn figure takes over the panel for a movement that HAS one.
+    // The drawn figure takes over the panel for a movement that has no clip,
+    // rather than a squat clip pretending to be a curl.
     expect(_clip, findsNothing);
     expect(_unavailable, findsNothing);
     expect(_figure, findsOneWidget);
-    // I4c's control. Every other authored movement keeps the label it always
-    // had, so the fix is source-aware rather than a blanket rewording — and
-    // switching the chip really does switch what the panel announces.
     expect(find.bySemanticsLabel(_figureLabel), findsOneWidget);
-    expect(find.bySemanticsLabel(_unavailableLabel), findsNothing);
     final curl = _demoPainter(t);
 
     await t.tap(find.byKey(const Key('form_check.exercise.lunge')));

@@ -20,6 +20,12 @@ class VisualEquipmentException implements Exception {
 /// Image dimension, ByteBuffer size and format don't match` (operator
 /// screenshot, 2026-07-30). The platform file decoder handles format + EXIF
 /// rotation; raw bytes cannot.
+/// How many candidates a photo scan asks for and shows: the best answer plus
+/// the 3 alternatives the cloud prompt now requests (2026-10-14). Measured on
+/// 33 labelled photos, the right machine is top-1 for 16/33 and in the top 3
+/// for 20/33, so the list is a confirmation surface, not a guess.
+const int kScanCandidateCount = 4;
+
 abstract class VisualEquipmentService {
   /// Classify an image FILE (camera / gallery capture).
   Future<List<VisualMatch>> classifyFile({
@@ -49,6 +55,14 @@ abstract interface class FallbackReportingRecogniser
   ///
   /// Read immediately after an awaited call; it describes that call.
   bool get lastAnsweredOffline;
+}
+
+/// Implemented by a service that can report the cloud model's verbatim reply
+/// for the LAST `classifyFile` (null when the cloud did not answer it). Read
+/// right after the awaited call, like [FallbackReportingRecogniser]; used only
+/// by the on-phone scan history.
+abstract interface class RawAnswerReporting implements VisualEquipmentService {
+  String? get lastRawAnswer;
 }
 
 class MockVisualEquipmentService implements VisualEquipmentService {

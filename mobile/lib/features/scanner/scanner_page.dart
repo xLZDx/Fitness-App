@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ import '../equipment/data/catalog_labels.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../equipment/widgets/last_session_card.dart';
 import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
+import '../../shared/widgets/shell_insets.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/hud/hud_scaffold.dart';
@@ -36,14 +38,46 @@ import '../visual_equipment/state/machine_card_providers.dart';
 import '../visual_equipment/state/recognition_history_providers.dart';
 import '../visual_equipment/state/visual_equipment_providers.dart';
 import '../visual_equipment/widgets/machine_card_view.dart';
+import 'history/scan_history_providers.dart';
+import 'history/scan_record.dart';
 import 'scan_evidence.dart';
 import 'state/scan_match_providers.dart';
 import 'state/scan_preview_provider.dart';
 import 'widgets/equipment_identity_badge.dart';
+import 'widgets/machine_thumb.dart';
+import 'widgets/rating_marks.dart';
+import 'widgets/manual_machine_picker.dart';
 import 'widgets/scan_frame.dart';
 import 'widgets/scan_glyph.dart';
 import 'widgets/scan_match_card.dart';
 import 'widgets/scan_viewfinder.dart';
+import 'widgets/zoom_controls.dart';
+
+/// Smallest height of the collapsed result sheet, in logical pixels: the drag
+/// handle, the primary button, the Gallery/Live row and the upload disclosure,
+/// so the shutter and both controls are always reachable over the full-screen
+/// preview. It is a FLOOR: the page measures the real header and uses the
+/// larger of the two, so a big text scale or a long translation grows the
+/// header instead of clipping it.
+const double kScanSheetCollapsedPx = 226;
+
+/// The sheet never covers more than this fraction of the screen area.
+const double kScanSheetMaxExtent = 0.92;
+
+/// Above this sheet extent the zoom and live overlay is hidden: riding on a
+/// tall sheet it would cover the title and the history button.
+const double kScanOverlayHideAbove = 0.61;
+
+/// The aiming window keeps at least this many pixels (or 30% of the height on
+/// a very short screen), so landscape and split-screen layouts still have a
+/// frame to aim through.
+const double kScanMinGuideWindowPx = 120;
+
+/// The title block drawn over the top of the camera (below the status bar).
+const double kScanTitleBlockPx = 84;
+
+/// How far the sheet opens by itself when a scan produces an answer.
+const double kScanSheetResultExtent = 0.6;
 
 /// The Scan tab.
 ///
@@ -126,6 +160,47 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// framed through (SCAN-G1, R7) instead of assuming the reference's 358px.
   final GlobalKey _viewfinderKey = GlobalKey(debugLabel: 'scan-viewfinder');
 
+  /// Where the aiming brackets sit inside the full-screen preview (clear of the
+  /// title and of the collapsed sheet). Written by `build`, read at capture so
+  /// the crop is exactly the frame the user aimed through.
+  EdgeInsets _guideInsets = EdgeInsets.zero;
+
+  /// The collapsed sheet's size as a fraction; written by `build`.
+  double _minSheet = 0.2;
+
+  /// The pinned header's real height (at least [kScanSheetCollapsedPx]),
+  /// measured from its content after layout: it grows with the text scale and
+  /// with long translations instead of clipping the shutter row.
+  double _headerPx = kScanSheetCollapsedPx;
+  final GlobalKey _headerContentKey = GlobalKey(debugLabel: 'scan-sheet-header');
+
+  void _measureHeader() {
+    if (!mounted) return;
+    final RenderObject? box = _headerContentKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final double h = math.max(kScanSheetCollapsedPx, box.size.height.ceilToDouble());
+    if ((h - _headerPx).abs() > 0.5) setState(() => _headerPx = h);
+  }
+
+  /// The sheet's current extent as a fraction of its area; things that ride
+  /// above it (the live reading, the zoom control) follow it. A notifier, not
+  /// page state: a drag changes it every frame, and only that overlay may
+  /// rebuild for it, not the whole screen. Until the sheet has moved, the
+  /// overlay uses the collapsed fraction ([_minSheet]) instead.
+  final ValueNotifier<double> _extent = ValueNotifier<double>(0.2);
+  bool _sheetMoved = false;
+
+  /// The result sheet: collapsed to its handle, shutter and controls until a
+  /// scan answers, then opened to [kScanSheetResultExtent].
+  final DraggableScrollableController _sheet = DraggableScrollableController();
+
+  void _setSheetExtent(double extent) {
+    if (!_sheet.isAttached) return;
+    // A jump, not an animation: the answer should be readable the moment it
+    // lands, and a jump is deterministic under test.
+    _sheet.jumpTo(extent.clamp(_minSheet, kScanSheetMaxExtent).toDouble());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -145,6 +220,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
 
   @override
   void dispose() {
+    _sheet.dispose();
+    _extent.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _router?.routerDelegate.removeListener(_onRouteChanged);
     // The session outlives this page (it is app-lifetime, by design), so a
@@ -198,7 +275,44 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// change, app resume. The system dialog belongs to the moment the user
   /// asks for the camera, not to every foreground event; without that split
   /// a refusal re-prompted on each resume.
-  Future<void> _arm({bool requestPermission = false}) async {
+  Future<void> _arm({bool requestPermission = false}) {
+    if (!mounted) return Future<void>.value();
+    _wantArmed = true;
+    return _enqueueLifecycle(() {
+      // A disarm that arrived after this arm was queued wins: the camera is
+      // not wanted any more, and starting it only to stop it again is the
+      // churn this queue exists to remove.
+      if (!_wantArmed) return Future<void>.value();
+      return _armNow(requestPermission: requestPermission);
+    });
+  }
+
+  /// What the page wants right now: the camera open (visible, foreground) or
+  /// released. The last of [_arm] / [_disarm] sets it, and every queued step
+  /// re-checks it when its turn comes.
+  bool _wantArmed = false;
+  Future<void> _lifecycleTail = Future<void>.value();
+  int _lifecycleBusy = 0;
+
+  /// Runs camera arm/disarm steps ONE AT A TIME, in call order.
+  ///
+  /// They used to run concurrently: an `inactive` disarm spends a few
+  /// milliseconds in `zoom.reset()` before it calls `stop()`, and a `resumed`
+  /// arm landing in that window called `start()` while the session still
+  /// reported `_running` (a no-op), after which the disarm finished the stop:
+  /// the screen was back in the foreground with the camera released and nothing
+  /// left to restart it. Serialised, the arm starts after the stop completed.
+  Future<void> _enqueueLifecycle(Future<void> Function() step) {
+    final Future<void> prev = _lifecycleTail;
+    final Future<void> next =
+        _lifecycleBusy == 0 ? step() : prev.then((_) => step());
+    _lifecycleBusy++;
+    _lifecycleTail =
+        next.whenComplete(() => _lifecycleBusy--).catchError((Object _) {});
+    return next;
+  }
+
+  Future<void> _armNow({required bool requestPermission}) async {
     if (!mounted) return;
     try {
       // Inside the try, not above it: these are `ref` reads on a path that
@@ -312,7 +426,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     ));
   }
 
-  Future<void> _disarm({bool flipLiveMode = true}) async {
+  Future<void> _disarm({bool flipLiveMode = true}) {
     // Fields only — no `ref` anywhere on this path, it also runs from
     // dispose(). The try guards the teardown race where the ProviderScope is
     // being destroyed right after this page (test teardown, app shutdown).
@@ -323,6 +437,23 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       } catch (e) {
         debugPrint('live-mode off on disarm skipped: $e');
       }
+    }
+    _wantArmed = false;
+    return _enqueueLifecycle(() {
+      // An arm that arrived after this disarm was queued wins (a quick
+      // inactive -> resumed): the camera stays open.
+      if (_wantArmed) return Future<void>.value();
+      return _disarmNow();
+    });
+  }
+
+  Future<void> _disarmNow() async {
+    try {
+      // Leaving the screen resets zoom to 1x, so the next visit does not start
+      // zoomed in. Before stop(): a released camera has nothing to reset.
+      await _session?.zoom.reset();
+    } catch (e) {
+      debugPrint('zoom reset on disarm failed: $e');
     }
     try {
       await _session?.stop();
@@ -384,6 +515,24 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     );
   }
 
+  /// "Not it -- choose manually": the user names the machine themselves from
+  /// the whole catalogue. Their own identification, so it is recorded like a
+  /// tapped candidate but with source manual and confidence 1.0. It does NOT
+  /// carry this scan's id: the scan's evidence described a different answer
+  /// than the machine the user chose.
+  Future<void> _pickManually() async {
+    final String? id = await showManualMachinePicker(context);
+    if (id == null || !mounted) return;
+    _remember(id, 1.0, RecognitionSource.manual);
+    final scanId = _currentScanId;
+    if (scanId != null) {
+      unawaited(ref
+          .read(scanHistoryRecorderProvider)
+          .choose(scanId, id, manual: true));
+    }
+    await _openEquipment(id);
+  }
+
   /// Navigates away. The route listener releases the camera on its own.
   ///
   /// [fromCurrentScan] is true only for a row that belongs to the scan on
@@ -397,6 +546,9 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     // `/equipment/:id` -> `/exercise/:id` -> `/workout/:id` -- see
     // `WorkoutPlayerPage.scanId`'s own doc comment for why.
     final scanId = fromCurrentScan ? _currentScanId : null;
+    if (scanId != null) {
+      unawaited(ref.read(scanHistoryRecorderProvider).choose(scanId, id));
+    }
     await GoRouter.of(context).push(
       scanId == null ? '/equipment/$id' : '/equipment/$id?scanId=$scanId',
     );
@@ -418,7 +570,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// separate activity — the app backgrounds, the preview freezes on return,
   /// and it is not what was asked for.
   Future<void> _recogniseWithCamera() async {
-    if (_handling) return;
+    if (_handling || _cameraFailure != null) return;
     _handling = true;
     try {
       final shot = await ref.read(scanCameraSessionProvider).captureStill();
@@ -437,10 +589,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       final String cropped = await cropToViewfinder(
         shot.path,
         viewport: card,
-        windowNormalized: ScanViewfinder.windowNormalized(card),
+        windowNormalized:
+            ScanViewfinder.windowNormalized(card, guideInsets: _guideInsets),
       );
       if (kScanEvidence) await saveScanEvidenceCrop(cropped);
-      await _classify(cropped);
+      await _classify(cropped, ScanSource.camera);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -462,7 +615,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         imageQuality: 88,
       );
       if (picked == null) return;
-      await _classify(picked.path);
+      await _classify(picked.path, ScanSource.gallery);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -485,9 +638,36 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// provider's own dispose lifecycle.
   String? _currentScanId;
 
-  Future<void> _classify(String path, {bool isRetry = false}) async {
+  /// The user's optional OK / NOT OK marks for the candidates of the scan on
+  /// screen, by equipment id. Local to this scan (cleared on a new scan and on
+  /// "Scan again"); the on-phone history holds the persistent copy.
+  final Map<String, CandidateRating> _ratings = <String, CandidateRating>{};
+
+  /// Sets or clears (null) one candidate's rating. Optional by design: nothing
+  /// else on the screen depends on it, and a failed history write is silent.
+  void _rate(String equipmentId, CandidateRating? rating) {
+    final String? scanId = _currentScanId;
+    if (scanId == null) return;
+    setState(() {
+      if (rating == null) {
+        _ratings.remove(equipmentId);
+      } else {
+        _ratings[equipmentId] = rating;
+      }
+    });
+    unawaited(
+        ref.read(scanHistoryRecorderProvider).rate(scanId, equipmentId, rating));
+  }
+
+  /// Where the last scanned image came from, kept for a retry on the same shot.
+  ScanSource _lastSource = ScanSource.camera;
+
+  Future<void> _classify(String path, ScanSource source,
+      {bool isRetry = false}) async {
     if (mounted) setState(() => _attempted = true);
     _lastScannedPath = path;
+    _lastSource = source;
+    if (mounted && !isRetry) setState(_ratings.clear);
 
     // A retry re-runs recognition on the SAME photo -- it is still the same
     // scan attempt, so it reuses the existing scanId rather than minting a
@@ -526,6 +706,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     // throw there instead of just being a no-op.
     if (!mounted) return;
     final result = ref.read(visualEquipmentControllerProvider).valueOrNull;
+    // Every scan is saved on the phone automatically (never uploaded), whatever
+    // it ended in -- a timeout or "could not tell" is data too. Fire and forget:
+    // the recorder never throws and must not delay the answer on screen.
+    if (result != null) {
+      unawaited(ref.read(scanHistoryRecorderProvider).saveScan(
+            scanId: scanId,
+            source: source,
+            result: result,
+            photoPath: path,
+          ));
+    }
     // The rule lives on ScanResult, not as an `if` here: this method needs a
     // real camera file to run, so a decision written inline would be one no
     // host test can reach. See ScanResult.isWorthRemembering.
@@ -560,7 +751,9 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       _attempted = false;
       _lastScannedPath = null;
       _currentScanId = null;
+      _ratings.clear();
     });
+    _setSheetExtent(_minSheet);
   }
 
   /// Re-runs recognition on the same shot. Offered only for outcomes where a
@@ -578,7 +771,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     if (path == null || _handling) return;
     setState(() => _handling = true);
     try {
-      await _classify(path, isRetry: true);
+      await _classify(path, _lastSource, isRetry: true);
     } finally {
       if (mounted) setState(() => _handling = false);
     }
@@ -629,6 +822,35 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       if (r == null || !r.settled) return;
       if (!_shouldWriteLive(r.equipmentId, DateTime.now())) return;
       _remember(r.equipmentId, r.confidence, RecognitionSource.live);
+      // A settled live reading is a scan too (no photo): same throttle as the
+      // "My machines" write above, so a held camera is one record per window.
+      unawaited(ref.read(scanHistoryRecorderProvider).saveScan(
+            scanId: 'live-${DateTime.now().microsecondsSinceEpoch}',
+            source: ScanSource.live,
+            result: ScanResult.confident(
+              <VisualMatch>[
+                VisualMatch(
+                    equipmentId: r.equipmentId, confidence: r.confidence)
+              ],
+              answeredOffline: true,
+            ),
+          ));
+    });
+
+    // A scan that answered opens the sheet over the preview; "Scan again"
+    // collapses it back to the shutter.
+    ref.listen<AsyncValue<ScanResult>>(visualEquipmentControllerProvider,
+        (prev, next) {
+      final r = next.valueOrNull;
+      if (next.isLoading || r == null) return;
+      // Any answer that ends a scan (including "could not tell what that is")
+      // is read in the sheet, so it opens; reset (not preceded by loading)
+      // does not.
+      if (prev?.isLoading == true ||
+          (r.outcome != ScanOutcome.noEquipment &&
+              !identical(prev?.valueOrNull, r))) {
+        _setSheetExtent(kScanSheetResultExtent);
+      }
     });
 
     final ScanResult? result = scan.valueOrNull;
@@ -683,299 +905,619 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     // but this page is also pumped as a bare route, and the Material widgets
     // below the reference region (chips, expansion tiles, the Switch) assert
     // one. The `FrostedScaffold` this replaces used to be that ancestor.
+    // Operator order 2026-10-14 (A): the scan window is the whole screen area,
+    // edge to edge, with the result list in a draggable sheet over it. The
+    // reference-card layout this replaced is kept only in `ScanViewfinder`'s
+    // non-full-bleed mode and `ScanMatchCard`.
     return Material(
       type: MaterialType.transparency,
-      child: HudScreenBody(
-      // The reference's screen starts at the status bar and its title block
-      // carries the only top padding (`padding:6px 20px 14px`, line 182):
-      // title at y=52 with a 46px inset. `HudScreenBody`'s own 6px would
-      // double it.
-      topPadding: 0,
-      children: <Widget>[
-        HudScreenTitle(
-          l10n.scannerTitle,
-          subtitle: l10n.scannerSubtitle,
-          bottomPadding: 14,
-          // Lines 183-184 declare no text-shadow; the cards below do.
-          readabilityShadow: false,
-          subtitleColor: t.brightness == Brightness.dark
-              ? const Color(0xB8FFFFFF) // rgba(255,255,255,.72), line 184
-              : const Color(0xC71B2030), // rgba(27,32,48,.78)
-          // The handoff declares no tracking here; `HudType.body`'s shared
-          // default is left alone for every other screen (R5), so Scan pins
-          // its own subtitle instead.
-          subtitleLetterSpacing: 0,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ScanViewfinder(
-            key: _viewfinderKey,
-            phase: scan.isLoading
-                ? ScanFramePhase.analyzing
-                : ScanFramePhase.ready,
-            hint: hint,
-            // No aiming frame over "camera access is blocked" — it would tell
-            // the user to aim at something that is not there. Evidence mode
-            // (R1) draws the bare preview so screenshots prove liveness.
-            guides: _cameraFailure == null && !kScanEvidence,
-            preview: _cameraFailure != null
-                ? _CameraUnavailable(
-                    failure: _cameraFailure!,
-                    busy: _retrying,
-                    onRetry: _retryCamera,
-                    onOpenSettings: _openCameraSettings,
-                  )
-                : ref.watch(scanPreviewBuilderProvider)(session),
-            // R2.2 state 9. Over the viewfinder, not instead of it: the
-            // guidance is "add light", and a user who cannot see what the
-            // camera sees cannot tell whether they followed it.
-            banner: _cameraFailure == null
-                ? ValueListenableBuilder<bool>(
-                    valueListenable: session.isLowLight,
-                    builder: (context, dark, _) => dark
-                        ? _ViewfinderBanner(
-                            key: const Key('scan-low-light'),
-                            icon: Icons.light_mode_outlined,
-                            text: l10n.scannerLowLight,
-                          )
-                        : const SizedBox.shrink(),
-                  )
-                : null,
-            corner: kScanEvidence && _cameraFailure == null
-                ? ScanEvidenceCounter(session: session)
-                : null,
+      child: LayoutBuilder(builder: (context, box) {
+        final double topInset = MediaQuery.paddingOf(context).top;
+        final double navInset = shellBottomObstruction(context);
+        final double sheetAvail = (box.maxHeight - navInset).clamp(1.0, double.infinity);
+        final double headerPx = _headerPx;
+        // The collapsed sheet is exactly its measured header, however tall that
+        // is on this screen (a short landscape window just gets a taller
+        // fraction); it may not exceed the sheet's own maximum.
+        final double minSheet =
+            (headerPx / sheetAvail).clamp(0.05, kScanSheetMaxExtent).toDouble();
+        _minSheet = minSheet;
+        // The brackets frame the part of the preview that is neither under the
+        // title nor under the collapsed sheet; the capture crop uses the same.
+        // On a short screen the two would leave no window at all, so the title
+        // allowance and then the sheet allowance give way until the window has
+        // its minimum height.
+        double guideTop = topInset + kScanTitleBlockPx;
+        double guideBottom = navInset + headerPx + 12;
+        final double minWindow =
+            math.min(kScanMinGuideWindowPx, box.maxHeight * 0.3);
+        double excess = guideTop +
+            guideBottom +
+            2 * ScanFrame.inset +
+            minWindow -
+            box.maxHeight;
+        if (excess > 0) {
+          final double cutTop = math.min(excess, kScanTitleBlockPx);
+          guideTop -= cutTop;
+          excess -= cutTop;
+          if (excess > 0) {
+            guideBottom = math.max(navInset, guideBottom - excess);
+          }
+        }
+        _guideInsets = EdgeInsets.only(top: guideTop, bottom: guideBottom);
+        WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeader());
+        final List<Widget> sheetChildren = <Widget>[
+
+            // The one primary button (shutter), always in the collapsed sheet.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: HudButton(
+                key: const Key('scan-recognise-camera'),
+                label: scanned ? l10n.scannerScanAgain : l10n.scannerRecognise,
+                onPressed: scanned ? _scanAgain : _recogniseWithCamera,
+                // Off while the camera is unavailable (permission refused, no
+                // camera, a stalled stream): a shutter that waits eight seconds
+                // and then says "camera unavailable" is a button that lies.
+                // "Scan again" does not need the camera, so it stays enabled.
+                enabled: !scan.isLoading && (scanned || _cameraFailure == null),
+                glass: t.scanPrimaryButton,
+                // See `HudSurface.shadowOutsideOnly`'s doc -- Scan opts in, the
+                // panel-family default (every other button) does not.
+                shadowOutsideOnly: true,
+                radius: 24,
+                padding: const EdgeInsets.all(16),
+                // `font:700 14px` at line-height normal -- a 15px line box
+                // (`scan_anchors.json` `primary_label`). Height set explicitly
+                // because the Material ancestor's `DefaultTextStyle` would
+                // otherwise lend the label its 1.43 body line-height, which is
+                // where a 52px button quietly became 56; letter-spacing pinned
+                // to 0 for the same reason `scan_match_card.dart`'s styles are --
+                // the handoff declares none, `HudType.panelTitle`'s shared
+                // default is left alone for every other button (R5).
+                //
+                // The light button (`Light.dc.html:221`) carries the light
+                // panel's `text-shadow:0 1px 12px rgba(255,255,255,.9)`; the dark
+                // one (`Sunset.dc.html:221`) declares none.
+                labelStyle: t.brightness == Brightness.dark
+                    ? HudType.panelTitle(t)
+                        .copyWith(height: 15 / 14, letterSpacing: 0)
+                    : HudType.panelTitle(t)
+                        .copyWith(height: 15 / 14, letterSpacing: 0)
+                        .overPhoto(t),
+                centered: true,
+                leading: ScanGlyph(
+                  codePoint: scanned
+                      ? ScanGlyph.refresh
+                      : ScanGlyph.centerFocusStrong,
+                  size: 20,
+                  color: t.textPrimary,
+                ),
+              ),
+            ),
+            // Gallery and Live stay in the collapsed sheet as well.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: ScanControlsRow(
+                    onGallery: _recogniseFromGallery,
+                    live: liveOn,
+                    onLive: (on) =>
+                        ref.read(liveModeEnabledProvider.notifier).state = on,
+              ),
+            ),
+            // The disclosure that recognising uploads the photo: the claim the
+            // user is consenting to at the moment of tapping, so it is pinned
+            // with the shutter and never scrolled out of sight.
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+              child: _ScanPrivacyStrip(),
+            ),
+            if (locked != null) ...<Widget>[
+              const SizedBox(height: 14),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ScanMatchCard(
+                  confidence: locked.confidence,
+                  name: equipmentDisplayName(ref, locked.equipmentId),
+                  subtitle: _matchSubtitle(l10n, locked.equipmentId),
+                  onOpen: () => unawaited(
+                      _openEquipment(locked.equipmentId, fromCurrentScan: true)),
+                ),
+              ),
+              // The same optional marks for the locked answer.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: RatingMarks(
+                    equipmentId: locked.equipmentId,
+                    rating: _ratings[locked.equipmentId],
+                    onChanged: (r) => _rate(locked.equipmentId, r),
+                  ),
+                ),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const SizedBox(height: 10),
+                  // A1. The claim this qualifies is "that machine is a lat
+                  // pulldown", and this is where it is made. Right under the
+                  // answer and the button, still on the first screen.
+                  ExperimentalBanner(message: l10n.experimentalScanner),
+                  if (locked != null) ...<Widget>[
+                    // Level-1 equipment-type memory, right where the user just
+                    // identified the machine -- not inside the match card,
+                    // because a "last time here" fact and a "how sure the
+                    // classifier is" fact come from two different sources of
+                    // truth and must not read as one (and SCAN-G1 R4: the card
+                    // ends at its CTA). Same widget the equipment detail page
+                    // uses, unchanged: it hides itself for a confirmed
+                    // no-history and only ever shows real logged numbers.
+                    const SizedBox(height: 10),
+                    LastSessionCard(equipmentId: locked.equipmentId),
+                    // R2.8. Only for a confident answer: the coach needs ONE
+                    // subject, and `alternatives` is the app saying it does not
+                    // know which of them the user is standing at.
+                    const SizedBox(height: 10),
+                    _ScanAiCoachEntry(match: locked),
+                    if (printedTextNote != null) ...<Widget>[
+                      const SizedBox(height: 10),
+                      _ScanNote(
+                        key: const Key('scan-match-note'),
+                        icon: Icons.text_fields_rounded,
+                        text: printedTextNote,
+                      ),
+                    ],
+                  ],
+                  // R2.2 state 12. The hybrid recogniser falls back to the
+                  // on-device model "silently-but-logged" — the user got the
+                  // weaker answer and was never told why it was weaker.
+                  if (result != null && !scan.isLoading && result.answeredOffline)
+                    ...<Widget>[
+                    const SizedBox(height: 10),
+                    _ScanNote(
+                      key: const Key('scan-offline-answer'),
+                      icon: Icons.cloud_off_rounded,
+                      text: l10n.scannerOfflineAnswer,
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  scan.when(
+                    // The viewfinder already says RECOGNISING and pulses; a
+                    // second spinner here would compete with it.
+                    loading: () => const SizedBox.shrink(),
+                    // Kept for a state the controller no longer produces — it
+                    // now converts every failure into a ScanResult so the
+                    // outcome, not an exception, drives the screen. Left as a
+                    // safety net rather than a `!`: an unexpected AsyncError
+                    // must not blank the page.
+                    error: (e, _) => HudPanel(
+                      tone: HudPanelTone.error,
+                      child: Text(l10n.scannerRecognitionFailed(e)),
+                    ),
+                    data: (result) => switch (result.outcome) {
+                      // The locked match is the card above; the runners-up are
+                      // listed here so a wrong first guess is one tap from the
+                      // right one.
+                      ScanOutcome.confident => result.matches.length > 1
+                          ? _Matches(
+                              matches: result.matches.skip(1).toList(),
+                              heading: l10n.scannerBestMatches,
+                              onOpen: (id) =>
+                                  _openEquipment(id, fromCurrentScan: true),
+                              onPickManually: _pickManually,
+                              ratings: _ratings,
+                              onRate: _rate,
+                            )
+                          : const SizedBox.shrink(),
+                      // FITAPP-EQUIP-ACC-2026-09-17 (GPT-PM review, round 2):
+                      // every cloud match now settles here instead of `confident`,
+                      // so this list is where the user's OWN identification now
+                      // happens -- a tap is no longer "open a runner-up", it is
+                      // "this is the machine". `isWorthRemembering` stays false
+                      // for `alternatives` (nothing is filed before the user
+                      // picks), but the pick itself is exactly the answer the
+                      // user was asked to give, and must be recorded the same way
+                      // a `confident` auto-answer already is -- or a tap here
+                      // routes to the exercises with zero trace in "My machines".
+                      ScanOutcome.alternatives => _Matches(
+                          matches: result.matches,
+                          heading: l10n.scannerNotSureClosest,
+                          onOpen: (id) async {
+                            final picked = result.matches
+                                .firstWhere((m) => m.equipmentId == id);
+                            _remember(
+                                picked.equipmentId,
+                                picked.confidence,
+                                RecognitionSource.photo);
+                            await _openEquipment(id, fromCurrentScan: true);
+                          },
+                          onPickManually: _pickManually,
+                          ratings: _ratings,
+                          onRate: _rate,
+                        ),
+                      // Not in the catalogue, but the describer could name it.
+                      // That card IS the answer -- "не удалось понять" stops
+                      // being true the moment the app can say what the machine
+                      // is.
+                      ScanOutcome.unknown => card != null
+                          ? MachineCardView(card: card)
+                          : _attempted
+                              ? _HintCard(theme: theme, noMatch: true)
+                              : const SizedBox.shrink(),
+                      // Nothing machine-like in the frame. Distinct from unknown:
+                      // telling someone pointing at a wall that their machine is
+                      // missing from our catalogue is a lie about our data. Before
+                      // any attempt this is the controller's initial state, and
+                      // the subtitle under the title already says what to do.
+                      ScanOutcome.noEquipment => _attempted
+                          ? _HintCard(theme: theme, noMatch: true)
+                          : const SizedBox.shrink(),
+                      ScanOutcome.timeout => _ScanProblemCard(
+                          key: const Key('scan-timeout'),
+                          title: l10n.scannerTimeoutTitle,
+                          body: l10n.scannerTimeoutBody,
+                          busy: _handling,
+                          onRetry: _retryLastScan,
+                        ),
+                      ScanOutcome.failed => _ScanProblemCard(
+                          key: const Key('scan-failed'),
+                          title: l10n.scannerFailedTitle,
+                          body: l10n.scannerFailedBody,
+                          busy: _handling,
+                          onRetry: _retryLastScan,
+                        ),
+                    },
+                  ),
+                  // P2.G4: one scan-level identity slot. GPT-PM pre-commit review
+                  // (this gate) corrected the original design here: visibility
+                  // used to depend on the GENERIC recognizer's `result.outcome`
+                  // (confident/alternatives/unknown only), but OCR-driven
+                  // identity resolution is a genuinely INDEPENDENT pipeline from
+                  // that generic visual matcher -- a machine the generic
+                  // recognizer cannot place (`noEquipment`/`timeout`/`failed`)
+                  // can still have a placard OCR resolves to a real server
+                  // MATCH/NEED_MORE_VIEW, and gating on the generic outcome would
+                  // silently discard that independently-resolved, already-
+                  // recorded (in the outcome sink) identity result from the
+                  // widget tree entirely. Both widgets already fully self-gate
+                  // (`isVisible`, OP-01) on the identity RESULT, never on the
+                  // generic pipeline's own outcome. The `identity` value passed
+                  // below still respects the ONE ScanOutcome-independent
+                  // boundary that must remain -- `!scan.isLoading` (T2) -- see
+                  // where `identity` is computed above.
+                  EquipmentIdentityBadge(identity: identity),
+                  EquipmentIdentityNeedMoreViewPrompt(identity: identity),
+                  // Also gated on `_cameraFailure == null`, the same condition the
+                  // viewfinder itself branches on: without it, denying camera
+                  // permission left this card showing regardless, its `_LiveCard`
+                  // spinner stuck on "Ищем..." forever -- no frames were ever
+                  // going to arrive to settle it, and nothing on screen said why.
+                  const SizedBox(height: 20),
+                  _HistorySection(onOpen: _openEquipment),
+                  const _PreparingSection(),
+                ],
+              ),
+            ),
+        ];
+        return Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            Positioned.fill(
+              child: ZoomPinchLayer(
+                zoom: session.zoom,
+                child: ScanViewfinder(
+                fullBleed: true,
+                guideInsets: _guideInsets,
+                  key: _viewfinderKey,
+                  phase: scan.isLoading
+                      ? ScanFramePhase.analyzing
+                      : ScanFramePhase.ready,
+                  hint: hint,
+                  // No aiming frame over "camera access is blocked" — it would tell
+                  // the user to aim at something that is not there. Evidence mode
+                  // (R1) draws the bare preview so screenshots prove liveness.
+                  guides: _cameraFailure == null && !kScanEvidence,
+                  preview: _cameraFailure != null
+                      ? _CameraUnavailable(
+                          failure: _cameraFailure!,
+                          busy: _retrying,
+                          onRetry: _retryCamera,
+                          onOpenSettings: _openCameraSettings,
+                        )
+                      : ref.watch(scanPreviewBuilderProvider)(session),
+                  // R2.2 state 9. Over the viewfinder, not instead of it: the
+                  // guidance is "add light", and a user who cannot see what the
+                  // camera sees cannot tell whether they followed it.
+                  banner: _cameraFailure == null
+                      ? ValueListenableBuilder<bool>(
+                          valueListenable: session.isLowLight,
+                          builder: (context, dark, _) => dark
+                              ? _ViewfinderBanner(
+                                  key: const Key('scan-low-light'),
+                                  icon: Icons.light_mode_outlined,
+                                  text: l10n.scannerLowLight,
+                                )
+                              : const SizedBox.shrink(),
+                        )
+                      : null,
+                  corner: kScanEvidence && _cameraFailure == null
+                      ? ScanEvidenceCounter(session: session)
+                      : null,
+                ),
+              ),
+            ),
+            // The title over the camera, in the dark token set: the preview is
+            // dark whatever the app theme is.
+            Positioned(
+              top: topInset,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: _OverCamera(
+                  child: HudScreenTitle(
+                    l10n.scannerTitle,
+                    subtitle: l10n.scannerSubtitle,
+                    bottomPadding: 8,
+                    subtitleColor: const Color(0xDBFFFFFF),
+                    subtitleLetterSpacing: 0,
+                  ),
+                ),
+              ),
+            ),
+            // The live reading rides just above the sheet, over the preview,
+            // wherever the sheet currently is: it is feedback for the user
+            // aiming the camera and must not hide in a collapsed sheet.
+            // History: every scan is kept on the phone; this is the way in. Over
+            // the camera, top right, below the status bar.
+            Positioned(
+              top: topInset + 6,
+              right: 8,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppSemanticColors.dark.cameraOverlay,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  key: const Key('scan-history-open'),
+                  tooltip: l10n.scanHistoryTitle,
+                  icon: Icon(Icons.history_rounded,
+                      color: AppSemanticColors.dark.textPrimary),
+                  onPressed: () => unawaited(
+                      GoRouter.of(context).push('/scan-history')),
+                ),
+              ),
+            ),
+            // Rebuilt by the sheet's extent alone (a drag changes it every
+            // frame), not by the page. Hidden while the sheet is tall: riding
+            // up with it, the zoom chips and live card would cover the title
+            // and the history button.
+            Positioned.fill(
+              child: ValueListenableBuilder<double>(
+                valueListenable: _extent,
+                builder: (context, dragged, _) {
+                  final double extent = _sheetMoved ? dragged : minSheet;
+                  if (extent > kScanOverlayHideAbove) {
+                    return const SizedBox.shrink();
+                  }
+                  return Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          16, 0, 16, navInset + extent * sheetAvail + 8),
+                      child: Column(
+                        key: const Key('scan-over-sheet'),
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          if (liveOn && _cameraFailure == null) ...<Widget>[
+                            _LiveSection(onOpen: _openEquipment),
+                            const SizedBox(height: 8),
+                          ],
+                          // Zoom presets (0.6/1/2/3/5/10x as the device
+                          // allows); the pinch gesture over the preview is the
+                          // other way in.
+                          if (_cameraFailure == null)
+                            Center(child: ZoomControls(zoom: session.zoom)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Positioned(
+              // Keyed: the live overlay above comes and goes, and a positional
+              // match would rebuild the sheet (and re-attach its controller).
+              key: const Key('scan-sheet-slot'),
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: navInset,
+              child: NotificationListener<DraggableScrollableNotification>(
+                onNotification: (n) {
+                  // No setState: only the overlay listens to this.
+                  if ((n.extent - _extent.value).abs() > 0.001) {
+                    _sheetMoved = true;
+                    _extent.value = n.extent;
+                  }
+                  return false;
+                },
+                child: DraggableScrollableSheet(
+                key: const Key('scan-sheet'),
+                controller: _sheet,
+                initialChildSize: minSheet,
+                minChildSize: minSheet,
+                maxChildSize: kScanSheetMaxExtent,
+                snap: true,
+                builder: (context, scrollController) {
+                  // The first three entries are the shutter, the Gallery/Live
+                  // row and the cloud disclosure: pinned. The rest is the
+                  // answer, which scrolls.
+                  return _ScanSheet(
+                    controller: scrollController,
+                    headerKey: _headerContentKey,
+                    headerHeight: headerPx,
+                    pinned: sheetChildren.sublist(0, 3),
+                    body: sheetChildren.sublist(3),
+                  );
+                },
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+}
+
+/// The result sheet over the full-screen preview: an opaque panel with a drag
+/// handle and a PINNED header (shutter + Gallery/Live), under which the answer
+/// scrolls. `controller` is the sheet's own, so dragging the header or the
+/// body moves the sheet first and scrolls only once it is fully open.
+///
+/// The header is pinned rather than part of the list so the shutter can never
+/// be scrolled out of reach by reading a long result. The body is one box (not
+/// a lazy list) so everything in it exists for finders and screen readers.
+class _ScanSheet extends StatelessWidget {
+  const _ScanSheet({
+    required this.controller,
+    required this.headerKey,
+    required this.headerHeight,
+    required this.pinned,
+    required this.body,
+  });
+
+  final ScrollController controller;
+
+  /// Keys the header's content so the page can measure its natural height.
+  final GlobalKey headerKey;
+  final double headerHeight;
+  final List<Widget> pinned;
+  final List<Widget> body;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color surface = Theme.of(context).colorScheme.surface;
+    final HudTokens t = context.hud;
+    return Material(
+      key: const Key('scan-sheet-surface'),
+      color: surface,
+      elevation: 8,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: CustomScrollView(
+        key: const Key('scan-sheet-list'),
+        controller: controller,
+        slivers: <Widget>[
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _PinnedHeaderDelegate(
+              height: headerHeight,
+              color: surface,
+              child: Column(
+                key: headerKey,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Center(
+                    child: Container(
+                      key: const Key('scan-sheet-handle'),
+                      margin: const EdgeInsets.only(top: 10, bottom: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: t.textSecondary.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  ...pinned,
+                ],
+              ),
+            ),
           ),
-        ),
-        if (locked != null) ...<Widget>[
-          const SizedBox(height: 14),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ScanMatchCard(
-              confidence: locked.confidence,
-              name: equipmentDisplayName(ref, locked.equipmentId),
-              subtitle: _matchSubtitle(l10n, locked.equipmentId),
-              onOpen: () => unawaited(
-                  _openEquipment(locked.equipmentId, fromCurrentScan: true)),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[...body, const SizedBox(height: 24)],
             ),
           ),
         ],
-        // `margin:14px 16px 18px` -- the one primary button. Its key is the
-        // one every scanner test has always driven; the shutter it replaces
-        // carried the same key, so the tests' contract is unchanged.
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-          child: HudButton(
-            key: const Key('scan-recognise-camera'),
-            label: scanned ? l10n.scannerScanAgain : l10n.scannerRecognise,
-            onPressed: scanned ? _scanAgain : _recogniseWithCamera,
-            enabled: !scan.isLoading,
-            glass: t.scanPrimaryButton,
-            // See `HudSurface.shadowOutsideOnly`'s doc -- Scan opts in, the
-            // panel-family default (every other button) does not.
-            shadowOutsideOnly: true,
-            radius: 24,
-            padding: const EdgeInsets.all(16),
-            // `font:700 14px` at line-height normal -- a 15px line box
-            // (`scan_anchors.json` `primary_label`). Height set explicitly
-            // because the Material ancestor's `DefaultTextStyle` would
-            // otherwise lend the label its 1.43 body line-height, which is
-            // where a 52px button quietly became 56; letter-spacing pinned
-            // to 0 for the same reason `scan_match_card.dart`'s styles are --
-            // the handoff declares none, `HudType.panelTitle`'s shared
-            // default is left alone for every other button (R5).
-            //
-            // The light button (`Light.dc.html:221`) carries the light
-            // panel's `text-shadow:0 1px 12px rgba(255,255,255,.9)`; the dark
-            // one (`Sunset.dc.html:221`) declares none.
-            labelStyle: t.brightness == Brightness.dark
-                ? HudType.panelTitle(t)
-                    .copyWith(height: 15 / 14, letterSpacing: 0)
-                : HudType.panelTitle(t)
-                    .copyWith(height: 15 / 14, letterSpacing: 0)
-                    .overPhoto(t),
-            centered: true,
-            leading: ScanGlyph(
-              codePoint: scanned
-                  ? ScanGlyph.refresh
-                  : ScanGlyph.centerFocusStrong,
-              size: 20,
-              color: t.textPrimary,
+      ),
+    );
+  }
+}
+
+class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _PinnedHeaderDelegate(
+      {required this.height, required this.color, required this.child});
+
+  final double height;
+  final Color color;
+  final Widget child;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+          BuildContext context, double shrinkOffset, bool overlapsContent) =>
+      SizedBox(
+        height: height,
+        child: ColoredBox(
+          color: color,
+          // Unbounded height: the content lays out at its natural size (which
+          // the page measures) and is only clipped to the header box, never
+          // squeezed into a guessed one.
+          child: ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.topCenter,
+              minHeight: 0,
+              maxHeight: double.infinity,
+              child: child,
             ),
           ),
         ),
-        // Everything the reference does not model, below its last element.
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              ScanControlsRow(
-                onGallery: _recogniseFromGallery,
-                live: liveOn,
-                onLive: (on) =>
-                    ref.read(liveModeEnabledProvider.notifier).state = on,
-              ),
-              const SizedBox(height: 10),
-              // A1. The claim this qualifies is "that machine is a lat
-              // pulldown", and this is where it is made. Right under the
-              // answer and the button, still on the first screen.
-              ExperimentalBanner(message: l10n.experimentalScanner),
-              if (locked != null) ...<Widget>[
-                // Level-1 equipment-type memory, right where the user just
-                // identified the machine -- not inside the match card,
-                // because a "last time here" fact and a "how sure the
-                // classifier is" fact come from two different sources of
-                // truth and must not read as one (and SCAN-G1 R4: the card
-                // ends at its CTA). Same widget the equipment detail page
-                // uses, unchanged: it hides itself for a confirmed
-                // no-history and only ever shows real logged numbers.
-                const SizedBox(height: 10),
-                LastSessionCard(equipmentId: locked.equipmentId),
-                // R2.8. Only for a confident answer: the coach needs ONE
-                // subject, and `alternatives` is the app saying it does not
-                // know which of them the user is standing at.
-                const SizedBox(height: 10),
-                _ScanAiCoachEntry(match: locked),
-                if (printedTextNote != null) ...<Widget>[
-                  const SizedBox(height: 10),
-                  _ScanNote(
-                    key: const Key('scan-match-note'),
-                    icon: Icons.text_fields_rounded,
-                    text: printedTextNote,
-                  ),
-                ],
-              ],
-              // R2.2 state 12. The hybrid recogniser falls back to the
-              // on-device model "silently-but-logged" — the user got the
-              // weaker answer and was never told why it was weaker.
-              if (result != null && !scan.isLoading && result.answeredOffline)
-                ...<Widget>[
-                const SizedBox(height: 10),
-                _ScanNote(
-                  key: const Key('scan-offline-answer'),
-                  icon: Icons.cloud_off_rounded,
-                  text: l10n.scannerOfflineAnswer,
-                ),
-              ],
-              const SizedBox(height: 10),
-              scan.when(
-                // The viewfinder already says RECOGNISING and pulses; a
-                // second spinner here would compete with it.
-                loading: () => const SizedBox.shrink(),
-                // Kept for a state the controller no longer produces — it
-                // now converts every failure into a ScanResult so the
-                // outcome, not an exception, drives the screen. Left as a
-                // safety net rather than a `!`: an unexpected AsyncError
-                // must not blank the page.
-                error: (e, _) => HudPanel(
-                  tone: HudPanelTone.error,
-                  child: Text(l10n.scannerRecognitionFailed(e)),
-                ),
-                data: (result) => switch (result.outcome) {
-                  // The locked match is the card above; the runners-up are
-                  // listed here so a wrong first guess is one tap from the
-                  // right one.
-                  ScanOutcome.confident => result.matches.length > 1
-                      ? _Matches(
-                          matches: result.matches.skip(1).toList(),
-                          heading: l10n.scannerBestMatches,
-                          onOpen: (id) =>
-                              _openEquipment(id, fromCurrentScan: true),
-                        )
-                      : const SizedBox.shrink(),
-                  // FITAPP-EQUIP-ACC-2026-09-17 (GPT-PM review, round 2):
-                  // every cloud match now settles here instead of `confident`,
-                  // so this list is where the user's OWN identification now
-                  // happens -- a tap is no longer "open a runner-up", it is
-                  // "this is the machine". `isWorthRemembering` stays false
-                  // for `alternatives` (nothing is filed before the user
-                  // picks), but the pick itself is exactly the answer the
-                  // user was asked to give, and must be recorded the same way
-                  // a `confident` auto-answer already is -- or a tap here
-                  // routes to the exercises with zero trace in "My machines".
-                  ScanOutcome.alternatives => _Matches(
-                      matches: result.matches,
-                      heading: l10n.scannerNotSureClosest,
-                      onOpen: (id) async {
-                        final picked = result.matches
-                            .firstWhere((m) => m.equipmentId == id);
-                        _remember(
-                            picked.equipmentId,
-                            picked.confidence,
-                            RecognitionSource.photo);
-                        await _openEquipment(id, fromCurrentScan: true);
-                      },
-                    ),
-                  // Not in the catalogue, but the describer could name it.
-                  // That card IS the answer -- "не удалось понять" stops
-                  // being true the moment the app can say what the machine
-                  // is.
-                  ScanOutcome.unknown => card != null
-                      ? MachineCardView(card: card)
-                      : _attempted
-                          ? _HintCard(theme: theme, noMatch: true)
-                          : const SizedBox.shrink(),
-                  // Nothing machine-like in the frame. Distinct from unknown:
-                  // telling someone pointing at a wall that their machine is
-                  // missing from our catalogue is a lie about our data. Before
-                  // any attempt this is the controller's initial state, and
-                  // the subtitle under the title already says what to do.
-                  ScanOutcome.noEquipment => _attempted
-                      ? _HintCard(theme: theme, noMatch: true)
-                      : const SizedBox.shrink(),
-                  ScanOutcome.timeout => _ScanProblemCard(
-                      key: const Key('scan-timeout'),
-                      title: l10n.scannerTimeoutTitle,
-                      body: l10n.scannerTimeoutBody,
-                      busy: _handling,
-                      onRetry: _retryLastScan,
-                    ),
-                  ScanOutcome.failed => _ScanProblemCard(
-                      key: const Key('scan-failed'),
-                      title: l10n.scannerFailedTitle,
-                      body: l10n.scannerFailedBody,
-                      busy: _handling,
-                      onRetry: _retryLastScan,
-                    ),
-                },
-              ),
-              // P2.G4: one scan-level identity slot. GPT-PM pre-commit review
-              // (this gate) corrected the original design here: visibility
-              // used to depend on the GENERIC recognizer's `result.outcome`
-              // (confident/alternatives/unknown only), but OCR-driven
-              // identity resolution is a genuinely INDEPENDENT pipeline from
-              // that generic visual matcher -- a machine the generic
-              // recognizer cannot place (`noEquipment`/`timeout`/`failed`)
-              // can still have a placard OCR resolves to a real server
-              // MATCH/NEED_MORE_VIEW, and gating on the generic outcome would
-              // silently discard that independently-resolved, already-
-              // recorded (in the outcome sink) identity result from the
-              // widget tree entirely. Both widgets already fully self-gate
-              // (`isVisible`, OP-01) on the identity RESULT, never on the
-              // generic pipeline's own outcome. The `identity` value passed
-              // below still respects the ONE ScanOutcome-independent
-              // boundary that must remain -- `!scan.isLoading` (T2) -- see
-              // where `identity` is computed above.
-              EquipmentIdentityBadge(identity: identity),
-              EquipmentIdentityNeedMoreViewPrompt(identity: identity),
-              // Also gated on `_cameraFailure == null`, the same condition the
-              // viewfinder itself branches on: without it, denying camera
-              // permission left this card showing regardless, its `_LiveCard`
-              // spinner stuck on "Ищем..." forever -- no frames were ever
-              // going to arrive to settle it, and nothing on screen said why.
-              if (liveOn && _cameraFailure == null) ...<Widget>[
-                const SizedBox(height: 10),
-                _LiveSection(onOpen: _openEquipment),
-              ],
-              const SizedBox(height: 10),
-              const _ScanPrivacyStrip(),
-              const SizedBox(height: 20),
-              _HistorySection(onOpen: _openEquipment),
-              const _PreparingSection(),
-            ],
+      );
+
+  @override
+  bool shouldRebuild(covariant _PinnedHeaderDelegate old) => true;
+}
+
+/// Draws [child] with the DARK HUD tokens and a soft scrim behind it, for text
+/// that sits directly on the camera preview (dark whatever the app theme is).
+class _OverCamera extends StatelessWidget {
+  const _OverCamera({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData base = Theme.of(context);
+    // The app theme carries exactly two extensions (the semantic tokens and
+    // the HUD tokens); only the HUD set is swapped for the dark one.
+    final AppSemanticColors? semantic = base.extension<AppSemanticColors>();
+    final List<ThemeExtension<dynamic>> extensions = <ThemeExtension<dynamic>>[
+      if (semantic != null) semantic,
+      HudTokens.dark,
+    ];
+    return Theme(
+      data: base.copyWith(extensions: extensions),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[Color(0x99000000), Color(0x00000000)],
           ),
         ),
-      ],
+        child: child,
       ),
     );
   }
@@ -1404,13 +1946,25 @@ class _Matches extends ConsumerWidget {
     required this.matches,
     required this.heading,
     required this.onOpen,
+    this.onPickManually,
+    this.ratings = const <String, CandidateRating>{},
+    this.onRate,
   });
+
+  /// The user's optional marks for these candidates, and the way to change one
+  /// (null hides the marks). The marks never gate opening a machine.
+  final Map<String, CandidateRating> ratings;
+  final void Function(String equipmentId, CandidateRating? rating)? onRate;
 
   /// Routed through the page so navigation is uniform; the route listener is
   /// what releases the camera.
   final Future<void> Function(String equipmentId) onOpen;
   final List<VisualMatch> matches;
   final String heading;
+
+  /// When set, the list ends with "Not it -- choose manually". The way out for
+  /// a scan whose right machine is not among the candidates.
+  final Future<void> Function()? onPickManually;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1429,10 +1983,21 @@ class _Matches extends ConsumerWidget {
             onTap: () => onOpen(m.equipmentId),
             child: Row(
               children: [
+                // The machine's own picture, so the user can recognise it by
+                // sight. Tapping the row is still the user's identification.
+                MachineThumb(equipmentId: m.equipmentId),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _MatchDetails(
                     match: m,
                     name: equipmentDisplayName(ref, m.equipmentId),
+                    marks: onRate == null
+                        ? null
+                        : RatingMarks(
+                            equipmentId: m.equipmentId,
+                            rating: ratings[m.equipmentId],
+                            onChanged: (r) => onRate!(m.equipmentId, r),
+                          ),
                   ),
                 ),
                 const Icon(Icons.chevron_right_rounded),
@@ -1441,6 +2006,25 @@ class _Matches extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
         ],
+        if (onPickManually != null)
+          HudPanel(
+            key: const Key('scan-pick-manually'),
+            onTap: () => unawaited(onPickManually!()),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).scannerNotThisPickManually,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -1450,10 +2034,14 @@ class _Matches extends ConsumerWidget {
 /// place, so the honesty rule on [VisualMatch.labelHint] (only captioned
 /// "read on the machine" for [MatchSource.printedText]) cannot drift.
 class _MatchDetails extends StatelessWidget {
-  const _MatchDetails({required this.match, required this.name});
+  const _MatchDetails(
+      {required this.match, required this.name, this.marks});
 
   final VisualMatch match;
   final String name;
+
+  /// The optional OK / NOT OK marks, shown right after the % match.
+  final Widget? marks;
 
   @override
   Widget build(BuildContext context) {
@@ -1467,11 +2055,16 @@ class _MatchDetails extends StatelessWidget {
           style:
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
-        Text(
-          AppLocalizations.of(context)
-              .scannerConfidence((match.confidence * 100).toStringAsFixed(0)),
-          style: theme.textTheme.labelSmall
-              ?.copyWith(color: theme.colors.textSecondary),
+        Row(
+          children: [
+            Text(
+              AppLocalizations.of(context).scannerConfidence(
+                  (match.confidence * 100).toStringAsFixed(0)),
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: theme.colors.textSecondary),
+            ),
+            if (marks != null) ...[const SizedBox(width: 6), marks!],
+          ],
         ),
         if (match.source == MatchSource.printedText && match.labelHint != null)
           Text(
@@ -1866,24 +2459,27 @@ class _ScanPrivacyStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return HudPanel(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.cloud_upload_outlined, size: 22),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context).scannerCloudDisclosure,
-              key: const Key('scan-privacy-strip'),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colors.textSecondary,
-              ),
+    // A caption, not a panel: it rides in the collapsed sheet under the
+    // shutter, so it is two small lines rather than a card.
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.cloud_upload_outlined,
+            size: 16, color: theme.colors.textSecondary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            AppLocalizations.of(context).scannerCloudDisclosure,
+            key: const Key('scan-privacy-strip'),
+            // Never ellipsised: this is the claim the user consents to by
+            // tapping the shutter. A larger text scale makes the pinned header
+            // taller (it is measured) rather than hiding part of the sentence.
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colors.textSecondary,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

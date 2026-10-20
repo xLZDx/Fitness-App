@@ -281,7 +281,11 @@ void main() {
 
     Future<void> squat(StreamController<PoseFrame> s,
         {double lean = 0, bool complete = true}) async {
-      final bottom = complete ? 0.71 : 0.64;
+      // 0.60 is short of the squat counter's counting depth (-0.30 torso
+      // lengths, `squatBodyRelativeConfig`; torso 0.28 here): -0.43. It used to
+      // be 0.64 for the old raw-signal ladder, which the body-relative counter
+      // now ACCEPTS as a (shallow) rep.
+      final bottom = complete ? 0.71 : 0.60;
       for (var h = 0.46; h < bottom; h += 0.04) {
         await push(s, stand(ts += 100, h, lean: lean));
       }

@@ -211,9 +211,10 @@ bool formCoachTeaches(FormExercise e, {CoachRegistry? registry}) =>
 /// would be hip-versus-knee height, which barely moves during a push-up —
 /// `pushupBottomTarget`'s own comment says so.
 ///
-/// The squat keeps `squatDepthSignal`; every movement added since reads a
-/// body-relative signal from `rep_signals.dart`, so its thresholds do not
-/// depend on how far the lifter stands from the phone.
+/// Every movement, the squat included since 2026-10-14
+/// (`squatBodyRelativeSignal`), reads a body-relative signal from
+/// `rep_signals.dart`, so its thresholds do not depend on how far the lifter
+/// stands from the phone.
 bool countsRepsFor(FormExercise e) {
   if (e == FormExercise.squat) return true;
   final tag = poseTagFor(e);
@@ -228,7 +229,7 @@ bool countsRepsFor(FormExercise e) {
 /// indistinguishable from a camera that cannot see the user.
 (RepSignalExtractor, RepCounterConfig)? repSignalFor(FormExercise e) {
   if (e == FormExercise.squat) {
-    return (squatDepthSignal, const RepCounterConfig());
+    return (squatBodyRelativeSignal, squatBodyRelativeConfig);
   }
   final tag = poseTagFor(e);
   return tag == null ? null : repSignalsByTag[tag];
@@ -241,9 +242,9 @@ bool countsRepsFor(FormExercise e) {
 ///
 /// Prefers a measured config from `measured_rep_configs.dart` (MM-Fit,
 /// [MeasuredRepConfig.countsReps] cleared) over the older, authored-shape
-/// [repSignalFor]. Squat is the one exception: [squatDepthSignal] stays --
-/// a measured squat config exists too, but replacing a tuned, shipped signal
-/// for no accuracy gain is not what the measurement was for.
+/// [repSignalFor]. Squat is the one exception: it keeps the torso-relative
+/// `squatBodyRelativeSignal` (a measured joint-angle squat config exists too,
+/// but it needs the ankle, which is often cropped).
 (RepSignalExtractor, RepCounterConfig)? liveRepSignalFor(FormExercise e,
     {CoachSpec? spec}) {
   if (e == FormExercise.squat) return repSignalFor(e);
@@ -263,7 +264,7 @@ bool countsRepsFor(FormExercise e) {
 /// rather than a gap — a 50/50 split printed for a movement whose legs are not
 /// moving would be a fabricated reassurance.
 RepSideSignalExtractor? coachSideSignalFor(FormExercise e) =>
-    e == FormExercise.squat ? squatSideDepths : null;
+    e == FormExercise.squat ? squatBodyRelativeSideDepths : null;
 
 /// The signal value that counts as FULL amplitude for [e], or null when this
 /// movement has no defensible answer.
@@ -274,7 +275,7 @@ RepSideSignalExtractor? coachSideSignalFor(FormExercise e) =>
 /// other movements run on carry thresholds but no statement of what their own
 /// full range is, so there is nothing here to be a percentage of.
 double? coachFullAmplitudeSignalFor(FormExercise e) =>
-    e == FormExercise.squat ? 0.0 : null;
+    e == FormExercise.squat ? kSquatFullDepthSignal : null;
 
 /// The four trainer counters, read off the last completed repetition.
 ///
@@ -666,7 +667,11 @@ final activeClassifiersProvider = Provider<List<FormClassifier>>((ref) {
     ];
   }
   return switch (exercise) {
-    FormExercise.squat => [SquatDepthClassifier()],
+    // The depth rule reports and never faults (camera-dependent); the back rule
+    // is the one entitled to fault. Order matters: `avatarVerdictSeverity`
+    // reads the FIRST entry for the silhouette fallback, and the extra
+    // fault-capable entries only add their own live severity.
+    FormExercise.squat => [SquatDepthClassifier(), SquatBackClassifier()],
     FormExercise.pushup => [PushupAlignmentClassifier()],
     FormExercise.deadlift => [DeadliftHipHingeClassifier()],
     // Empty ON PURPOSE, not pending work. The movements added 2026-08-08 are
@@ -939,6 +944,15 @@ int? avatarVerdictSeverity(
   // by the detector) there is no verdict colour — neither a live green nor a
   // stale red from the last rep. The completed rep's own record is untouched;
   // only this live overlay goes neutral.
+  // A later, fault-capable rule (squat back position) colours the live body
+  // while its own fault is on screen; otherwise the fallback below applies.
+  if (feedback != null &&
+      feedback.severity > 0 &&
+      activeClassifiers
+          .skip(1)
+          .any((c) => c.canFault && c.rule == feedback.rule)) {
+    return feedback.severity;
+  }
   if (!currentFrameReliable) return null;
   // `classifier` names a real, known movement that has simply chosen not to
   // fault it (camera-angle-confounded, e.g. squat depth / hip hinge) — unlike
@@ -1824,7 +1838,25 @@ class RepSessionController extends Notifier<RepSessionState> {
     }());
 
     var cue = _worstThisRep;
-    if (missed) {
+    // A completed rep that stayed above the depth the coach asks for. Only a
+    // movement whose counter declares `fullDepthSignal` (squat) can produce it.
+    final fullDepth = counter.config.fullDepthSignal;
+    final completed = event.rep;
+    if (cue == null &&
+        fullDepth != null &&
+        completed != null &&
+        completed.peakSignal < fullDepth) {
+      cue = FormFeedback(
+        rule: counter.config.shallowRule,
+        severity: 1,
+        cueKey: FormCueKey.squatDepthShallow,
+        metric: completed.peakSignal,
+      );
+    }
+    // A specific squat diagnosis (back rounding, shallow) is worth more than
+    // the generic "you did not reach the shape", so the silhouette cue does not
+    // overwrite it. Every other movement keeps the old precedence.
+    if (missed && !(cue != null && cue.rule.startsWith('squat.'))) {
       cue = FormFeedback(
         rule: 'silhouette.match',
         severity: 2,
@@ -1860,7 +1892,11 @@ class RepSessionController extends Notifier<RepSessionState> {
     // for as long as the position held, which is what made it unbearable.
     if (cue != null) {
       final coach = ref.read(voiceCoachProvider);
-      unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
+      // One utterance per completed rep: the rep paces it, not the gate's
+      // stopwatch (see `FormFeedback.repScoped`).
+      unawaited(coach
+          .cue(cue.asRepScoped())
+          .whenComplete(() => _publishVoiceError(coach)));
     }
   }
 
@@ -1936,17 +1972,34 @@ class RepSessionController extends Notifier<RepSessionState> {
     // minute earlier. GPT-PM, reviewing the first version of this gate: the
     // discard removes the phantom rep from the count and the voice then
     // re-invents it as a technique fault.
-    final cue = (target != null &&
-            peak != null &&
-            peak < kPoseMatchPassing &&
-            event.rejectReason != RepRejectReason.abandoned)
+    // For a squat, a lap that started and came back up without reaching the
+    // counting depth is a shallow squat: say so instead of the generic miss.
+    final shallowSquat = event.rejectReason == RepRejectReason.incomplete &&
+        ref.read(selectedExerciseProvider) == FormExercise.squat;
+    //
+    // Keyed on the rejection reason ALONE, not on a silhouette score: the
+    // target is withdrawn in some modes (avatar), and a squat that never
+    // reached the counting depth was rejected silently there, with no peak to
+    // compare. The counter's own `incomplete` verdict is the evidence.
+    final silhouetteMiss = target != null &&
+        peak != null &&
+        peak < kPoseMatchPassing &&
+        event.rejectReason != RepRejectReason.abandoned;
+    final cue = shallowSquat
         ? FormFeedback(
-            rule: 'silhouette.match',
-            severity: 2,
-            cueKey: FormCueKey.silhouetteMissed,
+            rule: 'squat.depth',
+            severity: 1,
+            cueKey: FormCueKey.squatDepthShallow,
             metric: peak,
           )
-        : null;
+        : (silhouetteMiss
+            ? FormFeedback(
+                rule: 'silhouette.match',
+                severity: 2,
+                cueKey: FormCueKey.silhouetteMissed,
+                metric: peak,
+              )
+            : null);
 
     state = RepSessionState(
       repCount: counter.repCount,
@@ -1962,7 +2015,9 @@ class RepSessionController extends Notifier<RepSessionState> {
 
     if (cue != null) {
       final coach = ref.read(voiceCoachProvider);
-      unawaited(coach.cue(cue).whenComplete(() => _publishVoiceError(coach)));
+      unawaited(coach
+          .cue(cue.asRepScoped())
+          .whenComplete(() => _publishVoiceError(coach)));
     }
   }
 
@@ -1980,6 +2035,11 @@ class RepSessionController extends Notifier<RepSessionState> {
 
   /// Start a new set: clear the count and the quality log.
   void resetSet() {
+    // Rule state that spans frames (hysteresis) belongs to the set that is
+    // ending.
+    for (final c in ref.read(activeClassifiersProvider)) {
+      if (c is ResettableClassifier) (c as ResettableClassifier).reset();
+    }
     _counter?.reset();
     _hold?.reset();
     _holdBand?.reset();

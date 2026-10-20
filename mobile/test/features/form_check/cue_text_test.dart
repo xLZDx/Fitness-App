@@ -21,6 +21,7 @@ void main() {
   /// name — which is how "Ошибки: squat.depth" reached a Russian screen.
   final shipped = <FormClassifier>[
     SquatDepthClassifier(),
+    SquatBackClassifier(),
     DeadliftHipHingeClassifier(),
     PushupAlignmentClassifier(),
   ];
@@ -87,6 +88,7 @@ void main() {
         for (final k in _legacyKeys) formCueText(ru, k),
         for (final c in [
           'squat.depth',
+          'squat.back',
           'deadlift.hip_hinge',
           'pushup.alignment',
         ])
