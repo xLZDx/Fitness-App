@@ -1,5 +1,5 @@
 {
-  "$schema_note": "Source of truth for the SPTR marketing site claim register. public/index.html is validated against this file by scripts/marketing/claim_lint.py. Do not hand-edit the generated .md register -- edit this file and regenerate.",
+  "$schema_note": "Source of truth for the SPTR marketing site claim register. marketing/site-prototype/index.html is validated against this file by scripts/marketing/claim_lint.py. Do not hand-edit the generated .md register -- edit this file and regenerate.",
   "generated_from_commit": "78b24dc",
   "last_reviewed": "2026-08-19",
   "states": ["exists", "committed", "hypothesis", "never"],

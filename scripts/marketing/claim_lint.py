@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Fail-closed structural validator for the SPTR marketing site's claim system.
 
-Two independent axes ride on every classified sentence in `public/index.html`:
+Two independent axes ride on every classified sentence in `marketing/site-prototype/index.html`:
 
   * `data-claim-state`  -- is it TRUE of the product (exists/committed/hypothesis/never)?
   * `data-public-gate`  -- may THIS WORDING be said publicly (allowed/qualify/blocked/internal-only)?
@@ -17,7 +17,7 @@ invalid enum value, a state/gate combination the rules forbid, a claim absent fr
 translation are all exit-1 conditions.
 
 Usage:
-    python scripts/marketing/claim_lint.py                 # lint public/index.html
+    python scripts/marketing/claim_lint.py                 # lint marketing/site-prototype/index.html
     python scripts/marketing/claim_lint.py --self-test      # prove the lint can fail
     python scripts/marketing/claim_lint.py --write-register # regenerate the .md register
 """
@@ -30,8 +30,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-HTML_PATH = ROOT / "public" / "index.html"
-JS_PATH = ROOT / "public" / "assets" / "sptr" / "site.js"
+HTML_PATH = ROOT / "marketing" / "site-prototype" / "index.html"
+JS_PATH = ROOT / "marketing" / "site-prototype" / "assets" / "sptr" / "site.js"
 REGISTER_JSON = ROOT / "core" / "marketing" / "claim_register.json"
 REGISTER_MD = ROOT / "core" / "marketing" / "SPTR_MARKETING_SITE_CLAIM_REGISTER_2026-08-19.md"
 
@@ -345,7 +345,7 @@ def write_register_md(register: dict) -> str:
         "",
         "## Enforcement",
         "",
-        "`scripts/marketing/claim_lint.py` fails closed: any marketing-copy node in `public/index.html` without",
+        "`scripts/marketing/claim_lint.py` fails closed: any marketing-copy node in `marketing/site-prototype/index.html` without",
         "either `data-claim-id`/`data-claim-state`/`data-public-gate` or an explicit `data-nonclaim` exemption is a",
         "lint failure, not a silent gap. It also fails on invalid enum values, forbidden state/gate combinations",
         "(a `committed` or `hypothesis` claim marked `allowed`), duplicate claim IDs, drift between the markup and",

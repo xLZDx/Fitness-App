@@ -1409,3 +1409,7 @@ SUCCESS: a docs branch with a diverged rebased history merged with only a log an
 ## 2026-10-20 - Integrate marketing/site-prototype-2026-08-19
 
 SHORTCOMING (process): the branch re-ported gates already cherry-picked to master, so an apparent 19-file conflict was in fact an already-in-main case; a per-line missing-content script (missing.py) separated real loss from stale forms. Rule: before resolving, test whether the branch's own added lines are already in main.
+
+## 2026-10-20 - Integrate move SPTR site prototype out of hosting root
+
+SHORTCOMING: the previous merge commit placed an internal prototype under the hosting root; I saw the risk in my own note but committed first. Rule: check firebase.json hosting root for newly added static files before committing a merge.

@@ -54,7 +54,7 @@ auto-map one from the other.
 
 ## Enforcement
 
-`scripts/marketing/claim_lint.py` fails closed: any marketing-copy node in `public/index.html` without
+`scripts/marketing/claim_lint.py` fails closed: any marketing-copy node in `marketing/site-prototype/index.html` without
 either `data-claim-id`/`data-claim-state`/`data-public-gate` or an explicit `data-nonclaim` exemption is a
 lint failure, not a silent gap. It also fails on invalid enum values, forbidden state/gate combinations
 (a `committed` or `hypothesis` claim marked `allowed`), duplicate claim IDs, drift between the markup and

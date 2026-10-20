@@ -59159,3 +59159,7 @@ entry -- reporting only. The MVP release gate remains NOT closed; nothing here c
 ## 2026-10-20 - Commit: Integrate marketing/site-prototype-2026-08-19
 
 Decision: take the marketing governance, site prototype and reports; keep master's newer mobile code and status reports because Gates D-G and MVP-1/3 are already on master. Flag public/index.html as a hosting-deploy risk. See docs/commits/2026-10-20-integrate-marketing-site-prototype.md.
+
+## 2026-10-20 - Commit: Integrate move SPTR site prototype out of hosting root
+
+Decision: place the internal site prototype under marketing/site-prototype/ so a Firebase hosting deploy cannot publish it. See docs/commits/2026-10-20-integrate-move-site-prototype.md.
