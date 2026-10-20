@@ -133,3 +133,5 @@ history.
 Two things are deliberately left broken and must not be "fixed" casually: Wear release pairing
 (`wear/build.gradle.kts` declares no `signingConfig`, so signing changes need their own GO) and the
 open personalisation ranking decision named in `a42abe3`.
+
+SDLC: use skill `sdlc-orchestrator` (state `docs/sdlc/STATE.md`).

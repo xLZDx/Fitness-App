@@ -55902,3 +55902,11 @@ Decision: the shutter is disabled while the camera is unavailable instead of wai
 ## 2026-10-14 - Commit: Scan screen review fixes part 2 (drag rebuilds, overlay, picker states, thumbnails, 44 px targets, arm/disarm queue)
 
 Decision: the scan page serialises camera arm and disarm through one queue that honours the last wish, because a quick inactive -> resumed used to leave the camera released (the resume's start() was a no-op while the stop was still finishing); the sheet extent drives only the overlay (no page rebuild per drag frame) and the overlay hides above 0.61; the manual picker distinguishes loading, load failure (with Retry) and an empty search; thumbnails decode at drawn size; zoom chips and rating marks are 44 px targets. Trade-off: a disarm waits behind a start still in flight. Details: `core/changes/2026-10-14-scan-mapping-fixes.md` Addendum 10.
+
+## 2026-10-16 -- SDLC workflow pointer added to CLAUDE.md
+
+Operator request: every project points its sessions to the global skill `sdlc-orchestrator` (virtual scrum team). Change limited to `CLAUDE.md`; no behavior change.
+
+## 2026-10-20 - Commit: Integrate sprint/hardening-followups-2026-10
+
+Decision: keep the SDLC pointer from sprint/hardening-followups-2026-10; the Stripe settle commits were already on master. See docs/commits/2026-10-20-integrate-hardening-followups.md.
