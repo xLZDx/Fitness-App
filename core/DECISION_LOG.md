@@ -58117,3 +58117,7 @@ Decision: send the GPT-PM gate request on this exact head; sprint report follows
 ## 2026-10-20 - Commit: fix(s04): close the seven external gate findings (stray source line, consent withdraw ordering, sign-out hook, expiry lock, segment rotation, owner-checked puts, wipe marker)
 
 Decision: fixed all seven findings of GPT-PM request 7c1e5a52 on head 5d5723fa. A withdrawn consent is denied synchronously and a grant called before a later withdraw is stale; sign-out runs the hand-off hook unless the journal lists no recording at all; foreign-scope expiry takes that scope's lock or skips it; unbind and wipe wait up to 5 s for in-flight owner-checked puts; a wipe marker that cannot be written or read refuses the bind (in-memory block). DT-0-10 is pre-existing and left as a known issue. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md (sprint set 1155 passed).
+
+## 2026-10-20 - Commit: fix(s04): treat unexpected recorder provider read failures at sign-out as cannot-check
+
+Decision: in sign_out_guard.dart only UnimplementedError from recordingJournalPortProvider means the recorder is not wired; any other failure reading the port or the phase provider is cannot-check (existing sheet with the explicit Sign out anyway choice). Applied to both _anyRecordingFiles and _recordingCount. Evidence: docs/phase2/s04/S04_TEST_FINDINGS_GATE1.md Round 2 (sprint set 1164 passed).

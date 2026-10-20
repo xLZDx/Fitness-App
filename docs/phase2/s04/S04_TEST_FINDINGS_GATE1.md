@@ -92,3 +92,31 @@ Remaining failure: `journal_availability_test.dart` "DT-0-10 no file or director
 ## Not verified
 - No mutation or red-before-fix runs (operator rule), so "the test fails without the fix" is argued from the assertions, not demonstrated. Strongest signal: M-04 asserts no `storageFailing` fault plus contiguous frame numbers across a segment boundary; M-01 asserts the stale `grant` returns false and the stored value is the withdrawal; M-03 asserts the file survives while the lock is held elsewhere.
 - Real device and real file locks (`RecordingFileOps` is faked in memory); the real `getApplicationSupportDirectory` path; the full app test suite.
+
+## Round 2: M-02-R2-01
+
+Finding: a failed read of `recordingJournalPortProvider` or `recorderPhaseProvider` counted as "no recordings", so sign-out could skip the pre-unbind hook.
+Rule under test (`mobile/lib/features/activity/state/sign_out_guard.dart`, uncommitted change): the port provider's default `UnimplementedError` (recorder not wired) means no recordings; any other exception reading the port, or any exception reading the phase provider after the port read worked, means "cannot check" (the cannot-check sheet with the explicit "Sign out anyway" choice, which still runs the leave path with the hook).
+
+New file: `mobile/test/features/activity/gps_signout/s04_gate1_m02r2_provider_failure_test.dart` (9 tests):
+
+Zero activities:
+1. Port provider throws `StateError`: cannot-check sheet shown, result list empty, hook not run; after "Sign out anyway" the hook runs for uid A with reason signOut and the result is true.
+2. Same, but Cancel: result false, hook never runs.
+3. Working port, `recorderPhaseProvider` throws: same cannot-check outcome, the port was not listed, hook only after "Sign out anyway".
+4. Nothing overridden (default `UnimplementedError`): result true at once, no sheet, no hook.
+5. Not wired plus a throwing phase provider: still true, no sheet (phase never read).
+6. Count listing succeeds, the second listing (any-files check) throws: cannot-check, hook only after "Sign out anyway".
+
+Account with local activities (count path):
+7. Port provider throws: cannot-check (not the warning sheet), hook only after "Sign out anyway".
+8. Working port, phase provider throws: same.
+9. Default `UnimplementedError`: normal warning sheet (activities only), "Sign out" returns true and offers the hand-off to the registered hook.
+
+No production defect found; all new tests passed on the first run.
+
+Commands (from `mobile/`, HEAD 63b03a7a plus the uncommitted guard change):
+- `flutter test test/features/activity/gps_signout/s04_gate1_m02r2_provider_failure_test.dart --timeout 300s` -> +9, All tests passed.
+- `flutter test test/features/recording test/shared/widgets/gps_strip test/features/activity/gps_signout test/features/activity/repository/s04_gate1_m05_m06_scoped_journal_test.dart --timeout 300s` -> +1164, All tests passed (1155 before + 9 new).
+
+Not covered: mutation runs (not performed by operator decision); a real recorder wiring on a device.

@@ -1303,3 +1303,11 @@ Root cause: the adapter file was never compiled by any test because it was only 
 Missed by: author, epic tests, the four earlier static reviews; caught by the external gate.
 Rule next time: every production file needs one test that imports it; any loop that rotates a buffer needs a test that crosses the boundary; for each ordering guarantee write the test with the earlier operation held in flight.
 Note: DT-0-10 (journal_availability_test.dart) fails at head 5d5723fa independently of these fixes (bindUid(null) already looked up the scopes root); recorded as a known issue outside the sprint test set.
+
+## 2026-10-20 - Commit: fix(s04): treat unexpected recorder provider read failures at sign-out as cannot-check
+
+Kind: FAILURE.
+Facts: round 2 of the external gate found that my own M-02 fix still returned 'no recordings' when reading recordingJournalPortProvider or recorderPhaseProvider threw for any reason, so sign-out could still skip the hand-off hook. The same pattern existed in _recordingCount.
+Root cause: the fix handled the failure of the second step (listUnfinished) but copied the original catch-all around the first step; the 'not wired' case was never separated from real failures.
+Missed by: author and my tests (they only injected a throwing listing); caught by the external gate.
+Rule next time: when a fallback means 'feature absent', match the one explicit absence signal (here UnimplementedError) and treat everything else as unknown; test every step of a multi-step read with an injected failure.
