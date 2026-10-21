@@ -623,6 +623,8 @@ void main() {
       final gate = Completer<bool>();
       final store = _pending();
       await homeRig(tester, store, extra: [
+        // v1 scope: the modal is off by default; this test exercises it.
+        day3WelcomeModalEnabledProvider.overrideWithValue(true),
         momentRepositoryProvider.overrideWithValue(_GatedMoments(gate.future)),
       ]);
       await settleFrames(tester, frames: 15);
@@ -636,6 +638,47 @@ void main() {
       await tester.tapAt(const Offset(180, 20)); // scrim
       await settleFrames(tester, frames: 20);
       expect(find.byType(Day3WelcomeModal), findsNothing);
+      expect(byKeyS('modeChooser.grid'), findsOneWidget);
+    });
+
+    // A repository that makes the Day-3 rule true (not shown, 5 launches, 10
+    // days old) and records what Home does to it.
+    testWidgets('v1 scope: default provider (false) -> no Day-3 modal, launch '
+        'counted, markShown not called, chooser offered after the step settles',
+        (tester) async {
+      final moments = _RecordingMoments();
+      expect(
+          shouldShowDay3Welcome(
+              accountCreatedAt: await moments.firstLaunchAt() ?? DateTime.now(),
+              launchCount: await moments.launchCount(),
+              alreadyShown: await moments.hasShown(MomentId.day3Welcome)),
+          isTrue,
+          reason: 'precondition: the rule alone would show the modal');
+      final store = _pending();
+      await homeRig(tester, store, extra: [
+        momentRepositoryProvider.overrideWithValue(moments),
+      ]);
+      await settleFrames(tester, frames: 20);
+      expect(find.byType(Day3WelcomeModal), findsNothing);
+      expect(moments.bumps, 1, reason: 'launch counting still runs');
+      expect(moments.marked, isEmpty, reason: 'nothing was shown, so no mark');
+      expect(byKeyS('modeChooser.grid'), findsOneWidget,
+          reason: 'the chooser is offered once the Day-3 step settled');
+    });
+
+    testWidgets('control: provider true with the same repository shows the '
+        'modal and marks it shown', (tester) async {
+      final moments = _RecordingMoments();
+      await homeRig(tester, _pending(), extra: [
+        day3WelcomeModalEnabledProvider.overrideWithValue(true),
+        momentRepositoryProvider.overrideWithValue(moments),
+      ]);
+      await settleFrames(tester, frames: 15);
+      expect(find.byType(Day3WelcomeModal), findsOneWidget);
+      expect(moments.bumps, 1);
+      await tester.tapAt(const Offset(180, 20)); // scrim
+      await settleFrames(tester, frames: 20);
+      expect(moments.marked, [MomentId.day3Welcome]);
       expect(byKeyS('modeChooser.grid'), findsOneWidget);
     });
   });
@@ -791,6 +834,22 @@ void main() {
       expect(store.writes, isEmpty);
     });
   });
+}
+
+class _RecordingMoments extends MockMomentRepository {
+  int bumps = 0;
+  final List<MomentId> marked = [];
+  @override
+  Future<bool> hasShown(MomentId id) async => false;
+  @override
+  Future<int> launchCount() async => 5;
+  @override
+  Future<DateTime?> firstLaunchAt() async =>
+      DateTime.now().subtract(const Duration(days: 10));
+  @override
+  Future<void> bumpLaunchCount() async => bumps += 1;
+  @override
+  Future<void> markShown(MomentId id) async => marked.add(id);
 }
 
 class _GatedMoments extends MockMomentRepository {

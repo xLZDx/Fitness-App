@@ -115,6 +115,9 @@ Future<FakeMode> pumpHome(
           ...dashOverrides(journal: journal ?? FakeJournal()),
           modeStateProvider.overrideWith(() => fake),
           momentRepositoryProvider.overrideWithValue(_Moments(day3: day3)),
+          // v1 scope: the Day-3 modal is off by default; day3: true means the
+          // scenario that exercises it.
+          day3WelcomeModalEnabledProvider.overrideWithValue(day3),
           trainingContextProvider.overrideWith(() => _Ctx()),
           safetyContextProvider.overrideWith((_) async => SafetyContext(
               screening:
