@@ -1543,3 +1543,11 @@ Facts: the Node 22 migration commit shipped with no test pinning firebase.json r
 Root cause: the runtime pin was treated as config with no contract, so nothing would fail if a codebase drifted back to nodejs20.
 Layer: author and tests missed it; found by the test pass.
 Rule next time: when a config value has an external deadline, add a pin test in the same change; before judging a big pytest file red, run the unchanged baseline to separate environment failures (missing node_modules) from regressions.
+
+## 2026-10-21 - Commit: chore(functions): fix review round 1 comment and record accepted minor findings
+
+Kind: SHORTCOMING.
+Facts: the migration commit left one nodejs20 comment in ts_dependency_probe.cjs and its change record claimed another comment was unchanged although a later commit had edited it.
+Root cause: the grep covered runtime pins but the record was written before the test commit changed a comment.
+Missed by: author; caught by the reliability reviewer.
+Rule next time: re-read the change record against the final tree before the review request.

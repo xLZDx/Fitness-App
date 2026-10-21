@@ -59237,3 +59237,7 @@ Decision: move both Cloud Functions codebases (default and equipment-identity) f
 ## 2026-10-21 - Commit: test(functions): guard the Node 22 runtime pin
 
 Decision: add scripts/ci/test_functions_runtime_pin.py (pytest) asserting every firebase.json functions runtime is nodejs22, both package.json engines.node are "22" and equal, and lock-file root engines match; update only the stale nodejs20 docstring in test_deployment_isolation.py. That file's 91 failures are environmental (functions/node_modules missing) and identical on the unmodified baseline, so they are not treated as migration regressions. Evidence: core/changes/2026-10-21-functions-node22-test-results.md.
+
+## 2026-10-21 - Commit: chore(functions): fix review round 1 comment and record accepted minor findings
+
+Decision: accept the three MINOR findings of the reliability review (test not wired into CI, node scripts on runner default Node, one stale comment); fix the stale comment and the change record; list the operator actions (deploy both codebases before 2026-10-30, Node 22 container image). Evidence: reliability-reviewer report (0 BLOCKER, 0 MAJOR, 3 MINOR); core/changes/2026-10-21-functions-node22.md.

@@ -21,7 +21,17 @@ Both Cloud Functions packages (`functions` = default codebase, `functions-equipm
 ## Deliberately NOT changed
 
 - Historical records that describe past facts: core/PRODUCTION_MANIFEST.*, core/changes/2026-10-19-*, DECISION_LOG/LESSONS_LOG history, evidence JSON, design/consensus documents, reports/*.html, p0 feasibility notes (they describe the then-current runtime).
-- Comments mentioning nodejs20 in `scripts/equipment_identity/test_deployment_isolation.py` and `functions/scripts/run_emulator_tests.js` ("Node 20+ refuses to spawn..." is still true on 22).
+- The comment "Node 20+ refuses to spawn..." in `functions/scripts/run_emulator_tests.js` (still true on 22). The nodejs20 comments in `scripts/equipment_identity/test_deployment_isolation.py` and `scripts/equipment_identity/ts_dependency_probe.cjs` were updated to nodejs22 (the first in the test commit, the second after review).
+
+## Review round 1 (reliability-reviewer, 0 BLOCKER, 0 MAJOR, 3 MINOR)
+- The runtime-pin test `scripts/ci/test_functions_runtime_pin.py` is not wired into any CI job; it is a manual check. Accepted (CI is outside this task); run it with `C:\Python314\python.exe -m pytest scripts/ci/test_functions_runtime_pin.py`.
+- Some CI jobs run `node` scripts on the runner default Node; they do not load the functions dependency tree and were not pinned to 20 before. Accepted, no change.
+- Stale comment in `ts_dependency_probe.cjs` fixed in this commit; this record corrected.
+
+## Operator actions (not done by this change)
+- Deploy BOTH codebases (`functions` and `functions-equipment-identity`) before 2026-10-30; a codebase left on nodejs20 will be decommissioned.
+- A redeploy rebuilds every function on Node 22 with no canary; watch error rates afterwards. Rollback is revert plus redeploy and is only possible before 2026-10-30.
+- The Linux emulator/e2e container used for rules and e2e runs needs a Node 22 image.
 - No .nvmrc, .node-version or Dockerfile exists in the repo that pins Node for functions (checked by search, excluding node_modules).
 
 ## Dependency compatibility (static, from package-lock.json only)

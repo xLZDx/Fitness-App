@@ -121,7 +121,7 @@ const FS_UNTABULATED_PATH_ARGUMENTS = [0];
  *
  * `path/win32` and `path/posix` are explicit. Plain `path` is whatever the
  * runtime is -- and this probe's runtime is not the analysed code's: it runs
- * on Windows while `functions` deploys to nodejs20 on Linux. So plain `path`
+ * on Windows while `functions` deploys to nodejs22 on Linux. So plain `path`
  * yields BOTH, and a value that lands inside the identity package under
  * EITHER algebra is a dependency on some platform the code really runs on.
  * That is the fail-closed direction; picking one flavour would silently pick
