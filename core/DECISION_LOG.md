@@ -59233,3 +59233,7 @@ Decision: put the unsaved AI Coach Phase 9 documents and the Body Scan sprint st
 ## 2026-10-21 - Commit: chore(functions): migrate Cloud Functions runtime to Node.js 22
 
 Decision: move both Cloud Functions codebases (default and equipment-identity) from Node 20 to Node 22 in firebase.json, package.json engines, lock-file root engines and the functions CI node-version, because Google decommissions Node 20 on 2026-10-30. No dependency was changed (lock-file engine ranges allow Node 22). Deploy and emulator runs are left to the operator. Evidence: core/changes/2026-10-21-functions-node22.md.
+
+## 2026-10-21 - Commit: test(functions): guard the Node 22 runtime pin
+
+Decision: add scripts/ci/test_functions_runtime_pin.py (pytest) asserting every firebase.json functions runtime is nodejs22, both package.json engines.node are "22" and equal, and lock-file root engines match; update only the stale nodejs20 docstring in test_deployment_isolation.py. That file's 91 failures are environmental (functions/node_modules missing) and identical on the unmodified baseline, so they are not treated as migration regressions. Evidence: core/changes/2026-10-21-functions-node22-test-results.md.

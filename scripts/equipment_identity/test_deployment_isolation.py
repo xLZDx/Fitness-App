@@ -1315,7 +1315,7 @@ def test_step_2_rejects_byte_identical_lockfiles(tmp_path, monkeypatch):
 def test_3a_folds_plain_path_under_both_algebras(tmp_path, parts, caught_by):
     r"""A bare `path` import is folded under win32 AND posix, and both matter.
 
-    This probe runs on Windows; `functions` deploys to nodejs20 on Linux. A
+    This probe runs on Windows; `functions` deploys to nodejs22 on Linux. A
     backslash is a separator to one algebra and an ordinary character to the
     other, so the same constant arguments reach different places -- measured
     here rather than argued:

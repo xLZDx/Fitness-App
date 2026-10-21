@@ -1535,3 +1535,11 @@ Kind: SUCCESS.
 Facts: a repo-wide search found the Node 20 pin in firebase.json (two sections), two package.json engines, two lock-file root engines, nine CI node-version entries and two docs; the second codebase (functions-equipment-identity) was not named in the request but shares the same runtime pin and deploy.
 Why it worked: searching the whole repo instead of only the named files, and reading dependency engine ranges from the lock files.
 Rule next time: a runtime bump must cover every codebase in firebase.json and the lock-file root engines, not just the package named in the request.
+
+## 2026-10-21 - Commit: test(functions): guard the Node 22 runtime pin
+
+Kind: SHORTCOMING.
+Facts: the Node 22 migration commit shipped with no test pinning firebase.json runtime or package.json engines; only a stale "nodejs20" docstring existed in test_deployment_isolation.py. That file also fails 91 of 107 tests in a worktree without node_modules, identically before and after the edit. Evidence: core/changes/2026-10-21-functions-node22-test-results.md.
+Root cause: the runtime pin was treated as config with no contract, so nothing would fail if a codebase drifted back to nodejs20.
+Layer: author and tests missed it; found by the test pass.
+Rule next time: when a config value has an external deadline, add a pin test in the same change; before judging a big pytest file red, run the unchanged baseline to separate environment failures (missing node_modules) from regressions.
