@@ -40,8 +40,12 @@ VoiceCommand parseCommand(String transcript) {
     return VoiceCommand(kind: VoiceCommandKind.unknown, rawTranscript: raw);
   }
 
-  bool any(List<String> needles) =>
-      needles.any((n) => raw.contains(n));
+  // Whole-word / whole-phrase match: a needle matches only when it is bounded
+  // by non-letter/digit characters (or the string ends) on both sides, so "go"
+  // no longer fires inside "good", "ago" or "mango". Needles are compared
+  // against the transcript with an optional apostrophe kept, so "what's next"
+  // still works; other punctuation acts as a word separator.
+  bool any(List<String> needles) => needles.any((n) => _containsPhrase(raw, n));
 
   if (any(['start set', 'go', 'begin set'])) {
     return VoiceCommand(kind: VoiceCommandKind.startSet, rawTranscript: raw);
@@ -75,7 +79,7 @@ VoiceCommand parseCommand(String transcript) {
   }
 
   // "log forty kilos" / "log 40 kg" / "log 40 pounds"
-  final logKgMatch = RegExp(r'log\s+([\d\.]+|[a-z\- ]+?)\s*(kg|kilos?|pounds?|lbs?)\b')
+  final logKgMatch = RegExp(r'\blog\s+([\d\.]+|[a-z\- ]+?)\s*(kg|kilos?|pounds?|lbs?)\b')
       .firstMatch(raw);
   if (logKgMatch != null) {
     final raw1 = logKgMatch.group(1) ?? '';
@@ -108,6 +112,25 @@ VoiceCommand parseCommand(String transcript) {
 
   return VoiceCommand(kind: VoiceCommandKind.unknown, rawTranscript: raw);
 }
+
+/// True when [phrase] occurs in [text] as whole words. Both sides are
+/// normalised: punctuation other than apostrophes becomes a space and runs of
+/// whitespace collapse, so "Start, set!" matches 'start set' and 'good' does
+/// not match 'go'.
+bool _containsPhrase(String text, String phrase) {
+  final t = ' ${_normalise(text)} ';
+  final p = ' ${_normalise(phrase)} ';
+  return t.contains(p);
+}
+
+String _normalise(String s) => s
+    .replaceAll('\u2019', "'")
+    .replaceAll(RegExp(r"[^a-z0-9']+"), ' ')
+    // Apostrophes survive only inside a word ("what's"); quote marks at word
+    // edges are separators.
+    .replaceAll(RegExp(r"(?<![a-z0-9])'|'(?![a-z0-9])"), ' ')
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();
 
 double? _wordsToNumber(String s) {
   final clean = s.trim();

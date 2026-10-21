@@ -1565,3 +1565,10 @@ Facts: GPT-PM found 5 MAJOR gaps in my first drafts: the queue criteria allowed 
 Root cause: I wrote acceptance criteria around the happy path of the operator decision and did not ask for each criterion what test would fail if it were violated.
 Missed by: author; caught by the GPT-PM documentation gate.
 Rule next time: for every criterion write the failing scenario (crash, restart, reorder, background, account switch) before accepting it.
+## 2026-10-21 - Commit: chore(hardening): tier override off by default, voice parser whole-word matching
+
+Kind: SHORTCOMING.
+Facts: the tier override shipped with default true and the voice parser used substring matching for every phrase ("go" fired inside "good"). Evidence: core/changes/2026-10-21-v1-hardening.md.
+Root cause: a convenience default chosen for the operator workflow, and a parser written without word boundaries; an existing guard test even asserted the unsafe default.
+Layer: author and tests missed it (a test pinned the default to true); caught by the hardening review.
+Rule next time: security-relevant flags default to the safe value and are opted into explicitly; text matchers use whole-word matching and are tested with near-miss words. No tests were run by the author for this change; they are owed by the test agents.

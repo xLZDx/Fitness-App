@@ -59249,3 +59249,6 @@ Decision: record the operator decisions of 2026-10-21 as documents: durable loca
 ## 2026-10-21 - Commit: docs(v1): address documentation gate round 1
 
 Decision: accept all 5 MAJOR and 2 MINOR findings of the GPT-PM documentation gate and amend the three documents in one batch (14 queue criteria, 7 attendance criteria with explicit detection/suggestion classes, qualified matrix claims). Evidence: GPT-PM round 1 reply for head 6a0afd7e; core/changes/2026-10-21-v1-module-matrix-and-specs.md.
+## 2026-10-21 - Commit: chore(hardening): tier override off by default, voice parser whole-word matching
+
+Decision: ALLOW_TIER_OVERRIDE defaults to false with an explicit opt-in (dart-define, run_with_debug.ps1 -AllowTierOverride; personal/test build profiles unchanged); voice phrases match whole words only, phrase lists unchanged. The whole-word rule still accepts "let's go home" (it contains the word go); tightening that changes accepted phrases and is left as a product question. Evidence: core/changes/2026-10-21-v1-hardening.md.

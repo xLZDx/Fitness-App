@@ -9,6 +9,7 @@
 #   pwsh ./scripts/dev/run_with_debug.ps1
 #   pwsh ./scripts/dev/run_with_debug.ps1 -Session feature-x
 #   pwsh ./scripts/dev/run_with_debug.ps1 -Profile
+#   pwsh ./scripts/dev/run_with_debug.ps1 -AllowTierOverride   # enable the paid-tier test switch
 
 [CmdletBinding()]
 param(
@@ -16,7 +17,10 @@ param(
     [string]$EmulatorSerial = 'emulator-5556',
     [string]$Package = 'com.fitnessapp.fitness_app.sptr',
     [switch]$Profile,
-    [switch]$Release
+    [switch]$Release,
+    # ALLOW_TIER_OVERRIDE defaults to false in Dart; opt in for dev runs that
+    # need to exercise paid screens without Stripe test cards.
+    [switch]$AllowTierOverride
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,7 +50,9 @@ if ($Release) { $mode = '--release' }
 Push-Location $Mobile
 try {
     Write-Host "flutter run $mode (-d $EmulatorSerial)" -ForegroundColor Cyan
-    & $Flutter run $mode -d $EmulatorSerial
+    $defines = @()
+    if ($AllowTierOverride) { $defines += '--dart-define=ALLOW_TIER_OVERRIDE=true' }
+    & $Flutter run $mode -d $EmulatorSerial @defines
 } finally {
     Pop-Location
     if ($daemon -and -not $daemon.HasExited) {
