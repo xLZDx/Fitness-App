@@ -24,6 +24,9 @@ class ProfilePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    // Read through the provider (not the compile-time constant) so a test can
+    // drive the release-build behavior with the flag off.
+    final demoEnabled = ref.watch(demoFeaturesEnabledProvider);
     final user = ref.watch(authUserProvider).valueOrNull;
     final profile = ref.watch(currentProfileProvider).valueOrNull;
     final onboarded = profile?.hasCompletedOnboarding ?? false;
@@ -160,7 +163,7 @@ class ProfilePage extends ConsumerWidget {
           // v1 scope: the coach marketplace (Stripe Connect, demo listings) and
           // celebrity plans are outside the nine v1 areas, so the whole section is
           // hidden in release builds together with the demo-backed routes.
-          if (kDemoFeaturesEnabled) ...[
+          if (demoEnabled) ...[
             _SectionLabel(l10n.profileSectionCoaching),
             HudPanel(
               padding: EdgeInsets.zero,
@@ -176,7 +179,7 @@ class ProfilePage extends ConsumerWidget {
                     onTap: () => context.push('/coaches'),
                   ),
                   // Demo-backed (Mock repository): hidden in release builds.
-                  if (kDemoFeaturesEnabled) ...[
+                  if (demoEnabled) ...[
                     _divider(context),
                     _profileTile(
                       context,
@@ -194,7 +197,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ],
           // Demo-backed (Mock repository): hidden in release builds.
-          if (kDemoFeaturesEnabled) ...[
+          if (demoEnabled) ...[
             _SectionLabel(l10n.profileSectionCommunity),
             HudPanel(
               padding: EdgeInsets.zero,

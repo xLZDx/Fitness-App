@@ -12,3 +12,6 @@ Router redirect contract and the Profile screen only. Provider overrides in `mai
 
 ## Verification state
 Not run by the author (coding phase). Existing tests that pin the old behavior must be updated by the test agents: `test/router/app_router_gating_test.dart` (lines ~77, 94, 187-188, 359-360), `test/router/app_router_test.dart` (~176) and `test/router/back_navigation_test.dart` (~119, 185-198).
+
+## Follow-up (same day)
+`profile_page.dart` now reads `demoFeaturesEnabledProvider` instead of the compile-time constant `kDemoFeaturesEnabled`, so the release-build behavior (no Coaching or Community section) can be driven by a widget test. Behavior with the default provider value is unchanged. Test for the flag-off Profile screen is owed by the test agents.

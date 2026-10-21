@@ -1474,3 +1474,11 @@ Facts: the product commit 4745cde1 left three router test files pinning the old 
 Root cause: a gate was added in a widget without the injectable provider the router already has; tests were deferred to the test phase per the workflow.
 Layer: author (testability), caught by the test phase.
 Rule next time: widgets that depend on a feature flag should read the provider so both sides are testable; the three router files now pass (+80).
+
+## 2026-10-21 - Commit: refactor(v1-scope): read the demo flag through its provider on the Profile screen
+
+Kind: SHORTCOMING.
+Facts: the first v1-scope commit gated the Profile Coaching section on the compile-time constant, which is always true under flutter test, so the hidden state could not be tested; the test agent reported the gap.
+Root cause: the author reused the constant already used in that file and did not check the testability seam that the router uses.
+Missed by: author; caught by the test agent.
+Rule next time: when gating UI by a flag, read it through the provider seam that tests can override, and state the flag-off test in the change record.

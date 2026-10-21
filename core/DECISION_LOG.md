@@ -59201,3 +59201,7 @@ Decision: reuse the existing demo-feature gate for `/coaches` instead of a new m
 ## 2026-10-21 - Commit: test(v1-scope): update router tests for login-only /donors and demo-gated /coaches
 
 Decision: update the tests to the new contract rather than keep the old expectations; leave the Profile Coaching flag-off test undone and report it, because covering it needs a mobile/lib change (provider read) outside the test-only scope. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.
+
+## 2026-10-21 - Commit: refactor(v1-scope): read the demo flag through its provider on the Profile screen
+
+Decision: switch ProfilePage from the compile-time constant to demoFeaturesEnabledProvider, the existing seam the router already uses, so the flag-off screen is testable. Evidence: test agent report (request d not coverable under flutter test without this change); core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
