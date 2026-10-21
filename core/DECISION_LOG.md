@@ -58164,3 +58164,7 @@ Decision: the open-question recommendations quoted in chat on 2026-10-18 were re
 ## 2026-10-20 - Commit: merge: bring origin/phase2/main (AI Coach documentation) into phase2/s04 and resolve the documentation conflicts
 
 Decision: resolve the PR 14 conflicts by a merge commit that changes documentation files only; the code and test trees stay identical to the head approved by GPT-PM (0ee39ba1). Evidence: git diff 0ee39ba1 HEAD -- mobile is empty.
+
+## 2026-10-21 - Commit: docs(s04): record the merge of PR 14 and commit the gate reports
+
+Decision: commit the two S04 gate reports and the STATE.md merged rows on phase2/s04 before the Trash worktree is retired; continue any later work in the canonical checkout, not here. Evidence: operator answer of 2026-10-21 (commit the reports, then move); core/changes/2026-10-21-s04-merged-state-and-reports.md.

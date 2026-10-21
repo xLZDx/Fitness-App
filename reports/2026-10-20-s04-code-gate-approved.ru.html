@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Код S04 одобрен внешним рецензентом</title>
+<style>
+  :root { --bg:#f4f5f3; --surface:#ffffff; --text:#171a15; --text-2:#5b6058; --accent:#4c7a1f; --accent-soft:#e4f0d3; --warn:#a8620c; --border:#dfe2da; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --border:#2c3122; color-scheme: dark; } }
+  :root[data-theme="dark"] { --bg:#14160f; --surface:#1b1e15; --text:#eef1e6; --text-2:#b7bcac; --accent:#a8d966; --accent-soft:#29350f; --warn:#f0a94e; --border:#2c3122; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',-apple-system,sans-serif; line-height:1.55; padding-inline:max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+  .wrap { max-width:820px; margin:0 auto; padding-block:32px 72px; }
+  h1 { font-size:28px; line-height:1.2; margin:0 0 10px; }
+  h2 { font-size:20px; margin:28px 0 10px; }
+  .lede { color:var(--text-2); max-width:64ch; margin:0 0 8px; }
+  .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { border-left:4px solid var(--accent); } .warn { border-left:4px solid var(--warn); }
+  .tablewrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  th, td { text-align:left; vertical-align:top; padding:8px 10px; border:1px solid var(--border); font-size:14px; }
+  th { background:var(--accent-soft); }
+  code { font-family:Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="lede">Fitness App, фаза 2</p>
+  <h1>Код спринта S04 (запись маршрута без карты) одобрен, открыт PR №14</h1>
+  <p class="lede">Внешний рецензент (GPT-PM) одобрил код на точном состоянии <code>0ee39ba1</code> в четвёртом круге. Ветка <code>phase2/s04</code> отправлена в git одним пушем, открыт PR №14 в <code>phase2/main</code>. Слияние не выполнено.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Trash\Fitness_App_Phase2_s01</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; phase2/s04 @ c63cdd35</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>Что сдано</h2>
+<div class="box ok"><p>Запись маршрута без карты за флагом <code>GPS_RECORDER</code> (сначала Android, по умолчанию выключено): доступ к GPS и разрешения, расчёты (сглаживание, высота, дистанция, автопауза), состояние рекордера, шифрованный журнал с восстановлением после убийства приложения, экраны старта, записи, итога и восстановления, защита при выходе из аккаунта, строки на русском и английском.</p></div>
+<h2>Как шла проверка</h2>
+<div class="tablewrap"><table>
+<tr><th>Этап</th><th>Результат</th></tr>
+<tr><td>Четыре независимых проверки кода (надёжность, тихие сбои, Flutter, безопасность)</td><td>14 существенных замечаний, все исправлены</td></tr>
+<tr><td>Внешний рецензент, круг 1 (<code>5d5723fa</code>)</td><td>«доработать»: 1 блокирующее (мусорная строка вместо импорта в адаптере GPS), 6 существенных</td></tr>
+<tr><td>Круг 2 (<code>63b03a7a</code>)</td><td>«доработать»: выход из аккаунта мог молча пропустить передачу записи при ошибке чтения провайдера</td></tr>
+<tr><td>Круг 3 (<code>ea5d1b8e</code>)</td><td>«доработать»: тип ошибки не доказывает, что рекордер не подключён; введён явный признак подключения</td></tr>
+<tr><td>Круг 4 (<code>0ee39ba1</code>)</td><td>одобрено, 0 блокирующих, 0 существенных</td></tr>
+</table></div>
+<h2>Тесты</h2>
+<div class="box warn"><p>Результаты получены тестовыми агентами, я их не запускал. Набор спринта: 1171 прошёл, 0 упал. Каталог активности: 1629 прошли, 2 пропущено, 1 упал. Общие и базовые тесты: 760 прошли, 1 упал. Два упавших теста вне набора спринта записаны как существовавшие раньше: проверка «нет обращения к файловой системе до первой привязки» и тест быстрых клавиш «та же учётная запись». Причина второго не найдена, на чистой версии он не запускался.</p></div>
+<h2>Что не проверено</h2>
+<div class="box warn"><p>Не запускались: анализ всего репозитория, сборка, CI, проверки на телефоне Samsung S8, проверка итогового манифеста. Одобрение рецензента статическое, не запуск. Переопределение признака подключения в <code>main.dart</code> не покрыто тестом, который собирает корень приложения. CI на GitHub идёт, одна проверка уже красная; по вашему правилу CI не читаю и не чиню.</p>
+<p>Принятые пробелы: настоящий монитор батареи и проверка «службы геолокации выключены» не подключены (экран старта говорит об этом), страницы ручного ввода нет, текст уведомления для экрана блокировки не сделан, индикатор «офлайн» не включается, метка версии формулы не обновлена.</p></div>
+<h2>Что нужно от вас</h2>
+<div class="box ok"><p>Решение о слиянии PR №14: слить в <code>phase2/main</code> сейчас, подождать результатов CI или оставить как есть. После слияния могу готовить следующий спринт.</p></div>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

@@ -1421,3 +1421,11 @@ Rule next time: for each fixed row, grep the command name, error code, source va
 Kind: NEUTRAL.
 Facts: PR 14 was CONFLICTING because the AI Coach documentation gate landed on phase2/main after the S04 branch point. Only DECISION_LOG, LESSONS_LOG, DOCUMENT_REGISTRY and STATE.md conflicted; both sides of the logs were kept, the registry was regenerated and the S04 gate row of STATE.md was updated.
 Rule: when a gate approval is for an exact head, merge main into the branch only for pure documentation conflicts and show that the code diff is unchanged (git diff 0ee39ba1 HEAD -- mobile is empty).
+
+## 2026-10-21 - Commit: docs(s04): record the merge of PR 14 and commit the gate reports
+
+Kind: SHORTCOMING.
+Facts: after PR 14 was merged on 2026-10-20 the two gate reports stayed untracked and the STATE.md rows still said "PR #14 opened"; a repository consolidation on 2026-10-21 found them only as uncommitted files in a Trash worktree. In the same session an independent review of another package first overstated several findings (a debug-telemetry claim, a build-flag claim and a missing-plan claim) and was corrected after reading the sources.
+Root cause: closing steps after a merge were left outside the merge task; review claims were written before reading the cited lines in full.
+Missed by: author; caught by a peer session and the operator.
+Rule next time: after a merge, commit the state rows and reports in the same turn; quote the full cited block, not a neighbouring comment, before claiming behaviour.
