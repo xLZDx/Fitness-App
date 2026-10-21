@@ -1,0 +1,36 @@
+import 'dart:typed_data';
+import 'package:fitness_app/features/food_diary/state/image_prep.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
+
+bool has(Uint8List b, String s) {
+  final n = s.codeUnits;
+  for (var i = 0; i + n.length <= b.length; i++) {
+    var ok = true;
+    for (var j = 0; j < n.length; j++) { if (b[i + j] != n[j]) { ok = false; break; } }
+    if (ok) return true;
+  }
+  return false;
+}
+
+void main() {
+  test('probe', () {
+    final src = img.Image(width: 400, height: 300);
+    src.exif.imageIfd.make = 'SecretCamMaker';
+    src.exif.imageIfd.orientation = 6;
+    src.exif.gpsIfd.gpsLatitude = 51.5;
+    final input = Uint8List.fromList(img.encodeJpg(src));
+    final d0 = img.decodeJpg(input)!;
+    print('decodeJpg orientation=${d0.exif.imageIfd.orientation} make=${d0.exif.imageIfd.make}');
+    final d1 = img.decodeImage(input)!;
+    print('decodeImage orientation=${d1.exif.imageIfd.orientation} make=${d1.exif.imageIfd.make}');
+    final out = prepareJpeg(input, longEdge: 1024)!;
+    print('out has make=${has(out, "SecretCamMaker")} Exif=${has(out, "Exif")} len=${out.length}');
+    final o = img.decodeJpg(out)!;
+    print('out exif empty=${o.exif.isEmpty} make=${o.exif.imageIfd.make} orient=${o.exif.imageIfd.orientation} gpsEmpty=${o.exif.gpsIfd.isEmpty}');
+    final nosrc = img.Image(width: 400, height: 300);
+    final noexif = Uint8List.fromList(img.encodeJpg(nosrc));
+    final out2 = prepareJpeg(noexif, longEdge: 1024)!;
+    print('no-exif input -> markers has Exif=${has(out2, "Exif")} in=${has(noexif, "Exif")}');
+  });
+}
