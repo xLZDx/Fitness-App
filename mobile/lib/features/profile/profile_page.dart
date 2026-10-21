@@ -178,8 +178,8 @@ class ProfilePage extends ConsumerWidget {
                         AppLocalizations.of(context).profileBrowse11Sessions15Fee,
                     onTap: () => context.push('/coaches'),
                   ),
-                  // Demo-backed (Mock repository): hidden in release builds.
-                  if (demoEnabled) ...[
+                  // The whole section is already behind the demo flag above.
+                  ...[
                     _divider(context),
                     _profileTile(
                       context,

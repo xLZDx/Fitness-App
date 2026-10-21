@@ -1489,3 +1489,11 @@ Kind: SUCCESS.
 Facts: after the page was switched to demoFeaturesEnabledProvider, two widget tests drive both flag states; the profile test files pass (+11).
 Why it worked: the testability gap reported earlier was fixed at the source instead of worked around.
 Rule next time: widgets read feature flags through a provider; the earlier SHORTCOMING entry about the constant is resolved.
+
+## 2026-10-21 - Commit: chore(v1-scope): fix review comments and record accepted minor findings
+
+Kind: SHORTCOMING.
+Facts: the reviewer found a redundant inner flag check, a doc comment that omitted the marketplace and a change record line that still named the old constant.
+Root cause: the follow-up commit that switched to the provider did not re-read the neighbouring comments and the record.
+Missed by: author; caught by the reviewer.
+Rule next time: after changing how a flag is read, grep the old name in code, tests and the change record in the same commit.

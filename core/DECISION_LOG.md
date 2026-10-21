@@ -59209,3 +59209,7 @@ Decision: switch ProfilePage from the compile-time constant to demoFeaturesEnabl
 ## 2026-10-21 - Commit: test(v1-scope): cover the Profile screen with the demo flag off and on
 
 Decision: add the flag-off and flag-on Profile tests to the existing profile_page_test.dart using a demoFeaturesEnabledProvider override. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.
+
+## 2026-10-21 - Commit: chore(v1-scope): fix review comments and record accepted minor findings
+
+Decision: accept the five MINOR findings of review round 1 without changing behavior; fix the stale comments in code and the change record; keep donor_wall publicly readable in Firestore rules (donors opted in; login-only is a UI choice). Evidence: flutter-reviewer report (0 BLOCKER, 0 MAJOR, 5 MINOR); firestore.rules lines 339-342; core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
