@@ -12,6 +12,7 @@ import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
+import 'package:fitness_app/features/donor_wall/donor_wall_page.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
@@ -45,6 +46,9 @@ void main() {
     '/contribute',
     '/moderate',
     '/team/abc',
+    // v1 scope: the coach marketplace is demo-gated too.
+    '/coaches',
+    '/coaches/x',
   ];
 
   group('demo-feature gating (pure)', () {
@@ -70,11 +74,10 @@ void main() {
       }
     });
 
-    test('other paths are unaffected, including /coaches', () {
+    test('other paths are unaffected', () {
       for (final p in [
         '/home',
         '/profile',
-        '/coaches',
         '/settings',
         '/teams',
         '/community-guidelines',
@@ -91,8 +94,41 @@ void main() {
       for (final p in gated) {
         expect(isDemoGatedPath(p), isTrue, reason: p);
       }
-      expect(isDemoGatedPath('/coaches'), isFalse);
       expect(isDemoGatedPath('/team'), isFalse);
+      // Prefix look-alikes must not be swallowed by the /coaches family.
+      expect(isDemoGatedPath('/coachesx'), isFalse);
+      expect(isDemoGatedPath('/coach'), isFalse);
+    });
+
+    test('v1 scope: /coaches and /coaches/x go to /home with the flag off, '
+        'stay with it on', () {
+      for (final p in ['/coaches', '/coaches/x']) {
+        expect(isDemoGatedPath(p), isTrue, reason: p);
+        expect(resolve(p), '/home', reason: 'flag off: $p');
+        expect(resolve(p, demo: true), isNull, reason: 'flag on: $p');
+      }
+    });
+
+    test('v1 scope: /donors is login-only (no longer a public path)', () {
+      // (a) signed-out deep link -> /login, whatever the demo flag says.
+      for (final demo in [false, true]) {
+        expect(
+            resolve('/donors', signedIn: false, onboarded: false, demo: demo),
+            '/login',
+            reason: 'signed-out, demo=$demo');
+      }
+      // (b) signed-in and onboarded -> reachable.
+      for (final demo in [false, true]) {
+        expect(resolve('/donors', demo: demo), isNull,
+            reason: 'signed-in onboarded, demo=$demo');
+      }
+      // Signed-in but not onboarded: the onboarding rule now applies.
+      expect(resolve('/donors', onboarded: false), '/onboarding');
+      // Control: the remaining public pages are still open when signed out.
+      for (final p in ['/about', '/licences', '/terms', '/privacy']) {
+        expect(resolve(p, signedIn: false, onboarded: false), isNull,
+            reason: p);
+      }
     });
   });
 
@@ -158,7 +194,9 @@ void main() {
       '/celebrity-plans',
       '/contribute',
       '/moderate',
-      // Sub-paths: only /team/ has a parametrised family.
+      '/coaches',
+      '/coaches/x',
+      // Sub-paths: /team/ and /coaches/ have parametrised families.
       '/team/abc/x',
       '/team/abc/',
       '/team/other-id',
@@ -183,13 +221,22 @@ void main() {
       }
     });
 
-    test('flag off: /coaches and /coaches/x are not gated', () {
+    test('flag off: /coaches and /coaches/x land on /home; flag on keeps them',
+        () {
       for (final p in ['/coaches', '/coaches/x']) {
-        expect(isDemoGatedPath(p), isFalse, reason: p);
+        expect(isDemoGatedPath(p), isTrue, reason: p);
         expect(redirectFor(auth, profiles, p, demoFeaturesEnabled: false),
+            '/home',
+            reason: p);
+        expect(redirectFor(auth, profiles, p, demoFeaturesEnabled: true),
             isNull,
             reason: p);
       }
+    });
+
+    test('/donors: an onboarded signed-in user is not redirected', () {
+      expect(redirectFor(auth, profiles, '/donors', demoFeaturesEnabled: false),
+          isNull);
     });
 
     test('flag off: a signed-in, NOT onboarded user never reaches a gated '
@@ -309,6 +356,8 @@ void main() {
       '/celebrity-plans/',
       '/contribute/',
       '/moderate/',
+      '/coaches',
+      '/coaches/x',
     ];
 
     testWidgets(
@@ -351,13 +400,43 @@ void main() {
       tester.platformDispatcher.clearDefaultRouteNameTestValue();
     });
 
-    testWidgets('release: /coaches/x is not gated and a gated page is never '
-        'built for it', (tester) async {
+    testWidgets('release: /coaches and /coaches/x land on /home',
+        (tester) async {
       final router = await mount(tester, demo: false);
-      await go(tester, router, '/coaches/x');
-      expect(pathOf(router), '/coaches/x');
-      await go(tester, router, '/coaches');
-      expect(pathOf(router), '/coaches');
+      for (final p in ['/coaches/x', '/coaches']) {
+        await go(tester, router, p);
+        expect(pathOf(router), '/home', reason: p);
+      }
+      await unmount(tester);
+    });
+
+    testWidgets('/donors: signed-out deep link redirects to /login',
+        (tester) async {
+      for (final demo in [false, true]) {
+        final router = await mount(tester, demo: demo, signedIn: false);
+        await go(tester, router, '/donors');
+        expect(pathOf(router), '/login', reason: 'demo=$demo');
+        await unmount(tester);
+      }
+    });
+
+    testWidgets('/donors: a signed-in onboarded user can open it',
+        (tester) async {
+      for (final demo in [false, true]) {
+        final router = await mount(tester, demo: demo);
+        await go(tester, router, '/donors');
+        expect(pathOf(router), '/donors', reason: 'demo=$demo');
+        expect(find.byType(DonorWallPage), findsOneWidget,
+            reason: 'demo=$demo');
+        await unmount(tester);
+      }
+    });
+
+    testWidgets('/donors: a signed-in NOT onboarded user goes to /onboarding',
+        (tester) async {
+      final router = await mount(tester, onboarded: false);
+      await go(tester, router, '/donors');
+      expect(pathOf(router), '/onboarding');
       await unmount(tester);
     });
 
@@ -386,6 +465,8 @@ void main() {
         '/celebrity-plans': '/celebrity-plans',
         '/contribute': '/contribute',
         '/moderate': '/moderate',
+        '/coaches': '/coaches',
+        '/coaches/x': '/coaches/x',
         '/community?x=1': '/community',
         '/team/abc?x=1': '/team/abc',
         '/moderate/': '/moderate',
@@ -470,12 +551,12 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('/coaches/x is not gated and builds no gated route',
+    testWidgets('/coaches/x is a demo-gated path, reachable with the flag on',
         (tester) async {
-      final router = await mount(tester);
+      final router = await mount(tester, demo: true);
       await go(tester, router, '/coaches/x');
-      expect(isDemoGatedPath(pathOf(router)), isFalse);
-      expect(pathOf(router), isNot('/home'));
+      expect(pathOf(router), '/coaches/x');
+      expect(isDemoGatedPath(pathOf(router)), isTrue);
       await unmount(tester);
     });
 

@@ -1466,3 +1466,11 @@ Kind: SUCCESS.
 Facts: an import scan of the eight out-of-v1 modules showed all of them are wired only in app_router.dart and three provider overrides in main.dart, and community/celebrity-plans were already behind kDemoFeaturesEnabled, so the change is two small edits.
 Why it worked: the entry points were found by grep before editing and the existing gate was reused.
 Rule next time: before adding a gate, grep for an existing one; list the tests that pin the old behavior in the change record so the test agents update them.
+
+## 2026-10-21 - Commit: test(v1-scope): update router tests for login-only /donors and demo-gated /coaches
+
+Kind: SHORTCOMING.
+Facts: the product commit 4745cde1 left three router test files pinning the old behavior, and the Profile Coaching hiding cannot be tested because ProfilePage reads the constant kDemoFeaturesEnabled instead of demoFeaturesEnabledProvider (see core/changes/2026-10-21-v1-scope-test-results.md).
+Root cause: a gate was added in a widget without the injectable provider the router already has; tests were deferred to the test phase per the workflow.
+Layer: author (testability), caught by the test phase.
+Rule next time: widgets that depend on a feature flag should read the provider so both sides are testable; the three router files now pass (+80).

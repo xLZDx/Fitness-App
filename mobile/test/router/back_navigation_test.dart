@@ -14,6 +14,7 @@ import 'package:fitness_app/features/auth/login_page.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/donor_wall/donor_wall_page.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
+import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
 import 'package:fitness_app/shared/widgets/main_shell.dart';
 
@@ -116,8 +117,9 @@ void main() {
     }
 
     // Boots the app signed-out: splash hands off to /home, the redirect
-    // rewrites to /login. /about and /donors are public, so they can be
-    // pushed on top without Firebase or sign-in.
+    // rewrites to /login. /about is public, so it can be pushed on top
+    // without Firebase or sign-in. (/donors is login-only since the v1 scope
+    // change; its stacking is tested signed-in below.)
     Future<GoRouter> bootToLogin(WidgetTester tester) async {
       late GoRouter router;
       await tester.pumpWidget(buildApp(
@@ -129,6 +131,27 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1500));
       await tester.pump(const Duration(milliseconds: 600));
       expect(find.byType(LoginPage), findsOneWidget);
+      return router;
+    }
+
+    // Boots the app signed-in and onboarded, landing on /home.
+    Future<GoRouter> bootSignedIn(WidgetTester tester) async {
+      final auth = MockAuthRepository(latency: Duration.zero);
+      final profiles = MockProfileRepository(latency: Duration.zero);
+      final u = (await tester.runAsync(() => auth.signInAnonymously()))!;
+      await tester.runAsync(() => profiles
+          .save(UserProfile(uid: u.uid, completedAt: DateTime(2026))));
+      late GoRouter router;
+      await tester.pumpWidget(buildApp(
+        auth: auth,
+        profiles: profiles,
+        capture: (r) => router = r,
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.byType(LoginPage), findsNothing);
+      expect(pathOf(router), '/home');
       return router;
     }
 
@@ -172,9 +195,9 @@ void main() {
     });
 
     testWidgets(
-        'converted call site stacks pages: about -> donor wall -> back -> about',
-        (tester) async {
-      final router = await bootToLogin(tester);
+        'converted call site stacks pages: about -> donor wall -> back -> about '
+        '(signed in)', (tester) async {
+      final router = await bootSignedIn(tester);
 
       router.push('/about');
       await tester.pump();
@@ -196,6 +219,18 @@ void main() {
       expect(find.byType(DonorWallPage), findsNothing);
       expect(find.byType(AboutPage), findsOneWidget,
           reason: '/donors must sit ON TOP of /about, not replace it');
+    });
+
+    testWidgets(
+        'v1 scope: signed out, pushing /donors never shows the donor wall '
+        '(login-only)', (tester) async {
+      final router = await bootToLogin(tester);
+
+      router.push('/donors');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.byType(DonorWallPage), findsNothing);
+      expect(find.byType(LoginPage), findsOneWidget);
     });
   });
 

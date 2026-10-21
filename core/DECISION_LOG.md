@@ -59197,3 +59197,7 @@ Decision: by operator decision the 2026-10-20 integration does not fix inherited
 ## 2026-10-21 - Commit: feat(v1-scope): hide the coach marketplace in release builds and make the donor wall login-only
 
 Decision: reuse the existing demo-feature gate for `/coaches` instead of a new mechanism; close `/donors` by removing it from the public paths; keep `buddy`, `sdk_export` and the moments notifications untouched. Evidence: operator answers and GO of 2026-10-21; core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
+
+## 2026-10-21 - Commit: test(v1-scope): update router tests for login-only /donors and demo-gated /coaches
+
+Decision: update the tests to the new contract rather than keep the old expectations; leave the Profile Coaching flag-off test undone and report it, because covering it needs a mobile/lib change (provider read) outside the test-only scope. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.
