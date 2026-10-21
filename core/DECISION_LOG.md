@@ -59225,3 +59225,7 @@ Decision: do not show the Day-3 modal in v1 (it is wholly a Supporter ask); keep
 ## 2026-10-21 - Commit: test(v1-scope): update Day-3 modal tests for the default-off provider
 
 Decision: tests that need the Day-3 modal override day3WelcomeModalEnabledProvider with true; the default (false) is covered by a new test; golden pixel failures are reported as not caused by this change (inference, baseline not compared). Evidence: core/changes/2026-10-21-v1-scope-day3-test-results.md.
+
+## 2026-10-21 - Commit: docs: preserve the uncommitted work of two retired worktrees
+
+Decision: put the unsaved AI Coach Phase 9 documents and the Body Scan sprint state into one documentation commit on master before the two worktrees are removed; archive the Body Scan EXIF probe as a non-compiled text file instead of adding a scratch test to the suite; keep master's own docs/sdlc/STATE.md. Evidence: operator instruction of 2026-10-21; core/changes/2026-10-21-preserve-trash-worktree-docs.md.

@@ -1520,3 +1520,11 @@ Facts: after the modal was put behind day3WelcomeModalEnabledProvider, one plann
 Root cause: the author listed affected tests from memory instead of grepping every Home test helper that builds a Day-3 scenario.
 Layer: author missed it; the test run caught it.
 Rule next time: grep for the scenario helper (day3: true) and not only for the widget name when listing tests pinned to old behavior.
+
+## 2026-10-21 - Commit: docs: preserve the uncommitted work of two retired worktrees
+
+Kind: SHORTCOMING.
+Facts: two worktrees under Trash held uncommitted documents (an AI Coach edit and reports, a Body Scan state file and a scratch probe) that were only noticed during a cleanup; one of them would have been lost by a worktree removal.
+Root cause: work was left uncommitted when the sessions ended and the worktrees were then treated as disposable.
+Missed by: author; caught by the pre-removal check for uncommitted files.
+Rule next time: before removing a worktree, check git status including untracked files and commit or archive anything found.
