@@ -249,6 +249,8 @@ void main() {
     await pumpWithDemo(tester, false);
     expect(find.text('COACHING'), findsNothing);
     expect(find.text('Coaches'), findsNothing);
+    expect(find.text('Celebrity plans'), findsNothing);
+    expect(find.text('In-kind donated programmes'), findsNothing);
     expect(find.text('COMMUNITY'), findsNothing);
     expect(find.text('Community'), findsNothing);
     // Control: the page built and the other groups are still there.
@@ -264,6 +266,8 @@ void main() {
     await pumpWithDemo(tester, true);
     expect(find.text('COACHING'), findsOneWidget);
     expect(find.text('Coaches'), findsOneWidget);
+    expect(find.text('Celebrity plans'), findsOneWidget);
+    expect(find.text('In-kind donated programmes'), findsOneWidget);
     expect(find.text('COMMUNITY'), findsOneWidget);
     expect(find.text('Community'), findsOneWidget);
   });

@@ -1497,3 +1497,10 @@ Facts: the reviewer found a redundant inner flag check, a doc comment that omitt
 Root cause: the follow-up commit that switched to the provider did not re-read the neighbouring comments and the record.
 Missed by: author; caught by the reviewer.
 Rule next time: after changing how a flag is read, grep the old name in code, tests and the change record in the same commit.
+
+## 2026-10-21 - Commit: test(v1-scope): close review round 1 test gaps
+
+Kind: SUCCESS.
+Facts: the reviewer expected /home after /splash for a cold-start /donors deep link; the first run with a placeholder assertion showed the actual landing is /home, so the expectation was verified, not assumed. Gating +39, all five files +94.
+Why it worked: asserting a deliberately wrong value first exposed the real landing. Layer that found the gaps: reviewers.
+Rule next time: for redirect landings, read the actual value from a failing probe before pinning it; a pure-gate variant with a query string is meaningless because the live router strips it.
