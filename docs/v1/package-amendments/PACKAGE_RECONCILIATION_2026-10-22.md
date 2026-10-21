@@ -9,20 +9,20 @@ Independent review through GPT-PM (request 7b78ae18-5a6d-498a-8fa6-0dced7bdf1c9,
 
 Facts re-checked against the package files by the coordinator on 2026-10-22: `ACCEPTANCE.csv` FU-AC-015 and FU-AC-064 still require online-only behavior for the three commands; FU-AC-046 still contains background permission steps and registration after reboot; FU-AC-047 has no automatic/suggestion/unknown distinction; FU-AC-067 only rejects substring matching; `docs/04_CORE_TDD.md` still requires an online `prepareWorkoutCommand` with a server-minted command id before the effect; `docs/15_DECISIONS_AND_RISKS.md` ADR-CMD-03 still says online-only with no durable queue. The remaining findings are the reviewer's claims, not coordinator measurements.
 
-## Findings and how they are closed
+## Acceptance coverage and remaining closure work
 
-| ID | Severity | Finding | Closure in this folder |
+| ID | Severity | Finding | Status and coverage in this folder |
 |---|---|---|---|
-| B-01 | BLOCKER | Local acceptance before network conflicts with the server-minted command admission step | FU-AC-092, 093, 095; the protocol itself is still to be written into the core design (see Document changes) |
-| B-02 | BLOCKER | Replay protection, receipt retention and writer migration have no single consistent proof for commands that stay offline longer than the detailed-record TTL | FU-AC-094, 096, 097, 098; the protocol freeze is a precondition of E1 |
-| B-03 | BLOCKER | Queue lifecycle (sign-out, deletion, export, backup) is not in the data and lifecycle contracts | FU-AC-102 to 105; data model and privacy documents to be amended |
-| M-01 | MAJOR | Local, synced and conflicted workout projections are inconsistent | FU-AC-099, 100 |
-| M-02 | MAJOR | Foreground attendance (delivery 1) is mixed with background geofences (delivery 2) in the visit design | FU-AC-110; SPLIT in `SUPERSESSION.csv` |
-| M-03 | MAJOR | Attendance evaluation can still count suggestions as detections | FU-AC-106 to 109 |
-| M-04 | MAJOR | The ready-prompt StartSet is missing from the voice runtime and acceptance contracts | FU-AC-113 to 118 |
-| M-05 | MAJOR | The module matrix is not an executable release-scope gate | open: a route and action coverage matrix (build inclusion, navigation, direct routes, shortcuts, persisted preferences, action admission, release tests) is still to be written |
-| M-06 | MAJOR | Register consistency is mechanical, not semantic | `SUPERSESSION.csv` plus `ACCEPTANCE_AMENDMENTS.csv`; the registers themselves are reissued by the package author |
-| M-07 | MAJOR | The implementation baseline and runtime status are not verified for the current date | open: freeze a current source manifest (full commit and tree hashes) and the deployed runtime of both Cloud Functions codebases before E0 integration |
+| B-01 | BLOCKER | Local acceptance before network conflicts with the server-minted command admission step | PARTIAL: acceptance rows FU-AC-092, 093, 095; the protocol itself is still to be written into the core design (see Document changes) |
+| B-02 | BLOCKER | Replay protection, receipt retention and writer migration have no single consistent proof for commands that stay offline longer than the detailed-record TTL | PARTIAL: acceptance rows FU-AC-094, 096, 097, 098; the protocol freeze is a precondition of E1 |
+| B-03 | BLOCKER | Queue lifecycle (sign-out, deletion, export, backup) is not in the data and lifecycle contracts | PARTIAL: acceptance rows FU-AC-102 to 105; data model, lifecycle and privacy documents still to be amended |
+| M-01 | MAJOR | Local, synced and conflicted workout projections are inconsistent | COVERED by acceptance rows FU-AC-099, 100; not yet implemented |
+| M-02 | MAJOR | Foreground attendance (delivery 1) is mixed with background geofences (delivery 2) in the visit design | COVERED by acceptance row FU-AC-110 and the SPLIT in `SUPERSESSION.csv`; the visit design document is still to be split |
+| M-03 | MAJOR | Attendance evaluation can still count suggestions as detections | COVERED by acceptance rows FU-AC-106 to 109; thresholds frozen before the pilot |
+| M-04 | MAJOR | The ready-prompt StartSet is missing from the voice runtime and acceptance contracts | COVERED by acceptance rows FU-AC-113 to 118; voice runtime contract still to be written |
+| M-05 | MAJOR | The module matrix is not an executable release-scope gate | OPEN: a route and action coverage matrix (build inclusion, navigation, direct routes, shortcuts, persisted preferences, action admission, release tests) is still to be written |
+| M-06 | MAJOR | Register consistency is mechanical, not semantic | PARTIAL: `SUPERSESSION.csv` plus `ACCEPTANCE_AMENDMENTS.csv`; the registers themselves are reissued by the package author |
+| M-07 | MAJOR | The implementation baseline and runtime status are not verified for the current date | OPEN: freeze a current source manifest (full commit and tree hashes) and the deployed runtime of both Cloud Functions codebases before E0 integration |
 
 ## Files in this folder
 - `ACCEPTANCE_AMENDMENTS.csv`: 27 new acceptance rows FU-AC-092 to FU-AC-118 in the package column layout, all status NOT_RUN. They are contractual cases, not 27 separate test runs: existing fault-injection tests may be reused where they prove the same invariant, with cross-links instead of duplicate PASS evidence.

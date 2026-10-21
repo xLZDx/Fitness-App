@@ -1624,3 +1624,11 @@ Rule next time: for any new interaction state, list entry, exit and invalidation
 Kind: NEUTRAL.
 Facts: the repeat package review (after the amendments) still found 3 BLOCKER, because amendments had been written as companion notes while the package registers kept contradicting rows; the PM Bridge send also failed three times with 12 attachments and worked once as a single bundled file after a daemon restart.
 Rule next time: when a decision supersedes a package, write the supersession map in the same change; bundle many inputs into one attachment.
+
+## 2026-10-22 - Commit: docs(v1): address package reconciliation gate round 1
+
+Kind: SHORTCOMING.
+Facts: when I turned 27 amendment criteria into acceptance rows, I shortened three of them and lost load-bearing parts (client-generated UID-bound identity, the StartSet exclusion from the queue, the unrelated-sentence false-positive class); the supersession map also retired ids that new rows referenced.
+Root cause: I paraphrased criteria instead of copying every clause, and did not check the map against the new rows' own references.
+Missed by: author; caught by the GPT-PM documentation gate.
+Rule next time: when transcribing criteria into a register, diff each row against its source clause by clause, and validate that every id referenced by a new row stays active after the map is applied.
