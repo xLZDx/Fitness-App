@@ -1587,3 +1587,10 @@ Facts: my normaliser handled only U+2019; the reviewer found U+2018 and U+02BC f
 Root cause: I handled the one variant I had in mind instead of the class of apostrophe characters.
 Missed by: author; caught by the flutter reviewer.
 Rule next time: when normalising a character class, enumerate the whole Unicode family, not the single example.
+## 2026-10-21 - test: add negative-access rules tests for the users owner wildcard
+
+- Kind: SHORTCOMING
+- Facts: the owner wildcard `users/{uid}/{coll}/{document=**}` protects sub-collections only through `coll != '...'` lists; no test covered other-user/unauthenticated denial for every listed name, and `workout_command_policy` is not mentioned in firestore.rules at all. New file functions/src/__rules__/v1_negative_access_rules.test.ts, 62 tests passed on the local emulator (core/changes/2026-10-21-firestore-negative-rules-tests.md).
+- Root cause: an allow-list-by-exclusion design relies on every new server-only collection being remembered in two lists; neither tests nor reviewers had a drift check.
+- Missed by: tests and the author of the rules; caught by an independent review.
+- Next time: the exclusion lists are parsed from the rules inside the test so drift fails the suite; fix the rules by replacing the wildcard with explicit per-collection blocks or a default deny (owner of the rules decides). Default port 8080 failed to start the emulator on this host; use FIREBASE_EMULATOR_CONFIG with a free port.
