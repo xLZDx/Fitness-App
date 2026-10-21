@@ -59267,3 +59267,7 @@ Decision: add tests only and record the gaps instead of changing firestore.rules
 ## 2026-10-21 - Commit: test(rules): address code gate round 1 (hard-coded inventory, list and nested denial)
 
 Decision: accept the 3 MAJOR and 2 MINOR findings of the GPT-PM gate; protected-collection inventory and owner-read policy are now hard-coded in the test (parser only adds extras), plus collection-query and nested-path denial tests. Evidence: GPT-PM round 1 for head 722d4344; agent run 140 tests passed on the local emulator; core/changes/2026-10-21-firestore-negative-rules-tests.md.
+
+## 2026-10-22 - Commit: docs(v1): voice ready-prompt decision and editorial fixes
+
+Decision: start a set by voice through a "tell me when you are ready" prompt with free-form affirmative answers, active only in a waiting state, instead of a fixed phrase list with bare "go"; defer the two Firestore rules gaps until the local queue is implemented; folder cleanup rule for all projects saved to memory. Evidence: operator answers of 2026-10-22; core/changes/2026-10-22-voice-ready-prompt-decision.md.

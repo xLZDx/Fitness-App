@@ -1,6 +1,6 @@
 # 2026-10-21 Firestore negative-access rules tests
 
-Branch: test/firestore-rules-negative-2026-10-21 (base master 8629d1bd). Tests only; no change to firestore.rules or any production file.
+Branch: test/firestore-rules-negative-2026-10-21 (rebased onto master 075b1aac before merge). Tests only; no change to firestore.rules or any production file.
 
 ## Why
 
