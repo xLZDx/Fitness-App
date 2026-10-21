@@ -3,8 +3,8 @@
 ## What changed
 Three new documents under `docs/v1/`:
 - `MODULE_DISPOSITION_MATRIX.md`: all 46 `mobile/lib/features` modules with a proposed disposition (KEEP / HIDE / KEEP login-only / DEFER), based on a read-only scan; method limits are stated in the file.
-- `LOCAL_QUEUE_DECISION.md`: the operator decision to use a durable local queue for CompleteSet, AddEligibleExercise and SetDifficulty, replacing the package's online-only Option A, with eight acceptance criteria.
-- `ATTENDANCE_SPEC_AMENDMENT.md`: first delivery of gym attendance is foreground only; background geofences are a later step gated on a Google Play policy assessment; six measurable acceptance criteria proposed.
+- `LOCAL_QUEUE_DECISION.md`: the operator decision to use a durable local queue for CompleteSet, AddEligibleExercise and SetDifficulty, replacing the package's online-only Option A, with fourteen acceptance criteria (after the documentation gate).
+- `ATTENDANCE_SPEC_AMENDMENT.md`: first delivery of gym attendance is foreground only; background geofences are a later step gated on a Google Play policy assessment; seven measurable acceptance criteria proposed (after the documentation gate).
 
 ## Gate round 1 remediation (GPT-PM: 0 BLOCKER, 5 MAJOR, 2 MINOR)
 - LOCAL_QUEUE_DECISION: criteria expanded from 8 to 14 (atomic durable acceptance, no silent eviction and fail-closed at capacity, stable IDs, one logical set one completion, per-session ordering, receipt capacity vs 256 proposal, UID isolation, sign-out outcomes with in-flight fencing, deletion ordering, offline export).

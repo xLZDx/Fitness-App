@@ -1602,3 +1602,19 @@ Facts: my first rules tests derived the protected set and the expected policy fr
 Root cause: I used the parser to avoid duplicating names and did not ask what happens to the tests when the guarded rule is removed.
 Missed by: author and the first test run; caught by the GPT-PM gate.
 Rule next time: security tests keep the expected policy as an independent constant; a looser rule must fail an assertion, never shrink the case list.
+
+## 2026-10-22 - Commit: docs(v1): voice ready-prompt decision and editorial fixes
+
+Kind: SHORTCOMING.
+Facts: I left two decisions as plain text "your decision" in a status table instead of asking them with AskUserQuestion, so the new question policy had nothing to act on; the operator had to point it out.
+Root cause: I treated operator-owned items as blockers to report, not as questions to ask.
+Missed by: author.
+Rule next time: any item that waits for the operator becomes an AskUserQuestion with a recommended first option in the same turn.
+
+## 2026-10-22 - Commit: docs(v1): address voice gate round 1
+
+Kind: SHORTCOMING.
+Facts: GPT-PM found 3 MAJOR gaps in my voice decision draft: acceptance tests for "must not start" only outside the waiting state, no microphone lifecycle, and a claim that StartSet shares the durable CompleteSet queue.
+Root cause: I wrote the operator's idea down as a behavior list and did not test it against the failure paths (negation inside the state, backgrounding, late callbacks) or against the scope of the queue I had approved the day before.
+Missed by: author; caught by the GPT-PM documentation gate.
+Rule next time: for any new interaction state, list entry, exit and invalidation events and check each referenced contract's scope before writing the criteria.
