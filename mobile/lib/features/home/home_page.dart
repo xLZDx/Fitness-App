@@ -177,6 +177,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           alreadyShown: shown,
         );
         if (!ok || !mounted) return;
+        // v1 scope: the Day-3 modal is a Supporter ask and stays off unless
+        // a test (or a later decision) turns the provider on.
+        if (!ref.read(day3WelcomeModalEnabledProvider)) return;
         setState(() => _day3ShownThisSession = true);
         await Day3WelcomeModal.show(context);
         await repo.markShown(MomentId.day3Welcome);

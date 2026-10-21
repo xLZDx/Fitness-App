@@ -59217,3 +59217,11 @@ Decision: accept the five MINOR findings of review round 1 without changing beha
 ## 2026-10-21 - Commit: test(v1-scope): close review round 1 test gaps
 
 Decision: pin the observed cold-start landing (/home, deep link dropped) as current behaviour and flag it as a product question rather than change mobile/lib. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.
+
+## 2026-10-21 - Commit: feat(v1-scope): keep the Day-3 welcome modal off behind a default-off provider
+
+Decision: do not show the Day-3 modal in v1 (it is wholly a Supporter ask); keep code, strings and bookkeeping; the injury-filter moment has no consumer so nothing changes there. Evidence: operator answer of 2026-10-21; grep of mobile/lib shows MomentId.firstInjuryFilter unused outside moment.dart; core/changes/2026-10-21-v1-scope-day3-modal-off.md.
+
+## 2026-10-21 - Commit: test(v1-scope): update Day-3 modal tests for the default-off provider
+
+Decision: tests that need the Day-3 modal override day3WelcomeModalEnabledProvider with true; the default (false) is covered by a new test; golden pixel failures are reported as not caused by this change (inference, baseline not compared). Evidence: core/changes/2026-10-21-v1-scope-day3-test-results.md.
