@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Whether features that are still backed by demo (Mock) repositories may be
 /// reached by the user.
 ///
-/// The community feed, celebrity plans, team feed, video contribution and the
-/// moderation queue read their data from providers that default to a Mock
+/// The coach marketplace (outside the v1 scope), the community feed, celebrity
+/// plans, team feed, video contribution and the moderation queue read their data from providers that default to a Mock
 /// repository, and `main.dart` does not override them with a real backend.
 /// In a release build the user would therefore see fake data and any
 /// "submitted" post or video would silently never be persisted.

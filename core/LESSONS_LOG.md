@@ -1459,3 +1459,48 @@ Docs-only branches can be verified by name-status plus marker grep without a tes
 ## 2026-10-21 - Commit: record inherited defects backlog
 
 Kind: SUCCESS. Facts: inherited failures and open items were collected from the integration state file and change records into one backlog file instead of being fixed inside the integration. Root cause of the approach: the operator rule that integration must not fix bugs. Layer: operator decision. Rule next time: record each inherited defect with evidence and an acceptance test at integration time.
+
+## 2026-10-21 - Commit: feat(v1-scope): hide the coach marketplace in release builds and make the donor wall login-only
+
+Kind: SUCCESS.
+Facts: an import scan of the eight out-of-v1 modules showed all of them are wired only in app_router.dart and three provider overrides in main.dart, and community/celebrity-plans were already behind kDemoFeaturesEnabled, so the change is two small edits.
+Why it worked: the entry points were found by grep before editing and the existing gate was reused.
+Rule next time: before adding a gate, grep for an existing one; list the tests that pin the old behavior in the change record so the test agents update them.
+
+## 2026-10-21 - Commit: test(v1-scope): update router tests for login-only /donors and demo-gated /coaches
+
+Kind: SHORTCOMING.
+Facts: the product commit 4745cde1 left three router test files pinning the old behavior, and the Profile Coaching hiding cannot be tested because ProfilePage reads the constant kDemoFeaturesEnabled instead of demoFeaturesEnabledProvider (see core/changes/2026-10-21-v1-scope-test-results.md).
+Root cause: a gate was added in a widget without the injectable provider the router already has; tests were deferred to the test phase per the workflow.
+Layer: author (testability), caught by the test phase.
+Rule next time: widgets that depend on a feature flag should read the provider so both sides are testable; the three router files now pass (+80).
+
+## 2026-10-21 - Commit: refactor(v1-scope): read the demo flag through its provider on the Profile screen
+
+Kind: SHORTCOMING.
+Facts: the first v1-scope commit gated the Profile Coaching section on the compile-time constant, which is always true under flutter test, so the hidden state could not be tested; the test agent reported the gap.
+Root cause: the author reused the constant already used in that file and did not check the testability seam that the router uses.
+Missed by: author; caught by the test agent.
+Rule next time: when gating UI by a flag, read it through the provider seam that tests can override, and state the flag-off test in the change record.
+
+## 2026-10-21 - Commit: test(v1-scope): cover the Profile screen with the demo flag off and on
+
+Kind: SUCCESS.
+Facts: after the page was switched to demoFeaturesEnabledProvider, two widget tests drive both flag states; the profile test files pass (+11).
+Why it worked: the testability gap reported earlier was fixed at the source instead of worked around.
+Rule next time: widgets read feature flags through a provider; the earlier SHORTCOMING entry about the constant is resolved.
+
+## 2026-10-21 - Commit: chore(v1-scope): fix review comments and record accepted minor findings
+
+Kind: SHORTCOMING.
+Facts: the reviewer found a redundant inner flag check, a doc comment that omitted the marketplace and a change record line that still named the old constant.
+Root cause: the follow-up commit that switched to the provider did not re-read the neighbouring comments and the record.
+Missed by: author; caught by the reviewer.
+Rule next time: after changing how a flag is read, grep the old name in code, tests and the change record in the same commit.
+
+## 2026-10-21 - Commit: test(v1-scope): close review round 1 test gaps
+
+Kind: SUCCESS.
+Facts: the reviewer expected /home after /splash for a cold-start /donors deep link; the first run with a placeholder assertion showed the actual landing is /home, so the expectation was verified, not assumed. Gating +39, all five files +94.
+Why it worked: asserting a deliberately wrong value first exposed the real landing. Layer that found the gaps: reviewers.
+Rule next time: for redirect landings, read the actual value from a failing probe before pinning it; a pure-gate variant with a query string is meaningless because the live router strips it.

@@ -59193,3 +59193,27 @@ Decision: Merge the Gym Digital Twin backlog documentation package; clean merge,
 ## 2026-10-21 - Commit: record inherited defects backlog
 
 Decision: by operator decision the 2026-10-20 integration does not fix inherited defects; they are recorded in docs/BACKLOG_INHERITED_2026-10-21.md with severity guess, evidence, origin and an acceptance test. Docs only, no code changed.
+
+## 2026-10-21 - Commit: feat(v1-scope): hide the coach marketplace in release builds and make the donor wall login-only
+
+Decision: reuse the existing demo-feature gate for `/coaches` instead of a new mechanism; close `/donors` by removing it from the public paths; keep `buddy`, `sdk_export` and the moments notifications untouched. Evidence: operator answers and GO of 2026-10-21; core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
+
+## 2026-10-21 - Commit: test(v1-scope): update router tests for login-only /donors and demo-gated /coaches
+
+Decision: update the tests to the new contract rather than keep the old expectations; leave the Profile Coaching flag-off test undone and report it, because covering it needs a mobile/lib change (provider read) outside the test-only scope. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.
+
+## 2026-10-21 - Commit: refactor(v1-scope): read the demo flag through its provider on the Profile screen
+
+Decision: switch ProfilePage from the compile-time constant to demoFeaturesEnabledProvider, the existing seam the router already uses, so the flag-off screen is testable. Evidence: test agent report (request d not coverable under flutter test without this change); core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
+
+## 2026-10-21 - Commit: test(v1-scope): cover the Profile screen with the demo flag off and on
+
+Decision: add the flag-off and flag-on Profile tests to the existing profile_page_test.dart using a demoFeaturesEnabledProvider override. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.
+
+## 2026-10-21 - Commit: chore(v1-scope): fix review comments and record accepted minor findings
+
+Decision: accept the five MINOR findings of review round 1 without changing behavior; fix the stale comments in code and the change record; keep donor_wall publicly readable in Firestore rules (donors opted in; login-only is a UI choice). Evidence: flutter-reviewer report (0 BLOCKER, 0 MAJOR, 5 MINOR); firestore.rules lines 339-342; core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
+
+## 2026-10-21 - Commit: test(v1-scope): close review round 1 test gaps
+
+Decision: pin the observed cold-start landing (/home, deep link dropped) as current behaviour and flag it as a product question rather than change mobile/lib. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.

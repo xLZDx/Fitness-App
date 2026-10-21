@@ -24,6 +24,9 @@ class ProfilePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    // Read through the provider (not the compile-time constant) so a test can
+    // drive the release-build behavior with the flag off.
+    final demoEnabled = ref.watch(demoFeaturesEnabledProvider);
     final user = ref.watch(authUserProvider).valueOrNull;
     final profile = ref.watch(currentProfileProvider).valueOrNull;
     final onboarded = profile?.hasCompletedOnboarding ?? false;
@@ -157,39 +160,44 @@ class ProfilePage extends ConsumerWidget {
               ],
             ),
           ),
-          _SectionLabel(l10n.profileSectionCoaching),
-          HudPanel(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _profileTile(
-                  context,
-                  icon: Icons.people_alt_outlined,
-                  gradient: AppPalette.tileGradients[2],
-                  title: AppLocalizations.of(context).marketplaceCoaches,
-                  subtitle:
-                      AppLocalizations.of(context).profileBrowse11Sessions15Fee,
-                  onTap: () => context.push('/coaches'),
-                ),
-                // Demo-backed (Mock repository): hidden in release builds.
-                if (kDemoFeaturesEnabled) ...[
-                  _divider(context),
+          // v1 scope: the coach marketplace (Stripe Connect, demo listings) and
+          // celebrity plans are outside the nine v1 areas, so the whole section is
+          // hidden in release builds together with the demo-backed routes.
+          if (demoEnabled) ...[
+            _SectionLabel(l10n.profileSectionCoaching),
+            HudPanel(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
                   _profileTile(
                     context,
-                    icon: Icons.star_outline,
-                    gradient: AppPalette.tileGradients[4],
-                    title: AppLocalizations.of(context)
-                        .celebrityplansCelebrityPlans,
-                    subtitle: AppLocalizations.of(context)
-                        .profileInKindDonatedProgrammes,
-                    onTap: () => context.push('/celebrity-plans'),
+                    icon: Icons.people_alt_outlined,
+                    gradient: AppPalette.tileGradients[2],
+                    title: AppLocalizations.of(context).marketplaceCoaches,
+                    subtitle:
+                        AppLocalizations.of(context).profileBrowse11Sessions15Fee,
+                    onTap: () => context.push('/coaches'),
                   ),
+                  // The whole section is already behind the demo flag above.
+                  ...[
+                    _divider(context),
+                    _profileTile(
+                      context,
+                      icon: Icons.star_outline,
+                      gradient: AppPalette.tileGradients[4],
+                      title: AppLocalizations.of(context)
+                          .celebrityplansCelebrityPlans,
+                      subtitle: AppLocalizations.of(context)
+                          .profileInKindDonatedProgrammes,
+                      onTap: () => context.push('/celebrity-plans'),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
+          ],
           // Demo-backed (Mock repository): hidden in release builds.
-          if (kDemoFeaturesEnabled) ...[
+          if (demoEnabled) ...[
             _SectionLabel(l10n.profileSectionCommunity),
             HudPanel(
               padding: EdgeInsets.zero,

@@ -168,12 +168,12 @@ void main() {
     });
 
     test('a public page reaches a signed-in, not-yet-onboarded user', () {
-      // Found reviewing L0a: /terms, /about, /donors and /licences are all
+      // Found reviewing L0a: /terms, /about and /licences are all
       // listed in _publicPaths, but before this the onboarding gate ignored
       // that list entirely and bounced every one of them to /onboarding
       // anyway -- directly contradicting the claim that a public page is
       // reachable regardless of sign-in state.
-      for (final p in ['/terms', '/privacy', '/about', '/donors', '/licences']) {
+      for (final p in ['/terms', '/privacy', '/about', '/licences']) {
         expect(
           resolveRedirect(
               isSignedIn: true,
@@ -184,6 +184,31 @@ void main() {
           reason: '$p is public and must not force onboarding first',
         );
       }
+    });
+
+    test('v1 scope: /donors is NOT public: signed-out goes to /login, '
+        'signed-in not-onboarded goes to /onboarding', () {
+      expect(
+          resolveRedirect(
+              isSignedIn: false,
+              isOnboarded: false,
+              location: '/donors',
+              isAnonymous: false),
+          '/login');
+      expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: false,
+              location: '/donors',
+              isAnonymous: false),
+          '/onboarding');
+      expect(
+          resolveRedirect(
+              isSignedIn: true,
+              isOnboarded: true,
+              location: '/donors',
+              isAnonymous: false),
+          isNull);
     });
   });
 
