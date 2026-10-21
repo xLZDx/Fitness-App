@@ -124,7 +124,7 @@ bool _containsPhrase(String text, String phrase) {
 }
 
 String _normalise(String s) => s
-    .replaceAll('\u2019', "'")
+    .replaceAll(RegExp('[\u2018\u2019\u02bc]'), "'")
     .replaceAll(RegExp(r"[^a-z0-9']+"), ' ')
     // Apostrophes survive only inside a word ("what's"); quote marks at word
     // edges are separators.

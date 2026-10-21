@@ -59256,3 +59256,7 @@ Decision: ALLOW_TIER_OVERRIDE defaults to false with an explicit opt-in (dart-de
 ## 2026-10-21 - Commit: test(hardening): tier override default and voice parser whole-word tests
 
 Decision: pin the new contract with tests (default false, store/personal profile tests that run only under their define, near-miss voice phrases) and record "let's go home" as a named KNOWN GAP test rather than a failing test, leaving the stricter grammar to the operator. Evidence: core/changes/2026-10-21-v1-hardening-test-results.md.
+
+## 2026-10-21 - Commit: chore(hardening): apostrophe variants and review record
+
+Decision: fix the apostrophe variants from the flutter review; accept the other four MINOR findings (settings section visibility, plural phrase forms, go-again/go-back priority, record line reference) and leave them to the pending voice-grammar and UI decisions. Evidence: flutter-reviewer report for head 1391e412; core/changes/2026-10-21-v1-hardening.md.

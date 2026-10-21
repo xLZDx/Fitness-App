@@ -61,6 +61,8 @@ void main() {
       'skip rest': VoiceCommandKind.skipRest,
       "what's next?": VoiceCommandKind.whatsNext,
       'what’s next': VoiceCommandKind.whatsNext,
+      'what‘s next': VoiceCommandKind.whatsNext,
+      'whatʼs next': VoiceCommandKind.whatsNext,
       'stop': VoiceCommandKind.cancel,
       'help': VoiceCommandKind.help,
     };

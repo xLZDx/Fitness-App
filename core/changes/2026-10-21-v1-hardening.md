@@ -57,3 +57,7 @@ mobile/lib/features/subscription/state/subscription_providers.dart, mobile/lib/c
 - No tests, analyzer or build were run by the author (operator rule). Everything above is from reading the code.
 - Owed by the test agents: (a) rewrite the default test in `tier_override_guard_test.dart` to assert false, and add a run under `--dart-define=ALLOW_TIER_OVERRIDE=true`; (b) voice parser tests for the accepted and rejected lists above, covering every phrase list; (c) check any other voice test that relied on substring behavior; (d) Firestore negative security-rules tests - a separate later task, not part of this change.
 - Not verified: Dart analyzer cleanliness of the new helper, behavior of the lookbehind regex on the Dart VM, and the PowerShell array splat in `run_with_debug.ps1` (an empty splat is expected to pass nothing).
+
+## Review round 1 (flutter-reviewer, 0 BLOCKER, 0 MAJOR, 5 MINOR)
+- Fixed: typographic apostrophe variants U+2018 and U+02BC now normalise to an ASCII apostrophe (two pinned cases added to `voice_command_test.dart`).
+- Accepted, not changed: Settings "Test access" section stays visible when the override flag is off (hiding it would change settings tests and UI outside this task; recorded for a later UI pass); "starts set"/"finished sets" falling to unknown is intended whole-word behaviour pending the stricter-grammar product decision; "go again"/"go back" priority defect and the missing phrase-list cases in the accepted map stay with that same decision; stale line reference in this record is cosmetic.

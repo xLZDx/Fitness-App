@@ -1579,3 +1579,11 @@ Facts: while writing the voice test I broke my own file with an apostrophe insid
 Root cause: scripted escaping of quotes through a shell heredoc (known gotcha).
 Layer: caught by the test run itself.
 Rule next time: write Dart test source with Edit/Write, not heredoc scripts; test define-dependent defaults under unset, =false and =true.
+
+## 2026-10-21 - Commit: chore(hardening): apostrophe variants and review record
+
+Kind: SHORTCOMING.
+Facts: my normaliser handled only U+2019; the reviewer found U+2018 and U+02BC fall apart into separators.
+Root cause: I handled the one variant I had in mind instead of the class of apostrophe characters.
+Missed by: author; caught by the flutter reviewer.
+Rule next time: when normalising a character class, enumerate the whole Unicode family, not the single example.
