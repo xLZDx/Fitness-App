@@ -26,7 +26,7 @@ cd "D:\Repo\Fitness_App\functions"
 npm install
 ```
 
-(Node 20 is required; `firebase.json` pins the runtime to nodejs20.)
+(Node 22 is required; `firebase.json` pins the runtime to nodejs22.)
 
 ### 2. Set the four Functions secrets
 
