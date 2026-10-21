@@ -11,6 +11,7 @@ import 'package:fitness_app/features/profile/state/profile_providers.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/core/config/demo_features.dart';
 
 void main() {
   // Regression: _ProfileSummary held the profile as `dynamic`, and enum
@@ -216,5 +217,54 @@ void main() {
     await pumpFor(tester, null);
     expect(find.text('Save your progress'), findsNothing);
     expect(find.text('Sign out'), findsOneWidget);
+  });
+
+  // v1 scope: the Coaching section (marketplace tile + celebrity plans) and
+  // the Community section are demo-backed and outside the nine v1 areas. The
+  // page reads demoFeaturesEnabledProvider, so both sides are driven here.
+  Future<void> pumpWithDemo(WidgetTester tester, bool demo) async {
+    tester.view.physicalSize = const Size(1000, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          demoFeaturesEnabledProvider.overrideWithValue(demo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProfilePage(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+
+  testWidgets('demo flag off: no Coaching section, marketplace tile or '
+      'Community section; the v1 sections remain', (tester) async {
+    await pumpWithDemo(tester, false);
+    expect(find.text('COACHING'), findsNothing);
+    expect(find.text('Coaches'), findsNothing);
+    expect(find.text('COMMUNITY'), findsNothing);
+    expect(find.text('Community'), findsNothing);
+    // Control: the page built and the other groups are still there.
+    for (final heading in const ['YOU', 'PROGRESS', 'MEMBERSHIP', 'APP']) {
+      expect(find.text(heading), findsOneWidget, reason: heading);
+    }
+    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Sign out'), findsOneWidget);
+  });
+
+  testWidgets('demo flag on: Coaching section with the marketplace tile and '
+      'the Community section are present', (tester) async {
+    await pumpWithDemo(tester, true);
+    expect(find.text('COACHING'), findsOneWidget);
+    expect(find.text('Coaches'), findsOneWidget);
+    expect(find.text('COMMUNITY'), findsOneWidget);
+    expect(find.text('Community'), findsOneWidget);
   });
 }

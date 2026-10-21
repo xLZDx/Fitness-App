@@ -59205,3 +59205,7 @@ Decision: update the tests to the new contract rather than keep the old expectat
 ## 2026-10-21 - Commit: refactor(v1-scope): read the demo flag through its provider on the Profile screen
 
 Decision: switch ProfilePage from the compile-time constant to demoFeaturesEnabledProvider, the existing seam the router already uses, so the flag-off screen is testable. Evidence: test agent report (request d not coverable under flutter test without this change); core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.
+
+## 2026-10-21 - Commit: test(v1-scope): cover the Profile screen with the demo flag off and on
+
+Decision: add the flag-off and flag-on Profile tests to the existing profile_page_test.dart using a demoFeaturesEnabledProvider override. Evidence: core/changes/2026-10-21-v1-scope-test-results.md.

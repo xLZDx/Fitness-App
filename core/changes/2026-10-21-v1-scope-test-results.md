@@ -14,3 +14,9 @@ Code under test: commit 4745cde1 (`/donors` login-only, `/coaches` demo-gated, P
 ## Not verified
 - Profile screen with the demo flag off shows no Coaching section: NOT testable. `ProfilePage` reads the compile-time constant `kDemoFeaturesEnabled` directly (no provider), which is always true under `flutter test`. A test needs a product change (read `demoFeaturesEnabledProvider`). The flag-on side is covered by the existing `profile_page_test.dart` (COACHING heading, Coaches tile), which was not re-run.
 - No other tests under `mobile/test` reference `/donors`, `/coaches` or the Coaching section in a way that pins the old behavior (grep).
+
+## Addendum: Profile screen (after commit e919f13b)
+`ProfilePage` now reads `demoFeaturesEnabledProvider`, so the Profile checks became testable.
+- Changed: `mobile/test/features/profile/profile_page_test.dart`, 2 new tests. Flag off: no COACHING heading, no Coaches tile, no COMMUNITY heading or Community tile; YOU/PROGRESS/MEMBERSHIP/APP, Settings and Sign out still present (control). Flag on: COACHING, Coaches, COMMUNITY and Community present.
+- Command (cwd `mobile/`): `flutter test --timeout 60s test/features/profile/profile_page_test.dart test/features/profile_page_test.dart` -> +11 all passed (9 in the changed file, 2 in the untouched second file).
+- Not verified: the celebrity-plans tile is not asserted by title; the real release build (`kReleaseMode`) is not exercised, only the provider override.

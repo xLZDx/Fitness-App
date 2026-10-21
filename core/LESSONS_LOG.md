@@ -1482,3 +1482,10 @@ Facts: the first v1-scope commit gated the Profile Coaching section on the compi
 Root cause: the author reused the constant already used in that file and did not check the testability seam that the router uses.
 Missed by: author; caught by the test agent.
 Rule next time: when gating UI by a flag, read it through the provider seam that tests can override, and state the flag-off test in the change record.
+
+## 2026-10-21 - Commit: test(v1-scope): cover the Profile screen with the demo flag off and on
+
+Kind: SUCCESS.
+Facts: after the page was switched to demoFeaturesEnabledProvider, two widget tests drive both flag states; the profile test files pass (+11).
+Why it worked: the testability gap reported earlier was fixed at the source instead of worked around.
+Rule next time: widgets read feature flags through a provider; the earlier SHORTCOMING entry about the constant is resolved.
