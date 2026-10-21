@@ -81,13 +81,46 @@ void main() {
     expect(c.read(allowTierOverrideProvider), kAllowTierOverride);
   });
 
-  test('the default is on, so the operator keeps the switch', () {
-    // Personal-use software: defaulting the guard off would restore the exact
-    // problem the switch was built for. Skipped when a define is in play,
-    // because then there is no default to check.
-    expect(kAllowTierOverride, isTrue);
+  test('the default is off: an unconfigured build grants no paid tier', () {
+    // Contract since the 2026-10-21 hardening: ALLOW_TIER_OVERRIDE defaults to
+    // false, so a build that passes no define cannot honour the override.
+    // Skipped when a define is in play, because then there is no default.
+    expect(kAllowTierOverride, isFalse);
   },
       skip: const bool.hasEnvironment('ALLOW_TIER_OVERRIDE')
           ? 'ALLOW_TIER_OVERRIDE is set; there is no default to assert'
+          : null);
+
+  test('default build ignores a stored celebrity override end to end', () {
+    // No allowTierOverrideProvider override: exercises the real compiled
+    // default through effectiveTierProvider.
+    final container = ProviderContainer(overrides: [
+      settingsControllerProvider.overrideWith(
+        () => _FixedSettings(
+            const AppSettings(tierOverride: TierOverride.celebrity)),
+      ),
+    ]);
+    addTearDown(container.dispose);
+    expect(container.read(effectiveTierProvider), SubscriptionTier.free);
+  },
+      skip: const bool.hasEnvironment('ALLOW_TIER_OVERRIDE')
+          ? 'ALLOW_TIER_OVERRIDE is set; there is no default to assert'
+          : null);
+
+  test('store profile (ALLOW_TIER_OVERRIDE=false) reports the guard off', () {
+    // Meaningful only under `--dart-define=ALLOW_TIER_OVERRIDE=false`.
+    expect(kAllowTierOverride, isFalse);
+  },
+      skip: const bool.fromEnvironment('ALLOW_TIER_OVERRIDE',
+              defaultValue: true)
+          ? 'run with --dart-define=ALLOW_TIER_OVERRIDE=false to exercise'
+          : null);
+
+  test('personal profile (ALLOW_TIER_OVERRIDE=true) reports the guard on', () {
+    // Meaningful only under `--dart-define=ALLOW_TIER_OVERRIDE=true`.
+    expect(kAllowTierOverride, isTrue);
+  },
+      skip: !const bool.fromEnvironment('ALLOW_TIER_OVERRIDE')
+          ? 'run with --dart-define=ALLOW_TIER_OVERRIDE=true to exercise'
           : null);
 }

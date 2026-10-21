@@ -2,7 +2,8 @@
 #
 # Three profiles, each an EXPLICIT dart-define set -- the old wrapper passed no
 # ALLOW_TIER_OVERRIDE at all, so every "release" build inherited the Dart
-# default (true) and a store artifact could ship the paid-tier override.
+# default (then true, now false) and a store artifact could ship the paid-tier
+# override. The profiles stay explicit so the result never depends on the default.
 #
 #   personal : the operator's own phones. Tier override ALLOWED (the switch
 #              exists so paid screens can be exercised without Stripe test

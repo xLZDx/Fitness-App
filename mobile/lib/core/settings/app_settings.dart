@@ -73,9 +73,10 @@ extension AppLanguageX on AppLanguage {
 /// It used to ship unconditionally, and the argument written here was that "a
 /// switch that only works in a build the operator never installs is not a test
 /// tool". That is still true of `kDebugMode`, and it is why the guard is a
-/// dart-define instead: `kAllowTierOverride` defaults to TRUE, so the operator
-/// keeps the switch in every build they make, and a store build turns it off
-/// with `--dart-define=ALLOW_TIER_OVERRIDE=false`. The guard lives at
+/// dart-define instead: `kAllowTierOverride` defaults to FALSE, so the operator
+/// opts in per build with `--dart-define=ALLOW_TIER_OVERRIDE=true` (the
+/// personal/test build profiles and `run_with_debug.ps1 -AllowTierOverride`
+/// do), and a store build passes `--dart-define=ALLOW_TIER_OVERRIDE=false`. The guard lives at
 /// `effectiveTierProvider`, not in Settings — hiding the toggle would leave the
 /// read site honouring a value already stored from before.
 enum TierOverride { off, standard, celebrity }

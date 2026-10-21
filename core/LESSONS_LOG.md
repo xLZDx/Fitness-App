@@ -1565,3 +1565,25 @@ Facts: GPT-PM found 5 MAJOR gaps in my first drafts: the queue criteria allowed 
 Root cause: I wrote acceptance criteria around the happy path of the operator decision and did not ask for each criterion what test would fail if it were violated.
 Missed by: author; caught by the GPT-PM documentation gate.
 Rule next time: for every criterion write the failing scenario (crash, restart, reorder, background, account switch) before accepting it.
+## 2026-10-21 - Commit: chore(hardening): tier override off by default, voice parser whole-word matching
+
+Kind: SHORTCOMING.
+Facts: the tier override shipped with default true and the voice parser used substring matching for every phrase ("go" fired inside "good"). Evidence: core/changes/2026-10-21-v1-hardening.md.
+Root cause: a convenience default chosen for the operator workflow, and a parser written without word boundaries; an existing guard test even asserted the unsafe default.
+Layer: author and tests missed it (a test pinned the default to true); caught by the hardening review.
+Rule next time: security-relevant flags default to the safe value and are opted into explicitly; text matchers use whole-word matching and are tested with near-miss words. No tests were run by the author for this change; they are owed by the test agents.
+
+## 2026-10-21 - Commit: test(hardening): tier override default and voice parser whole-word tests
+Kind: SHORTCOMING.
+Facts: while writing the voice test I broke my own file with an apostrophe inside a single-quoted Dart string (compile error, first run red); scripted writes also changed nothing else. Evidence: core/changes/2026-10-21-v1-hardening-test-results.md. All 10 relevant test files green in three define configurations afterward.
+Root cause: scripted escaping of quotes through a shell heredoc (known gotcha).
+Layer: caught by the test run itself.
+Rule next time: write Dart test source with Edit/Write, not heredoc scripts; test define-dependent defaults under unset, =false and =true.
+
+## 2026-10-21 - Commit: chore(hardening): apostrophe variants and review record
+
+Kind: SHORTCOMING.
+Facts: my normaliser handled only U+2019; the reviewer found U+2018 and U+02BC fall apart into separators.
+Root cause: I handled the one variant I had in mind instead of the class of apostrophe characters.
+Missed by: author; caught by the flutter reviewer.
+Rule next time: when normalising a character class, enumerate the whole Unicode family, not the single example.

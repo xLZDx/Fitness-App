@@ -120,12 +120,18 @@ final entitlementResolvedProvider = Provider<bool>(
 /// passing while proving nothing about the shipped build. A define is the same
 /// value in both, and the test command sets it explicitly.
 ///
-/// Default true, deliberately. This is personal-use software and the switch
-/// exists because the paid surfaces could not be exercised at all; defaulting
-/// it off would restore that. Store builds pass
-/// `--dart-define=ALLOW_TIER_OVERRIDE=false`.
+/// Default FALSE: a build that does not say otherwise never grants a paid tier
+/// from the on-device switch. Debug and dev workflows that need to exercise paid
+/// screens opt in explicitly with `--dart-define=ALLOW_TIER_OVERRIDE=true`
+/// (`scripts/dev/run_with_debug.ps1 -AllowTierOverride`; the personal and test
+/// profiles of `scripts/dev/build_release_profile.ps1` pass it too). Store
+/// builds pass `--dart-define=ALLOW_TIER_OVERRIDE=false` explicitly as well.
+///
+/// This is not a security boundary: release builds are still debug-signed while
+/// no `key.properties` exists, so anyone can build with the define set to true.
+/// The default only guarantees that an unconfigured build does not grant a tier.
 const bool kAllowTierOverride =
-    bool.fromEnvironment('ALLOW_TIER_OVERRIDE', defaultValue: true);
+    bool.fromEnvironment('ALLOW_TIER_OVERRIDE', defaultValue: false);
 
 /// The same value, reachable from a test.
 ///

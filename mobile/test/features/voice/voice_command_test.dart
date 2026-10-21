@@ -49,4 +49,68 @@ void main() {
       expect(parseCommand('quack quack').kind, VoiceCommandKind.unknown);
     });
   });
+
+  group('parseCommand whole-word matching', () {
+    const accepted = <String, VoiceCommandKind>{
+      'Go': VoiceCommandKind.startSet,
+      'go!': VoiceCommandKind.startSet,
+      'ok go now': VoiceCommandKind.startSet,
+      'Start set!': VoiceCommandKind.startSet,
+      'Set done.': VoiceCommandKind.doneSet,
+      'rest now': VoiceCommandKind.startRest,
+      'skip rest': VoiceCommandKind.skipRest,
+      "what's next?": VoiceCommandKind.whatsNext,
+      'what’s next': VoiceCommandKind.whatsNext,
+      'what‘s next': VoiceCommandKind.whatsNext,
+      'whatʼs next': VoiceCommandKind.whatsNext,
+      'stop': VoiceCommandKind.cancel,
+      'help': VoiceCommandKind.help,
+    };
+    accepted.forEach((phrase, kind) {
+      test('accepts "$phrase" as ${kind.name}', () {
+        expect(parseCommand(phrase).kind, kind);
+      });
+    });
+
+    test('accepts "log 40 kg" as weight 40', () {
+      final c = parseCommand('log 40 kg');
+      expect(c.kind, VoiceCommandKind.logWeight);
+      expect(c.numericArg, 40.0);
+    });
+
+    test('accepts "10 reps" as reps 10', () {
+      final c = parseCommand('10 reps');
+      expect(c.kind, VoiceCommandKind.logReps);
+      expect(c.numericArg, 10.0);
+    });
+
+    const rejected = <String, VoiceCommandKind>{
+      'good': VoiceCommandKind.startSet,
+      'ago': VoiceCommandKind.startSet,
+      'mango': VoiceCommandKind.startSet,
+      'gone': VoiceCommandKind.startSet,
+      'undone': VoiceCommandKind.doneSet,
+      'stopped': VoiceCommandKind.cancel,
+      'nonstop': VoiceCommandKind.cancel,
+      'helpful': VoiceCommandKind.help,
+      'interest now': VoiceCommandKind.startRest,
+      'timer started': VoiceCommandKind.startRest,
+      'catalog 40 kg': VoiceCommandKind.logWeight,
+    };
+    rejected.forEach((phrase, oldKind) {
+      test('"$phrase" no longer triggers ${oldKind.name}', () {
+        final c = parseCommand(phrase);
+        expect(c.kind, isNot(oldKind));
+        expect(c.kind, VoiceCommandKind.unknown);
+      });
+    });
+
+    test(
+        "KNOWN GAP (product decision): 'let's go home' still parses as "
+        'startSet because "go" is a standalone word', () {
+      // Documents current behaviour, not desired behaviour. Closing it needs a
+      // stricter grammar (short-utterance or exact matching).
+      expect(parseCommand("let's go home").kind, VoiceCommandKind.startSet);
+    });
+  });
 }

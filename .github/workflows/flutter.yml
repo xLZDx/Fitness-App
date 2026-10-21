@@ -80,9 +80,9 @@ jobs:
       - name: flutter test
         run: flutter test --no-pub --reporter=expanded
 
-      # CR-04. The suite above runs with the Dart default (override allowed).
-      # The STORE build compiles ALLOW_TIER_OVERRIDE=false, so the guard is
-      # exercised under that exact configuration too.
+      # CR-04. The suite above runs with the Dart default (override OFF).
+      # The STORE build compiles ALLOW_TIER_OVERRIDE=false explicitly, so the
+      # guard is exercised under that exact configuration too.
       - name: tier-override guard under the store define
         run: flutter test --no-pub --dart-define=ALLOW_TIER_OVERRIDE=false test/features/subscription test/features/settings
 
