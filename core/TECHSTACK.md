@@ -14,7 +14,7 @@ functions/package.json, mobile/android build files. Current-state only.
 - Firestore security rules + indexes at repo root (firestore.rules, firestore.indexes.json)
 
 ## Cloud Functions (functions/)
-- Runtime Node 20 · TypeScript 5.4 · firebase-admin 12.6 · firebase-functions 6.0
+- Runtime Node 22 · TypeScript 5.4 · firebase-admin 12.6 · firebase-functions 6.0
 - Purpose: Stripe Checkout + webhook bridge (stripe 17.4)
 
 ## On-device ML / sensors

@@ -59229,3 +59229,7 @@ Decision: tests that need the Day-3 modal override day3WelcomeModalEnabledProvid
 ## 2026-10-21 - Commit: docs: preserve the uncommitted work of two retired worktrees
 
 Decision: put the unsaved AI Coach Phase 9 documents and the Body Scan sprint state into one documentation commit on master before the two worktrees are removed; archive the Body Scan EXIF probe as a non-compiled text file instead of adding a scratch test to the suite; keep master's own docs/sdlc/STATE.md. Evidence: operator instruction of 2026-10-21; core/changes/2026-10-21-preserve-trash-worktree-docs.md.
+
+## 2026-10-21 - Commit: chore(functions): migrate Cloud Functions runtime to Node.js 22
+
+Decision: move both Cloud Functions codebases (default and equipment-identity) from Node 20 to Node 22 in firebase.json, package.json engines, lock-file root engines and the functions CI node-version, because Google decommissions Node 20 on 2026-10-30. No dependency was changed (lock-file engine ranges allow Node 22). Deploy and emulator runs are left to the operator. Evidence: core/changes/2026-10-21-functions-node22.md.

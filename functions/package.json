@@ -13,7 +13,7 @@
     "test:e2e": "node scripts/run_emulator_tests.js jest.e2e.config.js firestore,auth demo-fitness-e2e"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {

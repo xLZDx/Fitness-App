@@ -1528,3 +1528,10 @@ Facts: two worktrees under Trash held uncommitted documents (an AI Coach edit an
 Root cause: work was left uncommitted when the sessions ended and the worktrees were then treated as disposable.
 Missed by: author; caught by the pre-removal check for uncommitted files.
 Rule next time: before removing a worktree, check git status including untracked files and commit or archive anything found.
+
+## 2026-10-21 - Commit: chore(functions): migrate Cloud Functions runtime to Node.js 22
+
+Kind: SUCCESS.
+Facts: a repo-wide search found the Node 20 pin in firebase.json (two sections), two package.json engines, two lock-file root engines, nine CI node-version entries and two docs; the second codebase (functions-equipment-identity) was not named in the request but shares the same runtime pin and deploy.
+Why it worked: searching the whole repo instead of only the named files, and reading dependency engine ranges from the lock files.
+Rule next time: a runtime bump must cover every codebase in firebase.json and the lock-file root engines, not just the package named in the request.

@@ -17,7 +17,7 @@
     "generate:p0-brand-candidates": "npm run build && node scripts/generate_p0_brand_candidates.js"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {
