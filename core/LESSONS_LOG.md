@@ -1594,3 +1594,11 @@ Rule next time: when normalising a character class, enumerate the whole Unicode 
 - Root cause: an allow-list-by-exclusion design relies on every new server-only collection being remembered in two lists; neither tests nor reviewers had a drift check.
 - Missed by: tests and the author of the rules; caught by an independent review.
 - Next time: the exclusion lists are parsed from the rules inside the test so drift fails the suite; fix the rules by replacing the wildcard with explicit per-collection blocks or a default deny (owner of the rules decides). Default port 8080 failed to start the emulator on this host; use FIREBASE_EMULATOR_CONFIG with a free port.
+
+## 2026-10-21 - Commit: test(rules): address code gate round 1 (hard-coded inventory, list and nested denial)
+
+Kind: SHORTCOMING.
+Facts: my first rules tests derived the protected set and the expected policy from the rules they guard, so weakening a rule removed assertions instead of failing them; only single-document gets were tested, not queries or nested paths.
+Root cause: I used the parser to avoid duplicating names and did not ask what happens to the tests when the guarded rule is removed.
+Missed by: author and the first test run; caught by the GPT-PM gate.
+Rule next time: security tests keep the expected policy as an independent constant; a looser rule must fail an assertion, never shrink the case list.

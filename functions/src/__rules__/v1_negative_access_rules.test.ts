@@ -11,8 +11,11 @@
  * path, and (c)/(d) records the CURRENT behavior for unlisted names as a known
  * gap, so nobody mistakes the allow-list for a deny-list.
  *
- * The lists are parsed out of firestore.rules at run time, never copied here,
- * so this suite fails when the rules and the test drift apart.
+ * The lists are parsed out of firestore.rules at run time so the suite notices
+ * names the rules add, but the parser is NOT the authority: a hard-coded
+ * mandatory inventory (ten server-only-write collections, five of them
+ * owner-read-denied) carries unconditional assertions, so a more permissive
+ * rule fails a test instead of removing one.
  *
  * Project id is its own ("demo-fitness-negative-access") so seeded data never
  * leaks into the other rules suites sharing the emulator.
@@ -25,7 +28,16 @@ import {
 } from "@firebase/rules-unit-testing";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  collectionGroup,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 const RULES_PATH = resolve(__dirname, "../../../firestore.rules");
 const RULES = readFileSync(RULES_PATH, "utf8");
@@ -94,6 +106,48 @@ const SERVER_ONLY_WRITE = WRITE_EXCLUDED.filter(writeIsServerOnly);
 const SERVER_ONLY_READ = WRITE_EXCLUDED.filter(readIsServerOnly);
 
 // ---------------------------------------------------------------------------
+// EXPECTED POLICY (hard-coded, independent of the parser).
+//
+// The parser above only OBSERVES the rules. The lists below are the policy the
+// product relies on; a rule change that makes a mandatory collection more
+// permissive must FAIL an assertion here, never silently drop one. The parser
+// may add extra names on top, it is not the authority.
+// Verified against firestore.rules on 2026-10-21 (see the change record).
+// ---------------------------------------------------------------------------
+
+/** Server-only-write: no client (owner included) may create/update/delete. */
+const MANDATORY_SERVER_WRITE_ONLY = [
+  "subscription",
+  "usage",
+  "receipts",
+  "recognised_models",
+  "equipment_identity_sessions",
+  "equipment_identity_latest_session",
+  "equipment_identity_telemetry",
+  "activity_streams",
+  "activity_settings",
+  "activity_tombstones",
+];
+
+/** Of those, the ones whose OWNER READ is denied today. */
+const MANDATORY_OWNER_READ_DENIED = [
+  "usage",
+  "receipts",
+  "equipment_identity_sessions",
+  "equipment_identity_latest_session",
+  "equipment_identity_telemetry",
+];
+
+/** Of those, the ones the owner may still READ today (never write). */
+const MANDATORY_OWNER_READ_ALLOWED = MANDATORY_SERVER_WRITE_ONLY.filter(
+  (n) => !MANDATORY_OWNER_READ_DENIED.includes(n),
+);
+
+/** Mandatory names plus whatever else the parser classifies as server-only. */
+const WRITE_DENIED_NAMES = [...new Set([...MANDATORY_SERVER_WRITE_ONLY, ...SERVER_ONLY_WRITE])];
+const READ_DENIED_NAMES = [...new Set([...MANDATORY_OWNER_READ_DENIED, ...SERVER_ONLY_READ])];
+
+// ---------------------------------------------------------------------------
 // Emulator plumbing
 // ---------------------------------------------------------------------------
 
@@ -124,6 +178,13 @@ async function seed(name: string, id = "seed"): Promise<void> {
   });
 }
 
+/** Seed users/OWNER/<name>/seed/sub/n1 (a document two levels under the collection). */
+async function seedNested(name: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), `users/${OWNER}/${name}/seed/sub/n1`), SEED);
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Drift guards: the parsed lists must still contain what the product relies on.
 // ---------------------------------------------------------------------------
@@ -137,18 +198,32 @@ describe("parsed exclusion lists (drift guard)", () => {
     for (const n of READ_EXCLUDED) expect(WRITE_EXCLUDED).toContain(n);
   });
 
-  test("the known server-only collections are still classified server-only", () => {
-    for (const n of [
-      "subscription",
-      "usage",
-      "receipts",
-      "recognised_models",
-      "equipment_identity_sessions",
-      "equipment_identity_latest_session",
-      "equipment_identity_telemetry",
-    ]) {
-      expect(SERVER_ONLY_WRITE).toContain(n);
-    }
+  test("the mandatory inventory has exactly the ten expected names", () => {
+    expect(MANDATORY_SERVER_WRITE_ONLY).toHaveLength(10);
+    expect(new Set(MANDATORY_SERVER_WRITE_ONLY).size).toBe(10);
+  });
+
+  test.each(MANDATORY_SERVER_WRITE_ONLY.map((n) => [n]))(
+    "%s: is on the wildcard WRITE exclusion list and classified server-only",
+    (name) => {
+      expect(WRITE_EXCLUDED).toContain(name);
+      expect(SERVER_ONLY_WRITE).toContain(name);
+    },
+  );
+
+  test.each(MANDATORY_OWNER_READ_DENIED.map((n) => [n]))(
+    "%s: is on the wildcard READ exclusion list and its block denies read",
+    (name) => {
+      expect(READ_EXCLUDED).toContain(name);
+      expect(SERVER_ONLY_READ).toContain(name);
+    },
+  );
+
+  test("owner-readable mandatory names are NOT on the read exclusion list or have an owner-read grant", () => {
+    // subscription is read through the wildcard; the rest through a dedicated
+    // owner-read block. Either way the observed classification is "not read
+    // denied"; the behavior itself is asserted in (a).
+    for (const n of MANDATORY_OWNER_READ_ALLOWED) expect(SERVER_ONLY_READ).not.toContain(n);
   });
 });
 
@@ -157,7 +232,7 @@ describe("parsed exclusion lists (drift guard)", () => {
 // ---------------------------------------------------------------------------
 
 describe("(a) owner client cannot write server-only collections", () => {
-  test.each(SERVER_ONLY_WRITE.map((n) => [n]))("%s: create, update, delete denied", async (name) => {
+  test.each(WRITE_DENIED_NAMES.map((n) => [n]))("%s: create, update, delete denied", async (name) => {
     await seed(name);
     const db = asOwner();
     await assertFails(setDoc(doc(db, `users/${OWNER}/${name}/new-doc`), { x: 1 }));
@@ -168,16 +243,35 @@ describe("(a) owner client cannot write server-only collections", () => {
     await assertFails(setDoc(doc(db, `users/${OWNER}/${name}/seed/nested/n1`), { x: 4 }));
   });
 
-  test.each(SERVER_ONLY_READ.map((n) => [n]))("%s: owner read denied", async (name) => {
-    await seed(name);
-    await assertFails(getDoc(doc(asOwner(), `users/${OWNER}/${name}/seed`)));
-  });
+  test.each(READ_DENIED_NAMES.map((n) => [n]))(
+    "%s: owner get, list and nested read denied",
+    async (name) => {
+      await seed(name);
+      await seedNested(name);
+      const db = asOwner();
+      await assertFails(getDoc(doc(db, `users/${OWNER}/${name}/seed`)));
+      await assertFails(getDocs(collection(db, `users/${OWNER}/${name}`)));
+      await assertFails(getDoc(doc(db, `users/${OWNER}/${name}/seed/sub/n1`)));
+      await assertFails(getDocs(collection(db, `users/${OWNER}/${name}/seed/sub`)));
+    },
+  );
 
-  test("subscription: owner may still READ it (documented), never write it", async () => {
-    expect(READ_EXCLUDED).not.toContain("subscription");
-    await seed("subscription", "main");
-    await assertSucceeds(getDoc(doc(asOwner(), `users/${OWNER}/subscription/main`)));
-    await assertFails(setDoc(doc(asOwner(), `users/${OWNER}/subscription/main`), { tier: "pro" }));
+  test.each(MANDATORY_OWNER_READ_ALLOWED.map((n) => [n]))(
+    "%s: owner may still READ it (get and list), never write it",
+    async (name) => {
+      await seed(name);
+      const db = asOwner();
+      await assertSucceeds(getDoc(doc(db, `users/${OWNER}/${name}/seed`)));
+      await assertSucceeds(getDocs(collection(db, `users/${OWNER}/${name}`)));
+      await assertFails(setDoc(doc(db, `users/${OWNER}/${name}/seed`), { tier: "pro" }));
+    },
+  );
+
+  test("collection-group query over a server-only name is denied to the owner", async () => {
+    for (const name of MANDATORY_SERVER_WRITE_ONLY) {
+      await seed(name);
+      await assertFails(getDocs(collectionGroup(asOwner(), name)));
+    }
   });
 });
 
@@ -186,7 +280,47 @@ describe("(a) owner client cannot write server-only collections", () => {
 // ---------------------------------------------------------------------------
 
 describe("(b) other user and signed-out client are denied on every excluded path", () => {
-  const ALL = [...new Set([...WRITE_EXCLUDED, ...READ_EXCLUDED])];
+  // Mandatory names are always included, whatever the parser discovers. The
+  // conditional-write collections (profile, body_scans, weight_entries, ...)
+  // come from the parser and are covered here for foreign/signed-out access.
+  const ALL = [...new Set([...MANDATORY_SERVER_WRITE_ONLY, ...WRITE_EXCLUDED, ...READ_EXCLUDED])];
+
+  test.each(ALL.map((n) => [n]))("%s: other user and signed-out client denied collection list", async (name) => {
+    await seed(name);
+    for (const db of [asOther(), signedOut()]) {
+      await assertFails(getDocs(collection(db, `users/${OWNER}/${name}`)));
+    }
+  });
+
+  test.each(ALL.map((n) => [n]))(
+    "%s: other user and signed-out client denied on a nested path (get, list, create, overwrite, update, delete)",
+    async (name) => {
+      await seed(name);
+      await seedNested(name);
+      for (const db of [asOther(), signedOut()]) {
+        const ref = doc(db, `users/${OWNER}/${name}/seed/sub/n1`);
+        await assertFails(getDoc(ref));
+        await assertFails(getDocs(collection(db, `users/${OWNER}/${name}/seed/sub`)));
+        await assertFails(setDoc(doc(db, `users/${OWNER}/${name}/seed/sub/fresh`), { x: 1 }));
+        await assertFails(setDoc(ref, { x: 2 }));
+        await assertFails(updateDoc(ref, { x: 3 }));
+        await assertFails(deleteDoc(ref));
+      }
+    },
+  );
+
+  test.each(ALL.map((n) => [n]))(
+    "%s: OWNER client cannot write a nested path under an excluded collection",
+    async (name) => {
+      await seedNested(name);
+      const db = asOwner();
+      const ref = doc(db, `users/${OWNER}/${name}/seed/sub/n1`);
+      await assertFails(setDoc(doc(db, `users/${OWNER}/${name}/seed/sub/fresh`), { x: 1 }));
+      await assertFails(setDoc(ref, { x: 2 }));
+      await assertFails(updateDoc(ref, { x: 3 }));
+      await assertFails(deleteDoc(ref));
+    },
+  );
 
   test.each(ALL.map((n) => [n]))("%s: other authenticated user denied read/create/update/delete", async (name) => {
     await seed(name);
