@@ -1618,3 +1618,9 @@ Facts: GPT-PM found 3 MAJOR gaps in my voice decision draft: acceptance tests fo
 Root cause: I wrote the operator's idea down as a behavior list and did not test it against the failure paths (negation inside the state, backgrounding, late callbacks) or against the scope of the queue I had approved the day before.
 Missed by: author; caught by the GPT-PM documentation gate.
 Rule next time: for any new interaction state, list entry, exit and invalidation events and check each referenced contract's scope before writing the criteria.
+
+## 2026-10-22 - Commit: docs(v1): package reconciliation with the four amendments
+
+Kind: NEUTRAL.
+Facts: the repeat package review (after the amendments) still found 3 BLOCKER, because amendments had been written as companion notes while the package registers kept contradicting rows; the PM Bridge send also failed three times with 12 attachments and worked once as a single bundled file after a daemon restart.
+Rule next time: when a decision supersedes a package, write the supersession map in the same change; bundle many inputs into one attachment.
