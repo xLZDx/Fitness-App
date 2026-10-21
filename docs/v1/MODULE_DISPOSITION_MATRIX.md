@@ -16,7 +16,7 @@ v1 focus areas used as the yardstick: gym/home/outdoor fitness, nutrition, body,
 | safety | 7 | fitness | age policy, cautious selection |
 | form_check | 40 | fitness, body | camera-based form check |
 | posture | 4 | body | static posture check |
-| modes | 17 | platform | mode chooser/switcher; outdoor cycling and hiking stay closed by the capability policy |
+| modes | 17 | platform | mode chooser/switcher; intent: outdoor cycling and hiking stay closed by the capability policy (the recording row shows the start screen still lists them, so closure is intended, not demonstrated) |
 | home | 8 | platform | Day-3 modal is off by default |
 | activity | 57 | fitness | unified activity journal |
 | recording | 53 | fitness | GPS recorder; the start screen still lists hiking and cycling (`kGpsStartSports`), which v1 defers (package rows FU-AC-084/085) |
@@ -53,7 +53,7 @@ v1 focus areas used as the yardstick: gym/home/outdoor fitness, nutrition, body,
 | marketplace | 4 | `/coaches` joined `isDemoGatedPath`; Profile Coaching section hidden | PR 15 |
 | community | 4 | `/community` demo-gated; Profile Community section hidden | existing gate |
 | celebrity_plans | 4 | `/celebrity-plans` demo-gated | existing gate |
-| social_feed | 4 | reached only through `/community` | existing gate |
+| social_feed | 4 | appears to be reached only through `/community` (not proved by the import scan) | existing gate |
 | catalog | 5 | `/contribute` and `/moderate` demo-gated (video contribution and moderation) | existing gate |
 | moments | 5 | Day-3 modal off by default (`day3WelcomeModalEnabledProvider`); the injury-filter moment has no consumer | PR 16 |
 
@@ -67,8 +67,8 @@ v1 focus areas used as the yardstick: gym/home/outdoor fitness, nutrition, body,
 
 | Module | Files | Evidence |
 |---|---|---|
-| buddy | 1 | no importer anywhere in `mobile/lib` (BLE presence sharing) |
-| sdk_export | 1 | no importer anywhere in `mobile/lib` (white-label SDK foundations) |
+| buddy | 1 | no importer found by the `features/buddy` path search in `mobile/lib`; relative imports not checked (BLE presence sharing) |
+| sdk_export | 1 | no importer found by the `features/sdk_export` path search in `mobile/lib`; relative imports not checked (white-label SDK foundations) |
 
 ## Not in the tree yet (v1 areas with no module)
 

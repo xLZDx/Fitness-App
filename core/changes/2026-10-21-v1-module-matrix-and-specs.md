@@ -6,6 +6,11 @@ Three new documents under `docs/v1/`:
 - `LOCAL_QUEUE_DECISION.md`: the operator decision to use a durable local queue for CompleteSet, AddEligibleExercise and SetDifficulty, replacing the package's online-only Option A, with eight acceptance criteria.
 - `ATTENDANCE_SPEC_AMENDMENT.md`: first delivery of gym attendance is foreground only; background geofences are a later step gated on a Google Play policy assessment; six measurable acceptance criteria proposed.
 
+## Gate round 1 remediation (GPT-PM: 0 BLOCKER, 5 MAJOR, 2 MINOR)
+- LOCAL_QUEUE_DECISION: criteria expanded from 8 to 14 (atomic durable acceptance, no silent eviction and fail-closed at capacity, stable IDs, one logical set one completion, per-session ordering, receipt capacity vs 256 proposal, UID isolation, sign-out outcomes with in-flight fencing, deletion ordering, offline export).
+- ATTENDANCE_SPEC_AMENDMENT: added class definitions (automatic detection / confirmation suggestion / unknown), separate recall and precision for automatic detection, frozen thresholds and labeling rules before the pilot, negative foreground-only tests (background, lock screen, termination, GPS recorder service), named non-attendance journeys per permission state.
+- MODULE_DISPOSITION_MATRIX: qualified unverified exclusivity claims and separated intended closure of cycling/hiking from demonstrated closure.
+
 ## Why
 Operator answers of 2026-10-21 to the independent review of the FitnessUp v1 rebaseline package, which listed these as the open items before implementation.
 

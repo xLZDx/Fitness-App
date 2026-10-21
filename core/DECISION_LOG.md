@@ -59245,3 +59245,7 @@ Decision: accept the three MINOR findings of the reliability review (test not wi
 ## 2026-10-21 - Commit: docs(v1): module disposition matrix, local-queue decision and attendance amendment
 
 Decision: record the operator decisions of 2026-10-21 as documents: durable local queue for the three workout commands (replaces online-only Option A), foreground-first gym attendance with background geofences deferred behind a Play policy check, and a disposition for each of the 46 feature modules. Evidence: operator answers of 2026-10-21; core/changes/2026-10-21-v1-module-matrix-and-specs.md.
+
+## 2026-10-21 - Commit: docs(v1): address documentation gate round 1
+
+Decision: accept all 5 MAJOR and 2 MINOR findings of the GPT-PM documentation gate and amend the three documents in one batch (14 queue criteria, 7 attendance criteria with explicit detection/suggestion classes, qualified matrix claims). Evidence: GPT-PM round 1 reply for head 6a0afd7e; core/changes/2026-10-21-v1-module-matrix-and-specs.md.

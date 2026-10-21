@@ -1557,3 +1557,11 @@ Rule next time: re-read the change record against the final tree before the revi
 Kind: NEUTRAL.
 Facts: the module matrix is built from names, doc comments and imports, not from running the app, so reachability of seven modules is still marked unverified; an earlier import-only scan had also missed relative imports.
 Rule next time: when classifying modules by imports, also grep relative import forms and state the method limits in the document.
+
+## 2026-10-21 - Commit: docs(v1): address documentation gate round 1
+
+Kind: SHORTCOMING.
+Facts: GPT-PM found 5 MAJOR gaps in my first drafts: the queue criteria allowed silent eviction and duplicate or reordered mutations, the attendance criteria had no failing test for foreground-only and counted suggestions as successes, and the lifecycle (sign-out, deletion, export) was underspecified.
+Root cause: I wrote acceptance criteria around the happy path of the operator decision and did not ask for each criterion what test would fail if it were violated.
+Missed by: author; caught by the GPT-PM documentation gate.
+Rule next time: for every criterion write the failing scenario (crash, restart, reorder, background, account switch) before accepting it.
