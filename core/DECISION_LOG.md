@@ -59260,3 +59260,10 @@ Decision: pin the new contract with tests (default false, store/personal profile
 ## 2026-10-21 - Commit: chore(hardening): apostrophe variants and review record
 
 Decision: fix the apostrophe variants from the flutter review; accept the other four MINOR findings (settings section visibility, plural phrase forms, go-again/go-back priority, record line reference) and leave them to the pending voice-grammar and UI decisions. Evidence: flutter-reviewer report for head 1391e412; core/changes/2026-10-21-v1-hardening.md.
+## 2026-10-21 - Commit: test: add negative-access rules tests for the users owner wildcard
+
+Decision: add tests only and record the gaps instead of changing firestore.rules in this commit. The exclusion lists are parsed from firestore.rules at test time, and the unlisted-sub-collection owner write and the unprotected `workout_command_policy/current` path are pinned as current behavior under tests named as known gaps; they flip when the rules are fixed. Evidence: core/changes/2026-10-21-firestore-negative-rules-tests.md (62 tests passed on the local emulator).
+
+## 2026-10-21 - Commit: test(rules): address code gate round 1 (hard-coded inventory, list and nested denial)
+
+Decision: accept the 3 MAJOR and 2 MINOR findings of the GPT-PM gate; protected-collection inventory and owner-read policy are now hard-coded in the test (parser only adds extras), plus collection-query and nested-path denial tests. Evidence: GPT-PM round 1 for head 722d4344; agent run 140 tests passed on the local emulator; core/changes/2026-10-21-firestore-negative-rules-tests.md.
