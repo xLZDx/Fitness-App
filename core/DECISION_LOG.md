@@ -59241,3 +59241,11 @@ Decision: add scripts/ci/test_functions_runtime_pin.py (pytest) asserting every 
 ## 2026-10-21 - Commit: chore(functions): fix review round 1 comment and record accepted minor findings
 
 Decision: accept the three MINOR findings of the reliability review (test not wired into CI, node scripts on runner default Node, one stale comment); fix the stale comment and the change record; list the operator actions (deploy both codebases before 2026-10-30, Node 22 container image). Evidence: reliability-reviewer report (0 BLOCKER, 0 MAJOR, 3 MINOR); core/changes/2026-10-21-functions-node22.md.
+
+## 2026-10-21 - Commit: docs(v1): module disposition matrix, local-queue decision and attendance amendment
+
+Decision: record the operator decisions of 2026-10-21 as documents: durable local queue for the three workout commands (replaces online-only Option A), foreground-first gym attendance with background geofences deferred behind a Play policy check, and a disposition for each of the 46 feature modules. Evidence: operator answers of 2026-10-21; core/changes/2026-10-21-v1-module-matrix-and-specs.md.
+
+## 2026-10-21 - Commit: docs(v1): address documentation gate round 1
+
+Decision: accept all 5 MAJOR and 2 MINOR findings of the GPT-PM documentation gate and amend the three documents in one batch (14 queue criteria, 7 attendance criteria with explicit detection/suggestion classes, qualified matrix claims). Evidence: GPT-PM round 1 reply for head 6a0afd7e; core/changes/2026-10-21-v1-module-matrix-and-specs.md.
