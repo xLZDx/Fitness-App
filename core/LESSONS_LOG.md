@@ -1504,3 +1504,11 @@ Kind: SUCCESS.
 Facts: the reviewer expected /home after /splash for a cold-start /donors deep link; the first run with a placeholder assertion showed the actual landing is /home, so the expectation was verified, not assumed. Gating +39, all five files +94.
 Why it worked: asserting a deliberately wrong value first exposed the real landing. Layer that found the gaps: reviewers.
 Rule next time: for redirect landings, read the actual value from a failing probe before pinning it; a pure-gate variant with a query string is meaningless because the live router strips it.
+
+## 2026-10-21 - Commit: feat(v1-scope): keep the Day-3 welcome modal off behind a default-off provider
+
+Kind: SHORTCOMING.
+Facts: I described the moments module to the operator from the doc comments as "a welcome plus a donation ask"; reading the widget and its strings showed the welcome IS the donation ask, and the injury-filter moment is unused. The operator's choice had been made on my inaccurate description and had to be re-asked.
+Root cause: summarised from comments without opening the widget and the l10n strings.
+Missed by: author; caught by the author before editing.
+Rule next time: before offering the operator a choice about a feature, open its UI and strings and grep its consumers.

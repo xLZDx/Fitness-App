@@ -7,6 +7,12 @@ final momentRepositoryProvider = Provider<MomentRepository>((ref) {
   return MockMomentRepository();
 });
 
+/// Whether Home may show the Day-3 welcome modal. Off in v1: the modal is
+/// entirely a Supporter-subscription ask, which is outside the v1 scope.
+/// Launch counting and the "settled" hand-off to the mode chooser still run.
+/// Tests override this to true to exercise the modal.
+final day3WelcomeModalEnabledProvider = Provider<bool>((ref) => false);
+
 /// Tiny notifier that triggers a moment-bookkeeping op (mark shown,
 /// bump counter) and exposes a simple `AsyncValue<void>` for the UI.
 class MomentController extends StateNotifier<AsyncValue<void>> {
