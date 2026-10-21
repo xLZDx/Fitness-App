@@ -1572,3 +1572,10 @@ Facts: the tier override shipped with default true and the voice parser used sub
 Root cause: a convenience default chosen for the operator workflow, and a parser written without word boundaries; an existing guard test even asserted the unsafe default.
 Layer: author and tests missed it (a test pinned the default to true); caught by the hardening review.
 Rule next time: security-relevant flags default to the safe value and are opted into explicitly; text matchers use whole-word matching and are tested with near-miss words. No tests were run by the author for this change; they are owed by the test agents.
+
+## 2026-10-21 - Commit: test(hardening): tier override default and voice parser whole-word tests
+Kind: SHORTCOMING.
+Facts: while writing the voice test I broke my own file with an apostrophe inside a single-quoted Dart string (compile error, first run red); scripted writes also changed nothing else. Evidence: core/changes/2026-10-21-v1-hardening-test-results.md. All 10 relevant test files green in three define configurations afterward.
+Root cause: scripted escaping of quotes through a shell heredoc (known gotcha).
+Layer: caught by the test run itself.
+Rule next time: write Dart test source with Edit/Write, not heredoc scripts; test define-dependent defaults under unset, =false and =true.
