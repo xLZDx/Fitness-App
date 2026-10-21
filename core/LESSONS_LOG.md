@@ -1551,3 +1551,9 @@ Facts: the migration commit left one nodejs20 comment in ts_dependency_probe.cjs
 Root cause: the grep covered runtime pins but the record was written before the test commit changed a comment.
 Missed by: author; caught by the reliability reviewer.
 Rule next time: re-read the change record against the final tree before the review request.
+
+## 2026-10-21 - Commit: docs(v1): module disposition matrix, local-queue decision and attendance amendment
+
+Kind: NEUTRAL.
+Facts: the module matrix is built from names, doc comments and imports, not from running the app, so reachability of seven modules is still marked unverified; an earlier import-only scan had also missed relative imports.
+Rule next time: when classifying modules by imports, also grep relative import forms and state the method limits in the document.
