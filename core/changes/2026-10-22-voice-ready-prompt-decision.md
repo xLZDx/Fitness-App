@@ -12,3 +12,10 @@ Documentation only. No source, test, build or rules file changes. The parser in 
 
 ## Verification state
 Documentation; nothing was executed. No speech engine, language list or noise corpus has been measured.
+
+## Gate round 1 remediation (GPT-PM: 0 BLOCKER, 3 MAJOR, 2 MINOR)
+- Whole-utterance readiness with negation/deferral precedence and an in-state adversarial set of at least 20 utterances (was missing in-state negative tests).
+- Microphone lifecycle: bounded window, visible indicator, context invalidation list, late/duplicate result rejection, no storage or out-of-window transmission.
+- StartSet separated from the durable CompleteSet queue; exactly-once consumption of the waiting context.
+- The "gap closed" wording changed to "intended to be closed, pending acceptance evidence".
+- The decision-log entry for the Firestore rules deferral is now a separate entry with its own source.

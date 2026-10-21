@@ -59270,4 +59270,8 @@ Decision: accept the 3 MAJOR and 2 MINOR findings of the GPT-PM gate; protected-
 
 ## 2026-10-22 - Commit: docs(v1): voice ready-prompt decision and editorial fixes
 
-Decision: start a set by voice through a "tell me when you are ready" prompt with free-form affirmative answers, active only in a waiting state, instead of a fixed phrase list with bare "go"; defer the two Firestore rules gaps until the local queue is implemented; folder cleanup rule for all projects saved to memory. Evidence: operator answers of 2026-10-22; core/changes/2026-10-22-voice-ready-prompt-decision.md.
+Decision: start a set by voice through a "tell me when you are ready" prompt with free-form affirmative answers, active only in a waiting state, instead of a fixed phrase list with bare "go". Evidence: operator answer of 2026-10-22; core/changes/2026-10-22-voice-ready-prompt-decision.md.
+
+## 2026-10-22 - Commit: docs(v1): voice ready-prompt decision and editorial fixes (separate operator decision)
+
+Decision: the two Firestore rules gaps pinned by the negative-rules tests (unlisted owner sub-collections writable; workout_command_policy/current unprotected) are deferred until the local queue is implemented. Evidence: operator answer of 2026-10-22 to the rules question; core/changes/2026-10-21-firestore-negative-rules-tests.md.
