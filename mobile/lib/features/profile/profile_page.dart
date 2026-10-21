@@ -157,37 +157,42 @@ class ProfilePage extends ConsumerWidget {
               ],
             ),
           ),
-          _SectionLabel(l10n.profileSectionCoaching),
-          HudPanel(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _profileTile(
-                  context,
-                  icon: Icons.people_alt_outlined,
-                  gradient: AppPalette.tileGradients[2],
-                  title: AppLocalizations.of(context).marketplaceCoaches,
-                  subtitle:
-                      AppLocalizations.of(context).profileBrowse11Sessions15Fee,
-                  onTap: () => context.push('/coaches'),
-                ),
-                // Demo-backed (Mock repository): hidden in release builds.
-                if (kDemoFeaturesEnabled) ...[
-                  _divider(context),
+          // v1 scope: the coach marketplace (Stripe Connect, demo listings) and
+          // celebrity plans are outside the nine v1 areas, so the whole section is
+          // hidden in release builds together with the demo-backed routes.
+          if (kDemoFeaturesEnabled) ...[
+            _SectionLabel(l10n.profileSectionCoaching),
+            HudPanel(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
                   _profileTile(
                     context,
-                    icon: Icons.star_outline,
-                    gradient: AppPalette.tileGradients[4],
-                    title: AppLocalizations.of(context)
-                        .celebrityplansCelebrityPlans,
-                    subtitle: AppLocalizations.of(context)
-                        .profileInKindDonatedProgrammes,
-                    onTap: () => context.push('/celebrity-plans'),
+                    icon: Icons.people_alt_outlined,
+                    gradient: AppPalette.tileGradients[2],
+                    title: AppLocalizations.of(context).marketplaceCoaches,
+                    subtitle:
+                        AppLocalizations.of(context).profileBrowse11Sessions15Fee,
+                    onTap: () => context.push('/coaches'),
                   ),
+                  // Demo-backed (Mock repository): hidden in release builds.
+                  if (kDemoFeaturesEnabled) ...[
+                    _divider(context),
+                    _profileTile(
+                      context,
+                      icon: Icons.star_outline,
+                      gradient: AppPalette.tileGradients[4],
+                      title: AppLocalizations.of(context)
+                          .celebrityplansCelebrityPlans,
+                      subtitle: AppLocalizations.of(context)
+                          .profileInKindDonatedProgrammes,
+                      onTap: () => context.push('/celebrity-plans'),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
+          ],
           // Demo-backed (Mock repository): hidden in release builds.
           if (kDemoFeaturesEnabled) ...[
             _SectionLabel(l10n.profileSectionCommunity),

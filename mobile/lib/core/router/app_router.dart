@@ -73,7 +73,8 @@ final _shellKey = GlobalKey<NavigatorState>();
 
 // /licences is public: an attribution surface that requires a login is not a
 // usable attribution surface.
-const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences', '/terms', '/privacy'};
+// v1 scope: /donors is no longer public; the donor wall needs a signed-in user.
+const _publicPaths = {'/splash', '/login', '/about', '/licences', '/terms', '/privacy'};
 
 // CR-03. Authenticated account actions: reachable by any SIGNED-IN user
 // before onboarding is finished, and never by a signed-out one (the sign-in
@@ -83,13 +84,19 @@ const _publicPaths = {'/splash', '/login', '/about', '/donors', '/licences', '/t
 const _accountActionPaths = {'/delete-account'};
 
 /// Routes backed by Mock repositories; see `kDemoFeaturesEnabled`.
-/// `/coaches` is deliberately absent: the marketplace has its own demo banner
-/// and booking is disabled.
+/// `/coaches` (the coach marketplace) joined the set for v1: it is outside the
+/// nine v1 areas, so a release build hides it like the other demo routes.
 @visibleForTesting
 bool isDemoGatedPath(String location) =>
-    const {'/community', '/celebrity-plans', '/contribute', '/moderate'}
-        .contains(location) ||
-    location.startsWith('/team/');
+    const {
+      '/community',
+      '/celebrity-plans',
+      '/contribute',
+      '/moderate',
+      '/coaches',
+    }.contains(location) ||
+    location.startsWith('/team/') ||
+    location.startsWith('/coaches/');
 
 /// Pure redirect resolution. Exposed for tests so the routing logic can be
 /// validated without spinning up the full widget tree.

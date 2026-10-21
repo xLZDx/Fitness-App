@@ -59193,3 +59193,7 @@ Decision: Merge the Gym Digital Twin backlog documentation package; clean merge,
 ## 2026-10-21 - Commit: record inherited defects backlog
 
 Decision: by operator decision the 2026-10-20 integration does not fix inherited defects; they are recorded in docs/BACKLOG_INHERITED_2026-10-21.md with severity guess, evidence, origin and an acceptance test. Docs only, no code changed.
+
+## 2026-10-21 - Commit: feat(v1-scope): hide the coach marketplace in release builds and make the donor wall login-only
+
+Decision: reuse the existing demo-feature gate for `/coaches` instead of a new mechanism; close `/donors` by removing it from the public paths; keep `buddy`, `sdk_export` and the moments notifications untouched. Evidence: operator answers and GO of 2026-10-21; core/changes/2026-10-21-v1-scope-hide-nonv1-entries.md.

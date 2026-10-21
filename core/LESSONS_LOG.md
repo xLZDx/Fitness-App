@@ -1459,3 +1459,10 @@ Docs-only branches can be verified by name-status plus marker grep without a tes
 ## 2026-10-21 - Commit: record inherited defects backlog
 
 Kind: SUCCESS. Facts: inherited failures and open items were collected from the integration state file and change records into one backlog file instead of being fixed inside the integration. Root cause of the approach: the operator rule that integration must not fix bugs. Layer: operator decision. Rule next time: record each inherited defect with evidence and an acceptance test at integration time.
+
+## 2026-10-21 - Commit: feat(v1-scope): hide the coach marketplace in release builds and make the donor wall login-only
+
+Kind: SUCCESS.
+Facts: an import scan of the eight out-of-v1 modules showed all of them are wired only in app_router.dart and three provider overrides in main.dart, and community/celebrity-plans were already behind kDemoFeaturesEnabled, so the change is two small edits.
+Why it worked: the entry points were found by grep before editing and the existing gate was reused.
+Rule next time: before adding a gate, grep for an existing one; list the tests that pin the old behavior in the change record so the test agents update them.
