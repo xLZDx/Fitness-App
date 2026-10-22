@@ -1708,3 +1708,10 @@ Rule next time: every guarantee must appear as a step in the ordered algorithm; 
 Kind: SUCCESS
 Facts: image built and tool versions verified (node v22.23.4, java 17, firebase 15.17.0). Lesson: a shell-policy hook scans heredoc text, so recursive-delete cleanup lines in a Dockerfile heredoc are blocked; use apt-get clean and the file tools.
 Correction (gate finding): first build used Java 17, which firebase-tools 15 does not support for emulators; fixed by moving to Debian trixie with OpenJDK 21 and proving an emulator start. Rule: verify a toolchain image by starting the tool it exists for, not by printing versions.
+
+## 2026-10-22 - Commit: docs(v1): close pre-implementation review findings
+Kind: FAILURE
+Facts: an independent review of the approved documentation found 2 BLOCKER and 11 MAJOR after nine gate rounds, among them a guarantee (no loss) that depended on an event channel without a recovery path and a deletion path that reopened the direct-write path.
+Root cause: the gate rounds reviewed deltas of my rewrites; nobody re-read the whole set against deletion, rollout order and failure of the mechanisms the design relies on.
+Missed by: author and the delta-based gate; caught by the broad independent review.
+Rule next time: before starting implementation run one whole-set review that asks, for every guarantee, what happens when its supporting mechanism fails permanently.

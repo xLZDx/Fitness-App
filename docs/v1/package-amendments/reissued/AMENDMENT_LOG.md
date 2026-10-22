@@ -63,3 +63,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 8 (GPT-PM, head e1bd259b: 0 BLOCKER, 2 MAJOR)
 - FU-AC-119 scenarios 21 and 24 extended for exact incarnation identity and resolved-entry redelivery.
+
+## Pre-implementation review (independent, master 03ea66e1)
+- FU-AC-119 gained scenario S25 (deletion fence) and S26 (trigger failure, watchdog, recovery), a scenario manifest and a two-run scenario 21; FU-AC-125 wording aligned with the no-export removal path.

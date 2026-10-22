@@ -34,3 +34,14 @@ The package's `18_CURRENT_INTEGRATION_BASELINE.md` (local integration candidate 
 - Behavior of each function on Node 22 under real traffic beyond the absence of error logs and one successful scheduled run (`reconcileAccountDeletions`); callable functions need App Check and authentication and were not invoked.
 - The Linux emulator image for rules and e2e runs still needs Node 22 (operator action from the runtime change record).
 - The actual source commit of each deployed archive; only compiled output was compared.
+
+## 6. Update after the master deployment (2026-10-22, later the same day)
+
+The statements above that the deployed code is not the code on `master` describe the state at the time of the runtime migration. Later on 2026-10-22 the dev project was brought to master `03ea66e1c8fa5190104a262bc4db2858d1c479f9`. Facts, each read from a tool result in that session:
+- A new runtime service account `fn-bodyscan@fitness-app-korostelev.iam.gserviceaccount.com` was created with `roles/iam.serviceAccountTokenCreator` (on itself), `roles/datastore.user` (project) and `roles/secretmanager.secretAccessor` on `ai-gateway-kill-switch`. No bucket, flag or new secret was created.
+- The release guard blocked a deploy of the two functions `analyzeMealPhoto` and `parseNutritionLabel` because it requires the full AI set to exist already. With explicit operator consent for that one named action they were deployed once through the firebase CLI with a temporary config kept outside the repository (guard hooks removed, build step kept). Nothing else bypassed the guard.
+- The four log-based metrics `ai_gateway_calls`, `ai_gateway_latency_ms`, `ai_gateway_quota_exhaustions` and `ai_gateway_total_tokens_per_call` were updated in place to the source definitions (six operations instead of four). The previous definitions are saved in `D:\tmp\deploy_node22\metrics_before\` (outside git).
+- `origin/phase1/main` was fast-forwarded from `0eee9ca2` to `03ea66e1` so that the guard's provenance check passes (rollback: move the ref back to `0eee9ca2`).
+- `node scripts/deploy/guarded_deploy.mjs --project fitness-app-korostelev --only functions:default` completed with the guard verdict PASS. The same command for both codebases failed in the equipment-identity predeploy (`P1_SNAPSHOT_STALE` and a Windows `%RESOURCE_DIR%` spawn error).
+- Result: 43 functions, all `ACTIVE` and `nodejs22`; 41 were created or updated around 15:14 UTC; `equipmentIdentityRecordTelemetry` and `equipmentIdentityResolveFromText` still run the older source and keep Cloud Run `maxScale = 100`.
+- Not re-checked after the deploy: the Cloud Scheduler 403 for the canary and enforcement-state jobs, behaviour of any new function (all feature flags are off by default), and whether the deployed configuration of each function matches its source. `core/PRODUCTION_MANIFEST.md` is still stale.

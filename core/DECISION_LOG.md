@@ -59334,3 +59334,7 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round8.md; validator OK.
 ## 2026-10-22 - Commit: chore: Node 22 emulator image
 
 Decision: provide the emulator toolchain as a small Dockerfile instead of an ad hoc local image, pinned to the firebase-tools version of functions/package.json. Evidence: core/changes/2026-10-22-emulator-node22-image.md (Java 21 after gate finding).
+
+## 2026-10-22 - Commit: docs(v1): close pre-implementation review findings
+
+Decision: accept all 13 findings of the independent pre-implementation review. The no-silent-loss guarantee is restated honestly (detection, watchdog, disclosure, recovery window, residual risk O-R2) instead of claiming lossless preservation; account deletion gets a fence that outlives the policy document; rules become a deploy prerequisite of the first callable. Evidence: core/changes/2026-10-22-v1-pre-implementation-review-fixes.md; validator OK.
