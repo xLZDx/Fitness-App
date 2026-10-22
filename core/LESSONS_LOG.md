@@ -1654,3 +1654,10 @@ Facts: the gate found 4 BLOCKER and 6 MAJOR even after internal reviewer rounds:
 Root cause: the design documents were written by separate agents from separate briefs; I did not designate one canonical contract before drafting, and internal reviews checked each document alone.
 Missed by: author and internal reviewers; caught by the GPT-PM gate.
 Rule next time: name the canonical contract document up front and give every sibling document the instruction to reference it; run one cross-document consistency review before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 2
+Kind: FAILURE
+Facts: GPT-PM round 2 found 2 BLOCKER and 5 MAJOR, all regressions or leftovers of my round 1 rewrite: the new quarantine design let a stale legacy delete remove newer typed sets, conversion skipped the tombstone, the provenance marker was forgeable, the count was not idempotent, effective_set had two deletion rules, three active acceptance rows still required the withdrawn denial policy, and UNKNOWN_EFFECT removal contradicted T17.
+Root cause: after rewriting the migration design I did not re-read every sibling rule that touches the same state (delete, conversion, counters) and did not grep the registers for the old policy wording; rows outside the earlier fixed list kept it.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: when a design decision changes a policy, grep all documents and registers for the old policy terms and walk every event type (create, update, delete, replay, retry) through the new rule before the gate.

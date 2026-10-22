@@ -59295,3 +59295,8 @@ Decision: migrate all 23 Cloud Functions to nodejs22 by redeploying each functio
 ## 2026-10-22 - Commit: docs(v1): address design gate round 1
 
 Decision: accept all 4 BLOCKER and 6 MAJOR findings; operator decided no silent loss of legacy writes, so the migration keeps DRAIN open-ended until every recently seen device has flushed, and the canonical workout state moves to a server-only typed document with a quarantine-and-repair trigger for old-client writes (recommended option accepted; the alternative would lose old-client writes); sealing the legacy path is not part of v1. Evidence: GPT-PM round 1 for head 380c143e; core/changes/2026-10-22-v1-design-registers-manifest.md.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 2
+
+Decision: accept both BLOCKER and all five MAJOR findings of round 2. A late legacy delete is quarantined as an intent and never deletes typed data without the owner confirming against the current revision; the tombstone is checked before any conversion; server provenance of projection writes is a digest, not a marker; the quarantine count is once-per-event; `effective_set` keeps an identity marker and erases values; removing an `UNKNOWN_EFFECT` entry without export is allowed only with a warning that the server may already hold it. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round2.md; validator OK.
