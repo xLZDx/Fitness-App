@@ -57,3 +57,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 6 (GPT-PM, head 7d619cb7: 1 BLOCKER, 5 MAJOR)
 - FU-AC-119 gained scenarios 18b, 22, 23, 24 and an extended 21; the validator rejects the withdrawn trigger-tombstone, ledger and divergent-entry wording in the protocol document.
+
+## Gate follow-up round 7 (GPT-PM, head 300bf9e7: 0 BLOCKER, 3 MAJOR)
+- FU-AC-119 scenarios 21, 22 and 24 extended (stripped-field server delete, OPEN certifies only the scan snapshot, marker expiry).

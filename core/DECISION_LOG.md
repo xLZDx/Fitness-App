@@ -59320,3 +59320,8 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round5.md; validator OK.
 
 Decision: keep eager conversion (accepted by the gate) and fix its edges: full-model no-op comparison, two-phase DRAIN entry proved by a clean scan, writerless server-converted sessions, a processed-event marker for idempotence, DELETE classification by generation, FU-AC-100 aligned. No product decision of the operator changed.
 Evidence: core/changes/2026-10-22-v1-design-gate-round6.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 7
+
+Decision: state exactly what the clean scan proves instead of claiming completeness, make event idempotence independent of an expiring marker (permanent ids plus a delivery-window invariant), and recognise server deletions by their recorded commit time. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round7.md; validator OK.

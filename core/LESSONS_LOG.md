@@ -1689,3 +1689,10 @@ Facts: GPT-PM round 6 found 1 BLOCKER and 5 MAJOR in the edges of the eager-conv
 Root cause: after the rewrite I did not grep every active test text for the withdrawn policy (FU-AC-100 line) and defined new server-created objects (converted sessions) without listing their writer state, idempotence key and boundary.
 Missed by: author; caught by the GPT-PM gate. The validator now forbids the withdrawn wording.
 Rule next time: when a policy is withdrawn add its wording to the validator in the same commit; for every server-created object define owner, idempotence key and completion boundary.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 7
+Kind: FAILURE
+Facts: GPT-PM round 7 found 3 MAJOR: P5 claimed a completeness the scan cannot prove, a 7-day marker TTL contradicted the idempotence claim, and DELETE classification relied on a before-image field that old clients strip.
+Root cause: I wrote guarantees ("complete", "changes nothing") without stating their time boundary and the retention of the evidence they depend on.
+Missed by: author; caught by the GPT-PM gate. Findings fell from 7 to 6 to 3, all MAJOR, which indicates convergence after the mechanism was removed in round 5.
+Rule next time: every guarantee names its time boundary and the lifetime of its evidence; identity of an event must not depend on fields that an old client can strip.
