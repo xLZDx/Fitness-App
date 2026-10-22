@@ -1715,3 +1715,10 @@ Facts: an independent review of the approved documentation found 2 BLOCKER and 1
 Root cause: the gate rounds reviewed deltas of my rewrites; nobody re-read the whole set against deletion, rollout order and failure of the mechanisms the design relies on.
 Missed by: author and the delta-based gate; caught by the broad independent review.
 Rule next time: before starting implementation run one whole-set review that asks, for every guarantee, what happens when its supporting mechanism fails permanently.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 1
+Kind: FAILURE
+Facts: the first gate on the review fixes returned 1 BLOCKER and 5 MAJOR. The no-silent-loss fix relied on a watchdog that compared projections with heads, which cannot see a failed event whose projection was overwritten by a later good write; the deletion fence was created before the irreversible state and could lock an account whose deletion was then cancelled; a new server-only collection (workout_gaps) was not added to the rules list; the quota check ran before the replay fence lookup; the scenario 21 oracle contradicted the generation fallback; the scenario manifest dropped 18b.
+Root cause: each fix was checked against its own finding, not against the lifecycle, the rules list, the step order and the inventory it touches.
+Missed by: author; caught by the gate.
+Rule next time: for every new guarantee name its authoritative inventory (what counts the things that may go missing), every collection it adds (rules, deletion, export), and the ordering against the surrounding steps; for every test oracle enumerate the full input matrix.

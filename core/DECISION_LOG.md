@@ -59338,3 +59338,7 @@ Decision: provide the emulator toolchain as a small Dockerfile instead of an ad 
 ## 2026-10-22 - Commit: docs(v1): close pre-implementation review findings
 
 Decision: accept all 13 findings of the independent pre-implementation review. The no-silent-loss guarantee is restated honestly (detection, watchdog, disclosure, recovery window, residual risk O-R2) instead of claiming lossless preservation; account deletion gets a fence that outlives the policy document; rules become a deploy prerequisite of the first callable. Evidence: core/changes/2026-10-22-v1-pre-implementation-review-fixes.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 1
+
+Decision: accept all six findings of the first gate on the review fixes. Existence of every accepted legacy write is accounted for by an audit-log inventory compared with processed-event markers (no dependence on the trigger); content recovery is best effort inside the exact point-in-time window and otherwise recorded as a disclosed gap; no account enters DRAIN unless the inventory is verified. Account deletion becomes: pre-checks, then one transaction (fence plus DELETING), forward recovery only, completion-anchored TTL. Quota is evaluated after the replay fence. Scenario inventory is frozen at 27 ids. Evidence: core/changes/2026-10-22-v1-pre-implementation-gate-round1.md; validator OK.

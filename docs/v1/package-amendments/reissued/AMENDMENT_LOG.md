@@ -66,3 +66,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation review (independent, master 03ea66e1)
 - FU-AC-119 gained scenario S25 (deletion fence) and S26 (trigger failure, watchdog, recovery), a scenario manifest and a two-run scenario 21; FU-AC-125 wording aligned with the no-export removal path.
+
+## Pre-implementation gate round 1 (GPT-PM, head d02b2d5b: 1 BLOCKER, 5 MAJOR)
+- FU-AC-119: S26 rewritten around the audit-log write inventory, S25 around the corrected deletion order, scenario 21 run B around the complete classification matrix, frozen inventory of 27 ids (S01 to S26 and S18b); FU-AC-125 gained the quota-boundary replay fixture case.
