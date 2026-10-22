@@ -1646,3 +1646,11 @@ Facts: my first deploy attempt for one function overwrote the live source object
 Root cause: I ran a deploy script without first checking how gcloud treats the archive ignore files and that the upload replaces the live object.
 Missed by: author; caught by the failed build and by my own diff check.
 Rule next time: before a production deploy, dry-run the packaging on a copy and download sources by explicit generation; run design drafts through internal reviewers before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 1
+
+Kind: SHORTCOMING.
+Facts: the gate found 4 BLOCKER and 6 MAJOR even after internal reviewer rounds: two draft documents defined incompatible queue states, one rule let a stale command resurrect a deleted session, and writer identity was a client-supplied string.
+Root cause: the design documents were written by separate agents from separate briefs; I did not designate one canonical contract before drafting, and internal reviews checked each document alone.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: name the canonical contract document up front and give every sibling document the instruction to reference it; run one cross-document consistency review before the gate.

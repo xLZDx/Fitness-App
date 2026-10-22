@@ -13,10 +13,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 AMEND = os.path.join(HERE, '..')
 
-# 91 package rows + 27 (FU-AC-092..118) + 1 (FU-AC-119) + 8 (FU-AC-120..127) + 11 (FU-AC-130..140).
-# 9 = 119..127 (the design documents define FU-AC-119 and FU-AC-120..127), 11 = 130..140.
-EXPECTED_ACCEPTANCE = 91 + 27 + 9 + 11
-NEW_RANGES = [(92, 118), (119, 127), (130, 140)]
+# 91 package rows + 27 (FU-AC-092..118) + 10 (FU-AC-119 and 120..128, defined by the protocol v1.3.1
+# and lifecycle rev 3 documents; FU-AC-125 is the protocol's shared-fixture row, FU-AC-128 the lifecycle caps row)
+# + 11 (FU-AC-130..140). FU-AC-129 is intentionally unused.
+EXPECTED_ACCEPTANCE = 91 + 27 + 10 + 11
+NEW_RANGES = [(92, 118), (119, 128), (130, 140)]
 
 errors = []
 
@@ -207,6 +208,29 @@ for name, rows in (('REQUIREMENTS', REQ), ('BACKLOG', BAK), ('ACCEPTANCE', ACC),
             for bad in BAD:
                 if bad in low:
                     fail(f'{name} {list(r.values())[0]} column {col}: active text contains {bad!r}')
+# withdrawn online admission protocol vocabulary must not remain in ACTIVE text of any row
+WITHDRAWN = ('preparewor' + 'koutcommand', 'admission token', 'open admission', 'closed_no_effect', 'birth epoch')
+ALLOWED_WITHDRAWN = {}  # (file, row id) -> reason; empty: no row states that the withdrawn protocol is still active
+for name, rows in (('REQUIREMENTS', REQ), ('BACKLOG', BAK), ('ACCEPTANCE', ACC), ('TRACEABILITY', TRC)):
+    for r in rows:
+        rid = list(r.values())[0]
+        for col, val in r.items():
+            if col == 'amendment_note' or (name, rid) in ALLOWED_WITHDRAWN: continue
+            for w in WITHDRAWN:
+                if w in val.lower():
+                    fail(f'{name} {rid} column {col}: active text contains withdrawn term {w!r}')
+for aid in ('FU-AC-012', 'FU-AC-058', 'FU-AC-059', 'FU-AC-060', 'FU-AC-081'):
+    if 'REWRITTEN IN PLACE' not in A[aid]['amendment_note']: fail(f'{aid}: must be REWRITTEN IN PLACE (old text in note)')
+if 'M-05 stays open' not in A['FU-AC-130']['amendment_note'] and 'M-05 stays open' not in R['FU-RQ-001']['amendment_note']:
+    fail('M-05 must be recorded as PARTIAL / open')
+for name, rows in (('REQUIREMENTS', REQ), ('BACKLOG', BAK), ('ACCEPTANCE', ACC), ('TRACEABILITY', TRC)):
+    for r in rows:
+        if re.search(r'closes? (RECONCILIATION )?M-05', r['amendment_note'], re.I):
+            fail(f'{name} {list(r.values())[0]}: note says M-05 is closed; it is PARTIAL')
+if 'UNKNOWN' not in A['FU-AC-130']['expected_result'] or 'FAILS' not in A['FU-AC-130']['expected_result']:
+    fail('FU-AC-130: known/unknown inventory requirement missing')
+for aid in ('FU-AC-125', 'FU-AC-128'):
+    if aid not in A: fail(f'{aid}: missing')
 for rid in ('FU-RQ-015',):
     if 'online' in R[rid]['title'].lower(): fail(f'{rid}: title still mentions online')
 for aid in ('FU-AC-015', 'FU-AC-064'):
@@ -228,6 +252,6 @@ if errors:
     for e in errors:
         print('  -', e)
     sys.exit(1)
-print(f'OK: requirements={len(REQ)} backlog={len(BAK)} acceptance={len(ACC)} (91+27+9+11={EXPECTED_ACCEPTANCE}) '
+print(f'OK: requirements={len(REQ)} backlog={len(BAK)} acceptance={len(ACC)} (91+27+10+11={EXPECTED_ACCEPTANCE}) '
       f'traceability={len(TRC)}; new rows={len(new_ids)} all NOT_RUN; superseded rows with notes: '
       f'req={len(need_note["requirements"])} task={len(need_note["tasks"])} acc={len(need_note["acceptance"])}')
