@@ -1638,3 +1638,11 @@ Rule next time: when transcribing criteria into a register, diff each row agains
 Kind: NEUTRAL.
 Facts: three design documents drafted by agents; reviews pending.
 Rule next time: commit agent-written work early so a worktree is never mistaken for merged.
+
+## 2026-10-22 - Commit: docs(v1): design revisions, reissued registers, runtime manifest
+
+Kind: FAILURE (own mistake) and SUCCESS.
+Facts: my first deploy attempt for one function overwrote the live source object in the bucket with a patched archive and failed the build; the running revision was not affected and the original generation was restored from bucket versioning. Separately the design reviews found 1 BLOCKER and 13 MAJOR defects in agent-written drafts before any gate.
+Root cause: I ran a deploy script without first checking how gcloud treats the archive ignore files and that the upload replaces the live object.
+Missed by: author; caught by the failed build and by my own diff check.
+Rule next time: before a production deploy, dry-run the packaging on a copy and download sources by explicit generation; run design drafts through internal reviewers before the gate.

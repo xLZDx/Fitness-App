@@ -59287,3 +59287,7 @@ Decision: accept the 4 MAJOR and 2 MINOR findings: tighten four acceptance rows,
 ## 2026-10-22 - Commit: docs(v1): design documents (work in progress)
 
 Decision: the legacy-write DRAIN period before the server accepts only typed commands is 30 days (operator answer 2026-10-22). Evidence: core/changes/2026-10-22-v1-design-documents.md.
+
+## 2026-10-22 - Commit: docs(v1): design revisions, reissued registers, runtime manifest
+
+Decision: migrate all 23 Cloud Functions to nodejs22 by redeploying each function from its own deployed source (not from master, which would also release 20 undeployed functions); reissue the package registers inside the repository with 47 new acceptance rows; accept the set-context, writer-binding and migration rules of the protocol v1.2. Evidence: core/changes/2026-10-22-v1-design-registers-manifest.md; deployed state read with gcloud functions list (23 of 23 nodejs22 ACTIVE).
