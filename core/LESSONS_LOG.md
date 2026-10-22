@@ -1632,3 +1632,74 @@ Facts: when I turned 27 amendment criteria into acceptance rows, I shortened thr
 Root cause: I paraphrased criteria instead of copying every clause, and did not check the map against the new rows' own references.
 Missed by: author; caught by the GPT-PM documentation gate.
 Rule next time: when transcribing criteria into a register, diff each row against its source clause by clause, and validate that every id referenced by a new row stays active after the map is applied.
+
+## 2026-10-22 - Commit: docs(v1): design documents (work in progress)
+
+Kind: NEUTRAL.
+Facts: three design documents drafted by agents; reviews pending.
+Rule next time: commit agent-written work early so a worktree is never mistaken for merged.
+
+## 2026-10-22 - Commit: docs(v1): design revisions, reissued registers, runtime manifest
+
+Kind: FAILURE (own mistake) and SUCCESS.
+Facts: my first deploy attempt for one function overwrote the live source object in the bucket with a patched archive and failed the build; the running revision was not affected and the original generation was restored from bucket versioning. Separately the design reviews found 1 BLOCKER and 13 MAJOR defects in agent-written drafts before any gate.
+Root cause: I ran a deploy script without first checking how gcloud treats the archive ignore files and that the upload replaces the live object.
+Missed by: author; caught by the failed build and by my own diff check.
+Rule next time: before a production deploy, dry-run the packaging on a copy and download sources by explicit generation; run design drafts through internal reviewers before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 1
+
+Kind: SHORTCOMING.
+Facts: the gate found 4 BLOCKER and 6 MAJOR even after internal reviewer rounds: two draft documents defined incompatible queue states, one rule let a stale command resurrect a deleted session, and writer identity was a client-supplied string.
+Root cause: the design documents were written by separate agents from separate briefs; I did not designate one canonical contract before drafting, and internal reviews checked each document alone.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: name the canonical contract document up front and give every sibling document the instruction to reference it; run one cross-document consistency review before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 2
+Kind: FAILURE
+Facts: GPT-PM round 2 found 2 BLOCKER and 5 MAJOR, all regressions or leftovers of my round 1 rewrite: the new quarantine design let a stale legacy delete remove newer typed sets, conversion skipped the tombstone, the provenance marker was forgeable, the count was not idempotent, effective_set had two deletion rules, three active acceptance rows still required the withdrawn denial policy, and UNKNOWN_EFFECT removal contradicted T17.
+Root cause: after rewriting the migration design I did not re-read every sibling rule that touches the same state (delete, conversion, counters) and did not grep the registers for the old policy wording; rows outside the earlier fixed list kept it.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: when a design decision changes a policy, grep all documents and registers for the old policy terms and walk every event type (create, update, delete, replay, retry) through the new rule before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 3
+Kind: FAILURE
+Facts: GPT-PM round 3 found 1 BLOCKER and 6 MAJOR, again in the mechanisms I added in round 2: a revision-only delete guard (ABA across generations), a latest-digest provenance test that misclassifies delayed server events, repair not atomic with accounting, an unhandled appendExists=false branch, a stub field missing from the schema, and a never-seen session class missing from the quarantine rule.
+Root cause: each new guard was checked for the failure it was meant to stop, not for reuse of identifiers (revisions across generations), event ordering and redelivery, and enumeration of all states of the data it reads.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: for every new guard list the identifiers it compares and whether they can repeat, walk reordered and repeated deliveries, and enumerate every value of each state field it branches on before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 4
+Kind: FAILURE
+Facts: GPT-PM round 4 found 2 BLOCKER and 3 MAJOR in the session classes I added in round 3: a never-converted legacy session could lose a divergent snapshot to a later whole-document write, its deletion left a resurrection path, the new summary document had no rules, a class A projection could be read before repair, and DELETE events were classified with a field they do not carry.
+Root cause: the class table was written for the cases that motivated it; I did not walk the legacy-only whole-document-replace semantics and the event shapes (no after on delete) through every class, and did not list the new collections in the rules carve-out when I added them.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: when adding a collection, add its rules and deletion-list entries in the same edit; for every classification rule test each event type (create, update, delete) and each ordering of commit time against trigger time.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 5
+Kind: SHORTCOMING
+Facts: rounds 3, 4 and 5 each found interleaving defects in the same mechanism (a long-lived legacy-only session class with a ledger, a fence and a reader exception); each patch added a new asynchronous path.
+Root cause: I patched symptoms of a design whose invariant (a session can be in a state the server cannot classify atomically) was the real problem; after the second finding in one mechanism I should have asked whether the mechanism needed to exist.
+Missed by: author; caught by the GPT-PM gate on the third pass.
+Rule next time: when two consecutive gate rounds find defects in the same mechanism, remove or simplify the mechanism (here: eager conversion) instead of adding a third guard.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 6
+Kind: FAILURE
+Facts: GPT-PM round 6 found 1 BLOCKER and 5 MAJOR in the edges of the eager-conversion rewrite: a partial no-op comparison, a backfill boundary without a proof, a writerless state not defined, no processed-event marker, DELETE classified without the generation, and a stale FU-AC-100 line left in the protocol test table.
+Root cause: after the rewrite I did not grep every active test text for the withdrawn policy (FU-AC-100 line) and defined new server-created objects (converted sessions) without listing their writer state, idempotence key and boundary.
+Missed by: author; caught by the GPT-PM gate. The validator now forbids the withdrawn wording.
+Rule next time: when a policy is withdrawn add its wording to the validator in the same commit; for every server-created object define owner, idempotence key and completion boundary.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 7
+Kind: FAILURE
+Facts: GPT-PM round 7 found 3 MAJOR: P5 claimed a completeness the scan cannot prove, a 7-day marker TTL contradicted the idempotence claim, and DELETE classification relied on a before-image field that old clients strip.
+Root cause: I wrote guarantees ("complete", "changes nothing") without stating their time boundary and the retention of the evidence they depend on.
+Missed by: author; caught by the GPT-PM gate. Findings fell from 7 to 6 to 3, all MAJOR, which indicates convergence after the mechanism was removed in round 5.
+Rule next time: every guarantee names its time boundary and the lifetime of its evidence; identity of an event must not depend on fields that an old client can strip.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 8
+Kind: FAILURE
+Facts: GPT-PM round 8 found 2 MAJOR: the permanent quarantine id was promised but not part of the transaction algorithm, and the server-delete match relied on an unproven equality of event time and commit time.
+Root cause: I stated a durable guarantee in prose without putting the check in the ordered algorithm, and I used a platform timestamp whose semantics I had not verified.
+Missed by: author; caught by the GPT-PM gate.
+Rule next time: every guarantee must appear as a step in the ordered algorithm; use platform metadata only when its exact semantics are verified, otherwise choose the conservative visible outcome.

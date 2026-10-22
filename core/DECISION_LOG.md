@@ -59283,3 +59283,50 @@ Decision: keep the in-repository folder docs/v1/package-amendments as the author
 ## 2026-10-22 - Commit: docs(v1): address package reconciliation gate round 1
 
 Decision: accept the 4 MAJOR and 2 MINOR findings: tighten four acceptance rows, rewrite Option A rows in place instead of retiring ids that new rows reference, mark the migration proof as owed, and use COVERED/PARTIAL/OPEN status wording. Evidence: GPT-PM round 1 for head c0f86950; core/changes/2026-10-22-package-reconciliation.md.
+
+## 2026-10-22 - Commit: docs(v1): design documents (work in progress)
+
+Decision: the legacy-write DRAIN period before the server accepts only typed commands is 30 days (operator answer 2026-10-22). Evidence: core/changes/2026-10-22-v1-design-documents.md.
+
+## 2026-10-22 - Commit: docs(v1): design revisions, reissued registers, runtime manifest
+
+Decision: migrate all 23 Cloud Functions to nodejs22 by redeploying each function from its own deployed source (not from master, which would also release 20 undeployed functions); reissue the package registers inside the repository with 47 new acceptance rows; accept the set-context, writer-binding and migration rules of the protocol v1.2. Evidence: core/changes/2026-10-22-v1-design-registers-manifest.md; deployed state read with gcloud functions list (23 of 23 nodejs22 ACTIVE).
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 1
+
+Decision: accept all 4 BLOCKER and 6 MAJOR findings; operator decided no silent loss of legacy writes, so the migration keeps DRAIN open-ended until every recently seen device has flushed, and the canonical workout state moves to a server-only typed document with a quarantine-and-repair trigger for old-client writes (recommended option accepted; the alternative would lose old-client writes); sealing the legacy path is not part of v1. Evidence: GPT-PM round 1 for head 380c143e; core/changes/2026-10-22-v1-design-registers-manifest.md.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 2
+
+Decision: accept both BLOCKER and all five MAJOR findings of round 2. A late legacy delete is quarantined as an intent and never deletes typed data without the owner confirming against the current revision; the tombstone is checked before any conversion; server provenance of projection writes is a digest, not a marker; the quarantine count is once-per-event; `effective_set` keeps an identity marker and erases values; removing an `UNKNOWN_EFFECT` entry without export is allowed only with a warning that the server may already hold it. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round2.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 3
+
+Decision: accept the BLOCKER and all six MAJOR findings of round 3. Deletion is bound to session generation and revision; projection provenance becomes a keyed seal so that order and repetition of trigger events do not matter; repair, quarantine entry and counters share one transaction; legacy sessions have three classes with one outcome each and an account-level inventory; the no-file sign-out removal and the serverStateUnknown field are part of the canonical schema. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round3.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 4
+
+Decision: accept both BLOCKER and all three MAJOR findings of round 4. Never-converted legacy sessions get a legacy ledger and a deletion fence ordered by commit times, readers verify a projection against a server-only head instead of trusting it, DELETE events are classified without an after-seal, and the new summary and head documents are write-protected. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round4.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 5
+
+Decision: remove the long-lived legacy-only session class instead of patching it again. A server backfill converts all existing sessions before DRAIN, the trigger converts any never-seen or overtaking event snapshot, and a legacy delete is never authoritative in DRAIN or later (recorded as a deletion intent; the document is recreated until the owner confirms). This follows from the operator decision of 2026-10-22 (no silent loss); the visible cost is that a workout deleted in an old build reappears with a review prompt.
+Evidence: core/changes/2026-10-22-v1-design-gate-round5.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 6
+
+Decision: keep eager conversion (accepted by the gate) and fix its edges: full-model no-op comparison, two-phase DRAIN entry proved by a clean scan, writerless server-converted sessions, a processed-event marker for idempotence, DELETE classification by generation, FU-AC-100 aligned. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round6.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 7
+
+Decision: state exactly what the clean scan proves instead of claiming completeness, make event idempotence independent of an expiring marker (permanent ids plus a delivery-window invariant), and recognise server deletions by their recorded commit time. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round7.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 8
+
+Decision: check the permanent quarantine entry before any create and identify server deletions by the exact createTime of the deleted document incarnation, with a conservative visible-intent fallback instead of any time-proximity match. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round8.md; validator OK.
