@@ -1661,3 +1661,10 @@ Facts: GPT-PM round 2 found 2 BLOCKER and 5 MAJOR, all regressions or leftovers 
 Root cause: after rewriting the migration design I did not re-read every sibling rule that touches the same state (delete, conversion, counters) and did not grep the registers for the old policy wording; rows outside the earlier fixed list kept it.
 Missed by: author and internal reviewers; caught by the GPT-PM gate.
 Rule next time: when a design decision changes a policy, grep all documents and registers for the old policy terms and walk every event type (create, update, delete, replay, retry) through the new rule before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 3
+Kind: FAILURE
+Facts: GPT-PM round 3 found 1 BLOCKER and 6 MAJOR, again in the mechanisms I added in round 2: a revision-only delete guard (ABA across generations), a latest-digest provenance test that misclassifies delayed server events, repair not atomic with accounting, an unhandled appendExists=false branch, a stub field missing from the schema, and a never-seen session class missing from the quarantine rule.
+Root cause: each new guard was checked for the failure it was meant to stop, not for reuse of identifiers (revisions across generations), event ordering and redelivery, and enumeration of all states of the data it reads.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: for every new guard list the identifiers it compares and whether they can repeat, walk reordered and repeated deliveries, and enumerate every value of each state field it branches on before the gate.

@@ -45,3 +45,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 ## Gate follow-up round 2 (GPT-PM, head fcaa90a1: 2 BLOCKER, 5 MAJOR)
 - FU-AC-014 and FU-AC-082 (acceptance) and FU-014 (definition_of_done) REWRITTEN IN PLACE: legacy writes are accepted, quarantined and repaired in DRAIN and SERVER_ONLY; only the operator-only SEALED state denies them. The earlier "denied for migrated records" wording is kept in the notes only.
 - FU-AC-119 gained scenarios 11 (late legacy delete preserves newer typed sets), 13 (tombstone before conversion), 14 (forged server provenance), 15 (once-per-event quarantine count). FU-AC-125 and FU-AC-128 use one `effective_set` schema (marker kept, values erased). FU-AC-126 gained the `UNKNOWN_EFFECT` removal test. FU-AC-100 and FU-AC-103 carry additional required tests in their notes (their approved text is unchanged).
+
+## Gate follow-up round 3 (GPT-PM, head 3d166137: 1 BLOCKER, 6 MAJOR)
+- FU-AC-082 now states the outcome per session class; FU-AC-119 scenarios 16, 17, 18 added and 11, 14, 15 extended; FU-AC-125 covers the appendExists branch and the serverStateUnknown field. Notes of FU-AC-100 and FU-AC-103 cross-reference the right rows.

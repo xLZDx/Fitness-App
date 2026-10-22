@@ -59300,3 +59300,8 @@ Decision: accept all 4 BLOCKER and 6 MAJOR findings; operator decided no silent 
 
 Decision: accept both BLOCKER and all five MAJOR findings of round 2. A late legacy delete is quarantined as an intent and never deletes typed data without the owner confirming against the current revision; the tombstone is checked before any conversion; server provenance of projection writes is a digest, not a marker; the quarantine count is once-per-event; `effective_set` keeps an identity marker and erases values; removing an `UNKNOWN_EFFECT` entry without export is allowed only with a warning that the server may already hold it. No product decision of the operator changed.
 Evidence: core/changes/2026-10-22-v1-design-gate-round2.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 3
+
+Decision: accept the BLOCKER and all six MAJOR findings of round 3. Deletion is bound to session generation and revision; projection provenance becomes a keyed seal so that order and repetition of trigger events do not matter; repair, quarantine entry and counters share one transaction; legacy sessions have three classes with one outcome each and an account-level inventory; the no-file sign-out removal and the serverStateUnknown field are part of the canonical schema. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round3.md; validator OK.
