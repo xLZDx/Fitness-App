@@ -1722,3 +1722,10 @@ Facts: the first gate on the review fixes returned 1 BLOCKER and 5 MAJOR. The no
 Root cause: each fix was checked against its own finding, not against the lifecycle, the rules list, the step order and the inventory it touches.
 Missed by: author; caught by the gate.
 Rule next time: for every new guarantee name its authoritative inventory (what counts the things that may go missing), every collection it adds (rules, deletion, export), and the ordering against the surrounding steps; for every test oracle enumerate the full input matrix.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 2
+Kind: FAILURE
+Facts: gate round 2 returned 1 BLOCKER and 5 MAJOR on the round-1 fixes: the owner warning condition still looked only at unresolvedTotal, so a gap-only account stayed silent; the watchdog and the trigger used different event identities; a single point-in-time read was used to prove a no-op; the quota read was placed after transactional writes; the deletion Cancel could be offered after a lost begin acknowledgement; the parent acceptance criterion still said zero loss while S26 allowed disclosed loss.
+Root cause: each new mechanism was added without re-reading the consumers of the data it produces (UI condition, second processor, ordering of reads and writes, parent criterion, the other document of the lifecycle).
+Missed by: author; caught by the gate.
+Rule next time: for every new server record list its consumers (UI condition, export, second writer, acceptance parent) and edit them in the same change; write the transaction steps with all reads first; define one identity for any record two processors can create.

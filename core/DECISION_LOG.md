@@ -59342,3 +59342,7 @@ Decision: accept all 13 findings of the independent pre-implementation review. T
 ## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 1
 
 Decision: accept all six findings of the first gate on the review fixes. Existence of every accepted legacy write is accounted for by an audit-log inventory compared with processed-event markers (no dependence on the trigger); content recovery is best effort inside the exact point-in-time window and otherwise recorded as a disclosed gap; no account enters DRAIN unless the inventory is verified. Account deletion becomes: pre-checks, then one transaction (fence plus DELETING), forward recovery only, completion-anchored TTL. Quota is evaluated after the replay fence. Scenario inventory is frozen at 27 ids. Evidence: core/changes/2026-10-22-v1-pre-implementation-gate-round1.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 2
+
+Decision: accept all six findings of gate round 2. One event key (path, kind, version time) is shared by the trigger and the watchdog; a no-op is proven only by a document version time earlier than the audit commit time; the owner warning fires for gap records too; the quota counter is read at step 3b before any write; deletion Cancel is offered only after the idempotent begin call confirms the server state; FU-AC-119 keeps the migration-release gate blocked for unrecoverable content until the operator accepts O-R2. Evidence: core/changes/2026-10-22-v1-pre-implementation-gate-round2.md; validator OK.

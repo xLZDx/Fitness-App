@@ -69,3 +69,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 1 (GPT-PM, head d02b2d5b: 1 BLOCKER, 5 MAJOR)
 - FU-AC-119: S26 rewritten around the audit-log write inventory, S25 around the corrected deletion order, scenario 21 run B around the complete classification matrix, frozen inventory of 27 ids (S01 to S26 and S18b); FU-AC-125 gained the quota-boundary replay fixture case.
+
+## Pre-implementation gate round 2 (GPT-PM, head 467881fc: 1 BLOCKER, 5 MAJOR)
+- FU-AC-119: S26 extended (version-time no-op proof, delayed trigger after watchdog, gap-only account, parent gate blocked until O-R2 is accepted); parent criterion reworded; FU-AC-121 gained the lost-begin-acknowledgement case.
