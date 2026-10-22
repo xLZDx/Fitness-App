@@ -59305,3 +59305,8 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round2.md; validator OK.
 
 Decision: accept the BLOCKER and all six MAJOR findings of round 3. Deletion is bound to session generation and revision; projection provenance becomes a keyed seal so that order and repetition of trigger events do not matter; repair, quarantine entry and counters share one transaction; legacy sessions have three classes with one outcome each and an account-level inventory; the no-file sign-out removal and the serverStateUnknown field are part of the canonical schema. No product decision of the operator changed.
 Evidence: core/changes/2026-10-22-v1-design-gate-round3.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 4
+
+Decision: accept both BLOCKER and all three MAJOR findings of round 4. Never-converted legacy sessions get a legacy ledger and a deletion fence ordered by commit times, readers verify a projection against a server-only head instead of trusting it, DELETE events are classified without an after-seal, and the new summary and head documents are write-protected. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round4.md; validator OK.

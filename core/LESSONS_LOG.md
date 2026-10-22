@@ -1668,3 +1668,10 @@ Facts: GPT-PM round 3 found 1 BLOCKER and 6 MAJOR, again in the mechanisms I add
 Root cause: each new guard was checked for the failure it was meant to stop, not for reuse of identifiers (revisions across generations), event ordering and redelivery, and enumeration of all states of the data it reads.
 Missed by: author and internal reviewers; caught by the GPT-PM gate.
 Rule next time: for every new guard list the identifiers it compares and whether they can repeat, walk reordered and repeated deliveries, and enumerate every value of each state field it branches on before the gate.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 4
+Kind: FAILURE
+Facts: GPT-PM round 4 found 2 BLOCKER and 3 MAJOR in the session classes I added in round 3: a never-converted legacy session could lose a divergent snapshot to a later whole-document write, its deletion left a resurrection path, the new summary document had no rules, a class A projection could be read before repair, and DELETE events were classified with a field they do not carry.
+Root cause: the class table was written for the cases that motivated it; I did not walk the legacy-only whole-document-replace semantics and the event shapes (no after on delete) through every class, and did not list the new collections in the rules carve-out when I added them.
+Missed by: author and internal reviewers; caught by the GPT-PM gate.
+Rule next time: when adding a collection, add its rules and deletion-list entries in the same edit; for every classification rule test each event type (create, update, delete) and each ordering of commit time against trigger time.

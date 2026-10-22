@@ -48,3 +48,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 3 (GPT-PM, head 3d166137: 1 BLOCKER, 6 MAJOR)
 - FU-AC-082 now states the outcome per session class; FU-AC-119 scenarios 16, 17, 18 added and 11, 14, 15 extended; FU-AC-125 covers the appendExists branch and the serverStateUnknown field. Notes of FU-AC-100 and FU-AC-103 cross-reference the right rows.
+
+## Gate follow-up round 4 (GPT-PM, head ae119f26: 2 BLOCKER, 3 MAJOR)
+- FU-AC-082 adds the legacy ledger and the deletion fence for never-converted sessions; FU-AC-119 scenarios 13 and 18 extended and 19, 20, 21 added; FU-AC-063 note covers the summary and head documents.
