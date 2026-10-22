@@ -1675,3 +1675,10 @@ Facts: GPT-PM round 4 found 2 BLOCKER and 3 MAJOR in the session classes I added
 Root cause: the class table was written for the cases that motivated it; I did not walk the legacy-only whole-document-replace semantics and the event shapes (no after on delete) through every class, and did not list the new collections in the rules carve-out when I added them.
 Missed by: author and internal reviewers; caught by the GPT-PM gate.
 Rule next time: when adding a collection, add its rules and deletion-list entries in the same edit; for every classification rule test each event type (create, update, delete) and each ordering of commit time against trigger time.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 5
+Kind: SHORTCOMING
+Facts: rounds 3, 4 and 5 each found interleaving defects in the same mechanism (a long-lived legacy-only session class with a ledger, a fence and a reader exception); each patch added a new asynchronous path.
+Root cause: I patched symptoms of a design whose invariant (a session can be in a state the server cannot classify atomically) was the real problem; after the second finding in one mechanism I should have asked whether the mechanism needed to exist.
+Missed by: author; caught by the GPT-PM gate on the third pass.
+Rule next time: when two consecutive gate rounds find defects in the same mechanism, remove or simplify the mechanism (here: eager conversion) instead of adding a third guard.

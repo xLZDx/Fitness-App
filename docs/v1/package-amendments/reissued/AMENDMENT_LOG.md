@@ -51,3 +51,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 4 (GPT-PM, head ae119f26: 2 BLOCKER, 3 MAJOR)
 - FU-AC-082 adds the legacy ledger and the deletion fence for never-converted sessions; FU-AC-119 scenarios 13 and 18 extended and 19, 20, 21 added; FU-AC-063 note covers the summary and head documents.
+
+## Gate follow-up round 5 (GPT-PM, head 3bb60dd7: 2 BLOCKER, 2 MAJOR)
+- The class-C ledger and fence of round 4 are removed; FU-AC-082 and FU-AC-119 (scenarios 13, 18, 20, 21) describe eager conversion, backfill at entry to DRAIN and the non-authoritative legacy delete; FU-AC-049 note covers the quarantine entries in the export.

@@ -59310,3 +59310,8 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round3.md; validator OK.
 
 Decision: accept both BLOCKER and all three MAJOR findings of round 4. Never-converted legacy sessions get a legacy ledger and a deletion fence ordered by commit times, readers verify a projection against a server-only head instead of trusting it, DELETE events are classified without an after-seal, and the new summary and head documents are write-protected. No product decision of the operator changed.
 Evidence: core/changes/2026-10-22-v1-design-gate-round4.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 5
+
+Decision: remove the long-lived legacy-only session class instead of patching it again. A server backfill converts all existing sessions before DRAIN, the trigger converts any never-seen or overtaking event snapshot, and a legacy delete is never authoritative in DRAIN or later (recorded as a deletion intent; the document is recreated until the owner confirms). This follows from the operator decision of 2026-10-22 (no silent loss); the visible cost is that a workout deleted in an old build reappears with a review prompt.
+Evidence: core/changes/2026-10-22-v1-design-gate-round5.md; validator OK.
