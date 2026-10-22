@@ -54,3 +54,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 5 (GPT-PM, head 3bb60dd7: 2 BLOCKER, 2 MAJOR)
 - The class-C ledger and fence of round 4 are removed; FU-AC-082 and FU-AC-119 (scenarios 13, 18, 20, 21) describe eager conversion, backfill at entry to DRAIN and the non-authoritative legacy delete; FU-AC-049 note covers the quarantine entries in the export.
+
+## Gate follow-up round 6 (GPT-PM, head 7d619cb7: 1 BLOCKER, 5 MAJOR)
+- FU-AC-119 gained scenarios 18b, 22, 23, 24 and an extended 21; the validator rejects the withdrawn trigger-tombstone, ledger and divergent-entry wording in the protocol document.

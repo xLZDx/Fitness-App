@@ -167,6 +167,13 @@ for r in ACC:
     if r['acceptance_id'] in orig and r['status'] not in ('NOT_RUN',):
         fail(f'{r["acceptance_id"]}: original row status is {r["status"]!r} (expected unchanged NOT_RUN)')
 
+FORBIDDEN_PROTO = ('honoured by the trigger with a tombstone', 'LEGACY_DELETE', 'LEGACY_DIVERGENT', 'workout_legacy_ledger')
+_proto = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'design', 'OFFLINE_COMMAND_PROTOCOL.md'), encoding='utf-8').read()
+for _w in FORBIDDEN_PROTO:
+    for _ln in _proto.splitlines():
+        if _w in _ln and 'replaces' not in _ln and 'removed' not in _ln and 'no longer' not in _ln and 'Version 1.' not in _ln:
+            fail(f'OFFLINE_COMMAND_PROTOCOL.md: withdrawn wording {_w!r} in an active line')
+
 # --- SUPERSESSION: every affected row carries an amendment_note ---
 sup_path = os.path.join(AMEND, 'SUPERSESSION.csv')
 sup = list(csv.DictReader(open(sup_path, encoding='utf-8-sig', newline='')))

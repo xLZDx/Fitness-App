@@ -1682,3 +1682,10 @@ Facts: rounds 3, 4 and 5 each found interleaving defects in the same mechanism (
 Root cause: I patched symptoms of a design whose invariant (a session can be in a state the server cannot classify atomically) was the real problem; after the second finding in one mechanism I should have asked whether the mechanism needed to exist.
 Missed by: author; caught by the GPT-PM gate on the third pass.
 Rule next time: when two consecutive gate rounds find defects in the same mechanism, remove or simplify the mechanism (here: eager conversion) instead of adding a third guard.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 6
+Kind: FAILURE
+Facts: GPT-PM round 6 found 1 BLOCKER and 5 MAJOR in the edges of the eager-conversion rewrite: a partial no-op comparison, a backfill boundary without a proof, a writerless state not defined, no processed-event marker, DELETE classified without the generation, and a stale FU-AC-100 line left in the protocol test table.
+Root cause: after the rewrite I did not grep every active test text for the withdrawn policy (FU-AC-100 line) and defined new server-created objects (converted sessions) without listing their writer state, idempotence key and boundary.
+Missed by: author; caught by the GPT-PM gate. The validator now forbids the withdrawn wording.
+Rule next time: when a policy is withdrawn add its wording to the validator in the same commit; for every server-created object define owner, idempotence key and completion boundary.
