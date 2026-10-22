@@ -1632,3 +1632,9 @@ Facts: when I turned 27 amendment criteria into acceptance rows, I shortened thr
 Root cause: I paraphrased criteria instead of copying every clause, and did not check the map against the new rows' own references.
 Missed by: author; caught by the GPT-PM documentation gate.
 Rule next time: when transcribing criteria into a register, diff each row against its source clause by clause, and validate that every id referenced by a new row stays active after the map is applied.
+
+## 2026-10-22 - Commit: docs(v1): design documents (work in progress)
+
+Kind: NEUTRAL.
+Facts: three design documents drafted by agents; reviews pending.
+Rule next time: commit agent-written work early so a worktree is never mistaken for merged.

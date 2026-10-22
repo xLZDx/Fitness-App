@@ -59283,3 +59283,7 @@ Decision: keep the in-repository folder docs/v1/package-amendments as the author
 ## 2026-10-22 - Commit: docs(v1): address package reconciliation gate round 1
 
 Decision: accept the 4 MAJOR and 2 MINOR findings: tighten four acceptance rows, rewrite Option A rows in place instead of retiring ids that new rows reference, mark the migration proof as owed, and use COVERED/PARTIAL/OPEN status wording. Evidence: GPT-PM round 1 for head c0f86950; core/changes/2026-10-22-package-reconciliation.md.
+
+## 2026-10-22 - Commit: docs(v1): design documents (work in progress)
+
+Decision: the legacy-write DRAIN period before the server accepts only typed commands is 30 days (operator answer 2026-10-22). Evidence: core/changes/2026-10-22-v1-design-documents.md.
