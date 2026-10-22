@@ -75,3 +75,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 3 (GPT-PM, head 15cf0f02: 1 BLOCKER, 4 MAJOR)
 - FU-AC-119: S26 gained the audit-key accounting cases (unrecoverable DELETE with repeated and concurrent passes, repeated no-op DELETE), per-class DELETE deltas, and a verdict table replacing the unconditional failure sentence; FU-AC-121 gained the lost response without a client crash.
+
+## Pre-implementation gate round 4 (GPT-PM, head 79cd1fb0: 1 BLOCKER, 3 MAJOR)
+- FU-AC-119: S26 gained the resolved-gap assertions, no-op write accounting, unverified write gaps and audit extraction cases.

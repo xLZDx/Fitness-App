@@ -59350,3 +59350,7 @@ Decision: accept all six findings of gate round 2. One event key (path, kind, ve
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 3
 
 Decision: accept all five findings of gate round 3. Gap records and no-op deletes are accounted by a stable audit key with create-if-absent and a terminal state; a delete whose deleted version cannot be read is reported only after the trigger retry window and is never claimed as proven loss; begin-deletion failures are classified (explicit NOT_STARTED removes the fence, an ambiguous answer keeps it); the parent criterion gets a verdict table (silent loss and duplication always fail, disclosed loss without O-R2 acceptance blocks, with acceptance is permitted); S26 has per-class DELETE deltas. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round3.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 4
+
+Decision: accept all four findings of gate round 4. The GAP audit marker is an explicit exception to the marker-first ordering with an atomic compare-and-set resolution by the trigger; audit records are expanded per successful document mutation and the deploy check covers batches, streams and failed mutations; an ordinary no-op write gets a terminal WRITE_NOOP audit marker; a write whose version cannot be proven becomes an unverified gap with non-assertive owner copy. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round4.md; validator OK.

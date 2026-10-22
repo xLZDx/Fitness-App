@@ -1736,3 +1736,10 @@ Facts: gate round 3 returned 1 BLOCKER and 4 MAJOR: gap records had no stable id
 Root cause: the round-2 fixes added a record type (gap) and a recovery path without defining its identity, terminal state and idempotence, and extended a test by copying its oracle across cases whose outcomes differ.
 Missed by: author; caught by the gate.
 Rule next time: when a record type is introduced, define in the same edit its stable id, create-if-absent semantics, terminal states and the counter it moves; when a test is repeated for variants, write the expected delta per variant; read the whole acceptance row for leftover sentences that contradict the new rule.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 4
+Kind: FAILURE
+Facts: gate round 4 returned 1 BLOCKER and 3 MAJOR: the new GAP marker outcome contradicted the marker-first rule of the older item 2; the audit operation type was taken from the RPC method name although batches carry mixed operations; an ordinary no-op write had no terminal marker; a write gap claimed proven loss from an audit record alone.
+Root cause: a new outcome value was added to a state machine without re-reading the older rule that consumes it, and an external log was treated as more structured than its documentation guarantees.
+Missed by: author; caught by the gate.
+Rule next time: when adding a value to a state machine, grep every rule that mentions the machine and state the transition for each reader; when a design leans on an external log, write what each field is derived from and mark the unverified fields as a deploy gate.
