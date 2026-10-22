@@ -59330,3 +59330,7 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round7.md; validator OK.
 
 Decision: check the permanent quarantine entry before any create and identify server deletions by the exact createTime of the deleted document incarnation, with a conservative visible-intent fallback instead of any time-proximity match. No product decision of the operator changed.
 Evidence: core/changes/2026-10-22-v1-design-gate-round8.md; validator OK.
+
+## 2026-10-22 - Commit: chore: Node 22 emulator image
+
+Decision: provide the emulator toolchain as a small Dockerfile instead of an ad hoc local image, pinned to the firebase-tools version of functions/package.json. Evidence: core/changes/2026-10-22-emulator-node22-image.md.

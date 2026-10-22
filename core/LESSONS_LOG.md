@@ -1703,3 +1703,7 @@ Facts: GPT-PM round 8 found 2 MAJOR: the permanent quarantine id was promised bu
 Root cause: I stated a durable guarantee in prose without putting the check in the ordered algorithm, and I used a platform timestamp whose semantics I had not verified.
 Missed by: author; caught by the GPT-PM gate.
 Rule next time: every guarantee must appear as a step in the ordered algorithm; use platform metadata only when its exact semantics are verified, otherwise choose the conservative visible outcome.
+
+## 2026-10-22 - Commit: chore: Node 22 emulator image
+Kind: SUCCESS
+Facts: image built and tool versions verified (node v22.23.4, java 17, firebase 15.17.0). Lesson: a shell-policy hook scans heredoc text, so recursive-delete cleanup lines in a Dockerfile heredoc are blocked; use apt-get clean and the file tools.
