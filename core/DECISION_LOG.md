@@ -59346,3 +59346,7 @@ Decision: accept all six findings of the first gate on the review fixes. Existen
 ## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 2
 
 Decision: accept all six findings of gate round 2. One event key (path, kind, version time) is shared by the trigger and the watchdog; a no-op is proven only by a document version time earlier than the audit commit time; the owner warning fires for gap records too; the quota counter is read at step 3b before any write; deletion Cancel is offered only after the idempotent begin call confirms the server state; FU-AC-119 keeps the migration-release gate blocked for unrecoverable content until the operator accepts O-R2. Evidence: core/changes/2026-10-22-v1-pre-implementation-gate-round2.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 3
+
+Decision: accept all five findings of gate round 3. Gap records and no-op deletes are accounted by a stable audit key with create-if-absent and a terminal state; a delete whose deleted version cannot be read is reported only after the trigger retry window and is never claimed as proven loss; begin-deletion failures are classified (explicit NOT_STARTED removes the fence, an ambiguous answer keeps it); the parent criterion gets a verdict table (silent loss and duplication always fail, disclosed loss without O-R2 acceptance blocks, with acceptance is permitted); S26 has per-class DELETE deltas. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round3.md; validator OK.

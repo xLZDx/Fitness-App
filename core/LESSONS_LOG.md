@@ -1729,3 +1729,10 @@ Facts: gate round 2 returned 1 BLOCKER and 5 MAJOR on the round-1 fixes: the own
 Root cause: each new mechanism was added without re-reading the consumers of the data it produces (UI condition, second processor, ordering of reads and writes, parent criterion, the other document of the lifecycle).
 Missed by: author; caught by the gate.
 Rule next time: for every new server record list its consumers (UI condition, export, second writer, acceptance parent) and edit them in the same change; write the transaction steps with all reads first; define one identity for any record two processors can create.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 3
+Kind: FAILURE
+Facts: gate round 3 returned 1 BLOCKER and 4 MAJOR: gap records had no stable identity so repeated watchdog passes could count one lost write many times; a no-op delete had no accounting path; the begin-deletion failure text still removed the fence on an ambiguous answer; the parent acceptance row kept an unconditional failure sentence; the S26 oracle expected one entry for a server delete that must create none.
+Root cause: the round-2 fixes added a record type (gap) and a recovery path without defining its identity, terminal state and idempotence, and extended a test by copying its oracle across cases whose outcomes differ.
+Missed by: author; caught by the gate.
+Rule next time: when a record type is introduced, define in the same edit its stable id, create-if-absent semantics, terminal states and the counter it moves; when a test is repeated for variants, write the expected delta per variant; read the whole acceptance row for leftover sentences that contradict the new rule.

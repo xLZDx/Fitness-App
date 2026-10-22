@@ -72,3 +72,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 2 (GPT-PM, head 467881fc: 1 BLOCKER, 5 MAJOR)
 - FU-AC-119: S26 extended (version-time no-op proof, delayed trigger after watchdog, gap-only account, parent gate blocked until O-R2 is accepted); parent criterion reworded; FU-AC-121 gained the lost-begin-acknowledgement case.
+
+## Pre-implementation gate round 3 (GPT-PM, head 15cf0f02: 1 BLOCKER, 4 MAJOR)
+- FU-AC-119: S26 gained the audit-key accounting cases (unrecoverable DELETE with repeated and concurrent passes, repeated no-op DELETE), per-class DELETE deltas, and a verdict table replacing the unconditional failure sentence; FU-AC-121 gained the lost response without a client crash.
