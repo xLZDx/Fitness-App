@@ -60,3 +60,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 7 (GPT-PM, head 300bf9e7: 0 BLOCKER, 3 MAJOR)
 - FU-AC-119 scenarios 21, 22 and 24 extended (stripped-field server delete, OPEN certifies only the scan snapshot, marker expiry).
+
+## Gate follow-up round 8 (GPT-PM, head e1bd259b: 0 BLOCKER, 2 MAJOR)
+- FU-AC-119 scenarios 21 and 24 extended for exact incarnation identity and resolved-entry redelivery.

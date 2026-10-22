@@ -59325,3 +59325,8 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round6.md; validator OK.
 
 Decision: state exactly what the clean scan proves instead of claiming completeness, make event idempotence independent of an expiring marker (permanent ids plus a delivery-window invariant), and recognise server deletions by their recorded commit time. No product decision of the operator changed.
 Evidence: core/changes/2026-10-22-v1-design-gate-round7.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 8
+
+Decision: check the permanent quarantine entry before any create and identify server deletions by the exact createTime of the deleted document incarnation, with a conservative visible-intent fallback instead of any time-proximity match. No product decision of the operator changed.
+Evidence: core/changes/2026-10-22-v1-design-gate-round8.md; validator OK.

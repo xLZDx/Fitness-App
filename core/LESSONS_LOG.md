@@ -1696,3 +1696,10 @@ Facts: GPT-PM round 7 found 3 MAJOR: P5 claimed a completeness the scan cannot p
 Root cause: I wrote guarantees ("complete", "changes nothing") without stating their time boundary and the retention of the evidence they depend on.
 Missed by: author; caught by the GPT-PM gate. Findings fell from 7 to 6 to 3, all MAJOR, which indicates convergence after the mechanism was removed in round 5.
 Rule next time: every guarantee names its time boundary and the lifetime of its evidence; identity of an event must not depend on fields that an old client can strip.
+
+## 2026-10-22 - Commit: docs(v1): address design gate round 8
+Kind: FAILURE
+Facts: GPT-PM round 8 found 2 MAJOR: the permanent quarantine id was promised but not part of the transaction algorithm, and the server-delete match relied on an unproven equality of event time and commit time.
+Root cause: I stated a durable guarantee in prose without putting the check in the ordered algorithm, and I used a platform timestamp whose semantics I had not verified.
+Missed by: author; caught by the GPT-PM gate.
+Rule next time: every guarantee must appear as a step in the ordered algorithm; use platform metadata only when its exact semantics are verified, otherwise choose the conservative visible outcome.
