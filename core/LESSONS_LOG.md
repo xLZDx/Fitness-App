@@ -1707,3 +1707,4 @@ Rule next time: every guarantee must appear as a step in the ordered algorithm; 
 ## 2026-10-22 - Commit: chore: Node 22 emulator image
 Kind: SUCCESS
 Facts: image built and tool versions verified (node v22.23.4, java 17, firebase 15.17.0). Lesson: a shell-policy hook scans heredoc text, so recursive-delete cleanup lines in a Dockerfile heredoc are blocked; use apt-get clean and the file tools.
+Correction (gate finding): first build used Java 17, which firebase-tools 15 does not support for emulators; fixed by moving to Debian trixie with OpenJDK 21 and proving an emulator start. Rule: verify a toolchain image by starting the tool it exists for, not by printing versions.

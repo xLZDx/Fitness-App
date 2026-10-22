@@ -59333,4 +59333,4 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round8.md; validator OK.
 
 ## 2026-10-22 - Commit: chore: Node 22 emulator image
 
-Decision: provide the emulator toolchain as a small Dockerfile instead of an ad hoc local image, pinned to the firebase-tools version of functions/package.json. Evidence: core/changes/2026-10-22-emulator-node22-image.md.
+Decision: provide the emulator toolchain as a small Dockerfile instead of an ad hoc local image, pinned to the firebase-tools version of functions/package.json. Evidence: core/changes/2026-10-22-emulator-node22-image.md (Java 21 after gate finding).
