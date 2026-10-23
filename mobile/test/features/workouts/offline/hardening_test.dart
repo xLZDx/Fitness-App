@@ -425,30 +425,27 @@ void main() {
       expect(s2.openReport.markersFileRepaired, isFalse);
     });
 
-    test('corrupt seq.json is reported and counters stay above surviving seqs',
+    test('a corrupt older slot is reported and preserved, the newest valid slot wins',
         () async {
       final s1 = await open();
       await accFor(s1).accept(intentOf('t1', setIndex: 1));
       await accFor(s1).accept(intentOf('t2', setIndex: 2));
-      await File('${rootPathOf(dir)}/${queueScopeDirName(kUid)}/seq.json')
-          .writeAsString('][');
+      await s1.dispose();
+      final scope = scopeOf(dir);
+      final older = olderSlot(scope);
+      File('$scope/meta.$older.json').writeAsStringSync('][');
       final s2 = await open();
       expect(s2.openReport.seqFileRepaired, isTrue);
-      expect(s2.openReport.markersFileRepaired, isFalse);
+      expect(s2.openReport.recoveryRequired, isFalse);
+      expect(File('$scope/meta.$older.json.corrupt-1').readAsStringSync(), '][');
       expect((await accFor(s2).accept(intentOf('t3', setIndex: 3))).record.seq, 3);
-    });
-
-    test('corrupt logical_sets.json is reported and rewritten readable', () async {
-      final s1 = await open();
-      await accFor(s1).accept(intentOf('t1'));
-      final f = File('${rootPathOf(dir)}/${queueScopeDirName(kUid)}/logical_sets.json');
-      await f.writeAsString('nope');
-      final s2 = await open();
-      expect(s2.openReport.markersFileRepaired, isTrue);
+      // The next write replaced the corrupt slot with a valid one.
       final s3 = await open();
-      expect(s3.openReport.markersFileRepaired, isFalse); // repaired on disk
+      expect(s3.openReport.seqFileRepaired, isFalse);
+      expect(slotDoc(scope, older), isNotNull);
     });
   });
+
 
   group('m3 single instance and unique temp files', () {
     test('a second open of the same scope throws StateError until the first is disposed',

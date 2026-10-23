@@ -14,12 +14,9 @@ class InMemoryCommandQueueStore extends BaseCommandQueueStore {
   Future<void> persistRecord(CommandRecord record) async {}
 
   @override
-  Future<void> persistSeqCounters(Map<String, int> counters) async {}
-
-  @override
   Future<void> removeRecordFromDisk(String operationId) async {}
 
   @override
-  Future<void> persistLogicalSetMarkers(
-      Map<String, LogicalSetMarker> markers) async {}
+  Future<void> persistMetadata(
+      Map<String, int> counters, Map<String, LogicalSetMarker> markers) async {}
 }

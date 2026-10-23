@@ -33,7 +33,7 @@ class DuplicateLogicalSetException extends QueueException {
       : super('logical set already has an APPEND: $logicalSetId');
 }
 
-/// The queue metadata (`seq.json` or `logical_sets.json`) could not be fully
+/// The queue metadata (`meta.a.json` or `meta.b.json`) could not be fully
 /// recovered at open. The store fails closed: it refuses new appends (and
 /// pruning) so a reused seq or a lost logical-set marker cannot occur, until
 /// the metadata is recoverable again. Existing records stay readable.

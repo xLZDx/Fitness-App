@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fitness_app/features/workouts/offline/canonical.dart';
+import 'package:fitness_app/features/workouts/offline/command_queue_store_base.dart';
 import 'package:fitness_app/features/workouts/offline/command_queue_store.dart';
 import 'package:fitness_app/features/workouts/offline/command_record.dart';
 import 'package:fitness_app/features/workouts/offline/complete_set_acceptor.dart';
@@ -240,176 +242,278 @@ void main() {
     });
   });
 
-  group('M03 checksummed metadata with a backup twin', () {
-    Future<void> seedPrunedStub(FileCommandQueueStore s) async {
-      final a = (await accFor(s).accept(intentOf('t1', setIndex: 1))).record;
-      await s.markSending(a.operationId);
-      await s.markResult(a.operationId,
-          const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
-      clock.advance(const Duration(days: 8));
-      expect(await s.prune(), 1);
+  group('M03 two-slot metadata document', () {
+    String key() => BaseCommandQueueStore.seqKey('sess-1', kDevice);
+
+    /// A slot file exactly as the store frames it (valid checksum).
+    String framed(int gen, Map<String, int> seq, {bool checksum = true}) {
+      final body = jsonEncode(<String, Object?>{
+        'format': 2,
+        'gen': gen,
+        'seq': seq,
+        'logicalSets': <String, Object?>{},
+      });
+      return checksum
+          ? '$body\n#sha256:${payloadHashHex(utf8.encode(body))}\n'
+          : '$body\n';
     }
 
-    test('files are written with a checksum line and a backup twin', () async {
+    /// Accepts [n] sets, syncs them all, ages them and prunes every stub.
+    Future<void> pruneAllStubs(FileCommandQueueStore s, int n) async {
+      for (var i = 1; i <= n; i++) {
+        final r = (await accFor(s).accept(intentOf('p$i', setIndex: i))).record;
+        await s.markSending(r.operationId);
+        await s.markResult(r.operationId,
+            const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
+      }
+      clock.advance(const Duration(days: 8));
+      expect(await s.prune(), n);
+      expect(await s.listAll(), isEmpty);
+    }
+
+    test('layout: store.init, one framed document, writes alternate slots with gen+1',
+        () async {
       final s = await open();
-      await accFor(s).accept(intentOf('t'));
-      for (final n in <String>['seq.json', 'logical_sets.json']) {
-        final text = File('${scope()}/$n').readAsStringSync();
-        expect(text.trimRight().split('\n').last, startsWith('#sha256:'));
-        expect(File('${scope()}/$n.bak').readAsStringSync(), text);
+      await accFor(s).accept(intentOf('t1', setIndex: 1));
+      expect(File('${scope()}/store.init').existsSync(), isTrue);
+      final n1 = newestSlot(scope());
+      final g1 = slotDoc(scope(), n1)!['gen'] as int;
+      await accFor(s).accept(intentOf('t2', setIndex: 2));
+      final n2 = newestSlot(scope());
+      expect(n2, isNot(n1));
+      expect(slotDoc(scope(), n2)!['gen'], g1 + 1);
+      final doc = slotDoc(scope(), n2)!;
+      expect(doc['format'], 2);
+      expect(doc.keys.toSet(), <String>{'format', 'gen', 'seq', 'logicalSets'});
+      expect((doc['logicalSets']! as Map).keys.toSet(),
+          <String>{'sess-1:ex-squat:1', 'sess-1:ex-squat:2'});
+      final text = File('${scope()}/meta.$n2.json').readAsStringSync();
+      expect(text.trimRight().split('\n').last, startsWith('#sha256:'));
+      expect(Directory(scope()).listSync().any((e) => e.path.endsWith('.tmp')),
+          isFalse);
+    });
+
+    test('a) after pruning every stub, deleting both slots (store.init stays) fails closed; no sequence reuse, no duplicate APPEND',
+        () async {
+      var s = await open();
+      await pruneAllStubs(s, 2);
+      await s.dispose();
+      File('${scope()}/meta.a.json').deleteSync();
+      File('${scope()}/meta.b.json').deleteSync();
+      expect(File('${scope()}/store.init').existsSync(), isTrue);
+      final before = treeSnapshot(scope());
+
+      s = await open();
+      expect(s.openReport.recoveryRequired, isTrue);
+      expect(s.openReport.recoveryRequiredReason, isNotNull);
+      // Sequence reuse (a NEW set would get seq 1 again) is refused ...
+      await expectLater(accFor(s).accept(intentOf('new', setIndex: 7)),
+          throwsA(isA<QueueRecoveryRequiredException>()));
+      // ... and so is a duplicate APPEND for a set that was already synced.
+      await expectLater(accFor(s).accept(intentOf('dup', setIndex: 1)),
+          throwsA(isA<QueueRecoveryRequiredException>()));
+      try {
+        expect(await s.prune(), 0);
+      } on QueueRecoveryRequiredException {
+        // refusing loudly is fine too
+      }
+      await s.dispose();
+      live = null;
+      expect(treeSnapshot(scope()), before, reason: 'originals must stay untouched');
+      expect(File('${scope()}/meta.a.json').existsSync(), isFalse);
+      expect(File('${scope()}/meta.b.json').existsSync(), isFalse);
+    });
+
+    test('a) both slots garbage: fail closed, bytes untouched, no .corrupt copies',
+        () async {
+      var s = await open();
+      await pruneAllStubs(s, 1);
+      await s.dispose();
+      File('${scope()}/meta.a.json').writeAsStringSync('garbage-a');
+      File('${scope()}/meta.b.json').writeAsStringSync('garbage-b');
+      final before = treeSnapshot(scope());
+      s = await open();
+      expect(s.openReport.recoveryRequired, isTrue);
+      await expectLater(accFor(s).accept(intentOf('dup', setIndex: 1)),
+          throwsA(isA<QueueRecoveryRequiredException>()));
+      await s.dispose();
+      live = null;
+      expect(treeSnapshot(scope()), before);
+      expect(Directory(scope()).listSync().any((e) => e.path.contains('.corrupt-')),
+          isFalse);
+    });
+
+    test('a) one slot is never enough when it is not valid: unchecksummed only -> fail closed, with or without store.init',
+        () async {
+      var s = await open();
+      await s.dispose();
+      for (final withInit in <bool>[true, false]) {
+        File('${scope()}/meta.a.json')
+            .writeAsStringSync(framed(1, <String, int>{key(): 5}, checksum: false));
+        if (File('${scope()}/meta.b.json').existsSync()) {
+          File('${scope()}/meta.b.json').deleteSync();
+        }
+        final init = File('${scope()}/store.init');
+        if (withInit && !init.existsSync()) init.writeAsStringSync('x\n');
+        if (!withInit && init.existsSync()) init.deleteSync();
+        s = await open();
+        expect(s.openReport.recoveryRequired, isTrue, reason: 'withInit=$withInit');
+        await expectLater(accFor(s).accept(intentOf('t1')),
+            throwsA(isA<QueueRecoveryRequiredException>()));
+        await s.dispose();
       }
     });
 
-    test('corruption AFTER pruning: the backup restores, no duplicate APPEND and no seq reuse',
-        () async {
+    test('b) the valid slot with the highest gen wins over a valid older one', () async {
       var s = await open();
-      await seedPrunedStub(s);
       await s.dispose();
-      File('${scope()}/seq.json').writeAsStringSync('garbage');
-      File('${scope()}/logical_sets.json').writeAsStringSync('');
-
+      File('${scope()}/meta.a.json').writeAsStringSync(framed(5, <String, int>{key(): 10}));
+      File('${scope()}/meta.b.json').writeAsStringSync(framed(3, <String, int>{key(): 2}));
       s = await open();
-      expect(s.openReport.seqFileRepaired, isTrue);
-      expect(s.openReport.markersFileRepaired, isTrue);
       expect(s.openReport.recoveryRequired, isFalse);
-      // Evidence preserved.
-      final names = Directory(scope()).listSync().map((e) => e.path).toList();
-      expect(names.where((p) => p.contains('seq.json.corrupt-')).length, 1);
-      expect(names.where((p) => p.contains('logical_sets.json.corrupt-')).length, 1);
-      // The pruned set cannot get a second APPEND.
-      await expectLater(accFor(s).accept(intentOf('again', setIndex: 1)),
-          throwsA(isA<DuplicateLogicalSetException>()));
-      // The next sequence is not 1 again.
-      final next = (await accFor(s).accept(intentOf('t2', setIndex: 2))).record;
-      expect(next.seq, 2);
+      expect((await accFor(s).accept(intentOf('t1'))).record.seq, 10);
+      // The next write goes to the slot that does NOT hold the highest gen.
+      expect(slotDoc(scope(), 'b')!['gen'], 6);
+      expect(slotDoc(scope(), 'a')!['gen'], 5);
     });
 
-    test('a silent bit flip that keeps the JSON valid is caught by the checksum',
+    test('b) an unchecksummed slot with a HIGHER gen is never selected; the valid older slot wins',
         () async {
       var s = await open();
-      await seedPrunedStub(s);
       await s.dispose();
-      final f = File('${scope()}/logical_sets.json');
-      final text = f.readAsStringSync();
-      expect(text.contains('t1') || text.contains('sess-1'), isTrue);
-      f.writeAsStringSync(text.replaceFirst('sess-1', 'sess-9')); // still valid JSON
+      File('${scope()}/meta.a.json').writeAsStringSync(framed(2, <String, int>{key(): 3}));
+      final bad = framed(99, <String, int>{key(): 5000}, checksum: false);
+      File('${scope()}/meta.b.json').writeAsStringSync(bad);
       s = await open();
-      expect(s.openReport.markersFileRepaired, isTrue);
-      await expectLater(accFor(s).accept(intentOf('again', setIndex: 1)),
-          throwsA(isA<DuplicateLogicalSetException>()));
+      expect(s.openReport.recoveryRequired, isFalse);
+      expect(s.openReport.seqFileRepaired, isTrue);
+      expect((await accFor(s).accept(intentOf('t1'))).record.seq, 3);
+      expect(File('${scope()}/meta.b.json.corrupt-1').readAsStringSync(), bad);
     });
 
-    test('a format-1 file without a checksum still loads and gets its backup', () async {
+    test('b) a higher-gen slot with a wrong checksum or garbage is never selected',
+        () async {
+      for (final badText in <String>[
+        '${framed(50, <String, int>{key(): 9000}).replaceFirst('9000', '9001')}',
+        'not json at all',
+        '',
+      ]) {
+        var s = await open();
+        await s.dispose();
+        File('${scope()}/meta.a.json').writeAsStringSync(framed(2, <String, int>{key(): 4}));
+        File('${scope()}/meta.b.json').writeAsStringSync(badText);
+        s = await open();
+        expect(s.openReport.recoveryRequired, isFalse, reason: badText);
+        expect((await accFor(s).accept(intentOf('t1'))).record.seq, 4, reason: badText);
+        await s.dispose();
+        // reset for the next iteration
+        for (final f in Directory(scope()).listSync().whereType<File>().toList()) {
+          if (f.path.contains('meta.')) f.deleteSync();
+        }
+        for (final f in Directory('${scope()}/records').listSync().whereType<File>().toList()) {
+          f.deleteSync();
+        }
+      }
+    });
+
+    test('b) corrupt NEWEST slot after real use: the older slot wins, surviving records raise the counter, nothing is reused',
+        () async {
       var s = await open();
       await accFor(s).accept(intentOf('t1', setIndex: 1));
+      await accFor(s).accept(intentOf('t2', setIndex: 2));
       await s.dispose();
-      final f = File('${scope()}/seq.json');
-      final body = f.readAsStringSync().split('\n').first;
-      f.writeAsStringSync(body); // legacy: plain JSON
-      File('${scope()}/seq.json.bak').deleteSync();
+      File('${scope()}/meta.${newestSlot(scope())}.json').writeAsStringSync('rot');
       s = await open();
       expect(s.openReport.recoveryRequired, isFalse);
-      expect(File('${scope()}/seq.json.bak').existsSync(), isTrue);
-      expect((await accFor(s).accept(intentOf('t2', setIndex: 2))).record.seq, 2);
+      await expectLater(accFor(s).accept(intentOf('dup', setIndex: 2)),
+          throwsA(isA<DuplicateLogicalSetException>()));
+      expect((await accFor(s).accept(intentOf('t3', setIndex: 3))).record.seq, 3);
     });
 
-    test('a failed primary write after the backup write never lets a seq be reused',
+    test('c) metadata write fault, then a second fault on cleanup, then restart and an identical retry: same sequence, no duplicate',
         () async {
-      final ops = FaultyFileOps();
+      final ops = DeleteFaultOps();
       var s = await open(ops: ops);
-      ops.armFor((p) => p.endsWith('/seq.json'), m: FaultMode.beforeTempWrite);
-      await expectLater(accFor(s).accept(intentOf('t1', setIndex: 1)), throwsA(anything));
-      ops.disarm();
+      await accFor(s).accept(intentOf('t1', setIndex: 1));
+      final slotsBefore = <String, String>{
+        for (final e in treeSnapshot(scope()).entries)
+          if (isMetaPath(e.key)) e.key: e.value,
+      };
+      ops.armFor(isMetaPath); // temp written, rename "crashes"
+      ops.failRecordDeletes = true; // and the rollback cannot delete the record
+      await expectLater(accFor(s).accept(intentOf('t2', setIndex: 2)), throwsA(anything));
+      expect(ops.failures, 1);
+      expect(ops.deleteFailures, greaterThanOrEqualTo(1));
+      // A failed write changes nothing: both slots are byte-identical.
+      final slotsAfter = <String, String>{
+        for (final e in treeSnapshot(scope()).entries)
+          if (isMetaPath(e.key)) e.key: e.value,
+      };
+      expect(slotsAfter, slotsBefore);
+
+      // Restart (ops without faults): temp removed, the residual record of
+      // set 2 is re-adopted together with its marker and sequence.
       s = await open();
       expect(s.openReport.recoveryRequired, isFalse);
-      final r = (await accFor(s).accept(intentOf('t1', setIndex: 1))).record;
-      expect(r.seq, greaterThanOrEqualTo(1));
-      final r2 = (await accFor(s).accept(intentOf('t2', setIndex: 2))).record;
-      expect(r2.seq, greaterThan(r.seq));
+      expect(s.openReport.removedTempFiles, greaterThanOrEqualTo(1));
+      expect((await s.listAll()).length, 2);
+      final retry = await accFor(s).accept(intentOf('t2', setIndex: 2));
+      expect(retry.record.seq, 2, reason: 'same sequence as without the faults');
+      final sameSet = (await s.listAll())
+          .where((r) => r.logicalSetId == 'sess-1:ex-squat:2')
+          .toList();
+      expect(sameSet.length, 1, reason: 'no duplicate APPEND for the set');
+      expect((await accFor(s).accept(intentOf('t3', setIndex: 3))).record.seq, 3);
     });
 
-    test('seq.json twin: a failed primary write restores the previous backup, so the failed set can be saved after a restart',
+    test('c) the same double fault, retried in the SAME process: after the next restart the set still has exactly one record',
         () async {
-      final ops = FaultyFileOps();
+      final ops = DeleteFaultOps();
       var s = await open(ops: ops);
-      final first = (await accFor(s).accept(intentOf('t1', setIndex: 1))).record;
-      final before = File('${scope()}/seq.json').readAsStringSync();
-      ops.armFor((p) => p.endsWith('/seq.json'), m: FaultMode.beforeTempWrite);
+      await accFor(s).accept(intentOf('t1', setIndex: 1));
+      ops.armFor(isMetaPath);
+      ops.failRecordDeletes = true;
       await expectLater(accFor(s).accept(intentOf('t2', setIndex: 2)), throwsA(anything));
       ops.disarm();
-      // Backup rolled back to the previous state: identical to the primary.
-      expect(File('${scope()}/seq.json.bak').readAsStringSync(), before);
-      expect(File('${scope()}/seq.json').readAsStringSync(), before);
+      ops.failRecordDeletes = false;
+      final retry = await accFor(s).accept(intentOf('t2', setIndex: 2));
+      expect(retry.record.seq, 2);
+
       s = await open();
-      expect(s.openReport.recoveryRequired, isFalse);
-      expect((await s.listAll()).single.operationId, first.operationId);
-      final second = (await accFor(s).accept(intentOf('t2', setIndex: 2))).record;
-      expect(second.seq, 2); // no phantom advance, no reuse of seq 1
+      final sameSet = (await s.listAll())
+          .where((r) => r.logicalSetId == 'sess-1:ex-squat:2')
+          .toList();
+      expect(sameSet.length, 1,
+          reason: 'a residual record file of the failed attempt must not '
+              'survive next to the retried record');
     });
 
-    test('seq.json twin on the very first write: no backup is left behind', () async {
+    test('c) a metadata fault during prune keeps the stub; prune works after a restart',
+        () async {
       final ops = FaultyFileOps();
       var s = await open(ops: ops);
-      ops.armFor((p) => p.endsWith('/seq.json'), m: FaultMode.beforeTempWrite);
-      await expectLater(accFor(s).accept(intentOf('t1')), throwsA(anything));
+      final r = (await accFor(s).accept(intentOf('t1'))).record;
+      await s.markSending(r.operationId);
+      await s.markResult(r.operationId,
+          const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
+      clock.advance(const Duration(days: 8));
+      ops.armFor(isMetaPath);
+      await expectLater(s.prune(), throwsA(anything));
+      expect(await s.get(r.operationId), isNotNull);
       ops.disarm();
-      expect(File('${scope()}/seq.json.bak').existsSync(), isFalse);
       s = await open();
-      expect((await accFor(s).accept(intentOf('t1'))).record.seq, 1);
-    });
-
-    for (final name in <String>['seq.json', 'logical_sets.json']) {
-      test('$name and its backup both corrupt: fail closed, originals untouched',
-          () async {
-        var s = await open();
-        final live1 = (await accFor(s).accept(intentOf('t1', setIndex: 1))).record;
-        await s.dispose();
-        File('${scope()}/$name').writeAsStringSync('corrupt-primary');
-        File('${scope()}/$name.bak').writeAsStringSync('corrupt-backup');
-        final before = _snapshot(scope());
-
-        s = await open();
-        expect(s.openReport.recoveryRequired, isTrue);
-        expect(s.openReport.recoveryRequiredReason, contains(name));
-        await expectLater(accFor(s).accept(intentOf('new', setIndex: 5)),
-            throwsA(isA<QueueRecoveryRequiredException>()));
-        clock.advance(const Duration(days: 30));
-        // Pruning is refused as well: nothing is removed.
-        try {
-          expect(await s.prune(), 0);
-        } on QueueRecoveryRequiredException {
-          // also acceptable: refused loudly
-        }
-        // Existing records stay readable.
-        expect((await s.get(live1.operationId)), isNotNull);
-        // Nothing was rewritten or removed, no .corrupt copy was made.
-        await s.dispose();
-        live = null;
-        expect(_snapshot(scope()), before);
-        expect(File('${scope()}/$name').readAsStringSync(), 'corrupt-primary');
-        expect(File('${scope()}/$name.bak').readAsStringSync(), 'corrupt-backup');
-      });
-    }
-
-    test('corrupt primary and no backup at all: fail closed', () async {
-      var s = await open();
-      await accFor(s).accept(intentOf('t1'));
-      await s.dispose();
-      File('${scope()}/seq.json').writeAsStringSync('x');
-      File('${scope()}/seq.json.bak').deleteSync();
-      s = await open();
-      expect(s.openReport.recoveryRequired, isTrue);
-      await expectLater(accFor(s).accept(intentOf('t2', setIndex: 2)),
-          throwsA(isA<QueueRecoveryRequiredException>()));
-      expect(File('${scope()}/seq.json').readAsStringSync(), 'x');
+      expect(await s.get(r.operationId), isNotNull);
+      expect(await s.prune(), 1);
+      await expectLater(accFor(s).accept(intentOf('again')),
+          throwsA(isA<DuplicateLogicalSetException>()));
     });
 
     test('a fail-closed store can still send what it already holds', () async {
       var s = await open();
       final rec = (await accFor(s).accept(intentOf('t1'))).record;
       await s.dispose();
-      File('${scope()}/seq.json').writeAsStringSync('x');
-      File('${scope()}/seq.json.bak').writeAsStringSync('y');
+      File('${scope()}/meta.a.json').writeAsStringSync('x');
+      File('${scope()}/meta.b.json').writeAsStringSync('y');
       s = await open();
       expect(s.openReport.recoveryRequired, isTrue);
       final rep = await senderFor(s, server, clock).sendNext();
@@ -418,9 +522,3 @@ void main() {
     });
   });
 }
-
-
-Map<String, String> _snapshot(String scopeDir) => <String, String>{
-      for (final e in Directory(scopeDir).listSync(recursive: true))
-        if (e is File) e.path: base64.encode(e.readAsBytesSync()),
-    };

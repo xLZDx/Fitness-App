@@ -87,22 +87,24 @@ void main() {
       ops.disarm();
       final r = await accFor(s1).accept(intentOf('tap-1'));
       expect(r.created, isTrue);
-      // The failed attempt burnt seq 1; gaps are allowed, reuse is not.
-      expect(r.record.seq, 2);
+      // The sequence is consumed only by a committed accept: same seq again.
+      expect(r.record.seq, 1);
       final s2 = await open();
-      expect((await s2.listAll()).single.seq, 2);
+      expect((await s2.listAll()).single.seq, 1);
     });
 
+
     test('failure before the temp file is even written changes nothing', () async {
-      final ops = FaultyFileOps()
-        ..armFor((p) => isSeqPath(p), m: FaultMode.beforeTempWrite);
+      final ops = FaultyFileOps();
       final s1 = await open(ops: ops);
+      ops.armFor(isMetaPath, m: FaultMode.beforeTempWrite);
       await expectLater(accFor(s1).accept(intentOf('tap-1')), throwsA(anything));
       expect(await s1.listAll(), isEmpty);
       ops.disarm();
       final r = await accFor(s1).accept(intentOf('tap-1'));
       expect(r.record.seq, 1); // the counter was not advanced by the failure
     });
+
 
     test('crash after the local commit: record survives reopen, still pending',
         () async {
@@ -169,16 +171,6 @@ void main() {
       expect(b.seq, 2);
     });
 
-    test('a lost counter file is repaired above the highest surviving seq',
-        () async {
-      final s1 = await open();
-      await accFor(s1).accept(intentOf('t1', setIndex: 1));
-      await accFor(s1).accept(intentOf('t2', setIndex: 2));
-      await File('${rootOfScope(root, kUid)}/seq.json').delete();
-      final s2 = await open();
-      final c = (await accFor(s2).accept(intentOf('t3', setIndex: 3))).record;
-      expect(c.seq, 3);
-    });
   });
 
   group('crash while SENDING', () {
@@ -276,13 +268,13 @@ void main() {
           .firstWhere((f) => f.path.endsWith('.json'));
       final full = await recFile.readAsBytes();
       await File('${recFile.path}.tmp').writeAsBytes(full.sublist(0, full.length ~/ 3));
-      await File('$scope/seq.json.tmp').writeAsString('{"format":1,"coun');
+      await File('$scope/meta.a.json.tmp').writeAsString('{"format":1,"coun');
       final s2 = await open();
       expect(s2.openReport.removedTempFiles, 2);
       expect(s2.openReport.loaded, 1);
       expect((await s2.get(a.operationId))!.toJson(), a.toJson());
       expect(File('${recFile.path}.tmp').existsSync(), isFalse);
-      expect(File('$scope/seq.json.tmp').existsSync(), isFalse);
+      expect(File('$scope/meta.a.json.tmp').existsSync(), isFalse);
     });
 
     test('failure persisting a SYNCED result keeps the payload and the old state',
@@ -397,17 +389,18 @@ void main() {
     });
   });
 
-  group('logical-set marker', () {
-    bool isMarkerPath(String p) => p.endsWith('/logical_sets.json');
-    String markerFile() => '${rootOfScope(root, kUid)}/logical_sets.json';
-
-    test('marker write failure rolls the record back on disk and in memory',
+  group('logical-set marker and metadata slots', () {
+    test('metadata write failure rolls the record back; the retry works now and after a restart',
         () async {
-      final ops = FaultyFileOps()..armFor(isMarkerPath);
-      final s1 = await open(ops: ops);
+      final ops = FaultyFileOps();
+      final s1 = await open(ops: ops); // a fresh store writes its first slot here
+      final slotsBefore = <String, String>{
+        for (final e in treeSnapshot(rootOfScope(root, kUid)).entries)
+          if (isMetaPath(e.key)) e.key: e.value,
+      };
+      ops.armFor(isMetaPath);
       await expectLater(accFor(s1).accept(intentOf('tap-1')), throwsA(anything));
       expect(ops.failures, 1);
-      // Not saved means not saved: live view and disk agree.
       expect(await s1.listAll(), isEmpty);
       expect(await s1.listPending(), isEmpty);
       final recordFiles = Directory('${rootOfScope(root, kUid)}/records')
@@ -415,38 +408,39 @@ void main() {
           .whereType<File>()
           .where((f) => f.path.endsWith('.json'));
       expect(recordFiles, isEmpty);
+      // No slot was changed by the failed write.
+      expect(<String, String>{
+        for (final e in treeSnapshot(rootOfScope(root, kUid)).entries)
+          if (isMetaPath(e.key)) e.key: e.value,
+      }, slotsBefore);
       final s2 = await open();
       expect(await s2.listAll(), isEmpty);
-      // The tap can be retried and then succeeds (the set is not blocked).
       final r = await accFor(s2).accept(intentOf('tap-1'));
       expect(r.created, isTrue);
+      expect(r.record.seq, 1);
     });
 
-    test('residual record without a marker (crash after the record write): open rebuilds the marker',
+    test('records without any metadata files and without store.init seed a fresh store',
         () async {
       final s1 = await open();
       final rec = (await accFor(s1).accept(intentOf('tap-1'))).record;
       await s1.dispose();
-      // The marker write never happened: neither the backup nor the primary.
-      File(markerFile()).deleteSync();
-      File('${markerFile()}.bak').deleteSync();
+      final scope = rootOfScope(root, kUid);
+      for (final n in ['meta.a.json', 'meta.b.json', 'store.init']) {
+        final f = File('$scope/$n');
+        if (f.existsSync()) f.deleteSync();
+      }
       final s2 = await open();
+      expect(s2.openReport.recoveryRequired, isFalse);
       expect((await s2.listAll()).single.operationId, rec.operationId);
-      expect(File(markerFile()).existsSync(), isTrue,
-          reason: 'open must persist the rebuilt marker');
-      expect(await File(markerFile()).readAsString(), contains(rec.logicalSetId!));
-      expect(s2.openReport.markersFileRepaired, isFalse); // rebuilt, not restored
-      await s2.markSending(rec.operationId);
-      await s2.markResult(rec.operationId,
-          const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
-      clock.advance(const Duration(days: 8));
-      expect(await s2.prune(), 1);
-      final s3 = await open();
-      await expectLater(accFor(s3).accept(intentOf('tap-2')),
+      await expectLater(accFor(s2).accept(intentOf('tap-2')),
           throwsA(isA<DuplicateLogicalSetException>()));
+      expect((await accFor(s2).accept(intentOf('t3', setIndex: 3))).record.seq, 2);
+      expect(File('$scope/store.init').existsSync(), isTrue);
     });
 
-    test('marker survives prune and restart on disk, identity only', () async {
+    test('the newest slot holds the marker of a pruned set, identity only',
+        () async {
       final s1 = await open();
       final a = (await accFor(s1).accept(intentOf('tap-1'))).record;
       await s1.markSending(a.operationId);
@@ -454,7 +448,8 @@ void main() {
           const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
       clock.advance(const Duration(days: 8));
       expect(await s1.prune(), 1);
-      final text = await File(markerFile()).readAsString();
+      final scope = rootOfScope(root, kUid);
+      final text = File('$scope/meta.${newestSlot(scope)}.json').readAsStringSync();
       expect(text, contains(a.logicalSetId!));
       expect(text, isNot(contains('actualReps')));
       final s2 = await open();
@@ -462,53 +457,8 @@ void main() {
       await expectLater(accFor(s2).accept(intentOf('tap-2')),
           throwsA(isA<DuplicateLogicalSetException>()));
     });
-
-    test('only the primary marker file missing: restored from the backup', () async {
-      final s1 = await open();
-      final rec = (await accFor(s1).accept(intentOf('tap-1'))).record;
-      await s1.dispose();
-      File(markerFile()).deleteSync();
-      final s2 = await open();
-      expect(s2.openReport.markersFileRepaired, isTrue);
-      expect(s2.openReport.recoveryRequired, isFalse);
-      expect(File(markerFile()).existsSync(), isTrue);
-      expect((await s2.listAll()).single.operationId, rec.operationId);
-    });
-
-    test('corrupt primary marker file: restored from the backup, corrupt copy preserved, pruned-stub marker kept',
-        () async {
-      final s1 = await open();
-      final pruned = (await accFor(s1).accept(intentOf('t1', setIndex: 1))).record;
-      final live = (await accFor(s1).accept(intentOf('t2', setIndex: 2))).record;
-      await s1.markSending(pruned.operationId);
-      await s1.markResult(pruned.operationId,
-          const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
-      clock.advance(const Duration(days: 8));
-      expect(await s1.prune(), 1);
-      await File(markerFile()).writeAsString('{not json');
-
-      final s2 = await open();
-      expect(s2.openReport.markersFileRepaired, isTrue);
-      expect(s2.openReport.recoveryRequired, isFalse);
-      expect((await s2.listAll()).single.operationId, live.operationId);
-      // The corrupt evidence is kept beside the restored file.
-      final kept = Directory(rootOfScope(root, kUid))
-          .listSync()
-          .whereType<File>()
-          .where((f) => f.path.contains('logical_sets.json.corrupt-'))
-          .toList();
-      expect(kept.length, 1);
-      expect(kept.single.readAsStringSync(), '{not json');
-      // Both sets still refuse a second APPEND, the pruned one included.
-      await expectLater(accFor(s2).accept(intentOf('t3', setIndex: 2)),
-          throwsA(isA<DuplicateLogicalSetException>()));
-      await expectLater(accFor(s2).accept(intentOf('t4', setIndex: 1)),
-          throwsA(isA<DuplicateLogicalSetException>()));
-      // The restored file is healthy again.
-      final s3 = await open();
-      expect(s3.openReport.markersFileRepaired, isFalse);
-    });
   });
+
 
   group('corruption handling', () {
     test('an unreadable record file is reported, kept on disk and not loaded',

@@ -1805,3 +1805,10 @@ Facts: gate round 1 on the V0 slice returned 1 BLOCKER and 4 MAJOR: the server a
 Root cause: an untrusted client field was used for an admission decision; a state machine had a nonterminal outcome stored in a terminal state; recovery code preferred rebuilding over failing closed; a two-file write was ordered without checking the failure path.
 Missed by: author, tests and the four earlier reviewers; caught by the gate (first five) and by the test agent (the phantom marker).
 Rule next time: never gate on a field the caller supplies; a nonterminal outcome must stay in a state that keeps the ordering barrier; for every damaged-metadata path decide fail-closed first; for every two-step write test the failure of the second step.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 2 (two-slot queue metadata)
+Kind: FAILURE
+Facts: gate round 2 returned 3 MAJOR on the primary+backup metadata scheme that I introduced to answer round 1: both copies missing was treated as a fresh store, an unchecksummed primary overrode a valid backup, and a failed primary write plus a failed backup rollback promoted an uncommitted backup. The test agent then found a fourth defect in the rewrite: a failed metadata write plus a failed record rollback let a retry mint a second record for the same logical set.
+Root cause: a recovery scheme with two copies and a rollback has no single commit point; each fault path needed its own patch. The fix of round 1 added a mechanism instead of removing the ambiguity.
+Missed by: author and tests; caught by the gate (three) and by the test agent (the fourth).
+Rule next time: give every persisted state exactly one commit point (successful atomic rename of a generation-numbered slot), no rollback of metadata, a store.init marker to tell fresh from lost, and make acceptance idempotent for the same logical set; when a fix adds a second recovery path, stop and look for the single-commit-point design first.

@@ -3,19 +3,25 @@
 /// Layout under `<root>/<scope>/` where `scope` is derived from the uid by a
 /// hash (the raw uid is never a path segment):
 ///   - `records/<hex(operationId)>.json`  one file per record
-///   - `seq.json`                         the seq counters (never pruned)
-///   - `logical_sets.json`                the logical-set markers (never pruned)
-///   - `seq.json.bak`, `logical_sets.json.bak`  validated duplicates
+///   - `meta.a.json`, `meta.b.json`       two slots of ONE metadata document
+///   - `store.init`                       written once the first slot exists
 /// Every write is temp file + flush + rename (see [QueueFileOps]).
 ///
-/// The two metadata files carry the information that must outlive pruned
-/// records (sequence high-water marks, logical-set identity). Each is written
-/// as one JSON line plus a `#sha256:<hex>` checksum line, backup first and
-/// primary second, so the backup is never older than the primary. At open a
-/// corrupt or missing file is recovered from its validated twin; a corrupt
-/// file is preserved as `<name>.corrupt-<n>` before it is replaced. If neither
-/// copy validates the store fails closed ([QueueRecoveryRequiredException] on
-/// append) instead of rebuilding from surviving records.
+/// The metadata document `{format:2, gen, seq:{...}, logicalSets:{...}}` holds
+/// the information that must outlive pruned records (sequence high-water marks
+/// and logical-set identity markers) and is never pruned. It is followed by a
+/// `#sha256:<hex>` line over the body. A write goes to the slot that does NOT
+/// hold the highest valid `gen`, with `gen + 1`; the commit point is the
+/// successful rename, so a failed write changes neither slot and nothing that
+/// was not acknowledged can ever be promoted. No rollback of metadata exists.
+///
+/// Load takes the valid slot with the highest `gen`. A corrupt slot beside a
+/// valid one is preserved as `<slot>.corrupt-<n>` and later overwritten by a
+/// normal write. If `store.init` exists but no slot validates, or a slot is
+/// corrupt and none validates, the store fails closed
+/// ([QueueRecoveryRequiredException] on append and prune) with the originals
+/// untouched. A store without `store.init` and without any slot file is fresh
+/// (record files of an older in-development build are used to seed it).
 ///
 /// Known limits (V0): one store instance per uid per process is assumed (no
 /// cross-process lock); the other local tables of section 3.1 (set_context,
@@ -69,11 +75,12 @@ class QueueOpenReport {
   /// them as "could not sync".
   final List<String> unreadableFiles;
 
-  /// `seq.json` was corrupt or missing and was restored from its backup.
+  /// A corrupt metadata slot was found beside a valid one and was preserved as
+  /// `.corrupt-<n>`. Seq counters and markers share one document, so this and
+  /// [markersFileRepaired] are always equal.
   final bool seqFileRepaired;
 
-  /// `logical_sets.json` was corrupt or missing and was restored from its
-  /// backup.
+  /// See [seqFileRepaired].
   final bool markersFileRepaired;
 
   /// Non-null when the metadata could not be completely recovered: the store
@@ -111,13 +118,20 @@ class FileCommandQueueStore extends BaseCommandQueueStore
     _openScopes.remove(scopeDir);
   }
 
-  String get _recordsDir => '$scopeDir/records';
-  String get _seqPath => '$scopeDir/seq.json';
-  String get _markersPath => '$scopeDir/logical_sets.json';
-  static const String _backupSuffix = '.bak';
   static const String _corruptInfix = '.corrupt-';
+  static const String _checkPrefix = '#sha256:';
+
+  String get _recordsDir => '$scopeDir/records';
+  String get _initPath => '$scopeDir/store.init';
+  String _slotName(String slot) => 'meta.$slot.json';
+  String _slotPath(String slot) => '$scopeDir/${_slotName(slot)}';
   String _recordPath(String operationId) =>
       '$_recordsDir/${_hex(operationId)}.json';
+
+  /// Generation and slot of the newest valid metadata document; slot null
+  /// until the first document was written.
+  int _gen = 0;
+  String? _activeSlot;
 
   /// Opens (and recovers) the store of [uid] under [rootDir].
   ///
@@ -173,42 +187,62 @@ class FileCommandQueueStore extends BaseCommandQueueStore
         unreadable.add(name);
       }
     }
-    // Leftover temp files of seq.json / logical_sets.json (unique names).
+    // Leftover temp files of the metadata slots (unique names).
     for (final name in await ops.listFileNames(scopeDir)) {
       if (name.endsWith(IoQueueFileOps.tempSuffix)) {
         await ops.delete('$scopeDir/$name');
         removedTmp++;
       }
     }
-    final problems = <String>[];
-    final seqMeta = await _loadMeta<Map<String, int>>(
-      path: _seqPath,
-      decode: (doc) => <String, int>{
-        for (final e in (doc['counters'] as Map).entries)
-          e.key as String: e.value as int,
-      },
-      problems: problems,
-    );
-    final markerMeta = await _loadMeta<List<LogicalSetMarker>>(
-      path: _markersPath,
-      decode: (doc) => <LogicalSetMarker>[
-        for (final e in (doc['sets'] as Map).entries)
-          LogicalSetMarker(
-            logicalSetId: e.key as String,
-            operationId: (e.value as Map)['operationId'] as String,
-            acceptedAtLocalWallMs: (e.value as Map)['acceptedAt'] as int,
-          ),
-      ],
-      problems: problems,
-    );
-    seed(records, seqMeta.value ?? <String, int>{},
-        markerMeta.value ?? const <LogicalSetMarker>[]);
-    if (problems.isNotEmpty) {
-      // Fail closed: nothing is rewritten and the corrupt originals stay on
-      // disk. Appends and pruning are refused; existing records stay readable.
-      recoveryRequiredReason = problems.join('; ');
-    } else if (markersNeedPersist) {
-      await persistLogicalSetMarkers(markersView);
+
+    final initExists = await ops.read(_initPath) != null;
+    final a = await _readSlot('a');
+    final b = await _readSlot('b');
+    _Slot? best;
+    for (final s in <_Slot>[a, b]) {
+      if (s.valid && (best == null || s.gen > best.gen)) best = s;
+    }
+    final anySlotFile = a.raw != null || b.raw != null;
+    var corruptPreserved = false;
+    String? problem;
+    var needFirstWrite = false;
+    var needInitWrite = false;
+
+    if (best != null) {
+      _gen = best.gen;
+      _activeSlot = best.slot;
+      for (final s in <_Slot>[a, b]) {
+        if (s.raw != null && !s.valid) {
+          await _preserveCorrupt(_slotName(s.slot), s.raw!);
+          corruptPreserved = true;
+        }
+      }
+      needInitWrite = !initExists;
+    } else if (initExists || anySlotFile) {
+      problem = initExists && !anySlotFile
+          ? 'metadata slots are missing'
+          : 'metadata slots are unreadable';
+    } else {
+      // Fresh store (also: records of an older in-development build, which
+      // seed the counters and markers below).
+      needFirstWrite = true;
+    }
+
+    seed(records, best?.counters ?? <String, int>{},
+        best?.markers ?? const <LogicalSetMarker>[]);
+    if (problem != null) {
+      // Fail closed: nothing is rewritten and the originals stay on disk.
+      // Appends and pruning are refused; existing records stay readable.
+      recoveryRequiredReason = problem;
+    } else {
+      if (needFirstWrite || markersNeedPersist) {
+        await persistMetadata(seqCountersView, markersView);
+        needInitWrite = !initExists;
+      }
+      if (needInitWrite) {
+        await ops.writeAtomic(
+            _initPath, Uint8List.fromList(utf8.encode('fitnessup-queue 2\n')));
+      }
     }
     final recovered = await recoverInterrupted();
     _report = QueueOpenReport(
@@ -216,8 +250,8 @@ class FileCommandQueueStore extends BaseCommandQueueStore
       recoveredSending: recovered,
       removedTempFiles: removedTmp,
       unreadableFiles: unreadable,
-      seqFileRepaired: seqMeta.restored,
-      markersFileRepaired: markerMeta.restored,
+      seqFileRepaired: corruptPreserved,
+      markersFileRepaired: corruptPreserved,
       recoveryRequiredReason: recoveryRequiredReason,
     );
   }
@@ -229,135 +263,72 @@ class FileCommandQueueStore extends BaseCommandQueueStore
             utf8.encode(jsonEncode({'format': 1, 'record': record.toJson()}))),
       );
 
+  /// Writes the complete metadata document to the slot that does not hold the
+  /// newest valid generation. The in-memory generation advances only after the
+  /// rename succeeded; a throw leaves both slots as they were.
   @override
-  Future<void> persistSeqCounters(Map<String, int> counters) =>
-      _writeMeta(_seqPath, {'format': 1, 'counters': counters});
-
-  @override
-  Future<void> persistLogicalSetMarkers(
-          Map<String, LogicalSetMarker> markers) =>
-      _writeMeta(_markersPath, {
-        'format': 1,
-        'sets': {
-          for (final e in markers.entries)
-            e.key: {
-              'operationId': e.value.operationId,
-              'acceptedAt': e.value.acceptedAtLocalWallMs,
-            },
-        },
-      });
-
-  // ---- redundant metadata files -------------------------------------------
-
-  static const String _checkPrefix = '#sha256:';
-
-  static Uint8List _frame(Map<String, Object?> doc) {
-    final body = jsonEncode(doc);
+  Future<void> persistMetadata(
+      Map<String, int> counters, Map<String, LogicalSetMarker> markers) async {
+    final gen = _gen + 1;
+    final slot = _activeSlot == 'a' ? 'b' : 'a';
+    final body = jsonEncode({
+      'format': 2,
+      'gen': gen,
+      'seq': counters,
+      'logicalSets': {
+        for (final e in markers.entries)
+          e.key: {
+            'operationId': e.value.operationId,
+            'acceptedAt': e.value.acceptedAtLocalWallMs,
+          },
+      },
+    });
     final sum = crypto.sha256.convert(utf8.encode(body));
-    return Uint8List.fromList(utf8.encode('$body\n$_checkPrefix$sum\n'));
+    await ops.writeAtomic(_slotPath(slot),
+        Uint8List.fromList(utf8.encode('$body\n$_checkPrefix$sum\n')));
+    _gen = gen;
+    _activeSlot = slot;
   }
 
-  /// Backup first, primary second: if the process dies between the two, the
-  /// backup is the newer (or equal) copy, never the older one.
-  Future<void> _writeMeta(String path, Map<String, Object?> doc) async {
-    final bytes = _frame(doc);
-    final bak = '$path$_backupSuffix';
-    final previous = await ops.read(bak);
-    await ops.writeAtomic(bak, bytes);
-    try {
-      await ops.writeAtomic(path, bytes);
-    } catch (_) {
-      // The write was not acknowledged: put the previous backup back so a
-      // restart cannot restore an unacknowledged state from it.
-      try {
-        if (previous == null) {
-          await ops.delete(bak);
-        } else {
-          await ops.writeAtomic(bak, previous);
-        }
-      } catch (_) {
-        // Residual: the backup stays one write ahead; open prefers a valid
-        // primary, and uses the backup only if the primary is lost.
-      }
-      rethrow;
-    }
-  }
+  @override
+  Future<void> removeRecordFromDisk(String operationId) =>
+      ops.delete(_recordPath(operationId));
 
-  /// Parses a framed file. A file without a checksum line is a format-1 file
-  /// written before the redundancy existed and is accepted if it parses. Null
-  /// when the content is corrupt.
-  static Map<String, Object?>? _parseFramed(Uint8List raw) {
+  Future<_Slot> _readSlot(String slot) async {
+    final raw = await ops.read(_slotPath(slot));
+    if (raw == null) return _Slot(slot, null);
     try {
       final text = utf8.decode(raw).trimRight();
       final idx = text.lastIndexOf('\n$_checkPrefix');
-      final String body;
-      if (idx < 0) {
-        body = text;
-      } else {
-        body = text.substring(0, idx);
-        final claimed = text.substring(idx + 1 + _checkPrefix.length).trim();
-        if (crypto.sha256.convert(utf8.encode(body)).toString() != claimed) {
-          return null;
-        }
+      if (idx < 0) return _Slot(slot, raw);
+      final body = text.substring(0, idx);
+      final claimed = text.substring(idx + 1 + _checkPrefix.length).trim();
+      if (crypto.sha256.convert(utf8.encode(body)).toString() != claimed) {
+        return _Slot(slot, raw);
       }
-      return Map<String, Object?>.from(jsonDecode(body) as Map);
+      final doc = Map<String, Object?>.from(jsonDecode(body) as Map);
+      if (doc['format'] != 2) return _Slot(slot, raw);
+      final gen = doc['gen'] as int;
+      final counters = <String, int>{
+        for (final e in (doc['seq'] as Map).entries)
+          e.key as String: e.value as int,
+      };
+      final markers = <LogicalSetMarker>[
+        for (final e in (doc['logicalSets'] as Map).entries)
+          LogicalSetMarker(
+            logicalSetId: e.key as String,
+            operationId: (e.value as Map)['operationId'] as String,
+            acceptedAtLocalWallMs: (e.value as Map)['acceptedAt'] as int,
+          ),
+      ];
+      return _Slot(slot, raw, gen: gen, counters: counters, markers: markers);
     } catch (_) {
-      return null;
+      return _Slot(slot, raw);
     }
-  }
-
-  /// Reads [path] and its backup. Both missing means a fresh store (value
-  /// null). Otherwise a validated copy is returned (and the other copy is
-  /// healed, a corrupt file being preserved first) or the problem is added to
-  /// [problems] and nothing is touched (fail closed).
-  Future<_Meta<T>> _loadMeta<T>({
-    required String path,
-    required T Function(Map<String, Object?> doc) decode,
-    required List<String> problems,
-  }) async {
-    final name = path.substring(path.lastIndexOf('/') + 1);
-    final bakPath = '$path$_backupSuffix';
-
-    Future<(Uint8List?, T?)> read(String p) async {
-      final raw = await ops.read(p);
-      if (raw == null) return (null, null);
-      final doc = _parseFramed(raw);
-      if (doc == null) return (raw, null);
-      try {
-        return (raw, decode(doc));
-      } catch (_) {
-        return (raw, null);
-      }
-    }
-
-    final (pRaw, pVal) = await read(path);
-    final (bRaw, bVal) = await read(bakPath);
-    if (pRaw == null && bRaw == null) return _Meta<T>(null, false);
-
-    if (pVal != null && bVal != null) {
-      // The primary is authoritative. The backup may be one write ahead (the
-      // primary write after it failed or the process died); that write was not
-      // acknowledged, so its extra content is ignored.
-      return _Meta<T>(pVal, false);
-    }
-    if (pVal != null) {
-      // Backup missing (older store) or corrupt: re-create it from the primary.
-      if (bRaw != null) await _preserveCorrupt('$name$_backupSuffix', bRaw);
-      await ops.writeAtomic(bakPath, pRaw!);
-      return _Meta<T>(pVal, false);
-    }
-    if (bVal != null) {
-      // Primary corrupt or missing: keep the evidence, restore from the backup.
-      if (pRaw != null) await _preserveCorrupt(name, pRaw);
-      await ops.writeAtomic(path, bRaw!);
-      return _Meta<T>(bVal, true);
-    }
-    problems.add('$name and its backup are unreadable');
-    return _Meta<T>(null, false);
   }
 
   /// Copies corrupt bytes to `<name>.corrupt-<n>` (n = highest existing + 1)
-  /// beside the original before the original is replaced.
+  /// beside the original, which is left in place.
   Future<void> _preserveCorrupt(String name, Uint8List raw) async {
     var next = 1;
     for (final f in await ops.listFileNames(scopeDir)) {
@@ -368,16 +339,18 @@ class FileCommandQueueStore extends BaseCommandQueueStore
     }
     await ops.writeAtomic('$scopeDir/$name$_corruptInfix$next', raw);
   }
-
-  @override
-  Future<void> removeRecordFromDisk(String operationId) =>
-      ops.delete(_recordPath(operationId));
 }
 
-class _Meta<T> {
-  _Meta(this.value, this.restored);
+/// One metadata slot as found on disk. [raw] null = file missing; [valid] =
+/// checksum, format and content all verified.
+class _Slot {
+  _Slot(this.slot, this.raw, {this.gen = 0, this.counters, this.markers});
 
-  /// Null for a fresh store (no file) or when nothing validated.
-  final T? value;
-  final bool restored;
+  final String slot;
+  final Uint8List? raw;
+  final int gen;
+  final Map<String, int>? counters;
+  final List<LogicalSetMarker>? markers;
+
+  bool get valid => counters != null && markers != null;
 }

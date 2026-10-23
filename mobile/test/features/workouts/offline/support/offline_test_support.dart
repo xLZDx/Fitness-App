@@ -263,7 +263,8 @@ class FaultyFileOps implements QueueFileOps {
 }
 
 bool isRecordPath(String p) => p.contains('/records/') && p.endsWith('.json');
-bool isSeqPath(String p) => p.endsWith('/seq.json');
+bool isSeqPath(String p) =>
+    p.endsWith('/meta.a.json') || p.endsWith('/meta.b.json');
 
 /// A store flavour for the parametrised suites.
 class StoreKind {
@@ -320,4 +321,57 @@ Future<String> dumpTree(Directory dir) async {
     }
   }
   return b.toString();
+}
+
+bool isMetaPath(String p) {
+  final name = p.substring(p.lastIndexOf('/') + 1);
+  return name == 'meta.a.json' || name == 'meta.b.json';
+}
+
+String scopeOf(Directory root, [String uid = kUid]) =>
+    '${rootPathOf(root)}/${queueScopeDirName(uid)}';
+
+/// Parsed metadata document of a slot ('a' or 'b'), null if the file is
+/// missing or not a framed document.
+Map<String, Object?>? slotDoc(String scope, String slot) {
+  final f = File('$scope/meta.$slot.json');
+  if (!f.existsSync()) return null;
+  final text = f.readAsStringSync().trimRight();
+  final i = text.lastIndexOf('\n#sha256:');
+  final body = i < 0 ? text : text.substring(0, i);
+  try {
+    return Map<String, Object?>.from(jsonDecode(body) as Map);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// 'a' or 'b': the slot with the highest gen.
+String newestSlot(String scope) {
+  final a = (slotDoc(scope, 'a')?['gen'] as int?) ?? -1;
+  final b = (slotDoc(scope, 'b')?['gen'] as int?) ?? -1;
+  return a >= b ? 'a' : 'b';
+}
+
+String olderSlot(String scope) => newestSlot(scope) == 'a' ? 'b' : 'a';
+
+/// Bytes of every file under [dir] keyed by path (for "nothing changed").
+Map<String, String> treeSnapshot(String dir) => <String, String>{
+      for (final e in Directory(dir).listSync(recursive: true))
+        if (e is File)
+          e.path.replaceAll('\\', '/'): base64.encode(e.readAsBytesSync()),
+    };
+
+/// FaultyFileOps that can also fail deletes of record files.
+class DeleteFaultOps extends FaultyFileOps {
+  bool failRecordDeletes = false;
+  int deleteFailures = 0;
+  @override
+  Future<void> delete(String path) {
+    if (failRecordDeletes && isRecordPath(path)) {
+      deleteFailures++;
+      throw const FileSystemException('injected delete failure');
+    }
+    return super.delete(path);
+  }
 }
