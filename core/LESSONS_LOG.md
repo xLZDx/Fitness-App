@@ -1743,3 +1743,10 @@ Facts: gate round 4 returned 1 BLOCKER and 3 MAJOR: the new GAP marker outcome c
 Root cause: a new outcome value was added to a state machine without re-reading the older rule that consumes it, and an external log was treated as more structured than its documentation guarantees.
 Missed by: author; caught by the gate.
 Rule next time: when adding a value to a state machine, grep every rule that mentions the machine and state the transition for each reader; when a design leans on an external log, write what each field is derived from and mark the unverified fields as a deploy gate.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 5
+Kind: FAILURE
+Facts: gate round 5 returned 2 MAJOR: the audit key text still derived the operation from the RPC method after a later edit moved it to per-mutation extraction, and the batch write response has no commit time so the key could not be built for a batch delete; the gap resolution step was written for one session class while the trigger handles three.
+Root cause: an edit changed one sentence of a definition without searching for its twin, and a platform field was assumed to exist without reading the response shape.
+Missed by: author; caught by the gate.
+Rule next time: after changing a definition grep the whole document for the old wording; for every external response used as an identity source list which fields each call shape actually returns and declare shapes without a source unsupported; when a step is shared by classes, state it once before the class split.

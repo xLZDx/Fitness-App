@@ -59354,3 +59354,7 @@ Decision: accept all five findings of gate round 3. Gap records and no-op delete
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 4
 
 Decision: accept all four findings of gate round 4. The GAP audit marker is an explicit exception to the marker-first ordering with an atomic compare-and-set resolution by the trigger; audit records are expanded per successful document mutation and the deploy check covers batches, streams and failed mutations; an ordinary no-op write gets a terminal WRITE_NOOP audit marker; a write whose version cannot be proven becomes an unverified gap with non-assertive owner copy. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round4.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 5
+
+Decision: accept both findings of gate round 5. The audit operation is defined once, per successful mutation; supported audit shapes are enumerated with their commit-time source (single commit, streaming write, batch update by its update time) and a batch delete is unsupported (unverified gap keyed by the log insert id, alert, DRAIN blocked); gap resolution is a shared step 0 for session classes A, B and C. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round5.md; validator OK.

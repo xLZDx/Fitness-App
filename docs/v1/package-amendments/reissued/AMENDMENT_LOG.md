@@ -78,3 +78,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 4 (GPT-PM, head 79cd1fb0: 1 BLOCKER, 3 MAJOR)
 - FU-AC-119: S26 gained the resolved-gap assertions, no-op write accounting, unverified write gaps and audit extraction cases.
+
+## Pre-implementation gate round 5 (GPT-PM, head ae7a7b0b: 0 BLOCKER, 2 MAJOR)
+- FU-AC-119: S26 audit-extraction case now uses real response shapes including batch deletes and mixed results; new case for gap resolution in session classes B and C.
