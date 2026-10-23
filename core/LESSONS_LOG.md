@@ -1847,3 +1847,9 @@ Facts: the resume feature I introduced to answer round 2 created five new defect
 Root cause: new persistence was added to a privacy-sensitive flow without listing who must delete it, who owns each page, what happens on a disk fault and what the terminal state is.
 Missed by: author and tests; caught by the gate.
 Rule next time: any new on-device copy of personal data needs, in the design, an owner, a deletion path (account deletion, sign-out, expiry), a size bound, a fault behaviour and a terminal state before the first line of code.
+
+## 2026-10-23 - Commit: feat(v1): transactional SQLite store for the offline command queue
+Kind: SUCCESS
+Facts: choosing a store with one commit point (a SQLite transaction) removed the two-slot metadata, part files and rollback code that had produced four gate findings in the previous design; the contract suite now runs on every store implementation.
+Why it worked: the operator's decision moved the guarantee from hand-written file ordering to a documented storage primitive, and the shared contract tests exposed any difference between stores.
+Rule next time: prefer a storage primitive with a documented commit point over composing atomicity from files; run one contract suite against every implementation.

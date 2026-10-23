@@ -47,6 +47,54 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
   Future<void> persistMetadata(
       Map<String, int> counters, Map<String, LogicalSetMarker> markers);
 
+  /// Durably commits one accepted command: record, logical-set marker and the
+  /// advanced counter [nextSeq] of [seqKey]. A throw means "not saved".
+  ///
+  /// Default (file store): record write, then ONE metadata write after it. A
+  /// crash between the two is healed by seed() (a surviving record raises its
+  /// counter and re-creates its marker). If the metadata write fails while the
+  /// process lives, the record is rolled back. A transactional store overrides
+  /// this with a single all-or-nothing transaction.
+  Future<void> commitAccept(CommandRecord record, String seqKey, int nextSeq,
+      LogicalSetMarker marker) async {
+    await persistRecord(record);
+    try {
+      await persistMetadata(Map<String, int>.of(_nextSeq)..[seqKey] = nextSeq,
+          Map.of(_markers)..[marker.logicalSetId] = marker);
+    } catch (_) {
+      try {
+        await removeRecordFromDisk(record.operationId);
+      } catch (_) {
+        // Double fault: the record file survives on disk (it is re-adopted at
+        // the next open). Mirror that in memory now, so a retry of the same
+        // tap finds this record instead of minting a second one. Its marker
+        // stays missing; [_readopt] writes the metadata on retry.
+        _records[record.operationId] = record;
+        _markers[marker.logicalSetId] = marker;
+        _nextSeq[seqKey] = nextSeq;
+        _notify();
+      }
+      rethrow;
+    }
+  }
+
+  /// Durably removes an expired SYNCED [record]. Default: make sure its
+  /// identity marker is durable, then delete the record. A transactional store
+  /// overrides this (its markers are committed with the accept).
+  Future<void> commitPrune(CommandRecord record) async {
+    final set = record.logicalSetId;
+    final markers = Map.of(_markers);
+    if (set != null && !markers.containsKey(set)) {
+      markers[set] = LogicalSetMarker(
+          logicalSetId: set,
+          operationId: record.operationId,
+          acceptedAtLocalWallMs: record.acceptedAtLocalWallMs);
+    }
+    await persistMetadata(Map<String, int>.of(_nextSeq), markers);
+    if (set != null) _markers.putIfAbsent(set, () => markers[set]!);
+    await removeRecordFromDisk(record.operationId);
+  }
+
   /// Copy of the seq counters (for subclasses and tests).
   Map<String, int> get seqCountersView => Map<String, int>.of(_nextSeq);
 
@@ -153,35 +201,11 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
 
         final record = request.build(seq);
         _validateBuilt(request, record, seq);
-        await persistRecord(record);
-        // Metadata (counter and marker) in ONE write after the record: a crash
-        // between the two is healed by seed() (a surviving record raises its
-        // counter and re-creates its marker). If the metadata write fails
-        // while the process lives, nothing on disk or in memory changed in the
-        // metadata and the record is rolled back, so "not saved" is true and a
-        // retry of the same set works.
         final marker = LogicalSetMarker(
             logicalSetId: request.logicalSetId,
             operationId: record.operationId,
             acceptedAtLocalWallMs: record.acceptedAtLocalWallMs);
-        try {
-          await persistMetadata(Map<String, int>.of(_nextSeq)..[key] = seq + 1,
-              Map.of(_markers)..[request.logicalSetId] = marker);
-        } catch (_) {
-          try {
-            await removeRecordFromDisk(record.operationId);
-          } catch (_) {
-            // Double fault: the record file survives on disk (it is re-adopted
-            // at the next open). Mirror that in memory now, so a retry of the
-            // same tap finds this record instead of minting a second one. Its
-            // marker stays missing; [_readopt] writes the metadata on retry.
-            _records[record.operationId] = record;
-            _markers[request.logicalSetId] = marker;
-            _nextSeq[key] = seq + 1;
-            _notify();
-          }
-          rethrow;
-        }
+        await commitAccept(record, key, seq + 1, marker);
         _nextSeq[key] = seq + 1;
         _records[record.operationId] = record;
         _markers[request.logicalSetId] = marker;
@@ -353,19 +377,7 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
           if (r.state != CommandState.synced) continue;
           final at = r.ackSummary?.localAckMs;
           if (at == null || at > cutoff) continue;
-          // Make sure the identity marker is durable before its record goes.
-          // Defensive: a record being pruned always leaves its marker behind.
-          final set = r.logicalSetId;
-          final markers = Map.of(_markers);
-          if (set != null && !markers.containsKey(set)) {
-            markers[set] = LogicalSetMarker(
-                logicalSetId: set,
-                operationId: r.operationId,
-                acceptedAtLocalWallMs: r.acceptedAtLocalWallMs);
-          }
-          await persistMetadata(Map<String, int>.of(_nextSeq), markers);
-          if (set != null) _markers.putIfAbsent(set, () => markers[set]!);
-          await removeRecordFromDisk(r.operationId);
+          await commitPrune(r);
           _records.remove(r.operationId);
           n++;
         }

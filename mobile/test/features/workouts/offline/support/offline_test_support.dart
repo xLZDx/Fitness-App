@@ -14,6 +14,8 @@ import 'package:fitness_app/features/workouts/offline/file_command_queue_store.d
 import 'package:fitness_app/features/workouts/offline/in_memory_command_queue_store.dart';
 import 'package:fitness_app/features/workouts/offline/queue_file_ops.dart';
 import 'package:fitness_app/features/workouts/offline/sender.dart';
+import 'package:fitness_app/features/workouts/offline/sqlite_command_queue_store.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 const String kUid = 'uid-alice';
 const String kOtherUid = 'uid-bob';
@@ -281,9 +283,17 @@ class StoreFactory {
   StoreFactory.file(this.clock, Directory this.root)
       : kind = StoreKind('file', true);
 
+  /// SQLite store over sqflite_common_ffi, one database file per uid under
+  /// [root]. [dbFactory] is the fault-injection seam (defaults to the ffi
+  /// factory).
+  StoreFactory.sqlite(this.clock, Directory this.root, {DatabaseFactory? dbFactory})
+      : kind = StoreKind('sqlite', true),
+        _dbFactory = dbFactory;
+
   final StoreKind kind;
   final TestClock clock;
   final Directory? root;
+  DatabaseFactory? _dbFactory;
 
   /// Shared in-memory instance per uid (an in-memory store has no reopen).
   final Map<String, CommandQueueStore> _mem = <String, CommandQueueStore>{};
@@ -297,6 +307,16 @@ class StoreFactory {
     if (!kind.durable) {
       return _mem[uid] ??=
           InMemoryCommandQueueStore(uid: uid, nowMs: clock.nowMs);
+    }
+    if (kind.name == 'sqlite') {
+      sqfliteFfiInit();
+      await _file.remove(uid)?.dispose();
+      return _file[uid] = await SqliteCommandQueueStore.open(
+        uid: uid,
+        path: '${rootPathOf(root!)}/${sqliteQueueFileName(uid)}',
+        factory: _dbFactory ??= databaseFactoryFfi,
+        nowMs: clock.nowMs,
+      );
     }
     await _file.remove(uid)?.dispose();
     return _file[uid] = await FileCommandQueueStore.open(

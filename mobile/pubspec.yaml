@@ -52,6 +52,10 @@ dependencies:
   shared_preferences: ^2.3.2
   dio: ^5.7.0
   path_provider: ^2.1.5
+  # Offline command queue store (WAL, synchronous=FULL, one transaction per
+  # accept). ^2.4.1 needs Dart >=3.5; the toolchain is Flutter 3.27 / Dart 3.6.
+  # pubspec.lock is NOT updated (no `pub get` in this lane).
+  sqflite: ^2.4.1
   share_plus: ^10.1.4
   crypto: ^3.0.6
   health: ^11.0.0
@@ -114,6 +118,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   fake_async: ^1.3.1
+  # Test-only: SQLite on the desktop VM for the SQLite command queue store.
+  sqflite_common_ffi: ^2.3.4
   # Test-only. `font_bundle_test.dart` reads the `fonts:` block below as data
   # and checks it against the family constants the theme uses. Parsing it with
   # a regex instead would be a second, worse YAML parser whose disagreements

@@ -59414,3 +59414,7 @@ Decision: accept the three findings of export gate round 2 and reverse the round
 ## 2026-10-23 - Commit: fix(v1): account export mobile collector hardening (streaming, account binding, cleanup)
 
 Decision: the operator ended the GPT-PM review rounds after round 3 of the export PR ("enough reviewing, prepare the PR, bugs will be fixed as we go"); the five round 3 findings were fixed (per-user progress with wipe and purge, uid binding of every page, streaming to disk, explicit storage errors, terminal delivered state) and the PR is opened without a fourth review and is NOT merged by the assistant. Known gaps are listed in the change record. Evidence: core/changes/2026-10-23-v1-account-export-v0.md; data_export tests 101/101.
+
+## 2026-10-23 - Commit: feat(v1): transactional SQLite store for the offline command queue
+
+Decision: the operator chose sqflite with WAL and synchronous=FULL for the local queue, ahead of environment work and flag activation (order: SQLite, then environment, then enabling V0 on test accounts). A fresh database is created when a file has no tables; any other open failure is fail-closed and keeps the original plus a .corrupt copy. The file store stays in the tree for now. Evidence: core/changes/2026-10-23-v1-queue-sqlite-store.md; 104 SQLite tests passing; no GPT-PM review by operator decision.

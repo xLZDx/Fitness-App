@@ -1,4 +1,4 @@
-// One contract suite, run unchanged over the in-memory and the file store.
+// One contract suite, run unchanged over the in-memory, file and SQLite stores.
 import 'dart:io';
 
 import 'package:fitness_app/features/workouts/offline/canonical.dart';
@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'support/offline_test_support.dart';
 
 void main() {
-  for (final kind in <String>['in-memory', 'file']) {
+  for (final kind in <String>['in-memory', 'file', 'sqlite']) {
     group('store contract [$kind]', () {
       late TestClock clock;
       late Directory? dir;
@@ -25,6 +25,9 @@ void main() {
         if (kind == 'file') {
           dir = await makeTempRoot();
           factory = StoreFactory.file(clock, dir!);
+        } else if (kind == 'sqlite') {
+          dir = await makeTempRoot();
+          factory = StoreFactory.sqlite(clock, dir!);
         } else {
           dir = null;
           factory = StoreFactory.memory(clock);
