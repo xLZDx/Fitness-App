@@ -92,6 +92,8 @@ import 'features/workouts/state/active_session_status.dart'
         activeSessionSourcesProvider,
         gpsRecorderEnabledProvider;
 import 'features/modes/state/mode_providers.dart' show modeWarmUpProvider;
+import 'features/workouts/offline/app_wiring.dart'
+    show workoutQueueBindingProvider;
 import 'features/modes/widgets/mode_switcher_sheet.dart' show openModeSwitcher;
 import 'features/modes/widgets/record_sheet.dart' show openRecordSheet;
 import 'shared/widgets/app_shortcuts.dart'
@@ -889,6 +891,9 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
     ref.watch(activityJournalBindingProvider);
     // Activity summary sync at start (flag-gated; a no-op when off).
     ref.watch(activityCloudSyncWiringProvider);
+    // Offline workout command queue: opens for the signed-in account and runs
+    // the sender (flag WORKOUT_COMMAND_QUEUE; a no-op when off).
+    ref.watch(workoutQueueBindingProvider);
     // S03 mode state + migration warm-up (one provider; never rebuilds on a mode choice).
     ref.watch(modeWarmUpProvider);
     // S04 recorder hook, consent warm-up and recovery gate (flag-gated).

@@ -22,6 +22,8 @@ import '../workouts/data/workout_session.dart';
 import '../profile/state/profile_providers.dart';
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
+import '../../core/config/workout_queue_flag.dart';
+import '../workouts/offline/app_wiring.dart';
 import '../workouts/widgets/difficulty_rating_sheet.dart';
 import '../workouts/widgets/plate_calculator.dart';
 import '../auth/state/auth_providers.dart';
@@ -745,7 +747,20 @@ class _MarkCompleteButton extends ConsumerWidget {
                 ? (already.durationMinutes ?? 0) + exercise.durationMinutes
                 : already.durationMinutes,
       );
-      await ref.read(logSessionActionProvider.notifier).log(entry);
+      await ref.read(logSessionActionProvider.notifier).log(
+            entry,
+            queued: ref.read(workoutCommandQueueEnabledProvider)
+                ? QueuedSet(
+                    sessionId: entry.id,
+                    exerciseId: exercise.id,
+                    dayId: inDay ? sessionKey : null,
+                    startedAtMs: entry.startedAt.millisecondsSinceEpoch,
+                    performedAtMs: DateTime.now().millisecondsSinceEpoch,
+                    weightKg: weightKg,
+                    reps: reps,
+                  )
+                : null,
+          );
       if (!context.mounted) return;
       final newState = ref.read(logSessionActionProvider);
       if (newState.hasError) {
@@ -832,7 +847,8 @@ class _MarkCompleteButton extends ConsumerWidget {
       }
     }
 
-    return HudPanel(
+    final queueOn = ref.watch(workoutCommandQueueEnabledProvider);
+    final panel = HudPanel(
       // Keyed so a test can drive the write path rather than only the pure
       // merge function beneath it. The invariant this gate exists for -- a day
       // is ONE session -- lives in what this button assembles, not in
@@ -881,6 +897,44 @@ class _MarkCompleteButton extends ConsumerWidget {
           ],
         ),
       ),
+    );
+    if (!queueOn) return panel;
+    final sid = inDay
+        ? daySessionId(sessionKey)
+        : ref.watch(_loggedEntryProvider(sessionKey))?.id;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [panel, if (sid != null) _QueueSyncChip(sessionId: sid)],
+    );
+  }
+}
+
+/// Pending / synced indication of the offline command queue. Built only with
+/// the WORKOUT_COMMAND_QUEUE flag on.
+class _QueueSyncChip extends ConsumerWidget {
+  const _QueueSyncChip({required this.sessionId});
+  final String sessionId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(workoutQueueSessionStatusProvider(sessionId)).valueOrNull;
+    if (s == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    final String? text = s.couldNotSync > 0
+        ? l10n.workoutQueueCouldNotSync
+        : s.pending > 0
+            ? l10n.workoutQueuePending
+            : s.synced > 0
+                ? l10n.workoutQueueSynced
+                : null;
+    if (text == null) return const SizedBox.shrink();
+    return Padding(
+      key: const Key('player.queueChip'),
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(text,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall),
     );
   }
 }
