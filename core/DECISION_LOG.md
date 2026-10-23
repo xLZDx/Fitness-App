@@ -59378,3 +59378,23 @@ Decision: accept both findings of gate round 9. Status validation applies to the
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 10
 
 Decision: accept the three findings of gate round 10 (the operator chose to continue the rounds). Records without an enumerable writes list create a record-level incident; incidents close only by attribution to accounts with per-account gaps, never by operator acceptance (a broader waiver would be a separate decision, O-R3, not taken); the global hold is guarded by an atomic openCount read in every DRAIN admission and cutover transaction. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round10.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): V0 slice plan
+
+Decision: start implementation with slice V0 in a scratch worktree on branch feat/v1-v0-complete-set-slice, as chosen by the operator on 2026-10-22 (fix the design first, then start V0). Evidence: core/changes/2026-10-23-v1-v0-slice-plan.md.
+
+## 2026-10-23 - Commit: feat(v1): V0 CompleteSet slice (server callable and mobile file-journal queue)
+
+Decision: implement slice V0 behind the feature flag WORKOUT_COMMANDS_ENABLED (off by default). A lone surrogate in any string or object key is rejected with INVALID_PAYLOAD on both sides (CanonicalError in TypeScript, the Dart builder), covered by a shared golden vector; the writer proof is checked before generation checks; ids of the form __x__ are reserved. Evidence: core/changes/2026-10-23-v1-v0-slice-implementation.md; jest 268, rules 44, e2e 71, mobile 295, 39 vectors on Node and Python, data lifecycle check OK.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 1 (DRAIN admission, sender proof, session barrier, queue metadata)
+
+Decision: accept all five findings of V0 gate round 1. V0 returns MIGRATION_HOLD for every DRAIN state (a later slice must bind the authenticated installation to its drain acknowledgement); the writer proof is a required sender parameter; NOT_WRITER and SESSION_COMMAND_LIMIT return the record to ACCEPTED with backoff so the session ordering barrier survives restart; queue metadata (seq.json, logical_sets.json) is checksummed with a backup twin and fails closed when neither copy validates. Residual risk accepted for V0: the parent directory is not synced after the atomic rename because dart:io has no portable directory fsync and FFI is not used; after a power loss the rename may be lost; the checksummed backups detect damage but cannot undo a lost rename. Mobile activation must not rely on power-loss durability until a platform storage primitive is chosen. Evidence: core/changes/2026-10-23-v1-v0-gate-round1.md.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 2 (two-slot queue metadata)
+
+Decision: accept the three findings of V0 gate round 2 and replace the primary+backup metadata scheme with one checksummed metadata document in two generation-numbered slots (meta.a.json, meta.b.json) and a store.init marker: the commit point is the successful atomic rename, there is no metadata rollback, no legacy unchecksummed format, and a store with store.init but no valid slot fails closed. Acceptance is idempotent for the same operation or intent key (a surviving record from a failed rollback is re-adopted). The no-directory-sync residual risk stays accepted for the inactive V0 slice (GPT-PM round 2); activation stays blocked until a durable storage primitive is chosen. Evidence: core/changes/2026-10-23-v1-v0-gate-round2.md.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 3 (marker of an adopted residual record)
+
+Decision: accept the finding of V0 gate round 3. An adopted surviving record gets its logical-set marker in memory at once, and prune derives a missing marker from the record and persists it in the metadata write that precedes the deletion; no submission hold is added. Evidence: core/changes/2026-10-23-v1-v0-gate-round3.md.

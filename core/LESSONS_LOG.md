@@ -1785,3 +1785,37 @@ Facts: gate round 10 returned 3 MAJOR on the coverage-incident mechanism I added
 Root cause: a new gate (global hold) was specified as a flag without its transactional contract, and a release path was added that bypassed the disclosure invariant the whole mechanism exists for.
 Missed by: author; caught by the gate.
 Rule next time: any hold or fence that blocks a phase change must say which transaction reads it and which writes it; every release path must be checked against the invariant that the mechanism protects; enumerate the degenerate inputs (no items at all) next to the per-item case.
+
+## 2026-10-23 - Commit: docs(v1): V0 slice plan
+Kind: SUCCESS
+Facts: the documentation gate for the v1 design closed with APPROVE after 11 rounds (PR 26); the first implementation slice starts from a written scope with required negative evidence.
+Why it worked: each gate round was answered with one batch, a change record and a validator run; the slice scope was frozen in the approved conditions document before any code.
+Rule next time: freeze the slice scope and its negative evidence in writing before the first line of code.
+
+## 2026-10-23 - Commit: feat(v1): V0 CompleteSet slice (server callable and mobile file-journal queue)
+Kind: FAILURE
+Facts: four independent reviewers and the test agents found real defects before the gate: the logical-set guard was lost after queue pruning, a corrupt record blocked the sender, watch() could hang on cancel, SENDING stayed stuck when persisting failed, the server checked generations before the writer proof, reserved ids were accepted, and a lone surrogate hashed differently in TS and Dart. Late in the work a scripted rewrite of canonical.ts opened the file for writing before the encode step failed and left a 0-byte untracked file; the test agent noticed it, the full rerun then passed (jest 268, rules 44, e2e 71, mobile 295, 39 vectors).
+Root cause: invariants were first written for the happy path; the lone-surrogate case lived outside the shared vectors; the scripted write was not atomic.
+Missed by: author; caught by reviewers and test agents.
+Rule next time: put every cross-language canonicalisation edge case into the shared vector file first; never write a source file through a script that truncates before the content is ready (write to a temp file, then rename); re-run the whole suite after any rewrite of a shared module.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 1 (DRAIN admission, sender proof, session barrier, queue metadata)
+Kind: FAILURE
+Facts: gate round 1 on the V0 slice returned 1 BLOCKER and 4 MAJOR: the server admitted a command during DRAIN when the caller-supplied deviceInstallId was in the acknowledged list; the sender could dispatch without a writer proof and then store a terminal conflict; a nonterminal NOT_WRITER conflict left the record out of the pending list so a later sequence could overtake it; corrupt queue metadata was silently rebuilt and lost pruned identities; rename without directory sync. The test agent then found a defect in my own fix: the backup copy was written before the primary, so a failed primary write left a phantom marker that blocked the retry of the same set.
+Root cause: an untrusted client field was used for an admission decision; a state machine had a nonterminal outcome stored in a terminal state; recovery code preferred rebuilding over failing closed; a two-file write was ordered without checking the failure path.
+Missed by: author, tests and the four earlier reviewers; caught by the gate (first five) and by the test agent (the phantom marker).
+Rule next time: never gate on a field the caller supplies; a nonterminal outcome must stay in a state that keeps the ordering barrier; for every damaged-metadata path decide fail-closed first; for every two-step write test the failure of the second step.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 2 (two-slot queue metadata)
+Kind: FAILURE
+Facts: gate round 2 returned 3 MAJOR on the primary+backup metadata scheme that I introduced to answer round 1: both copies missing was treated as a fresh store, an unchecksummed primary overrode a valid backup, and a failed primary write plus a failed backup rollback promoted an uncommitted backup. The test agent then found a fourth defect in the rewrite: a failed metadata write plus a failed record rollback let a retry mint a second record for the same logical set.
+Root cause: a recovery scheme with two copies and a rollback has no single commit point; each fault path needed its own patch. The fix of round 1 added a mechanism instead of removing the ambiguity.
+Missed by: author and tests; caught by the gate (three) and by the test agent (the fourth).
+Rule next time: give every persisted state exactly one commit point (successful atomic rename of a generation-numbered slot), no rollback of metadata, a store.init marker to tell fresh from lost, and make acceptance idempotent for the same logical set; when a fix adds a second recovery path, stop and look for the single-commit-point design first.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 3 (marker of an adopted residual record)
+Kind: SHORTCOMING
+Facts: gate round 3 found one regression in my own idempotent-accept fix: the surviving record adopted after a failed metadata write and a failed rollback was put into the record table but its logical-set marker was not, so prune could remove the record without the marker and a later duplicate APPEND passed. My test only covered the immediate-retry path, which repairs the marker.
+Root cause: the fix repaired the symptom on the retry path; the invariant (every record in the table has its marker in the table) was not enforced where records enter the table.
+Missed by: author and test agent; caught by the gate.
+Rule next time: enforce an invariant at every place the state is mutated, and test the no-retry path next to the retry path.

@@ -55,6 +55,14 @@ service cloud.firestore {
     // index row, a consent document or a tombstone. Never remove one of the
     // four names from either condition.
     //
+    // Offline command protocol (OFFLINE_COMMAND_PROTOCOL.md 5.3, slice V0):
+    // `workout_command_fence`, `workout_command_receipts`,
+    // `workout_command_policy`, `workout_command_counters` and
+    // `workout_typed_sessions` are written only by the submitWorkoutCommands
+    // callable (Admin SDK) and join the carve-out list in BOTH the read and the
+    // write condition below. Each has a dedicated `if false` block next to the
+    // `usage` block. Never remove one of the five names from either condition.
+    //
     // MVP1.G3 Step 8/9: `isCanaryToken()` excludes the synthetic canary
     // identity (core/G3_STEP8_RUNTIME_PREREQUISITES.md Sec 3/9) from this
     // wildcard explicitly, regardless of what uid it is minted for. Without
@@ -101,7 +109,12 @@ service cloud.firestore {
                   && coll != 'activities'
                   && coll != 'activity_streams'
                   && coll != 'activity_settings'
-                  && coll != 'activity_tombstones';
+                  && coll != 'activity_tombstones'
+                  && coll != 'workout_command_fence'
+                  && coll != 'workout_command_receipts'
+                  && coll != 'workout_command_policy'
+                  && coll != 'workout_command_counters'
+                  && coll != 'workout_typed_sessions';
       allow write: if request.auth != null
                    && request.auth.uid == uid
                    && !isCanaryToken()
@@ -123,7 +136,12 @@ service cloud.firestore {
                    && coll != 'activities'
                    && coll != 'activity_streams'
                    && coll != 'activity_settings'
-                   && coll != 'activity_tombstones';
+                   && coll != 'activity_tombstones'
+                   && coll != 'workout_command_fence'
+                   && coll != 'workout_command_receipts'
+                   && coll != 'workout_command_policy'
+                   && coll != 'workout_command_counters'
+                   && coll != 'workout_typed_sessions';
     }
 
     // The canary's ENTIRE grant. A synthetic identity minted via
@@ -152,6 +170,29 @@ service cloud.firestore {
     // callable returns whatever it needs in its own response), so closed
     // outright rather than opened read-only for a caller that does not exist.
     match /users/{uid}/usage/{day} {
+      allow read, write: if false;
+    }
+
+    // Offline command protocol (slice V0): server-only collections, closed to
+    // every client for read and write. Clients learn outcomes through the
+    // callable's answers. Same style as the `usage` block above.
+    match /users/{uid}/workout_command_fence/{shard} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/workout_command_receipts/{operationId} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/workout_command_policy/{doc} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/workout_command_counters/{utcDay} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/workout_typed_sessions/{sessionId} {
       allow read, write: if false;
     }
 

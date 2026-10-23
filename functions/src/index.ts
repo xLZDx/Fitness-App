@@ -3042,6 +3042,8 @@ export { purgeExpiredActivityStreams } from "./activity_streams/purge";
 export { sweepLateActivityStreams } from "./activity_streams/late_sweep";
 // Orphan reconciler (S02-06b, design 5.2/6): pending rows, stored rows, stray objects; every 5 minutes.
 export { reconcileActivityStreams } from "./activity_streams/reconcile";
+// Offline workout command protocol, slice V0 (flag WORKOUT_COMMANDS_ENABLED, off by default).
+export { submitWorkoutCommands } from "./workout_commands/apply";
 // Seventh callable (S02-06b, design 5.4/9.1): resumable bulk "delete my cloud streams"; own quota activityDeleteAll.
 export { deleteAllActivityStreams } from "./activity_streams/delete_all_streams";
 // Short-lived V4 GET links for the owner's stored streams (S02-07, design 7/7.1); own quota activityDownloadUrls.
