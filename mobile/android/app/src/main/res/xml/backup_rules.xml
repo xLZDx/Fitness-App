@@ -66,4 +66,12 @@
     <exclude domain="file" path="sources" />
     <exclude domain="file" path="quarantine" />
     <exclude domain="file" path="activity_journal" />
+    <!-- Offline workout command queue. SQLite databases live in the directory
+         offline_command_queue_db (getApplicationSupportDirectory = getFilesDir):
+         backup rules cannot wildcard file names, so the directory is excluded
+         and with it every database, -wal and -shm file; the legacy file-store
+         directory offline_command_queue too. A restored copy would replay stale
+         commands. Name from providers.dart (kOfflineQueueDbDirName). -->
+    <exclude domain="file" path="offline_command_queue_db" />
+    <exclude domain="file" path="offline_command_queue" />
 </full-backup-content>

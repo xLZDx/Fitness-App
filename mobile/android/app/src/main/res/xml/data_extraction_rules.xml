@@ -43,6 +43,8 @@
         <exclude domain="file" path="sources" />
         <exclude domain="file" path="quarantine" />
         <exclude domain="file" path="activity_journal" />
+        <exclude domain="file" path="offline_command_queue_db" />
+        <exclude domain="file" path="offline_command_queue" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="root" path="app_flutter/progress_photos" />
@@ -54,5 +56,7 @@
         <exclude domain="file" path="sources" />
         <exclude domain="file" path="quarantine" />
         <exclude domain="file" path="activity_journal" />
+        <exclude domain="file" path="offline_command_queue_db" />
+        <exclude domain="file" path="offline_command_queue" />
     </device-transfer>
 </data-extraction-rules>
