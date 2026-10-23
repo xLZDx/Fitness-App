@@ -277,6 +277,15 @@ describe("result classes (4.4) and batch stop rule (4.5)", () => {
   });
 });
 
+describe("deployed callable options", () => {
+  test("runs as the data service account (fn-data) in europe-west1, not the AI runtime account", () => {
+    const ep = (submitWorkoutCommands as unknown as { __endpoint: { serviceAccountEmail?: string; region?: string[] } }).__endpoint;
+    expect(ep.serviceAccountEmail).toMatch(/^fn-data@.+.iam.gserviceaccount.com$/);
+    expect(ep.serviceAccountEmail).not.toContain("fn-ai-runtime");
+    expect(ep.region).toEqual(["europe-west1"]);
+  });
+});
+
 describe("document paths", () => {
   test("paths use the carved-out collection names", () => {
     expect(policyPath("u")).toBe("users/u/workout_command_policy/current");

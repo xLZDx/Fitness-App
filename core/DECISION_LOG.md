@@ -59438,3 +59438,7 @@ Decision: the predeploy test failed because V0 added an intentional export witho
 ## 2026-10-23 - Commit: docs(v1): record the V0 deployment to the dev project
 
 Decision (operator, 2026-10-23): release master's full firestore.rules, move origin/phase1/main to master, deploy submitWorkoutCommands alone with the flag OFF, decide the service account before enabling, leave the scheduler 403s; and, after the 3759-test predeploy failed twice on this machine, deploy this one function WITHOUT the full predeploy test run (release guard and compile kept, `npm test` dropped, one deploy only; not a standing waiver). Evidence: core/changes/2026-10-23-v1-deploy-v0-dev.md; docs/v1/design/DEPLOY_V0_DEV_2026-10-23.md.
+
+## 2026-10-23 - Commit: fix(v1): run the V0 callable under the fn-data service account
+
+Decision: run submitWorkoutCommands under the existing fn-data service account (roles/datastore.user already held) instead of granting a Firestore role to the default Compute account (which eleven other functions use) or creating a new account; the operator chose the plan "separate account for the function, then enable on test accounts". The deployed function still needs a redeploy before the flag can be enabled. Evidence: core/changes/2026-10-23-v1-v0-callable-service-account.md; jest 420, rules 44, e2e 75.
