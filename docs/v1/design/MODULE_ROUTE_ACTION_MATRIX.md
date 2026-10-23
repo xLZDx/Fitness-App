@@ -140,6 +140,8 @@ All tests are Flutter tests that run a table of cases from one source. Ids start
 
 These items were not traced because the trace stopped early. Nothing below is verified.
 
+Release gate (pre-implementation review PI-M08): until FU-AC-130 to 140 have run against real release build defines, direct routes, resume paths, keyboard actions and the recorder port, no document may claim that every KEEP module is reachable and every HIDE module is closed. Build-time bypasses (`DEMO_FEATURES`, recorder-enabled builds that expose hiking and cycling) are release gates.
+
 Modules with no row, or a partial row, in section 2 (check owed in parentheses):
 - programmes (12 files): only known wiring is `programmeRepositoryProvider` in `main.dart:646`; UI entry points UNKNOWN (grep for importers by pages and routes).
 - ai_coach (5): imported by? no route found; UNKNOWN (grep `ai_coach/` imports, check `AiCoachSheet` callers).

@@ -59334,3 +59334,47 @@ Evidence: core/changes/2026-10-22-v1-design-gate-round8.md; validator OK.
 ## 2026-10-22 - Commit: chore: Node 22 emulator image
 
 Decision: provide the emulator toolchain as a small Dockerfile instead of an ad hoc local image, pinned to the firebase-tools version of functions/package.json. Evidence: core/changes/2026-10-22-emulator-node22-image.md (Java 21 after gate finding).
+
+## 2026-10-22 - Commit: docs(v1): close pre-implementation review findings
+
+Decision: accept all 13 findings of the independent pre-implementation review. The no-silent-loss guarantee is restated honestly (detection, watchdog, disclosure, recovery window, residual risk O-R2) instead of claiming lossless preservation; account deletion gets a fence that outlives the policy document; rules become a deploy prerequisite of the first callable. Evidence: core/changes/2026-10-22-v1-pre-implementation-review-fixes.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 1
+
+Decision: accept all six findings of the first gate on the review fixes. Existence of every accepted legacy write is accounted for by an audit-log inventory compared with processed-event markers (no dependence on the trigger); content recovery is best effort inside the exact point-in-time window and otherwise recorded as a disclosed gap; no account enters DRAIN unless the inventory is verified. Account deletion becomes: pre-checks, then one transaction (fence plus DELETING), forward recovery only, completion-anchored TTL. Quota is evaluated after the replay fence. Scenario inventory is frozen at 27 ids. Evidence: core/changes/2026-10-22-v1-pre-implementation-gate-round1.md; validator OK.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 2
+
+Decision: accept all six findings of gate round 2. One event key (path, kind, version time) is shared by the trigger and the watchdog; a no-op is proven only by a document version time earlier than the audit commit time; the owner warning fires for gap records too; the quota counter is read at step 3b before any write; deletion Cancel is offered only after the idempotent begin call confirms the server state; FU-AC-119 keeps the migration-release gate blocked for unrecoverable content until the operator accepts O-R2. Evidence: core/changes/2026-10-22-v1-pre-implementation-gate-round2.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 3
+
+Decision: accept all five findings of gate round 3. Gap records and no-op deletes are accounted by a stable audit key with create-if-absent and a terminal state; a delete whose deleted version cannot be read is reported only after the trigger retry window and is never claimed as proven loss; begin-deletion failures are classified (explicit NOT_STARTED removes the fence, an ambiguous answer keeps it); the parent criterion gets a verdict table (silent loss and duplication always fail, disclosed loss without O-R2 acceptance blocks, with acceptance is permitted); S26 has per-class DELETE deltas. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round3.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 4
+
+Decision: accept all four findings of gate round 4. The GAP audit marker is an explicit exception to the marker-first ordering with an atomic compare-and-set resolution by the trigger; audit records are expanded per successful document mutation and the deploy check covers batches, streams and failed mutations; an ordinary no-op write gets a terminal WRITE_NOOP audit marker; a write whose version cannot be proven becomes an unverified gap with non-assertive owner copy. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round4.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 5
+
+Decision: accept both findings of gate round 5. The audit operation is defined once, per successful mutation; supported audit shapes are enumerated with their commit-time source (single commit, streaming write, batch update by its update time) and a batch delete is unsupported (unverified gap keyed by the log insert id, alert, DRAIN blocked); gap resolution is a shared step 0 for session classes A, B and C. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round5.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 6
+
+Decision: accept both findings of gate round 6. BatchWrite is unsupported as a whole (no verified commit time for updates or deletes); unsupported audit items become immediate unverified gaps keyed by the log insert id with a null commit time, with no waiting and no correlation; before DRAIN they refuse admission, after DRAIN the phase never regresses and a flag refuses the cutover to SERVER_ONLY until the operator clears it. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round6.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 7
+
+Decision: accept the finding of gate round 7. Only successful batch items reach the unsupported-item rule; failed items create no gap, no counter change and no flag; the acceptance case covers mixed results in both orders. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round7.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 8
+
+Decision: accept the finding of gate round 8. Audit items get a three-valued status (explicit OK, explicit non-OK, unknown); only explicit non-OK is skipped; unknown is accounted as an unverified gap that never claims success, with the alert, the flag and a refused cutover; the acceptance case covers missing, truncated, misaligned and unparseable status lists including an after-DRAIN failed trigger. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round8.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 9
+
+Decision: accept both findings of gate round 9. Status validation applies to the batch shape only; commits and streaming writes are validated by their commit time and write-result count; items whose account cannot be established become database-level coverage incidents with a neutral kind and a global hold on cutover and DRAIN admission until the operator reconciles them. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round9.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 10
+
+Decision: accept the three findings of gate round 10 (the operator chose to continue the rounds). Records without an enumerable writes list create a record-level incident; incidents close only by attribution to accounts with per-account gaps, never by operator acceptance (a broader waiver would be a separate decision, O-R3, not taken); the global hold is guarded by an atomic openCount read in every DRAIN admission and cutover transaction. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round10.md; validator OK.

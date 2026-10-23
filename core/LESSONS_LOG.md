@@ -1708,3 +1708,80 @@ Rule next time: every guarantee must appear as a step in the ordered algorithm; 
 Kind: SUCCESS
 Facts: image built and tool versions verified (node v22.23.4, java 17, firebase 15.17.0). Lesson: a shell-policy hook scans heredoc text, so recursive-delete cleanup lines in a Dockerfile heredoc are blocked; use apt-get clean and the file tools.
 Correction (gate finding): first build used Java 17, which firebase-tools 15 does not support for emulators; fixed by moving to Debian trixie with OpenJDK 21 and proving an emulator start. Rule: verify a toolchain image by starting the tool it exists for, not by printing versions.
+
+## 2026-10-22 - Commit: docs(v1): close pre-implementation review findings
+Kind: FAILURE
+Facts: an independent review of the approved documentation found 2 BLOCKER and 11 MAJOR after nine gate rounds, among them a guarantee (no loss) that depended on an event channel without a recovery path and a deletion path that reopened the direct-write path.
+Root cause: the gate rounds reviewed deltas of my rewrites; nobody re-read the whole set against deletion, rollout order and failure of the mechanisms the design relies on.
+Missed by: author and the delta-based gate; caught by the broad independent review.
+Rule next time: before starting implementation run one whole-set review that asks, for every guarantee, what happens when its supporting mechanism fails permanently.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 1
+Kind: FAILURE
+Facts: the first gate on the review fixes returned 1 BLOCKER and 5 MAJOR. The no-silent-loss fix relied on a watchdog that compared projections with heads, which cannot see a failed event whose projection was overwritten by a later good write; the deletion fence was created before the irreversible state and could lock an account whose deletion was then cancelled; a new server-only collection (workout_gaps) was not added to the rules list; the quota check ran before the replay fence lookup; the scenario 21 oracle contradicted the generation fallback; the scenario manifest dropped 18b.
+Root cause: each fix was checked against its own finding, not against the lifecycle, the rules list, the step order and the inventory it touches.
+Missed by: author; caught by the gate.
+Rule next time: for every new guarantee name its authoritative inventory (what counts the things that may go missing), every collection it adds (rules, deletion, export), and the ordering against the surrounding steps; for every test oracle enumerate the full input matrix.
+
+## 2026-10-22 - Commit: docs(v1): address pre-implementation gate round 2
+Kind: FAILURE
+Facts: gate round 2 returned 1 BLOCKER and 5 MAJOR on the round-1 fixes: the owner warning condition still looked only at unresolvedTotal, so a gap-only account stayed silent; the watchdog and the trigger used different event identities; a single point-in-time read was used to prove a no-op; the quota read was placed after transactional writes; the deletion Cancel could be offered after a lost begin acknowledgement; the parent acceptance criterion still said zero loss while S26 allowed disclosed loss.
+Root cause: each new mechanism was added without re-reading the consumers of the data it produces (UI condition, second processor, ordering of reads and writes, parent criterion, the other document of the lifecycle).
+Missed by: author; caught by the gate.
+Rule next time: for every new server record list its consumers (UI condition, export, second writer, acceptance parent) and edit them in the same change; write the transaction steps with all reads first; define one identity for any record two processors can create.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 3
+Kind: FAILURE
+Facts: gate round 3 returned 1 BLOCKER and 4 MAJOR: gap records had no stable identity so repeated watchdog passes could count one lost write many times; a no-op delete had no accounting path; the begin-deletion failure text still removed the fence on an ambiguous answer; the parent acceptance row kept an unconditional failure sentence; the S26 oracle expected one entry for a server delete that must create none.
+Root cause: the round-2 fixes added a record type (gap) and a recovery path without defining its identity, terminal state and idempotence, and extended a test by copying its oracle across cases whose outcomes differ.
+Missed by: author; caught by the gate.
+Rule next time: when a record type is introduced, define in the same edit its stable id, create-if-absent semantics, terminal states and the counter it moves; when a test is repeated for variants, write the expected delta per variant; read the whole acceptance row for leftover sentences that contradict the new rule.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 4
+Kind: FAILURE
+Facts: gate round 4 returned 1 BLOCKER and 3 MAJOR: the new GAP marker outcome contradicted the marker-first rule of the older item 2; the audit operation type was taken from the RPC method name although batches carry mixed operations; an ordinary no-op write had no terminal marker; a write gap claimed proven loss from an audit record alone.
+Root cause: a new outcome value was added to a state machine without re-reading the older rule that consumes it, and an external log was treated as more structured than its documentation guarantees.
+Missed by: author; caught by the gate.
+Rule next time: when adding a value to a state machine, grep every rule that mentions the machine and state the transition for each reader; when a design leans on an external log, write what each field is derived from and mark the unverified fields as a deploy gate.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 5
+Kind: FAILURE
+Facts: gate round 5 returned 2 MAJOR: the audit key text still derived the operation from the RPC method after a later edit moved it to per-mutation extraction, and the batch write response has no commit time so the key could not be built for a batch delete; the gap resolution step was written for one session class while the trigger handles three.
+Root cause: an edit changed one sentence of a definition without searching for its twin, and a platform field was assumed to exist without reading the response shape.
+Missed by: author; caught by the gate.
+Rule next time: after changing a definition grep the whole document for the old wording; for every external response used as an identity source list which fields each call shape actually returns and declare shapes without a source unsupported; when a step is shared by classes, state it once before the class split.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 6
+Kind: FAILURE
+Facts: gate round 6 returned 2 MAJOR on the round-5 text: a successful batch update that changes nothing returns the previous update time and would have received the key of the earlier write; the fallback for unsupported audit items had no schema for the unknown commit time, no lifecycle after DRAIN had begun and no stated waiting or correlation rule.
+Root cause: I declared a call shape partially supported on the strength of one field without checking its documented no-op behaviour, and wrote a fallback without walking it through every phase of the account.
+Missed by: author; caught by the gate.
+Rule next time: treat a platform field as an identity only after reading its documented value in the no-change case; for every fallback state its record schema, its behaviour in each lifecycle phase and its interaction with the normal path.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 7
+Kind: FAILURE
+Facts: gate round 7 returned 1 MAJOR: the unsupported-item rule for batch writes did not say that only successful items count, while the extraction rule above it skipped failed ones, so a rejected delete could have produced a gap and blocked the cutover.
+Root cause: a new rule was written for the shape and not checked against the success filter defined a few lines earlier.
+Missed by: author; caught by the gate.
+Rule next time: when adding a rule that consumes items of a record, state the filter (success, status, kind) it runs after, and test the mixed success and failure cases in both orders.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 8
+Kind: FAILURE
+Facts: gate round 8 returned 1 MAJOR: the success filter I added in round 7 distinguished OK from not OK but not an absent or inconsistent status list, and audit exports may omit response elements, so a successful write could have been skipped as failed.
+Root cause: a two-valued filter was written for an input that has a third state (unknown), a direct regression of my own previous fix.
+Missed by: author; caught by the gate.
+Rule next time: every filter over external data has three outcomes (explicit yes, explicit no, unknown); only an explicit no may discard, unknown must fail closed with a record.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 9
+Kind: FAILURE
+Facts: gate round 9 returned 2 MAJOR: the status check I wrote in round 8 applied to every multi-write record although only the batch response has a status list (a normal commit would have been flagged as unknown); the record-level fallback had no valid account destination when the path is unreadable or a batch spans several users.
+Root cause: a rule was generalised from one response shape to all shapes without reading the other shapes, and a per-account store was used for an item whose account is unknown.
+Missed by: author; caught by the gate.
+Rule next time: write validation rules per response shape from the platform reference; every fallback record needs a storage location that exists when the identifying field is missing (database-level, not per-account).
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 10
+Kind: FAILURE
+Facts: gate round 10 returned 3 MAJOR on the coverage-incident mechanism I added in round 9: an audit record with no writes list had no incident identity; the operator could close an incident by acceptance without attributing it to an account, leaving an owner without a disclosure; the global hold had no atomic fence against a concurrent cutover.
+Root cause: a new gate (global hold) was specified as a flag without its transactional contract, and a release path was added that bypassed the disclosure invariant the whole mechanism exists for.
+Missed by: author; caught by the gate.
+Rule next time: any hold or fence that blocks a phase change must say which transaction reads it and which writes it; every release path must be checked against the invariant that the mechanism protects; enumerate the degenerate inputs (no items at all) next to the per-item case.

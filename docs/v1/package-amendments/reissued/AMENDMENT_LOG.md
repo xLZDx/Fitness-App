@@ -63,3 +63,36 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Gate follow-up round 8 (GPT-PM, head e1bd259b: 0 BLOCKER, 2 MAJOR)
 - FU-AC-119 scenarios 21 and 24 extended for exact incarnation identity and resolved-entry redelivery.
+
+## Pre-implementation review (independent, master 03ea66e1)
+- FU-AC-119 gained scenario S25 (deletion fence) and S26 (trigger failure, watchdog, recovery), a scenario manifest and a two-run scenario 21; FU-AC-125 wording aligned with the no-export removal path.
+
+## Pre-implementation gate round 1 (GPT-PM, head d02b2d5b: 1 BLOCKER, 5 MAJOR)
+- FU-AC-119: S26 rewritten around the audit-log write inventory, S25 around the corrected deletion order, scenario 21 run B around the complete classification matrix, frozen inventory of 27 ids (S01 to S26 and S18b); FU-AC-125 gained the quota-boundary replay fixture case.
+
+## Pre-implementation gate round 2 (GPT-PM, head 467881fc: 1 BLOCKER, 5 MAJOR)
+- FU-AC-119: S26 extended (version-time no-op proof, delayed trigger after watchdog, gap-only account, parent gate blocked until O-R2 is accepted); parent criterion reworded; FU-AC-121 gained the lost-begin-acknowledgement case.
+
+## Pre-implementation gate round 3 (GPT-PM, head 15cf0f02: 1 BLOCKER, 4 MAJOR)
+- FU-AC-119: S26 gained the audit-key accounting cases (unrecoverable DELETE with repeated and concurrent passes, repeated no-op DELETE), per-class DELETE deltas, and a verdict table replacing the unconditional failure sentence; FU-AC-121 gained the lost response without a client crash.
+
+## Pre-implementation gate round 4 (GPT-PM, head 79cd1fb0: 1 BLOCKER, 3 MAJOR)
+- FU-AC-119: S26 gained the resolved-gap assertions, no-op write accounting, unverified write gaps and audit extraction cases.
+
+## Pre-implementation gate round 5 (GPT-PM, head ae7a7b0b: 0 BLOCKER, 2 MAJOR)
+- FU-AC-119: S26 audit-extraction case now uses real response shapes including batch deletes and mixed results; new case for gap resolution in session classes B and C.
+
+## Pre-implementation gate round 6 (GPT-PM, head 95ff39c7: 0 BLOCKER, 2 MAJOR)
+- FU-AC-119: S26 audit-extraction case now treats every BatchWrite item as unsupported, asserts the key-collision case for a version-less batch update and the first encounter of an unsupported item after DRAIN.
+
+## Pre-implementation gate round 7 (GPT-PM, head ebb88df4: 0 BLOCKER, 1 MAJOR)
+- FU-AC-119: S26 audit-extraction case now requires failed batch items to create nothing, tested in both orders.
+
+## Pre-implementation gate round 8 (GPT-PM, head ebc15773: 0 BLOCKER, 1 MAJOR)
+- FU-AC-119: S26 gained the status-validation case (missing, truncated, misaligned or unparseable status lists fail closed).
+
+## Pre-implementation gate round 9 (GPT-PM, head ee753711: 0 BLOCKER, 2 MAJOR)
+- FU-AC-119: S26 status-validation case is now method by method and covers missing path, missing operation and multi-account batches with the global hold.
+
+## Pre-implementation gate round 10 (GPT-PM, head 01a4be83: 0 BLOCKER, 3 MAJOR)
+- FU-AC-119: S26 gained the omitted writes list case, the acceptance-cannot-close case and the concurrent cutover versus incident case.
