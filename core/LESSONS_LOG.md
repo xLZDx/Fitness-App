@@ -1853,3 +1853,9 @@ Kind: SUCCESS
 Facts: choosing a store with one commit point (a SQLite transaction) removed the two-slot metadata, part files and rollback code that had produced four gate findings in the previous design; the contract suite now runs on every store implementation.
 Why it worked: the operator's decision moved the guarantee from hand-written file ordering to a documented storage primitive, and the shared contract tests exposed any difference between stores.
 Rule next time: prefer a storage primitive with a documented commit point over composing atomicity from files; run one contract suite against every implementation.
+
+## 2026-10-23 - Commit: docs(v1): platform facts for the v1 design
+Kind: SUCCESS
+Facts: reading the live project instead of trusting the design showed two protocol assumptions to be false (point-in-time recovery and data-write audit logs are off) and one earlier code decision (no deleted_accounts tombstone) that the protocol contradicts.
+Why it worked: every platform fact was turned into a read-only command with recorded output before code depended on it.
+Rule next time: verify each platform assumption with a read-only command before building on it, and record the output next to the claim.
