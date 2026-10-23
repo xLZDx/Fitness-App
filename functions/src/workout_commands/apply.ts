@@ -98,8 +98,8 @@ function constantTimeEqualText(a: unknown, b: string): boolean {
 
 /**
  * Policy gate of 4.2 step 2. Returns the non-terminal code to answer, or `null` when typed commands
- * are accepted. Accepted: `SERVER_ONLY`, `SEALED` (same acceptance as `SERVER_ONLY`, table 8.2) and
- * `DRAIN` in phase `OPEN` from a drain-acknowledged device. Everything else holds.
+ * are accepted. Accepted: `SERVER_ONLY` and `SEALED` (same acceptance as `SERVER_ONLY`, table 8.2).
+ * Everything else holds, including every `DRAIN` state.
  */
 export function policyGate(policy: Doc | undefined, deviceInstallId: string | undefined): ResultCode | null {
   if (policy === undefined) return "MIGRATION_HOLD";
@@ -107,16 +107,9 @@ export function policyGate(policy: Doc | undefined, deviceInstallId: string | un
   if (state === "DELETING") return "ACCOUNT_DELETING";
   if (policy.sendingPaused === true) return "MIGRATION_HOLD";
   if (state === "SERVER_ONLY" || state === "SEALED") return null;
-  if (state === "DRAIN") {
-    const devices = policy.drainedDevices;
-    const acked =
-      policy.drainPhase === "OPEN" &&
-      deviceInstallId !== undefined &&
-      typeof devices === "object" &&
-      devices !== null &&
-      Object.prototype.hasOwnProperty.call(devices, deviceInstallId);
-    return acked ? null : "MIGRATION_HOLD";
-  }
+  // DRAIN is excluded from V0 in EVERY phase. The envelope `deviceInstallId` is untrusted (device B
+  // could claim device A's acknowledged id), so no drained-device admission path exists here. A later
+  // slice must bind the AUTHENTICATED installation to its acknowledged drain state before admitting.
   return "MIGRATION_HOLD";
 }
 

@@ -427,13 +427,15 @@ void main() {
       final s1 = await open();
       final rec = (await accFor(s1).accept(intentOf('tap-1'))).record;
       await s1.dispose();
-      File(markerFile()).deleteSync(); // the marker write never happened
+      // The marker write never happened: neither the backup nor the primary.
+      File(markerFile()).deleteSync();
+      File('${markerFile()}.bak').deleteSync();
       final s2 = await open();
       expect((await s2.listAll()).single.operationId, rec.operationId);
       expect(File(markerFile()).existsSync(), isTrue,
           reason: 'open must persist the rebuilt marker');
       expect(await File(markerFile()).readAsString(), contains(rec.logicalSetId!));
-      expect(s2.openReport.markersFileRepaired, isFalse); // missing, not corrupt
+      expect(s2.openReport.markersFileRepaired, isFalse); // rebuilt, not restored
       await s2.markSending(rec.operationId);
       await s2.markResult(rec.operationId,
           const CommandResult(to: CommandState.synced, resultCode: 'COMMITTED'));
@@ -461,7 +463,19 @@ void main() {
           throwsA(isA<DuplicateLogicalSetException>()));
     });
 
-    test('corrupt marker file (documented limitation): live markers are rebuilt, pruned-stub markers are lost',
+    test('only the primary marker file missing: restored from the backup', () async {
+      final s1 = await open();
+      final rec = (await accFor(s1).accept(intentOf('tap-1'))).record;
+      await s1.dispose();
+      File(markerFile()).deleteSync();
+      final s2 = await open();
+      expect(s2.openReport.markersFileRepaired, isTrue);
+      expect(s2.openReport.recoveryRequired, isFalse);
+      expect(File(markerFile()).existsSync(), isTrue);
+      expect((await s2.listAll()).single.operationId, rec.operationId);
+    });
+
+    test('corrupt primary marker file: restored from the backup, corrupt copy preserved, pruned-stub marker kept',
         () async {
       final s1 = await open();
       final pruned = (await accFor(s1).accept(intentOf('t1', setIndex: 1))).record;
@@ -474,12 +488,25 @@ void main() {
       await File(markerFile()).writeAsString('{not json');
 
       final s2 = await open();
+      expect(s2.openReport.markersFileRepaired, isTrue);
+      expect(s2.openReport.recoveryRequired, isFalse);
       expect((await s2.listAll()).single.operationId, live.operationId);
+      // The corrupt evidence is kept beside the restored file.
+      final kept = Directory(rootOfScope(root, kUid))
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.contains('logical_sets.json.corrupt-'))
+          .toList();
+      expect(kept.length, 1);
+      expect(kept.single.readAsStringSync(), '{not json');
+      // Both sets still refuse a second APPEND, the pruned one included.
       await expectLater(accFor(s2).accept(intentOf('t3', setIndex: 2)),
           throwsA(isA<DuplicateLogicalSetException>()));
-      // Pins the documented limitation: the pruned set is accepted again.
-      final again = await accFor(s2).accept(intentOf('t4', setIndex: 1));
-      expect(again.created, isTrue);
+      await expectLater(accFor(s2).accept(intentOf('t4', setIndex: 1)),
+          throwsA(isA<DuplicateLogicalSetException>()));
+      // The restored file is healthy again.
+      final s3 = await open();
+      expect(s3.openReport.markersFileRepaired, isFalse);
     });
   });
 

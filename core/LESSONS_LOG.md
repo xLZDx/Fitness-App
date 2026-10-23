@@ -1798,3 +1798,10 @@ Facts: four independent reviewers and the test agents found real defects before 
 Root cause: invariants were first written for the happy path; the lone-surrogate case lived outside the shared vectors; the scripted write was not atomic.
 Missed by: author; caught by reviewers and test agents.
 Rule next time: put every cross-language canonicalisation edge case into the shared vector file first; never write a source file through a script that truncates before the content is ready (write to a temp file, then rename); re-run the whole suite after any rewrite of a shared module.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 1 (DRAIN admission, sender proof, session barrier, queue metadata)
+Kind: FAILURE
+Facts: gate round 1 on the V0 slice returned 1 BLOCKER and 4 MAJOR: the server admitted a command during DRAIN when the caller-supplied deviceInstallId was in the acknowledged list; the sender could dispatch without a writer proof and then store a terminal conflict; a nonterminal NOT_WRITER conflict left the record out of the pending list so a later sequence could overtake it; corrupt queue metadata was silently rebuilt and lost pruned identities; rename without directory sync. The test agent then found a defect in my own fix: the backup copy was written before the primary, so a failed primary write left a phantom marker that blocked the retry of the same set.
+Root cause: an untrusted client field was used for an admission decision; a state machine had a nonterminal outcome stored in a terminal state; recovery code preferred rebuilding over failing closed; a two-file write was ordered without checking the failure path.
+Missed by: author, tests and the four earlier reviewers; caught by the gate (first five) and by the test agent (the phantom marker).
+Rule next time: never gate on a field the caller supplies; a nonterminal outcome must stay in a state that keeps the ordering barrier; for every damaged-metadata path decide fail-closed first; for every two-step write test the failure of the second step.

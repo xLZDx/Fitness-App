@@ -136,7 +136,7 @@ class CommandSender {
     required this.transport,
     required this.deviceInstallId,
     required this.clientBuild,
-    this.writerProof,
+    required this.writerProof,
     this.sendTimeout = const Duration(seconds: 30),
     this.stuckAttemptThreshold = 10,
     DateTime Function()? now,
@@ -148,7 +148,9 @@ class CommandSender {
   final CommandTransport transport;
   final String deviceInstallId;
   final String clientBuild;
-  final WriterProofProvider? writerProof;
+  /// Mandatory: the real callable rejects a command without a writer proof,
+  /// so the sender never sends (or marks SENDING) without one.
+  final WriterProofProvider writerProof;
   final Duration sendTimeout;
   final int stuckAttemptThreshold;
   final DateTime Function() _now;
@@ -200,7 +202,18 @@ class CommandSender {
     // Inside the busy section no send of this sender is in flight, so any
     // SENDING record is stale (an earlier answer could not be committed): it
     // returns to UNKNOWN_EFFECT (T10) and is resent with the same bytes.
-    for (final r in await store.listAll()) {
+    final all = await store.listAll();
+    // Fail-closed barrier (persisted through the record itself): a record
+    // stored as non-terminal CONFLICTED (written by an older build) is not
+    // sendable, but its session must not let a higher seq overtake it.
+    final conflictBarrier = <String, int>{};
+    for (final r in all) {
+      if (r.state == CommandState.conflicted && r.conflictTerminal == false) {
+        final cur = conflictBarrier[r.sessionId];
+        if (cur == null || r.seq < cur) conflictBarrier[r.sessionId] = r.seq;
+      }
+    }
+    for (final r in all) {
       if (r.state == CommandState.sending) {
         await store.markResult(
             r.operationId,
@@ -234,6 +247,8 @@ class CommandSender {
     for (final r in pending) {
       final badFrom = badFromSeq[r.sessionId];
       if (badFrom != null && r.seq >= badFrom) continue;
+      final barrier = conflictBarrier[r.sessionId];
+      if (barrier != null && r.seq > barrier) continue;
       final hold = _holds[r.sessionId];
       if (hold != null && !hold.untilSignIn && !now.isBefore(hold.until)) {
         // Probe time reached: the hold stays until a non-hold answer clears it.
@@ -262,23 +277,20 @@ class CommandSender {
     });
 
     // The proof is read before the SENDING commit: a secure-storage failure
-    // must not set maybeSent.
+    // must not set maybeSent. A missing, empty or unreadable proof means
+    // nothing is marked SENDING and nothing reaches the transport; the record
+    // stays sendable.
     String? proof;
-    final provider = writerProof;
-    if (provider != null) {
-      try {
-        proof = await provider(candidate.uid, candidate.sessionId);
-      } catch (_) {
-        proof = null;
-      }
-      if (proof == null || proof.isEmpty) {
-        // No proof: the server would answer INVALID_PAYLOAD/NOT_WRITER. Send
-        // nothing, leave the record untouched and hold the session.
-        final hold = _bumpHold(candidate.sessionId,
-            base: const Duration(seconds: 30), cap: const Duration(minutes: 15));
-        return SendReport(SendStatus.proofUnavailable,
-            operationId: candidate.operationId, nextAttemptAt: hold.until);
-      }
+    try {
+      proof = await writerProof(candidate.uid, candidate.sessionId);
+    } catch (_) {
+      proof = null;
+    }
+    if (proof == null || proof.isEmpty) {
+      final hold = _bumpHold(candidate.sessionId,
+          base: const Duration(seconds: 30), cap: const Duration(minutes: 15));
+      return SendReport(SendStatus.proofUnavailable,
+          operationId: candidate.operationId, nextAttemptAt: hold.until);
     }
 
     final sending = await store.markSending(candidate.operationId); // T6
@@ -348,14 +360,15 @@ class CommandSender {
         return SendReport(SendStatus.conflicted, operationId: id, code: code);
 
       case ResultClass.sessionConflict:
+        // NOT_WRITER / SESSION_COMMAND_LIMIT are non-terminal on the server.
+        // The record goes back to ACCEPTED (T11, nothing was applied) instead
+        // of CONFLICTED: CONFLICTED is excluded from listPending(), so a
+        // restart or resetBackoff() would let a higher seq of the same session
+        // overtake it. As ACCEPTED it keeps the lowest seq of its session and
+        // is retried first, after the backoff hold; the code stays in
+        // lastResultCode. Terminal conflicts keep CONFLICTED (above).
         await store.markResult(
-            id,
-            CommandResult(
-              to: CommandState.conflicted, // T12
-              resultCode: code,
-              conflictKind: code,
-              conflictTerminal: false,
-            ));
+            id, CommandResult(to: CommandState.accepted, resultCode: code));
         final hold = _bumpHold(rec.sessionId,
             base: const Duration(seconds: 30),
             cap: const Duration(minutes: 15),

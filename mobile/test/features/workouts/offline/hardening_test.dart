@@ -167,13 +167,33 @@ void main() {
       await store.dispose();
     });
 
-    test('without a provider the sender still sends (no writer credential)',
+    test('without a usable proof nothing is marked SENDING or reaches the transport',
         () async {
       final store = InMemoryCommandQueueStore(uid: kUid, nowMs: clock.nowMs);
-      await accFor(store).accept(intentOf('t'));
-      expect((await senderFor(store, server, clock).sendNext()).status,
-          SendStatus.synced);
-      expect(server.received.single.writerProof, isNull);
+      final rec = (await accFor(store).accept(intentOf('t'))).record;
+      final sender = senderFor(store, server, clock, proof: (u, s) async => '');
+      expect((await sender.sendNext()).status, SendStatus.proofUnavailable);
+      expect(server.received, isEmpty);
+      final r = (await store.get(rec.operationId))!;
+      expect(r.state, CommandState.accepted);
+      expect(r.maybeSent, isFalse);
+      expect(r.attempts, 0);
+      await store.dispose();
+    });
+
+    test('the fake server rejects a command without a writer proof', () async {
+      final store = InMemoryCommandQueueStore(uid: kUid, nowMs: clock.nowMs);
+      final rec = (await accFor(store).accept(intentOf('t'))).record;
+      final answer = await server.send(CommandEnvelope(
+          operationId: rec.operationId,
+          payloadBytes: rec.canonicalBytes!,
+          payloadHash: rec.payloadHash,
+          writerProof: null,
+          writerEpochClaim: 0,
+          deviceInstallId: kDevice,
+          clientBuild: 'b'));
+      expect(answer.code, 'INVALID_PAYLOAD');
+      expect(server.effects, isEmpty);
       await store.dispose();
     });
   });
@@ -306,6 +326,7 @@ void main() {
         deviceInstallId: kDevice,
         clientBuild: 'b',
         stuckAttemptThreshold: 2,
+        writerProof: kDefaultTestProof,
         now: clock.now,
       );
       server.faults.addAll(<Fault>[Fault.throwWithoutApplying, Fault.throwWithoutApplying]);

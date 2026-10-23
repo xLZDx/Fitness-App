@@ -356,7 +356,7 @@ void main() {
           operationId: sending.operationId,
           payloadBytes: sending.canonicalBytes!,
           payloadHash: sending.payloadHash,
-          writerProof: null,
+          writerProof: 'test-proof',
           writerEpochClaim: 0,
           deviceInstallId: kDevice,
           clientBuild: 'b'));
@@ -571,10 +571,12 @@ void main() {
     }
 
     for (final code in <String>['NOT_WRITER', 'SESSION_COMMAND_LIMIT']) {
-      test('$code -> non-terminal CONFLICTED and the session loop pauses', () async {
+      test('$code -> stays sendable (ACCEPTED) and the session loop pauses', () async {
         final r = await sendWith(code);
-        expect(r.state, CommandState.conflicted);
-        expect(r.conflictTerminal, isFalse);
+        // Not CONFLICTED: that state is excluded from listPending() and would
+        // let a higher seq of the session overtake after a restart.
+        expect(r.state, CommandState.accepted);
+        expect(r.lastResultCode, code);
         expect(r.canonicalBytes, isNotNull);
       });
     }

@@ -52,6 +52,10 @@ CompleteSetIntent intentOf(
       body: setBody(setIndex, reps: reps),
     );
 
+/// Default writer proof of [senderFor]; the sender requires a provider.
+Future<String?> kDefaultTestProof(String uid, String sessionId) async =>
+    'test-proof';
+
 /// Deterministic mutable clock shared by store, acceptor and sender.
 class TestClock {
   TestClock([int startMs = 1700000000000]) : ms = startMs;
@@ -138,6 +142,11 @@ class FakeServer implements CommandTransport {
   }
 
   TransportAnswer _apply(CommandEnvelope e) {
+    // The real callable rejects a command without a writer proof.
+    final proof = e.writerProof;
+    if (proof == null || proof.isEmpty) {
+      return const TransportAnswer(code: 'INVALID_PAYLOAD');
+    }
     if (payloadHashHex(e.payloadBytes) != e.payloadHash) {
       return const TransportAnswer(code: 'INVALID_PAYLOAD');
     }
@@ -169,7 +178,7 @@ CommandSender senderFor(
       transport: transport,
       deviceInstallId: kDevice,
       clientBuild: 'test-build',
-      writerProof: proof,
+      writerProof: proof ?? kDefaultTestProof,
       sendTimeout: sendTimeout,
       now: clock.now,
       random: _SeededRandom(seed),

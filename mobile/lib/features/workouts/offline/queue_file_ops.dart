@@ -35,6 +35,19 @@ class IoQueueFileOps implements QueueFileOps {
     await Directory(path).create(recursive: true);
   }
 
+  /// Writes a unique temp file, flushes it (`RandomAccessFile.flush`) and
+  /// renames it over [path].
+  ///
+  /// Guarantee: against a process crash a reader sees the old file or the
+  /// complete new one, never a partial write.
+  ///
+  /// Residual risk (accepted limitation): the parent directory is not synced
+  /// after the rename. `dart:io` has no portable directory fsync and FFI is not
+  /// used, so after a power loss or OS crash the rename itself may be lost
+  /// (the old file reappears) or, on file systems that do not order data and
+  /// metadata, the new name may point to unflushed data. This method does not
+  /// provide power-loss durability. The checksummed backup copies of the queue
+  /// metadata detect such damage but cannot undo a lost rename.
   @override
   Future<void> writeAtomic(String path, Uint8List bytes) async {
     // Unique per write so two writers never share a temp file.

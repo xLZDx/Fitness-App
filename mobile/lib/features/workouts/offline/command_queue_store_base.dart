@@ -57,6 +57,14 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
   /// table then.
   bool markersNeedPersist = false;
 
+  /// Non-null when the persisted metadata (seq counters or logical-set
+  /// markers) could not be completely recovered. While set, [accept] and
+  /// [prune] refuse to run (fail closed). Set by the subclass during load.
+  String? recoveryRequiredReason;
+
+  /// True while the store fails closed (see [recoveryRequiredReason]).
+  bool get recoveryRequired => recoveryRequiredReason != null;
+
   /// Copy of the marker table (for subclasses and tests).
   Map<String, LogicalSetMarker> get markersView =>
       Map<String, LogicalSetMarker>.of(_markers);
@@ -113,6 +121,8 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
 
   @override
   Future<AcceptResult> accept(AcceptRequest request) => _locked(() async {
+        final recovery = recoveryRequiredReason;
+        if (recovery != null) throw QueueRecoveryRequiredException(recovery);
         final byId = _records[request.operationId];
         if (byId != null) return AcceptResult(byId, created: false);
 
@@ -308,6 +318,9 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
 
   @override
   Future<int> prune() => _locked(() async {
+        // Pruning rewrites the marker table from memory; with incomplete
+        // metadata that could drop information for good.
+        if (recoveryRequired) return 0;
         final cutoff = _nowMs() - kStubRetention.inMilliseconds;
         var n = 0;
         for (final r in _records.values.toList()) {

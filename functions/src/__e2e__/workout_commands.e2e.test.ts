@@ -521,6 +521,8 @@ describe("policy gate outcomes (4.2 step 2)", () => {
     ["DELETING", { migrationState: "DELETING" }, "ACCOUNT_DELETING", undefined],
     ["DRAIN OPEN unacked device", { migrationState: "DRAIN", drainPhase: "OPEN", drainedDevices: { other: 1 } }, "MIGRATION_HOLD", undefined],
     ["DRAIN CLOSED acked device", { migrationState: "DRAIN", drainPhase: "CLOSED", drainedDevices: { [DEVICE]: 1 } }, "MIGRATION_HOLD", undefined],
+    ["DRAIN OPEN acked device (V0 excludes DRAIN)", { migrationState: "DRAIN", drainPhase: "OPEN", drainedDevices: { [DEVICE]: 1 } }, "MIGRATION_HOLD", undefined],
+    ["DRAIN OPEN device-id substitution (B claims A's acknowledged id)", { migrationState: "DRAIN", drainPhase: "OPEN", drainedDevices: { [DEVICE]: 1 } }, "MIGRATION_HOLD", undefined],
   ])("%s answers %s and records nothing", async (_n, policy, code) => {
     await setPolicy(policy);
     const before = await dumpEffects(UID_A);
@@ -533,7 +535,6 @@ describe("policy gate outcomes (4.2 step 2)", () => {
   test.each<[string, Record<string, unknown>]>([
     ["SERVER_ONLY", { migrationState: "SERVER_ONLY" }],
     ["SEALED", { migrationState: "SEALED" }],
-    ["DRAIN OPEN acked device", { migrationState: "DRAIN", drainPhase: "OPEN", drainedDevices: { [DEVICE]: 1 } }],
   ])("%s accepts the command", async (_n, policy) => {
     await setPolicy(policy);
     expect((await one(cmd("pa-" + _n).e)).code).toBe("COMMITTED");
@@ -807,5 +808,63 @@ describe("S3: UNAVAILABLE causes are logged as closed slugs without identifiers"
     const resultLines = info.mock.calls.filter((c) => c[0] === "workout_command_result");
     expect(resultLines.map((c) => (c[1] as any).code)).toEqual(["COMMITTED", "COMMITTED", "DUPLICATE_LOGICAL_SET"]);
     for (const c of resultLines) expect(Object.keys(c[1] as object)).toEqual(["code"]);
+  });
+});
+
+describe("DRAIN is never admitted in V0, even with a substituted device id", () => {
+  test("policy acknowledges deviceA; a caller sending deviceInstallId deviceA (not the payload origin) is held and nothing is written", async () => {
+    await db.doc(`users/${UID_A}/workout_command_policy/current`).set({ migrationState: "DRAIN", drainPhase: "OPEN", drainedDevices: { deviceA: 1 } });
+    const before = await dumpEffects(UID_A);
+    const c = cmd("drain-sub");
+    const r = await one({ ...c.e, deviceInstallId: "deviceA" });
+    expect(r).toMatchObject({ code: "MIGRATION_HOLD", resultClass: "C5b" });
+    expect(await dumpEffects(UID_A)).toEqual(before);
+    expect(await typed()).toBeNull();
+    expect(await receipt(c.opId)).toBeNull();
+  });
+});
+
+describe("concurrent operations that hit the same fence shard", () => {
+  const sameShardIds = (n: number, uid = UID_A) => {
+    const byShard = new Map<string, string[]>();
+    for (let i = 0; i < 20000; i++) {
+      const id = opIdOf(uid, "cs" + i);
+      const l = byShard.get(fenceShardOf(id)) ?? [];
+      l.push(id);
+      byShard.set(fenceShardOf(id), l);
+      if (l.length === n) return l;
+    }
+    throw new Error("no shard collision found");
+  };
+
+  test("two different sessions created at the same time: both commit, shard keeps both keys, counters add up", async () => {
+    const [a, b] = sameShardIds(2);
+    const pa = payloadOf(UID_A, "x", { operationId: a, sessionId: "s_one", logicalSetId: `s_one:${EXERCISE}:1` });
+    const pb = payloadOf(UID_A, "x", { operationId: b, sessionId: "s_two", logicalSetId: `s_two:${EXERCISE}:1` });
+    const [ra, rb] = await Promise.all([submit([envelopeOf(pa)], UID_A, "s_one"), submit([envelopeOf(pb)], UID_A, "s_two")]);
+    expect(ra.results[0].code).toBe("COMMITTED");
+    expect(rb.results[0].code).toBe("COMMITTED");
+    const shard = await shardOf(UID_A, a);
+    expect(Object.keys(shard.e).sort()).toEqual([fenceKeyOf(a), fenceKeyOf(b)].sort());
+    expect(await counter()).toMatchObject({ applied: 2, sessionsCreated: 2 });
+    expect((await typed(UID_A, "s_one")).revision).toBe(1);
+    expect((await typed(UID_A, "s_two")).revision).toBe(1);
+  });
+
+  test("three operations of one session on one shard fired together: all commit, revision, resolvedOps and counter agree", async () => {
+    const [a, b, c] = sameShardIds(3);
+    const first = cmd("cs-first");
+    expect((await one(first.e)).code).toBe("COMMITTED");
+    const mk = (id: string, n: number) => envelopeOf(payloadOf(UID_A, "x", { operationId: id, logicalSetId: `${SESSION}:${EXERCISE}:${n}`, seq: n, sessionInit: null, body: { setId: "set_000" + n } }));
+    const res = await Promise.all([a, b, c].map((id, i) => submit([mk(id, i + 2)])));
+    expect(res.map((r) => r.results[0].code)).toEqual(["COMMITTED", "COMMITTED", "COMMITTED"]);
+    const t = await typed();
+    expect(t.revision).toBe(4);
+    expect(t.resolvedOps).toBe(4);
+    expect(Object.keys(t.exercises[EXERCISE].sets).sort()).toEqual(["1", "2", "3", "4"]);
+    expect((await counter()).applied).toBe(4);
+    const shard = await shardOf(UID_A, a);
+    for (const id of [a, b, c]) expect(shard.e[fenceKeyOf(id)][0]).toBe("C");
+    for (const id of [a, b, c]) expect((await receipt(id)).status).toBe("COMMITTED");
   });
 });
