@@ -81,3 +81,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 5 (GPT-PM, head ae7a7b0b: 0 BLOCKER, 2 MAJOR)
 - FU-AC-119: S26 audit-extraction case now uses real response shapes including batch deletes and mixed results; new case for gap resolution in session classes B and C.
+
+## Pre-implementation gate round 6 (GPT-PM, head 95ff39c7: 0 BLOCKER, 2 MAJOR)
+- FU-AC-119: S26 audit-extraction case now treats every BatchWrite item as unsupported, asserts the key-collision case for a version-less batch update and the first encounter of an unsupported item after DRAIN.

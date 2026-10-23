@@ -1750,3 +1750,10 @@ Facts: gate round 5 returned 2 MAJOR: the audit key text still derived the opera
 Root cause: an edit changed one sentence of a definition without searching for its twin, and a platform field was assumed to exist without reading the response shape.
 Missed by: author; caught by the gate.
 Rule next time: after changing a definition grep the whole document for the old wording; for every external response used as an identity source list which fields each call shape actually returns and declare shapes without a source unsupported; when a step is shared by classes, state it once before the class split.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 6
+Kind: FAILURE
+Facts: gate round 6 returned 2 MAJOR on the round-5 text: a successful batch update that changes nothing returns the previous update time and would have received the key of the earlier write; the fallback for unsupported audit items had no schema for the unknown commit time, no lifecycle after DRAIN had begun and no stated waiting or correlation rule.
+Root cause: I declared a call shape partially supported on the strength of one field without checking its documented no-op behaviour, and wrote a fallback without walking it through every phase of the account.
+Missed by: author; caught by the gate.
+Rule next time: treat a platform field as an identity only after reading its documented value in the no-change case; for every fallback state its record schema, its behaviour in each lifecycle phase and its interaction with the normal path.

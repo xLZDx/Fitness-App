@@ -59358,3 +59358,7 @@ Decision: accept all four findings of gate round 4. The GAP audit marker is an e
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 5
 
 Decision: accept both findings of gate round 5. The audit operation is defined once, per successful mutation; supported audit shapes are enumerated with their commit-time source (single commit, streaming write, batch update by its update time) and a batch delete is unsupported (unverified gap keyed by the log insert id, alert, DRAIN blocked); gap resolution is a shared step 0 for session classes A, B and C. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round5.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 6
+
+Decision: accept both findings of gate round 6. BatchWrite is unsupported as a whole (no verified commit time for updates or deletes); unsupported audit items become immediate unverified gaps keyed by the log insert id with a null commit time, with no waiting and no correlation; before DRAIN they refuse admission, after DRAIN the phase never regresses and a flag refuses the cutover to SERVER_ONLY until the operator clears it. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round6.md; validator OK.
