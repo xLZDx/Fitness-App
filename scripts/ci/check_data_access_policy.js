@@ -140,7 +140,7 @@ const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/account_export.ts'),
-    line: 323,
+    line: 343,
     arg: 'collection',
     reason: "owned()'s own collection-name PARAMETER -- every real call site passing it a literal " +
       '(coach_bookings, equipment_reports, debug_sessions, ...) is itself discovered by Source B ' +
@@ -235,15 +235,15 @@ const KNOWN_AUDITED_DYNAMIC_CALL_SITES = [
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/account_export.ts'),
-    line: 234,
+    line: 253,
     arg: 'base',
     reason: "pagedRead()'s own base-path local (`users/${uid}/${spec.path}` where spec.path comes from the PAGED_COLLECTIONS literal table); every table entry is a declared collection. Verified 2026-10-16.",
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/account_export.ts'),
-    line: 237,
+    line: 256,
     arg: '`${base}/${cursor}`',
-    reason: "pagedRead() cursor lookup: the same base path as line 234 plus a document id. Verified 2026-10-16.",
+    reason: "pagedRead() cursor lookup: the same base path as line 253 plus a document id. Verified 2026-10-16.",
   },
   {
     file: path.join(REPO_ROOT, 'functions/src/activity_streams/delete_all_streams.ts'),

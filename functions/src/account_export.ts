@@ -156,6 +156,11 @@ const PAGED_COLLECTIONS = [
   // up to MAX_ROWS of each (see `CAPPED_FIRST_PAGE`), continuations page by PAGE_ROWS.
   { key: "activities", path: "activities", order: "startUtc" },
   { key: "activityStreams", path: "activity_streams", order: null },
+  // V0 offline command protocol: the owner's canonical typed sessions (the
+  // server-only source of truth behind `workout_sessions`) and the account's
+  // 90-day detail receipts. Fence shards, policy and counters are NOT exported.
+  { key: "workoutTypedSessions", path: "workout_typed_sessions", order: null },
+  { key: "workoutCommandReceipts", path: "workout_command_receipts", order: null },
 ] as const;
 type PagedKey = (typeof PAGED_COLLECTIONS)[number]["key"];
 
@@ -181,6 +186,20 @@ function streamRow(row: Record<string, unknown>): Record<string, unknown> {
   for (const f of STREAM_ROW_FIELDS) {
     if (f in row) out[f] = row[f];
   }
+  return out;
+}
+
+/**
+ * Server-only controls of a typed workout session that must not leave the
+ * server: `writerTokenHash` is the SHA-256 of the secret writer proof (material
+ * a holder could use to test guesses, and a credential-derived value). Every
+ * other field is the owner's own session content or its sync bookkeeping.
+ */
+const TYPED_SESSION_WITHHELD_FIELDS = ["writerTokenHash"] as const;
+
+function typedSessionRow(row: Record<string, unknown>): Record<string, unknown> {
+  const out = { ...row };
+  for (const f of TYPED_SESSION_WITHHELD_FIELDS) delete out[f];
   return out;
 }
 
@@ -248,6 +267,7 @@ async function pagedRead(
   const rows = snap.docs.slice(0, pageRows).map((d) => {
     const row = { id: d.id, ...d.data() } as Record<string, unknown>;
     if (spec.key === "bodyScans") return scanRow(row);
+    if (spec.key === "workoutTypedSessions") return typedSessionRow(row);
     return spec.key === "activityStreams" ? streamRow(row) : row;
   });
   return {

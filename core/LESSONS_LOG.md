@@ -1819,3 +1819,10 @@ Facts: gate round 3 found one regression in my own idempotent-accept fix: the su
 Root cause: the fix repaired the symptom on the retry path; the invariant (every record in the table has its marker in the table) was not enforced where records enter the table.
 Missed by: author and test agent; caught by the gate.
 Rule next time: enforce an invariant at every place the state is mutated, and test the no-retry path next to the retry path.
+
+## 2026-10-23 - Commit: feat(v1): account export sections for V0 collections
+Kind: SHORTCOMING
+Facts: the implementer changed the lifecycle classification of workout_command_fence in the reason text but left the classification value BOTH; a hand-pinned line list in test_check_data_access_policy.js went stale after the export file grew; the test agent caught both. I also ran git stash by mistake in a worktree with another agent's uncommitted work and restored it at once with stash pop (stash list empty afterwards).
+Root cause: a classification has two places (value and reason) with no check tying them to the code; pinned line numbers are brittle; a stray stash command in a shared worktree.
+Missed by: author; caught by the test agent.
+Rule next time: change the value first, then the reason; re-run the pin tests after any edit of an audited file; never run stash in a worktree that an agent is using.
