@@ -301,6 +301,7 @@ describe("workoutCommandOutcomes (fence)", () => {
     expect(res.workoutCommandOutcomes).toEqual([
       {
         id: "0a",
+        status: "OK",
         entries: [
           { operationKey: "aaa", code: "C", sessionDigest: "SESSIONDIG1" },
           { operationKey: "mmm", code: "R", sessionDigest: "SESSIONDIG3" },
@@ -377,8 +378,15 @@ describe("workoutCommandOutcomes (fence)", () => {
     for (const k of ["short", "badcode", "num", "nul", "long"]) {
       expect(entry(k)).toEqual({ operationKey: k, code: null, sessionDigest: null });
     }
-    expect(byId["02"]).toEqual([]);
-    expect(byId["03"]).toEqual([]);
+    // R2-M03: a shard whose stored map is not an object is NOT an empty shard.
+    const rowOf = (id: string) => res.workoutCommandOutcomes.find((r: any) => r.id === id);
+    expect(rowOf("01").status).toBe("OK");
+    expect(rowOf("02")).toEqual({ id: "02", status: "CORRUPT_ENTRY_MAP", entries: [] });
+    expect(rowOf("03")).toEqual({ id: "03", status: "CORRUPT_ENTRY_MAP", entries: [] });
+    expect(res.warnings).toEqual([
+      { section: "workoutCommandOutcomes", id: "03", code: "CORRUPT_ENTRY_MAP" },
+      { section: "workoutCommandOutcomes", id: "02", code: "CORRUPT_ENTRY_MAP" },
+    ]);
     expect(JSON.stringify(res)).not.toContain(PAYLOAD);
   });
 
@@ -405,15 +413,45 @@ describe("workoutCommandOutcomes (fence)", () => {
     expect(res.paging.workoutCommandOutcomes).toEqual({ returned: 0, hasMore: false, nextCursor: null });
   });
 
-  test("receipts are no longer an export section", async () => {
-    collections.set("users/u1/workout_command_receipts", [{ id: "op1", data: { marker: "RECEIPT-X" } }]);
+  test("receipts are an export section: owner fields only, payloadHash withheld", async () => {
+    collections.set("users/u1/workout_command_receipts", [
+      {
+        id: "op1",
+        data: {
+          payloadHash: "sha256:SECRETPAYLOAD",
+          status: "REJECTED",
+          reasonCode: "DUPLICATE_LOGICAL_SET",
+          effect: null,
+          sessionId: "sess1",
+          exerciseId: "ex1",
+          operation: "ADD_SET",
+          logicalSetId: "ls1",
+          seq: 7,
+          originDeviceInstallId: "dev1",
+          revisionBefore: 3,
+          revisionAfter: null,
+          serverTimeMs: 1700000000000,
+          performedAtClientMs: 1699999999000,
+          clockSuspect: false,
+          expireAt: 1707776000000,
+          unknownFutureField: "NOT-ALLOWED",
+        },
+      },
+    ]);
     const res = await run();
-    expect(res.workoutCommandReceipts).toBeUndefined();
-    expect(res.paging.workoutCommandReceipts).toBeUndefined();
-    expect(JSON.stringify(res)).not.toContain("RECEIPT-X");
-    await expect(run({ cursors: { workoutCommandReceipts: "op1" } })).rejects.toMatchObject({
-      code: "invalid-argument",
+    expect(res.workoutCommandReceipts).toHaveLength(1);
+    expect(res.workoutCommandReceipts[0]).toMatchObject({
+      id: "op1",
+      reasonCode: "DUPLICATE_LOGICAL_SET",
+      exerciseId: "ex1",
+      logicalSetId: "ls1",
+      seq: 7,
+      originDeviceInstallId: "dev1",
+      revisionBefore: 3,
+      serverTimeMs: 1700000000000,
     });
+    expect(JSON.stringify(res)).not.toMatch(/SECRETPAYLOAD|payloadHash|NOT-ALLOWED/);
+    expect(res.paging.workoutCommandReceipts).toEqual({ returned: 1, hasMore: false, nextCursor: null });
   });
 });
 
@@ -538,7 +576,7 @@ describe("byte budget with the new sections present", () => {
     expect(res.truncated).toEqual([]);
     expect(res.paging.workoutTypedSessions.hasMore).toBe(false);
     expect(res.paging.workoutCommandOutcomes.hasMore).toBe(false);
-    expect(res.paging.workoutCommandReceipts).toBeUndefined();
+    expect(res.paging.workoutCommandReceipts).toEqual({ returned: 0, hasMore: false, nextCursor: null });
   });
 });
 
@@ -554,7 +592,7 @@ describe("lifecycle policy matches the export code", () => {
     [...src.matchAll(/path:\s*"([a-z_]+)"/g)].map((m) => m[1]),
   );
 
-  test.each(["workout_typed_sessions", "workout_command_fence"])(
+  test.each(["workout_typed_sessions", "workout_command_fence", "workout_command_receipts"])(
     "%s is a paged export section in code and BOTH in policy",
     (c) => {
       expect(exportedPaths.has(c)).toBe(true);
@@ -562,7 +600,7 @@ describe("lifecycle policy matches the export code", () => {
     },
   );
 
-  test.each(["workout_command_receipts", "workout_command_policy", "workout_command_counters"])(
+  test.each(["workout_command_policy", "workout_command_counters"])(
     "%s is not exported by code and is DELETE (not export-classified) in policy",
     (c) => {
       expect(exportedPaths.has(c)).toBe(false);
@@ -572,5 +610,283 @@ describe("lifecycle policy matches the export code", () => {
 
   test("the code withholds writerTokenHash by declaration", () => {
     expect(src).toMatch(/TYPED_SESSION_WITHHELD_FIELDS\s*=\s*\[\s*"writerTokenHash"/);
+  });
+});
+
+// ---------------------------------------------------------------- R2 additions
+const RECEIPTS = "users/u1/workout_command_receipts";
+
+const receiptDoc = (i: number, extra: Record<string, unknown> = {}): Record<string, unknown> => ({
+  status: i % 2 ? "COMMITTED" : "REJECTED",
+  reasonCode: i % 2 ? null : "DUPLICATE_LOGICAL_SET",
+  effect: i % 2 ? "APPENDED" : null,
+  sessionId: "sess" + (i % 7),
+  exerciseId: "ex1",
+  operation: "ADD_SET",
+  logicalSetId: "ls" + i,
+  seq: i,
+  originDeviceInstallId: "dev1",
+  revisionBefore: i,
+  revisionAfter: i + 1,
+  serverTimeMs: 1700000000000 + i,
+  performedAtClientMs: 1699999999000 + i,
+  clockSuspect: false,
+  expireAt: 1707776000000 + i,
+  payloadHash: "sha256:PAYLOADSECRET",
+  writerTokenHash: "WRITERSECRET",
+  writerProof: "PROOFSECRET",
+  ...extra,
+});
+const seedReceipts = (name: string, n: number): string[] => {
+  const list = ids(n, "op");
+  collections.set(name, list.map((id, i) => ({ id, data: receiptDoc(i) })));
+  return list;
+};
+const SECRET = /PAYLOADSECRET|WRITERSECRET|PROOFSECRET|payloadHash|writerTokenHash|writerProof/;
+
+describe("workoutCommandReceipts", () => {
+  test("rows carry exactly the allow-listed fields, newest id first", async () => {
+    const list = seedReceipts(RECEIPTS, 3);
+    const res = await run();
+    expect(res.workoutCommandReceipts.map((r: any) => r.id)).toEqual([...list].reverse());
+    expect(Object.keys(res.workoutCommandReceipts[0]).sort()).toEqual(
+      [
+        "id", "status", "reasonCode", "effect", "sessionId", "exerciseId", "operation",
+        "logicalSetId", "seq", "originDeviceInstallId", "revisionBefore", "revisionAfter",
+        "serverTimeMs", "performedAtClientMs", "clockSuspect", "expireAt",
+      ].sort(),
+    );
+    expect(res.workoutCommandReceipts[0]).toMatchObject({ id: "op0003", seq: 2, revisionAfter: 3 });
+    expect(JSON.stringify(res)).not.toMatch(SECRET);
+  });
+
+  test("pages 2000 rows at a time: 4500 receipts = 2000 + 2000 + 500, exactly once, secrets never present", async () => {
+    const list = seedReceipts(RECEIPTS, 4500);
+    const expected = [...list].reverse();
+    const first = await run();
+    expect(first.paging.workoutCommandReceipts).toEqual({
+      returned: 2000,
+      hasMore: true,
+      nextCursor: expected[1999],
+    });
+    const got: string[] = first.workoutCommandReceipts.map((r: any) => r.id);
+    let cursor: string | null = first.paging.workoutCommandReceipts.nextCursor;
+    let calls = 1;
+    expect(JSON.stringify(first)).not.toMatch(SECRET);
+    while (cursor) {
+      const res = await run({ cursors: { workoutCommandReceipts: cursor } });
+      calls++;
+      expect(res.workoutTypedSessions).toBeUndefined();
+      expect(JSON.stringify(res)).not.toMatch(SECRET);
+      got.push(...res.workoutCommandReceipts.map((r: any) => r.id));
+      cursor = res.paging.workoutCommandReceipts.nextCursor;
+      expect(calls).toBeLessThan(10);
+    }
+    expect(calls).toBe(3);
+    expect(got).toEqual(expected);
+  });
+
+  test("tenant isolation: another account's receipts never appear", async () => {
+    seedReceipts(RECEIPTS, 2);
+    collections.set("users/u2/workout_command_receipts", [
+      { id: "op9999", data: receiptDoc(1, { sessionId: "OTHER-SESSION" }) },
+    ]);
+    const res = await run();
+    expect(res.workoutCommandReceipts.map((r: any) => r.id)).toEqual(["op0002", "op0001"]);
+    expect(JSON.stringify(res)).not.toMatch(/OTHER-SESSION|op9999/);
+    const other = await run({}, "u2");
+    expect(other.workoutCommandReceipts.map((r: any) => r.id)).toEqual(["op9999"]);
+    expect(readPaths.filter((x) => x.includes("workout_command_receipts"))).toEqual([
+      RECEIPTS,
+      "users/u2/workout_command_receipts",
+    ]);
+  });
+
+  test("empty receipts yield an empty, final section", async () => {
+    const res = await run();
+    expect(res.workoutCommandReceipts).toEqual([]);
+    expect(res.paging.workoutCommandReceipts).toEqual({ returned: 0, hasMore: false, nextCursor: null });
+  });
+
+  test("a stale receipts cursor is refused and another account's receipt id is not a valid position", async () => {
+    seedReceipts(RECEIPTS, 2);
+    collections.set("users/u2/workout_command_receipts", [{ id: "theirs", data: {} }]);
+    await expect(run({ cursors: { workoutCommandReceipts: "theirs" } })).rejects.toMatchObject({
+      code: "failed-precondition",
+    });
+  });
+});
+
+describe("corrupt fence shards raise warnings on every page", () => {
+  const seedMixed = (): void => {
+    collections.set(
+      FENCE,
+      shardIds(10).map((sh) => ({
+        id: sh,
+        data: sh === "03" || sh === "07" ? { e: "garbage" } : { e: { [key22(sh, 0)]: fenceValue("C", digestOf(sh, 0)) } },
+      })),
+    );
+  };
+
+  test("first page: corrupt shards are flagged in rows and in warnings", async () => {
+    seedMixed();
+    const res = await run();
+    const bad = res.workoutCommandOutcomes.filter((r: any) => r.status === "CORRUPT_ENTRY_MAP");
+    expect(bad.map((r: any) => r.id)).toEqual(["07", "03"]);
+    expect(res.workoutCommandOutcomes.filter((r: any) => r.status === "OK")).toHaveLength(8);
+    expect(res.warnings).toEqual([
+      { section: "workoutCommandOutcomes", id: "07", code: "CORRUPT_ENTRY_MAP" },
+      { section: "workoutCommandOutcomes", id: "03", code: "CORRUPT_ENTRY_MAP" },
+    ]);
+  });
+
+  test("continuation pages carry warnings for the corrupt shards they return, and an empty list otherwise", async () => {
+    seedMixed();
+    const cont = await run({ cursors: { workoutCommandOutcomes: "08" } }); // returns 07..00
+    expect(cont.warnings).toEqual([
+      { section: "workoutCommandOutcomes", id: "07", code: "CORRUPT_ENTRY_MAP" },
+      { section: "workoutCommandOutcomes", id: "03", code: "CORRUPT_ENTRY_MAP" },
+    ]);
+    const tail = await run({ cursors: { workoutCommandOutcomes: "04" } }); // returns 03..00
+    expect(tail.warnings).toEqual([
+      { section: "workoutCommandOutcomes", id: "03", code: "CORRUPT_ENTRY_MAP" },
+    ]);
+    const clean = await run({ cursors: { workoutCommandOutcomes: "03" } }); // returns 02..00
+    expect(clean.warnings).toEqual([]);
+    // A continuation of ANOTHER section still carries the (empty) warnings field.
+    seedTyped(TYPED, 3);
+    const other = await run({ cursors: { workoutTypedSessions: "s0003" } });
+    expect(other.warnings).toEqual([]);
+  });
+
+  test("a missing map (no e field), an array and a null map are all corrupt, never an empty shard", async () => {
+    collections.set(FENCE, [
+      { id: "a1", data: {} },
+      { id: "a2", data: { e: [] } },
+      { id: "a3", data: { e: null } },
+      { id: "a4", data: { e: {} } }, // a genuinely empty map is fine
+    ]);
+    const res = await run();
+    const st = Object.fromEntries(res.workoutCommandOutcomes.map((r: any) => [r.id, r.status]));
+    expect(st).toEqual({ a1: "CORRUPT_ENTRY_MAP", a2: "CORRUPT_ENTRY_MAP", a3: "CORRUPT_ENTRY_MAP", a4: "OK" });
+    expect(res.warnings.map((w: any) => w.id).sort()).toEqual(["a1", "a2", "a3"]);
+  });
+
+  test("a healthy export has an empty warnings list on the first page", async () => {
+    seedFence(FENCE, 3, 2);
+    const res = await run();
+    expect(res.warnings).toEqual([]);
+  });
+});
+
+describe("fully populated account: a client-style loop completes", () => {
+  // Production sizes, not scaled: 256 shards x 12,000 entries (~1 MB each), 600 typed
+  // sessions of ~400 KB, and 5,000 receipts. Entry/value strings are shared where the
+  // test does not assert on them, to keep heap use bounded; keys are unique.
+  const SHARDS = 256;
+  const ENTRIES = 12_000;
+  const SESSIONS = 600;
+  const RECEIPT_COUNT = 5000;
+
+  jest.setTimeout(900_000);
+
+  test("every fence entry, session and receipt appears exactly once; no starvation; terminates; pages within budget", async () => {
+    const blob = "z".repeat(400_000);
+    const sessionIds = ids(SESSIONS, "s");
+    collections.set(
+      TYPED,
+      sessionIds.map((id, i) => ({ id, data: { revision: i, writerTokenHash: HASH, blob } })),
+    );
+    const values = [fenceValue("C", "AAAAAAAAAAA"), fenceValue("R", "BBBBBBBBBBB"), fenceValue("S", "CCCCCCCCCCC")];
+    const shardList = shardIds(SHARDS);
+    collections.set(
+      FENCE,
+      shardList.map((sh) => {
+        const e: Record<string, string> = {};
+        for (let i = 0; i < ENTRIES; i++) e[key22(sh, i)] = values[i % 3];
+        return { id: sh, data: { e } };
+      }),
+    );
+    const receiptIds = seedReceipts(RECEIPTS, RECEIPT_COUNT);
+
+    type Key = "workoutTypedSessions" | "workoutCommandOutcomes" | "workoutCommandReceipts";
+    const keys: Key[] = ["workoutTypedSessions", "workoutCommandOutcomes", "workoutCommandReceipts"];
+    const seenSessions = new Set<string>();
+    const seenShards = new Set<string>();
+    const seenReceipts = new Set<string>();
+    let entryCount = 0;
+    let badEntry = 0;
+    let secretLeak = 0;
+    let maxBytes = 0;
+    let pages = 0;
+    let quotaHitAtPage: number | null = null;
+    let lastCursor: Partial<Record<Key, string>> = {};
+
+    const absorb = (res: any): Partial<Record<Key, string>> => {
+      pages++;
+      const text = JSON.stringify(res);
+      maxBytes = Math.max(maxBytes, Buffer.byteLength(text, "utf8"));
+      if (SECRET.test(text) || text.includes(PAYLOAD)) secretLeak++;
+      for (const r of res.workoutTypedSessions ?? []) {
+        if (seenSessions.has(r.id)) throw new Error("duplicate session " + r.id);
+        seenSessions.add(r.id);
+      }
+      for (const r of res.workoutCommandOutcomes ?? []) {
+        if (seenShards.has(r.id)) throw new Error("duplicate shard " + r.id);
+        seenShards.add(r.id);
+        r.entries.forEach((e: any, i: number) => {
+          if (e.operationKey !== key22(r.id, i) || e.code !== "CRS"[i % 3]) badEntry++;
+        });
+        entryCount += r.entries.length;
+      }
+      for (const r of res.workoutCommandReceipts ?? []) {
+        if (seenReceipts.has(r.id)) throw new Error("duplicate receipt " + r.id);
+        seenReceipts.add(r.id);
+      }
+      const next: Partial<Record<Key, string>> = {};
+      for (const k of keys) {
+        const info = res.paging[k];
+        if (info === undefined) continue;
+        if (info.hasMore) {
+          // Cursors advance: ids are descending, so each new cursor is strictly smaller.
+          const prev = lastCursor[k];
+          if (prev !== undefined && !(info.nextCursor < prev)) throw new Error("cursor did not advance for " + k);
+          if (info.returned < 1) throw new Error("section starved: " + k);
+          next[k] = info.nextCursor;
+          lastCursor[k] = info.nextCursor;
+        }
+      }
+      return next;
+    };
+
+    let cursors = absorb(await run());
+    while (Object.keys(cursors).length > 0) {
+      if (pages > 1000) throw new Error("loop did not terminate");
+      let res: any;
+      try {
+        res = await run({ cursors });
+      } catch (err: any) {
+        if (err?.code !== "resource-exhausted") throw err;
+        quotaHitAtPage = quotaHitAtPage ?? pages;
+        usage = {}; // keep measuring completeness past the daily page quota
+        res = await run({ cursors });
+      }
+      cursors = absorb(res);
+    }
+
+    expect(seenSessions.size).toBe(SESSIONS);
+    expect([...seenSessions].sort()).toEqual([...sessionIds].sort());
+    expect(seenShards.size).toBe(SHARDS);
+    expect(entryCount).toBe(SHARDS * ENTRIES);
+    expect(badEntry).toBe(0);
+    expect(seenReceipts.size).toBe(RECEIPT_COUNT);
+    expect([...seenReceipts].sort()).toEqual([...receiptIds].sort());
+    expect(secretLeak).toBe(0);
+    expect(maxBytes).toBeLessThanOrEqual(MAX_EXPORT_BYTES);
+    // eslint-disable-next-line no-console
+    console.log(`FULL-POPULATION pages=${pages} maxPageBytes=${maxBytes} quotaHitAtPage=${quotaHitAtPage}`);
+    // The daily continuation quota (accountExportPage, 150/day) must not be exhausted
+    // by one complete export of a fully populated account.
+    expect(quotaHitAtPage).toBeNull();
   });
 });

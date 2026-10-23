@@ -159,12 +159,25 @@ const PAGED_COLLECTIONS = [
   // V0 offline command protocol: the owner's canonical typed sessions (the
   // server-only source of truth behind `workout_sessions`) and the lifetime
   // per-operation outcomes kept by the replay fence (at most 256 shard
-  // documents, paged by shard id). The 90-day detail receipts (a response
-  // cache), policy and counters are NOT exported.
+  // documents, paged by shard id), and the 90-day per-command receipts (a
+  // rejected command such as DUPLICATE_LOGICAL_SET exists nowhere else). Policy
+  // and counters are NOT exported.
   { key: "workoutTypedSessions", path: "workout_typed_sessions", order: null },
   { key: "workoutCommandOutcomes", path: "workout_command_fence", order: null },
+  { key: "workoutCommandReceipts", path: "workout_command_receipts", order: null },
 ] as const;
 type PagedKey = (typeof PAGED_COLLECTIONS)[number]["key"];
+
+/**
+ * Rows per page for sections that need more than [PAGE_ROWS]. Receipts are small
+ * (a few hundred bytes) but can number 180,000 per account (2,000 a day for 90
+ * days); 2,000 per page keeps a full receipts export near 90 pages, inside one
+ * day of the continuation quota ([PAGE_QUOTA_LIMIT]) when it is the only section left.
+ */
+const SECTION_PAGE_ROWS: Partial<Record<PagedKey, number>> = {
+  workoutCommandReceipts: 2000,
+};
+const pageRowsOf = (key: PagedKey): number => SECTION_PAGE_ROWS[key] ?? PAGE_ROWS;
 
 /**
  * Paged sections whose FIRST response is read up to [MAX_ROWS] (not [PAGE_ROWS])
@@ -231,7 +244,13 @@ function typedSessionRow(row: Record<string, unknown>): Record<string, unknown> 
  */
 function outcomeRow(row: Record<string, unknown>): Record<string, unknown> {
   const e = row.e;
-  const map = typeof e === "object" && e !== null ? (e as Record<string, unknown>) : {};
+  if (typeof e !== "object" || e === null || Array.isArray(e)) {
+    // R2-M03: a shard whose stored map is missing or not an object must not read
+    // as a legitimately empty shard (a falsely complete export). It is listed
+    // with an explicit status and reported through the response `warnings`.
+    return { id: row.id, status: OUTCOME_STATUS_CORRUPT, entries: [] };
+  }
+  const map = e as Record<string, unknown>;
   const entries = Object.keys(map)
     .sort()
     .map((operationKey) => {
@@ -246,7 +265,73 @@ function outcomeRow(row: Record<string, unknown>): Record<string, unknown> {
         sessionDigest: ok ? v.slice(1, 12) : null,
       };
     });
-  return { id: row.id, entries };
+  return { id: row.id, status: "OK", entries };
+}
+
+/**
+ * Receipt fields exported by `workoutCommandReceipts` (an allow-list). Stored by
+ * workout_commands/apply.ts `writeOutcome`; each is the owner's own record of
+ * what happened to one command they sent:
+ *  - `id`: the operationId (document id), the client-generated command id.
+ *  - `status`: COMMITTED or REJECTED.
+ *  - `reasonCode`: why a command was rejected (e.g. DUPLICATE_LOGICAL_SET); null if committed.
+ *  - `effect`: what a committed command did (e.g. APPENDED); null if rejected.
+ *  - `sessionId`: the owner's typed session the command targeted.
+ *  - `exerciseId`, `operation`, `logicalSetId`: which exercise, command kind and set.
+ *  - `seq`: the client sequence number of the command.
+ *  - `originDeviceInstallId`: the owner's own device install id that sent it.
+ *  - `revisionBefore`, `revisionAfter`: session revision around the command.
+ *  - `serverTimeMs`: server clock when it was resolved.
+ *  - `performedAtClientMs`, `clockSuspect`: the client-reported time and its suspicion flag.
+ *  - `expireAt`: when the 90-day receipt is deleted by TTL.
+ * Withheld: `payloadHash` (a hash of the command body that would let a holder of
+ * the file test guesses of command content). No writer proof or token material
+ * is stored on a receipt, and none can be exported by this allow-list.
+ */
+const RECEIPT_ROW_FIELDS = [
+  "id",
+  "status",
+  "reasonCode",
+  "effect",
+  "sessionId",
+  "exerciseId",
+  "operation",
+  "logicalSetId",
+  "seq",
+  "originDeviceInstallId",
+  "revisionBefore",
+  "revisionAfter",
+  "serverTimeMs",
+  "performedAtClientMs",
+  "clockSuspect",
+  "expireAt",
+] as const;
+
+function receiptRow(row: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const f of RECEIPT_ROW_FIELDS) {
+    if (f in row) out[f] = row[f];
+  }
+  return out;
+}
+
+/** Status of a replay-fence shard row whose stored map could not be read. */
+const OUTCOME_STATUS_CORRUPT = "CORRUPT_ENTRY_MAP";
+
+/**
+ * Explicit incompleteness signal for rows that could not be exported faithfully:
+ * one `{section, id, code}` per corrupt fence shard in the returned page.
+ */
+function corruptWarnings(
+  sections: Partial<Record<PagedKey, Record<string, unknown>[]>>,
+): Array<{ section: string; id: string; code: string }> {
+  const out: Array<{ section: string; id: string; code: string }> = [];
+  for (const r of sections.workoutCommandOutcomes ?? []) {
+    if (r.status === OUTCOME_STATUS_CORRUPT) {
+      out.push({ section: "workoutCommandOutcomes", id: String(r.id), code: OUTCOME_STATUS_CORRUPT });
+    }
+  }
+  return out;
 }
 
 /** Docs materialised per server read by [boundedRead]. */
@@ -256,6 +341,7 @@ const READ_BATCH_DOCS = 20;
 const BYTE_BOUNDED: ReadonlySet<PagedKey> = new Set<PagedKey>([
   "workoutTypedSessions",
   "workoutCommandOutcomes",
+  "workoutCommandReceipts",
 ]);
 
 function rowOf(
@@ -266,6 +352,7 @@ function rowOf(
   if (key === "bodyScans") return scanRow(row);
   if (key === "workoutTypedSessions") return typedSessionRow(row);
   if (key === "workoutCommandOutcomes") return outcomeRow(row);
+  if (key === "workoutCommandReceipts") return receiptRow(row);
   return key === "activityStreams" ? streamRow(row) : row;
 }
 
@@ -564,7 +651,7 @@ export const exportAccountData = onCall(
   // good faith, and the right to the data is not a right to it on demand at
   // any rate.
   // C25. A request carrying cursors is a continuation page of the app's export
-  // loop (up to 50 pages): it reads ONLY the named paged sections, so it is
+  // loop (any number of pages, resumable across days): it reads ONLY the named paged sections, so it is
   // charged to its own counter instead of burning the 3/day full-export quota.
   const cursors = parseCursors(request.data);
   const continuation = Object.keys(cursors).length > 0;
@@ -586,7 +673,7 @@ export const exportAccountData = onCall(
           uid,
           c,
           cursors[c.key],
-          !continuation && CAPPED_FIRST_PAGE.has(c.key) ? MAX_ROWS : PAGE_ROWS,
+          !continuation && CAPPED_FIRST_PAGE.has(c.key) ? MAX_ROWS : pageRowsOf(c.key),
         ),
       ),
     );
@@ -614,6 +701,8 @@ export const exportAccountData = onCall(
         uid,
         ...pagedSections,
         paging,
+        // Rows in THIS page that could not be exported faithfully (see outcomeRow).
+        warnings: corruptWarnings(pagedSections),
         notes: [
           photoNote,
           ...(pagedSections.activityStreams !== undefined ? [STREAM_EXPORT_NOTE] : []),
@@ -761,6 +850,9 @@ export const exportAccountData = onCall(
       // Per-section paging state. The app repeats the call with
       // `cursors: {section: nextCursor}` while any `hasMore` is true.
       paging,
+      // Rows that could not be exported faithfully, e.g. a corrupt fence shard
+      // (status CORRUPT_ENTRY_MAP). Empty means every returned row is intact.
+      warnings: corruptWarnings(pagedSections),
       notes: [
         photoNote,
         STREAM_EXPORT_NOTE,

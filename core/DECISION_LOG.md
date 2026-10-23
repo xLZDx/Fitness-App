@@ -59406,3 +59406,7 @@ Decision: the operator chose to add the export as a separate small PR before ena
 ## 2026-10-23 - Commit: fix(v1): account export gate round 1 (outcomes, bounded reads)
 
 Decision: accept the three findings of export gate round 1. Receipts are not exported (DELETE: a 90-day response cache that the 50-page client collector could not export completely above 25,000 rows); the lifetime outcomes in the replay fence are exported as workoutCommandOutcomes (at most 256 shard documents); typed sessions and outcomes are read in batches of 20 documents with a byte-budget stop so memory stays under the budget plus one batch. Evidence: core/changes/2026-10-23-v1-account-export-v0.md; jest 89/89.
+
+## 2026-10-23 - Commit: fix(v1): account export gate round 2 (receipts, resumable client, corrupt shards)
+
+Decision: accept the three findings of export gate round 2 and reverse the round 1 choice to drop receipts: receipts carry owner data that no other section has (reason codes, rejected attempts), so they are exported again; completeness is guaranteed by the client, which follows per-section cursors without a page cap and can resume from persisted progress; a corrupt fence map is reported as CORRUPT_ENTRY_MAP with a warning that marks the section incomplete. Known gap accepted for now: the final export file is assembled in memory. Evidence: core/changes/2026-10-23-v1-account-export-v0.md; server 99/99, mobile 122/122.

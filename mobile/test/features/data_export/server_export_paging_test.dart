@@ -143,8 +143,7 @@ void main() {
       expect(merged['weightEntries'], hasLength(2));
     });
 
-    test('the 50-page cap: 49 continuations after the first page, then incomplete', () async {
-      expect(kMaxExportPages, 50);
+    test('there is no fixed page cap: 120 continuations complete the export', () async {
       var calls = 0;
       final merged = await mergeServerPages({
         'foodEntries': _rows('f', 0, 1),
@@ -153,12 +152,14 @@ void main() {
         calls++;
         return {
           'foodEntries': _rows('f', calls, 1),
-          'paging': {'foodEntries': _info(1, next: 'f$calls')},
+          'paging': {
+            'foodEntries': calls == 120 ? _info(1) : _info(1, next: 'f$calls'),
+          },
         };
       });
-      expect(calls, 49);
-      expect(merged['pagingIncomplete'], isTrue);
-      expect(merged['foodEntries'], hasLength(50));
+      expect(calls, 120);
+      expect(merged.containsKey('pagingIncomplete'), isFalse);
+      expect(merged['foodEntries'], hasLength(121));
     });
 
     test('finishing exactly on the last allowed page is complete, not incomplete', () async {
@@ -192,7 +193,8 @@ void main() {
         return null;
       });
       expect(calls, 0);
-      expect(merged.containsKey('pagingIncomplete'), isFalse);
+      // hasMore without a usable cursor can never be completed: not "complete".
+      expect(merged['pagingIncomplete'], isTrue);
     });
   });
 
@@ -222,9 +224,10 @@ void main() {
             server: server,
           );
       final bad = (build({'pagingIncomplete': true})['notes'] as List).join(' ');
-      expect(bad, contains('50-page limit'));
+      expect(bad, contains('INCOMPLETE'));
+      expect(bad, contains('resume'));
       final ok = (build({'foodEntries': <Object>[]})['notes'] as List).join(' ');
-      expect(ok, isNot(contains('50-page limit')));
+      expect(ok, isNot(contains('INCOMPLETE')));
     });
   });
 

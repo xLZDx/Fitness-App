@@ -1833,3 +1833,10 @@ Facts: the gate found that my first export design ignored the client side (50-pa
 Root cause: the export was designed from the server only, and the table of limits (per-day command cap, TTL, page size, client page cap) was never multiplied out.
 Missed by: author and test agent (tests used 1,100 rows and 10 KB documents); caught by the gate.
 Rule next time: multiply the producer limits by the retention window and compare with the consumer's cap before choosing what to export; size test fixtures at the real upper bound.
+
+## 2026-10-23 - Commit: fix(v1): account export gate round 2 (receipts, resumable client, corrupt shards)
+Kind: FAILURE
+Facts: my round 1 answer removed receipts from the export on the claim that fence plus typed sessions made them redundant; the gate showed that the claim was false (reason codes and rejected attempts exist only in receipts). I also asserted that 256 shard documents fit the 50-page client cap without computing row sizes, and I turned a malformed stored map into an empty shard.
+Root cause: an unverified equivalence claim used to shrink scope, an estimate by document count instead of bytes, and a lenient default for invalid stored data.
+Missed by: author; caught by the gate (all three); the test agent found two further client defects in the resume work (warnings did not mark a section incomplete; progress written without a user id).
+Rule next time: before dropping data from an export, diff the field lists of the dropped and the kept records; size every limit in bytes; invalid stored data must surface as an explicit status, never as empty.

@@ -76,10 +76,32 @@ Map<String, dynamic> buildExport({
     );
   }
   if (server != null && server['pagingIncomplete'] == true) {
+    final manifest = server['exportManifest'];
+    final names = (manifest is Map && manifest['pagingIncompleteSections'] is List)
+        ? (manifest['pagingIncompleteSections'] as List).join(', ')
+        : '';
+    final why = server['pagingStopReason'] == 'quota'
+        ? 'the daily download limit was reached'
+        : 'a page could not be fetched';
     notes.add(
-      'Some diary, weight or scan rows could not be fetched (a page failed or '
-      'the 50-page limit was reached), so those sections may be incomplete. '
-      'Re-run the export to try again.',
+      'This export is INCOMPLETE: '
+      '${names.isEmpty ? 'some server sections' : names} did not finish '
+      'because $why. Your progress is saved on this device: run the export '
+      'again (tomorrow if the daily limit was reached) to resume where it '
+      'stopped; it will not start over.',
+    );
+  }
+  final warnings = server?['warnings'];
+  if (warnings is List && warnings.isNotEmpty) {
+    final items = <String>[
+      for (final w in warnings)
+        if (w is Map) '${w['section']} record ${w['id']} (${w['code']})',
+    ];
+    notes.add(
+      'This export is INCOMPLETE: ${warnings.length} stored server record(s) '
+      'could not be read and their content is not in this file: '
+      '${items.join('; ')}. Running the export again will not fix this: the '
+      'stored record itself is damaged. Contact support for a data repair.',
     );
   }
   if (progressPhotosIncomplete) {

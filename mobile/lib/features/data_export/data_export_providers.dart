@@ -12,6 +12,7 @@ import '../workouts/data/workout_session.dart'
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
 import 'data_export.dart';
+import 'export_progress_store.dart';
 import 'server_export.dart';
 import 'data_export_sink.dart';
 
@@ -129,7 +130,12 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
       // is the last thing needed. Null on failure rather than an exception:
       // losing the local export too would punish the user twice for one
       // callable being down.
-      final server = await ref.read(serverExportProvider).fetchAll();
+      // Progress is persisted per page so an interrupted or quota-stopped run
+      // resumes instead of restarting (see ExportProgressStore).
+      final progress = ref.read(exportProgressStoreProvider);
+      final server = await ref
+          .read(serverExportProvider)
+          .fetchAll(store: progress, uid: user.uid);
 
       final json = buildExportJson(
         profile: profile,
@@ -146,6 +152,13 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
             filename: 'fitness-app-export-$stamp.json',
             contents: json,
           );
+
+      // Saved progress is dropped only once a COMPLETE file was delivered.
+      if (server != null && server['pagingIncomplete'] != true) {
+        try {
+          await progress.clear();
+        } catch (_) {}
+      }
 
       state = const AsyncValue.data(null);
     } catch (e, st) {
