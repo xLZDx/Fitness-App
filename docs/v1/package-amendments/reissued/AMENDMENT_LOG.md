@@ -84,3 +84,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 6 (GPT-PM, head 95ff39c7: 0 BLOCKER, 2 MAJOR)
 - FU-AC-119: S26 audit-extraction case now treats every BatchWrite item as unsupported, asserts the key-collision case for a version-less batch update and the first encounter of an unsupported item after DRAIN.
+
+## Pre-implementation gate round 7 (GPT-PM, head ebb88df4: 0 BLOCKER, 1 MAJOR)
+- FU-AC-119: S26 audit-extraction case now requires failed batch items to create nothing, tested in both orders.

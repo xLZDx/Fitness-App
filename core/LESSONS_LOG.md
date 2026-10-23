@@ -1757,3 +1757,10 @@ Facts: gate round 6 returned 2 MAJOR on the round-5 text: a successful batch upd
 Root cause: I declared a call shape partially supported on the strength of one field without checking its documented no-op behaviour, and wrote a fallback without walking it through every phase of the account.
 Missed by: author; caught by the gate.
 Rule next time: treat a platform field as an identity only after reading its documented value in the no-change case; for every fallback state its record schema, its behaviour in each lifecycle phase and its interaction with the normal path.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 7
+Kind: FAILURE
+Facts: gate round 7 returned 1 MAJOR: the unsupported-item rule for batch writes did not say that only successful items count, while the extraction rule above it skipped failed ones, so a rejected delete could have produced a gap and blocked the cutover.
+Root cause: a new rule was written for the shape and not checked against the success filter defined a few lines earlier.
+Missed by: author; caught by the gate.
+Rule next time: when adding a rule that consumes items of a record, state the filter (success, status, kind) it runs after, and test the mixed success and failure cases in both orders.

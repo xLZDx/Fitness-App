@@ -59362,3 +59362,7 @@ Decision: accept both findings of gate round 5. The audit operation is defined o
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 6
 
 Decision: accept both findings of gate round 6. BatchWrite is unsupported as a whole (no verified commit time for updates or deletes); unsupported audit items become immediate unverified gaps keyed by the log insert id with a null commit time, with no waiting and no correlation; before DRAIN they refuse admission, after DRAIN the phase never regresses and a flag refuses the cutover to SERVER_ONLY until the operator clears it. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round6.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 7
+
+Decision: accept the finding of gate round 7. Only successful batch items reach the unsupported-item rule; failed items create no gap, no counter change and no flag; the acceptance case covers mixed results in both orders. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round7.md; validator OK.
