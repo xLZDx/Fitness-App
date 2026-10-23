@@ -59382,3 +59382,7 @@ Decision: accept the three findings of gate round 10 (the operator chose to cont
 ## 2026-10-23 - Commit: docs(v1): V0 slice plan
 
 Decision: start implementation with slice V0 in a scratch worktree on branch feat/v1-v0-complete-set-slice, as chosen by the operator on 2026-10-22 (fix the design first, then start V0). Evidence: core/changes/2026-10-23-v1-v0-slice-plan.md.
+
+## 2026-10-23 - Commit: feat(v1): V0 CompleteSet slice (server callable and mobile file-journal queue)
+
+Decision: implement slice V0 behind the feature flag WORKOUT_COMMANDS_ENABLED (off by default). A lone surrogate in any string or object key is rejected with INVALID_PAYLOAD on both sides (CanonicalError in TypeScript, the Dart builder), covered by a shared golden vector; the writer proof is checked before generation checks; ids of the form __x__ are reserved. Evidence: core/changes/2026-10-23-v1-v0-slice-implementation.md; jest 268, rules 44, e2e 71, mobile 295, 39 vectors on Node and Python, data lifecycle check OK.

@@ -1791,3 +1791,10 @@ Kind: SUCCESS
 Facts: the documentation gate for the v1 design closed with APPROVE after 11 rounds (PR 26); the first implementation slice starts from a written scope with required negative evidence.
 Why it worked: each gate round was answered with one batch, a change record and a validator run; the slice scope was frozen in the approved conditions document before any code.
 Rule next time: freeze the slice scope and its negative evidence in writing before the first line of code.
+
+## 2026-10-23 - Commit: feat(v1): V0 CompleteSet slice (server callable and mobile file-journal queue)
+Kind: FAILURE
+Facts: four independent reviewers and the test agents found real defects before the gate: the logical-set guard was lost after queue pruning, a corrupt record blocked the sender, watch() could hang on cancel, SENDING stayed stuck when persisting failed, the server checked generations before the writer proof, reserved ids were accepted, and a lone surrogate hashed differently in TS and Dart. Late in the work a scripted rewrite of canonical.ts opened the file for writing before the encode step failed and left a 0-byte untracked file; the test agent noticed it, the full rerun then passed (jest 268, rules 44, e2e 71, mobile 295, 39 vectors).
+Root cause: invariants were first written for the happy path; the lone-surrogate case lived outside the shared vectors; the scripted write was not atomic.
+Missed by: author; caught by reviewers and test agents.
+Rule next time: put every cross-language canonicalisation edge case into the shared vector file first; never write a source file through a script that truncates before the content is ready (write to a temp file, then rename); re-run the whole suite after any rewrite of a shared module.
