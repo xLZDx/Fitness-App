@@ -1826,3 +1826,10 @@ Facts: the implementer changed the lifecycle classification of workout_command_f
 Root cause: a classification has two places (value and reason) with no check tying them to the code; pinned line numbers are brittle; a stray stash command in a shared worktree.
 Missed by: author; caught by the test agent.
 Rule next time: change the value first, then the reason; re-run the pin tests after any edit of an audited file; never run stash in a worktree that an agent is using.
+
+## 2026-10-23 - Commit: fix(v1): account export gate round 1 (outcomes, bounded reads)
+Kind: FAILURE
+Facts: the gate found that my first export design ignored the client side (50-page cap vs up to 180,000 receipts), dropped a lifetime record from the export, and read 501 full documents before applying the byte budget.
+Root cause: the export was designed from the server only, and the table of limits (per-day command cap, TTL, page size, client page cap) was never multiplied out.
+Missed by: author and test agent (tests used 1,100 rows and 10 KB documents); caught by the gate.
+Rule next time: multiply the producer limits by the retention window and compare with the consumer's cap before choosing what to export; size test fixtures at the real upper bound.

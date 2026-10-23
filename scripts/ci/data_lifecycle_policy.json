@@ -561,8 +561,8 @@
       ]
     },
     "workout_command_fence": {
-      "classification": "DELETE",
-      "reason": "Compact replay fence `users/{uid}/workout_command_fence/{shard}`: hashed operation digests mapped to a result code, session digest and payload-hash prefix; pseudonymous, no workout values. Kept for the life of the account by design (no TTL). Written Admin-SDK-only by the submitWorkoutCommands callable (offline command protocol slice V0, behind the WORKOUT_COMMANDS_ENABLED flag); every client read and write is closed in firestore.rules (carve-out from the owner wildcard plus a dedicated if-false block). DELETE-covered by the recursiveDelete cascade of deleteAccount. Deliberately not exported: hashed operation digests and payload-hash prefixes are replay-protection bookkeeping, not user-recognisable content; the owner's data is exported through workoutTypedSessions and workoutCommandReceipts.",
+      "classification": "BOTH",
+      "reason": "Compact replay fence `users/{uid}/workout_command_fence/{shard}`: hashed operation digests mapped to a result code, session digest and payload-hash prefix; pseudonymous digests, no workout values. Kept for the life of the account by design (no TTL), so it is the only lifetime record of each command outcome. Written Admin-SDK-only by the submitWorkoutCommands callable (offline command protocol slice V0, behind the WORKOUT_COMMANDS_ENABLED flag); every client read and write is closed in firestore.rules (carve-out from the owner wildcard plus a dedicated if-false block). DELETE-covered by the recursiveDelete cascade of deleteAccount. EXPORT: exported by account_export.ts as the paged section workoutCommandOutcomes (at most 256 shard documents per account, paged by shard id, byte-bounded reads): per shard the operation digest key, the result code and the session digest. The payload-hash prefix is withheld (replay-protection bookkeeping).",
       "clientAccess": [
         {
           "path": "/users/{uid}/workout_command_fence/{shard}",
@@ -576,8 +576,8 @@
       ]
     },
     "workout_command_receipts": {
-      "classification": "BOTH",
-      "reason": "Detail receipts `users/{uid}/workout_command_receipts/{operationId}`: per-command outcome with operation id, session and exercise ids, set identity and set sequence data; expireAt = 90 days (TTL policy or sweep). Written Admin-SDK-only by the submitWorkoutCommands callable (offline command protocol slice V0, behind the WORKOUT_COMMANDS_ENABLED flag); every client read and write is closed in firestore.rules (carve-out from the owner wildcard plus a dedicated if-false block). DELETE-covered by the recursiveDelete cascade of deleteAccount. EXPORT: exported by account_export.ts as the paged section workoutCommandReceipts (the account's own receipts only, within the 90-day TTL window, paged like every other paged section).",
+      "classification": "DELETE",
+      "reason": "Detail receipts `users/{uid}/workout_command_receipts/{operationId}`: a 90-day response cache (expireAt = 90 days, TTL policy or sweep) of a command outcome, up to 2,000 per day per account so up to 180,000 per account. Not exported: the lifetime outcome of every operation is exported through the fence section workoutCommandOutcomes, and the session content is exported through the typed sessions section workoutTypedSessions; the cache adds nothing the owner cannot already retrieve. Written Admin-SDK-only by the submitWorkoutCommands callable (offline command protocol slice V0, behind the WORKOUT_COMMANDS_ENABLED flag); every client read and write is closed in firestore.rules (carve-out from the owner wildcard plus a dedicated if-false block). DELETE-covered by the recursiveDelete cascade of deleteAccount.",
       "clientAccess": [
         {
           "path": "/users/{uid}/workout_command_receipts/{operationId}",

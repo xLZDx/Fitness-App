@@ -59402,3 +59402,7 @@ Decision: accept the finding of V0 gate round 3. An adopted surviving record get
 ## 2026-10-23 - Commit: feat(v1): account export sections for V0 collections
 
 Decision: the operator chose to add the export as a separate small PR before enabling the V0 flag. workout_typed_sessions (without writerTokenHash) and workout_command_receipts are exported as paged sections; workout_command_fence, workout_command_policy and workout_command_counters are server bookkeeping, classified DELETE and not exported. The check_data_access_policy.js failure on body_scan/manage.ts and nutrition_cache.ts is pre-existing on master 631279b2 and is not part of this change. Evidence: core/changes/2026-10-23-v1-account-export-v0.md.
+
+## 2026-10-23 - Commit: fix(v1): account export gate round 1 (outcomes, bounded reads)
+
+Decision: accept the three findings of export gate round 1. Receipts are not exported (DELETE: a 90-day response cache that the 50-page client collector could not export completely above 25,000 rows); the lifetime outcomes in the replay fence are exported as workoutCommandOutcomes (at most 256 shard documents); typed sessions and outcomes are read in batches of 20 documents with a byte-budget stop so memory stays under the budget plus one batch. Evidence: core/changes/2026-10-23-v1-account-export-v0.md; jest 89/89.

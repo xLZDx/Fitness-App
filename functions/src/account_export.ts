@@ -157,10 +157,12 @@ const PAGED_COLLECTIONS = [
   { key: "activities", path: "activities", order: "startUtc" },
   { key: "activityStreams", path: "activity_streams", order: null },
   // V0 offline command protocol: the owner's canonical typed sessions (the
-  // server-only source of truth behind `workout_sessions`) and the account's
-  // 90-day detail receipts. Fence shards, policy and counters are NOT exported.
+  // server-only source of truth behind `workout_sessions`) and the lifetime
+  // per-operation outcomes kept by the replay fence (at most 256 shard
+  // documents, paged by shard id). The 90-day detail receipts (a response
+  // cache), policy and counters are NOT exported.
   { key: "workoutTypedSessions", path: "workout_typed_sessions", order: null },
-  { key: "workoutCommandReceipts", path: "workout_command_receipts", order: null },
+  { key: "workoutCommandOutcomes", path: "workout_command_fence", order: null },
 ] as const;
 type PagedKey = (typeof PAGED_COLLECTIONS)[number]["key"];
 
@@ -201,6 +203,124 @@ function typedSessionRow(row: Record<string, unknown>): Record<string, unknown> 
   const out = { ...row };
   for (const f of TYPED_SESSION_WITHHELD_FIELDS) delete out[f];
   return out;
+}
+
+/**
+ * One replay-fence shard document as the owner's record of command outcomes.
+ *
+ * The stored shape is `{ e: { <operationKey>: <23-char value> } }` where the key
+ * is base64url of the first 16 bytes of SHA-256("op1|" + operationId) and the
+ * value is code (C committed, R rejected, S superseded) + 11 chars of session
+ * digest + 11 chars of payload-hash prefix. The fence is kept for the life of
+ * the account, so it is the only lifetime record of what happened to each
+ * command; it is bounded at 256 shard documents per account.
+ *
+ * Fields exported, and why each is safe:
+ *  - `id` (shard): two hex characters, a bucket name.
+ *  - `operationKey`: a one-way digest of the client-generated operation id; it
+ *    lets the owner match an outcome to a command they sent and is not a
+ *    credential (the operation id cannot be recovered from it).
+ *  - `code`: the outcome letter, the owner's own result.
+ *  - `sessionDigest`: a truncated one-way digest of the session id; it groups
+ *    outcomes by session and is not a credential.
+ * Withheld: the payload-hash prefix. It is replay-protection bookkeeping (a
+ * truncated hash of the command body) that tells the owner nothing the outcome
+ * does not, and it would let a holder of the file test guesses of command
+ * content. A malformed stored value is listed with null code and digest rather
+ * than silently dropped.
+ */
+function outcomeRow(row: Record<string, unknown>): Record<string, unknown> {
+  const e = row.e;
+  const map = typeof e === "object" && e !== null ? (e as Record<string, unknown>) : {};
+  const entries = Object.keys(map)
+    .sort()
+    .map((operationKey) => {
+      const v = map[operationKey];
+      const ok =
+        typeof v === "string" &&
+        v.length === 23 &&
+        (v[0] === "C" || v[0] === "R" || v[0] === "S");
+      return {
+        operationKey,
+        code: ok ? v[0] : null,
+        sessionDigest: ok ? v.slice(1, 12) : null,
+      };
+    });
+  return { id: row.id, entries };
+}
+
+/** Docs materialised per server read by [boundedRead]. */
+const READ_BATCH_DOCS = 20;
+
+/** Sections read by [boundedRead]: their documents can be large (hundreds of KB). */
+const BYTE_BOUNDED: ReadonlySet<PagedKey> = new Set<PagedKey>([
+  "workoutTypedSessions",
+  "workoutCommandOutcomes",
+]);
+
+function rowOf(
+  key: PagedKey,
+  d: { id: string; data(): unknown },
+): Record<string, unknown> {
+  const row = { id: d.id, ...(d.data() as object) } as Record<string, unknown>;
+  if (key === "bodyScans") return scanRow(row);
+  if (key === "workoutTypedSessions") return typedSessionRow(row);
+  if (key === "workoutCommandOutcomes") return outcomeRow(row);
+  return key === "activityStreams" ? streamRow(row) : row;
+}
+
+/**
+ * Reads a page in small server-side batches and stops as soon as the page row
+ * limit or the serialized byte `budget` is reached, so memory never holds more
+ * than the budget plus one batch ([READ_BATCH_DOCS] documents) regardless of
+ * how large the stored documents are. `q` is the ordered (and, for a
+ * continuation, already positioned) query; each batch continues with
+ * `startAfter` on the last document read. The cursor is the id of the last
+ * INCLUDED row. A single document larger than the whole budget is still
+ * emitted alone (the first row is always taken), so the page always advances
+ * and a continuation can never loop on the same document.
+ */
+async function boundedRead(
+  q: FirebaseFirestore.Query,
+  key: PagedKey,
+  pageRows: number,
+  budget: number,
+): Promise<{ rows: Record<string, unknown>[]; info: PageInfo }> {
+  const rows: Record<string, unknown>[] = [];
+  let bytes = 2; // the enclosing brackets
+  let hasMore = false;
+  let query = q;
+  for (;;) {
+    // One extra document beyond the rows still needed proves "more exists".
+    const want = Math.min(READ_BATCH_DOCS, pageRows - rows.length + 1);
+    const snap = await query.limit(want).get();
+    let last: FirebaseFirestore.QueryDocumentSnapshot | undefined;
+    for (const d of snap.docs) {
+      last = d;
+      if (rows.length >= pageRows) {
+        hasMore = true;
+        break;
+      }
+      const row = rowOf(key, d);
+      const size = jsonBytes(row) + 1; // plus the separating comma
+      if (rows.length > 0 && bytes + size > budget) {
+        hasMore = true;
+        break;
+      }
+      rows.push(row);
+      bytes += size;
+    }
+    if (hasMore || snap.docs.length < want || last === undefined) break;
+    query = q.startAfter(last);
+  }
+  return {
+    rows,
+    info: {
+      returned: rows.length,
+      hasMore,
+      nextCursor: hasMore ? String(rows[rows.length - 1].id) : null,
+    },
+  };
 }
 
 /** GPS-PRIV-053: the declared delivery of streams and the heart-rate exclusion. */
@@ -262,14 +382,12 @@ async function pagedRead(
     }
     q = q.startAfter(at);
   }
+  if (BYTE_BOUNDED.has(spec.key)) {
+    return boundedRead(q, spec.key, pageRows, MAX_EXPORT_BYTES);
+  }
   const snap = await q.limit(pageRows + 1).get();
   const hasMore = snap.docs.length > pageRows;
-  const rows = snap.docs.slice(0, pageRows).map((d) => {
-    const row = { id: d.id, ...d.data() } as Record<string, unknown>;
-    if (spec.key === "bodyScans") return scanRow(row);
-    if (spec.key === "workoutTypedSessions") return typedSessionRow(row);
-    return spec.key === "activityStreams" ? streamRow(row) : row;
-  });
+  const rows = snap.docs.slice(0, pageRows).map((d) => rowOf(spec.key, d));
   return {
     rows,
     info: {
