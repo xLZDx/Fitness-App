@@ -1785,3 +1785,9 @@ Facts: gate round 10 returned 3 MAJOR on the coverage-incident mechanism I added
 Root cause: a new gate (global hold) was specified as a flag without its transactional contract, and a release path was added that bypassed the disclosure invariant the whole mechanism exists for.
 Missed by: author; caught by the gate.
 Rule next time: any hold or fence that blocks a phase change must say which transaction reads it and which writes it; every release path must be checked against the invariant that the mechanism protects; enumerate the degenerate inputs (no items at all) next to the per-item case.
+
+## 2026-10-23 - Commit: docs(v1): V0 slice plan
+Kind: SUCCESS
+Facts: the documentation gate for the v1 design closed with APPROVE after 11 rounds (PR 26); the first implementation slice starts from a written scope with required negative evidence.
+Why it worked: each gate round was answered with one batch, a change record and a validator run; the slice scope was frozen in the approved conditions document before any code.
+Rule next time: freeze the slice scope and its negative evidence in writing before the first line of code.
