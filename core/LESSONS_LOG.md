@@ -1812,3 +1812,10 @@ Facts: gate round 2 returned 3 MAJOR on the primary+backup metadata scheme that 
 Root cause: a recovery scheme with two copies and a rollback has no single commit point; each fault path needed its own patch. The fix of round 1 added a mechanism instead of removing the ambiguity.
 Missed by: author and tests; caught by the gate (three) and by the test agent (the fourth).
 Rule next time: give every persisted state exactly one commit point (successful atomic rename of a generation-numbered slot), no rollback of metadata, a store.init marker to tell fresh from lost, and make acceptance idempotent for the same logical set; when a fix adds a second recovery path, stop and look for the single-commit-point design first.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 3 (marker of an adopted residual record)
+Kind: SHORTCOMING
+Facts: gate round 3 found one regression in my own idempotent-accept fix: the surviving record adopted after a failed metadata write and a failed rollback was put into the record table but its logical-set marker was not, so prune could remove the record without the marker and a later duplicate APPEND passed. My test only covered the immediate-retry path, which repairs the marker.
+Root cause: the fix repaired the symptom on the retry path; the invariant (every record in the table has its marker in the table) was not enforced where records enter the table.
+Missed by: author and test agent; caught by the gate.
+Rule next time: enforce an invariant at every place the state is mutated, and test the no-retry path next to the retry path.

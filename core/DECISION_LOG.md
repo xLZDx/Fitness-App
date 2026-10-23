@@ -59394,3 +59394,7 @@ Decision: accept all five findings of V0 gate round 1. V0 returns MIGRATION_HOLD
 ## 2026-10-23 - Commit: fix(v1): V0 gate round 2 (two-slot queue metadata)
 
 Decision: accept the three findings of V0 gate round 2 and replace the primary+backup metadata scheme with one checksummed metadata document in two generation-numbered slots (meta.a.json, meta.b.json) and a store.init marker: the commit point is the successful atomic rename, there is no metadata rollback, no legacy unchecksummed format, and a store with store.init but no valid slot fails closed. Acceptance is idempotent for the same operation or intent key (a surviving record from a failed rollback is re-adopted). The no-directory-sync residual risk stays accepted for the inactive V0 slice (GPT-PM round 2); activation stays blocked until a durable storage primitive is chosen. Evidence: core/changes/2026-10-23-v1-v0-gate-round2.md.
+
+## 2026-10-23 - Commit: fix(v1): V0 gate round 3 (marker of an adopted residual record)
+
+Decision: accept the finding of V0 gate round 3. An adopted surviving record gets its logical-set marker in memory at once, and prune derives a missing marker from the record and persists it in the metadata write that precedes the deletion; no submission hold is added. Evidence: core/changes/2026-10-23-v1-v0-gate-round3.md.

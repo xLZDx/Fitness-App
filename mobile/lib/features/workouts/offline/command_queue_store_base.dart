@@ -176,6 +176,7 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
             // same tap finds this record instead of minting a second one. Its
             // marker stays missing; [_readopt] writes the metadata on retry.
             _records[record.operationId] = record;
+            _markers[request.logicalSetId] = marker;
             _nextSeq[key] = seq + 1;
             _notify();
           }
@@ -353,8 +354,17 @@ abstract class BaseCommandQueueStore implements CommandQueueStore {
           final at = r.ackSummary?.localAckMs;
           if (at == null || at > cutoff) continue;
           // Make sure the identity marker is durable before its record goes.
-          await persistMetadata(
-              Map<String, int>.of(_nextSeq), Map.of(_markers));
+          // Defensive: a record being pruned always leaves its marker behind.
+          final set = r.logicalSetId;
+          final markers = Map.of(_markers);
+          if (set != null && !markers.containsKey(set)) {
+            markers[set] = LogicalSetMarker(
+                logicalSetId: set,
+                operationId: r.operationId,
+                acceptedAtLocalWallMs: r.acceptedAtLocalWallMs);
+          }
+          await persistMetadata(Map<String, int>.of(_nextSeq), markers);
+          if (set != null) _markers.putIfAbsent(set, () => markers[set]!);
           await removeRecordFromDisk(r.operationId);
           _records.remove(r.operationId);
           n++;

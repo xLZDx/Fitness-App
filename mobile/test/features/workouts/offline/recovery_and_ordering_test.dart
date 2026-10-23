@@ -520,5 +520,65 @@ void main() {
       expect(rep.status, SendStatus.synced);
       expect(server.effects.single.operationId, rec.operationId);
     });
+
+    test('V0-R3-M01: double fault, NO retry, L2 synced, retention passes, prune, restart: a different-intent APPEND of L2 is refused and seq is not reused',
+        () async {
+      final ops = DeleteFaultOps();
+      var s = await open(ops: ops);
+      final l1 = (await accFor(s).accept(intentOf('l1', setIndex: 1))).record;
+      ops.armFor(isMetaPath);
+      ops.failRecordDeletes = true;
+      await expectLater(accFor(s).accept(intentOf('l2', setIndex: 2)), throwsA(anything));
+      ops.disarm();
+      ops.failRecordDeletes = false;
+
+      // The surviving record is visible and gets sent and acknowledged.
+      final sender = senderFor(s, server, clock);
+      final reports = await sender.sendAvailable();
+      expect(reports.where((r) => r.status == SendStatus.synced).length, 2);
+      expect(server.effects.length, 2);
+      final l2 = (await s.listAll())
+          .singleWhere((r) => r.logicalSetId == 'sess-1:ex-squat:2');
+      expect(l2.state, CommandState.synced);
+      expect(l2.seq, 2);
+
+      clock.advance(const Duration(days: 8));
+      expect(await s.prune(), 2);
+      expect(await s.listAll(), isEmpty);
+
+      s = await open(); // restart
+      expect(s.openReport.recoveryRequired, isFalse);
+      expect(await s.listAll(), isEmpty);
+      await expectLater(accFor(s).accept(intentOf('l2-other-intent', setIndex: 2)),
+          throwsA(isA<DuplicateLogicalSetException>()));
+      await expectLater(accFor(s).accept(intentOf('l1-other-intent', setIndex: 1)),
+          throwsA(isA<DuplicateLogicalSetException>()));
+      final l3 = (await accFor(s).accept(intentOf('l3', setIndex: 3))).record;
+      expect(l3.seq, 3, reason: 'sequence numbers of L1 and L2 must not be reused');
+      expect(l1.seq, 1);
+    });
+
+    test('V0-R3-M01 crash variant: restart before any further metadata write; seed recreates the marker from the loaded record',
+        () async {
+      final ops = DeleteFaultOps();
+      var s = await open(ops: ops);
+      await accFor(s).accept(intentOf('l1', setIndex: 1));
+      ops.armFor(isMetaPath);
+      ops.failRecordDeletes = true;
+      await expectLater(accFor(s).accept(intentOf('l2', setIndex: 2)), throwsA(anything));
+      // The slot on disk does not know L2 yet.
+      expect(((slotDoc(scope(), newestSlot(scope()))!['logicalSets']) as Map).keys,
+          isNot(contains('sess-1:ex-squat:2')));
+
+      s = await open(); // process died here
+      expect(s.openReport.recoveryRequired, isFalse);
+      expect((await s.listAll()).length, 2);
+      await expectLater(accFor(s).accept(intentOf('l2-other-intent', setIndex: 2)),
+          throwsA(isA<DuplicateLogicalSetException>()));
+      expect((await accFor(s).accept(intentOf('l3', setIndex: 3))).record.seq, 3);
+      // The recreated marker reached disk with that write.
+      expect(((slotDoc(scope(), newestSlot(scope()))!['logicalSets']) as Map).keys,
+          contains('sess-1:ex-squat:2'));
+    });
   });
 }
