@@ -1859,3 +1859,9 @@ Kind: SUCCESS
 Facts: reading the live project instead of trusting the design showed two protocol assumptions to be false (point-in-time recovery and data-write audit logs are off) and one earlier code decision (no deleted_accounts tombstone) that the protocol contradicts.
 Why it worked: every platform fact was turned into a read-only command with recorded output before code depended on it.
 Rule next time: verify each platform assumption with a read-only command before building on it, and record the output next to the claim.
+
+## 2026-10-23 - Commit: docs(v1): environment preparation report for deploying V0
+Kind: SUCCESS
+Facts: comparing the live project with master before deploying showed that the released rules do not carry the V0 carve-outs (the owner wildcard still covers the new collections), that a full rules release would change behaviour for existing clients, and that the equipment-identity snapshot alarm was only a line-ending artefact.
+Why it worked: the deployment questions were answered by read-only comparisons instead of by trying a deploy.
+Rule next time: diff the released artefact against the source before any deploy and choose the smallest change that closes the gap.
