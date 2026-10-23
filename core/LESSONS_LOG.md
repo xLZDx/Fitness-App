@@ -1899,3 +1899,10 @@ Facts: the first id sanitiser replaced bad characters with underscores, so diffe
 Root cause: I treated sanitising as formatting, not as an identity mapping that must stay injective.
 Missed by: author; caught by the test agent.
 Rule next time: any id mapping used as a key must be injective (hash the raw value when it is altered) and carry a collision test.
+
+## 2026-10-23 - Commit: fix(v1): cast the manifest gate lambdas to Kotlin Function1 and record the test-account enablement
+Kind: SHORTCOMING
+Facts: the S04 manifest gate in app/build.gradle used `as Function` for a Kotlin Function1 parameter, so no debug APK could be built on this machine; it was found only when the first real build was attempted.
+Root cause: no build of the Android app is part of the slice checks; the gate was written and merged without one.
+Missed by: author and reviewers; caught by the first build.
+Rule next time: a change to build scripts needs one real assemble of the affected variant before merge.
