@@ -59374,3 +59374,7 @@ Decision: accept the finding of gate round 8. Audit items get a three-valued sta
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 9
 
 Decision: accept both findings of gate round 9. Status validation applies to the batch shape only; commits and streaming writes are validated by their commit time and write-result count; items whose account cannot be established become database-level coverage incidents with a neutral kind and a global hold on cutover and DRAIN admission until the operator reconciles them. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round9.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 10
+
+Decision: accept the three findings of gate round 10 (the operator chose to continue the rounds). Records without an enumerable writes list create a record-level incident; incidents close only by attribution to accounts with per-account gaps, never by operator acceptance (a broader waiver would be a separate decision, O-R3, not taken); the global hold is guarded by an atomic openCount read in every DRAIN admission and cutover transaction. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round10.md; validator OK.

@@ -1778,3 +1778,10 @@ Facts: gate round 9 returned 2 MAJOR: the status check I wrote in round 8 applie
 Root cause: a rule was generalised from one response shape to all shapes without reading the other shapes, and a per-account store was used for an item whose account is unknown.
 Missed by: author; caught by the gate.
 Rule next time: write validation rules per response shape from the platform reference; every fallback record needs a storage location that exists when the identifying field is missing (database-level, not per-account).
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 10
+Kind: FAILURE
+Facts: gate round 10 returned 3 MAJOR on the coverage-incident mechanism I added in round 9: an audit record with no writes list had no incident identity; the operator could close an incident by acceptance without attributing it to an account, leaving an owner without a disclosure; the global hold had no atomic fence against a concurrent cutover.
+Root cause: a new gate (global hold) was specified as a flag without its transactional contract, and a release path was added that bypassed the disclosure invariant the whole mechanism exists for.
+Missed by: author; caught by the gate.
+Rule next time: any hold or fence that blocks a phase change must say which transaction reads it and which writes it; every release path must be checked against the invariant that the mechanism protects; enumerate the degenerate inputs (no items at all) next to the per-item case.

@@ -93,3 +93,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 9 (GPT-PM, head ee753711: 0 BLOCKER, 2 MAJOR)
 - FU-AC-119: S26 status-validation case is now method by method and covers missing path, missing operation and multi-account batches with the global hold.
+
+## Pre-implementation gate round 10 (GPT-PM, head 01a4be83: 0 BLOCKER, 3 MAJOR)
+- FU-AC-119: S26 gained the omitted writes list case, the acceptance-cannot-close case and the concurrent cutover versus incident case.
