@@ -1819,3 +1819,31 @@ Facts: gate round 3 found one regression in my own idempotent-accept fix: the su
 Root cause: the fix repaired the symptom on the retry path; the invariant (every record in the table has its marker in the table) was not enforced where records enter the table.
 Missed by: author and test agent; caught by the gate.
 Rule next time: enforce an invariant at every place the state is mutated, and test the no-retry path next to the retry path.
+
+## 2026-10-23 - Commit: feat(v1): account export sections for V0 collections
+Kind: SHORTCOMING
+Facts: the implementer changed the lifecycle classification of workout_command_fence in the reason text but left the classification value BOTH; a hand-pinned line list in test_check_data_access_policy.js went stale after the export file grew; the test agent caught both. I also ran git stash by mistake in a worktree with another agent's uncommitted work and restored it at once with stash pop (stash list empty afterwards).
+Root cause: a classification has two places (value and reason) with no check tying them to the code; pinned line numbers are brittle; a stray stash command in a shared worktree.
+Missed by: author; caught by the test agent.
+Rule next time: change the value first, then the reason; re-run the pin tests after any edit of an audited file; never run stash in a worktree that an agent is using.
+
+## 2026-10-23 - Commit: fix(v1): account export gate round 1 (outcomes, bounded reads)
+Kind: FAILURE
+Facts: the gate found that my first export design ignored the client side (50-page cap vs up to 180,000 receipts), dropped a lifetime record from the export, and read 501 full documents before applying the byte budget.
+Root cause: the export was designed from the server only, and the table of limits (per-day command cap, TTL, page size, client page cap) was never multiplied out.
+Missed by: author and test agent (tests used 1,100 rows and 10 KB documents); caught by the gate.
+Rule next time: multiply the producer limits by the retention window and compare with the consumer's cap before choosing what to export; size test fixtures at the real upper bound.
+
+## 2026-10-23 - Commit: fix(v1): account export gate round 2 (receipts, resumable client, corrupt shards)
+Kind: FAILURE
+Facts: my round 1 answer removed receipts from the export on the claim that fence plus typed sessions made them redundant; the gate showed that the claim was false (reason codes and rejected attempts exist only in receipts). I also asserted that 256 shard documents fit the 50-page client cap without computing row sizes, and I turned a malformed stored map into an empty shard.
+Root cause: an unverified equivalence claim used to shrink scope, an estimate by document count instead of bytes, and a lenient default for invalid stored data.
+Missed by: author; caught by the gate (all three); the test agent found two further client defects in the resume work (warnings did not mark a section incomplete; progress written without a user id).
+Rule next time: before dropping data from an export, diff the field lists of the dropped and the kept records; size every limit in bytes; invalid stored data must surface as an explicit status, never as empty.
+
+## 2026-10-23 - Commit: fix(v1): account export mobile collector hardening (streaming, account binding, cleanup)
+Kind: FAILURE
+Facts: the resume feature I introduced to answer round 2 created five new defects found by the gate in round 3: plaintext progress surviving account deletion, rows of two accounts mixed when the auth user changes, an in-memory export that can reach 500 MB, silent loss of resumability on a storage fault, and reuse of a stale completed snapshot after a failed cleanup.
+Root cause: new persistence was added to a privacy-sensitive flow without listing who must delete it, who owns each page, what happens on a disk fault and what the terminal state is.
+Missed by: author and tests; caught by the gate.
+Rule next time: any new on-device copy of personal data needs, in the design, an owner, a deletion path (account deletion, sign-out, expiry), a size bound, a fault behaviour and a terminal state before the first line of code.

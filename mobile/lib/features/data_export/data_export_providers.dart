@@ -1,3 +1,6 @@
+import 'dart:io' show FileSystemException;
+
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/state/auth_providers.dart';
@@ -12,8 +15,10 @@ import '../workouts/data/workout_session.dart'
 import '../workouts/state/scheduled_session_providers.dart';
 import '../workouts/state/workout_session_providers.dart';
 import 'data_export.dart';
+import 'export_progress_store.dart';
 import 'server_export.dart';
 import 'data_export_sink.dart';
+import 'data_export_stream.dart';
 
 /// Runs L0c: gathers everything about the signed-in user and hands it to
 /// [DataExportSink].
@@ -27,6 +32,11 @@ import 'data_export_sink.dart';
 final serverExportProvider = Provider<ServerExport>((_) => FakeServerExport());
 
 class DataExportAction extends Notifier<AsyncValue<void>> {
+  /// True when the last export was delivered but its saved server data could
+  /// not be deleted from this device (it can no longer be reused: it is marked
+  /// delivered, and the next export or app start removes it).
+  bool cleanupIncomplete = false;
+
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
@@ -129,23 +139,77 @@ class DataExportAction extends Notifier<AsyncValue<void>> {
       // is the last thing needed. Null on failure rather than an exception:
       // losing the local export too would punish the user twice for one
       // callable being down.
-      final server = await ref.read(serverExportProvider).fetchAll();
+      // Progress is persisted per page so an interrupted or quota-stopped run
+      // resumes instead of restarting (see ExportProgressStore).
+      final progress = ref.read(exportProgressStoreProvider);
+      // The export is bound to the account that started it.
+      final boundUid = user.uid;
+      cleanupIncomplete = false;
+      void assertSameAccount() {
+        if (ref.read(authUserProvider).valueOrNull?.uid != boundUid) {
+          throw const ExportAccountChangedException();
+        }
+      }
 
-      final json = buildExportJson(
-        profile: profile,
-        workoutLogs: workoutLogs,
-        scheduledSessions: scheduledSessions,
-        programmes: programmes,
-        progressPhotos: progressPhotos,
-        progressPhotosIncomplete: photosIncomplete,
-        server: server,
-      );
+      ServerExportOutcome? server;
+      try {
+        server = await ref
+            .read(serverExportProvider)
+            .collect(store: progress, uid: boundUid);
+        assertSameAccount();
 
-      final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-      await ref.read(dataExportSinkProvider).deliver(
-            filename: 'fitness-app-export-$stamp.json',
-            contents: json,
-          );
+        final data = buildExport(
+          profile: profile,
+          workoutLogs: workoutLogs,
+          scheduledSessions: scheduledSessions,
+          programmes: programmes,
+          progressPhotos: progressPhotos,
+          progressPhotosIncomplete: photosIncomplete,
+          server: server?.header,
+          progressSaved: server?.persisted ?? true,
+        );
+
+        final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+        try {
+          await ref.read(dataExportSinkProvider).deliverStreamed(
+                filename: 'fitness-app-export-$stamp.json',
+                write: (out) async {
+                  await writeExportJsonStreamed(
+                      out: out, data: data, server: server);
+                  // Last check before the file leaves the app.
+                  assertSameAccount();
+                },
+              );
+        } on FileSystemException catch (e) {
+          throw ExportStorageException(e);
+        }
+      } on ExportAccountChangedException {
+        // Nothing of the bound account is kept once it is no longer the
+        // signed-in one.
+        try {
+          await progress.forUser(boundUid).clear();
+        } catch (e) {
+          debugPrint('export progress cleanup failed: ${e.runtimeType}');
+        }
+        rethrow;
+      }
+
+      // Saved progress is dropped only once a COMPLETE file was delivered. A
+      // terminal "delivered" state is written first, so a failed delete can
+      // never turn into a reused (stale) snapshot.
+      if (server != null && server.header['pagingIncomplete'] != true) {
+        try {
+          await markExportDelivered(progress, boundUid);
+        } catch (e) {
+          debugPrint('export progress could not be marked delivered: ${e.runtimeType}');
+        }
+        try {
+          await progress.forUser(boundUid).clear();
+        } catch (e) {
+          cleanupIncomplete = true;
+          debugPrint('export progress cleanup incomplete: ${e.runtimeType}');
+        }
+      }
 
       state = const AsyncValue.data(null);
     } catch (e, st) {

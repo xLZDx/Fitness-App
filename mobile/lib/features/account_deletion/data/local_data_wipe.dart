@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data_export/export_progress_store.dart' show deleteExportProgressFor;
 import '../../progress_photos/data/photo_directory.dart';
 import '../../progress_photos/data/photo_key_store.dart';
 import '../../scanner/history/scan_history_store.dart'
@@ -178,7 +179,9 @@ class DeviceLocalDataWipe implements LocalDataWipe {
     Future<void> Function(String uid)? forgetPhotoKey,
     ScanHistoryStore? scanHistory,
     Directory? temporaryDir,
-  })  : _injectedPrefs = prefs,
+    Directory? supportDir,
+  })  : _injectedSupport = supportDir,
+        _injectedPrefs = prefs,
         _injectedDir = documentsDir,
         _forgetPhotoKey = forgetPhotoKey ?? SecurePhotoKeyStore.forget,
         _scanHistory = scanHistory,
@@ -191,6 +194,11 @@ class DeviceLocalDataWipe implements LocalDataWipe {
   /// directly.
   final ScanHistoryStore? _scanHistory;
   final Directory? _injectedTemp;
+
+  /// Where the resumable server-export progress lives (the app support
+  /// directory). A test that injects only the documents folder gets an isolated
+  /// folder beside it.
+  final Directory? _injectedSupport;
 
   final SharedPreferences? _injectedPrefs;
   final Directory? _injectedDir;
@@ -399,6 +407,22 @@ class DeviceLocalDataWipe implements LocalDataWipe {
       debugPrint(
           'local data wipe: could not delete scan history: ${e.runtimeType}');
       failed.add('scan_history');
+    }
+
+    // The plaintext, resumable server-export progress of this account
+    // (`<support>/server_export_progress/<hash of uid>/`): rows of the user's
+    // own data. Its own try, like the other steps.
+    try {
+      final injectedDocs = _injectedDir;
+      final support = _injectedSupport ??
+          (injectedDocs != null
+              ? Directory('${injectedDocs.path}/_support')
+              : await getApplicationSupportDirectory());
+      await deleteExportProgressFor(support, uid);
+    } catch (e) {
+      debugPrint(
+          'local data wipe: could not delete export progress: ${e.runtimeType}');
+      failed.add('export_progress');
     }
 
     // Every step has run by now. The caller logs this and still treats the

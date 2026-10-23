@@ -41,6 +41,7 @@ import 'features/account_deletion/state/account_deletion_providers.dart';
 import 'features/scanner/history/scan_history_providers.dart' show scanHistoryStoreProvider;
 import 'features/data_export/data_export_sink.dart';
 import 'features/data_export/data_export_providers.dart';
+import 'features/data_export/export_progress_store.dart';
 import 'features/data_export/server_export.dart';
 import 'features/equipment/data/cloud_functions_equipment_report_service.dart';
 import 'features/equipment/state/equipment_providers.dart';
@@ -580,6 +581,11 @@ Future<void> main() async {
   final activityJournal = await openActivityJournal();
   final gpsRecorderOn = _gpsRecorderWired(activityJournal);
 
+  // Expired, delivered and unreadable export progress (plaintext rows of the
+  // user's own data) is removed at start, not only when an export begins.
+  unawaited(FileExportProgressStore().purgeStale().catchError(
+      (Object e) => debugPrint('export progress purge failed: ${e.runtimeType}')));
+
   runApp(
     ProviderScope(
       overrides: [
@@ -777,6 +783,8 @@ Future<void> main() async {
         // provider returns nothing, so a widget test can never reach the
         // backend, the same shape as the sink override above.
         serverExportProvider.overrideWith((_) => CloudFunctionsServerExport()),
+        // Resumable export progress on disk (in-memory by default in tests).
+        exportProgressStoreProvider.overrideWith((_) => FileExportProgressStore()),
 
         // Account deletion (L0b) — calls the deleteAccount Cloud Function.
         accountDeletionServiceProvider

@@ -51,6 +51,9 @@ Map<String, dynamic> buildExport({
   // callable failed, which is NOT the same as "you have none of it": the note
   // below says so in the file the user keeps.
   Map<String, dynamic>? server,
+  // False when the unfinished server progress was NOT durably written to this
+  // device: the note then must not claim it is saved.
+  bool progressSaved = true,
 }) {
   // One sentence, not two. The second used to read "The encryption key never
   // leaves this device", and it was dropped when that was not yet true --
@@ -76,10 +79,33 @@ Map<String, dynamic> buildExport({
     );
   }
   if (server != null && server['pagingIncomplete'] == true) {
+    final manifest = server['exportManifest'];
+    final names = (manifest is Map && manifest['pagingIncompleteSections'] is List)
+        ? (manifest['pagingIncompleteSections'] as List).join(', ')
+        : '';
+    final why = server['pagingStopReason'] == 'quota'
+        ? 'the daily download limit was reached'
+        : 'a page could not be fetched';
     notes.add(
-      'Some diary, weight or scan rows could not be fetched (a page failed or '
-      'the 50-page limit was reached), so those sections may be incomplete. '
-      'Re-run the export to try again.',
+      'This export is INCOMPLETE: '
+      '${names.isEmpty ? 'some server sections' : names} did not finish '
+      'because $why. ${progressSaved ? 'Your progress is saved on this device: run the export '
+          'again (tomorrow if the daily limit was reached) to resume where it '
+          'stopped; it will not start over.' : 'Your progress could not be kept on this device: run the export '
+          'again (tomorrow if the daily limit was reached); it will start over.'}',
+    );
+  }
+  final warnings = server?['warnings'];
+  if (warnings is List && warnings.isNotEmpty) {
+    final items = <String>[
+      for (final w in warnings)
+        if (w is Map) '${w['section']} record ${w['id']} (${w['code']})',
+    ];
+    notes.add(
+      'This export is INCOMPLETE: ${warnings.length} stored server record(s) '
+      'could not be read and their content is not in this file: '
+      '${items.join('; ')}. Running the export again will not fix this: the '
+      'stored record itself is damaged. Contact support for a data repair.',
     );
   }
   if (progressPhotosIncomplete) {
