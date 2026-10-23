@@ -112,6 +112,8 @@ const ENTRYPOINTS: Record<string, unknown> = {
   purgeExpiredActivityStreams: index.purgeExpiredActivityStreams,
   sweepLateActivityStreams: index.sweepLateActivityStreams,
   reconcileActivityStreams: index.reconcileActivityStreams,
+  // Workout command protocol, slice V0: a RARE callable (europe-west1, maxInstances 5).
+  submitWorkoutCommands: index.submitWorkoutCommands,
 };
 
 describe("scaling ceilings", () => {
@@ -121,7 +123,7 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these thirty", () => {
+  test("the deployed surface is exactly these forty-two", () => {
     // A function added without a ceiling is the regression this whole file
     // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
