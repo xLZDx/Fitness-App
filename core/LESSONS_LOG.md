@@ -1872,3 +1872,10 @@ Facts: slice V0 added an exported callable but master's own predeploy test (a re
 Root cause: the V0 test agents ran only their own tests, not the repository's registry tests that react to a new export; a path was written with backslashes in a Bash command.
 Missed by: author and test agents; caught by the deploy predeploy.
 Rule next time: when a slice adds an export, route or collection, grep the repository for registry-style tests that list them and update them in the same PR; always use forward-slash absolute paths in Bash.
+
+## 2026-10-23 - Commit: docs(v1): record the V0 deployment to the dev project
+Kind: SHORTCOMING
+Facts: the first deploy attempts failed for reasons I created or missed: the deploy branch name was not on an allowed deploy line (my naming), the worktree was created inside the repository folder because backslashes were swallowed in a Bash path, the scaling registry test had not been updated by the V0 PR, and the full predeploy test run (3759 tests) proved too slow and fragile on this Windows machine and contradicted the rule against full runs, so a one-time consented skip of that step was needed.
+Root cause: the deploy path was never exercised before the slice was declared ready; the registry test and the deploy guard rules were not part of the slice's checklist.
+Missed by: author and test agents; caught by the guard, the predeploy and the agents' own reports.
+Rule next time: include a dry run of the guarded deploy (guard and build only) in a slice's exit criteria; name deploy branches on an allowed line; use forward-slash absolute paths in Bash.
