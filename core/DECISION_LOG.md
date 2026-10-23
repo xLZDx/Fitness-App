@@ -59446,3 +59446,7 @@ Decision: run submitWorkoutCommands under the existing fn-data service account (
 ## 2026-10-23 - Commit: docs(v1): record the redeployment of the V0 callable under fn-data
 
 Decision (operator, 2026-10-23): redeploy submitWorkoutCommands under the fn-data service account with the flag OFF, skipping the full predeploy npm test for this one deploy again (release guard and build kept). Evidence: core/changes/2026-10-23-v1-redeploy-v0-fn-data.md.
+
+## 2026-10-23 - Commit: feat(v1): wire the V0 offline queue into set completion behind a flag
+
+Decision: wire only the first completion of a set into the queue (one set per exercise, setIndex 1), keep the legacy save running afterwards (history and streak still read it), and gate everything behind the compile-time flag WORKOUT_COMMAND_QUEUE, default off; ids that cannot be used as is are mapped with a hash of the raw value so different raw ids never collide. The server flag and the migration policy document stay untouched (operator word required). Evidence: core/changes/2026-10-23-v1-v0-app-wiring.md; 80 wiring tests passed.

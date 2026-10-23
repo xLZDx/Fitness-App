@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/workout_queue_flag.dart';
 import '../../auth/state/auth_providers.dart';
+import '../offline/app_wiring.dart' show QueuedSet, workoutQueueGatewayProvider;
 import '../../progress/data/progress_stats.dart';
 import '../data/mock_workout_session_repository.dart';
 import '../data/workout_log.dart' show WorkoutLogEntry;
@@ -90,7 +92,13 @@ class LogSessionAction extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
-  Future<void> log(WorkoutSession session) async {
+  /// [queued] is passed only by the first completion of a set and is used
+  /// only when `workoutCommandQueueEnabledProvider` is true: the set is then
+  /// durably accepted by the local command queue BEFORE the legacy save, and a
+  /// failure to accept is an error (no save, no success, no rest timer). The
+  /// legacy `repo.save` still runs afterwards because V0 has no server
+  /// projection into `workout_sessions` yet.
+  Future<void> log(WorkoutSession session, {QueuedSet? queued}) async {
     // NEW-OFFLINE-LOG: a second tap while the first write is in flight must
     // not start another one.
     if (state.isLoading) return;
@@ -99,6 +107,9 @@ class LogSessionAction extends Notifier<AsyncValue<void>> {
       final user = ref.read(authUserProvider).valueOrNull;
       if (user == null) {
         throw StateError('Cannot log a workout while signed out');
+      }
+      if (queued != null && ref.read(workoutCommandQueueEnabledProvider)) {
+        await ref.read(workoutQueueGatewayProvider).acceptSet(queued);
       }
       final repo = ref.read(workoutSessionRepositoryProvider);
       await repo.save(user.uid, session);

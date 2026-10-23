@@ -6045,5 +6045,17 @@
   "gpsConsentWithdrawFailed": "We could not save your choice. Location recording is off for now, but may turn on again after a restart. Try again.",
   "@gpsConsentWithdrawFailed": {
     "description": "Shown when withdrawing location consent was not saved; the toggle keeps its true state."
+  },
+  "workoutQueuePending": "Saved on this device, waiting to sync",
+  "@workoutQueuePending": {
+    "description": "Offline queue chip: the set is stored locally and not yet confirmed by the server."
+  },
+  "workoutQueueSynced": "Synced",
+  "@workoutQueueSynced": {
+    "description": "Offline queue chip: the server confirmed the set."
+  },
+  "workoutQueueCouldNotSync": "Could not sync. The set is still saved on this device.",
+  "@workoutQueueCouldNotSync": {
+    "description": "Offline queue chip: the server refused or could not apply a set."
   }
 }

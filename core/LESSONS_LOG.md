@@ -1892,3 +1892,10 @@ Kind: SUCCESS
 Facts: the redeploy succeeded in one attempt because the first deploy had left a documented procedure (throw-away config that keeps the guard and the build, a baseline directory, read-only verification steps) and because the deploy branch was named on an allowed line from the start of the retry.
 Why it worked: the deployment was written down as a repeatable procedure with rollback values.
 Rule next time: keep the deploy procedure and the baseline in the repository docs so the next deploy is a replay.
+
+## 2026-10-23 - Commit: feat(v1): wire the V0 offline queue into set completion behind a flag
+Kind: SHORTCOMING
+Facts: the first id sanitiser replaced bad characters with underscores, so different raw ids (`a.b`, `a b`) mapped to one id and could merge two sets; the test agent's collision test failed on it before the commit.
+Root cause: I treated sanitising as formatting, not as an identity mapping that must stay injective.
+Missed by: author; caught by the test agent.
+Rule next time: any id mapping used as a key must be injective (hash the raw value when it is altered) and carry a collision test.
