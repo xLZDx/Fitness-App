@@ -59418,3 +59418,7 @@ Decision: the operator ended the GPT-PM review rounds after round 3 of the expor
 ## 2026-10-23 - Commit: feat(v1): transactional SQLite store for the offline command queue
 
 Decision: the operator chose sqflite with WAL and synchronous=FULL for the local queue, ahead of environment work and flag activation (order: SQLite, then environment, then enabling V0 on test accounts). A fresh database is created when a file has no tables; any other open failure is fail-closed and keeps the original plus a .corrupt copy. The file store stays in the tree for now. Evidence: core/changes/2026-10-23-v1-queue-sqlite-store.md; 104 SQLite tests passing; no GPT-PM review by operator decision.
+
+## 2026-10-23 - Commit: docs(v1): platform facts for the v1 design
+
+Decision: record the platform facts with evidence before any feature enablement (step 3 of the implementation plan). Two assumptions of the protocol are contradicted by the live dev project (point-in-time recovery disabled, Firestore data-write audit logs not enabled); enabling either is a configuration and cost change on a live project and is left to the operator. Evidence: core/changes/2026-10-23-v1-platform-facts.md; docs/v1/design/PLATFORM_FACTS_2026-10-23.md.
