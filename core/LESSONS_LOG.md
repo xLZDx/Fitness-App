@@ -1771,3 +1771,10 @@ Facts: gate round 8 returned 1 MAJOR: the success filter I added in round 7 dist
 Root cause: a two-valued filter was written for an input that has a third state (unknown), a direct regression of my own previous fix.
 Missed by: author; caught by the gate.
 Rule next time: every filter over external data has three outcomes (explicit yes, explicit no, unknown); only an explicit no may discard, unknown must fail closed with a record.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 9
+Kind: FAILURE
+Facts: gate round 9 returned 2 MAJOR: the status check I wrote in round 8 applied to every multi-write record although only the batch response has a status list (a normal commit would have been flagged as unknown); the record-level fallback had no valid account destination when the path is unreadable or a batch spans several users.
+Root cause: a rule was generalised from one response shape to all shapes without reading the other shapes, and a per-account store was used for an item whose account is unknown.
+Missed by: author; caught by the gate.
+Rule next time: write validation rules per response shape from the platform reference; every fallback record needs a storage location that exists when the identifying field is missing (database-level, not per-account).

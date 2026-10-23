@@ -59370,3 +59370,7 @@ Decision: accept the finding of gate round 7. Only successful batch items reach 
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 8
 
 Decision: accept the finding of gate round 8. Audit items get a three-valued status (explicit OK, explicit non-OK, unknown); only explicit non-OK is skipped; unknown is accounted as an unverified gap that never claims success, with the alert, the flag and a refused cutover; the acceptance case covers missing, truncated, misaligned and unparseable status lists including an after-DRAIN failed trigger. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round8.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 9
+
+Decision: accept both findings of gate round 9. Status validation applies to the batch shape only; commits and streaming writes are validated by their commit time and write-result count; items whose account cannot be established become database-level coverage incidents with a neutral kind and a global hold on cutover and DRAIN admission until the operator reconciles them. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round9.md; validator OK.
