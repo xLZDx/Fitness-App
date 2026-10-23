@@ -1879,3 +1879,10 @@ Facts: the first deploy attempts failed for reasons I created or missed: the dep
 Root cause: the deploy path was never exercised before the slice was declared ready; the registry test and the deploy guard rules were not part of the slice's checklist.
 Missed by: author and test agents; caught by the guard, the predeploy and the agents' own reports.
 Rule next time: include a dry run of the guarded deploy (guard and build only) in a slice's exit criteria; name deploy branches on an allowed line; use forward-slash absolute paths in Bash.
+
+## 2026-10-23 - Commit: fix(v1): run the V0 callable under the fn-data service account
+Kind: SHORTCOMING
+Facts: the V0 callable was merged and deployed under the default Compute service account although the repository already had a runtime-identity pattern (RUNTIME_SA) with accounts that hold the needed role; the gap was found only by the environment report.
+Root cause: the V0 recon did not list the runtime identity of a new callable as a design item; I copied only the RARE options.
+Missed by: author and reviewers; caught by the environment report.
+Rule next time: for every new function, state its runtime service account and the roles it needs in the design, and assert it in a test.

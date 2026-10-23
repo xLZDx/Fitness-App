@@ -17,7 +17,7 @@ import * as admin from "firebase-admin";
 import { createHash, timingSafeEqual } from "crypto";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { RARE } from "../scaling";
+import { RARE, RUNTIME_SA } from "../scaling";
 import { noteAppCheck } from "../abuse_guard";
 import { assertFeatureEnabled } from "../feature_flags";
 import {
@@ -547,9 +547,10 @@ async function assertAccountExists(uid: string): Promise<void> {
 
 /**
  * Callable `submitWorkoutCommands({ sessionId, items })`. Region and options come from the shared
- * `RARE` bundle (europe-west1); it deliberately does NOT use the AI runtime service account.
+ * `RARE` bundle (europe-west1) and runs as the low-risk data service account (`RUNTIME_SA.data`,
+ * fn-data); it deliberately does NOT use the AI runtime service account.
  */
-export const submitWorkoutCommands = onCall(RARE, async (request) => {
+export const submitWorkoutCommands = onCall({ ...RARE, serviceAccount: RUNTIME_SA.data }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "sign_in_required");
   noteAppCheck(request, "submitWorkoutCommands");
   assertFeatureEnabled(workoutCommandsEnabled());
