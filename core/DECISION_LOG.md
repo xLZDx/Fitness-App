@@ -59410,3 +59410,7 @@ Decision: accept the three findings of export gate round 1. Receipts are not exp
 ## 2026-10-23 - Commit: fix(v1): account export gate round 2 (receipts, resumable client, corrupt shards)
 
 Decision: accept the three findings of export gate round 2 and reverse the round 1 choice to drop receipts: receipts carry owner data that no other section has (reason codes, rejected attempts), so they are exported again; completeness is guaranteed by the client, which follows per-section cursors without a page cap and can resume from persisted progress; a corrupt fence map is reported as CORRUPT_ENTRY_MAP with a warning that marks the section incomplete. Known gap accepted for now: the final export file is assembled in memory. Evidence: core/changes/2026-10-23-v1-account-export-v0.md; server 99/99, mobile 122/122.
+
+## 2026-10-23 - Commit: fix(v1): account export mobile collector hardening (streaming, account binding, cleanup)
+
+Decision: the operator ended the GPT-PM review rounds after round 3 of the export PR ("enough reviewing, prepare the PR, bugs will be fixed as we go"); the five round 3 findings were fixed (per-user progress with wipe and purge, uid binding of every page, streaming to disk, explicit storage errors, terminal delivered state) and the PR is opened without a fourth review and is NOT merged by the assistant. Known gaps are listed in the change record. Evidence: core/changes/2026-10-23-v1-account-export-v0.md; data_export tests 101/101.

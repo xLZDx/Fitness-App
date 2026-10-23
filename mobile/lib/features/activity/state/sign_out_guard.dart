@@ -44,6 +44,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/wiring/activity_wiring.dart';
+import '../../data_export/export_progress_store.dart'
+    show exportProgressStoreProvider;
 import '../../recording/journal/pre_unbind_hook.dart';
 import '../../recording/state/recorder_phase.dart';
 import '../../recording/state/recorder_providers.dart';
@@ -271,6 +273,9 @@ Future<bool> _warnLoop(
           final bool done =
               await ActivityWipeCoordinator(journal).onSignOut(_ConfirmedHooks());
           if (!done) throw StateError('wipe did not complete');
+          // The saved server-export data of the departing account goes with
+          // it; a failure keeps the user signed in with the error sheet.
+          await ref.read(exportProgressStoreProvider).forUser(uid).clear();
         });
         if (!wiped) return false;
         // The wipe returned normally: only now is "deleted" true.

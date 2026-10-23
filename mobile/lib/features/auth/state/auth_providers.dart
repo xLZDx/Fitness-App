@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data_export/export_progress_store.dart';
 import '../data/auth_repository.dart';
 import '../data/auth_user.dart';
 import '../data/mock_auth_repository.dart';
@@ -55,6 +57,17 @@ class AuthAction extends Notifier<AsyncValue<GuestUpgrade?>> {
   Future<void> signOut() async {
     state = const AsyncValue.loading();
     try {
+      // The departing account's saved export data is plaintext health data:
+      // removed on every sign-out, best effort (the account-deletion wipe and
+      // the "sign out and delete" path report a failure instead).
+      final uid = _repo.currentUser?.uid;
+      if (uid != null) {
+        try {
+          await ref.read(exportProgressStoreProvider).forUser(uid).clear();
+        } catch (e) {
+          debugPrint('export progress cleanup on sign-out failed: ${e.runtimeType}');
+        }
+      }
       await _repo.signOut();
       state = const AsyncValue.data(null);
     } catch (e, st) {

@@ -51,6 +51,9 @@ Map<String, dynamic> buildExport({
   // callable failed, which is NOT the same as "you have none of it": the note
   // below says so in the file the user keeps.
   Map<String, dynamic>? server,
+  // False when the unfinished server progress was NOT durably written to this
+  // device: the note then must not claim it is saved.
+  bool progressSaved = true,
 }) {
   // One sentence, not two. The second used to read "The encryption key never
   // leaves this device", and it was dropped when that was not yet true --
@@ -86,9 +89,10 @@ Map<String, dynamic> buildExport({
     notes.add(
       'This export is INCOMPLETE: '
       '${names.isEmpty ? 'some server sections' : names} did not finish '
-      'because $why. Your progress is saved on this device: run the export '
-      'again (tomorrow if the daily limit was reached) to resume where it '
-      'stopped; it will not start over.',
+      'because $why. ${progressSaved ? 'Your progress is saved on this device: run the export '
+          'again (tomorrow if the daily limit was reached) to resume where it '
+          'stopped; it will not start over.' : 'Your progress could not be kept on this device: run the export '
+          'again (tomorrow if the daily limit was reached); it will start over.'}',
     );
   }
   final warnings = server?['warnings'];

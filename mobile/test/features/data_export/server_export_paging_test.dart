@@ -304,6 +304,7 @@ void main() {
 class _PagedServer extends ServerExport {
   @override
   Future<Map<String, dynamic>?> fetch() async => {
+        'uid': 'u1',
         'foodEntries': _rows('f', 0, 2),
         'paging': {'foodEntries': _info(2, next: 'f1')},
       };
@@ -312,6 +313,7 @@ class _PagedServer extends ServerExport {
   Future<Map<String, dynamic>?> fetchPage(Map<String, String> cursors) async {
     expect(cursors, {'foodEntries': 'f1'});
     return {
+      'uid': 'u1',
       'foodEntries': _rows('f', 2, 1),
       'paging': {'foodEntries': _info(1)},
     };

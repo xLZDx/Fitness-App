@@ -581,6 +581,11 @@ Future<void> main() async {
   final activityJournal = await openActivityJournal();
   final gpsRecorderOn = _gpsRecorderWired(activityJournal);
 
+  // Expired, delivered and unreadable export progress (plaintext rows of the
+  // user's own data) is removed at start, not only when an export begins.
+  unawaited(FileExportProgressStore().purgeStale().catchError(
+      (Object e) => debugPrint('export progress purge failed: ${e.runtimeType}')));
+
   runApp(
     ProviderScope(
       overrides: [

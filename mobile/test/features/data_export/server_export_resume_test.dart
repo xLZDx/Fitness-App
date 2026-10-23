@@ -40,9 +40,12 @@ class _Interrupted implements Exception {
 /// Serves `totals[section]` rows per section, [pageSize] rows per page, with
 /// cursors `c<offset>`. Hooks (1-based over continuation calls) inject faults.
 class PagedServer extends ServerExport {
-  PagedServer(this.totals, {this.pageSize = 1});
+  PagedServer(this.totals, {this.pageSize = 1, this.uid = 'u1'});
 
   final Map<String, int> totals;
+
+  /// The authenticated uid every response carries (the real callable does).
+  final String uid;
   final int pageSize;
 
   int fetchCalls = 0;
@@ -89,7 +92,10 @@ class PagedServer extends ServerExport {
   @override
   Future<Map<String, dynamic>?> fetch() async {
     fetchCalls++;
-    final out = <String, dynamic>{'profile': <String, Object?>{'name': 'server'}};
+    final out = <String, dynamic>{
+      'uid': uid,
+      'profile': <String, Object?>{'name': 'server'},
+    };
     final paging = <String, dynamic>{};
     for (final s in totals.keys) {
       final end = pageSize < totals[s]! ? pageSize : totals[s]!;
@@ -114,7 +120,7 @@ class PagedServer extends ServerExport {
     final stalling = stallOnCall != null &&
         pageCalls >= stallOnCall! &&
         pageCalls < stallOnCall! + stallLength;
-    final out = <String, dynamic>{};
+    final out = <String, dynamic>{'uid': uid};
     final paging = <String, dynamic>{};
     cursors.forEach((section, cursor) {
       final from = int.parse(cursor.substring(1));
@@ -228,7 +234,7 @@ void main() {
     test('rows are not lost when a page carries several rows (page size 7)', () async {
       final totals = <String, int>{'a': 100, 'b': 33};
       final server = PagedServer(totals, pageSize: 7);
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       expectExactRows(res!, totals);
     });
 
@@ -237,7 +243,7 @@ void main() {
       final totals = <String, int>{'a': 12, 'b': 5};
       final server = PagedServer(totals);
       final store = InMemoryExportProgressStore();
-      final res = await server.fetchAll(store: store, uid: 'u');
+      final res = await server.fetchAll(store: store, uid: 'u1');
       expect(store.manifest!['parts'], 12);
       final rebuilt = <String, List<String>>{'a': [], 'b': []};
       for (var i = 0; i < 12; i++) {
@@ -249,9 +255,9 @@ void main() {
       }
       expect(rebuilt['a'], idsOf(res!, 'a'));
       expect(rebuilt['b'], idsOf(res, 'b'));
-      // Part 0 is the complete first response, later parts hold rows only.
-      expect(store.parts[0]!.containsKey('profile'), isTrue);
-      expect(store.parts[1]!.containsKey('profile'), isFalse);
+      // Parts hold rows only; the rest of the first response is the base.
+      expect(store.parts[0]!.containsKey('profile'), isFalse);
+      expect(store.base!.containsKey('profile'), isTrue);
     });
   });
 
@@ -308,10 +314,10 @@ void main() {
       final totals = <String, int>{'a': 30, 'b': 12};
       for (final dieAt in <int>[5, 7, 3]) {
         final s = PagedServer(totals)..throwOnCall = dieAt;
-        await expectLater(s.fetchAll(store: store, uid: 'u'), throwsA(isA<_Interrupted>()));
+        await expectLater(s.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
       }
       final last = PagedServer(totals);
-      final res = await last.fetchAll(store: store, uid: 'u');
+      final res = await last.fetchAll(store: store, uid: 'u1');
       expect(last.fetchCalls, 0);
       expectExactRows(res!, totals);
     });
@@ -328,7 +334,7 @@ void main() {
       final res = await s2.fetchAll(store: mk(), uid: 'u1');
       expect(s2.fetchCalls, 0);
       expectExactRows(res!, _threeSections);
-      final dir = Directory('${tmp.path}/server_export_progress');
+      final dir = Directory('${tmp.path}/server_export_progress/${exportProgressUserKey('u1')}');
       expect(dir.listSync().any((e) => e.path.endsWith('.tmp')), isFalse,
           reason: 'temp files are renamed away');
     });
@@ -341,8 +347,9 @@ void main() {
       final store = CrashingStore();
       // Write 1 = first response, 2.. = pages. Fail the manifest of page 4.
       store.failManifestWrite = 4;
-      final s1 = PagedServer(totals)..throwOnCall = 5; // the process dies next
-      await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
+      final s1 = PagedServer(totals);
+      // A failed manifest write stops the export before another page is fetched.
+      await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<ExportStorageException>()));
       // Part 3 (page 4) is on disk but the manifest still lists 3 parts.
       expect(store.parts.containsKey(3), isTrue);
       expect(store.manifest!['parts'], 3);
@@ -360,8 +367,9 @@ void main() {
         () async {
       final totals = <String, int>{'a': 10, 'b': 6};
       final store = CrashingStore()..failPartWrite = 5;
-      final s1 = PagedServer(totals)..throwOnCall = 6;
-      await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
+      final s1 = PagedServer(totals);
+      await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<ExportStorageException>()));
+      expect(s1.pageCalls, 4, reason: 'no further server quota is used after a failed write');
       store.failPartWrite = null;
       final s2 = PagedServer(totals);
       final res = await s2.fetchAll(store: store, uid: 'u1');
@@ -382,11 +390,10 @@ void main() {
       expectExactRows(res!, totals);
     });
 
-    test('a failing store never fails or corrupts the in-memory export', () async {
-      final totals = <String, int>{'a': 8};
+    test('a failing store stops the export with ExportStorageException (never silently disabled)', () async {
       final store = CrashingStore()..failPartWrite = 3;
-      final res = await PagedServer(totals).fetchAll(store: store, uid: 'u1');
-      expectExactRows(res!, totals);
+      await expectLater(PagedServer(<String, int>{'a': 8}).fetchAll(store: store, uid: 'u1'),
+          throwsA(isA<ExportStorageException>()));
     });
 
     test('resume through real files with an orphan part file on disk', () async {
@@ -399,11 +406,9 @@ void main() {
       final s1 = PagedServer(totals)..throwOnCall = 4;
       await expectLater(s1.fetchAll(store: fileStore, uid: 'u1'), throwsA(isA<_Interrupted>()));
       // Orphan: part 3 exists with the rows of the page the manifest does not list.
-      final dir = '${tmp.path}/server_export_progress';
-      File('$dir/part_00003.json').writeAsStringSync(jsonEncode(<String, Object?>{
-        'a': <Object>[<String, Object?>{'id': 'a-3'}],
-        'b': <Object>[<String, Object?>{'id': 'b-3'}],
-      }));
+      final dir = '${tmp.path}/server_export_progress/${exportProgressUserKey('u1')}';
+      File('$dir/part_00003.a.ndjson').writeAsStringSync('${jsonEncode(<String, Object?>{'id': 'a-3'})}\n');
+      File('$dir/part_00003.b.ndjson').writeAsStringSync('${jsonEncode(<String, Object?>{'id': 'b-3'})}\n');
       final res = await PagedServer(totals).fetchAll(store: fileStore, uid: 'u1');
       expectExactRows(res!, totals);
     });
@@ -418,7 +423,7 @@ void main() {
       await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
 
       final totalsB = <String, int>{'a': 7};
-      final s2 = PagedServer(totalsB);
+      final s2 = PagedServer(totalsB, uid: 'u2');
       final res = await s2.fetchAll(store: store, uid: 'u2');
       expect(s2.fetchCalls, 1, reason: 'user 2 starts from the beginning');
       expectExactRows(res!, totalsB);
@@ -432,7 +437,8 @@ void main() {
       final store = InMemoryExportProgressStore();
       final s1 = PagedServer(<String, int>{'a': 10})..throwOnCall = 5;
       await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
-      await PagedServer(<String, int>{'a': 3}).fetchAll(store: store, uid: 'u2');
+      await PagedServer(<String, int>{'a': 3}, uid: 'u2')
+          .fetchAll(store: store, uid: 'u2');
       final s3 = PagedServer(<String, int>{'a': 10});
       final res = await s3.fetchAll(store: store, uid: 'u1');
       expect(s3.fetchCalls, 1);
@@ -522,7 +528,8 @@ void main() {
       final st = FileExportProgressStore(baseDir: () async => tmp);
       final s1 = PagedServer(totals)..throwOnCall = 5;
       await expectLater(s1.fetchAll(store: st, uid: 'u1'), throwsA(isA<_Interrupted>()));
-      File('${tmp.path}/server_export_progress/part_00002.json').writeAsStringSync('{"a":[{"id"');
+      File('${tmp.path}/server_export_progress/${exportProgressUserKey('u1')}/part_00002.a.ndjson')
+          .writeAsStringSync('{"id"');
       final s2 = PagedServer(totals);
       final res = await s2.fetchAll(store: st, uid: 'u1');
       expect(s2.fetchCalls, 1);
@@ -624,7 +631,7 @@ void main() {
       final server = PagedServer(totals)
         ..stallOnCall = 3
         ..stallLength = 2;
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       expectExactRows(res!, totals);
       expect(res.containsKey('pagingIncomplete'), isFalse);
     });
@@ -656,7 +663,7 @@ void main() {
         () async {
       final totals = <String, int>{'foodEntries': 4, 'workoutCommandOutcomes': 4};
       final server = PagedServer(totals)..warningsOnCall[2] = [warning];
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       expectExactRows(res!, totals); // rows are still delivered exactly once
       expect(res['warnings'], hasLength(1));
       final manifest = res['exportManifest'] as Map;
@@ -671,7 +678,7 @@ void main() {
     test('a warning in the FIRST response also marks its section incomplete', () async {
       final totals = <String, int>{'foodEntries': 2, 'workoutCommandOutcomes': 2};
       final server = PagedServer(totals)..warningsOnCall[0] = [warning];
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       expect((res!['exportManifest'] as Map)['incompleteSections'],
           contains('workoutCommandOutcomes'));
     });
@@ -680,7 +687,7 @@ void main() {
         () async {
       final totals = <String, int>{'workoutCommandOutcomes': 1};
       final server = PagedServer(totals)..warningsOnCall[0] = [warning];
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       expect((res!['exportManifest'] as Map)['incompleteSections'],
           <String>['workoutCommandOutcomes']);
     });
@@ -691,8 +698,8 @@ void main() {
       final s1 = PagedServer(totals)
         ..warningsOnCall[2] = [warning]
         ..throwOnCall = 5;
-      await expectLater(s1.fetchAll(store: store, uid: 'u'), throwsA(isA<_Interrupted>()));
-      final res = await PagedServer(totals).fetchAll(store: store, uid: 'u');
+      await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
+      final res = await PagedServer(totals).fetchAll(store: store, uid: 'u1');
       expect(res!['warnings'], hasLength(1));
       expect((res['exportManifest'] as Map)['incompleteSections'],
           contains('workoutCommandOutcomes'));
@@ -703,7 +710,7 @@ void main() {
     test('sectionRowCounts equal the rows, pages equal the calls, nothing incomplete',
         () async {
       final server = PagedServer(_threeSections);
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       final m = res!['exportManifest'] as Map;
       expect(m['pages'], 1 + server.pageCalls);
       expect(m['pages'], 130);
@@ -720,9 +727,9 @@ void main() {
         () async {
       final store = InMemoryExportProgressStore();
       final s1 = PagedServer(_threeSections)..throwOnCall = 77;
-      await expectLater(s1.fetchAll(store: store, uid: 'u'), throwsA(isA<_Interrupted>()));
+      await expectLater(s1.fetchAll(store: store, uid: 'u1'), throwsA(isA<_Interrupted>()));
       final s2 = PagedServer(_threeSections);
-      final res = await s2.fetchAll(store: store, uid: 'u');
+      final res = await s2.fetchAll(store: store, uid: 'u1');
       final m = res!['exportManifest'] as Map;
       expect(m['resumedFromEarlierRun'], isTrue);
       expect(m['pages'], 130);
@@ -739,7 +746,7 @@ void main() {
       final server = PagedServer(totals)
         ..errorFromCall = 5
         ..errorCode = 'quota';
-      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u');
+      final res = await server.fetchAll(store: InMemoryExportProgressStore(), uid: 'u1');
       final m = res!['exportManifest'] as Map;
       expect(m['incompleteSections'], <String>['a']);
       expect(m['sectionRowCounts']['a'], idsOf(res, 'a').length);
@@ -923,6 +930,14 @@ class _ScriptedStall extends PagedServer {
 }
 
 class _FailingSink implements DataExportSink {
+  @override
+  Future<void> deliverStreamed({
+    required String filename,
+    required Future<void> Function(ExportTextSink out) write,
+  }) async {
+    throw StateError('share sheet failed');
+  }
+
   @override
   Future<void> deliver({required String filename, required String contents}) async {
     throw StateError('share sheet failed');

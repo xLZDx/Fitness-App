@@ -1840,3 +1840,10 @@ Facts: my round 1 answer removed receipts from the export on the claim that fenc
 Root cause: an unverified equivalence claim used to shrink scope, an estimate by document count instead of bytes, and a lenient default for invalid stored data.
 Missed by: author; caught by the gate (all three); the test agent found two further client defects in the resume work (warnings did not mark a section incomplete; progress written without a user id).
 Rule next time: before dropping data from an export, diff the field lists of the dropped and the kept records; size every limit in bytes; invalid stored data must surface as an explicit status, never as empty.
+
+## 2026-10-23 - Commit: fix(v1): account export mobile collector hardening (streaming, account binding, cleanup)
+Kind: FAILURE
+Facts: the resume feature I introduced to answer round 2 created five new defects found by the gate in round 3: plaintext progress surviving account deletion, rows of two accounts mixed when the auth user changes, an in-memory export that can reach 500 MB, silent loss of resumability on a storage fault, and reuse of a stale completed snapshot after a failed cleanup.
+Root cause: new persistence was added to a privacy-sensitive flow without listing who must delete it, who owns each page, what happens on a disk fault and what the terminal state is.
+Missed by: author and tests; caught by the gate.
+Rule next time: any new on-device copy of personal data needs, in the design, an owner, a deletion path (account deletion, sign-out, expiry), a size bound, a fault behaviour and a terminal state before the first line of code.
