@@ -59442,3 +59442,7 @@ Decision (operator, 2026-10-23): release master's full firestore.rules, move ori
 ## 2026-10-23 - Commit: fix(v1): run the V0 callable under the fn-data service account
 
 Decision: run submitWorkoutCommands under the existing fn-data service account (roles/datastore.user already held) instead of granting a Firestore role to the default Compute account (which eleven other functions use) or creating a new account; the operator chose the plan "separate account for the function, then enable on test accounts". The deployed function still needs a redeploy before the flag can be enabled. Evidence: core/changes/2026-10-23-v1-v0-callable-service-account.md; jest 420, rules 44, e2e 75.
+
+## 2026-10-23 - Commit: docs(v1): record the redeployment of the V0 callable under fn-data
+
+Decision (operator, 2026-10-23): redeploy submitWorkoutCommands under the fn-data service account with the flag OFF, skipping the full predeploy npm test for this one deploy again (release guard and build kept). Evidence: core/changes/2026-10-23-v1-redeploy-v0-fn-data.md.

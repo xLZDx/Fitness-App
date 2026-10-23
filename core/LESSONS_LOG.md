@@ -1886,3 +1886,9 @@ Facts: the V0 callable was merged and deployed under the default Compute service
 Root cause: the V0 recon did not list the runtime identity of a new callable as a design item; I copied only the RARE options.
 Missed by: author and reviewers; caught by the environment report.
 Rule next time: for every new function, state its runtime service account and the roles it needs in the design, and assert it in a test.
+
+## 2026-10-23 - Commit: docs(v1): record the redeployment of the V0 callable under fn-data
+Kind: SUCCESS
+Facts: the redeploy succeeded in one attempt because the first deploy had left a documented procedure (throw-away config that keeps the guard and the build, a baseline directory, read-only verification steps) and because the deploy branch was named on an allowed line from the start of the retry.
+Why it worked: the deployment was written down as a repeatable procedure with rollback values.
+Rule next time: keep the deploy procedure and the baseline in the repository docs so the next deploy is a replay.

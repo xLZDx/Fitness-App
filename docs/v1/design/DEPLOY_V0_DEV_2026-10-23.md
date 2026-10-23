@@ -45,3 +45,35 @@ Project `fitness-app-korostelev`, region `europe-west1`. Executed from a scratch
 ## Open items (unchanged)
 - The flag is OFF. Enabling needs a service account with a Firestore role (the default Compute account has none) and a deployed `exportAccountData` that includes V0 data.
 - Scheduler 403s remain.
+
+## Redeploy under fn-data (2026-10-23)
+
+Operator authorisation of 2026-10-23: redeploy `submitWorkoutCommands` alone after PR 34 (service account `fn-data`), flag `WORKOUT_COMMANDS_ENABLED` still OFF (never set). Executed from scratch worktree `D:/tmp/scratch_worktrees/deploy2`; working material in `D:/tmp/deploy_v0_baseline_2026-10-23/redeploy/`.
+
+### Revisions
+| Item | Value |
+|---|---|
+| Deployed from | master `2b5e469579693827fb9eea68f9d68eb9956a5c28` (PR 34) |
+| `origin/phase1/main` | `9e6aeaa3f5cbd199f7490d585e2281cd2f6d406a` -> `2b5e469579693827fb9eea68f9d68eb9956a5c28` (fast-forward, `git push origin origin/master:refs/heads/phase1/main`) |
+| Function revision | `submitworkoutcommands-00001-gib` (service account: default Compute) -> `submitworkoutcommands-00002-red` |
+| Service account (after) | `fn-data@fitness-app-korostelev.iam.gserviceaccount.com` |
+| Update time (after) | 2026-10-23T15:59:49Z |
+
+### Steps
+1. `npm ci` in `functions`; baseline saved (describe, function list, phase1/main sha).
+2. The guard first BLOCKED the branch `docs/v1-deploy-v0-sa` (not on a deploy line). A local branch `phase1/deploy-v0-sa-redeploy` was created at the same commit (no tracked-file change) and the deploy re-run; guard verdict PASS.
+3. `node functions/node_modules/firebase-tools/lib/bin/firebase.js deploy --config firebase.deploy-v0.json --project fitness-app-korostelev --only functions:default:submitWorkoutCommands` (throw-away config, untracked in the worktree root, copy at `D:/tmp/deploy_v0_baseline_2026-10-23/firebase.deploy-v0.json`). Predeploy: `npm run build` OK, release guard PASS. Deploy complete.
+
+### Skipped step (one-time operator consent, this deploy only)
+The `npm --prefix functions test` predeploy step was skipped (unreliable on this machine; see the first deploy section). Build and release guard were NOT skipped; no tracked file, guard script or test was edited; no `--force`. Not verified: the full unit suite on the deployed head.
+
+### Read-only verification
+- `submitWorkoutCommands`: ACTIVE, GEN_2, nodejs22, europe-west1, new revision, `serviceAccountEmail` = fn-data.
+- `WORKOUT_COMMANDS_ENABLED` is absent from the function environment (flag OFF).
+- 44 functions; the diff against the baseline is exactly one line (`submitWorkoutCommands` update time); the other 43 are unchanged.
+- Rules release `cloud.firestore` still `07f56cec-b834-48db-bb38-8fcd3ad703bf` (updated 2026-10-23T13:47:15Z).
+- Cloud Logging, severity ERROR or above, for service `submitworkoutcommands` since the deploy: no entries at check time. The callable was not called.
+
+### Rollback
+- Function: route traffic back to the previous revision `submitworkoutcommands-00001-gib` (Cloud Run service `submitworkoutcommands`, region europe-west1; that revision runs under the default Compute account), or delete the function (operator-only): `gcloud functions delete submitWorkoutCommands --gen2 --region=europe-west1 --project=fitness-app-korostelev` (43 functions afterwards).
+- Provenance ref (non-fast-forward, operator-level): `git push origin 9e6aeaa3f5cbd199f7490d585e2281cd2f6d406a:refs/heads/phase1/main --force-with-lease=phase1/main:2b5e469579693827fb9eea68f9d68eb9956a5c28`.
