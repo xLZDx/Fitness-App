@@ -59450,3 +59450,7 @@ Decision (operator, 2026-10-23): redeploy submitWorkoutCommands under the fn-dat
 ## 2026-10-23 - Commit: feat(v1): wire the V0 offline queue into set completion behind a flag
 
 Decision: wire only the first completion of a set into the queue (one set per exercise, setIndex 1), keep the legacy save running afterwards (history and streak still read it), and gate everything behind the compile-time flag WORKOUT_COMMAND_QUEUE, default off; ids that cannot be used as is are mapped with a hash of the raw value so different raw ids never collide. The server flag and the migration policy document stay untouched (operator word required). Evidence: core/changes/2026-10-23-v1-v0-app-wiring.md; 80 wiring tests passed.
+
+## 2026-10-23 - Commit: fix(v1): cast the manifest gate lambdas to Kotlin Function1 and record the test-account enablement
+
+Decision (operator, 2026-10-23, "разрешаю все"): enable the V0 queue for one test account: the operator's own Google account in the dev project (chosen by me from the user export on the operator's instruction "find it yourself"), policy document SERVER_ONLY, WORKOUT_COMMANDS_ENABLED=true on submitworkoutcommands via a Cloud Run env update (not a full deploy). Evidence: core/changes/2026-10-23-v1-v0-enable-test-account.md; revision submitworkoutcommands-00003-lrs; env verified by describe.

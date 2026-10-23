@@ -303,8 +303,8 @@ androidComponents {
         }
         variant.artifacts.use(gate)
             .wiredWithFiles(
-                { t -> t.mergedManifest } as Function,
-                { t -> t.updatedManifest } as Function)
+                { t -> t.mergedManifest } as kotlin.jvm.functions.Function1,
+                { t -> t.updatedManifest } as kotlin.jvm.functions.Function1)
             .toTransform(SingleArtifact.MERGED_MANIFEST.INSTANCE)
     }
 }
