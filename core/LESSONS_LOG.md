@@ -1764,3 +1764,10 @@ Facts: gate round 7 returned 1 MAJOR: the unsupported-item rule for batch writes
 Root cause: a new rule was written for the shape and not checked against the success filter defined a few lines earlier.
 Missed by: author; caught by the gate.
 Rule next time: when adding a rule that consumes items of a record, state the filter (success, status, kind) it runs after, and test the mixed success and failure cases in both orders.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 8
+Kind: FAILURE
+Facts: gate round 8 returned 1 MAJOR: the success filter I added in round 7 distinguished OK from not OK but not an absent or inconsistent status list, and audit exports may omit response elements, so a successful write could have been skipped as failed.
+Root cause: a two-valued filter was written for an input that has a third state (unknown), a direct regression of my own previous fix.
+Missed by: author; caught by the gate.
+Rule next time: every filter over external data has three outcomes (explicit yes, explicit no, unknown); only an explicit no may discard, unknown must fail closed with a record.

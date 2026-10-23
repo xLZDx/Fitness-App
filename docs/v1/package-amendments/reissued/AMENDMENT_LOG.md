@@ -87,3 +87,6 @@ Priority rationale for FU-AC-066/067/072 (P0 under P1 parents) is unchanged. Not
 
 ## Pre-implementation gate round 7 (GPT-PM, head ebb88df4: 0 BLOCKER, 1 MAJOR)
 - FU-AC-119: S26 audit-extraction case now requires failed batch items to create nothing, tested in both orders.
+
+## Pre-implementation gate round 8 (GPT-PM, head ebc15773: 0 BLOCKER, 1 MAJOR)
+- FU-AC-119: S26 gained the status-validation case (missing, truncated, misaligned or unparseable status lists fail closed).

@@ -59366,3 +59366,7 @@ Decision: accept both findings of gate round 6. BatchWrite is unsupported as a w
 ## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 7
 
 Decision: accept the finding of gate round 7. Only successful batch items reach the unsupported-item rule; failed items create no gap, no counter change and no flag; the acceptance case covers mixed results in both orders. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round7.md; validator OK.
+
+## 2026-10-23 - Commit: docs(v1): address pre-implementation gate round 8
+
+Decision: accept the finding of gate round 8. Audit items get a three-valued status (explicit OK, explicit non-OK, unknown); only explicit non-OK is skipped; unknown is accounted as an unverified gap that never claims success, with the alert, the flag and a refused cutover; the acceptance case covers missing, truncated, misaligned and unparseable status lists including an after-DRAIN failed trigger. Evidence: core/changes/2026-10-23-v1-pre-implementation-gate-round8.md; validator OK.
