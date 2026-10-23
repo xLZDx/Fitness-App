@@ -1865,3 +1865,10 @@ Kind: SUCCESS
 Facts: comparing the live project with master before deploying showed that the released rules do not carry the V0 carve-outs (the owner wildcard still covers the new collections), that a full rules release would change behaviour for existing clients, and that the equipment-identity snapshot alarm was only a line-ending artefact.
 Why it worked: the deployment questions were answered by read-only comparisons instead of by trying a deploy.
 Rule next time: diff the released artefact against the source before any deploy and choose the smallest change that closes the gap.
+
+## 2026-10-23 - Commit: test(v1): register the V0 callable in the scaling test
+Kind: SHORTCOMING
+Facts: slice V0 added an exported callable but master's own predeploy test (a registry of the deployed surface) was not updated, so the first deploy of V0 was blocked; the registry title was already stale (thirty vs 41 entries). The same deployment attempt first created its worktree inside the repository folder because the shell swallowed backslashes in a Windows path.
+Root cause: the V0 test agents ran only their own tests, not the repository's registry tests that react to a new export; a path was written with backslashes in a Bash command.
+Missed by: author and test agents; caught by the deploy predeploy.
+Rule next time: when a slice adds an export, route or collection, grep the repository for registry-style tests that list them and update them in the same PR; always use forward-slash absolute paths in Bash.

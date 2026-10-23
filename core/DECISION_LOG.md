@@ -59430,3 +59430,7 @@ Decision (operator, 2026-10-23): (1) point-in-time recovery is NOT enabled now a
 ## 2026-10-23 - Commit: docs(v1): environment preparation report for deploying V0
 
 Decision: before any deployment of V0 to the live dev project, a read-only report compares the released rules and the deployed functions with master and lists the decisions the operator must take (which rules to release, the release-guard reference, the service account, the scheduler 403, the shipped app build). Nothing was deployed. Evidence: core/changes/2026-10-23-v1-environment-prep.md; docs/v1/design/ENVIRONMENT_PREP_2026-10-23.md.
+
+## 2026-10-23 - Commit: test(v1): register the V0 callable in the scaling test
+
+Decision: the predeploy test failed because V0 added an intentional export without registering it; the registry is updated (no invariant weakened) instead of skipping the predeploy test. Operator decisions of 2026-10-23 for the dev deployment, recorded here: master's full firestore.rules released (ruleset 07f56cec-b834-48db-bb38-8fcd3ad703bf, previous eefbc179-7f92-4199-a163-828a7424d503), origin/phase1/main moved from 03ea66e1 to aff06975 (and to the new master after this change), submitWorkoutCommands deployed alone with the flag OFF, the service account decided before enabling, scheduler 403s left as they are. Evidence: core/changes/2026-10-23-v1-register-v0-callable-in-scaling-test.md; scaling.test.ts 150/150.
