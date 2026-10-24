@@ -164,7 +164,6 @@ const Set<String> _machineLabels = {
   'airbike',
   'ski ergometer',
   'stationary exercise bike',
-  'hyperextension bench',
 };
 
 const Set<String> _barbellLabels = {
@@ -222,7 +221,6 @@ const Set<String> _machineEquipmentIds = {
   'smith_machine',
   'chest_press_machine',
   'leg_press',
-  'back_extension',
   'assisted_pullup_machine',
   'leg_curl',
   'seated_row_machine',

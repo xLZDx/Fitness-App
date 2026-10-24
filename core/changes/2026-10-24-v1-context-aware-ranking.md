@@ -13,3 +13,10 @@ Order only; hard filters (safety, difficulty ceiling, equipment access) are unch
 
 ## Verification state
 Test agent: 41 + 24 + 18 new tests passed, and 28 existing files that import the touched modules passed. One existing test (account_switch_journey_test.dart, scan reminder state) fails identically on a clean master, so it is not caused by this change. On the real catalogue the top-5 suggestions differ in 5 of 5 items between gym, home and outdoors, and the first programme day differs in 4 of 4. Known limits: ties inside the best tier fall back to catalogue order (the gym list shows hyperextension and airbike items near the top); not verified on a device; no analyzer run.
+
+## Addendum: the "План на сегодня" planner (same PR)
+The real-phone test (Samsung S8) showed the Home recommendations differ per context after the ranking change, but the adaptive plan screen (AI planner, plan_builder.dart) still gave the same four exercises for gym, outdoors and home.
+- mobile/lib/features/ai_planner/data/plan_builder.dart: buildPlan keeps the weekly deficit as the primary order; on equal deficit the context affinity decides; a one-per-primary-muscle diversity pass (reserved goal items count as used groups; untagged items are their own group; second pass fills the remaining slots) stops one muscle taking every slot. Without a training context only the diversity pass is added to the old order.
+- mobile/lib/features/training_context/data/training_context.dart: the hyperextension bench is "other loaded kit", not a machine (id and label removed from the machine sets).
+- Test: mobile/test/features/ai_planner/plan_builder_context_ranking_test.dart (29 tests). Rerun of 40 files: all passed except account_switch_journey_test.dart (fails identically on clean master).
+- Real catalogue, no history, 45 minutes: gym = ab crunch machine, airbike, assisted chin-up machine, barbell curl; home = dumbbell curls, press and fly; outdoors = jump turns, curtsy, punching, hamstring curl; the three plans differ in 4 of 4 exercises. Known limit: untagged dumbbell rows count as separate muscle groups.
