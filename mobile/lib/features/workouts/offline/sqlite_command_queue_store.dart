@@ -164,7 +164,8 @@ class SqliteCommandQueueStore extends BaseCommandQueueStore
       throw _OpenProblem('integrity check failed');
     }
     final tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' "
+        "AND name != 'android_metadata'");
     final scope = queueScopeDirName(uid);
     if (tables.isEmpty) {
       await db.transaction((txn) async {

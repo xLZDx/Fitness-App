@@ -59454,3 +59454,7 @@ Decision: wire only the first completion of a set into the queue (one set per ex
 ## 2026-10-23 - Commit: fix(v1): cast the manifest gate lambdas to Kotlin Function1 and record the test-account enablement
 
 Decision (operator, 2026-10-23, "разрешаю все"): enable the V0 queue for one test account: the operator's own Google account in the dev project (chosen by me from the user export on the operator's instruction "find it yourself"), policy document SERVER_ONLY, WORKOUT_COMMANDS_ENABLED=true on submitworkoutcommands via a Cloud Run env update (not a full deploy). Evidence: core/changes/2026-10-23-v1-v0-enable-test-account.md; revision submitworkoutcommands-00003-lrs; env verified by describe.
+
+## 2026-10-24 - Commit: fix(v1): ignore android_metadata when deciding whether the queue database is new
+
+Decision: treat a database whose only table is android_metadata as new (create the schema), instead of adding an Android-specific open path; a database holding other foreign tables still follows the recovery path. Evidence: core/changes/2026-10-23-v1-sqlite-android-metadata.md; 39 store tests passed.
