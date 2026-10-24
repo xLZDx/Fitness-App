@@ -1906,3 +1906,10 @@ Facts: the S04 manifest gate in app/build.gradle used `as Function` for a Kotlin
 Root cause: no build of the Android app is part of the slice checks; the gate was written and merged without one.
 Missed by: author and reviewers; caught by the first build.
 Rule next time: a change to build scripts needs one real assemble of the affected variant before merge.
+
+## 2026-10-24 - Commit: fix(v1): ignore android_metadata when deciding whether the queue database is new
+Kind: FAILURE
+Facts: on the operator's phone the offline queue never opened ("no such table: meta"); every set completion failed with the flag on. sqflite on Android adds an android_metadata table to each database; the desktop test driver does not.
+Root cause: the schema check assumed an empty table list means a new database; the store was developed and tested only on the desktop driver and merged before any on-device run.
+Missed by: author, tests (wrong platform), reviewers; caught by the operator on a real phone.
+Rule next time: a storage layer needs one run on the real target platform driver before it is wired in; list platform-created system tables explicitly.
