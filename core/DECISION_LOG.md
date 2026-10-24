@@ -59473,3 +59473,7 @@ Decision: add a shared affinity score instead of new per-context programme templ
 ## 2026-10-24 - Commit: feat(v1): apply the training context and muscle diversity to the adaptive plan
 
 Decision: deficit stays the primary order in the adaptive plan (its stated rationale), context affinity is a tie-break, and a per-muscle diversity pass prevents one muscle filling every slot; the hyperextension bench no longer counts as a gym machine. Evidence: core/changes/2026-10-24-v1-context-aware-ranking.md (addendum); on-device check on the S8.
+
+## 2026-10-24 - Commit: docs(v1): full project status report
+
+Decision: report the v1 task statuses as inferred from merged work (4 done, 9 partial, 4 flag-off, 1 blocked, 36 not started, 2 not verified of 56) instead of copying the register's planned label; disclose that PRs #39 and #40 were merged on an auto-accepted question after the operator's silence. Evidence: reports/PROJECT_STATUS_2026-10-24.html; core/changes/2026-10-24-v1-project-status-report.md.
