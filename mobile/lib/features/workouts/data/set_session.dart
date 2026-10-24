@@ -17,14 +17,20 @@
 /// milliseconds rather than by sitting through three real minutes.
 library;
 
+import 'set_prescription.dart';
+
 /// Where in the set we are.
 enum SetPhase {
   /// Nothing running. The starting state and the state after [reset].
   idle,
 
-  /// The countdown before the first repetition. Long enough to put the phone
-  /// down and get into position, which is the thing a timer that starts
-  /// instantly gets wrong.
+  /// The spoken briefing and the "I am ready" gate. No clock runs and no
+  /// cue plays here: the instruction is heard in full, the person gets into
+  /// position at their own pace, and only [SetSession.confirmReady] moves on.
+  briefing,
+
+  /// The short countdown after the person said they are ready; ticks, then
+  /// the start gong, then work.
   gettingReady,
 
   /// Working.
@@ -62,16 +68,24 @@ class SetPlan {
     required this.sets,
     required this.workSeconds,
     required this.restSeconds,
-    this.readySeconds = 10,
+    this.readySeconds = 3,
     this.cueLead = 5,
+    this.prescription = const SetPrescription(),
   });
 
   final int sets;
   final int workSeconds;
   final int restSeconds;
 
-  /// The countdown before the first set.
+  /// The short countdown after "I am ready", before the first set. The
+  /// time to get into position is the open-ended briefing gate, not this.
   final int readySeconds;
+
+  /// Timed (default) or repetition based. For a rep based set [workSeconds]
+  /// is not used as a clock: the work phase ends when the person taps Done.
+  final SetPrescription prescription;
+
+  bool get isRepBased => prescription.isReps;
 
   /// How many seconds of ticking precede the end of a phase. The operator
   /// asked for five.
@@ -98,6 +112,7 @@ class SetPlan {
     int? restSeconds,
     int? readySeconds,
     int? cueLead,
+    SetPrescription? prescription,
   }) =>
       SetPlan(
         sets: sets ?? this.sets,
@@ -105,6 +120,7 @@ class SetPlan {
         restSeconds: restSeconds ?? this.restSeconds,
         readySeconds: readySeconds ?? this.readySeconds,
         cueLead: cueLead ?? this.cueLead,
+        prescription: prescription ?? this.prescription,
       );
 
   /// Total wall-clock, ready included. The last set is not followed by a rest.
@@ -118,11 +134,12 @@ class SetPlan {
       other.workSeconds == workSeconds &&
       other.restSeconds == restSeconds &&
       other.readySeconds == readySeconds &&
-      other.cueLead == cueLead;
+      other.cueLead == cueLead &&
+      other.prescription == prescription;
 
   @override
-  int get hashCode =>
-      Object.hash(sets, workSeconds, restSeconds, readySeconds, cueLead);
+  int get hashCode => Object.hash(
+      sets, workSeconds, restSeconds, readySeconds, cueLead, prescription);
 }
 
 /// One second of the session, and everything the UI needs to draw it.
@@ -171,6 +188,7 @@ class SetSession {
   double get progress {
     if (_phase == SetPhase.idle) return 0;
     if (_phase == SetPhase.done) return 1;
+    if (_phase == SetPhase.briefing) return 0;
     var elapsed = 0;
     if (_phase == SetPhase.gettingReady) {
       elapsed = plan.readySeconds - _left;
@@ -188,9 +206,10 @@ class SetSession {
   double get phaseProgress {
     final total = switch (_phase) {
       SetPhase.gettingReady => plan.readySeconds,
-      SetPhase.work => plan.workSeconds,
+      // A rep based set has no clock, so no arc to sweep.
+      SetPhase.work => plan.isRepBased ? 0 : plan.workSeconds,
       SetPhase.rest => plan.restSeconds,
-      SetPhase.idle || SetPhase.done => 0,
+      SetPhase.idle || SetPhase.briefing || SetPhase.done => 0,
     };
     if (total <= 0) return _phase == SetPhase.done ? 1 : 0;
     return ((total - _left) / total).clamp(0.0, 1.0);
@@ -202,18 +221,23 @@ class SetSession {
   List<SetCue> start() {
     if (_running) return const [];
     if (_phase == SetPhase.idle || _phase == SetPhase.done) {
-      _phase = SetPhase.gettingReady;
+      // Starts in the briefing gate, not in a countdown: nothing counts down
+      // until the person confirms with [confirmReady].
+      _phase = SetPhase.briefing;
       _setNumber = 0;
-      _left = plan.readySeconds;
-      // A zero-length ready phase would otherwise sit at 0 for a whole second
-      // before the first work tick.
-      if (_left <= 0) {
-        _running = true;
-        return _beginSet();
-      }
+      _left = 0;
     }
     _running = true;
     return const [];
+  }
+
+  /// "I am ready": leaves the briefing gate and starts the short countdown.
+  /// Also resumes a paused session, so the button works in either state. A
+  /// no-op outside the briefing, so a double tap cannot skip anything.
+  List<SetCue> confirmReady() {
+    if (_phase != SetPhase.briefing) return const [];
+    _running = true;
+    return _advance();
   }
 
   void pause() => _running = false;
@@ -234,12 +258,30 @@ class SetSession {
     return _advance();
   }
 
+  /// "Done" on a repetition based set: ends the work phase and moves to rest
+  /// (or finishes). Unlike [skip] it also works while paused, because the
+  /// person finishing their reps does not depend on the clock; the session
+  /// resumes so the rest countdown runs. A no-op outside a rep based work
+  /// phase.
+  List<SetCue> finishRepSet() {
+    if (_phase != SetPhase.work || !plan.isRepBased) return const [];
+    _running = true;
+    _left = 0;
+    return _advance();
+  }
+
   /// One second of clock. Returns the cues for this instant.
   ///
   /// Ticking a paused or finished session does nothing, so a Timer that
   /// outlives the page cannot quietly drive it to completion.
   SetTick tick() {
-    if (!_running || _phase == SetPhase.idle || _phase == SetPhase.done) {
+    if (!_running ||
+        _phase == SetPhase.idle ||
+        _phase == SetPhase.done ||
+        // The gate waits for the person, and a rep based set waits for Done:
+        // neither has a clock to run down.
+        _phase == SetPhase.briefing ||
+        (_phase == SetPhase.work && plan.isRepBased)) {
       return SetTick(
         phase: _phase,
         setNumber: _setNumber,
@@ -270,13 +312,20 @@ class SetSession {
   List<SetCue> _beginSet() {
     _setNumber += 1;
     _phase = SetPhase.work;
-    _left = plan.workSeconds;
+    _left = plan.isRepBased ? 0 : plan.workSeconds;
     return [SetCue.startGong];
   }
 
   /// Moves out of whatever phase just ran out.
   List<SetCue> _advance() {
     switch (_phase) {
+      case SetPhase.briefing:
+        _phase = SetPhase.gettingReady;
+        _left = plan.readySeconds;
+        // A zero-length countdown would otherwise sit at 0 for a whole second
+        // before the first work tick.
+        return _left <= 0 ? _beginSet() : const [];
+
       case SetPhase.gettingReady:
         return _beginSet();
 

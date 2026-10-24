@@ -50,6 +50,7 @@ void main() {
       fakeAsync((async) {
         final h = harness();
         h.container.read(setTimerProvider.notifier).start(quick);
+        h.container.read(setTimerProvider.notifier).confirmReady();
         expect(h.container.read(setTimerProvider).phase, SetPhase.gettingReady);
 
         async.elapse(const Duration(seconds: 1));
@@ -65,6 +66,7 @@ void main() {
       fakeAsync((async) {
         final h = harness();
         h.container.read(setTimerProvider.notifier).start(quick);
+        h.container.read(setTimerProvider.notifier).confirmReady();
         async.elapse(const Duration(seconds: 60));
         expect(h.container.read(setTimerProvider).isDone, isTrue);
 
@@ -80,6 +82,7 @@ void main() {
         final h = harness();
         final ctl = h.container.read(setTimerProvider.notifier);
         ctl.start(quick);
+        ctl.confirmReady();
         async.elapse(const Duration(seconds: 2));
         final left = h.container.read(setTimerProvider).secondsLeft;
 
@@ -100,6 +103,7 @@ void main() {
         final h = harness();
         final ctl = h.container.read(setTimerProvider.notifier);
         ctl.start(quick);
+        ctl.confirmReady();
         async.elapse(const Duration(seconds: 2));
         ctl.reset();
         final count = h.player.played.length;
@@ -120,6 +124,7 @@ void main() {
               .overrideWithValue(MockVoiceCoach(resolveText: (k) => k.name)),
         ]);
         c.read(setTimerProvider.notifier).start(quick);
+        c.read(setTimerProvider.notifier).confirmReady();
         async.elapse(const Duration(seconds: 2));
         c.dispose();
         final count = player.played.length;
@@ -134,6 +139,7 @@ void main() {
       fakeAsync((async) {
         final h = harness();
         h.container.read(setTimerProvider.notifier).start(quick);
+        h.container.read(setTimerProvider.notifier).confirmReady();
         async.elapse(const Duration(seconds: 60));
         expect(h.player.played.where((c) => c == SetCue.startGong).length, 2);
         expect(h.player.played.where((c) => c == SetCue.endGong).length, 2);
@@ -146,6 +152,7 @@ void main() {
         final h = harness();
         h.container.read(setCuesMutedProvider.notifier).state = true;
         h.container.read(setTimerProvider.notifier).start(quick);
+        h.container.read(setTimerProvider.notifier).confirmReady();
         async.elapse(const Duration(seconds: 60));
         expect(h.player.played, isEmpty);
         expect(h.container.read(setTimerProvider).isDone, isTrue,
@@ -230,6 +237,7 @@ void main() {
       fakeAsync((async) {
         final h = harness();
         h.container.read(setTimerProvider.notifier).start(quick);
+        h.container.read(setTimerProvider.notifier).confirmReady();
         async.elapse(const Duration(seconds: 1));
         expect(h.player.played, isNotEmpty);
         expect(h.player.stopCalls, 0);

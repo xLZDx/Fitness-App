@@ -34,6 +34,7 @@ void main() {
       const plan = SetPlan(
           sets: 3, workSeconds: 30, restSeconds: 10, readySeconds: 5, cueLead: 1);
       c.read(setTimerProvider.notifier).start(plan);
+      c.read(setTimerProvider.notifier).confirmReady(); // leave the briefing gate
       c.read(restTimerProvider.notifier).start(const Duration(seconds: 60));
       async.elapse(const Duration(seconds: 2));
       final setBefore = c.read(setTimerProvider);

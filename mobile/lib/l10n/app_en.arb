@@ -2098,6 +2098,56 @@
       }
     }
   },
+  "timerImReady": "I am ready",
+  "timerListen": "listen",
+  "timerRepsDone": "Done",
+  "timerRepsCount": "{arg0} reps",
+  "timerAtLoad": "at {arg0} kg",
+  "timerPlanSummaryReps": "{arg0} sets · {arg1} reps · {arg2} s rest",
+  "timerSpokenIntroReps": "{arg0}. {arg1} sets of {arg2} repetitions, {arg3} seconds rest between them.",
+  "@timerRepsCount": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerAtLoad": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      }
+    }
+  },
+  "@timerPlanSummaryReps": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerSpokenIntroReps": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      },
+      "arg3": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptionPeriodMonthly": "Monthly",
   "subscriptionPeriodAnnual": "Annual",
   "subscriptionPeriodFamily2": "Family · 2 seats",

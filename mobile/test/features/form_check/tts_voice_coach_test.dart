@@ -90,6 +90,76 @@ void main() {
     expect(calls.map((c) => c.method), contains('speak'));
   });
 
+  group('sayAndWait', () {
+    List<String> methods() => calls.map((c) => c.method).toList();
+
+    test('waits for completion only around the one call, then restores',
+        () async {
+      final coach = TtsVoiceCoach();
+
+      await coach.sayAndWait('  Squat. Two sets.  ');
+
+      final m = methods();
+      final on = m.indexOf('awaitSpeakCompletion');
+      final speak = m.indexOf('speak');
+      final off = m.lastIndexOf('awaitSpeakCompletion');
+      expect(on, greaterThanOrEqualTo(0));
+      expect(speak, greaterThan(on), reason: 'wait is switched on before speak');
+      expect(off, greaterThan(speak), reason: 'and restored after');
+      final args = calls
+          .where((c) => c.method == 'awaitSpeakCompletion')
+          .map((c) => c.arguments)
+          .toList();
+      expect(args, [true, false]);
+      expect(calls.firstWhere((c) => c.method == 'speak').arguments,
+          'Squat. Two sets.',
+          reason: 'text is trimmed');
+      expect(coach.lastErrorMessage, isNull);
+    });
+
+    test('utter stays fire-and-forget: it never touches awaitSpeakCompletion',
+        () async {
+      final coach = TtsVoiceCoach();
+      await coach.utter('присед');
+      expect(methods(), isNot(contains('awaitSpeakCompletion')));
+    });
+
+    test('a muted coach does nothing at all', () async {
+      final coach = TtsVoiceCoach()..setMuted(true);
+      await coach.sayAndWait('Squat.');
+      expect(calls, isEmpty);
+    });
+
+    test('blank text does nothing', () async {
+      final coach = TtsVoiceCoach();
+      await coach.sayAndWait('   ');
+      expect(calls, isEmpty);
+    });
+
+    test('an engine failure is recorded, completion mode is still restored',
+        () async {
+      speakThrows = true;
+      final coach = TtsVoiceCoach();
+
+      await coach.sayAndWait('Squat.');
+
+      expect(coach.lastErrorMessage, contains('engine busy'));
+      final args = calls
+          .where((c) => c.method == 'awaitSpeakCompletion')
+          .map((c) => c.arguments)
+          .toList();
+      expect(args, [true, false],
+          reason: 'a failed wait must not leave later cues blocking');
+    });
+
+    test('no installed voice completes without throwing', () async {
+      languageAvailable = false;
+      final coach = TtsVoiceCoach();
+      await coach.sayAndWait('Squat.');
+      expect(coach.voiceUnavailable, isTrue);
+    });
+  });
+
   test('stopSpeaking failure is recorded without throwing', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
