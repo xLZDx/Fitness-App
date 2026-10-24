@@ -16,3 +16,10 @@ No Firestore schema or programme builder change. Only the first completion of a 
 
 ## Verification state
 Test agent: 39 files run; all passed except app_shortcuts_test.dart (1 failure), which fails identically on a clean master. Not verified: a real TTS engine, localized_tts_voice_coach.dart, Russian reps-line wording, analyzer, a device; reps of a loaded move logged without a weight are not recorded.
+
+## Addendum: fixes found on a real phone (same PR)
+The Samsung S8 run confirmed the ready gate, the rep-based set (weight dialog, Done, rest, second set without a new gate) and the timed stretch. It also found three defects, fixed here:
+- The set timer is one global session, so the page of another exercise showed the previous exercise's finished state. SetTimerState now carries exerciseId; the card renders idle when the running session belongs to another exercise (the running session and the dock strip are untouched), and starting a different exercise resets the old session. A null id keeps the old behaviour.
+- The "Пропустить" label wrapped into two lines; it now scales down inside a FittedBox.
+- During rest the header showed the finished set number; it now shows the next one.
+- Tests (test agent): 48 + 34 controller and card tests plus 38 other files rerun; all passed except app_shortcuts_test.dart, which fails identically on a clean master. Known layout limit: the card header overflows below about 340 px width in Russian (360 px is clean; the S8 is 360 dp). A legacy start with a null id clears the stored exercise id (cards always pass an id).

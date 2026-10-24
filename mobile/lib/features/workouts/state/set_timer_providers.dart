@@ -135,7 +135,13 @@ class SetTimerState {
     required this.progress,
     required this.running,
     this.introSpeaking = false,
+    this.exerciseId,
   });
+
+  /// The exercise the running session belongs to; null when unknown (callers
+  /// that start without an id) or idle. Lets a page show its own idle card
+  /// instead of another exercise's session.
+  final String? exerciseId;
 
   final SetPhase phase;
 
@@ -180,6 +186,9 @@ class SetTimerController extends Notifier<SetTimerState> {
   /// completion of an abandoned intro cannot touch the current state.
   int _introToken = 0;
   bool _disposed = false;
+
+  /// Exercise the current session was started for.
+  String? _exerciseId;
 
   @override
   SetTimerState build() {
@@ -228,7 +237,14 @@ class SetTimerController extends Notifier<SetTimerState> {
   /// on) is spoken IN FULL with no clock running and no cue playing, then the
   /// person confirms with [confirmReady]. Only that starts the short
   /// countdown. Resuming after a pause does not repeat the intro.
-  void start(SetPlan plan, {String? spokenIntro}) {
+  ///
+  /// Starting for a different [exerciseId] than the running session's replaces
+  /// that session (it is reset first), even if the plans happen to be equal.
+  void start(SetPlan plan, {String? spokenIntro, String? exerciseId}) {
+    if (exerciseId != null && _session != null && _exerciseId != exerciseId) {
+      reset();
+    }
+    _exerciseId = exerciseId;
     final session = _session ??= SetSession(plan);
     if (session.plan != plan || session.isFinished) {
       _session = SetSession(plan);
@@ -369,6 +385,7 @@ class SetTimerController extends Notifier<SetTimerState> {
       progress: s.phaseProgress,
       running: s.isRunning,
       introSpeaking: _introSpeaking,
+      exerciseId: _exerciseId,
     );
   }
 }

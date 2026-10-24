@@ -11,6 +11,8 @@ import 'package:fitness_app/features/form_check/data/voice_coach.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 import 'package:fitness_app/features/workouts/data/cue_player.dart';
 import 'package:fitness_app/features/workouts/data/set_session.dart';
+import 'package:fitness_app/features/workouts/state/active_session_status.dart';
+import 'package:fitness_app/features/workouts/state/rest_timer_providers.dart';
 import 'package:fitness_app/features/workouts/state/set_timer_providers.dart';
 import 'package:fitness_app/features/workouts/widgets/set_timer_card.dart';
 
@@ -457,6 +459,98 @@ void main() {
       await t.tap(find.byKey(_done));
       await t.pump();
       expect(h.c.read(setLoadProvider('sq')), (weightKg: 40.0, reps: 8));
+    });
+  });
+
+  group('another exercise page and the rest header', () {
+    tw('A running: the page for B shows idle, the dock state still shows A',
+        (t) async {
+      final h = await _pump(t, _ex(id: 'B'), voiceOn: false);
+      final plan = h.c.read(setPlanProvider(_ex(id: 'B')));
+      final ctl = h.c.read(setTimerProvider.notifier);
+      ctl.start(plan, exerciseId: 'A');
+      ctl.confirmReady();
+      await t.pump(const Duration(seconds: 3));
+      expect(_st(h).phase, SetPhase.work);
+
+      expect(find.text('Start'), findsOneWidget);
+      expect(find.byKey(_done), findsNothing);
+      expect(find.byKey(_ready), findsNothing);
+      expect(find.byKey(_stop), findsNothing);
+
+      final raw = _st(h);
+      expect(raw.exerciseId, 'A');
+      expect(raw.running, isTrue);
+      expect(raw.phase, SetPhase.work);
+      final status = deriveActiveSessionStatus(
+          setTimer: raw, rest: RestTimerState.idle, now: DateTime.utc(2026));
+      expect(status, isNotNull);
+      expect(status!.state, ActiveSessionState.running);
+    });
+
+    tw('Start on B replaces A, including when the plans are equal', (t) async {
+      final h = await _pump(t, _ex(id: 'B'), voiceOn: false);
+      final plan = h.c.read(setPlanProvider(_ex(id: 'B')));
+      final ctl = h.c.read(setTimerProvider.notifier);
+      ctl.start(plan, exerciseId: 'A');
+      ctl.confirmReady();
+      await t.pump(const Duration(seconds: 3));
+      expect(_st(h).phase, SetPhase.work);
+
+      await _tapStart(t);
+      expect(_st(h).exerciseId, 'B');
+      expect(_st(h).phase, SetPhase.briefing);
+      expect(find.byKey(_ready), findsOneWidget);
+    });
+
+    tw('the page of the running exercise shows its own session', (t) async {
+      final h = await _pump(t, _ex(id: 'B'), voiceOn: false);
+      await _tapStart(t);
+      expect(_st(h).exerciseId, 'B', reason: 'the card always passes its id');
+      expect(find.byKey(_ready), findsOneWidget);
+    });
+
+    tw('header shows the NEXT set number during rest', (t) async {
+      final h = await _pump(t, _ex(), voiceOn: false);
+      await _tapStart(t);
+      await t.tap(find.byKey(_ready));
+      await t.pump();
+      await t.pump(const Duration(seconds: 3));
+      expect(find.text('Set 1 of 3'), findsOneWidget, reason: 'during work');
+      await t.tap(find.byKey(_done));
+      await t.pump();
+      expect(_st(h).phase, SetPhase.rest);
+      expect(find.text('Set 2 of 3'), findsOneWidget);
+      expect(find.text('Set 1 of 3'), findsNothing);
+    });
+
+    tw('Russian header during rest is "Подход 2 из 3"', (t) async {
+      await _pump(t, _ex(), voiceOn: false, locale: const Locale('ru'));
+      await _tapStart(t);
+      await t.tap(find.byKey(_ready));
+      await t.pump();
+      await t.pump(const Duration(seconds: 3));
+      await t.tap(find.byKey(_done));
+      await t.pump();
+      expect(find.text('Подход 2 из 3'), findsOneWidget);
+    });
+
+    tw('the Russian skip label stays on one line at a narrow width',
+        (t) async {
+      t.view.physicalSize = const Size(360, 900);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      await _pump(t, _ex(), voiceOn: false, locale: const Locale('ru'));
+      await _tapStart(t);
+      final label = find.text('Пропустить');
+      expect(label, findsOneWidget);
+      expect(find.ancestor(of: label, matching: find.byType(FittedBox)),
+          findsOneWidget);
+      final style = t.widget<Text>(label).style;
+      final twoLines = (style?.fontSize ?? 14) * 2;
+      expect(t.getSize(label).height, lessThan(twoLines),
+          reason: 'a wrapped label would be at least two lines tall');
+      expect(t.takeException(), isNull);
     });
   });
 

@@ -100,7 +100,14 @@ class SetTimerCard extends ConsumerWidget {
     final colors = theme.colors;
     final l10n = AppLocalizations.of(context);
     final plan = ref.watch(setPlanProvider(exercise));
-    final timer = ref.watch(setTimerProvider);
+    final rawTimer = ref.watch(setTimerProvider);
+    // The timer provider is global. A session that belongs to another exercise
+    // keeps running (the dock strip still shows it) but this page renders its
+    // own idle card; Start here replaces that session.
+    final timer = rawTimer.exerciseId == null ||
+            rawTimer.exerciseId == exercise.id
+        ? rawTimer
+        : SetTimerState.idle;
     final controller = ref.read(setTimerProvider.notifier);
 
     // Reconciled onto AppSemanticColors (GPT-PM, 2026-08-30 gate decision:
@@ -154,7 +161,12 @@ class SetTimerCard extends ConsumerWidget {
                     : l10n.timerPlanSummary(
                         plan.sets, plan.workSeconds, plan.restSeconds))
                 : l10n.timerSetOf(
-                    timer.setNumber == 0 ? 1 : timer.setNumber, plan.sets),
+                    // During rest the finished set is behind us: show the
+                    // one that is coming.
+                    timer.phase == SetPhase.rest
+                        ? (timer.setNumber + 1).clamp(1, plan.sets)
+                        : (timer.setNumber == 0 ? 1 : timer.setNumber),
+                    plan.sets),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colors.textSecondary,
             ),
@@ -298,6 +310,7 @@ class SetTimerCard extends ConsumerWidget {
                     controller.start(
                       plan,
                       spokenIntro: fresh ? _intro(context, plan) : null,
+                      exerciseId: exercise.id,
                     );
                   },
                 ),
@@ -432,7 +445,11 @@ class _Secondary extends StatelessWidget {
             children: [
               Icon(icon, size: 20),
               const SizedBox(height: 2),
-              Text(label, style: theme.textTheme.labelSmall),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label,
+                    maxLines: 1, style: theme.textTheme.labelSmall),
+              ),
             ],
           ),
         ),

@@ -59462,3 +59462,7 @@ Decision: treat a database whose only table is android_metadata as new (create t
 ## 2026-10-24 - Commit: feat(v1): add a ready gate before the set and rep-based sets
 
 Decision (operator reports, 2026-10-24): the timer starts only after the spoken instruction ends and the person taps ready (3 s countdown); strength moves are rep-based (reps and load), only inherently timed moves (holds, cardio, stretching, yoga) keep the timer. Programme-level prescriptions and a persisted last-load are a later step. Evidence: core/changes/2026-10-24-v1-set-ready-gate-and-rep-sets.md.
+
+## 2026-10-24 - Commit: fix(v1): scope the set timer card to its exercise and polish the timer header
+
+Decision: keep the single global timer session (one active workout at a time, dock strip unchanged) and scope only the card display by exercise id; starting another exercise replaces the running session. Evidence: core/changes/2026-10-24-v1-set-ready-gate-and-rep-sets.md (addendum); S8 run.

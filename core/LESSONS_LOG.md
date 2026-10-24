@@ -1920,3 +1920,9 @@ Facts: the first version of Done in a rep set did nothing while the session was 
 Root cause: I reused an existing transition without checking its guard for the new state.
 Missed by: author; caught by the test agent.
 Rule next time: when reusing a state transition for a new mode, list its guards and test the paused and finished states.
+
+## 2026-10-24 - Commit: fix(v1): scope the set timer card to its exercise and polish the timer header
+Kind: SUCCESS
+Facts: a real-phone run on the S8 found the cross-exercise timer state, a wrapped label and a stale set number within one session, none of which the unit tests had covered.
+Why it worked: the phone was driven through the whole flow by an agent, including a second exercise and a second set, with screenshots kept as evidence.
+Rule next time: run the new flow on the device through two exercises and two sets before merge; global providers need an identity check in every consumer.

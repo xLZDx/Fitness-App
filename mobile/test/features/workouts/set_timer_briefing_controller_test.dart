@@ -676,6 +676,81 @@ void main() {
       });
     });
 
+    test('state carries the exercise id of the running session', () {
+      fakeAsync((async) {
+        final h = _harness();
+        expect(_s(h).exerciseId, isNull);
+        h.ctl.start(_plan, exerciseId: 'A');
+        expect(_s(h).exerciseId, 'A');
+        h.ctl.reset();
+        expect(_s(h).exerciseId, isNull);
+      });
+    });
+
+    test('Start for B replaces A even with an EQUAL plan', () {
+      fakeAsync((async) {
+        final h = _harness();
+        h.ctl.start(_plan, exerciseId: 'A');
+        h.ctl.confirmReady();
+        async.elapse(const Duration(seconds: 3));
+        expect(_s(h).phase, SetPhase.work);
+        expect(_s(h).setNumber, 1);
+
+        h.ctl.start(_plan, exerciseId: 'B');
+        expect(_s(h).exerciseId, 'B');
+        expect(_s(h).phase, SetPhase.briefing,
+            reason: 'a fresh session, not A resumed');
+        expect(_s(h).setNumber, 0);
+        async.elapse(const Duration(seconds: 30));
+        expect(_s(h).phase, SetPhase.briefing, reason: 'A clock is gone');
+      });
+    });
+
+    test('Start for the same exercise resumes instead of resetting', () {
+      fakeAsync((async) {
+        final h = _harness();
+        h.ctl.start(_plan, exerciseId: 'A');
+        h.ctl.confirmReady();
+        async.elapse(const Duration(seconds: 3));
+        h.ctl.pause();
+        h.ctl.start(_plan, exerciseId: 'A');
+        expect(_s(h).phase, SetPhase.work);
+        expect(_s(h).setNumber, 1);
+        expect(_s(h).running, isTrue);
+      });
+    });
+
+    test('a null id keeps the legacy behaviour (resume, no reset)', () {
+      fakeAsync((async) {
+        final h = _harness();
+        h.ctl.start(_plan, exerciseId: 'A');
+        h.ctl.confirmReady();
+        async.elapse(const Duration(seconds: 3));
+        h.ctl.pause();
+        h.ctl.start(_plan);
+        expect(_s(h).phase, SetPhase.work);
+        expect(_s(h).setNumber, 1);
+      });
+    });
+
+    test('replacing A while it is speaking cannot leak into B', () {
+      fakeAsync((async) {
+        final h = _harness();
+        h.ctl.start(_plan, spokenIntro: 'A.', exerciseId: 'A');
+        async.flushMicrotasks();
+        h.ctl.start(_plan, spokenIntro: 'B.', exerciseId: 'B');
+        async.flushMicrotasks();
+        expect(h.voice.waited, ['A.', 'B.']);
+        expect(_s(h).introSpeaking, isTrue);
+        h.voice.speeches.first.complete();
+        async.flushMicrotasks();
+        expect(_s(h).introSpeaking, isTrue, reason: 'stale A completion');
+        h.voice.speeches.last.complete();
+        async.flushMicrotasks();
+        expect(_s(h).introSpeaking, isFalse);
+      });
+    });
+
     test('Done while paused resumes into rest and the rest clock runs', () {
       fakeAsync((async) {
         final h = _harness();
