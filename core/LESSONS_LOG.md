@@ -1926,3 +1926,16 @@ Kind: SUCCESS
 Facts: a real-phone run on the S8 found the cross-exercise timer state, a wrapped label and a stale set number within one session, none of which the unit tests had covered.
 Why it worked: the phone was driven through the whole flow by an agent, including a second exercise and a second set, with screenshots kept as evidence.
 Rule next time: run the new flow on the device through two exercises and two sets before merge; global providers need an identity check in every consumer.
+## 2026-10-24 - Commit: feat(v1): rank recommendations and programmes by training context
+Kind: SHORTCOMING
+Facts: the first version treated any item with an equipment id as a machine; 1385 of 1887 catalogue rows have one, so dumbbells and bands were punished outdoors. The test agent found it by running the real catalogue.
+Root cause: I wrote the classifier from field names without checking the value distribution in the data.
+Missed by: author; caught by the test agent's real-catalogue tests.
+Rule next time: before classifying on a field, count its real values; give every classifier at least one test on the real catalogue.
+
+## 2026-10-24 - Commit: feat(v1): apply the training context and muscle diversity to the adaptive plan
+Kind: SHORTCOMING
+Facts: the first ranking change covered Home recommendations and programmes, but the operator's "plan for today" screen is a third generator (AI planner) and stayed identical across contexts; the real-phone test found it. The first planner result was also four hyperextension-bench items because no diversity rule existed.
+Root cause: I scoped the change from a code read of two surfaces instead of listing every generator that consumes the training context.
+Missed by: author, reviewers; caught by the on-device test and the real-catalogue test.
+Rule next time: grep every consumer of the shared input (here narrowToTrainingContext) before declaring a ranking change complete; judge list quality on real data, not only that lists differ.

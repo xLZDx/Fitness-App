@@ -2,7 +2,8 @@ import '../../equipment/data/equipment_models.dart';
 import '../../personalisation/data/recommendation_hints.dart';
 import '../../profile/data/profile_models.dart';
 import '../../safety/data/age_policy.dart';
-import '../../training_context/data/training_context.dart' show TrainingContext;
+import '../../training_context/data/training_context.dart'
+    show TrainingContext, contextAffinity, equipmentAccessFor;
 import '../../workouts/data/workout_log.dart';
 
 /// Why an exercise was suggested.
@@ -105,6 +106,10 @@ const _cardioEquipment = {'treadmill', 'rowing_machine', 'exercise_bike'};
 /// session is the fastest way for suggestions to feel dumb.
 const _justDoneWindow = Duration(hours: 48);
 
+/// Scale applied to `contextAffinity` (range about -4..+5) before it joins the
+/// integer-valued goal and history points.
+const _contextWeight = 0.5;
+
 /// Muscles trained inside this window count as "covered this week".
 const _freshnessWindow = Duration(days: 7);
 
@@ -161,6 +166,9 @@ List<WorkoutSuggestion> buildSuggestions({
   final senior = profile != null &&
       ageBandForPersonal(profile.personal, at.year).needsBalanceAndMobility;
   final targetMinutes = _targetMinutes(profile?.motivation.preferredDuration);
+  final contextAccess = trainingContext == null
+      ? null
+      : equipmentAccessFor(trainingContext, profile?.equipment);
 
   final scored = <_Scored>[];
   for (var i = 0; i < candidates.length; i++) {
@@ -176,7 +184,7 @@ List<WorkoutSuggestion> buildSuggestions({
         .where((m) => !trainedMuscles.contains(m))
         .toList(growable: false);
 
-    var score = 0;
+    var score = 0.0;
     SuggestionReason? reason;
     String? reasonMuscle;
 
@@ -207,6 +215,14 @@ List<WorkoutSuggestion> buildSuggestions({
         (ex.durationMinutes - targetMinutes).abs() <= 4) {
       score += 1;
       reason ??= SuggestionReason.fitsSessionLength;
+    }
+    // Context preference: an additive bonus applied AFTER the hard filters
+    // (candidates are already narrowed and the beginner ceiling is above), so
+    // it only reorders what is allowed. Halved so goal and history signals
+    // (worth 1-3 each) still matter; the pool order stays the final tie-break.
+    if (trainingContext != null) {
+      score += _contextWeight *
+          contextAffinity(ex, trainingContext, contextAccess);
     }
     // Removed: `reason ??= 'Safe with the injuries you listed'`.
     //
@@ -299,7 +315,7 @@ class _Scored {
   });
 
   final ExerciseItem exercise;
-  final int score;
+  final double score;
   final int order;
   final SuggestionReason reason;
   final String? reasonMuscle;

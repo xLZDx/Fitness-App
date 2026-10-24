@@ -8,7 +8,8 @@ import '../../personalisation/data/volume_ledger.dart';
 import '../../recovery/data/deload_detector.dart';
 import '../../safety/data/age_policy.dart';
 import '../../safety/data/eligibility.dart';
-import '../../training_context/data/training_context.dart' show TrainingContext;
+import '../../training_context/data/training_context.dart'
+    show TrainingContext, contextAffinity;
 import 'workout_plan.dart';
 
 /// Pure plan-builder. Combines:
@@ -89,20 +90,30 @@ PlanOutcome buildPlan({
           deficit,
         ),
         i: i,
+        // How well the item suits the stated training context (0 without
+        // one). Only a tie-break below: the deficit stays the primary key, so
+        // the rationale about the user's history remains true.
+        affinity: contextAffinity(safe[i], trainingContext, null),
       ),
   ]..sort((a, b) {
-      // Unattributed exercises last, in catalogue order. 182 rows carry no
-      // muscle tag; when they scored mid-range they tied with every untrained
-      // muscle and a greedy top-N could fill a whole session from them while
-      // the rationale claimed the plan came from the user's own history.
+      // Unattributed exercises last. 182 rows carry no muscle tag; when they
+      // scored mid-range they tied with every untrained muscle and a greedy
+      // top-N could fill a whole session from them while the rationale
+      // claimed the plan came from the user's own history.
       if (a.priority == null || b.priority == null) {
-        if (a.priority == null && b.priority == null) return a.i.compareTo(b.i);
+        if (a.priority == null && b.priority == null) {
+          final byAffinity = b.affinity.compareTo(a.affinity);
+          return byAffinity != 0 ? byAffinity : a.i.compareTo(b.i);
+        }
         return a.priority == null ? 1 : -1;
       }
       final byPriority = b.priority!.compareTo(a.priority!);
-      // Explicit index tie-break: `List.sort` is not stable in Dart, and the
+      if (byPriority != 0) return byPriority;
+      // Equal deficit: the training context decides (best fit first), then the
+      // explicit index tie-break: `List.sort` is not stable in Dart, and the
       // comment here used to claim novelty was "broken by insertion order".
-      return byPriority != 0 ? byPriority : a.i.compareTo(b.i);
+      final byAffinity = b.affinity.compareTo(a.affinity);
+      return byAffinity != 0 ? byAffinity : a.i.compareTo(b.i);
     });
 
   // 3. Decide the factor — recovery + cycle self-report + the screening
@@ -192,6 +203,22 @@ PlanOutcome buildPlan({
   }
   if (hints.wantsConditioning) {
     if (reserve(isConditioningExercise) != null) mixes.add(GoalMix.conditioning);
+  }
+  // Diversity: a first pass takes the best-ranked exercise per distinct first
+  // primary muscle (an untagged exercise is its own group), counting muscles
+  // already covered by the reserved items; only then are the remaining slots
+  // filled from the rest in the same sorted order. The sort above (deficit
+  // first) still decides which muscle and which exercise comes first.
+  String muscleGroup(ExerciseItem e) =>
+      e.primaryMuscles.isEmpty ? 'id:${e.id}' : e.primaryMuscles.first;
+  final usedGroups = <String>{
+    for (final i in chosen) muscleGroup(scored[i].ex),
+  };
+  for (var i = 0; i < scored.length && chosen.length < 6; i++) {
+    if (chosen.contains(i) || !fits(scored[i].ex)) continue;
+    if (!usedGroups.add(muscleGroup(scored[i].ex))) continue;
+    chosen.add(i);
+    minutes += scored[i].ex.durationMinutes;
   }
   for (var i = 0; i < scored.length && chosen.length < 6; i++) {
     if (chosen.contains(i) || !fits(scored[i].ex)) continue;

@@ -59466,3 +59466,10 @@ Decision (operator reports, 2026-10-24): the timer starts only after the spoken 
 ## 2026-10-24 - Commit: fix(v1): scope the set timer card to its exercise and polish the timer header
 
 Decision: keep the single global timer session (one active workout at a time, dock strip unchanged) and scope only the card display by exercise id; starting another exercise replaces the running session. Evidence: core/changes/2026-10-24-v1-set-ready-gate-and-rep-sets.md (addendum); S8 run.
+## 2026-10-24 - Commit: feat(v1): rank recommendations and programmes by training context
+
+Decision: add a shared affinity score instead of new per-context programme templates (smallest change that makes gym, home and outdoors differ); equipment kind is decided by label first, with an explicit machine-id fallback derived from the catalogue. Evidence: core/changes/2026-10-24-v1-context-aware-ranking.md; 83 new tests passed.
+
+## 2026-10-24 - Commit: feat(v1): apply the training context and muscle diversity to the adaptive plan
+
+Decision: deficit stays the primary order in the adaptive plan (its stated rationale), context affinity is a tie-break, and a per-muscle diversity pass prevents one muscle filling every slot; the hyperextension bench no longer counts as a gym machine. Evidence: core/changes/2026-10-24-v1-context-aware-ranking.md (addendum); on-device check on the S8.
