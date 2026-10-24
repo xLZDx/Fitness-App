@@ -133,6 +133,33 @@ class TtsVoiceCoach extends GatedVoiceCoach {
     }
   }
 
+  /// Speaks [text] and completes when the engine reports it finished.
+  ///
+  /// `awaitSpeakCompletion` is switched on only around this one call and
+  /// restored afterwards, so the form coach's fire-and-forget [utter] keeps
+  /// its non-blocking behaviour. A `stop()` during the wait makes the engine
+  /// end the utterance; the caller's own timeout covers an engine that does
+  /// not report completion.
+  @override
+  Future<void> sayAndWait(String text) async {
+    if (muted) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    try {
+      await _ensureConfigured();
+      await _tts.awaitSpeakCompletion(true);
+      await _tts.speak(trimmed);
+    } catch (e, st) {
+      _recordError('sayAndWait', e, st);
+    } finally {
+      try {
+        await _tts.awaitSpeakCompletion(false);
+      } catch (_) {
+        // Best effort: the next utter() simply waits too if this fails.
+      }
+    }
+  }
+
   @override
   Future<void> stopSpeaking() async {
     try {

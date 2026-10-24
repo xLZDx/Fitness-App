@@ -170,6 +170,7 @@ void main() {
         clock: clock,
         overrides: realTimerOverrides(clock));
     f.container.read(setTimerProvider.notifier).start(kTestSetPlan);
+    f.container.read(setTimerProvider.notifier).confirmReady();
     await t.pump(const Duration(seconds: 4));
     // Focus the Progress rail destination (index 3) by Tab.
     await _tabTo(t, () => FocusManager.instance.primaryFocus?.debugLabel == 'shell.destination.3');

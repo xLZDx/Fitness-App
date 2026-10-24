@@ -1913,3 +1913,10 @@ Facts: on the operator's phone the offline queue never opened ("no such table: m
 Root cause: the schema check assumed an empty table list means a new database; the store was developed and tested only on the desktop driver and merged before any on-device run.
 Missed by: author, tests (wrong platform), reviewers; caught by the operator on a real phone.
 Rule next time: a storage layer needs one run on the real target platform driver before it is wired in; list platform-created system tables explicitly.
+
+## 2026-10-24 - Commit: feat(v1): add a ready gate before the set and rep-based sets
+Kind: SHORTCOMING
+Facts: the first version of Done in a rep set did nothing while the session was paused (it reused skip(), which returns early when paused); the loaded-move capture also suppressed the later weight question. The test agent found both.
+Root cause: I reused an existing transition without checking its guard for the new state.
+Missed by: author; caught by the test agent.
+Rule next time: when reusing a state transition for a new mode, list its guards and test the paused and finished states.

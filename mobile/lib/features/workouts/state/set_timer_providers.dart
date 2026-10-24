@@ -8,7 +8,9 @@ import '../../form_check/state/form_check_providers.dart';
 import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/cue_player.dart';
+import '../../form_check/data/voice_coach.dart' show GatedVoiceCoach;
 import '../data/set_capture.dart';
+import '../data/set_prescription.dart';
 import '../data/set_session.dart';
 
 /// Where cues are played. Overridden in tests with [SilentCuePlayer].
@@ -61,7 +63,18 @@ final setLoadProvider = StateProvider.family<SetCapture?, String>((ref, _) {
 /// sets than a bodyweight hold. That distinction is read off `equipmentId`
 /// rather than a list of exercise names, so it cannot drift out of step with
 /// the catalog.
-SetPlan planFor(ExerciseItem? exercise, FitnessTier? tier) {
+///
+/// Repetition based unless the exercise is inherently timed
+/// ([exerciseIsTimed]); with no exercise the plan stays timed, as before.
+/// [capturedReps] and [loadKg] are what the person already said through the
+/// capture sheet; without them reps default by tier ([defaultTargetReps]) and
+/// the load stays unset.
+SetPlan planFor(
+  ExerciseItem? exercise,
+  FitnessTier? tier, {
+  double? loadKg,
+  int? capturedReps,
+}) {
   var plan = switch (tier) {
     // `never` takes the beginner plan rather than something gentler still.
     // There are three plans, and inventing a fourth for a tier that has never
@@ -89,6 +102,15 @@ SetPlan planFor(ExerciseItem? exercise, FitnessTier? tier) {
       restSeconds: plan.restSeconds < 60 ? 90 : plan.restSeconds,
     );
   }
+  if (exercise != null && !exerciseIsTimed(exercise)) {
+    plan = plan.copyWith(
+      prescription: SetPrescription(
+        mode: SetMode.reps,
+        targetReps: capturedReps ?? defaultTargetReps(tier),
+        loadKg: loadKg,
+      ),
+    );
+  }
   return plan;
 }
 
@@ -96,7 +118,11 @@ SetPlan planFor(ExerciseItem? exercise, FitnessTier? tier) {
 final setPlanProvider = Provider.family<SetPlan, ExerciseItem?>((ref, ex) {
   final tier =
       ref.watch(currentProfileProvider).valueOrNull?.level.tier;
-  return planFor(ex, tier);
+  // The person's own answer for this exercise (this session) pre-fills the
+  // load and reps; nothing is persisted across sessions here.
+  final captured = ex == null ? null : ref.watch(setLoadProvider(ex.id));
+  return planFor(ex, tier,
+      loadKg: captured?.weightKg, capturedReps: captured?.reps);
 });
 
 /// Live state of a running set. Null until the user starts one.
@@ -108,9 +134,14 @@ class SetTimerState {
     required this.totalSets,
     required this.progress,
     required this.running,
+    this.introSpeaking = false,
   });
 
   final SetPhase phase;
+
+  /// True while the spoken intro is still playing in the briefing phase; the
+  /// "I am ready" button appears once it is false.
+  final bool introSpeaking;
   final int setNumber;
   final int secondsLeft;
   final int totalSets;
@@ -128,6 +159,7 @@ class SetTimerState {
     running: false,
   );
 
+  bool get isBriefing => phase == SetPhase.briefing;
   bool get isIdle => phase == SetPhase.idle;
   bool get isDone => phase == SetPhase.done;
 }
@@ -141,9 +173,21 @@ class SetTimerController extends Notifier<SetTimerState> {
   SetSession? _session;
   Timer? _timer;
 
+  /// True while the spoken intro of the briefing phase is playing.
+  bool _introSpeaking = false;
+
+  /// Bumped whenever an intro is cancelled or finished early, so a late
+  /// completion of an abandoned intro cannot touch the current state.
+  int _introToken = 0;
+  bool _disposed = false;
+
   @override
   SetTimerState build() {
-    ref.onDispose(_stopClock);
+    ref.onDispose(() {
+      _disposed = true;
+      _introToken++;
+      _stopClock();
+    });
 
     // Both switches take effect NOW, not at the next set.
     //
@@ -156,7 +200,15 @@ class SetTimerController extends Notifier<SetTimerState> {
     // correctly (`form_check_providers.dart`, the same `ref.listen` +
     // `stop()` pair); the set timer never did.
     ref.listen<bool>(setVoiceEnabledProvider, (_, enabled) {
-      if (!enabled) unawaited(ref.read(voiceCoachProvider).stop());
+      if (!enabled) {
+        unawaited(ref.read(voiceCoachProvider).stop());
+        // Voice off means no waiting: open the gate right away.
+        if (_introSpeaking) {
+          _introToken++;
+          _introSpeaking = false;
+          _publish();
+        }
+      }
     });
     ref.listen<bool>(setCuesMutedProvider, (_, muted) {
       if (muted) unawaited(ref.read(cuePlayerProvider).stop());
@@ -170,26 +222,82 @@ class SetTimerController extends Notifier<SetTimerState> {
     _timer = null;
   }
 
-  /// Begins a set of [plan] for [exercise], announcing it first if the voice
-  /// is on.
+  /// Begins a set of [plan] for [exercise].
+  ///
+  /// A fresh start enters the briefing phase: [spokenIntro] (if the voice is
+  /// on) is spoken IN FULL with no clock running and no cue playing, then the
+  /// person confirms with [confirmReady]. Only that starts the short
+  /// countdown. Resuming after a pause does not repeat the intro.
   void start(SetPlan plan, {String? spokenIntro}) {
     final session = _session ??= SetSession(plan);
     if (session.plan != plan || session.isFinished) {
       _session = SetSession(plan);
     }
     final s = _session!;
+    final entering = s.phase == SetPhase.idle;
     _play(s.start());
 
-    if (spokenIntro != null && ref.read(setVoiceEnabledProvider)) {
-      unawaited(ref.read(voiceCoachProvider).say(spokenIntro));
+    _stopClock();
+    if (s.phase == SetPhase.briefing) {
+      if (entering &&
+          spokenIntro != null &&
+          ref.read(setVoiceEnabledProvider)) {
+        _introSpeaking = true;
+        unawaited(_speakIntro(spokenIntro, ++_introToken));
+      }
+    } else {
+      _startClock();
     }
+    _publish();
+  }
 
+  void _startClock() {
     _stopClock();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _onSecond());
+  }
+
+  /// Speaks the intro and opens the "I am ready" gate when it ends.
+  ///
+  /// The wait is bounded: a TTS engine that never reports completion must not
+  /// block the session, so after the timeout the speech is cut and the gate
+  /// opens anyway. A broken or muted voice completes at once.
+  Future<void> _speakIntro(String text, int token) async {
+    final coach = ref.read(voiceCoachProvider);
+    final limit = Duration(seconds: 15 + text.length ~/ 8);
+    try {
+      final spoken =
+          coach is GatedVoiceCoach ? coach.sayAndWait(text) : coach.say(text);
+      await spoken.timeout(limit);
+    } on TimeoutException {
+      unawaited(coach.stop());
+    } catch (_) {
+      // A failing engine is the same as a silent one: open the gate.
+    }
+    if (_disposed || token != _introToken) return;
+    _introSpeaking = false;
+    _publish();
+  }
+
+  /// Drops a running intro (pause, stop, "I am ready" while it still talks).
+  void _cancelIntro() {
+    if (!_introSpeaking) return;
+    _introToken++;
+    _introSpeaking = false;
+    unawaited(ref.read(voiceCoachProvider).stop());
+  }
+
+  /// "I am ready": ends the briefing and starts the short countdown.
+  void confirmReady() {
+    final s = _session;
+    if (s == null || s.phase != SetPhase.briefing) return;
+    _cancelIntro();
+    _play(s.confirmReady());
+    _startClock();
     _publish();
   }
 
   void pause() {
+    _cancelIntro();
     _session?.pause();
     _stopClock();
     _publish();
@@ -198,11 +306,31 @@ class SetTimerController extends Notifier<SetTimerState> {
   void skip() {
     final s = _session;
     if (s == null) return;
+    // In the gate, skip means "ready".
+    if (s.phase == SetPhase.briefing) {
+      confirmReady();
+      return;
+    }
     _play(s.skip());
+    if (s.isFinished) _stopClock();
+    _publish();
+  }
+
+  /// "Done" on a rep based set; works while paused too.
+  void finishRepSet() {
+    final s = _session;
+    if (s == null) return;
+    _play(s.finishRepSet());
+    if (s.isFinished) {
+      _stopClock();
+    } else if (s.isRunning) {
+      _startClock();
+    }
     _publish();
   }
 
   void reset() {
+    _cancelIntro();
     _stopClock();
     _session?.reset();
     _session = null;
@@ -240,6 +368,7 @@ class SetTimerController extends Notifier<SetTimerState> {
       totalSets: s.plan.sets,
       progress: s.phaseProgress,
       running: s.isRunning,
+      introSpeaking: _introSpeaking,
     );
   }
 }

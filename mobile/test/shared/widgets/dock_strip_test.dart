@@ -54,7 +54,10 @@ void _startReal(ShellFixture f, {bool rest = false}) {
   if (rest) {
     f.container.read(restTimerProvider.notifier).start(const Duration(seconds: 90));
   } else {
-    f.container.read(setTimerProvider.notifier).start(kTestSetPlan);
+    final ctl = f.container.read(setTimerProvider.notifier);
+    ctl.start(kTestSetPlan);
+    // Past the briefing gate, so the clock is running like it used to.
+    ctl.confirmReady();
   }
 }
 

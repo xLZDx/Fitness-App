@@ -59458,3 +59458,7 @@ Decision (operator, 2026-10-23, "разрешаю все"): enable the V0 queue 
 ## 2026-10-24 - Commit: fix(v1): ignore android_metadata when deciding whether the queue database is new
 
 Decision: treat a database whose only table is android_metadata as new (create the schema), instead of adding an Android-specific open path; a database holding other foreign tables still follows the recovery path. Evidence: core/changes/2026-10-23-v1-sqlite-android-metadata.md; 39 store tests passed.
+
+## 2026-10-24 - Commit: feat(v1): add a ready gate before the set and rep-based sets
+
+Decision (operator reports, 2026-10-24): the timer starts only after the spoken instruction ends and the person taps ready (3 s countdown); strength moves are rep-based (reps and load), only inherently timed moves (holds, cardio, stretching, yoga) keep the timer. Programme-level prescriptions and a persisted last-load are a later step. Evidence: core/changes/2026-10-24-v1-set-ready-gate-and-rep-sets.md.

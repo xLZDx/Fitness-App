@@ -398,6 +398,7 @@ void main() {
       // Real controllers, started with the injected clock.
       container.read(setTimerProvider.notifier).start(const SetPlan(
           sets: 3, workSeconds: 60, restSeconds: 20, readySeconds: 0));
+      container.read(setTimerProvider.notifier).confirmReady();
       container.read(restTimerProvider.notifier).start(const Duration(minutes: 5));
       await tester.pump(const Duration(seconds: 1));
       await settleFrames(tester, frames: 3);

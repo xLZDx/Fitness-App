@@ -299,6 +299,7 @@ ActiveSessionStatus? deriveActiveSessionStatus({
   required DateTime now,
 }) {
   switch (setTimer.phase) {
+    case SetPhase.briefing:
     case SetPhase.gettingReady:
     case SetPhase.work:
     case SetPhase.rest:

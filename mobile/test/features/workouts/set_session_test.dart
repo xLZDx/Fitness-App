@@ -11,7 +11,7 @@ import 'package:fitness_app/features/workouts/data/set_session.dart';
 void main() {
   /// Runs the session to completion, returning every cue in order.
   List<SetCue> runOut(SetSession s, {int maxTicks = 10000}) {
-    final cues = <SetCue>[...s.start()];
+    final cues = <SetCue>[...s.start(), ...s.confirmReady()];
     var n = 0;
     while (!s.isFinished && n++ < maxTicks) {
       cues.addAll(s.tick().cues);
@@ -26,6 +26,7 @@ void main() {
     test('ready, then work, rest, work, done', () {
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       expect(s.phase, SetPhase.gettingReady);
 
       final seen = <SetPhase>[s.phase];
@@ -61,6 +62,7 @@ void main() {
     test('ticking counts down through each phase exactly once', () {
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       final work = <int>[];
       while (!s.isFinished) {
         final t = s.tick();
@@ -82,6 +84,7 @@ void main() {
           sets: 1, workSeconds: 6, restSeconds: 2, readySeconds: 0, cueLead: 3);
       final s = SetSession(plan);
       s.start();
+      s.confirmReady();
       final ticksAt = <int>[];
       while (!s.isFinished) {
         final t = s.tick();
@@ -96,6 +99,7 @@ void main() {
           sets: 1, workSeconds: 2, restSeconds: 1, readySeconds: 4, cueLead: 2);
       final s = SetSession(plan);
       s.start();
+      s.confirmReady();
       final duringReady = <int>[];
       while (s.phase == SetPhase.gettingReady) {
         final t = s.tick();
@@ -108,6 +112,7 @@ void main() {
       // They would talk over each other. The gong replaces the last tick.
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       while (!s.isFinished) {
         final c = s.tick().cues;
         final hasTick = c.contains(SetCue.tick);
@@ -122,6 +127,7 @@ void main() {
     test('a paused session does not advance', () {
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       s.tick();
       s.pause();
       final phase = s.phase;
@@ -148,6 +154,7 @@ void main() {
       // A double tap must not send the user back to set one.
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       for (var i = 0; i < 4; i++) {
         s.tick();
       }
@@ -161,6 +168,7 @@ void main() {
     test('pause then start resumes rather than restarting', () {
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       for (var i = 0; i < 3; i++) {
         s.tick();
       }
@@ -168,6 +176,7 @@ void main() {
       final left = s.secondsLeft;
       s.pause();
       s.start();
+      s.confirmReady();
       expect(s.phase, phase);
       expect(s.secondsLeft, left);
       expect(s.isRunning, isTrue);
@@ -176,6 +185,7 @@ void main() {
     test('skip ends the current set as if it had run out', () {
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       s.tick();
       while (s.phase != SetPhase.work) {
         s.tick();
@@ -207,6 +217,7 @@ void main() {
       final s = SetSession(tiny);
       expect(s.progress, 0);
       s.start();
+      s.confirmReady();
       var last = s.progress;
       while (!s.isFinished) {
         s.tick();
@@ -220,6 +231,7 @@ void main() {
     test('phase progress resets each phase', () {
       final s = SetSession(tiny);
       s.start();
+      s.confirmReady();
       while (s.phase != SetPhase.work) {
         s.tick();
       }
@@ -262,7 +274,8 @@ void main() {
       const p = SetPlan(
           sets: 1, workSeconds: 5, restSeconds: 5, readySeconds: 0);
       final s = SetSession(p);
-      expect(s.start(), contains(SetCue.startGong));
+      s.start();
+      expect(s.confirmReady(), contains(SetCue.startGong));
       expect(s.phase, SetPhase.work);
     });
   });

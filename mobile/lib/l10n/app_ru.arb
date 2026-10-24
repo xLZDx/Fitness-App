@@ -1221,6 +1221,56 @@
       }
     }
   },
+  "timerImReady": "Готов",
+  "timerListen": "слушайте",
+  "timerRepsDone": "Готово",
+  "timerRepsCount": "Повторений: {arg0}",
+  "timerAtLoad": "вес {arg0} кг",
+  "timerPlanSummaryReps": "Подходов: {arg0} · повторений: {arg1} · отдых {arg2} с",
+  "timerSpokenIntroReps": "{arg0}. Подходов: {arg1}, в каждом повторений: {arg2}, отдых между ними {arg3} секунд.",
+  "@timerRepsCount": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerAtLoad": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      }
+    }
+  },
+  "@timerPlanSummaryReps": {
+    "placeholders": {
+      "arg0": {
+        "type": "int"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      }
+    }
+  },
+  "@timerSpokenIntroReps": {
+    "placeholders": {
+      "arg0": {
+        "type": "String"
+      },
+      "arg1": {
+        "type": "int"
+      },
+      "arg2": {
+        "type": "int"
+      },
+      "arg3": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptionPeriodMonthly": "Помесячно",
   "subscriptionPeriodAnnual": "На год",
   "subscriptionPeriodFamily2": "Семейная · 2 места",

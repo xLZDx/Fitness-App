@@ -30,8 +30,11 @@ class SetTimerCard extends ConsumerWidget {
   /// four paragraphs while the user is holding a plank is not helping.
   String _intro(BuildContext context, SetPlan plan) {
     final l10n = AppLocalizations.of(context);
-    final head = l10n.timerSpokenIntro(
-        exercise.title, plan.sets, plan.workSeconds, plan.restSeconds);
+    final head = plan.isRepBased
+        ? l10n.timerSpokenIntroReps(exercise.title, plan.sets,
+            plan.prescription.targetReps ?? 0, plan.restSeconds)
+        : l10n.timerSpokenIntro(
+            exercise.title, plan.sets, plan.workSeconds, plan.restSeconds);
     final first = exercise.steps.isEmpty ? '' : exercise.steps.first.trim();
     if (first.isEmpty) return head;
     final sentence = first.split(RegExp(r'(?<=[.!?])\s')).first;
@@ -69,6 +72,28 @@ class SetTimerCard extends ConsumerWidget {
     }
   }
 
+  /// "Done" on a repetition based set: hands the reps (and load, when known)
+  /// to the capture provider that "Mark complete" and the offline queue read,
+  /// then ends the set so the rest phase starts.
+  void _repsDone(WidgetRef ref, SetPlan plan) {
+    final p = plan.prescription;
+    // A loaded move whose weight was never given gets no capture: writing a
+    // reps-only record would stop the weight question being asked again and
+    // would log "no weight". Bodyweight moves keep the reps-only capture.
+    final loaded = exerciseUsesLoad(
+      equipmentId: exercise.equipmentId,
+      isStretch: exercise.isStretch,
+    );
+    if (!loaded || p.loadKg != null) {
+      ref.read(setLoadProvider(exercise.id).notifier).state =
+          (weightKg: p.loadKg, reps: p.targetReps);
+    }
+    ref.read(setTimerProvider.notifier).finishRepSet();
+  }
+
+  static String _kg(double kg) =>
+      kg == kg.roundToDouble() ? kg.toInt().toString() : kg.toString();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -88,7 +113,17 @@ class SetTimerCard extends ConsumerWidget {
     // arc at all (`HudRing`'s painter returns before stroking when
     // `sweep <= 0`), so the shared colour has nothing to visually collide
     // with.
+    final repBased = plan.isRepBased;
+    // A repetition based set has no clock while it is being prepared or
+    // performed: the ring shows the target instead.
+    final showReps = repBased &&
+        (timer.isIdle || timer.isBriefing || timer.phase == SetPhase.work);
+    final repsWork = repBased && timer.phase == SetPhase.work;
     final (label, colour) = switch (timer.phase) {
+      SetPhase.briefing => (
+          timer.introSpeaking ? l10n.timerListen : l10n.timerGetReady,
+          colors.warning
+        ),
       SetPhase.gettingReady => (l10n.timerGetReady, colors.warning),
       SetPhase.work => (l10n.timerWork, colors.accentPrimary),
       SetPhase.rest => (l10n.timerRest, colors.accentSecondary),
@@ -113,8 +148,11 @@ class SetTimerCard extends ConsumerWidget {
           const SizedBox(height: 6),
           Text(
             timer.isIdle
-                ? l10n.timerPlanSummary(
-                    plan.sets, plan.workSeconds, plan.restSeconds)
+                ? (repBased
+                    ? l10n.timerPlanSummaryReps(plan.sets,
+                        plan.prescription.targetReps ?? 0, plan.restSeconds)
+                    : l10n.timerPlanSummary(
+                        plan.sets, plan.workSeconds, plan.restSeconds))
                 : l10n.timerSetOf(
                     timer.setNumber == 0 ? 1 : timer.setNumber, plan.sets),
             style: theme.textTheme.bodySmall?.copyWith(
@@ -157,9 +195,11 @@ class SetTimerCard extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    timer.isIdle
-                        ? _clock(plan.workSeconds)
-                        : _clock(timer.secondsLeft),
+                    showReps
+                        ? '${plan.prescription.targetReps ?? 0}'
+                        : (timer.isIdle || timer.isBriefing)
+                            ? _clock(plan.workSeconds)
+                            : _clock(timer.secondsLeft),
                     key: const Key('workout.set_timer.clock'),
                     style: theme.textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w900,
@@ -180,10 +220,44 @@ class SetTimerCard extends ConsumerWidget {
               ),
             ),
           ),
+          if (showReps) ...[
+            const SizedBox(height: 8),
+            Text(
+              plan.prescription.loadKg == null
+                  ? l10n.timerRepsCount(plan.prescription.targetReps ?? 0)
+                  : '${l10n.timerRepsCount(plan.prescription.targetReps ?? 0)}'
+                      ' · ${l10n.timerAtLoad(_kg(plan.prescription.loadKg!))}',
+              key: const Key('workout.set_timer.reps'),
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ],
           const SizedBox(height: 16),
+          // The gate: shown only after the spoken intro has finished.
+          if (timer.isBriefing && !timer.introSpeaking) ...[
+            _Primary(
+              key: const Key('workout.set_timer.ready'),
+              label: l10n.timerImReady,
+              icon: Icons.check_rounded,
+              colour: colour,
+              onTap: controller.confirmReady,
+            ),
+            const SizedBox(height: 10),
+          ],
+          // A repetition based set ends when the person says so.
+          if (repsWork) ...[
+            _Primary(
+              key: const Key('workout.set_timer.reps_done'),
+              label: l10n.timerRepsDone,
+              icon: Icons.check_rounded,
+              colour: colour,
+              onTap: () => _repsDone(ref, plan),
+            ),
+            const SizedBox(height: 10),
+          ],
           Row(
             children: [
-              if (!timer.isIdle && !timer.isDone) ...[
+              if (!timer.isIdle && !timer.isDone && !repsWork) ...[
                 Expanded(
                   child: _Secondary(
                     key: const Key('workout.set_timer.skip'),

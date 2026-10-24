@@ -45,7 +45,12 @@ void main() {
     final idleSet = SetTimerState.idle;
 
     test('set phases map to running or paused; done and idle hide', () {
-      for (final p in [SetPhase.gettingReady, SetPhase.work, SetPhase.rest]) {
+      for (final p in [
+        SetPhase.briefing,
+        SetPhase.gettingReady,
+        SetPhase.work,
+        SetPhase.rest
+      ]) {
         expect(d(_set(p), RestTimerState.idle)!.state,
             ActiveSessionState.running, reason: '$p');
         expect(d(_set(p, running: false), RestTimerState.idle)!.state,
@@ -198,6 +203,7 @@ void main() {
         c.read(activeSessionOwnerProvider.notifier)
             .capture(uid: 'uidA', destination: '/workout/ex1');
         c.read(setTimerProvider.notifier).start(kTestSetPlan);
+        c.read(setTimerProvider.notifier).confirmReady(); // timers tick only after the gate
         async.flushMicrotasks();
         expect(c.read(activeSessionStatusProvider)!.ownerUid, 'uidA');
         auth.add(kUserB);

@@ -283,6 +283,17 @@ abstract class GatedVoiceCoach implements VoiceCoach {
     await utter(trimmed);
   }
 
+  /// Like [say], but the returned future completes only when the speech has
+  /// finished (or failed). Used by the set timer, which must not start a
+  /// countdown over its own spoken instruction.
+  ///
+  /// Not on the [VoiceCoach] interface so existing implementers keep
+  /// compiling; the default completes with [say], which is right for coaches
+  /// whose [utter] already resolves when speech ends (and for the mock).
+  /// Callers must still bound the wait: an engine that never reports
+  /// completion would otherwise hang the caller.
+  Future<void> sayAndWait(String text) => say(text);
+
   @override
   Future<void> stop() async {
     gate.reset();
