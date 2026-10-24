@@ -1945,3 +1945,10 @@ Kind: SUCCESS
 Facts: the report was produced from one data model for both languages and checked mechanically; building it exposed that the task register still shows every task as planned although about 30 percent have delivered work.
 Why it worked: statuses were taken from merged PRs and the live environment, and each uncertain status carries an explicit not-verified label.
 Rule next time: update the register status in the same commit as the delivering PR so a status report does not need reconstruction.
+
+## 2026-10-24 - Commit: docs(v1): unified programme report
+Kind: SHORTCOMING
+Facts: the operator asked for the whole project, all branches and the whole programme; my first report covered only the v1 line and had to be redone.
+Root cause: I scoped "the project" to the work I had personally done this week instead of the repository's full history.
+Missed by: author; caught by the operator.
+Rule next time: for a "whole project" report, enumerate every sprint line and branch from git first, and state the covered scope at the top before building.

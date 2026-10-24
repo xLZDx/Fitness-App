@@ -59477,3 +59477,7 @@ Decision: deficit stays the primary order in the adaptive plan (its stated ratio
 ## 2026-10-24 - Commit: docs(v1): full project status report
 
 Decision: report the v1 task statuses as inferred from merged work (4 done, 9 partial, 4 flag-off, 1 blocked, 36 not started, 2 not verified of 56) instead of copying the register's planned label; disclose that PRs #39 and #40 were merged on an auto-accepted question after the operator's silence. Evidence: reports/PROJECT_STATUS_2026-10-24.html; core/changes/2026-10-24-v1-project-status-report.md.
+
+## 2026-10-24 - Commit: docs(v1): unified programme report
+
+Decision: the single programme report (all eras, sprints, branches, gates, 75 vision items) replaces the v1-only report as the operator-facing status view; unverified research statuses stay labelled. Evidence: reports/PROGRAMME_REPORT_2026-10-24.html; core/changes/2026-10-24-programme-report.md.
