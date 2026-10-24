@@ -59458,3 +59458,11 @@ Decision (operator, 2026-10-23, "разрешаю все"): enable the V0 queue 
 ## 2026-10-24 - Commit: fix(v1): ignore android_metadata when deciding whether the queue database is new
 
 Decision: treat a database whose only table is android_metadata as new (create the schema), instead of adding an Android-specific open path; a database holding other foreign tables still follows the recovery path. Evidence: core/changes/2026-10-23-v1-sqlite-android-metadata.md; 39 store tests passed.
+
+## 2026-10-24 - Commit: feat(v1): rank recommendations and programmes by training context
+
+Decision: add a shared affinity score instead of new per-context programme templates (smallest change that makes gym, home and outdoors differ); equipment kind is decided by label first, with an explicit machine-id fallback derived from the catalogue. Evidence: core/changes/2026-10-24-v1-context-aware-ranking.md; 83 new tests passed.
+
+## 2026-10-24 - Commit: feat(v1): apply the training context and muscle diversity to the adaptive plan
+
+Decision: deficit stays the primary order in the adaptive plan (its stated rationale), context affinity is a tie-break, and a per-muscle diversity pass prevents one muscle filling every slot; the hyperextension bench no longer counts as a gym machine. Evidence: core/changes/2026-10-24-v1-context-aware-ranking.md (addendum); on-device check on the S8.

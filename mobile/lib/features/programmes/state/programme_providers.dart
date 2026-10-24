@@ -241,15 +241,20 @@ class ProgrammeAction extends Notifier<AsyncValue<void>> {
           // a role structure cannot work that way: a user who asks for core
           // work still needs a squat in the squat slot. Preferring rather than
           // filtering keeps their answer and keeps the programme a programme.
-          rank: focus.isEmpty
+          //
+          // A chosen training context adds a PRIMARY key in front of that
+          // order: how well the exercise suits gym / home / outdoors
+          // (`contextAffinity`), best first. Focus muscle is then the
+          // tie-break, and the pool order (id) the last one, so the result is
+          // a deterministic permutation of the pool.
+          rank: (focus.isEmpty && tc == null)
               ? null
-              : (role, pool) => [
-                    ...pool.where((e) =>
-                        e.primaryMuscles.any(focus.contains) ||
-                        e.muscles.any(focus.contains)),
-                    ...pool.where((e) => !(e.primaryMuscles.any(focus.contains) ||
-                        e.muscles.any(focus.contains))),
-                  ],
+              : (role, pool) => rankForContext(
+                    pool,
+                    focus: focus,
+                    context: tc,
+                    access: equipmentAccessFor(tc, safety.equipment),
+                  ),
         ));
         switch (built) {
           case ProgrammeRefused(:final findings):

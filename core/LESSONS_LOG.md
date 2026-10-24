@@ -1913,3 +1913,17 @@ Facts: on the operator's phone the offline queue never opened ("no such table: m
 Root cause: the schema check assumed an empty table list means a new database; the store was developed and tested only on the desktop driver and merged before any on-device run.
 Missed by: author, tests (wrong platform), reviewers; caught by the operator on a real phone.
 Rule next time: a storage layer needs one run on the real target platform driver before it is wired in; list platform-created system tables explicitly.
+
+## 2026-10-24 - Commit: feat(v1): rank recommendations and programmes by training context
+Kind: SHORTCOMING
+Facts: the first version treated any item with an equipment id as a machine; 1385 of 1887 catalogue rows have one, so dumbbells and bands were punished outdoors. The test agent found it by running the real catalogue.
+Root cause: I wrote the classifier from field names without checking the value distribution in the data.
+Missed by: author; caught by the test agent's real-catalogue tests.
+Rule next time: before classifying on a field, count its real values; give every classifier at least one test on the real catalogue.
+
+## 2026-10-24 - Commit: feat(v1): apply the training context and muscle diversity to the adaptive plan
+Kind: SHORTCOMING
+Facts: the first ranking change covered Home recommendations and programmes, but the operator's "plan for today" screen is a third generator (AI planner) and stayed identical across contexts; the real-phone test found it. The first planner result was also four hyperextension-bench items because no diversity rule existed.
+Root cause: I scoped the change from a code read of two surfaces instead of listing every generator that consumes the training context.
+Missed by: author, reviewers; caught by the on-device test and the real-catalogue test.
+Rule next time: grep every consumer of the shared input (here narrowToTrainingContext) before declaring a ranking change complete; judge list quality on real data, not only that lists differ.
